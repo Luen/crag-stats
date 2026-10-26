@@ -1,11 +1,23 @@
 <script lang="ts">
 	import BarList from '#lib/components/BarList.svelte';
+	import ClimberTypeBar from '#lib/components/ClimberTypeBar.svelte';
+	import CprTimeline from '#lib/components/CprTimeline.svelte';
 	import GradeChip from '#lib/components/GradeChip.svelte';
+	import NotableAscents from '#lib/components/NotableAscents.svelte';
+	import StylePyramid from '#lib/components/StylePyramid.svelte';
 	import VolumeChart from '#lib/components/VolumeChart.svelte';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
 	const s = $derived(data.stats);
+
+	const systems = [
+		{ id: 'ewbank', label: 'Ewbanks' },
+		{ id: 'french', label: 'French' },
+		{ id: 'yds', label: 'YDS' },
+		{ id: 'v_scale', label: 'V-Scale' },
+		{ id: 'font', label: 'Fontainebleau' }
+	] as const;
 </script>
 
 <section class="hero panel">
@@ -13,12 +25,11 @@
 		<p class="eyebrow">Personal climbing analytics</p>
 		<h1>{s.profileName ? `${s.profileName}'s crag year` : 'Your climbing, quantified'}</h1>
 		<p class="lede">
-			Turn theCrag ascent history into performance analytics, project tracking, and clearer training
-			focus — self-hosted, MIT licensed.
+			{s.climberType}. Turn theCrag history into performance analytics, projects, and training focus.
 		</p>
 	</div>
 	<div class="sync">
-		<span class="pill" class:ok={data.sync.status === 'idle'} class:err={data.sync.status === 'error'}>
+		<span class={['pill', { ok: data.sync.status === 'idle', err: data.sync.status === 'error' }]}>
 			{data.sync.status}
 		</span>
 		{#if data.sync.lastSuccessAt}
@@ -26,6 +37,14 @@
 		{:else}
 			<small>No API sync yet — import a CSV or sync from Settings</small>
 		{/if}
+		<form method="POST" action="?/setGradeSystem" class="grade-form">
+			<label for="system">Grade system</label>
+			<select id="system" name="system" onchange={(e) => e.currentTarget.form?.requestSubmit()}>
+				{#each systems as opt (opt.id)}
+					<option value={opt.id} selected={data.gradeSystem === opt.id}>{opt.label}</option>
+				{/each}
+			</select>
+		</form>
 	</div>
 </section>
 
@@ -39,22 +58,26 @@
 	</section>
 {:else}
 	<section class="metrics">
-		<div class="metric panel">
-			<span>Ascents</span>
-			<strong>{s.totalAscents}</strong>
+		<div class="metric panel accent">
+			<strong>{s.onsightCount}</strong>
+			<span>onsighted</span>
 		</div>
 		<div class="metric panel">
-			<span>Sends</span>
 			<strong>{s.totalSends}</strong>
+			<span>successful ascents</span>
 		</div>
 		<div class="metric panel">
-			<span>Height</span>
-			<strong>{s.heightM.toLocaleString()} m</strong>
+			<strong>{s.heightKm} km</strong>
+			<span>distance climbed</span>
 		</div>
 		<div class="metric panel">
-			<span>Routes / Crags</span>
-			<strong>{s.distinctRoutes} / {s.distinctCrags}</strong>
+			<strong>{s.totalAscents}</strong>
+			<span>total logged</span>
 		</div>
+	</section>
+
+	<section class="stack">
+		<ClimberTypeBar shares={s.styleShare} climberType={s.climberType} />
 	</section>
 
 	<section class="grid">
@@ -87,35 +110,41 @@
 		<article class="panel">
 			<h2>Tick types</h2>
 			<BarList
-				items={s.tickBreakdown.map((t) => ({
+				items={s.tickBreakdown.slice(0, 12).map((t) => ({
 					label: t.tick,
 					value: t.count
 				}))}
 			/>
 		</article>
-		<article class="panel wide">
-			<h2>Grade pyramid (sends)</h2>
-			{#if s.gradePyramid.length === 0}
-				<p class="hint">No graded sends yet.</p>
-			{:else}
-				<div class="pyramid">
-					{#each s.gradePyramid as g (g.score)}
-						<div class="py-row">
-							<span class="g"><GradeChip grade={g.grade} band={g.band} /></span>
-							<div class="py-track">
-								<div
-									class="py-fill"
-									style:width="{Math.max(8, (g.count / Math.max(...s.gradePyramid.map((x) => x.count))) * 100)}%"
-									style:background={g.color}
-								>
-									{g.count}
-								</div>
-							</div>
-						</div>
-					{/each}
-				</div>
-			{/if}
-		</article>
+	</section>
+
+	<section class="stack">
+		<header class="section-head">
+			<h2>Grade pyramids</h2>
+			<p>Split by style · grades shown in your preferred system ({data.gradeSystem})</p>
+		</header>
+		<div class="pyramids">
+			{#each s.stylePyramids as pyramid (pyramid.style)}
+				<StylePyramid {pyramid} />
+			{/each}
+		</div>
+	</section>
+
+	<section class="stack">
+		<NotableAscents byStyle={s.notableByStyle} byArea={s.notableByArea} />
+	</section>
+
+	<section class="stack">
+		<header class="section-head">
+			<h2>CPR timelines</h2>
+			<p>Sport · Trad · Boulder performance over time</p>
+		</header>
+		<CprTimeline title="Sport" data={s.cpr.sport} />
+		<CprTimeline title="Trad" data={s.cpr.trad} />
+		<CprTimeline title="Boulder" data={s.cpr.boulder} />
+	</section>
+
+	<section class="grid">
 		<article class="panel">
 			<h2>Hardest sends</h2>
 			<ul class="list">
@@ -125,7 +154,7 @@
 							<strong>{climb.routeName}</strong>
 							<div class="sub">{climb.cragName} · {climb.tickType}</div>
 						</div>
-						<GradeChip grade={climb.gradeRaw} band={climb.gradeBand} />
+						<GradeChip grade={climb.gradeLabel ?? climb.gradeRaw} band={climb.gradeBand} />
 					</li>
 				{/each}
 			</ul>
@@ -141,7 +170,7 @@
 								{(climb.ascentDate || '').slice(0, 10)} · {climb.tickType} · {climb.cragName}
 							</div>
 						</div>
-						<GradeChip grade={climb.gradeRaw} band={climb.gradeBand} />
+						<GradeChip grade={climb.gradeLabel ?? climb.gradeRaw} band={climb.gradeBand} />
 					</li>
 				{/each}
 			</ul>
@@ -170,19 +199,19 @@
 	h1 {
 		margin: 0;
 		font-size: clamp(1.8rem, 4vw, 2.6rem);
-		max-width: 16ch;
+		max-width: 18ch;
 		line-height: 1.05;
 	}
 	.lede {
 		margin: 0.7rem 0 0;
-		max-width: 42ch;
+		max-width: 46ch;
 		color: var(--ink-muted);
 	}
 	.sync {
 		display: grid;
 		align-content: start;
 		gap: 0.4rem;
-		min-width: 12rem;
+		min-width: 13rem;
 	}
 	.pill {
 		display: inline-flex;
@@ -200,6 +229,25 @@
 	.pill.err {
 		background: rgba(201, 9, 9, 0.15);
 	}
+	.grade-form {
+		display: grid;
+		gap: 0.25rem;
+		margin-top: 0.35rem;
+	}
+	.grade-form label {
+		font-size: 0.75rem;
+		font-weight: 700;
+		color: var(--ink-muted);
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+	}
+	.grade-form select {
+		font: inherit;
+		padding: 0.4rem 0.55rem;
+		border-radius: 0.45rem;
+		border: 1px solid var(--line);
+		background: white;
+	}
 	.metrics {
 		display: grid;
 		grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -209,6 +257,10 @@
 	.metric {
 		padding: 1rem 1.1rem;
 		border-radius: 0.9rem;
+	}
+	.metric.accent {
+		background: rgba(201, 9, 9, 0.08);
+		border: 1px solid rgba(201, 9, 9, 0.22);
 	}
 	.metric span {
 		display: block;
@@ -223,13 +275,28 @@
 		display: grid;
 		grid-template-columns: repeat(2, minmax(0, 1fr));
 		gap: 0.9rem;
+		margin-bottom: 1rem;
+	}
+	.stack {
+		display: grid;
+		gap: 0.9rem;
+		margin-bottom: 1rem;
+	}
+	.section-head h2 {
+		margin: 0;
+	}
+	.section-head p {
+		margin: 0.25rem 0 0;
+		color: var(--ink-muted);
+	}
+	.pyramids {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+		gap: 0.9rem;
 	}
 	.panel {
 		padding: 1.1rem 1.2rem;
 		border-radius: 1rem;
-	}
-	.wide {
-		grid-column: 1 / -1;
 	}
 	h2 {
 		margin: 0 0 0.85rem;
@@ -256,30 +323,6 @@
 	.sub {
 		color: var(--ink-muted);
 		font-size: 0.85rem;
-	}
-	.pyramid {
-		display: grid;
-		gap: 0.45rem;
-	}
-	.py-row {
-		display: grid;
-		grid-template-columns: 5.5rem 1fr;
-		gap: 0.6rem;
-		align-items: center;
-	}
-	.py-track {
-		background: rgba(28, 36, 24, 0.06);
-		border-radius: 999px;
-		overflow: hidden;
-		min-height: 1.35rem;
-	}
-	.py-fill {
-		min-width: 1.5rem;
-		padding: 0.15rem 0.5rem;
-		color: #111;
-		font-size: 0.8rem;
-		font-weight: 700;
-		text-align: right;
 	}
 	.empty {
 		padding: 1.25rem 1.4rem;

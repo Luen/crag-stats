@@ -1,57 +1,95 @@
 import { desc, eq, sql } from 'drizzle-orm';
-import { bandById, GRADE_BANDS } from '#lib/grades';
+import {
+	bandById,
+	bandFromEwbank,
+	bandFromVScale,
+	convertFromEwbank,
+	convertFromVScale,
+	GRADE_BANDS,
+	type GradeSystem
+} from '#lib/grades';
+import type { DashboardStats, NotableRow, StylePyramid } from '#lib/types/dashboard';
+import { buildCprTimeline, normalizeClimbStyle } from './cpr';
 import { db, ensureSchema } from './db';
 import { ascents, profiles, routes } from './db/schema';
 
-export type DashboardStats = {
-	profileName: string | null;
-	totalAscents: number;
-	totalSends: number;
-	totalAttempts: number;
-	heightM: number;
-	distinctRoutes: number;
-	distinctCrags: number;
-	tickBreakdown: { tick: string; count: number }[];
-	styleBreakdown: { style: string; count: number }[];
-	topCrags: { crag: string; count: number; maxGrade: string | null; maxBand: number | null }[];
-	volumeByMonth: { month: string; count: number; sends: number }[];
-	gradePyramid: { grade: string; score: number; band: number | null; count: number; color: string }[];
-	bandBreakdown: { band: number; name: string; count: number; color: string }[];
-	hardestSends: {
-		routeName: string;
-		gradeRaw: string | null;
-		gradeBand: number | null;
-		tickType: string | null;
-		ascentDate: string | null;
-		cragName: string | null;
-		url: string | null;
-	}[];
-	heatmap: { date: string; count: number }[];
-	recent: {
-		id: number;
-		routeName: string;
-		gradeRaw: string | null;
-		gradeBand: number | null;
-		tickType: string | null;
-		ascentDate: string | null;
-		cragName: string | null;
-		isSend: boolean;
-		isAttempt: boolean;
-		url: string | null;
-	}[];
+export type { DashboardStats, NotableRow, StylePyramid } from '#lib/types/dashboard';
+
+const STYLE_COLORS: Record<string, string> = {
+	Sport: '#1d6fa5',
+	Trad: '#e07a2f',
+	Boulder: '#c44569',
+	'Top rope': '#7b5ea7',
+	Alpine: '#2a9d8f',
+	Aid: '#6c757d',
+	Unknown: '#9aa0a6'
 };
 
-function dateKey(iso: string | null | undefined): string | null {
-	if (!iso) return null;
-	return iso.slice(0, 10);
-}
+const TICK_COLORS: Record<string, string> = {
+	Onsight: '#54b41a',
+	Flash: '#fee100',
+	'Red point': '#c90909',
+	'Pink point': '#e83e8c',
+	Tick: '#1d6fa5',
+	Send: '#1d6fa5',
+	Clean: '#54b41a',
+	Other: '#c5c5c5'
+};
 
 function monthKey(iso: string | null | undefined): string | null {
 	if (!iso) return null;
 	return iso.slice(0, 7);
 }
 
-export function getDashboardStats(): DashboardStats {
+function displayStyle(gearStyle: string | null | undefined): string {
+	const s = (gearStyle || '').trim();
+	if (!s) return 'Unknown';
+	const lower = s.toLowerCase();
+	if (lower.includes('boulder')) return 'Boulder';
+	if (lower.includes('trad')) return 'Trad';
+	if (lower.includes('sport')) return 'Sport';
+	if (lower.includes('top')) return 'Top rope';
+	if (lower.includes('alpine')) return 'Alpine';
+	if (lower.includes('aid')) return 'Aid';
+	return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+function tickColor(tick: string): string {
+	if (TICK_COLORS[tick]) return TICK_COLORS[tick];
+	const t = tick.toLowerCase();
+	if (t.includes('sight')) return TICK_COLORS.Onsight;
+	if (t.includes('flash')) return TICK_COLORS.Flash;
+	if (t.includes('pink')) return TICK_COLORS['Pink point'];
+	if (t.includes('red')) return TICK_COLORS['Red point'];
+	if (t.includes('send') || t === 'tick') return TICK_COLORS.Send;
+	return TICK_COLORS.Other;
+}
+
+function formatGrade(score: number, isBoulder: boolean, system: GradeSystem): string {
+	if (isBoulder) return convertFromVScale(score, system === 'font' ? 'font' : 'v_scale');
+	const routeSystem: GradeSystem =
+		system === 'v_scale' || system === 'font' ? 'ewbank' : system;
+	return convertFromEwbank(score, routeSystem);
+}
+
+function relativeTime(iso: string | null): string | null {
+	if (!iso) return null;
+	const then = new Date(iso);
+	if (Number.isNaN(then.getTime())) return null;
+	const years = (Date.now() - then.getTime()) / (365.25 * 24 * 3600 * 1000);
+	if (years < 1 / 12) return 'this month';
+	if (years < 1) return `${Math.max(1, Math.round(years * 12))} months ago`;
+	if (years < 1.5) return '1 year ago';
+	return `${Math.round(years)} years ago`;
+}
+
+export function parseGradeSystem(raw: string | null | undefined): GradeSystem {
+	const v = (raw || '').toLowerCase();
+	if (v === 'yds' || v === 'french' || v === 'ewbank' || v === 'v_scale' || v === 'font') return v;
+	return 'ewbank';
+}
+
+export function getDashboardStats(preferredSystem: GradeSystem = 'ewbank'): DashboardStats {
 	ensureSchema();
 
 	const profile = db.select().from(profiles).limit(1).get();
@@ -71,6 +109,7 @@ export function getDashboardStats(): DashboardStats {
 			gearStyle: routes.gearStyle,
 			cragName: routes.cragName,
 			url: routes.url,
+			stars: routes.stars,
 			routeHeightM: routes.heightM
 		})
 		.from(ascents)
@@ -79,30 +118,52 @@ export function getDashboardStats(): DashboardStats {
 
 	const tickMap = new Map<string, number>();
 	const styleMap = new Map<string, number>();
-	const cragMap = new Map<string, { count: number; maxScore: number; maxGrade: string | null; maxBand: number | null }>();
+	const cragMap = new Map<
+		string,
+		{ count: number; maxScore: number; maxGrade: string | null; maxBand: number | null }
+	>();
 	const monthMap = new Map<string, { count: number; sends: number }>();
-	const pyramidMap = new Map<number, { grade: string; band: number | null; count: number }>();
 	const bandMap = new Map<number, number>();
-	const heatMap = new Map<string, number>();
 	const routeSet = new Set<number>();
 	let heightM = 0;
 	let sends = 0;
 	let attempts = 0;
+	let onsightCount = 0;
+
+	// style -> scoreKey -> { segments, band, isBoulder }
+	const pyramid = new Map<
+		string,
+		Map<number, { ticks: Map<string, number>; band: number | null; isBoulder: boolean }>
+	>();
+
+	type NotableAgg = {
+		count: number;
+		bandCounts: Map<number, number>;
+		hardest: (typeof all)[number] | null;
+	};
+	const notableStyle = new Map<string, NotableAgg>();
+	const notableArea = new Map<string, NotableAgg>();
 
 	for (const row of all) {
 		routeSet.add(row.routeId);
 		const tick = row.tickType || 'Unknown';
 		tickMap.set(tick, (tickMap.get(tick) ?? 0) + 1);
-		const style = row.gearStyle || 'Unknown';
+		const style = displayStyle(row.gearStyle);
 		styleMap.set(style, (styleMap.get(style) ?? 0) + 1);
 
 		const h = row.heightM ?? row.routeHeightM ?? 0;
 		if (h) heightM += h;
 		if (row.isSend) sends += 1;
 		if (row.isAttempt) attempts += 1;
+		if ((row.tickType || '').toLowerCase().includes('sight')) onsightCount += 1;
 
 		const crag = row.cragName || 'Unknown';
-		const prev = cragMap.get(crag) ?? { count: 0, maxScore: -Infinity, maxGrade: null, maxBand: null };
+		const prev = cragMap.get(crag) ?? {
+			count: 0,
+			maxScore: -Infinity,
+			maxGrade: null,
+			maxBand: null
+		};
 		prev.count += 1;
 		const score = row.gradeScore ?? -Infinity;
 		if (score > prev.maxScore) {
@@ -120,68 +181,206 @@ export function getDashboardStats(): DashboardStats {
 			monthMap.set(month, m);
 		}
 
-		const day = dateKey(row.ascentDate);
-		if (day) heatMap.set(day, (heatMap.get(day) ?? 0) + 1);
+		const isBoulder = normalizeClimbStyle(row.gearStyle) === 'boulder';
+		const band =
+			row.gradeBand ??
+			(row.gradeScore != null
+				? isBoulder
+					? bandFromVScale(row.gradeScore)?.id ?? null
+					: bandFromEwbank(row.gradeScore)?.id ?? null
+				: null);
 
-		if (row.isSend && row.gradeScore != null) {
-			const key = Math.round(row.gradeScore);
-			const p = pyramidMap.get(key) ?? {
-				grade: row.gradeRaw || String(key),
-				band: row.gradeBand,
-				count: 0
+		if (row.isSend && band) bandMap.set(band, (bandMap.get(band) ?? 0) + 1);
+
+		if (row.gradeScore != null && (row.isSend || row.isAttempt)) {
+			const styleKey = style === 'Top rope' ? 'Top rope' : style;
+			if (!pyramid.has(styleKey)) pyramid.set(styleKey, new Map());
+			const byGrade = pyramid.get(styleKey)!;
+			const key = Math.round(row.gradeScore * 10) / 10;
+			const slot = byGrade.get(key) ?? {
+				ticks: new Map<string, number>(),
+				band,
+				isBoulder
 			};
-			p.count += 1;
-			pyramidMap.set(key, p);
+			const tickKey = row.isAttempt ? 'Other' : tick;
+			slot.ticks.set(tickKey, (slot.ticks.get(tickKey) ?? 0) + 1);
+			if (band) slot.band = band;
+			byGrade.set(key, slot);
 		}
 
-		if (row.gradeBand && row.isSend) {
-			bandMap.set(row.gradeBand, (bandMap.get(row.gradeBand) ?? 0) + 1);
+		const bumpNotable = (map: Map<string, NotableAgg>, group: string, tickType: string) => {
+			const key = `${group}||${tickType}`;
+			const agg = map.get(key) ?? { count: 0, bandCounts: new Map(), hardest: null };
+			agg.count += 1;
+			if (band) agg.bandCounts.set(band, (agg.bandCounts.get(band) ?? 0) + 1);
+			if (
+				row.gradeScore != null &&
+				(!agg.hardest || (agg.hardest.gradeScore ?? -Infinity) < row.gradeScore)
+			) {
+				agg.hardest = row;
+			}
+			map.set(key, agg);
+		};
+
+		if (row.isSend) {
+			bumpNotable(notableStyle, style, tick);
+			bumpNotable(notableArea, crag, tick);
 		}
 	}
+
+	const totalForShare = Math.max(1, all.length);
+	const styleShare = [...styleMap.entries()]
+		.map(([style, count]) => ({
+			style,
+			count,
+			pct: Math.round((count / totalForShare) * 1000) / 10,
+			color: STYLE_COLORS[style] ?? STYLE_COLORS.Unknown
+		}))
+		.sort((a, b) => b.count - a.count);
+
+	const dominant = styleShare[0];
+	const climberType =
+		dominant && dominant.pct >= 40 && ['Sport', 'Trad', 'Boulder'].includes(dominant.style)
+			? `${dominant.style} climber`
+			: 'Rock climber';
+
+	const styleOrder = ['Boulder', 'Sport', 'Trad', 'Top rope', 'Alpine', 'Aid'];
+	const stylePyramids: StylePyramid[] = [...pyramid.entries()]
+		.sort((a, b) => {
+			const ia = styleOrder.indexOf(a[0]);
+			const ib = styleOrder.indexOf(b[0]);
+			return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
+		})
+		.map(([style, grades]) => {
+			const isBoulder = style === 'Boulder';
+			const system: GradeSystem = isBoulder
+				? preferredSystem === 'font'
+					? 'font'
+					: 'v_scale'
+				: preferredSystem === 'v_scale' || preferredSystem === 'font'
+					? 'ewbank'
+					: preferredSystem;
+
+			const rows = [...grades.entries()]
+				.map(([score, v]) => {
+					const total = [...v.ticks.values()].reduce((s, n) => s + n, 0);
+					const band = bandById(v.band ?? 0);
+					return {
+						grade: formatGrade(score, isBoulder, preferredSystem),
+						score,
+						band: v.band,
+						color: band?.color ?? '#888',
+						total,
+						segments: [...v.ticks.entries()]
+							.map(([tick, count]) => ({ tick, count, color: tickColor(tick) }))
+							.sort((a, b) => b.count - a.count)
+					};
+				})
+				.sort((a, b) => a.score - b.score);
+
+			return {
+				style,
+				total: rows.reduce((s, r) => s + r.total, 0),
+				system,
+				rows
+			};
+		})
+		.filter((p) => p.total > 0);
+
+	const toNotableRows = (map: Map<string, NotableAgg>): NotableRow[] =>
+		[...map.entries()]
+			.map(([key, agg]) => {
+				const [group, tickType] = key.split('||');
+				const hardest = agg.hardest;
+				const isBoulder = normalizeClimbStyle(hardest?.gearStyle) === 'boulder';
+				return {
+					group,
+					tickType,
+					count: agg.count,
+					hardestGrade:
+						hardest?.gradeScore != null
+							? formatGrade(hardest.gradeScore, isBoulder, preferredSystem)
+							: hardest?.gradeRaw ?? null,
+					hardestBand: hardest?.gradeBand ?? null,
+					hardestRoute: hardest?.routeName ?? null,
+					hardestUrl: hardest?.url ?? null,
+					hardestDate: relativeTime(hardest?.ascentDate ?? null),
+					hardestStars: hardest?.stars ?? null,
+					bandShares: GRADE_BANDS.map((b) => ({
+						band: b.id,
+						name: b.name,
+						count: agg.bandCounts.get(b.id) ?? 0,
+						color: b.color
+					}))
+				};
+			})
+			.sort((a, b) => b.count - a.count);
+
+	const cprInputs = all.map((a) => ({
+		routeId: a.routeId,
+		ascentDate: a.ascentDate,
+		tickType: a.tickType,
+		gradeScore: a.gradeScore,
+		gearStyle: a.gearStyle,
+		isSend: a.isSend,
+		isAttempt: a.isAttempt
+	}));
 
 	const hardestSends = all
 		.filter((r) => r.isSend && r.gradeScore != null)
 		.sort((a, b) => (b.gradeScore ?? 0) - (a.gradeScore ?? 0))
 		.slice(0, 10)
-		.map((r) => ({
-			routeName: r.routeName,
-			gradeRaw: r.gradeRaw,
-			gradeBand: r.gradeBand,
-			tickType: r.tickType,
-			ascentDate: r.ascentDate,
-			cragName: r.cragName,
-			url: r.url
-		}));
+		.map((r) => {
+			const isBoulder = normalizeClimbStyle(r.gearStyle) === 'boulder';
+			return {
+				routeName: r.routeName,
+				gradeRaw: r.gradeRaw,
+				gradeLabel:
+					r.gradeScore != null ? formatGrade(r.gradeScore, isBoulder, preferredSystem) : r.gradeRaw,
+				gradeBand: r.gradeBand,
+				tickType: r.tickType,
+				ascentDate: r.ascentDate,
+				cragName: r.cragName,
+				url: r.url
+			};
+		});
 
 	const recent = [...all]
 		.sort((a, b) => (b.ascentDate || '').localeCompare(a.ascentDate || ''))
 		.slice(0, 20)
-		.map((r) => ({
-			id: r.id,
-			routeName: r.routeName,
-			gradeRaw: r.gradeRaw,
-			gradeBand: r.gradeBand,
-			tickType: r.tickType,
-			ascentDate: r.ascentDate,
-			cragName: r.cragName,
-			isSend: r.isSend,
-			isAttempt: r.isAttempt,
-			url: r.url
-		}));
+		.map((r) => {
+			const isBoulder = normalizeClimbStyle(r.gearStyle) === 'boulder';
+			return {
+				id: r.id,
+				routeName: r.routeName,
+				gradeRaw: r.gradeRaw,
+				gradeLabel:
+					r.gradeScore != null ? formatGrade(r.gradeScore, isBoulder, preferredSystem) : r.gradeRaw,
+				gradeBand: r.gradeBand,
+				tickType: r.tickType,
+				ascentDate: r.ascentDate,
+				cragName: r.cragName,
+				isSend: r.isSend,
+				isAttempt: r.isAttempt,
+				url: r.url
+			};
+		});
 
 	return {
 		profileName: profile?.name ?? null,
+		climberType,
 		totalAscents: all.length,
 		totalSends: sends,
 		totalAttempts: attempts,
+		onsightCount,
 		heightM: Math.round(heightM),
+		heightKm: Math.round((heightM / 1000) * 10) / 10,
 		distinctRoutes: routeSet.size,
 		distinctCrags: cragMap.size,
+		preferredSystem,
+		styleShare,
 		tickBreakdown: [...tickMap.entries()]
 			.map(([tick, count]) => ({ tick, count }))
-			.sort((a, b) => b.count - a.count),
-		styleBreakdown: [...styleMap.entries()]
-			.map(([style, count]) => ({ style, count }))
 			.sort((a, b) => b.count - a.count),
 		topCrags: [...cragMap.entries()]
 			.map(([crag, v]) => ({
@@ -196,28 +395,21 @@ export function getDashboardStats(): DashboardStats {
 			.map(([month, v]) => ({ month, ...v }))
 			.sort((a, b) => a.month.localeCompare(b.month))
 			.slice(-24),
-		gradePyramid: [...pyramidMap.entries()]
-			.map(([score, v]) => {
-				const band = bandById(v.band ?? 0);
-				return {
-					grade: v.grade,
-					score,
-					band: v.band,
-					count: v.count,
-					color: band?.color ?? '#888'
-				};
-			})
-			.sort((a, b) => a.score - b.score),
+		stylePyramids,
 		bandBreakdown: GRADE_BANDS.map((b) => ({
 			band: b.id,
 			name: b.name,
 			count: bandMap.get(b.id) ?? 0,
 			color: b.color
 		})),
+		notableByStyle: toNotableRows(notableStyle).slice(0, 40),
+		notableByArea: toNotableRows(notableArea).slice(0, 40),
+		cpr: {
+			sport: buildCprTimeline(cprInputs, 'sport'),
+			trad: buildCprTimeline(cprInputs, 'trad'),
+			boulder: buildCprTimeline(cprInputs, 'boulder')
+		},
 		hardestSends,
-		heatmap: [...heatMap.entries()]
-			.map(([date, count]) => ({ date, count }))
-			.sort((a, b) => a.date.localeCompare(b.date)),
 		recent
 	};
 }
