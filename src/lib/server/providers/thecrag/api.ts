@@ -6,6 +6,7 @@ import {
 	type ProviderProfile,
 	type SyncCursor
 } from '../types';
+import { resolveEffectiveGrade, type ApiPitch } from './effectiveGrade';
 
 const BASE = 'https://www.thecrag.com/api/logbook/ascents';
 
@@ -34,7 +35,16 @@ type ApiAscent = {
 	climbedGearStyle?: string;
 	tick?: ApiTick;
 	markdown?: string;
-	cpr?: { base?: { grade?: string; band?: number; score?: number } };
+	pitch?: ApiPitch[];
+	cpr?: {
+		base?: {
+			grade?: string;
+			band?: number;
+			score?: number;
+			rating?: number;
+			internalGrade?: number;
+		};
+	};
 	route?: ApiRoute;
 };
 type ApiResponse = {
@@ -78,16 +88,28 @@ function heightFromRoute(route?: ApiRoute): number | null {
 	return heightFromUnknown(route.height) ?? heightFromUnknown(route.displayHeight);
 }
 
-function mapAscent(a: ApiAscent): CanonicalAscent | null {
+export function mapAscent(a: ApiAscent): CanonicalAscent | null {
 	const route = a.route;
 	if (!a.id || !route?.id || !route.name) return null;
 
 	const tickName = a.tick?.name || a.tick?.label || '';
 	const { isSend, isAttempt } = classifyTick(tickName);
 	const gradeRaw = route.grade ?? a.cpr?.base?.grade ?? null;
-	const parsed = detectAndParseGrade(gradeRaw, {
+	const routeParsed = detectAndParseGrade(gradeRaw, {
 		gearStyle: route.style ?? a.climbedGearStyle,
 		gradeBand: route.gradeBand ?? a.cpr?.base?.band
+	});
+
+	const routeHeightM = heightFromRoute(route);
+	const effective = resolveEffectiveGrade({
+		routeGrade: route.grade ?? null,
+		routeGradeBand: route.gradeBand ?? null,
+		routeStyle: route.style ?? null,
+		climbedGearStyle: a.climbedGearStyle ?? null,
+		cprGrade: a.cpr?.base?.grade ?? null,
+		cprBand: a.cpr?.base?.band ?? null,
+		pitches: a.pitch ?? null,
+		routeHeightM
 	});
 
 	const tlc = route.ancestors?.TLC;
@@ -102,11 +124,11 @@ function mapAscent(a: ApiAscent): CanonicalAscent | null {
 			externalId: String(route.id),
 			name: route.name,
 			gradeRaw,
-			gradeScore: parsed.score,
-			gradeBand: parsed.band?.id ?? route.gradeBand ?? null,
-			gradeSystem: parsed.system,
+			gradeScore: routeParsed.score,
+			gradeBand: routeParsed.band?.id ?? route.gradeBand ?? null,
+			gradeSystem: routeParsed.system,
 			gearStyle: route.style ?? null,
-			heightM: heightFromRoute(route),
+			heightM: routeHeightM,
 			stars: route.stars ?? null,
 			url: route.urlAncestorStub
 				? `https://www.thecrag.com${route.urlAncestorStub}`
@@ -121,8 +143,14 @@ function mapAscent(a: ApiAscent): CanonicalAscent | null {
 		tickType: tickName || null,
 		tickLabel: a.tick?.label ?? null,
 		ascentGearStyle: a.climbedGearStyle ?? null,
-		ascentGradeRaw: a.cpr?.base?.grade ?? null,
-		heightM: heightFromRoute(route),
+		ascentGradeRaw: a.cpr?.base?.grade ?? effective.raw,
+		effectiveGradeRaw: effective.raw,
+		effectiveGradeScore: effective.score,
+		effectiveGradeBand: effective.band,
+		pitchLabel: effective.pitchLabel,
+		pitchesClimbed: effective.pitchesClimbed,
+		pitchesTotal: effective.pitchesTotal,
+		heightM: effective.heightM ?? routeHeightM,
 		quality: null,
 		partners: null,
 		comment: a.markdown ?? null,
@@ -130,7 +158,7 @@ function mapAscent(a: ApiAscent): CanonicalAscent | null {
 		isAttempt,
 		epoch: a.epoch ?? null,
 		cprBase: a.cpr?.base?.grade ?? null,
-		cprScore: a.cpr?.base?.score ?? null,
+		cprScore: a.cpr?.base?.rating ?? a.cpr?.base?.score ?? null,
 		rawJson: JSON.stringify(a)
 	};
 }

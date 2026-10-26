@@ -59,15 +59,17 @@
 	<nav class="pager">
 		{#if data.page > 1}
 			<a
-				href="?q={encodeURIComponent(data.q)}&style={encodeURIComponent(data.style)}&tick={encodeURIComponent(data.tick)}&page={data.page - 1}"
-				>← Prev</a
+				href="?q={encodeURIComponent(data.q)}&style={encodeURIComponent(
+					data.style
+				)}&tick={encodeURIComponent(data.tick)}&page={data.page - 1}">← Prev</a
 			>
 		{/if}
 		<span>Page {data.page} / {data.pages}</span>
 		{#if data.page < data.pages}
 			<a
-				href="?q={encodeURIComponent(data.q)}&style={encodeURIComponent(data.style)}&tick={encodeURIComponent(data.tick)}&page={data.page + 1}"
-				>Next →</a
+				href="?q={encodeURIComponent(data.q)}&style={encodeURIComponent(
+					data.style
+				)}&tick={encodeURIComponent(data.tick)}&page={data.page + 1}">Next →</a
 			>
 		{/if}
 	</nav>

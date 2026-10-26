@@ -76,6 +76,13 @@ export function upsertAscents(batch: CanonicalAscent[]): { routes: number; ascen
 				tickLabel: item.tickLabel ?? null,
 				ascentGearStyle: item.ascentGearStyle ?? null,
 				ascentGradeRaw: item.ascentGradeRaw ?? null,
+				effectiveGradeRaw: item.effectiveGradeRaw ?? item.ascentGradeRaw ?? item.route.gradeRaw ?? null,
+				effectiveGradeScore:
+					item.effectiveGradeScore ?? item.route.gradeScore ?? null,
+				effectiveGradeBand: item.effectiveGradeBand ?? item.route.gradeBand ?? null,
+				pitchLabel: item.pitchLabel ?? null,
+				pitchesClimbed: item.pitchesClimbed ?? null,
+				pitchesTotal: item.pitchesTotal ?? null,
 				heightM: item.heightM ?? null,
 				quality: item.quality ?? null,
 				partners: item.partners ?? null,

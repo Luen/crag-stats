@@ -19,8 +19,8 @@
 	<article class="panel">
 		<h2>theCrag API sync</h2>
 		<p class="hint">
-			Uses <code>THECRAG_API_KEY</code> from your environment. Keys grant read access to private notes —
-			treat them like passwords.
+			Uses <code>THECRAG_API_KEY</code> from your environment. Keys grant read access to private
+			notes — treat them like passwords.
 			<a href="https://www.thecrag.com/en/article/logbookreadapi" target="_blank" rel="noreferrer"
 				>API docs</a
 			>
@@ -48,7 +48,9 @@
 				</form>
 			</div>
 		{:else}
-			<p class="hint">No API key configured. Set <code>THECRAG_API_KEY</code> in <code>.env</code>.</p>
+			<p class="hint">
+				No API key configured. Set <code>THECRAG_API_KEY</code> in <code>.env</code>.
+			</p>
 		{/if}
 	</article>
 

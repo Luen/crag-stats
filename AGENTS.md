@@ -86,6 +86,8 @@ Height quirk: theCrag may return height as `[value, unit]` arrays — parse in t
 - Band palette (Beginner → Elite) matches theCrag article colours — see `bands.ts`.
 - Preferred system: cookie `cs_grade_system` + env `PREFERRED_GRADE_SYSTEM`.
 - **Style pyramids** group by Sport / Trad / Boulder / Top rope / … with stacked tick segments. Do not dump mixed VB + `7a` + `19` in one unordered list.
+- **V-scale ranges** like `V1/2` or `V5/6` must parse as midpoints (1.5, 5.5). Never fall back to gradeBand Ewbank midpoints (21/28/…) as V-scores — that produced fake “V21” / “V28”.
+- **Multipitch:** use `ascent.pitch[]` from the API. Effective grade = hardest **climbed** pitch (not the full route grade). Store `effective_grade_*` + `pitch_label` (e.g. `P1`) on ascents. Analytics/hardest lists must use effective grades. `repairGradesFromRawJson()` re-derives from stored `raw_json` after parser fixes.
 
 ---
 
@@ -152,5 +154,6 @@ Prefer fixing type errors over `@ts-ignore`. Do not switch the package manager.
 |---|---|
 | 2026-03 | Initial MVP: sync, CSV, dashboard, pyramids, CPR approx, GHCR, pnpm |
 | 2026-03 | Sync made full reconcile (upsert + prune). Tick/style SVG icons. This file created as living docs. |
+| 2026-03 | Fixed V1/2 range parsing; multipitch effective grades (pitch ticks); hardest ascents use ascent effective grade. |
 
 _Add a row when you change behaviour agents must know about._

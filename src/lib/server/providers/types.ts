@@ -34,6 +34,13 @@ export type CanonicalAscent = {
 	tickLabel?: string | null;
 	ascentGearStyle?: string | null;
 	ascentGradeRaw?: string | null;
+	/** Effective difficulty for this ascent (climbed pitches / CPR), not always full route */
+	effectiveGradeRaw?: string | null;
+	effectiveGradeScore?: number | null;
+	effectiveGradeBand?: number | null;
+	pitchLabel?: string | null;
+	pitchesClimbed?: number | null;
+	pitchesTotal?: number | null;
 	heightM?: number | null;
 	quality?: string | null;
 	partners?: string | null;

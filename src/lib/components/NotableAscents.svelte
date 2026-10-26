@@ -8,7 +8,10 @@
 	let { byStyle, byArea }: Props = $props();
 
 	function bandWidth(row: NotableRow, bandId: number) {
-		const total = Math.max(1, row.bandShares.reduce((s, b) => s + b.count, 0));
+		const total = Math.max(
+			1,
+			row.bandShares.reduce((s, b) => s + b.count, 0)
+		);
 		const band = row.bandShares.find((b) => b.band === bandId);
 		return ((band?.count ?? 0) / total) * 100;
 	}

@@ -5,6 +5,7 @@ import {
 	bandFromVScale,
 	convertFromEwbank,
 	convertFromVScale,
+	formatVScaleLabel,
 	GRADE_BANDS,
 	type GradeSystem
 } from '#lib/grades';
@@ -12,8 +13,11 @@ import type { DashboardStats, NotableRow, StylePyramid } from '#lib/types/dashbo
 import { buildCprTimeline, normalizeClimbStyle } from './cpr';
 import { db, ensureSchema } from './db';
 import { ascents, profiles, routes } from './db/schema';
+import { repairGradesFromRawJson } from './repairGrades';
 
 export type { DashboardStats, NotableRow, StylePyramid } from '#lib/types/dashboard';
+
+let repairedOnce = false;
 
 const STYLE_COLORS: Record<string, string> = {
 	Sport: '#1d6fa5',
@@ -65,11 +69,45 @@ function tickColor(tick: string): string {
 	return TICK_COLORS.Other;
 }
 
-function formatGrade(score: number, isBoulder: boolean, system: GradeSystem): string {
-	if (isBoulder) return convertFromVScale(score, system === 'font' ? 'font' : 'v_scale');
+function formatGrade(
+	score: number,
+	isBoulder: boolean,
+	system: GradeSystem,
+	raw?: string | null
+): string {
+	if (isBoulder) {
+		if (system === 'font') return convertFromVScale(score, 'font');
+		return formatVScaleLabel(score, raw);
+	}
 	const routeSystem: GradeSystem =
 		system === 'v_scale' || system === 'font' ? 'ewbank' : system;
 	return convertFromEwbank(score, routeSystem);
+}
+
+function effectiveScore(row: {
+	effectiveGradeScore: number | null;
+	gradeScore: number | null;
+}): number | null {
+	return row.effectiveGradeScore ?? row.gradeScore;
+}
+
+function effectiveRaw(row: {
+	effectiveGradeRaw: string | null;
+	gradeRaw: string | null;
+}): string | null {
+	return row.effectiveGradeRaw ?? row.gradeRaw;
+}
+
+function effectiveBand(row: {
+	effectiveGradeBand: number | null;
+	gradeBand: number | null;
+}): number | null {
+	return row.effectiveGradeBand ?? row.gradeBand;
+}
+
+function displayRouteName(name: string, pitchLabel: string | null | undefined): string {
+	if (!pitchLabel) return name;
+	return `${name} (${pitchLabel})`;
 }
 
 function relativeTime(iso: string | null): string | null {
@@ -91,6 +129,14 @@ export function parseGradeSystem(raw: string | null | undefined): GradeSystem {
 
 export function getDashboardStats(preferredSystem: GradeSystem = 'ewbank'): DashboardStats {
 	ensureSchema();
+	if (!repairedOnce) {
+		try {
+			repairGradesFromRawJson();
+		} catch (err) {
+			console.warn('[analytics] grade repair skipped:', err instanceof Error ? err.message : err);
+		}
+		repairedOnce = true;
+	}
 
 	const profile = db.select().from(profiles).limit(1).get();
 	const all = db
@@ -101,6 +147,10 @@ export function getDashboardStats(preferredSystem: GradeSystem = 'ewbank'): Dash
 			isSend: ascents.isSend,
 			isAttempt: ascents.isAttempt,
 			heightM: ascents.heightM,
+			effectiveGradeRaw: ascents.effectiveGradeRaw,
+			effectiveGradeScore: ascents.effectiveGradeScore,
+			effectiveGradeBand: ascents.effectiveGradeBand,
+			pitchLabel: ascents.pitchLabel,
 			routeId: routes.id,
 			routeName: routes.name,
 			gradeRaw: routes.gradeRaw,
@@ -165,11 +215,14 @@ export function getDashboardStats(preferredSystem: GradeSystem = 'ewbank'): Dash
 			maxBand: null
 		};
 		prev.count += 1;
-		const score = row.gradeScore ?? -Infinity;
+		const rowScore = effectiveScore(row);
+		const rowRaw = effectiveRaw(row);
+		const rowBand = effectiveBand(row);
+		const score = rowScore ?? -Infinity;
 		if (score > prev.maxScore) {
 			prev.maxScore = score;
-			prev.maxGrade = row.gradeRaw;
-			prev.maxBand = row.gradeBand;
+			prev.maxGrade = rowRaw;
+			prev.maxBand = rowBand;
 		}
 		cragMap.set(crag, prev);
 
@@ -183,20 +236,20 @@ export function getDashboardStats(preferredSystem: GradeSystem = 'ewbank'): Dash
 
 		const isBoulder = normalizeClimbStyle(row.gearStyle) === 'boulder';
 		const band =
-			row.gradeBand ??
-			(row.gradeScore != null
+			rowBand ??
+			(rowScore != null
 				? isBoulder
-					? bandFromVScale(row.gradeScore)?.id ?? null
-					: bandFromEwbank(row.gradeScore)?.id ?? null
+					? bandFromVScale(rowScore)?.id ?? null
+					: bandFromEwbank(rowScore)?.id ?? null
 				: null);
 
 		if (row.isSend && band) bandMap.set(band, (bandMap.get(band) ?? 0) + 1);
 
-		if (row.gradeScore != null && (row.isSend || row.isAttempt)) {
+		if (rowScore != null && (row.isSend || row.isAttempt)) {
 			const styleKey = style === 'Top rope' ? 'Top rope' : style;
 			if (!pyramid.has(styleKey)) pyramid.set(styleKey, new Map());
 			const byGrade = pyramid.get(styleKey)!;
-			const key = Math.round(row.gradeScore * 10) / 10;
+			const key = Math.round(rowScore * 10) / 10;
 			const slot = byGrade.get(key) ?? {
 				ticks: new Map<string, number>(),
 				band,
@@ -213,10 +266,8 @@ export function getDashboardStats(preferredSystem: GradeSystem = 'ewbank'): Dash
 			const agg = map.get(key) ?? { count: 0, bandCounts: new Map(), hardest: null };
 			agg.count += 1;
 			if (band) agg.bandCounts.set(band, (agg.bandCounts.get(band) ?? 0) + 1);
-			if (
-				row.gradeScore != null &&
-				(!agg.hardest || (agg.hardest.gradeScore ?? -Infinity) < row.gradeScore)
-			) {
+			const hardestScore = agg.hardest ? effectiveScore(agg.hardest) : null;
+			if (rowScore != null && (!agg.hardest || (hardestScore ?? -Infinity) < rowScore)) {
 				agg.hardest = row;
 			}
 			map.set(key, agg);
@@ -266,7 +317,7 @@ export function getDashboardStats(preferredSystem: GradeSystem = 'ewbank'): Dash
 					const total = [...v.ticks.values()].reduce((s, n) => s + n, 0);
 					const band = bandById(v.band ?? 0);
 					return {
-						grade: formatGrade(score, isBoulder, preferredSystem),
+						grade: formatGrade(score, isBoulder, preferredSystem, null),
 						score,
 						band: v.band,
 						color: band?.color ?? '#888',
@@ -293,19 +344,24 @@ export function getDashboardStats(preferredSystem: GradeSystem = 'ewbank'): Dash
 				const [group, tickType] = key.split('||');
 				const hardest = agg.hardest;
 				const isBoulder = normalizeClimbStyle(hardest?.gearStyle) === 'boulder';
+				const hScore = hardest ? effectiveScore(hardest) : null;
+				const hRaw = hardest ? effectiveRaw(hardest) : null;
 				return {
 					group,
 					tickType,
 					count: agg.count,
 					hardestGrade:
-						hardest?.gradeScore != null
-							? formatGrade(hardest.gradeScore, isBoulder, preferredSystem)
-							: hardest?.gradeRaw ?? null,
-					hardestBand: hardest?.gradeBand ?? null,
-					hardestRoute: hardest?.routeName ?? null,
+						hScore != null
+							? formatGrade(hScore, isBoulder, preferredSystem, hRaw)
+							: hRaw,
+					hardestBand: hardest ? effectiveBand(hardest) : null,
+					hardestRoute: hardest
+						? displayRouteName(hardest.routeName, hardest.pitchLabel)
+						: null,
 					hardestUrl: hardest?.url ?? null,
 					hardestDate: relativeTime(hardest?.ascentDate ?? null),
 					hardestStars: hardest?.stars ?? null,
+					hardestPitchLabel: hardest?.pitchLabel ?? null,
 					bandShares: GRADE_BANDS.map((b) => ({
 						band: b.id,
 						name: b.name,
@@ -320,24 +376,26 @@ export function getDashboardStats(preferredSystem: GradeSystem = 'ewbank'): Dash
 		routeId: a.routeId,
 		ascentDate: a.ascentDate,
 		tickType: a.tickType,
-		gradeScore: a.gradeScore,
+		gradeScore: effectiveScore(a),
 		gearStyle: a.gearStyle,
 		isSend: a.isSend,
 		isAttempt: a.isAttempt
 	}));
 
 	const hardestSends = all
-		.filter((r) => r.isSend && r.gradeScore != null)
-		.sort((a, b) => (b.gradeScore ?? 0) - (a.gradeScore ?? 0))
+		.filter((r) => r.isSend && effectiveScore(r) != null)
+		.sort((a, b) => (effectiveScore(b) ?? 0) - (effectiveScore(a) ?? 0))
 		.slice(0, 10)
 		.map((r) => {
 			const isBoulder = normalizeClimbStyle(r.gearStyle) === 'boulder';
+			const score = effectiveScore(r);
+			const raw = effectiveRaw(r);
 			return {
-				routeName: r.routeName,
-				gradeRaw: r.gradeRaw,
-				gradeLabel:
-					r.gradeScore != null ? formatGrade(r.gradeScore, isBoulder, preferredSystem) : r.gradeRaw,
-				gradeBand: r.gradeBand,
+				routeName: displayRouteName(r.routeName, r.pitchLabel),
+				gradeRaw: raw,
+				gradeLabel: score != null ? formatGrade(score, isBoulder, preferredSystem, raw) : raw,
+				gradeBand: effectiveBand(r),
+				pitchLabel: r.pitchLabel,
 				tickType: r.tickType,
 				ascentDate: r.ascentDate,
 				cragName: r.cragName,
@@ -350,13 +408,15 @@ export function getDashboardStats(preferredSystem: GradeSystem = 'ewbank'): Dash
 		.slice(0, 20)
 		.map((r) => {
 			const isBoulder = normalizeClimbStyle(r.gearStyle) === 'boulder';
+			const score = effectiveScore(r);
+			const raw = effectiveRaw(r);
 			return {
 				id: r.id,
-				routeName: r.routeName,
-				gradeRaw: r.gradeRaw,
-				gradeLabel:
-					r.gradeScore != null ? formatGrade(r.gradeScore, isBoulder, preferredSystem) : r.gradeRaw,
-				gradeBand: r.gradeBand,
+				routeName: displayRouteName(r.routeName, r.pitchLabel),
+				gradeRaw: raw,
+				gradeLabel: score != null ? formatGrade(score, isBoulder, preferredSystem, raw) : raw,
+				gradeBand: effectiveBand(r),
+				pitchLabel: r.pitchLabel,
 				tickType: r.tickType,
 				ascentDate: r.ascentDate,
 				cragName: r.cragName,

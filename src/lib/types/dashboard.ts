@@ -26,6 +26,8 @@ export type NotableRow = {
 	hardestUrl: string | null;
 	hardestDate: string | null;
 	hardestStars: number | null;
+	/** e.g. P1 when only some pitches of a multipitch were climbed */
+	hardestPitchLabel: string | null;
 	bandShares: { band: number; name: string; count: number; color: string }[];
 };
 
@@ -78,6 +80,7 @@ export type DashboardStats = {
 		gradeRaw: string | null;
 		gradeLabel: string | null;
 		gradeBand: number | null;
+		pitchLabel: string | null;
 		tickType: string | null;
 		ascentDate: string | null;
 		cragName: string | null;
@@ -89,6 +92,7 @@ export type DashboardStats = {
 		gradeRaw: string | null;
 		gradeLabel: string | null;
 		gradeBand: number | null;
+		pitchLabel: string | null;
 		tickType: string | null;
 		ascentDate: string | null;
 		cragName: string | null;

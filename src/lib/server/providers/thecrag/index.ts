@@ -22,5 +22,6 @@ export function createTheCragProvider(apiKey?: string | null): ClimbProvider {
 	};
 }
 
-export { fetchTheCragPage, syncTheCragAll } from './api';
+export { fetchTheCragPage, mapAscent, syncTheCragAll } from './api';
 export { parseTheCragCsv } from './csv';
+export { resolveEffectiveGrade } from './effectiveGrade';

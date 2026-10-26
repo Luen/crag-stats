@@ -18,9 +18,14 @@ function mapRow(row: CsvRow): CanonicalAscent | null {
 
 	const tickType = row['Ascent Type']?.trim() || null;
 	const { isSend, isAttempt } = classifyTick(tickType);
-	const gradeRaw = row['Route Grade']?.trim() || row['Ascent Grade']?.trim() || null;
+	const routeGradeRaw = row['Route Grade']?.trim() || null;
+	const ascentGradeRaw = row['Ascent Grade']?.trim() || null;
+	const gradeRaw = routeGradeRaw || ascentGradeRaw;
 	const gearStyle = row['Route Gear Style']?.trim() || null;
 	const parsed = detectAndParseGrade(gradeRaw, { gearStyle });
+	const ascentParsed = detectAndParseGrade(ascentGradeRaw || gradeRaw, {
+		gearStyle: row['Ascent Gear Style']?.trim() || gearStyle
+	});
 	const heightM =
 		parseHeightMeters(row['Ascent Height']) ?? parseHeightMeters(row['Route Height']);
 
@@ -49,7 +54,13 @@ function mapRow(row: CsvRow): CanonicalAscent | null {
 		tickType,
 		tickLabel: row['Ascent Label']?.trim() || null,
 		ascentGearStyle: row['Ascent Gear Style']?.trim() || null,
-		ascentGradeRaw: row['Ascent Grade']?.trim() || null,
+		ascentGradeRaw,
+		effectiveGradeRaw: ascentParsed.raw || ascentGradeRaw || gradeRaw,
+		effectiveGradeScore: ascentParsed.score,
+		effectiveGradeBand: ascentParsed.band?.id ?? null,
+		pitchLabel: null,
+		pitchesClimbed: null,
+		pitchesTotal: null,
 		heightM,
 		quality: row['Quality']?.trim() || null,
 		partners: row['With']?.trim() || null,

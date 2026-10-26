@@ -213,19 +213,45 @@ function parseFrench(raw: string): number | null {
 	return null;
 }
 
+/**
+ * Parse Hueco V-scale, including ranges used on theCrag (V1/2, V1-2, V4/V5).
+ * Ranges use the midpoint (e.g. V1/2 → 1.5).
+ */
 function parseVScale(raw: string): number | null {
-	const m = raw.trim().match(/^V\s*(B)?\s*([+-])?(\d+)?([+-])?$/i);
-	if (!m) return null;
-	if (m[1]) {
-		if (m[2] === '-') return -1.5;
-		if (m[2] === '+') return -0.5;
+	const text = raw.trim();
+
+	const vb = text.match(/^V\s*B\s*([+-])?$/i);
+	if (vb) {
+		if (vb[1] === '-') return -1.5;
+		if (vb[1] === '+') return -0.5;
 		return -1;
 	}
-	const n = Number(m[3]);
+
+	const range = text.match(/^V\s*(\d+)\s*[\/\-–]\s*V?\s*(\d+)\s*([+-])?$/i);
+	if (range) {
+		const a = Number(range[1]);
+		const b = Number(range[2]);
+		if (Number.isNaN(a) || Number.isNaN(b)) return null;
+		let mid = (a + b) / 2;
+		if (range[3] === '-') mid -= 0.15;
+		if (range[3] === '+') mid += 0.15;
+		return mid;
+	}
+
+	const m = text.match(/^V\s*(\d+)\s*([+-])?$/i);
+	if (!m) return null;
+	const n = Number(m[1]);
 	if (Number.isNaN(n)) return null;
-	if (m[4] === '-') return n - 0.3;
-	if (m[4] === '+') return n + 0.3;
+	if (m[2] === '-') return n - 0.3;
+	if (m[2] === '+') return n + 0.3;
 	return n;
+}
+
+/** Display label for a V score (preserves ranges when raw was a range). */
+export function formatVScaleLabel(score: number, raw?: string | null): string {
+	const range = (raw ?? '').trim().match(/^V\s*(\d+)\s*[\/\-–]\s*V?\s*(\d+)/i);
+	if (range) return `V${range[1]}/${range[2]}`;
+	return convertFromVScale(score, 'v_scale');
 }
 
 function parseFont(raw: string): number | null {
@@ -256,15 +282,36 @@ export function detectAndParseGrade(
 		return { system: 'unknown', raw: '', score: null, label: '—', band, isBoulder };
 	}
 
-	if (isBoulder || /^V/i.test(text) || parseFont(text) != null) {
+	const looksV = /^V/i.test(text);
+	if (isBoulder || looksV || parseFont(text) != null) {
 		const v = parseVScale(text) ?? parseFont(text);
 		if (v != null) {
 			return {
-				system: /^V/i.test(text) ? 'v_scale' : 'font',
+				system: looksV || isBoulder ? 'v_scale' : 'font',
 				raw: text,
 				score: v,
-				label: convertFromVScale(v, preferred === 'font' ? 'font' : 'v_scale'),
+				label:
+					preferred === 'font'
+						? convertFromVScale(v, 'font')
+						: formatVScaleLabel(v, text),
 				band: bandFromVScale(v),
+				isBoulder: true
+			};
+		}
+
+		// Unparseable boulder string: keep the raw label. Never treat route gradeBand
+		// midpoints (Ewbank 6/15/21/28/35) as V-scores — that produced fake "V21"/"V28".
+		if (isBoulder || looksV) {
+			const band =
+				opts?.gradeBand != null && opts.gradeBand >= 1 && opts.gradeBand <= 5
+					? bandFromVScale([-1, 0, 2, 5, 8][opts.gradeBand - 1])
+					: null;
+			return {
+				system: 'unknown',
+				raw: text,
+				score: null,
+				label: text || '—',
+				band,
 				isBoulder: true
 			};
 		}
@@ -294,16 +341,16 @@ export function detectAndParseGrade(
 		};
 	}
 
-	// API may provide gradeBand directly (1–5) without a parseable string
+	// API may provide gradeBand directly (1–5) without a parseable string (routes only)
 	if (opts?.gradeBand && opts.gradeBand >= 1 && opts.gradeBand <= 5) {
 		const mid = [6, 15, 21, 28, 35][opts.gradeBand - 1];
 		return {
 			system: 'unknown',
 			raw: text,
 			score: mid,
-			label: text,
+			label: text || String(mid),
 			band: bandFromEwbank(mid),
-			isBoulder
+			isBoulder: false
 		};
 	}
 

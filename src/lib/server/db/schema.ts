@@ -51,6 +51,14 @@ export const ascents = sqliteTable(
 		tickLabel: text('tick_label'),
 		ascentGearStyle: text('ascent_gear_style'),
 		ascentGradeRaw: text('ascent_grade_raw'),
+		/** Grade for *this* ascent (climbed pitches / CPR), not always the full route grade */
+		effectiveGradeRaw: text('effective_grade_raw'),
+		effectiveGradeScore: real('effective_grade_score'),
+		effectiveGradeBand: integer('effective_grade_band'),
+		/** e.g. P1 or P1–P2 when multipitch logging was used */
+		pitchLabel: text('pitch_label'),
+		pitchesClimbed: integer('pitches_climbed'),
+		pitchesTotal: integer('pitches_total'),
 		heightM: real('height_m'),
 		quality: text('quality'),
 		partners: text('partners'),

@@ -8,6 +8,7 @@ import {
 	upsertProfile
 } from './ingest';
 import { refreshProjects } from './projects';
+import { repairGradesFromRawJson } from './repairGrades';
 
 let syncing = false;
 
@@ -50,6 +51,7 @@ export async function runTheCragSync(opts?: { full?: boolean }) {
 		const pruned = reconcileProviderAscents(provider, seen, {
 			expectedCount: result.profile?.ascentCount ?? null
 		});
+		repairGradesFromRawJson();
 
 		refreshProjects();
 

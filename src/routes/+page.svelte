@@ -26,7 +26,8 @@
 		<p class="eyebrow">Personal climbing analytics</p>
 		<h1>{s.profileName ? `${s.profileName}'s crag year` : 'Your climbing, quantified'}</h1>
 		<p class="lede">
-			{s.climberType}. Turn theCrag history into performance analytics, projects, and training focus.
+			{s.climberType}. Turn theCrag history into performance analytics, projects, and training
+			focus.
 		</p>
 	</div>
 	<div class="sync">
