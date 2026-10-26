@@ -1,0 +1,123 @@
+import { sqliteTable, text, integer, real, uniqueIndex, index } from 'drizzle-orm/sqlite-core';
+
+export const profiles = sqliteTable('profiles', {
+	id: integer('id').primaryKey({ autoIncrement: true }),
+	provider: text('provider').notNull().default('thecrag'),
+	externalId: text('external_id'),
+	name: text('name'),
+	login: text('login'),
+	country: text('country'),
+	ascentCount: integer('ascent_count'),
+	rawJson: text('raw_json'),
+	updatedAt: text('updated_at').notNull()
+});
+
+export const routes = sqliteTable(
+	'routes',
+	{
+		id: integer('id').primaryKey({ autoIncrement: true }),
+		provider: text('provider').notNull(),
+		externalId: text('external_id').notNull(),
+		name: text('name').notNull(),
+		gradeRaw: text('grade_raw'),
+		gradeScore: real('grade_score'),
+		gradeBand: integer('grade_band'),
+		gradeSystem: text('grade_system'),
+		gearStyle: text('gear_style'),
+		heightM: real('height_m'),
+		stars: integer('stars'),
+		url: text('url'),
+		country: text('country'),
+		cragName: text('crag_name'),
+		cragPath: text('crag_path'),
+		areaExternalId: text('area_external_id'),
+		updatedAt: text('updated_at').notNull()
+	},
+	(t) => [uniqueIndex('routes_provider_ext').on(t.provider, t.externalId)]
+);
+
+export const ascents = sqliteTable(
+	'ascents',
+	{
+		id: integer('id').primaryKey({ autoIncrement: true }),
+		provider: text('provider').notNull(),
+		externalId: text('external_id').notNull(),
+		routeId: integer('route_id')
+			.notNull()
+			.references(() => routes.id),
+		ascentDate: text('ascent_date'),
+		logDate: text('log_date'),
+		tickType: text('tick_type'),
+		tickLabel: text('tick_label'),
+		ascentGearStyle: text('ascent_gear_style'),
+		ascentGradeRaw: text('ascent_grade_raw'),
+		heightM: real('height_m'),
+		quality: text('quality'),
+		partners: text('partners'),
+		comment: text('comment'),
+		isSend: integer('is_send', { mode: 'boolean' }).notNull().default(false),
+		isAttempt: integer('is_attempt', { mode: 'boolean' }).notNull().default(false),
+		epoch: integer('epoch'),
+		cprBase: text('cpr_base'),
+		cprScore: real('cpr_score'),
+		rawJson: text('raw_json'),
+		updatedAt: text('updated_at').notNull()
+	},
+	(t) => [
+		uniqueIndex('ascents_provider_ext').on(t.provider, t.externalId),
+		index('ascents_date_idx').on(t.ascentDate),
+		index('ascents_tick_idx').on(t.tickType),
+		index('ascents_route_idx').on(t.routeId)
+	]
+);
+
+export const syncState = sqliteTable(
+	'sync_state',
+	{
+		id: integer('id').primaryKey({ autoIncrement: true }),
+		provider: text('provider').notNull(),
+		cursor: text('cursor'),
+		lastSyncAt: text('last_sync_at'),
+		lastSuccessAt: text('last_success_at'),
+		lastError: text('last_error'),
+		status: text('status').notNull().default('idle')
+	},
+	(t) => [uniqueIndex('sync_provider').on(t.provider)]
+);
+
+export const projects = sqliteTable(
+	'projects',
+	{
+		id: integer('id').primaryKey({ autoIncrement: true }),
+		routeId: integer('route_id')
+			.notNull()
+			.references(() => routes.id),
+		status: text('status').notNull().default('open'), // open | sent | archived
+		attemptCount: integer('attempt_count').notNull().default(0),
+		firstAttemptAt: text('first_attempt_at'),
+		lastAttemptAt: text('last_attempt_at'),
+		sentAt: text('sent_at'),
+		notes: text('notes'),
+		updatedAt: text('updated_at').notNull()
+	},
+	(t) => [uniqueIndex('projects_route').on(t.routeId)]
+);
+
+export const goals = sqliteTable('goals', {
+	id: integer('id').primaryKey({ autoIncrement: true }),
+	kind: text('kind').notNull(), // grade | height_year | days_month | custom
+	title: text('title').notNull(),
+	targetValue: text('target_value'),
+	targetGradeScore: real('target_grade_score'),
+	year: integer('year'),
+	progressValue: text('progress_value'),
+	completed: integer('completed', { mode: 'boolean' }).notNull().default(false),
+	createdAt: text('created_at').notNull(),
+	updatedAt: text('updated_at').notNull()
+});
+
+export type Route = typeof routes.$inferSelect;
+export type Ascent = typeof ascents.$inferSelect;
+export type Project = typeof projects.$inferSelect;
+export type Goal = typeof goals.$inferSelect;
+export type SyncState = typeof syncState.$inferSelect;

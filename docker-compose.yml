@@ -1,0 +1,36 @@
+# Local build (development / contribution)
+services:
+  app:
+    build: .
+    image: crag-stats:local
+    ports:
+      - '${PORT:-3000}:3000'
+    env_file:
+      - .env
+    environment:
+      DATABASE_PATH: /data/crag-stats.sqlite
+      MIGRATIONS_DIR: /app/migrations
+      HOST: 0.0.0.0
+      PORT: 3000
+    volumes:
+      - crag_data:/data
+    restart: unless-stopped
+
+  worker:
+    image: crag-stats:local
+    build: .
+    command: ['node', 'scripts/worker.mjs']
+    env_file:
+      - .env
+    environment:
+      DATABASE_PATH: /data/crag-stats.sqlite
+      MIGRATIONS_DIR: /app/migrations
+      APP_INTERNAL_URL: http://app:3000
+    volumes:
+      - crag_data:/data
+    restart: unless-stopped
+    depends_on:
+      - app
+
+volumes:
+  crag_data:

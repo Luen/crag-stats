@@ -1,0 +1,83 @@
+@import 'tailwindcss';
+
+:root {
+	--band-beginner: rgb(84, 180, 26);
+	--band-intermediate: rgb(254, 225, 0);
+	--band-experienced: rgb(229, 131, 41);
+	--band-expert: rgb(201, 9, 9);
+	--band-elite: rgb(178, 24, 130);
+
+	--bg: #f3efe6;
+	--bg-deep: #e7e0d2;
+	--ink: #1c2418;
+	--ink-muted: #5c6656;
+	--panel: rgba(255, 252, 246, 0.88);
+	--line: rgba(28, 36, 24, 0.12);
+	--accent: #2f5d3a;
+	--accent-2: #c45c26;
+}
+
+@font-face {
+	font-family: 'Fraunces';
+	font-style: normal;
+	font-weight: 500 700;
+	font-display: swap;
+	src: url('https://cdn.jsdelivr.net/fontsource/fonts/fraunces@latest/latin-500-normal.woff2')
+		format('woff2');
+}
+
+@font-face {
+	font-family: 'Source Sans 3';
+	font-style: normal;
+	font-weight: 400 600;
+	font-display: swap;
+	src: url('https://cdn.jsdelivr.net/fontsource/fonts/source-sans-3@latest/latin-400-normal.woff2')
+		format('woff2');
+}
+
+html,
+body {
+	min-height: 100%;
+}
+
+body {
+	margin: 0;
+	color: var(--ink);
+	font-family: 'Source Sans 3', 'Segoe UI', sans-serif;
+	background:
+		radial-gradient(1200px 600px at 10% -10%, rgba(84, 180, 26, 0.18), transparent 55%),
+		radial-gradient(900px 500px at 90% 0%, rgba(229, 131, 41, 0.16), transparent 50%),
+		linear-gradient(180deg, var(--bg) 0%, var(--bg-deep) 100%);
+}
+
+h1,
+h2,
+h3,
+.brand {
+	font-family: Fraunces, Georgia, serif;
+	letter-spacing: -0.02em;
+}
+
+a {
+	color: inherit;
+	text-decoration: none;
+}
+
+.panel {
+	background: var(--panel);
+	border: 1px solid var(--line);
+	backdrop-filter: blur(8px);
+}
+
+.grade-chip {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.35rem;
+	padding: 0.15rem 0.55rem;
+	border-radius: 999px;
+	font-weight: 600;
+	font-size: 0.85rem;
+	border: 1px solid color-mix(in srgb, var(--chip, #888) 45%, transparent);
+	background: color-mix(in srgb, var(--chip, #888) 18%, white);
+	color: var(--ink);
+}
