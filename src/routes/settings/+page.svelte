@@ -25,6 +25,10 @@
 				>API docs</a
 			>
 		</p>
+		<p class="hint">
+			<strong>Upstream is source of truth.</strong> Each sync pulls the full logbook, updates changed
+			ascents (comments, grades, ticks), and deletes local rows that were removed on theCrag.
+		</p>
 		<p>
 			Status: <strong>{data.sync.status}</strong>
 			{#if data.sync.lastSuccessAt}
@@ -37,10 +41,10 @@
 		{#if data.hasApiKey}
 			<div class="actions">
 				<form method="POST" action="?/sync">
-					<button type="submit">Incremental sync</button>
+					<button type="submit">Sync now</button>
 				</form>
 				<form method="POST" action="?/fullSync">
-					<button type="submit" class="secondary">Full re-sync</button>
+					<button type="submit" class="secondary">Sync again</button>
 				</form>
 			</div>
 		{:else}
@@ -52,7 +56,8 @@
 		<h2>CSV import</h2>
 		<p class="hint">
 			For everyone without supporter API access. Export from theCrag:
-			<em>Action → Export logbook as CSV</em>.
+			<em>Action → Export logbook as CSV</em>. CSV import upserts rows but does
+			<strong>not</strong> prune deletes (API sync does).
 		</p>
 		<form method="POST" action="?/importCsv" enctype="multipart/form-data" class="stack">
 			<input type="file" name="file" accept=".csv,text/csv" required />

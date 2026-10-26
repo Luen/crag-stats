@@ -1,0 +1,156 @@
+# AGENTS.md — Crag Stats
+
+> **Living document.** Future AI agents (and humans) should read this before changing the repo, and **update it** when they learn something new, correct a mistake, or retire outdated guidance. Prefer short, actionable notes over essays. Remove stale info rather than commenting it out.
+
+Self-hosted climbing analytics for [theCrag](https://www.thecrag.com/), inspired by [Dreeve](https://dreeve.app/) (Stats for Strava) and [RoxClimbs](https://roxclimbs.com/). MIT licensed.
+
+---
+
+## Product principles
+
+1. **Upstream is source of truth.** Like Dreeve ↔ Strava: theCrag owns the logbook. Local SQLite is a cache + analytics store.
+   - API sync **upserts** creates/updates (comments, grades, ticks, heights, etc.).
+   - API sync **deletes** local ascents that no longer exist upstream, then orphans routes/projects.
+   - Do **not** invent a second editable logbook that drifts from theCrag.
+   - CSV import is upsert-only (no prune). Prefer API sync when the user has a supporter key.
+2. **Privacy.** API keys expose private notes. Never commit `.env`. Wipe must remain available in Settings.
+3. **Provider-shaped.** Core types live under `src/lib/server/providers/`. theCrag is first; Mountain Project later. Keep canonical ascent/route shapes provider-agnostic.
+4. **Grade honesty.** Never mix grading systems in one pyramid row list. Split by climb style and/or convert into the user’s preferred system.
+
+---
+
+## Stack & tooling
+
+| Piece | Choice |
+|---|---|
+| App | SvelteKit 3 + Svelte 5 (runes: `$props`, `$derived`, `$state`) |
+| CSS | Tailwind 4 where useful + existing custom CSS variables in layout |
+| DB | SQLite via `better-sqlite3` + Drizzle ORM |
+| Package manager | **pnpm** (not npm/yarn) |
+| Node | 22+ |
+| Deploy | Docker multi-arch → GHCR (`ghcr.io/luen/crag-stats`) |
+| Migrations | Versioned SQL in `/migrations`, run on container boot via `scripts/docker-entrypoint.mjs` |
+| i18n | Planned (Crowdin epic/issue) — not implemented yet |
+
+**Import alias:** `#lib/...` → `src/lib/...` (see `svelte.config` / `tsconfig` paths).
+
+**Env:** Kit 3 private env via `src/env.ts` / `#lib/server/env` (`defineEnvVars`). Do not assume `process.env.THECRAG_API_KEY` is populated in server modules without going through that helper.
+
+**Svelte MCP:** When editing `.svelte` files, use the official Svelte MCP (`list-sections` / `get-documentation` / `svelte-autofixer`) per project rules. Re-run autofixer until clean.
+
+---
+
+## Repository map
+
+```
+src/lib/grades/          # bands, conversions (Ewbank ↔ French/YDS/V/Font)
+src/lib/ticks.ts         # tick kind + style badge colours
+src/lib/types/dashboard.ts
+src/lib/components/      # UI: pyramids, CPR, notable, TickTypeIcon, StyleBadge, …
+src/lib/server/
+  analytics.ts           # dashboard aggregations
+  cpr.ts                 # approximate CPR (not a proprietary theCrag clone)
+  ingest.ts              # upsert + reconcileProviderAscents
+  sync.ts                # runTheCragSync (full pull + prune)
+  providers/thecrag/     # API + CSV mappers
+  db/schema.ts
+migrations/              # 0001_init.sql, …
+scripts/                 # migrate, docker-entrypoint, worker
+.github/workflows/       # ci, docker-release (tag/release → GHCR)
+```
+
+Client components must **not** import from `#lib/server/*` except via `import type` from shared `#lib/types/*`. Server modules pull in `better-sqlite3`.
+
+---
+
+## Sync model (critical)
+
+Entry: `runTheCragSync()` in `src/lib/server/sync.ts`.
+
+1. Pull **all** pages from `https://www.thecrag.com/api/logbook/ascents` (no `since` filter). Incremental cursors cannot see deletes.
+2. `upsertAscents` — overwrite local fields from the provider payload (do not coalesce “keep old if API null” for content fields; upstream wins).
+3. `reconcileProviderAscents(provider, seenIds, { expectedCount })` — delete local ascents whose `external_id` was not seen; then orphan routes/projects.
+4. Safety: if API returns **0** ascents but `account.ascentCount > 0`, **refuse to prune** (partial failure guard).
+5. `refreshProjects()` after sync.
+6. Scheduler (`SYNC_CRON`, default daily) calls the same reconcile path.
+
+Cursor/`maxEpoch` is still stored for diagnostics; it is **not** used to skip a full pull.
+
+Height quirk: theCrag may return height as `[value, unit]` arrays — parse in the API mapper (`parseHeightMeters` / array handler).
+
+---
+
+## Grades & colours
+
+- Canonical numeric scores lean on **Ewbank** for routes and **V-scale** for boulder; convert for display via `src/lib/grades`.
+- Band palette (Beginner → Elite) matches theCrag article colours — see `bands.ts`.
+- Preferred system: cookie `cs_grade_system` + env `PREFERRED_GRADE_SYSTEM`.
+- **Style pyramids** group by Sport / Trad / Boulder / Top rope / … with stacked tick segments. Do not dump mixed VB + `7a` + `19` in one unordered list.
+
+---
+
+## Analytics quirks
+
+- **Climber type:** if one of Sport / Trad / Boulder is ≥ **40%** of ascents → “Sport climber” (etc.); else “Rock climber”.
+- **CPR timelines:** approximate model in `cpr.ts` (power factor P=5, tick shifts, ~0.7 grade/year decay). Link/docs: theCrag CPR articles. Label UI as approximate — not a byte-for-byte clone.
+- **Notable ascents:** by style + by area; use `StyleBadge` + `TickTypeIcon` (theCrag-like SVGs).
+- Summary metrics: onsights, successful ascents, distance climbed (km).
+
+---
+
+## UI icons (theCrag-like)
+
+| Tick | Visual |
+|---|---|
+| Onsight | Blue eye |
+| Flash | Yellow bolt, red outline |
+| Red point | Red filled circle |
+| Pink point | Pink filled circle |
+| Tick | Black check |
+| Clean / Send | Green check |
+| Top rope | “Top” text + small check |
+
+Components: `TickTypeIcon.svelte`, `StyleBadge.svelte`. Keep icons SVG-inline so they theme/print cleanly.
+
+---
+
+## Docker / release
+
+- Compose: `docker-compose.yml` (build) and `docker-compose.ghcr.yml` (pull image).
+- Release workflow builds multi-arch and pushes on version tags (`v0.1.0`, …).
+- Entrypoint runs migrations before app/worker start. Persist SQLite via volume (`DATABASE_PATH`).
+
+---
+
+## Commands
+
+```bash
+pnpm install
+pnpm dev
+pnpm check          # svelte-check — run before claiming done
+pnpm build
+```
+
+Prefer fixing type errors over `@ts-ignore`. Do not switch the package manager.
+
+---
+
+## What not to do
+
+- Don’t treat local DB as authoritative over theCrag for logbook rows.
+- Don’t reintroduce incremental-only sync without a delete/tombstone strategy.
+- Don’t import server DB code into client components.
+- Don’t commit secrets, sample private notes, or real API keys.
+- Don’t expand scope into wearables / Mountain Project until the matching epic is in play — keep PRs focused.
+- Don’t claim CPR is identical to theCrag’s proprietary score.
+
+---
+
+## Changelog for agents
+
+| When | Note |
+|---|---|
+| 2026-03 | Initial MVP: sync, CSV, dashboard, pyramids, CPR approx, GHCR, pnpm |
+| 2026-03 | Sync made full reconcile (upsert + prune). Tick/style SVG icons. This file created as living docs. |
+
+_Add a row when you change behaviour agents must know about._

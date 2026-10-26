@@ -1,5 +1,7 @@
 <script lang="ts">
 	import GradeChip from '#lib/components/GradeChip.svelte';
+	import StyleBadge from '#lib/components/StyleBadge.svelte';
+	import TickTypeIcon from '#lib/components/TickTypeIcon.svelte';
 	import type { NotableRow } from '#lib/types/dashboard';
 
 	type Props = { byStyle: NotableRow[]; byArea: NotableRow[] };
@@ -28,8 +30,8 @@
 			<tbody>
 				{#each byStyle as row (row.group + row.tickType)}
 					<tr>
-						<td class="group">{row.group}</td>
-						<td>{row.tickType}</td>
+						<td class="group"><StyleBadge style={row.group} /></td>
+						<td><TickTypeIcon tick={row.tickType} /></td>
 						<td>
 							<div class="bands">
 								{#each row.bandShares as b (b.band)}
@@ -78,7 +80,7 @@
 				{#each byArea as row (row.group + row.tickType)}
 					<tr>
 						<td class="group">{row.group}</td>
-						<td>{row.tickType}</td>
+						<td><TickTypeIcon tick={row.tickType} /></td>
 						<td>
 							<div class="bands">
 								{#each row.bandShares as b (b.band)}

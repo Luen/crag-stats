@@ -1,12 +1,16 @@
-import { eq, and } from 'drizzle-orm';
+import { eq, and, sql } from 'drizzle-orm';
 import { db, ensureSchema } from './db';
-import { ascents, profiles, routes, syncState } from './db/schema';
+import { ascents, profiles, projects, routes, syncState } from './db/schema';
 import type { CanonicalAscent, ProviderProfile } from './providers/types';
 
 function nowIso() {
 	return new Date().toISOString();
 }
 
+/**
+ * Upsert routes + ascents. Upstream payload is source of truth for each record:
+ * fields are overwritten from the provider (not merged with stale local values).
+ */
 export function upsertAscents(batch: CanonicalAscent[]): { routes: number; ascents: number } {
 	ensureSchema();
 	const updatedAt = nowIso();
@@ -24,48 +28,33 @@ export function upsertAscents(batch: CanonicalAscent[]): { routes: number; ascen
 				.get();
 
 			let routeId: number;
+			const routeValues = {
+				name: item.route.name,
+				gradeRaw: item.route.gradeRaw ?? null,
+				gradeScore: item.route.gradeScore ?? null,
+				gradeBand: item.route.gradeBand ?? null,
+				gradeSystem: item.route.gradeSystem ?? null,
+				gearStyle: item.route.gearStyle ?? null,
+				heightM: item.route.heightM ?? null,
+				stars: item.route.stars ?? null,
+				url: item.route.url ?? null,
+				country: item.route.country ?? null,
+				cragName: item.route.cragName ?? null,
+				cragPath: item.route.cragPath ?? null,
+				areaExternalId: item.route.areaExternalId ?? null,
+				updatedAt
+			};
+
 			if (existingRoute) {
 				routeId = existingRoute.id;
-				txDb
-					.update(routes)
-					.set({
-						name: item.route.name,
-						gradeRaw: item.route.gradeRaw ?? existingRoute.gradeRaw,
-						gradeScore: item.route.gradeScore ?? existingRoute.gradeScore,
-						gradeBand: item.route.gradeBand ?? existingRoute.gradeBand,
-						gradeSystem: item.route.gradeSystem ?? existingRoute.gradeSystem,
-						gearStyle: item.route.gearStyle ?? existingRoute.gearStyle,
-						heightM: item.route.heightM ?? existingRoute.heightM,
-						stars: item.route.stars ?? existingRoute.stars,
-						url: item.route.url ?? existingRoute.url,
-						country: item.route.country ?? existingRoute.country,
-						cragName: item.route.cragName ?? existingRoute.cragName,
-						cragPath: item.route.cragPath ?? existingRoute.cragPath,
-						areaExternalId: item.route.areaExternalId ?? existingRoute.areaExternalId,
-						updatedAt
-					})
-					.where(eq(routes.id, routeId))
-					.run();
+				txDb.update(routes).set(routeValues).where(eq(routes.id, routeId)).run();
 			} else {
 				const inserted = txDb
 					.insert(routes)
 					.values({
 						provider: item.route.provider,
 						externalId: item.route.externalId,
-						name: item.route.name,
-						gradeRaw: item.route.gradeRaw ?? null,
-						gradeScore: item.route.gradeScore ?? null,
-						gradeBand: item.route.gradeBand ?? null,
-						gradeSystem: item.route.gradeSystem ?? null,
-						gearStyle: item.route.gearStyle ?? null,
-						heightM: item.route.heightM ?? null,
-						stars: item.route.stars ?? null,
-						url: item.route.url ?? null,
-						country: item.route.country ?? null,
-						cragName: item.route.cragName ?? null,
-						cragPath: item.route.cragPath ?? null,
-						areaExternalId: item.route.areaExternalId ?? null,
-						updatedAt
+						...routeValues
 					})
 					.returning({ id: routes.id })
 					.get();
@@ -119,6 +108,67 @@ export function upsertAscents(batch: CanonicalAscent[]): { routes: number; ascen
 	return { routes: routeCount, ascents: ascentCount };
 }
 
+/**
+ * After a full provider pull, delete local ascents that no longer exist upstream.
+ * Also removes orphan routes and projects that referenced pruned routes.
+ *
+ * Safety: refuses to wipe everything if the API returned zero IDs but the account
+ * still reports a positive ascentCount (likely a partial/failed pull).
+ */
+export function reconcileProviderAscents(
+	provider: string,
+	seenExternalIds: Iterable<string>,
+	opts?: { expectedCount?: number | null }
+): { deletedAscents: number; deletedRoutes: number; deletedProjects: number } {
+	ensureSchema();
+	const seen = [...new Set([...seenExternalIds].map(String))];
+	const expected = opts?.expectedCount;
+
+	if (seen.length === 0 && expected != null && expected > 0) {
+		throw new Error(
+			`Refusing to prune ${provider} logbook: API returned 0 ascents but account reports ${expected}`
+		);
+	}
+
+	const local = db
+		.select({ id: ascents.id, externalId: ascents.externalId })
+		.from(ascents)
+		.where(eq(ascents.provider, provider))
+		.all();
+
+	const seenSet = new Set(seen);
+	const staleIds =
+		seen.length === 0 ? local.map((a) => a.id) : local.filter((a) => !seenSet.has(a.externalId)).map((a) => a.id);
+
+	let deletedAscents = 0;
+	let deletedRoutes = 0;
+	let deletedProjects = 0;
+
+	db.transaction((txDb) => {
+		for (const id of staleIds) {
+			deletedAscents += txDb.delete(ascents).where(eq(ascents.id, id)).run().changes;
+		}
+
+		const orphans = txDb
+			.select({ id: routes.id })
+			.from(routes)
+			.where(
+				and(
+					eq(routes.provider, provider),
+					sql`${routes.id} NOT IN (SELECT ${ascents.routeId} FROM ${ascents})`
+				)
+			)
+			.all();
+
+		for (const r of orphans) {
+			deletedProjects += txDb.delete(projects).where(eq(projects.routeId, r.id)).run().changes;
+			deletedRoutes += txDb.delete(routes).where(eq(routes.id, r.id)).run().changes;
+		}
+	});
+
+	return { deletedAscents, deletedRoutes, deletedProjects };
+}
+
 export function upsertProfile(profile: ProviderProfile) {
 	ensureSchema();
 	const updatedAt = nowIso();
@@ -126,12 +176,12 @@ export function upsertProfile(profile: ProviderProfile) {
 	if (existing) {
 		db.update(profiles)
 			.set({
-				externalId: profile.externalId ?? existing.externalId,
-				name: profile.name ?? existing.name,
-				login: profile.login ?? existing.login,
-				country: profile.country ?? existing.country,
-				ascentCount: profile.ascentCount ?? existing.ascentCount,
-				rawJson: profile.rawJson ?? existing.rawJson,
+				externalId: profile.externalId ?? null,
+				name: profile.name ?? null,
+				login: profile.login ?? null,
+				country: profile.country ?? null,
+				ascentCount: profile.ascentCount ?? null,
+				rawJson: profile.rawJson ?? null,
 				updatedAt
 			})
 			.where(eq(profiles.id, existing.id))

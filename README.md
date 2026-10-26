@@ -6,14 +6,16 @@ Self-hosted climbing analytics for [theCrag](https://www.thecrag.com/) — perfo
 
 ## Features (MVP)
 
-- **theCrag API sync** — personal Logbook Read API key with incremental `since` cursor + daily schedule
-- **CSV import** — full logbook export for users without supporter API access
-- **Dashboard** — volume, height, tick breakdown, top crags, hardest sends, grade pyramid
-- **Grade bands & colours** — Beginner → Elite palette aligned with [theCrag grades](https://www.thecrag.com/en/article/grades)
-- **Logbook** — searchable / filterable ascent history
+- **theCrag API sync** — personal Logbook Read API key; full reconcile on every sync (upsert + prune deletes) + daily schedule. Upstream is source of truth.
+- **CSV import** — full logbook export for users without supporter API access (upsert only)
+- **Dashboard** — climber type, style pyramids, notable ascents, CPR timelines, volume, height, top crags
+- **Grade bands & colours** — Beginner → Elite palette aligned with [theCrag grades](https://www.thecrag.com/en/article/grades); preferred system selector
+- **Logbook** — searchable / filterable ascent history with theCrag-like tick icons
 - **Projects** — auto-detected from attempts
 - **Docker / GHCR** — public multi-arch images (`amd64` + `arm64`) with automatic DB migrations on boot
 - Provider-shaped architecture ready for Mountain Project later
+
+Contributor / agent notes: see [AGENTS.md](./AGENTS.md) (living document).
 
 ## Quick start (local)
 

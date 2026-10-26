@@ -5,6 +5,7 @@
 	import GradeChip from '#lib/components/GradeChip.svelte';
 	import NotableAscents from '#lib/components/NotableAscents.svelte';
 	import StylePyramid from '#lib/components/StylePyramid.svelte';
+	import TickTypeIcon from '#lib/components/TickTypeIcon.svelte';
 	import VolumeChart from '#lib/components/VolumeChart.svelte';
 	import type { PageProps } from './$types';
 
@@ -152,7 +153,9 @@
 					<li>
 						<div>
 							<strong>{climb.routeName}</strong>
-							<div class="sub">{climb.cragName} · {climb.tickType}</div>
+							<div class="sub">
+								{climb.cragName} · <TickTypeIcon tick={climb.tickType} />
+							</div>
 						</div>
 						<GradeChip grade={climb.gradeLabel ?? climb.gradeRaw} band={climb.gradeBand} />
 					</li>
@@ -167,7 +170,8 @@
 						<div>
 							<strong>{climb.routeName}</strong>
 							<div class="sub">
-								{(climb.ascentDate || '').slice(0, 10)} · {climb.tickType} · {climb.cragName}
+								{(climb.ascentDate || '').slice(0, 10)} · <TickTypeIcon tick={climb.tickType} /> ·
+								{climb.cragName}
 							</div>
 						</div>
 						<GradeChip grade={climb.gradeLabel ?? climb.gradeRaw} band={climb.gradeBand} />

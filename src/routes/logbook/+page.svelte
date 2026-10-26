@@ -1,5 +1,7 @@
 <script lang="ts">
 	import GradeChip from '#lib/components/GradeChip.svelte';
+	import StyleBadge from '#lib/components/StyleBadge.svelte';
+	import TickTypeIcon from '#lib/components/TickTypeIcon.svelte';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -44,9 +46,9 @@
 						{/if}
 					</td>
 					<td><GradeChip grade={row.gradeRaw} band={row.gradeBand} /></td>
-					<td>{row.tickType}</td>
+					<td><TickTypeIcon tick={row.tickType} /></td>
 					<td>{row.cragName}</td>
-					<td>{row.ascentGearStyle || row.gearStyle}</td>
+					<td><StyleBadge style={row.ascentGearStyle || row.gearStyle} /></td>
 				</tr>
 			{/each}
 		</tbody>
