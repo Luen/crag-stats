@@ -22,7 +22,9 @@ function linkFor(row: { ascentUrl: string | null; ascentExternalId: string; url:
 
 export type { DashboardStats, NotableRow, StylePyramid } from '#lib/types/dashboard';
 
-let repairedOnce = false;
+/** Bump when a new one-shot data repair must run after a schema/parser change. */
+const REPAIR_GEN = 2;
+let repairedGen = 0;
 
 const STYLE_COLORS: Record<string, string> = {
 	Sport: '#1d6fa5',
@@ -139,13 +141,13 @@ export function getDashboardStats(preferredSystem: GradeSystem = 'ewbank'): Dash
 		sql`UPDATE ascents SET ascent_url = 'https://www.thecrag.com/ascent/' || external_id
 			WHERE provider = 'thecrag' AND (ascent_url IS NULL OR ascent_url = '')`
 	);
-	if (!repairedOnce) {
+	if (repairedGen < REPAIR_GEN) {
 		try {
 			repairGradesFromRawJson();
 		} catch (err) {
 			console.warn('[analytics] grade repair skipped:', err instanceof Error ? err.message : err);
 		}
-		repairedOnce = true;
+		repairedGen = REPAIR_GEN;
 	}
 
 	const profile = db.select().from(profiles).limit(1).get();
@@ -170,6 +172,7 @@ export function getDashboardStats(preferredSystem: GradeSystem = 'ewbank'): Dash
 			gradeBand: routes.gradeBand,
 			gearStyle: routes.gearStyle,
 			cragName: routes.cragName,
+			cragUrl: routes.cragUrl,
 			url: routes.url,
 			stars: routes.stars,
 			routeHeightM: routes.heightM
@@ -182,7 +185,13 @@ export function getDashboardStats(preferredSystem: GradeSystem = 'ewbank'): Dash
 	const styleMap = new Map<string, number>();
 	const cragMap = new Map<
 		string,
-		{ count: number; maxScore: number; maxGrade: string | null; maxBand: number | null }
+		{
+			count: number;
+			maxScore: number;
+			maxGrade: string | null;
+			maxBand: number | null;
+			url: string | null;
+		}
 	>();
 	const monthMap = new Map<string, { count: number; sends: number }>();
 	const bandMap = new Map<number, number>();
@@ -224,9 +233,11 @@ export function getDashboardStats(preferredSystem: GradeSystem = 'ewbank'): Dash
 			count: 0,
 			maxScore: -Infinity,
 			maxGrade: null,
-			maxBand: null
+			maxBand: null,
+			url: row.cragUrl
 		};
 		prev.count += 1;
+		if (!prev.url && row.cragUrl) prev.url = row.cragUrl;
 		const rowScore = effectiveScore(row);
 		const rowRaw = effectiveRaw(row);
 		const rowBand = effectiveBand(row);
@@ -360,6 +371,7 @@ export function getDashboardStats(preferredSystem: GradeSystem = 'ewbank'): Dash
 				const hRaw = hardest ? effectiveRaw(hardest) : null;
 				return {
 					group,
+					groupUrl: hardest?.cragUrl && hardest.cragName === group ? hardest.cragUrl : null,
 					tickType,
 					count: agg.count,
 					hardestGrade:
@@ -411,6 +423,7 @@ export function getDashboardStats(preferredSystem: GradeSystem = 'ewbank'): Dash
 				tickType: r.tickType,
 				ascentDate: r.ascentDate,
 				cragName: r.cragName,
+				cragUrl: r.cragUrl,
 				url: linkFor(r)
 			};
 		});
@@ -432,6 +445,7 @@ export function getDashboardStats(preferredSystem: GradeSystem = 'ewbank'): Dash
 				tickType: r.tickType,
 				ascentDate: r.ascentDate,
 				cragName: r.cragName,
+				cragUrl: r.cragUrl,
 				isSend: r.isSend,
 				isAttempt: r.isAttempt,
 				url: linkFor(r)
@@ -459,7 +473,8 @@ export function getDashboardStats(preferredSystem: GradeSystem = 'ewbank'): Dash
 				crag,
 				count: v.count,
 				maxGrade: v.maxGrade,
-				maxBand: v.maxBand
+				maxBand: v.maxBand,
+				url: v.url
 			}))
 			.sort((a, b) => b.count - a.count)
 			.slice(0, 12),
@@ -517,6 +532,7 @@ export function listLogbook(filters?: {
 			gearStyle: routes.gearStyle,
 			cragName: routes.cragName,
 			cragPath: routes.cragPath,
+			cragUrl: routes.cragUrl,
 			country: routes.country,
 			heightM: routes.heightM,
 			routeUrl: routes.url,

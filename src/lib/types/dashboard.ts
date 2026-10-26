@@ -18,6 +18,8 @@ export type StylePyramid = {
 
 export type NotableRow = {
 	group: string;
+	/** Link for the group when it is an area/crag name */
+	groupUrl: string | null;
 	tickType: string;
 	count: number;
 	hardestGrade: string | null;
@@ -64,7 +66,13 @@ export type DashboardStats = {
 	preferredSystem: GradeSystem;
 	styleShare: { style: string; count: number; pct: number; color: string }[];
 	tickBreakdown: { tick: string; count: number }[];
-	topCrags: { crag: string; count: number; maxGrade: string | null; maxBand: number | null }[];
+	topCrags: {
+		crag: string;
+		count: number;
+		maxGrade: string | null;
+		maxBand: number | null;
+		url: string | null;
+	}[];
 	volumeByMonth: { month: string; count: number; sends: number }[];
 	stylePyramids: StylePyramid[];
 	bandBreakdown: { band: number; name: string; count: number; color: string }[];
@@ -84,6 +92,7 @@ export type DashboardStats = {
 		tickType: string | null;
 		ascentDate: string | null;
 		cragName: string | null;
+		cragUrl: string | null;
 		url: string | null;
 	}[];
 	recent: {
@@ -96,6 +105,7 @@ export type DashboardStats = {
 		tickType: string | null;
 		ascentDate: string | null;
 		cragName: string | null;
+		cragUrl: string | null;
 		isSend: boolean;
 		isAttempt: boolean;
 		url: string | null;

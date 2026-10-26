@@ -30,6 +30,8 @@ export const routes = sqliteTable(
 		country: text('country'),
 		cragName: text('crag_name'),
 		cragPath: text('crag_path'),
+		/** Public theCrag area/crag page for cragName (TLC) */
+		cragUrl: text('crag_url'),
 		areaExternalId: text('area_external_id'),
 		updatedAt: text('updated_at').notNull()
 	},

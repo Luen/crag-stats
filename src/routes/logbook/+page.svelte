@@ -47,7 +47,13 @@
 					</td>
 					<td><GradeChip grade={row.gradeRaw} band={row.gradeBand} /></td>
 					<td><TickTypeIcon tick={row.tickType} /></td>
-					<td>{row.cragName}</td>
+					<td>
+						{#if row.cragUrl && row.cragName}
+							<a href={row.cragUrl} target="_blank" rel="noreferrer">{row.cragName}</a>
+						{:else}
+							{row.cragName}
+						{/if}
+					</td>
 					<td><StyleBadge style={row.ascentGearStyle || row.gearStyle} /></td>
 				</tr>
 			{/each}

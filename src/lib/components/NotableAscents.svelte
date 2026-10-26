@@ -82,7 +82,13 @@
 			<tbody>
 				{#each byArea as row (row.group + row.tickType)}
 					<tr>
-						<td class="group">{row.group}</td>
+						<td class="group">
+							{#if row.groupUrl}
+								<a href={row.groupUrl} target="_blank" rel="noreferrer">{row.group}</a>
+							{:else}
+								{row.group}
+							{/if}
+						</td>
 						<td><TickTypeIcon tick={row.tickType} /></td>
 						<td>
 							<div class="bands">
@@ -186,5 +192,8 @@
 	a {
 		text-decoration: underline;
 		text-underline-offset: 2px;
+	}
+	.group a {
+		color: inherit;
 	}
 </style>

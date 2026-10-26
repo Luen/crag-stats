@@ -1,5 +1,5 @@
 <script lang="ts">
-	type Item = { label: string; value: number; color?: string; meta?: string };
+	type Item = { label: string; value: number; color?: string; meta?: string; href?: string | null };
 
 	type Props = {
 		items: Item[];
@@ -16,7 +16,13 @@
 	{#each visible as item (item.label)}
 		<li>
 			<div class="row">
-				<span class="label">{item.label}</span>
+				<span class="label">
+					{#if item.href}
+						<a href={item.href} target="_blank" rel="noreferrer">{item.label}</a>
+					{:else}
+						{item.label}
+					{/if}
+				</span>
 				<span class="value"
 					>{item.value}{#if item.meta}<span class="meta"> · {item.meta}</span>{/if}</span
 				>
@@ -48,6 +54,10 @@
 	}
 	.label {
 		font-weight: 600;
+	}
+	.label a {
+		text-decoration: underline;
+		text-underline-offset: 2px;
 	}
 	.value {
 		color: var(--ink-muted);

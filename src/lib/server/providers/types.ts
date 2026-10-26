@@ -21,6 +21,7 @@ export type CanonicalRoute = {
 	country?: string | null;
 	cragName?: string | null;
 	cragPath?: string | null;
+	cragUrl?: string | null;
 	areaExternalId?: string | null;
 };
 

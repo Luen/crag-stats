@@ -41,6 +41,7 @@ export function upsertAscents(batch: CanonicalAscent[]): { routes: number; ascen
 				country: item.route.country ?? null,
 				cragName: item.route.cragName ?? null,
 				cragPath: item.route.cragPath ?? null,
+				cragUrl: item.route.cragUrl ?? null,
 				areaExternalId: item.route.areaExternalId ?? null,
 				updatedAt
 			};

@@ -1,6 +1,7 @@
 /**
  * Build public theCrag page URLs.
  * Route pages: /en/climbing/{area-path}/route/{id}
+ * Area/crag pages: /en/climbing/{area-path}/area/{id}
  * Ascent (logbook entry) pages: /ascent/{id}
  */
 
@@ -22,6 +23,17 @@ export function theCragRouteUrl(
 	const stub = joinAncestorStub(ancestorStub);
 	if (stub) return `${ORIGIN}/en/climbing/${stub}/route/${routeId}`;
 	return `${ORIGIN}/en/route/${routeId}`;
+}
+
+/** Top-level crag / area page (e.g. Castle Hill → …/area/11818021). */
+export function theCragAreaUrl(
+	areaId: string | number | null | undefined,
+	ancestorStub?: string | null
+): string | null {
+	if (areaId == null || areaId === '') return null;
+	const stub = joinAncestorStub(ancestorStub);
+	if (stub) return `${ORIGIN}/en/climbing/${stub}/area/${areaId}`;
+	return `${ORIGIN}/area/${areaId}`;
 }
 
 export function theCragAscentUrl(ascentId: string | number | null | undefined): string | null {

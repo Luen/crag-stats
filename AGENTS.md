@@ -90,6 +90,7 @@ Height quirk: theCrag may return height as `[value, unit]` arrays — parse in t
 - **Multipitch:** use `ascent.pitch[]` from the API. Effective grade = hardest **climbed** pitch (not the full route grade). Store `effective_grade_*` + `pitch_label` (e.g. `P1`) on ascents. Analytics/hardest lists must use effective grades. `repairGradesFromRawJson()` re-derives from stored `raw_json` after parser fixes.
 - **URLs:** `urlAncestorStub` is an *area* path and often has **no leading slash**. Never concatenate as `https://www.thecrag.com${stub}` (produces `thecrag.comaustralia/...`). Use helpers in `src/lib/thecragUrls.ts`:
   - Route: `https://www.thecrag.com/en/climbing/{stub}/route/{routeId}`
+  - Area/crag (TLC): `https://www.thecrag.com/en/climbing/{stub}/area/{areaId}` (e.g. Castle Hill)
   - Ascent (preferred for “your tick” links): `https://www.thecrag.com/ascent/{ascentId}`
 
 ---

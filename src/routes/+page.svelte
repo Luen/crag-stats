@@ -105,7 +105,8 @@
 					label: c.crag,
 					value: c.count,
 					meta: c.maxGrade ? `up to ${c.maxGrade}` : undefined,
-					color: 'var(--accent-2)'
+					color: 'var(--accent-2)',
+					href: c.url
 				}))}
 			/>
 		</article>
@@ -161,7 +162,12 @@
 								{/if}
 							</strong>
 							<div class="sub">
-								{climb.cragName} · <TickTypeIcon tick={climb.tickType} />
+								{#if climb.cragUrl && climb.cragName}
+									<a href={climb.cragUrl} target="_blank" rel="noreferrer">{climb.cragName}</a>
+								{:else}
+									{climb.cragName}
+								{/if}
+								· <TickTypeIcon tick={climb.tickType} />
 							</div>
 						</div>
 						<GradeChip grade={climb.gradeLabel ?? climb.gradeRaw} band={climb.gradeBand} />
@@ -184,7 +190,11 @@
 							</strong>
 							<div class="sub">
 								{(climb.ascentDate || '').slice(0, 10)} · <TickTypeIcon tick={climb.tickType} /> ·
-								{climb.cragName}
+								{#if climb.cragUrl && climb.cragName}
+									<a href={climb.cragUrl} target="_blank" rel="noreferrer">{climb.cragName}</a>
+								{:else}
+									{climb.cragName}
+								{/if}
 							</div>
 						</div>
 						<GradeChip grade={climb.gradeLabel ?? climb.gradeRaw} band={climb.gradeBand} />

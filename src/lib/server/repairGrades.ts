@@ -79,6 +79,11 @@ export function repairGradesFromRawJson(): { routes: number; ascents: number } {
 					gradeBand: mapped.route.gradeBand ?? null,
 					gradeSystem: mapped.route.gradeSystem ?? null,
 					url: mapped.route.url ?? null,
+					cragName: mapped.route.cragName ?? null,
+					cragPath: mapped.route.cragPath ?? null,
+					cragUrl: mapped.route.cragUrl ?? null,
+					areaExternalId: mapped.route.areaExternalId ?? null,
+					country: mapped.route.country ?? null,
 					updatedAt
 				})
 				.where(eq(routes.id, row.routeId))

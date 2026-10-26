@@ -1,5 +1,5 @@
 import { detectAndParseGrade, parseHeightMeters } from '#lib/grades';
-import { theCragAscentUrl, theCragRouteUrl } from '#lib/thecragUrls';
+import { theCragAreaUrl, theCragAscentUrl, theCragRouteUrl } from '#lib/thecragUrls';
 import {
 	classifyTick,
 	type CanonicalAscent,
@@ -12,6 +12,12 @@ import { resolveEffectiveGrade, type ApiPitch } from './effectiveGrade';
 const BASE = 'https://www.thecrag.com/api/logbook/ascents';
 
 type ApiTick = { label?: string; name?: string };
+type ApiAreaNode = {
+	id?: number | string;
+	name?: string;
+	urlAncestorStub?: string;
+	urlStub?: string;
+};
 type ApiRoute = {
 	id?: number | string;
 	name?: string;
@@ -23,9 +29,9 @@ type ApiRoute = {
 	stars?: number;
 	urlAncestorStub?: string;
 	ancestors?: {
-		parent?: { id?: number | string; name?: string };
-		country?: { name?: string };
-		TLC?: { id?: number | string; name?: string };
+		parent?: ApiAreaNode;
+		country?: ApiAreaNode & { name?: string };
+		TLC?: ApiAreaNode;
 	};
 };
 type ApiAscent = {
@@ -116,6 +122,9 @@ export function mapAscent(a: ApiAscent): CanonicalAscent | null {
 	const tlc = route.ancestors?.TLC;
 	const parent = route.ancestors?.parent;
 	const country = route.ancestors?.country?.name;
+	const areaId = tlc?.id ?? parent?.id ?? null;
+	const areaStub =
+		tlc?.urlAncestorStub ?? parent?.urlAncestorStub ?? route.urlAncestorStub ?? null;
 
 	return {
 		provider: 'thecrag',
@@ -135,7 +144,8 @@ export function mapAscent(a: ApiAscent): CanonicalAscent | null {
 			country: country ?? null,
 			cragName: tlc?.name ?? parent?.name ?? null,
 			cragPath: [country, tlc?.name, parent?.name].filter(Boolean).join(' - ') || null,
-			areaExternalId: tlc?.id != null ? String(tlc.id) : parent?.id != null ? String(parent.id) : null
+			cragUrl: theCragAreaUrl(areaId, areaStub),
+			areaExternalId: areaId != null ? String(areaId) : null
 		},
 		ascentDate: a.date ?? null,
 		logDate: a.logDate ?? null,
