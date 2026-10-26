@@ -92,6 +92,7 @@ export function upsertAscents(batch: CanonicalAscent[]): { routes: number; ascen
 				epoch: item.epoch ?? null,
 				cprBase: item.cprBase ?? null,
 				cprScore: item.cprScore ?? null,
+				ascentUrl: item.ascentUrl ?? null,
 				rawJson: item.rawJson ?? null,
 				updatedAt
 			};

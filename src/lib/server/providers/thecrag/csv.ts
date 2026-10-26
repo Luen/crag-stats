@@ -1,5 +1,6 @@
 import { parse } from 'csv-parse/sync';
 import { detectAndParseGrade, parseHeightMeters } from '#lib/grades';
+import { theCragAscentUrl } from '#lib/thecragUrls';
 import { classifyTick, type CanonicalAscent } from '../types';
 
 type CsvRow = Record<string, string>;
@@ -61,6 +62,7 @@ function mapRow(row: CsvRow): CanonicalAscent | null {
 		pitchLabel: null,
 		pitchesClimbed: null,
 		pitchesTotal: null,
+		ascentUrl: theCragAscentUrl(externalId),
 		heightM,
 		quality: row['Quality']?.trim() || null,
 		partners: row['With']?.trim() || null,

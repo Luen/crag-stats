@@ -68,6 +68,8 @@ export const ascents = sqliteTable(
 		epoch: integer('epoch'),
 		cprBase: text('cpr_base'),
 		cprScore: real('cpr_score'),
+		/** Public theCrag ascent page (/ascent/{external_id}) */
+		ascentUrl: text('ascent_url'),
 		rawJson: text('raw_json'),
 		updatedAt: text('updated_at').notNull()
 	},

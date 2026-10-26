@@ -50,6 +50,8 @@ export type CanonicalAscent = {
 	epoch?: number | null;
 	cprBase?: string | null;
 	cprScore?: number | null;
+	/** Direct link to this ascent on theCrag (/ascent/{id}) */
+	ascentUrl?: string | null;
 	rawJson?: string | null;
 };
 

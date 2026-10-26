@@ -153,7 +153,13 @@
 				{#each s.hardestSends as climb (climb.routeName + (climb.ascentDate ?? ''))}
 					<li>
 						<div>
-							<strong>{climb.routeName}</strong>
+							<strong>
+								{#if climb.url}
+									<a href={climb.url} target="_blank" rel="noreferrer">{climb.routeName}</a>
+								{:else}
+									{climb.routeName}
+								{/if}
+							</strong>
 							<div class="sub">
 								{climb.cragName} · <TickTypeIcon tick={climb.tickType} />
 							</div>
@@ -169,7 +175,13 @@
 				{#each s.recent as climb (climb.id)}
 					<li>
 						<div>
-							<strong>{climb.routeName}</strong>
+							<strong>
+								{#if climb.url}
+									<a href={climb.url} target="_blank" rel="noreferrer">{climb.routeName}</a>
+								{:else}
+									{climb.routeName}
+								{/if}
+							</strong>
 							<div class="sub">
 								{(climb.ascentDate || '').slice(0, 10)} · <TickTypeIcon tick={climb.tickType} /> ·
 								{climb.cragName}
@@ -328,6 +340,10 @@
 	.sub {
 		color: var(--ink-muted);
 		font-size: 0.85rem;
+	}
+	.list a {
+		text-decoration: underline;
+		text-underline-offset: 2px;
 	}
 	.empty {
 		padding: 1.25rem 1.4rem;

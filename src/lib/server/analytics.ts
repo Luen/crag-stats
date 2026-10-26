@@ -13,7 +13,12 @@ import type { DashboardStats, NotableRow, StylePyramid } from '#lib/types/dashbo
 import { buildCprTimeline, normalizeClimbStyle } from './cpr';
 import { db, ensureSchema } from './db';
 import { ascents, profiles, routes } from './db/schema';
+import { theCragAscentUrl } from '#lib/thecragUrls';
 import { repairGradesFromRawJson } from './repairGrades';
+
+function linkFor(row: { ascentUrl: string | null; ascentExternalId: string; url: string | null }) {
+	return row.ascentUrl || theCragAscentUrl(row.ascentExternalId) || row.url;
+}
 
 export type { DashboardStats, NotableRow, StylePyramid } from '#lib/types/dashboard';
 
@@ -129,6 +134,11 @@ export function parseGradeSystem(raw: string | null | undefined): GradeSystem {
 
 export function getDashboardStats(preferredSystem: GradeSystem = 'ewbank'): DashboardStats {
 	ensureSchema();
+	// Cheap: fill missing ascent logbook links without a full re-parse
+	db.run(
+		sql`UPDATE ascents SET ascent_url = 'https://www.thecrag.com/ascent/' || external_id
+			WHERE provider = 'thecrag' AND (ascent_url IS NULL OR ascent_url = '')`
+	);
 	if (!repairedOnce) {
 		try {
 			repairGradesFromRawJson();
@@ -151,6 +161,8 @@ export function getDashboardStats(preferredSystem: GradeSystem = 'ewbank'): Dash
 			effectiveGradeScore: ascents.effectiveGradeScore,
 			effectiveGradeBand: ascents.effectiveGradeBand,
 			pitchLabel: ascents.pitchLabel,
+			ascentUrl: ascents.ascentUrl,
+			ascentExternalId: ascents.externalId,
 			routeId: routes.id,
 			routeName: routes.name,
 			gradeRaw: routes.gradeRaw,
@@ -358,7 +370,7 @@ export function getDashboardStats(preferredSystem: GradeSystem = 'ewbank'): Dash
 					hardestRoute: hardest
 						? displayRouteName(hardest.routeName, hardest.pitchLabel)
 						: null,
-					hardestUrl: hardest?.url ?? null,
+					hardestUrl: hardest ? linkFor(hardest) : null,
 					hardestDate: relativeTime(hardest?.ascentDate ?? null),
 					hardestStars: hardest?.stars ?? null,
 					hardestPitchLabel: hardest?.pitchLabel ?? null,
@@ -399,7 +411,7 @@ export function getDashboardStats(preferredSystem: GradeSystem = 'ewbank'): Dash
 				tickType: r.tickType,
 				ascentDate: r.ascentDate,
 				cragName: r.cragName,
-				url: r.url
+				url: linkFor(r)
 			};
 		});
 
@@ -422,7 +434,7 @@ export function getDashboardStats(preferredSystem: GradeSystem = 'ewbank'): Dash
 				cragName: r.cragName,
 				isSend: r.isSend,
 				isAttempt: r.isAttempt,
-				url: r.url
+				url: linkFor(r)
 			};
 		});
 
@@ -488,6 +500,7 @@ export function listLogbook(filters?: {
 	let rows = db
 		.select({
 			id: ascents.id,
+			externalId: ascents.externalId,
 			ascentDate: ascents.ascentDate,
 			tickType: ascents.tickType,
 			isSend: ascents.isSend,
@@ -496,6 +509,7 @@ export function listLogbook(filters?: {
 			comment: ascents.comment,
 			quality: ascents.quality,
 			ascentGearStyle: ascents.ascentGearStyle,
+			ascentUrl: ascents.ascentUrl,
 			routeName: routes.name,
 			gradeRaw: routes.gradeRaw,
 			gradeBand: routes.gradeBand,
@@ -505,7 +519,7 @@ export function listLogbook(filters?: {
 			cragPath: routes.cragPath,
 			country: routes.country,
 			heightM: routes.heightM,
-			url: routes.url,
+			routeUrl: routes.url,
 			stars: routes.stars
 		})
 		.from(ascents)
@@ -532,7 +546,13 @@ export function listLogbook(filters?: {
 	}
 
 	const total = rows.length;
-	return { total, rows: rows.slice(offset, offset + limit) };
+	return {
+		total,
+		rows: rows.slice(offset, offset + limit).map((r) => ({
+			...r,
+			url: r.ascentUrl || theCragAscentUrl(r.externalId) || r.routeUrl
+		}))
+	};
 }
 
 export function wipeAllData() {

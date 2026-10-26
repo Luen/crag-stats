@@ -1,12 +1,13 @@
 import { eq } from 'drizzle-orm';
 import { detectAndParseGrade } from '#lib/grades';
+import { theCragAscentUrl } from '#lib/thecragUrls';
 import { db, ensureSchema } from './db';
 import { ascents, routes } from './db/schema';
 import { mapAscent } from './providers/thecrag/api';
 
 /**
- * Re-derive route + effective ascent grades from stored raw_json (API payloads).
- * Fixes V1/2-style parses and multipitch effective grades without waiting for a re-sync.
+ * Re-derive route + effective ascent grades (and URLs) from stored raw_json.
+ * Fixes V1/2-style parses, multipitch effective grades, and broken area-stub links.
  */
 export function repairGradesFromRawJson(): { routes: number; ascents: number } {
 	ensureSchema();
@@ -18,14 +19,25 @@ export function repairGradesFromRawJson(): { routes: number; ascents: number } {
 		.select({
 			id: ascents.id,
 			routeId: ascents.routeId,
+			externalId: ascents.externalId,
 			rawJson: ascents.rawJson,
-			provider: ascents.provider
+			provider: ascents.provider,
+			ascentUrl: ascents.ascentUrl
 		})
 		.from(ascents)
 		.all();
 
 	db.transaction((txDb) => {
 		for (const row of rows) {
+			if (row.provider === 'thecrag' && !row.ascentUrl) {
+				txDb
+					.update(ascents)
+					.set({ ascentUrl: theCragAscentUrl(row.externalId), updatedAt })
+					.where(eq(ascents.id, row.id))
+					.run();
+				ascentCount += 1;
+			}
+
 			if (!row.rawJson || row.provider !== 'thecrag') continue;
 			let parsed: unknown;
 			try {
@@ -52,6 +64,7 @@ export function repairGradesFromRawJson(): { routes: number; ascents: number } {
 					heightM: mapped.heightM ?? null,
 					cprBase: mapped.cprBase ?? null,
 					cprScore: mapped.cprScore ?? null,
+					ascentUrl: mapped.ascentUrl ?? theCragAscentUrl(row.externalId),
 					updatedAt
 				})
 				.where(eq(ascents.id, row.id))
@@ -65,6 +78,7 @@ export function repairGradesFromRawJson(): { routes: number; ascents: number } {
 					gradeScore: mapped.route.gradeScore ?? null,
 					gradeBand: mapped.route.gradeBand ?? null,
 					gradeSystem: mapped.route.gradeSystem ?? null,
+					url: mapped.route.url ?? null,
 					updatedAt
 				})
 				.where(eq(routes.id, row.routeId))

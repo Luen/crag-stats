@@ -1,4 +1,5 @@
 import { detectAndParseGrade, parseHeightMeters } from '#lib/grades';
+import { theCragAscentUrl, theCragRouteUrl } from '#lib/thecragUrls';
 import {
 	classifyTick,
 	type CanonicalAscent,
@@ -130,9 +131,7 @@ export function mapAscent(a: ApiAscent): CanonicalAscent | null {
 			gearStyle: route.style ?? null,
 			heightM: routeHeightM,
 			stars: route.stars ?? null,
-			url: route.urlAncestorStub
-				? `https://www.thecrag.com${route.urlAncestorStub}`
-				: `https://www.thecrag.com/route/${route.id}`,
+			url: theCragRouteUrl(route.id, route.urlAncestorStub),
 			country: country ?? null,
 			cragName: tlc?.name ?? parent?.name ?? null,
 			cragPath: [country, tlc?.name, parent?.name].filter(Boolean).join(' - ') || null,
@@ -159,6 +158,8 @@ export function mapAscent(a: ApiAscent): CanonicalAscent | null {
 		epoch: a.epoch ?? null,
 		cprBase: a.cpr?.base?.grade ?? null,
 		cprScore: a.cpr?.base?.rating ?? a.cpr?.base?.score ?? null,
+		/** Public logbook entry for this ascent */
+		ascentUrl: theCragAscentUrl(a.id),
 		rawJson: JSON.stringify(a)
 	};
 }
