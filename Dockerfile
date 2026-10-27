@@ -6,11 +6,11 @@ WORKDIR /app
 RUN apt-get update \
   && apt-get install -y --no-install-recommends python3 make g++ \
   && rm -rf /var/lib/apt/lists/* \
-  && corepack enable \
-  && corepack prepare pnpm@10.33.0 --activate
+  && corepack enable
 
-COPY package.json pnpm-lock.yaml .npmrc ./
-RUN pnpm install --frozen-lockfile
+COPY package.json pnpm-lock.yaml .npmrc pnpm-workspace.yaml ./
+RUN corepack prepare "$(node -p "require('./package.json').packageManager")" --activate \
+  && pnpm install --frozen-lockfile
 
 COPY . .
 RUN pnpm run build \
@@ -27,9 +27,7 @@ ENV MIGRATIONS_DIR=/app/migrations
 RUN apt-get update \
   && apt-get install -y --no-install-recommends ca-certificates \
   && rm -rf /var/lib/apt/lists/* \
-  && mkdir -p /data \
-  && corepack enable \
-  && corepack prepare pnpm@10.33.0 --activate
+  && mkdir -p /data
 
 COPY --from=build /app/build ./build
 COPY --from=build /app/package.json ./package.json

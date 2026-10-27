@@ -1,0 +1,18 @@
+# pnpm 11+ reads project config from here (not package.json#pnpm / most .npmrc keys).
+allowBuilds:
+  better-sqlite3: true
+  esbuild: true
+
+overrides:
+  esbuild: '>=0.25.0'
+  tinypool: '>=2.1.2'
+
+engineStrict: true
+shamefullyHoist: true
+
+# pnpm 12 defaults to a release-age gate that breaks frozen CI installs when
+# the lockfile already pins recently published transitive deps. Trust the lockfile.
+minimumReleaseAge: 0
+
+# Avoid re-running install before every script when modules are briefly locked (dev server).
+verifyDepsBeforeRun: false

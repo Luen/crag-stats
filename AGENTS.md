@@ -29,7 +29,7 @@ Self-hosted climbing analytics for [theCrag](https://www.thecrag.com/), inspired
 | App | SvelteKit 3 + Svelte 5 (runes: `$props`, `$derived`, `$state`) |
 | CSS | Tailwind 4 where useful + existing custom CSS variables in layout |
 | DB | SQLite via `better-sqlite3` + Drizzle ORM |
-| Package manager | **pnpm** (not npm/yarn) |
+| Package manager | **pnpm** (pin via `package.json#packageManager`; config in `pnpm-workspace.yaml`) |
 | Node | 22+ |
 | Deploy | Docker multi-arch → GHCR (`ghcr.io/luen/crag-stats`) |
 | Migrations | Versioned SQL in `/migrations`, run on container boot via `scripts/docker-entrypoint.mjs` |
@@ -176,5 +176,6 @@ Prefer fixing type errors over `@ts-ignore`. Do not switch the package manager.
 | 2026-03 | Dashboard extras: monthly/yearly/milestones/training load, style mix, partners, stars/quality, rock types + blurb; CPR prefers API when dense; logbook sort/band/multipitch/season/sector; pyramid `?pyramid=` toggles. |
 | 2026-10 | Auth harden: login rate limit, safe redirects, HMAC password/worker-secret compares, security headers, `/logout`. CF Access for `crag.luenwarneke.com` settings/login. CPR SVG NaN guards. |
 | 2026-10 | Mobile: heatmap/charts scroll, yearly cards, notable stacked groups; pyramid active pill `--paper` + “All” label. |
+| 2026-10 | pnpm 12.15.0 via `packageManager`; config in `pnpm-workspace.yaml` (`allowBuilds`, `minimumReleaseAge: 0`). Docker reads pin from package.json. |
 
 _Add a row when you change behaviour agents must know about._
