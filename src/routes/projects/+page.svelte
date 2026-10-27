@@ -20,12 +20,18 @@
 				{#each data.open as p (p.id)}
 					<li>
 						<div>
-							<strong>{p.routeName}</strong>
+							{#if p.href}
+								<a href={p.href} target="_blank" rel="noreferrer"><strong>{p.routeName}</strong></a>
+							{:else}
+								<strong>{p.routeName}</strong>
+							{/if}
 							<div class="sub">
-								{p.cragName} · {p.attemptCount} attempts · last {(p.lastAttemptAt || '').slice(
-									0,
-									10
-								)}
+								{#if p.cragUrl}
+									<a href={p.cragUrl} target="_blank" rel="noreferrer">{p.cragName}</a>
+								{:else}
+									{p.cragName}
+								{/if}
+								· {p.attemptCount} attempts · last {(p.lastAttemptAt || '').slice(0, 10)}
 							</div>
 						</div>
 						<GradeChip grade={p.gradeRaw} band={p.gradeBand} />
@@ -43,9 +49,18 @@
 				{#each data.sent as p (p.id)}
 					<li>
 						<div>
-							<strong>{p.routeName}</strong>
+							{#if p.href}
+								<a href={p.href} target="_blank" rel="noreferrer"><strong>{p.routeName}</strong></a>
+							{:else}
+								<strong>{p.routeName}</strong>
+							{/if}
 							<div class="sub">
-								{p.cragName} · sent {(p.sentAt || '').slice(0, 10)} · {p.attemptCount} attempts
+								{#if p.cragUrl}
+									<a href={p.cragUrl} target="_blank" rel="noreferrer">{p.cragName}</a>
+								{:else}
+									{p.cragName}
+								{/if}
+								· sent {(p.sentAt || '').slice(0, 10)} · {p.attemptCount} attempts
 							</div>
 						</div>
 						<GradeChip grade={p.gradeRaw} band={p.gradeBand} />
@@ -90,6 +105,17 @@
 		justify-content: space-between;
 		gap: 0.75rem;
 		align-items: center;
+	}
+	a {
+		color: inherit;
+		text-decoration: underline;
+		text-underline-offset: 0.15em;
+	}
+	.sub a {
+		text-decoration: none;
+	}
+	.sub a:hover {
+		text-decoration: underline;
 	}
 	.sub,
 	.empty {

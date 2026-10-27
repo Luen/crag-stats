@@ -1,4 +1,5 @@
 import { asc, eq, sql } from 'drizzle-orm';
+import { theCragBestLink } from '#lib/thecragUrls';
 import { db, ensureSchema } from './db';
 import { ascents, projects, routes } from './db/schema';
 
@@ -70,6 +71,20 @@ export function refreshProjects() {
 
 export function listProjects(status?: 'open' | 'sent' | 'archived') {
 	ensureSchema();
+	/** Prefer a send ascent when present, else the most recent tick (open projects). */
+	const preferredAscentExternalId = sql<string | null>`(
+		SELECT a.external_id FROM ascents a
+		WHERE a.route_id = ${routes.id}
+		ORDER BY a.is_send DESC, a.ascent_date DESC
+		LIMIT 1
+	)`;
+	const preferredAscentUrl = sql<string | null>`(
+		SELECT a.ascent_url FROM ascents a
+		WHERE a.route_id = ${routes.id}
+		ORDER BY a.is_send DESC, a.ascent_date DESC
+		LIMIT 1
+	)`;
+
 	const q = db
 		.select({
 			id: projects.id,
@@ -79,21 +94,34 @@ export function listProjects(status?: 'open' | 'sent' | 'archived') {
 			lastAttemptAt: projects.lastAttemptAt,
 			sentAt: projects.sentAt,
 			routeId: routes.id,
+			routeExternalId: routes.externalId,
 			routeName: routes.name,
 			gradeRaw: routes.gradeRaw,
 			gradeBand: routes.gradeBand,
 			gradeScore: routes.gradeScore,
 			cragName: routes.cragName,
+			cragPath: routes.cragPath,
+			cragUrl: routes.cragUrl,
 			gearStyle: routes.gearStyle,
-			url: routes.url
+			url: routes.url,
+			ascentExternalId: preferredAscentExternalId,
+			ascentUrl: preferredAscentUrl
 		})
 		.from(projects)
 		.innerJoin(routes, eq(projects.routeId, routes.id));
 
-	if (status) {
-		return q.where(eq(projects.status, status)).all();
-	}
-	return q.all();
+	const rows = status ? q.where(eq(projects.status, status)).all() : q.all();
+	return rows.map((row) => ({
+		...row,
+		href:
+			row.ascentUrl ||
+			theCragBestLink({
+				ascentId: row.ascentExternalId,
+				routeId: row.routeExternalId,
+				ancestorStub: row.cragPath,
+				fallbackUrl: row.url
+			})
+	}));
 }
 
 export function getProjectAttempts(routeId: number) {

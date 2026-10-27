@@ -14,6 +14,7 @@ import { buildCprTimeline, normalizeClimbStyle } from './cpr';
 import { db, ensureSchema } from './db';
 import { ascents, profiles, routes } from './db/schema';
 import { theCragAscentUrl } from '#lib/thecragUrls';
+import { tickKind } from '#lib/ticks';
 import { repairGradesFromRawJson } from './repairGrades';
 
 function linkFor(row: { ascentUrl: string | null; ascentExternalId: string; url: string | null }) {
@@ -304,6 +305,9 @@ export function getDashboardStats(preferredSystem: GradeSystem = 'ewbank'): Dash
 	let sends = 0;
 	let attempts = 0;
 	let onsightCount = 0;
+	let flashCount = 0;
+	let redpointCount = 0;
+	let pinkpointCount = 0;
 
 	// style -> scoreKey -> { segments, band, isBoulder }
 	const pyramid = new Map<
@@ -330,7 +334,11 @@ export function getDashboardStats(preferredSystem: GradeSystem = 'ewbank'): Dash
 		if (h) heightM += h;
 		if (row.isSend) sends += 1;
 		if (row.isAttempt) attempts += 1;
-		if ((row.tickType || '').toLowerCase().includes('sight')) onsightCount += 1;
+		const kind = tickKind(row.tickType);
+		if (kind === 'onsight') onsightCount += 1;
+		else if (kind === 'flash') flashCount += 1;
+		else if (kind === 'redpoint') redpointCount += 1;
+		else if (kind === 'pinkpoint') pinkpointCount += 1;
 
 		const crag = row.cragName || 'Unknown';
 		const prev = cragMap.get(crag) ?? {
@@ -671,6 +679,10 @@ export function getDashboardStats(preferredSystem: GradeSystem = 'ewbank'): Dash
 			totalAscents: all.length,
 			totalSends: sends,
 			onsightCount,
+			flashCount,
+			redpointCount,
+			pinkpointCount,
+			climberType,
 			heightM: accountHeightM ?? heightM,
 			distinctRoutes: routeSet.size,
 			distinctCrags: cragMap.size,
@@ -824,12 +836,42 @@ function formatDurationHuman(fromIso: string, to = new Date()): string {
 	return `${years} year${years === 1 ? '' : 's'} and ${rem} month${rem === 1 ? '' : 's'}`;
 }
 
+/** First-go vs worked-route preference from tick mix (used in the climbing story). */
+export function describeSendPreference(input: {
+	onsightCount: number;
+	flashCount: number;
+	redpointCount: number;
+	pinkpointCount: number;
+	totalSends: number;
+}): string {
+	const firstGo = input.onsightCount + input.flashCount;
+	const worked = input.redpointCount + input.pinkpointCount;
+	const classified = firstGo + worked;
+	if (classified === 0) return 'I mix onsighting with redpointing and working routes';
+	const firstGoShare = firstGo / classified;
+	const workedShare = worked / classified;
+	// Need a clear majority; a near split reads as mixed style.
+	if (firstGoShare >= 0.55) return 'I like to onsight (and flash) when I can';
+	if (workedShare >= 0.55) return 'I tend to work routes and redpoint them';
+	return 'I mix onsighting with redpointing and working routes';
+}
+
+function climberTypeSentence(climberType: string, preference: string): string {
+	const type = (climberType || 'Rock climber').trim() || 'Rock climber';
+	const labeled = /climber$/i.test(type) ? type : `${type} climber`;
+	return `I'm a ${labeled} — ${preference}.`;
+}
+
 function buildClimberBlurb(input: {
 	firstDate: string | null;
 	activeDays: number;
 	totalAscents: number;
 	totalSends: number;
 	onsightCount: number;
+	flashCount: number;
+	redpointCount: number;
+	pinkpointCount: number;
+	climberType: string;
 	heightM: number;
 	distinctRoutes: number;
 	distinctCrags: number;
@@ -847,13 +889,24 @@ function buildClimberBlurb(input: {
 	const worldLaps = heightKm > 0 ? Math.round((heightKm / 40075) * 100) / 100 : 0;
 	const perDay =
 		input.activeDays > 0 ? Math.round((input.totalAscents / input.activeDays) * 10) / 10 : 0;
+	const identity = climberTypeSentence(
+		input.climberType,
+		describeSendPreference({
+			onsightCount: input.onsightCount,
+			flashCount: input.flashCount,
+			redpointCount: input.redpointCount,
+			pinkpointCount: input.pinkpointCount,
+			totalSends: input.totalSends
+		})
+	);
 
 	if (!input.firstDate) {
 		return {
 			startedOn: null,
 			durationLabel: null,
 			paragraphs: [
-				`You've logged ${input.totalAscents} ascents across ${input.distinctCrags} crags so far.`
+				`You've logged ${input.totalAscents} ascents across ${input.distinctCrags} crags so far.`,
+				identity
 			]
 		};
 	}
@@ -871,7 +924,8 @@ function buildClimberBlurb(input: {
 		heightM > 0
 			? `That's about ${heightKm} km of rock — roughly ${everest}× Everest or ${elCap}× El Capitan${worldLaps > 0 ? `, and ${worldLaps} trips around the world if you laid the rope end-to-end` : ''}.`
 			: null,
-		`On average that's ${perDay} ascents per active day.`
+		`On average that's ${perDay} ascents per active day.`,
+		identity
 	].filter((p): p is string => Boolean(p));
 
 	return { startedOn: input.firstDate, durationLabel: duration, paragraphs };
