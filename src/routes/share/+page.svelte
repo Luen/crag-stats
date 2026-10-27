@@ -54,6 +54,15 @@
 		anywhere that accepts an <code>&lt;img&gt;</code> or Markdown, and they update after each sync. Cards
 		only show totals, grades and route names, never ascent notes or partners.
 	</p>
+	{#if data.privateHost}
+		<p class="warn" role="note">
+			<strong>Only you can see these right now.</strong> This site is at
+			<code>{data.origin}</code>, a local or private-network address, so the links and images below
+			won't load for anyone else. To share them, host Crag Stats on a public server or domain (a
+			VPS, or a tunnel such as Cloudflare Tunnel), then open this page from that address and copy
+			the code again.
+		</p>
+	{/if}
 	<div class="share-row">
 		<button type="button" class="primary" onclick={() => copy('link', dashboardUrl)}>
 			{copied === 'link' ? 'Link copied' : 'Copy dashboard link'}
@@ -114,6 +123,19 @@
 		margin: 0;
 		color: var(--ink-muted);
 		max-width: 62ch;
+	}
+	.head p.warn {
+		margin-top: 0.85rem;
+		padding: 0.7rem 0.85rem;
+		border-radius: 0.6rem;
+		border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+		background: var(--accent-soft);
+		color: var(--ink);
+		font-size: 0.9rem;
+		max-width: 72ch;
+	}
+	.warn code {
+		overflow-wrap: anywhere;
 	}
 	.share-row,
 	.card-actions {
