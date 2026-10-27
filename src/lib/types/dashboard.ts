@@ -13,6 +13,8 @@ export type StylePyramid = {
 		color: string;
 		total: number;
 		segments: PyramidTickSegment[];
+		/** Logbook filter link for routes at this grade */
+		href: string;
 	}[];
 };
 
@@ -52,18 +54,27 @@ export type CprTimelineData = {
 	currentGrade: number | null;
 };
 
+export type RouteTag = { category: string; name: string };
+
+export type HeatmapDay = { date: string; count: number; sends: number };
+
 export type DashboardStats = {
 	profileName: string | null;
 	climberType: string;
+	avatar: string | null;
 	totalAscents: number;
 	totalSends: number;
 	totalAttempts: number;
 	onsightCount: number;
+	outdoorAscents: number | null;
+	indoorAscents: number | null;
+	routesTicked: number;
 	heightM: number;
 	heightKm: number;
 	distinctRoutes: number;
 	distinctCrags: number;
 	preferredSystem: GradeSystem;
+	heatmap: HeatmapDay[];
 	styleShare: { style: string; count: number; pct: number; color: string }[];
 	tickBreakdown: { tick: string; count: number }[];
 	topCrags: {
@@ -108,6 +119,9 @@ export type DashboardStats = {
 		cragUrl: string | null;
 		isSend: boolean;
 		isAttempt: boolean;
+		partners: string | null;
+		quality: string | null;
+		tags: RouteTag[];
 		url: string | null;
 	}[];
 };

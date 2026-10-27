@@ -19,18 +19,24 @@
 		<div class="pyramid">
 			{#each pyramid.rows as row (row.score)}
 				<div class="row">
-					<span class="g"><GradeChip grade={row.grade} band={row.band} /></span>
+					<span class="g">
+						<a href={row.href} title="Show {pyramid.style} ascents at {row.grade}">
+							<GradeChip grade={row.grade} band={row.band} />
+						</a>
+					</span>
 					<div class="track">
-						<div class="stack" style:width="{Math.max(10, (row.total / max) * 100)}%">
-							{#each row.segments as seg (seg.tick)}
-								<span
-									class="seg"
-									style:flex={seg.count}
-									style:background={seg.color}
-									title="{seg.tick}: {seg.count}"
-								></span>
-							{/each}
-						</div>
+						<a class="bar-link" href={row.href} title="Show {pyramid.style} ascents at {row.grade}">
+							<div class="stack" style:width="{Math.max(10, (row.total / max) * 100)}%">
+								{#each row.segments as seg (seg.tick)}
+									<span
+										class="seg"
+										style:flex={seg.count}
+										style:background={seg.color}
+										title="{seg.tick}: {seg.count}"
+									></span>
+								{/each}
+							</div>
+						</a>
 						<span class="n">{row.total}</span>
 					</div>
 				</div>
@@ -82,6 +88,21 @@
 		align-items: center;
 		gap: 0.45rem;
 		min-height: 1.1rem;
+	}
+	.g a,
+	.bar-link {
+		color: inherit;
+		text-decoration: none;
+	}
+	.g a:hover :global(.grade-chip),
+	.bar-link:hover .stack {
+		outline: 2px solid var(--accent, #1d6fa5);
+		outline-offset: 1px;
+	}
+	.bar-link {
+		flex: 1;
+		min-width: 0;
+		display: flex;
 	}
 	.stack {
 		display: flex;

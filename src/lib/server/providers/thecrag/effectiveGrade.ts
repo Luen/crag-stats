@@ -62,24 +62,69 @@ function heightFromPitch(p: ApiPitch): number | null {
 	return null;
 }
 
+function isBoulderStyle(style: string | null | undefined): boolean {
+	return (style || '').toLowerCase().includes('boulder');
+}
+
+/** True when an ascent/CPR grade system fits the route's gear style. */
+export function gradeSystemFitsStyle(
+	gradeSystem: string | null | undefined,
+	routeStyle: string | null | undefined
+): boolean {
+	const sys = (gradeSystem || '').toUpperCase();
+	if (!sys) return true;
+	const boulder = isBoulderStyle(routeStyle);
+	const isBoulderSys = sys.includes('BLD') || sys === 'V' || sys.includes('FONT') || sys === 'FB';
+	if (boulder) return isBoulderSys || sys === 'AU' || sys === 'EWBANK';
+	// Sport/trad/etc: reject boulder V-scale CPR mirrors (caused Trad "-1" / VB rows)
+	if (isBoulderSys) return false;
+	return true;
+}
+
+function toEffective(parsed: ParsedGrade): Pick<EffectiveGrade, 'raw' | 'score' | 'band' | 'system'> {
+	// Prefer display label (e.g. V5 for bare AU "5" on boulder) over API raw.
+	return {
+		raw: parsed.label || parsed.raw || null,
+		score: parsed.score,
+		band: parsed.band?.id ?? null,
+		system: parsed.system
+	};
+}
+
 /**
  * Resolve the grade that *this ascent* actually represents.
  * Multipitch: only climbed pitches count (max difficulty among them).
- * Prefer CPR base grade when pitches are absent but theCrag already adjusted.
+ * Prefer ascent grade / CPR when compatible with route style; else route grade.
  */
 export function resolveEffectiveGrade(opts: {
 	routeGrade?: string | null;
 	routeGradeBand?: number | null;
 	routeStyle?: string | null;
 	climbedGearStyle?: string | null;
+	ascentGrade?: string | null;
+	ascentGradeSystem?: string | null;
+	ascentGradeBand?: number | null;
 	cprGrade?: string | null;
 	cprBand?: number | null;
 	pitches?: ApiPitch[] | null;
 	routeHeightM?: number | null;
 }): EffectiveGrade {
-	const gearStyle = opts.climbedGearStyle ?? opts.routeStyle;
+	const routeStyle = opts.routeStyle;
+	const gearStyle = opts.climbedGearStyle ?? routeStyle;
 	const pitches = opts.pitches ?? [];
 	const climbed = pitches.filter(pitchClimbed);
+
+	const parseWith = (
+		raw: string | null | undefined,
+		style: string | null | undefined,
+		band?: number | null,
+		gradeSystem?: string | null
+	) =>
+		detectAndParseGrade(raw, {
+			gearStyle: style,
+			gradeBand: band ?? null,
+			gradeSystem: gradeSystem ?? null
+		});
 
 	if (climbed.length > 0) {
 		let best: ParsedGrade | null = null;
@@ -94,65 +139,61 @@ export function resolveEffectiveGrade(opts: {
 				heightSum += h;
 				heightAny = true;
 			}
-			const parsed = detectAndParseGrade(pitchGradeText(p), {
+			const parsed = parseWith(
+				pitchGradeText(p),
 				gearStyle,
-				gradeBand: p.gradeBand ?? p.gradeAtom?.gradeBand ?? null
-			});
+				p.gradeBand ?? p.gradeAtom?.gradeBand ?? null,
+				p.gradeSystem
+			);
 			if (parsed.score == null) continue;
 			if (!best || (best.score ?? -Infinity) < parsed.score) best = parsed;
 		}
 
 		const pitchLabel = formatPitchLabel(numbers);
-		// Partial when API only returned climbed pitches, or climbed < listed
 		const partial =
 			climbed.length < pitches.length ||
 			(pitches.length === climbed.length && climbed.length === 1 && (numbers[0] ?? 1) === 1);
 
 		if (best) {
 			return {
-				raw: best.raw || best.label,
-				score: best.score,
-				band: best.band?.id ?? null,
-				system: best.system,
+				...toEffective(best),
 				pitchLabel,
 				pitchesClimbed: climbed.length,
 				pitchesTotal: pitches.length,
 				heightM: heightAny ? heightSum : opts.routeHeightM ?? null,
-				// Single pitch entry on a multipitch log ⇒ treat as partial (e.g. Neon God P1)
 				partialMultipitch: pitches.length > 0 && (partial || climbed.length === 1)
 			};
 		}
+	}
 
-		// Climbed pitches but no parseable grades — still surface pitch label
-		const fallback = detectAndParseGrade(opts.cprGrade ?? opts.routeGrade, {
-			gearStyle,
-			gradeBand: opts.cprBand ?? opts.routeGradeBand
-		});
+	const routeParsed = parseWith(opts.routeGrade, routeStyle, opts.routeGradeBand, null);
+
+	// Prefer ascent grade when its system fits the route (e.g. AU "5" on boulder → V5).
+	// Skip boulder V/BLDV overlays on sport/trad (Gropefest Trad 8 + CPR VB).
+	const candidates: { raw?: string | null; sys?: string | null; band?: number | null }[] = [
+		{ raw: opts.ascentGrade, sys: opts.ascentGradeSystem, band: opts.ascentGradeBand },
+		{ raw: opts.cprGrade, sys: null, band: opts.cprBand }
+	];
+
+	for (const c of candidates) {
+		if (!c.raw) continue;
+		if (!gradeSystemFitsStyle(c.sys, routeStyle)) continue;
+		// Also skip when the *parsed* result is boulder-scaled but route is not
+		const parsed = parseWith(c.raw, routeStyle, c.band, c.sys);
+		if (!isBoulderStyle(routeStyle) && parsed.isBoulder) continue;
+		if (parsed.score == null) continue;
 		return {
-			raw: fallback.raw || fallback.label,
-			score: fallback.score,
-			band: fallback.band?.id ?? null,
-			system: fallback.system,
-			pitchLabel,
-			pitchesClimbed: climbed.length,
-			pitchesTotal: pitches.length,
-			heightM: heightAny ? heightSum : opts.routeHeightM ?? null,
-			partialMultipitch: true
+			...toEffective(parsed),
+			pitchLabel: null,
+			pitchesClimbed: null,
+			pitchesTotal: null,
+			heightM: opts.routeHeightM ?? null,
+			partialMultipitch: false
 		};
 	}
 
-	// No pitch breakdown — prefer CPR/ascent grade (theCrag effective), else route
-	const preferredRaw = opts.cprGrade ?? opts.routeGrade;
-	const parsed = detectAndParseGrade(preferredRaw, {
-		gearStyle,
-		gradeBand: opts.cprBand ?? opts.routeGradeBand
-	});
-
 	return {
-		raw: parsed.raw || parsed.label || null,
-		score: parsed.score,
-		band: parsed.band?.id ?? null,
-		system: parsed.system,
+		...toEffective(routeParsed),
 		pitchLabel: null,
 		pitchesClimbed: null,
 		pitchesTotal: null,
@@ -164,7 +205,7 @@ export function resolveEffectiveGrade(opts: {
 /** Recompute route-level parse (for V1/2 style fixes). */
 export function parseRouteGrade(
 	gradeRaw: string | null | undefined,
-	opts?: { gearStyle?: string | null; gradeBand?: number | null }
+	opts?: { gearStyle?: string | null; gradeBand?: number | null; gradeSystem?: string | null }
 ) {
 	return detectAndParseGrade(gradeRaw, opts);
 }

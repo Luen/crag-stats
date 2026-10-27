@@ -43,6 +43,10 @@ export function upsertAscents(batch: CanonicalAscent[]): { routes: number; ascen
 				cragPath: item.route.cragPath ?? null,
 				cragUrl: item.route.cragUrl ?? null,
 				areaExternalId: item.route.areaExternalId ?? null,
+				tagsJson: item.route.tags?.length ? JSON.stringify(item.route.tags) : null,
+				bolts: item.route.bolts ?? null,
+				parentName: item.route.parentName ?? null,
+				parentExternalId: item.route.parentExternalId ?? null,
 				updatedAt
 			};
 
@@ -82,6 +86,7 @@ export function upsertAscents(batch: CanonicalAscent[]): { routes: number; ascen
 					item.effectiveGradeScore ?? item.route.gradeScore ?? null,
 				effectiveGradeBand: item.effectiveGradeBand ?? item.route.gradeBand ?? null,
 				pitchLabel: item.pitchLabel ?? null,
+				ascentLabel: item.ascentLabel ?? null,
 				pitchesClimbed: item.pitchesClimbed ?? null,
 				pitchesTotal: item.pitchesTotal ?? null,
 				heightM: item.heightM ?? null,
@@ -182,30 +187,28 @@ export function upsertProfile(profile: ProviderProfile) {
 	ensureSchema();
 	const updatedAt = nowIso();
 	const existing = db.select().from(profiles).where(eq(profiles.provider, profile.provider)).get();
+	const profileValues = {
+		externalId: profile.externalId ?? null,
+		name: profile.name ?? null,
+		login: profile.login ?? null,
+		country: profile.country ?? null,
+		ascentCount: profile.ascentCount ?? null,
+		avatar: profile.avatar ?? null,
+		typeOfClimber: profile.typeOfClimber ?? null,
+		outdoorAscentCount: profile.outdoorAscentCount ?? null,
+		indoorAscentCount: profile.indoorAscentCount ?? null,
+		heightClimbed: profile.heightClimbed ?? null,
+		routesTicked: profile.routesTicked ?? null,
+		rawJson: profile.rawJson ?? null,
+		updatedAt
+	};
 	if (existing) {
-		db.update(profiles)
-			.set({
-				externalId: profile.externalId ?? null,
-				name: profile.name ?? null,
-				login: profile.login ?? null,
-				country: profile.country ?? null,
-				ascentCount: profile.ascentCount ?? null,
-				rawJson: profile.rawJson ?? null,
-				updatedAt
-			})
-			.where(eq(profiles.id, existing.id))
-			.run();
+		db.update(profiles).set(profileValues).where(eq(profiles.id, existing.id)).run();
 	} else {
 		db.insert(profiles)
 			.values({
 				provider: profile.provider,
-				externalId: profile.externalId ?? null,
-				name: profile.name ?? null,
-				login: profile.login ?? null,
-				country: profile.country ?? null,
-				ascentCount: profile.ascentCount ?? null,
-				rawJson: profile.rawJson ?? null,
-				updatedAt
+				...profileValues
 			})
 			.run();
 	}

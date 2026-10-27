@@ -23,7 +23,7 @@ function linkFor(row: { ascentUrl: string | null; ascentExternalId: string; url:
 export type { DashboardStats, NotableRow, StylePyramid } from '#lib/types/dashboard';
 
 /** Bump when a new one-shot data repair must run after a schema/parser change. */
-const REPAIR_GEN = 2;
+const REPAIR_GEN = 5;
 let repairedGen = 0;
 
 const STYLE_COLORS: Record<string, string> = {
@@ -112,9 +112,35 @@ function effectiveBand(row: {
 	return row.effectiveGradeBand ?? row.gradeBand;
 }
 
-function displayRouteName(name: string, pitchLabel: string | null | undefined): string {
-	if (!pitchLabel) return name;
-	return `${name} (${pitchLabel})`;
+function displayRouteName(
+	name: string,
+	pitchLabel: string | null | undefined,
+	ascentLabel?: string | null
+): string {
+	const label = ascentLabel?.trim();
+	const base = label || name;
+	if (!pitchLabel) return base;
+	if (base.toLowerCase().includes(pitchLabel.toLowerCase())) return base;
+	return `${base} (${pitchLabel})`;
+}
+
+function parseTagsJson(raw: string | null | undefined): { category: string; name: string }[] {
+	if (!raw) return [];
+	try {
+		const parsed = JSON.parse(raw) as unknown;
+		if (!Array.isArray(parsed)) return [];
+		return parsed
+			.filter(
+				(t): t is { category: string; name: string } =>
+					!!t &&
+					typeof t === 'object' &&
+					typeof (t as { category?: unknown }).category === 'string' &&
+					typeof (t as { name?: unknown }).name === 'string'
+			)
+			.map((t) => ({ category: t.category, name: t.name }));
+	} catch {
+		return [];
+	}
 }
 
 function relativeTime(iso: string | null): string | null {
@@ -151,6 +177,42 @@ export function getDashboardStats(preferredSystem: GradeSystem = 'ewbank'): Dash
 	}
 
 	const profile = db.select().from(profiles).limit(1).get();
+	// Backfill profile outdoor/indoor/etc from stored account JSON once columns exist
+	if (profile?.rawJson && profile.outdoorAscentCount == null) {
+		try {
+			const acct = JSON.parse(profile.rawJson) as {
+				avatar?: string;
+				typeOfClimber?: string;
+				outdoorAscentCount?: number;
+				indoorAscentCount?: number;
+				heightClimbed?: number | [number, string];
+				routesTicked?: number;
+			};
+			const height =
+				typeof acct.heightClimbed === 'number'
+					? acct.heightClimbed
+					: Array.isArray(acct.heightClimbed)
+						? Number(acct.heightClimbed[0])
+						: null;
+			const patched = {
+				avatar: acct.avatar ?? profile.avatar ?? null,
+				typeOfClimber: acct.typeOfClimber ?? profile.typeOfClimber ?? null,
+				outdoorAscentCount:
+					acct.outdoorAscentCount != null ? Number(acct.outdoorAscentCount) : null,
+				indoorAscentCount:
+					acct.indoorAscentCount != null ? Number(acct.indoorAscentCount) : null,
+				heightClimbed: height != null && Number.isFinite(height) ? height : null,
+				routesTicked: acct.routesTicked != null ? Number(acct.routesTicked) : null
+			};
+			db.update(profiles).set(patched).where(eq(profiles.id, profile.id)).run();
+			Object.assign(profile, patched);
+		} catch (err) {
+			console.warn(
+				'[analytics] profile backfill skipped:',
+				err instanceof Error ? err.message : err
+			);
+		}
+	}
 	const all = db
 		.select({
 			id: ascents.id,
@@ -163,6 +225,9 @@ export function getDashboardStats(preferredSystem: GradeSystem = 'ewbank'): Dash
 			effectiveGradeScore: ascents.effectiveGradeScore,
 			effectiveGradeBand: ascents.effectiveGradeBand,
 			pitchLabel: ascents.pitchLabel,
+			ascentLabel: ascents.ascentLabel,
+			partners: ascents.partners,
+			quality: ascents.quality,
 			ascentUrl: ascents.ascentUrl,
 			ascentExternalId: ascents.externalId,
 			routeId: routes.id,
@@ -175,7 +240,8 @@ export function getDashboardStats(preferredSystem: GradeSystem = 'ewbank'): Dash
 			cragUrl: routes.cragUrl,
 			url: routes.url,
 			stars: routes.stars,
-			routeHeightM: routes.heightM
+			routeHeightM: routes.heightM,
+			tagsJson: routes.tagsJson
 		})
 		.from(ascents)
 		.innerJoin(routes, eq(ascents.routeId, routes.id))
@@ -272,7 +338,8 @@ export function getDashboardStats(preferredSystem: GradeSystem = 'ewbank'): Dash
 			const styleKey = style === 'Top rope' ? 'Top rope' : style;
 			if (!pyramid.has(styleKey)) pyramid.set(styleKey, new Map());
 			const byGrade = pyramid.get(styleKey)!;
-			const key = Math.round(rowScore * 10) / 10;
+			// Integer buckets so V0- / V0 / V0+ don't create duplicate "V0" rows
+			const key = Math.round(rowScore);
 			const slot = byGrade.get(key) ?? {
 				ticks: new Map<string, number>(),
 				band,
@@ -314,9 +381,23 @@ export function getDashboardStats(preferredSystem: GradeSystem = 'ewbank'): Dash
 
 	const dominant = styleShare[0];
 	const climberType =
-		dominant && dominant.pct >= 40 && ['Sport', 'Trad', 'Boulder'].includes(dominant.style)
+		profile?.typeOfClimber?.trim() ||
+		(dominant && dominant.pct >= 40 && ['Sport', 'Trad', 'Boulder'].includes(dominant.style)
 			? `${dominant.style} climber`
-			: 'Rock climber';
+			: 'Rock climber');
+
+	const dayMap = new Map<string, { count: number; sends: number }>();
+	for (const row of all) {
+		const day = (row.ascentDate || '').slice(0, 10);
+		if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) continue;
+		const slot = dayMap.get(day) ?? { count: 0, sends: 0 };
+		slot.count += 1;
+		if (row.isSend) slot.sends += 1;
+		dayMap.set(day, slot);
+	}
+	const heatmap = [...dayMap.entries()]
+		.map(([date, v]) => ({ date, count: v.count, sends: v.sends }))
+		.sort((a, b) => a.date.localeCompare(b.date));
 
 	const styleOrder = ['Boulder', 'Sport', 'Trad', 'Top rope', 'Alpine', 'Aid'];
 	const stylePyramids: StylePyramid[] = [...pyramid.entries()]
@@ -339,12 +420,17 @@ export function getDashboardStats(preferredSystem: GradeSystem = 'ewbank'): Dash
 				.map(([score, v]) => {
 					const total = [...v.ticks.values()].reduce((s, n) => s + n, 0);
 					const band = bandById(v.band ?? 0);
+					const params = new URLSearchParams({
+						style,
+						score: String(score)
+					});
 					return {
 						grade: formatGrade(score, isBoulder, preferredSystem, null),
 						score,
 						band: v.band,
 						color: band?.color ?? '#888',
 						total,
+						href: `/logbook?${params.toString()}`,
 						segments: [...v.ticks.entries()]
 							.map(([tick, count]) => ({ tick, count, color: tickColor(tick) }))
 							.sort((a, b) => b.count - a.count)
@@ -380,7 +466,7 @@ export function getDashboardStats(preferredSystem: GradeSystem = 'ewbank'): Dash
 							: hRaw,
 					hardestBand: hardest ? effectiveBand(hardest) : null,
 					hardestRoute: hardest
-						? displayRouteName(hardest.routeName, hardest.pitchLabel)
+						? displayRouteName(hardest.routeName, hardest.pitchLabel, hardest.ascentLabel)
 						: null,
 					hardestUrl: hardest ? linkFor(hardest) : null,
 					hardestDate: relativeTime(hardest?.ascentDate ?? null),
@@ -415,7 +501,7 @@ export function getDashboardStats(preferredSystem: GradeSystem = 'ewbank'): Dash
 			const score = effectiveScore(r);
 			const raw = effectiveRaw(r);
 			return {
-				routeName: displayRouteName(r.routeName, r.pitchLabel),
+				routeName: displayRouteName(r.routeName, r.pitchLabel, r.ascentLabel),
 				gradeRaw: raw,
 				gradeLabel: score != null ? formatGrade(score, isBoulder, preferredSystem, raw) : raw,
 				gradeBand: effectiveBand(r),
@@ -437,7 +523,7 @@ export function getDashboardStats(preferredSystem: GradeSystem = 'ewbank'): Dash
 			const raw = effectiveRaw(r);
 			return {
 				id: r.id,
-				routeName: displayRouteName(r.routeName, r.pitchLabel),
+				routeName: displayRouteName(r.routeName, r.pitchLabel, r.ascentLabel),
 				gradeRaw: raw,
 				gradeLabel: score != null ? formatGrade(score, isBoulder, preferredSystem, raw) : raw,
 				gradeBand: effectiveBand(r),
@@ -448,22 +534,37 @@ export function getDashboardStats(preferredSystem: GradeSystem = 'ewbank'): Dash
 				cragUrl: r.cragUrl,
 				isSend: r.isSend,
 				isAttempt: r.isAttempt,
+				partners: r.partners,
+				quality: r.quality,
+				tags: parseTagsJson(r.tagsJson).slice(0, 6),
 				url: linkFor(r)
 			};
 		});
 
+	const outdoorAscents = profile?.outdoorAscentCount ?? null;
+	const indoorAscents = profile?.indoorAscentCount ?? null;
+	const accountHeightM =
+		profile?.heightClimbed != null && Number.isFinite(profile.heightClimbed)
+			? Math.round(profile.heightClimbed)
+			: null;
+
 	return {
 		profileName: profile?.name ?? null,
 		climberType,
+		avatar: profile?.avatar ?? null,
 		totalAscents: all.length,
 		totalSends: sends,
 		totalAttempts: attempts,
 		onsightCount,
-		heightM: Math.round(heightM),
-		heightKm: Math.round((heightM / 1000) * 10) / 10,
+		outdoorAscents,
+		indoorAscents,
+		routesTicked: profile?.routesTicked ?? routeSet.size,
+		heightM: accountHeightM ?? Math.round(heightM),
+		heightKm: Math.round(((accountHeightM ?? heightM) / 1000) * 10) / 10,
 		distinctRoutes: routeSet.size,
 		distinctCrags: cragMap.size,
 		preferredSystem,
+		heatmap,
 		styleShare,
 		tickBreakdown: [...tickMap.entries()]
 			.map(([tick, count]) => ({ tick, count }))
@@ -505,6 +606,12 @@ export function listLogbook(filters?: {
 	q?: string;
 	style?: string;
 	tick?: string;
+	crag?: string;
+	year?: number;
+	/** Exact YYYY-MM-DD */
+	day?: string;
+	/** Exact effective/route grade score bucket (from pyramid links) */
+	score?: number;
 	limit?: number;
 	offset?: number;
 }) {
@@ -523,8 +630,13 @@ export function listLogbook(filters?: {
 			partners: ascents.partners,
 			comment: ascents.comment,
 			quality: ascents.quality,
+			ascentLabel: ascents.ascentLabel,
+			pitchLabel: ascents.pitchLabel,
 			ascentGearStyle: ascents.ascentGearStyle,
 			ascentUrl: ascents.ascentUrl,
+			effectiveGradeRaw: ascents.effectiveGradeRaw,
+			effectiveGradeScore: ascents.effectiveGradeScore,
+			effectiveGradeBand: ascents.effectiveGradeBand,
 			routeName: routes.name,
 			gradeRaw: routes.gradeRaw,
 			gradeBand: routes.gradeBand,
@@ -536,7 +648,8 @@ export function listLogbook(filters?: {
 			country: routes.country,
 			heightM: routes.heightM,
 			routeUrl: routes.url,
-			stars: routes.stars
+			stars: routes.stars,
+			tagsJson: routes.tagsJson
 		})
 		.from(ascents)
 		.innerJoin(routes, eq(ascents.routeId, routes.id))
@@ -545,18 +658,43 @@ export function listLogbook(filters?: {
 
 	if (filters?.style) {
 		const s = filters.style.toLowerCase();
-		rows = rows.filter((r) => (r.gearStyle || '').toLowerCase() === s);
+		rows = rows.filter(
+			(r) =>
+				(r.ascentGearStyle || r.gearStyle || '').toLowerCase().includes(s) ||
+				displayStyle(r.gearStyle).toLowerCase() === s
+		);
 	}
 	if (filters?.tick) {
 		const t = filters.tick.toLowerCase();
 		rows = rows.filter((r) => (r.tickType || '').toLowerCase() === t);
+	}
+	if (filters?.crag) {
+		const c = filters.crag.toLowerCase();
+		rows = rows.filter((r) => (r.cragName || '').toLowerCase().includes(c));
+	}
+	if (filters?.year != null && Number.isFinite(filters.year)) {
+		const y = String(filters.year);
+		rows = rows.filter((r) => (r.ascentDate || '').startsWith(y));
+	}
+	if (filters?.day && /^\d{4}-\d{2}-\d{2}$/.test(filters.day)) {
+		const day = filters.day;
+		rows = rows.filter((r) => (r.ascentDate || '').startsWith(day));
+	}
+	if (filters?.score != null && Number.isFinite(filters.score)) {
+		const target = Math.round(filters.score);
+		rows = rows.filter((r) => {
+			const score = r.effectiveGradeScore ?? r.gradeScore;
+			return score != null && Math.round(score) === target;
+		});
 	}
 	if (filters?.q) {
 		const q = filters.q.toLowerCase();
 		rows = rows.filter(
 			(r) =>
 				r.routeName.toLowerCase().includes(q) ||
+				(r.ascentLabel || '').toLowerCase().includes(q) ||
 				(r.cragName || '').toLowerCase().includes(q) ||
+				(r.partners || '').toLowerCase().includes(q) ||
 				(r.comment || '').toLowerCase().includes(q)
 		);
 	}
@@ -566,6 +704,10 @@ export function listLogbook(filters?: {
 		total,
 		rows: rows.slice(offset, offset + limit).map((r) => ({
 			...r,
+			displayName: displayRouteName(r.routeName, r.pitchLabel, r.ascentLabel),
+			gradeBand: r.effectiveGradeBand ?? r.gradeBand,
+			gradeRaw: r.effectiveGradeRaw ?? r.gradeRaw,
+			tags: parseTagsJson(r.tagsJson),
 			url: r.ascentUrl || theCragAscentUrl(r.externalId) || r.routeUrl
 		}))
 	};

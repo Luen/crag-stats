@@ -18,7 +18,12 @@
 			<div class="row">
 				<span class="label">
 					{#if item.href}
-						<a href={item.href} target="_blank" rel="noreferrer">{item.label}</a>
+						{@const external = /^https?:\/\//i.test(item.href)}
+						<a
+							href={item.href}
+							target={external ? '_blank' : undefined}
+							rel={external ? 'noreferrer' : undefined}>{item.label}</a
+						>
 					{:else}
 						{item.label}
 					{/if}

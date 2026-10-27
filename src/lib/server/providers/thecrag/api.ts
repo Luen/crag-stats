@@ -17,7 +17,11 @@ type ApiAreaNode = {
 	name?: string;
 	urlAncestorStub?: string;
 	urlStub?: string;
+	geometry?: unknown;
 };
+type ApiTagLeaf = { id?: number | string; name?: string };
+/** route.tags: { Aspect: { NE: { name, id, ... } }, ... } */
+type ApiRouteTags = Record<string, Record<string, ApiTagLeaf>>;
 type ApiRoute = {
 	id?: number | string;
 	name?: string;
@@ -27,6 +31,8 @@ type ApiRoute = {
 	height?: { value?: number; unit?: string } | string | number | [number, string];
 	displayHeight?: string | [number, string];
 	stars?: number;
+	bolts?: number | string;
+	tags?: ApiRouteTags;
 	urlAncestorStub?: string;
 	ancestors?: {
 		parent?: ApiAreaNode;
@@ -40,9 +46,20 @@ type ApiAscent = {
 	date?: string;
 	logDate?: string;
 	climbedGearStyle?: string;
+	grade?: string;
+	gradeSystem?: string;
+	gradeBand?: number;
+	label?: string;
+	/** Climbing partners, often "@login" */
+	with?: string | string[] | null;
+	quality?: string | null;
+	qualityLabel?: string | null;
+	numberAttempts?: number | null;
+	historical?: boolean | number | null;
 	tick?: ApiTick;
 	markdown?: string;
 	pitch?: ApiPitch[];
+	tags?: unknown;
 	cpr?: {
 		base?: {
 			grade?: string;
@@ -51,6 +68,8 @@ type ApiAscent = {
 			rating?: number;
 			internalGrade?: number;
 		};
+		shifted?: { grade?: string; band?: number; score?: number; rating?: number };
+		decayed?: { grade?: string; band?: number; score?: number; rating?: number };
 	};
 	route?: ApiRoute;
 };
@@ -62,6 +81,12 @@ type ApiResponse = {
 			login?: string;
 			country?: string;
 			ascentCount?: number;
+			avatar?: string;
+			typeOfClimber?: string;
+			outdoorAscentCount?: number;
+			indoorAscentCount?: number;
+			heightClimbed?: number | string | [number, string];
+			routesTicked?: number;
 		};
 		ascents?: ApiAscent[];
 		numberAscents?: number;
@@ -69,6 +94,32 @@ type ApiResponse = {
 		perPage?: number;
 	};
 };
+
+/** Flatten theCrag route.tags nested map into chip-friendly pairs. */
+export function flattenRouteTags(
+	tags: ApiRouteTags | null | undefined
+): { category: string; name: string }[] {
+	if (!tags || typeof tags !== 'object') return [];
+	const out: { category: string; name: string }[] = [];
+	for (const [category, leaves] of Object.entries(tags)) {
+		if (!leaves || typeof leaves !== 'object') continue;
+		for (const leaf of Object.values(leaves)) {
+			const name = leaf?.name?.trim();
+			if (name) out.push({ category, name });
+		}
+	}
+	return out;
+}
+
+function partnersFromWith(value: ApiAscent['with']): string | null {
+	if (value == null) return null;
+	if (Array.isArray(value)) {
+		const joined = value.map(String).map((s) => s.trim()).filter(Boolean).join(', ');
+		return joined || null;
+	}
+	const s = String(value).trim();
+	return s || null;
+}
 
 function heightFromUnknown(value: unknown): number | null {
 	if (value == null) return null;
@@ -113,6 +164,9 @@ export function mapAscent(a: ApiAscent): CanonicalAscent | null {
 		routeGradeBand: route.gradeBand ?? null,
 		routeStyle: route.style ?? null,
 		climbedGearStyle: a.climbedGearStyle ?? null,
+		ascentGrade: a.grade ?? null,
+		ascentGradeSystem: a.gradeSystem ?? null,
+		ascentGradeBand: a.gradeBand ?? null,
 		cprGrade: a.cpr?.base?.grade ?? null,
 		cprBand: a.cpr?.base?.band ?? null,
 		pitches: a.pitch ?? null,
@@ -125,6 +179,14 @@ export function mapAscent(a: ApiAscent): CanonicalAscent | null {
 	const areaId = tlc?.id ?? parent?.id ?? null;
 	const areaStub =
 		tlc?.urlAncestorStub ?? parent?.urlAncestorStub ?? route.urlAncestorStub ?? null;
+	const tags = flattenRouteTags(route.tags);
+	const boltsRaw = route.bolts;
+	const bolts =
+		typeof boltsRaw === 'number'
+			? boltsRaw
+			: typeof boltsRaw === 'string' && boltsRaw.trim()
+				? Number(boltsRaw)
+				: null;
 
 	return {
 		provider: 'thecrag',
@@ -145,7 +207,11 @@ export function mapAscent(a: ApiAscent): CanonicalAscent | null {
 			cragName: tlc?.name ?? parent?.name ?? null,
 			cragPath: [country, tlc?.name, parent?.name].filter(Boolean).join(' - ') || null,
 			cragUrl: theCragAreaUrl(areaId, areaStub),
-			areaExternalId: areaId != null ? String(areaId) : null
+			areaExternalId: areaId != null ? String(areaId) : null,
+			tags: tags.length ? tags : null,
+			bolts: bolts != null && Number.isFinite(bolts) ? bolts : null,
+			parentName: parent?.name ?? null,
+			parentExternalId: parent?.id != null ? String(parent.id) : null
 		},
 		ascentDate: a.date ?? null,
 		logDate: a.logDate ?? null,
@@ -157,11 +223,12 @@ export function mapAscent(a: ApiAscent): CanonicalAscent | null {
 		effectiveGradeScore: effective.score,
 		effectiveGradeBand: effective.band,
 		pitchLabel: effective.pitchLabel,
+		ascentLabel: a.label?.trim() || null,
 		pitchesClimbed: effective.pitchesClimbed,
 		pitchesTotal: effective.pitchesTotal,
 		heightM: effective.heightM ?? routeHeightM,
-		quality: null,
-		partners: null,
+		quality: a.quality?.trim() || a.qualityLabel?.trim() || null,
+		partners: partnersFromWith(a.with),
 		comment: a.markdown ?? null,
 		isSend,
 		isAttempt,
@@ -204,6 +271,7 @@ export async function fetchTheCragPage(
 
 	let profile: ProviderProfile | null = null;
 	if (data?.account) {
+		const heightClimbed = heightFromUnknown(data.account.heightClimbed);
 		profile = {
 			provider: 'thecrag',
 			externalId: data.account.id != null ? String(data.account.id) : null,
@@ -211,6 +279,12 @@ export async function fetchTheCragPage(
 			login: data.account.login ?? null,
 			country: data.account.country ?? null,
 			ascentCount: data.account.ascentCount ?? null,
+			avatar: data.account.avatar ?? null,
+			typeOfClimber: data.account.typeOfClimber ?? null,
+			outdoorAscentCount: data.account.outdoorAscentCount ?? null,
+			indoorAscentCount: data.account.indoorAscentCount ?? null,
+			heightClimbed,
+			routesTicked: data.account.routesTicked ?? null,
 			rawJson: JSON.stringify(data.account)
 		};
 	}

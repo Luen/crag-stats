@@ -1,10 +1,12 @@
 <script lang="ts">
+	import AscentHeatmap from '#lib/components/AscentHeatmap.svelte';
 	import BarList from '#lib/components/BarList.svelte';
 	import ClimberTypeBar from '#lib/components/ClimberTypeBar.svelte';
 	import CprTimeline from '#lib/components/CprTimeline.svelte';
 	import GradeChip from '#lib/components/GradeChip.svelte';
 	import NotableAscents from '#lib/components/NotableAscents.svelte';
 	import StylePyramid from '#lib/components/StylePyramid.svelte';
+	import TagChips from '#lib/components/TagChips.svelte';
 	import TickTypeIcon from '#lib/components/TickTypeIcon.svelte';
 	import VolumeChart from '#lib/components/VolumeChart.svelte';
 	import type { PageProps } from './$types';
@@ -76,10 +78,24 @@
 			<strong>{s.totalAscents}</strong>
 			<span>total logged</span>
 		</div>
+		{#if s.outdoorAscents != null || s.indoorAscents != null}
+			<div class="metric panel">
+				<strong>{s.outdoorAscents ?? '—'}</strong>
+				<span>outdoor</span>
+			</div>
+			<div class="metric panel">
+				<strong>{s.indoorAscents ?? '—'}</strong>
+				<span>indoor</span>
+			</div>
+		{/if}
 	</section>
 
 	<section class="stack">
 		<ClimberTypeBar shares={s.styleShare} climberType={s.climberType} />
+	</section>
+
+	<section class="stack">
+		<AscentHeatmap data={s.heatmap} />
 	</section>
 
 	<section class="grid">
@@ -106,7 +122,7 @@
 					value: c.count,
 					meta: c.maxGrade ? `up to ${c.maxGrade}` : undefined,
 					color: 'var(--accent-2)',
-					href: c.url
+					href: `/logbook?crag=${encodeURIComponent(c.crag)}`
 				}))}
 			/>
 		</article>
@@ -190,12 +206,17 @@
 							</strong>
 							<div class="sub">
 								{(climb.ascentDate || '').slice(0, 10)} · <TickTypeIcon tick={climb.tickType} /> ·
-								{#if climb.cragUrl && climb.cragName}
-									<a href={climb.cragUrl} target="_blank" rel="noreferrer">{climb.cragName}</a>
-								{:else}
-									{climb.cragName}
+								{#if climb.cragName}
+									<a href="/logbook?crag={encodeURIComponent(climb.cragName)}">{climb.cragName}</a>
+								{/if}
+								{#if climb.quality}
+									· {climb.quality}
+								{/if}
+								{#if climb.partners}
+									· with {climb.partners}
 								{/if}
 							</div>
+							<TagChips tags={climb.tags} />
 						</div>
 						<GradeChip grade={climb.gradeLabel ?? climb.gradeRaw} band={climb.gradeBand} />
 					</li>

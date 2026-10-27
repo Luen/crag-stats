@@ -8,6 +8,12 @@ export const profiles = sqliteTable('profiles', {
 	login: text('login'),
 	country: text('country'),
 	ascentCount: integer('ascent_count'),
+	avatar: text('avatar'),
+	typeOfClimber: text('type_of_climber'),
+	outdoorAscentCount: integer('outdoor_ascent_count'),
+	indoorAscentCount: integer('indoor_ascent_count'),
+	heightClimbed: real('height_climbed'),
+	routesTicked: integer('routes_ticked'),
 	rawJson: text('raw_json'),
 	updatedAt: text('updated_at').notNull()
 });
@@ -33,6 +39,11 @@ export const routes = sqliteTable(
 		/** Public theCrag area/crag page for cragName (TLC) */
 		cragUrl: text('crag_url'),
 		areaExternalId: text('area_external_id'),
+		/** JSON array of {category,name} from route.tags */
+		tagsJson: text('tags_json'),
+		bolts: integer('bolts'),
+		parentName: text('parent_name'),
+		parentExternalId: text('parent_external_id'),
 		updatedAt: text('updated_at').notNull()
 	},
 	(t) => [uniqueIndex('routes_provider_ext').on(t.provider, t.externalId)]
@@ -59,6 +70,8 @@ export const ascents = sqliteTable(
 		effectiveGradeBand: integer('effective_grade_band'),
 		/** e.g. P1 or P1–P2 when multipitch logging was used */
 		pitchLabel: text('pitch_label'),
+		/** theCrag ascent `label` when set (often route name or "Neon God P1") */
+		ascentLabel: text('ascent_label'),
 		pitchesClimbed: integer('pitches_climbed'),
 		pitchesTotal: integer('pitches_total'),
 		heightM: real('height_m'),

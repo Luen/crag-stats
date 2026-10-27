@@ -180,7 +180,8 @@ function parseEwbank(raw: string): number | null {
 	if (range) {
 		return (Number(range[1]) + Number(range[2])) / 2;
 	}
-	const single = raw.match(/^(\d{1,2})([a-dA-D]?)$/);
+	// Digits only — do not match French "5a" / "6b+" (those are not Ewbank).
+	const single = raw.match(/^(\d{1,2})$/);
 	if (single) return Number(single[1]);
 	return null;
 }
@@ -263,7 +264,13 @@ function parseFont(raw: string): number | null {
 
 export function detectAndParseGrade(
 	raw: string | null | undefined,
-	opts?: { gearStyle?: string | null; gradeBand?: number | null; preferredSystem?: GradeSystem }
+	opts?: {
+		gearStyle?: string | null;
+		gradeBand?: number | null;
+		preferredSystem?: GradeSystem;
+		/** theCrag gradeSystem code: AU, FR, BLDV, YDS, … */
+		gradeSystem?: string | null;
+	}
 ): ParsedGrade {
 	const preferred = opts?.preferredSystem ?? 'ewbank';
 	const text = (raw ?? '').trim();
@@ -283,11 +290,17 @@ export function detectAndParseGrade(
 	}
 
 	const looksV = /^V/i.test(text);
-	if (isBoulder || looksV || parseFont(text) != null) {
-		const v = parseVScale(text) ?? parseFont(text);
+	const sys = (opts?.gradeSystem || '').toUpperCase();
+	const forceFont = sys.includes('FONT') || sys === 'FB';
+	const forceBoulderGrade = isBoulder || looksV || sys.includes('BLD') || sys === 'V';
+	// Only treat Font when context is boulder/font — French "5a" must not match Font "5A".
+	const tryFont = isBoulder || forceFont;
+
+	if (forceBoulderGrade || tryFont) {
+		const v = parseVScale(text) ?? (tryFont ? parseFont(text) : null);
 		if (v != null) {
 			return {
-				system: looksV || isBoulder ? 'v_scale' : 'font',
+				system: looksV || (forceBoulderGrade && !forceFont) ? 'v_scale' : 'font',
 				raw: text,
 				score: v,
 				label:
@@ -299,9 +312,22 @@ export function detectAndParseGrade(
 			};
 		}
 
+		// Boulder logged with a bare AU/Ewbank number (e.g. Upendi "5") → V5.
+		if (isBoulder && /^\d{1,2}$/.test(text)) {
+			const n = Number(text);
+			return {
+				system: 'v_scale',
+				raw: text,
+				score: n,
+				label: preferred === 'font' ? convertFromVScale(n, 'font') : `V${n}`,
+				band: bandFromVScale(n),
+				isBoulder: true
+			};
+		}
+
 		// Unparseable boulder string: keep the raw label. Never treat route gradeBand
 		// midpoints (Ewbank 6/15/21/28/35) as V-scores — that produced fake "V21"/"V28".
-		if (isBoulder || looksV) {
+		if (forceBoulderGrade) {
 			const band =
 				opts?.gradeBand != null && opts.gradeBand >= 1 && opts.gradeBand <= 5
 					? bandFromVScale([-1, 0, 2, 5, 8][opts.gradeBand - 1])

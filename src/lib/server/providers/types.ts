@@ -23,6 +23,11 @@ export type CanonicalRoute = {
 	cragPath?: string | null;
 	cragUrl?: string | null;
 	areaExternalId?: string | null;
+	/** Flattened route tags for chips */
+	tags?: { category: string; name: string }[] | null;
+	bolts?: number | null;
+	parentName?: string | null;
+	parentExternalId?: string | null;
 };
 
 export type CanonicalAscent = {
@@ -40,6 +45,8 @@ export type CanonicalAscent = {
 	effectiveGradeScore?: number | null;
 	effectiveGradeBand?: number | null;
 	pitchLabel?: string | null;
+	/** Display label from theCrag when set */
+	ascentLabel?: string | null;
 	pitchesClimbed?: number | null;
 	pitchesTotal?: number | null;
 	heightM?: number | null;
@@ -63,6 +70,12 @@ export type ProviderProfile = {
 	login?: string | null;
 	country?: string | null;
 	ascentCount?: number | null;
+	avatar?: string | null;
+	typeOfClimber?: string | null;
+	outdoorAscentCount?: number | null;
+	indoorAscentCount?: number | null;
+	heightClimbed?: number | null;
+	routesTicked?: number | null;
 	rawJson?: string | null;
 };
 
