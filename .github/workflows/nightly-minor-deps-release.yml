@@ -1,0 +1,163 @@
+# Nightly dependency refresh → patch release → GHCR image (main only).
+#
+# Raises the version ranges in package.json to the newest release that stays
+# inside each dependency's current major (npm-check-updates `--target semver`:
+# ^4.14.0 → ^4.15.2; 0.x packages only take patches, since 0.x minors break).
+# Versions published in the last few days are skipped (`--cooldown`) so a
+# hijacked release has time to be yanked before it reaches the image.
+#
+# package.json is the only file this job edits on purpose. pnpm then re-resolves
+# just the specifiers that changed, because CI and the Dockerfile install with
+# --frozen-lockfile and would reject a package.json the lockfile doesn't match.
+# Nothing else in the lockfile is refreshed.
+#
+# No-op when nothing changed. Releases created with GITHUB_TOKEN don't trigger
+# other workflows, so the image build is called directly as a second job.
+
+name: Nightly minor deps release
+
+on:
+  schedule:
+    - cron: '17 14 * * *' # ~00:17 AEST
+  workflow_dispatch:
+
+concurrency:
+  group: nightly-minor-deps-${{ github.repository }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  packages: write
+
+env:
+  NCU_VERSION: 23.1.1
+  COOLDOWN_DAYS: 3
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    outputs:
+      changed: ${{ steps.changes.outputs.changed }}
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - name: Checkout main
+        uses: actions/checkout@v7
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+
+      - name: Enable pnpm via corepack
+        run: |
+          corepack enable
+          corepack prepare "$(node -p "require('./package.json').packageManager")" --activate
+          pnpm --version
+
+      - name: Install build deps for better-sqlite3
+        run: sudo apt-get update && sudo apt-get install -y python3 make g++
+
+      - name: Raise package.json ranges (same major)
+        run: |
+          set -euo pipefail
+          npx --yes "npm-check-updates@${NCU_VERSION}" \
+            --target semver \
+            --cooldown "${COOLDOWN_DAYS}" \
+            --upgrade
+
+      - name: Detect package.json changes
+        id: changes
+        run: |
+          set -euo pipefail
+          if git diff --quiet -- package.json; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "All dependencies already at the newest in-major release."
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+            git diff -- package.json
+          fi
+
+      # Re-resolves only the specifiers ncu changed; keeps everything else pinned.
+      - name: Sync lockfile to package.json
+        if: steps.changes.outputs.changed == 'true'
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Lint
+        if: steps.changes.outputs.changed == 'true'
+        run: pnpm lint
+
+      - name: Type check
+        if: steps.changes.outputs.changed == 'true'
+        run: pnpm check
+
+      - name: Unit tests
+        if: steps.changes.outputs.changed == 'true'
+        run: pnpm test
+
+      - name: Build
+        if: steps.changes.outputs.changed == 'true'
+        run: pnpm build
+
+      - name: Install Playwright Chromium
+        if: steps.changes.outputs.changed == 'true'
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: E2E tests (Playwright + axe)
+        if: steps.changes.outputs.changed == 'true'
+        run: pnpm test:e2e
+
+      - name: Bump patch version
+        if: steps.changes.outputs.changed == 'true'
+        id: version
+        run: |
+          set -euo pipefail
+          NEW_VERSION="$(npm version patch --no-git-tag-version)"
+          echo "version=${NEW_VERSION#v}" >> "$GITHUB_OUTPUT"
+          echo "Bumped to ${NEW_VERSION}"
+
+      - name: Commit, tag and push
+        if: steps.changes.outputs.changed == 'true'
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package.json pnpm-lock.yaml
+          git commit -m "chore(deps): nightly in-major dependency update (v${VERSION})"
+          # A PR may have merged while tests ran.
+          git pull --rebase origin main
+          git tag "v${VERSION}"
+          git push origin HEAD:main "v${VERSION}"
+
+      - name: Create GitHub Release
+        if: steps.changes.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          set -euo pipefail
+          TAG="v${VERSION}"
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            echo "Release $TAG already exists"
+            exit 0
+          fi
+          {
+            echo "Nightly in-major dependency update."
+            echo
+            echo "Database migrations run automatically when the container starts."
+          } > notes.md
+          gh release create "$TAG" --target main --title "$TAG" --notes-file notes.md --generate-notes
+
+  docker:
+    needs: update
+    if: needs.update.outputs.changed == 'true'
+    uses: ./.github/workflows/docker-release.yml
+    permissions:
+      contents: read
+      packages: write
+    with:
+      ref: v${{ needs.update.outputs.version }}

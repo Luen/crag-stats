@@ -59,6 +59,18 @@ export type CprTimelineData = {
 
 export type RouteTag = { category: string; name: string };
 
+/** One Eddington number; `needed` more qualifying days/routes reach `next`. */
+export type EddingtonMetric = { value: number; next: number; needed: number };
+
+export type EddingtonStats = {
+	sends: EddingtonMetric;
+	vertical: EddingtonMetric;
+	verticalUnitM: number;
+	routeGrade: EddingtonMetric;
+	boulderGrade: EddingtonMetric;
+	activeDays: number;
+};
+
 export type HeatmapDay = { date: string; count: number; sends: number };
 
 export type DashboardStats = {
@@ -134,6 +146,7 @@ export type DashboardStats = {
 		durationLabel: string | null;
 		paragraphs: string[];
 	};
+	eddington: EddingtonStats;
 	streaks: {
 		currentDays: number;
 		currentWeeks: number;

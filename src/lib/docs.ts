@@ -34,6 +34,12 @@ export const DOC_PAGES: readonly DocPage[] = [
 		slug: 'training-load',
 		title: 'Training load',
 		summary: 'The intensity-weighted acute:chronic load model behind the Training load card.'
+	},
+	{
+		slug: 'eddington',
+		title: 'Eddington numbers',
+		summary:
+			"Cycling's Eddington number adapted to climbing: send days, vertical days and grade indexes."
 	}
 ];
 

@@ -76,7 +76,8 @@ Entry: `runTheCragSync()` in `src/lib/server/sync.ts`.
 3. `reconcileProviderAscents(provider, seenIds, { expectedCount })` — delete local ascents whose `external_id` was not seen; then orphan routes/projects.
 4. Safety: if API returns **0** ascents but `account.ascentCount > 0`, **refuse to prune** (partial failure guard).
 5. `refreshProjects()` after sync.
-6. Scheduler (`SYNC_CRON`, default daily) calls the same reconcile path.
+6. Scheduler (`SYNC_CRON`, default daily) calls the same reconcile path. It starts from the `init` hook in `src/hooks.server.ts` at server boot, not on the first request.
+7. **Fresh install:** if no sync has ever succeeded (`sync_state.last_success_at` is null), the scheduler runs one sync straight away at boot. A failed first sync is retried on the next boot or cron tick.
 
 Cursor/`maxEpoch` is still stored for diagnostics; it is **not** used to skip a full pull.
 
@@ -145,8 +146,21 @@ Components: `TickTypeIcon.svelte`, `StyleBadge.svelte`. Keep icons SVG-inline so
 ## Docker / release
 
 - Compose: `docker-compose.yml` (build) and `docker-compose.ghcr.yml` (pull image).
-- Release workflow builds multi-arch and pushes on version tags (`v0.1.0`, …).
-- Entrypoint runs migrations before app/worker start. Persist SQLite via volume (`DATABASE_PATH`).
+- `docker-release.yml` builds multi-arch and pushes on version tags (`v0.1.0`, …), published releases, manual dispatch, or `workflow_call`.
+- `nightly-minor-deps-release.yml` runs daily (~00:17 AEST). `npm-check-updates --target semver --cooldown 3` raises package.json ranges within each dependency's major; 0.x packages only get patches. pnpm then re-resolves only the changed specifiers in the lockfile, because frozen installs need the two in sync. After that: lint, check, test, build and e2e, a patch bump, a tag and GitHub release, and the image via `docker-release.yml`. It does nothing when no range moved. It pushes straight to `main`, so branch protection on `main` needs a bypass for Actions.
+- Entrypoint runs migrations before app/worker start; `ensureSchema()` (`src/lib/server/db/index.ts`) applies the same files under `pnpm dev` / `node build`. Persist SQLite via volume (`DATABASE_PATH`).
+
+### Migrations must survive every release
+
+Every release, including the automated nightly one, gets pulled straight onto running homeservers (`docker compose pull && up -d`). There, `scripts/docker-entrypoint.mjs` applies pending migrations before the app starts. If a migration fails, the container exits and the instance stays down until someone fixes it. So:
+
+- **Append only.** Add a new `migrations/NNNN_name.sql` with the next number. Never edit, rename or delete a migration that has shipped. `schema_migrations` tracks file names, so an edited file never re-runs on existing DBs and fresh DBs end up with a different schema.
+- **Upgrade from any older version.** Users skip releases. Files apply in order, each in its own transaction, so each one must work on the schema the previous file left, with real data in the tables.
+- **Additive and backwards-safe.** Prefer `ADD COLUMN` (nullable or with a `DEFAULT`), new tables and `CREATE INDEX IF NOT EXISTS`. SQLite can't alter or drop most columns in place. For those, rebuild the table inside the migration (create new → copy → drop → rename).
+- **Never lose local-only data.** A sync or `repairGradesFromRawJson()` can rebuild cached provider data. Nothing can rebuild settings, goals, dashboard layout or anything else entered locally.
+- **Keep `src/lib/server/db/schema.ts` (Drizzle) in step** with the SQL.
+- **Test the upgrade path** before releasing: build the previous tag, put data in its DB, then start the new build against that DB. Also start it on an empty DB. E2E only covers the fresh path.
+- Release notes should call out slow migrations, such as table rebuilds on big logbooks.
 
 ---
 

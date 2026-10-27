@@ -42,8 +42,15 @@ test.describe('app shell', () => {
 	test('docs: every page renders and the dashboard links into them', async ({ page }) => {
 		await page.goto('/docs');
 		const links = page.locator('.toc a');
-		await expect(links).toHaveCount(6);
-		for (const slug of ['climber-type', 'grades', 'tick-types', 'cpr', 'training-load']) {
+		await expect(links).toHaveCount(7);
+		for (const slug of [
+			'eddington',
+			'climber-type',
+			'grades',
+			'tick-types',
+			'cpr',
+			'training-load'
+		]) {
 			const r = await page.goto(`/docs/${slug}`);
 			expect(r?.status(), slug).toBe(200);
 			await expect(page.locator('.prose h1')).toBeVisible();
@@ -59,9 +66,19 @@ test.describe('app shell', () => {
 		const res = await page.goto('/logbook');
 		expect(res?.headers()['content-security-policy']).toContain("default-src 'self'");
 		await expect(page.getByText('Sample Sport Route').first()).toBeVisible();
-		for (const path of ['/', '/projects', '/sectors', '/goals', '/rewind']) {
+		for (const path of ['/', '/projects', '/sectors', '/goals', '/rewind', '/share']) {
 			const r = await page.goto(path);
 			expect(r?.status(), path).toBe(200);
 		}
+	});
+
+	test('embed cards are SVG and unknown cards 404', async ({ request }) => {
+		for (const card of ['summary', 'eddington', 'hardest']) {
+			const res = await request.get(`/embed/${card}.svg?theme=dark`);
+			expect(res.status(), card).toBe(200);
+			expect(res.headers()['content-type']).toContain('image/svg+xml');
+			expect(await res.text()).toMatch(/^<svg /);
+		}
+		expect((await request.get('/embed/notes.svg')).status()).toBe(404);
 	});
 });

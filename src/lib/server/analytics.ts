@@ -28,6 +28,7 @@ import {
 	buildYearlyStats
 } from './dashboardExtras';
 import { db, ensureSchema } from './db';
+import { buildEddington } from './eddington';
 import { ascents, profiles, routes } from './db/schema';
 import { repairGradesFromRawJson } from './repairGrades';
 import { buildTrainingLoadView } from './trainingLoad';
@@ -782,6 +783,16 @@ export function getDashboardStats(
 			if (rockBlurb) base.paragraphs.push(rockBlurb);
 			return base;
 		})(),
+		eddington: buildEddington(
+			all.map((r) => ({
+				day: validDay(r.ascentDate),
+				routeId: r.routeId,
+				isSend: Boolean(r.isSend),
+				heightM: r.heightM ?? r.routeHeightM ?? 0,
+				score: effectiveScore(r),
+				isBoulder: normalizeClimbStyle(r.gearStyle) === 'boulder'
+			}))
+		),
 		streaks: buildStreaks(dayMap),
 		athleteProfile: buildAthleteProfile(all, dayMap),
 		cpr: {

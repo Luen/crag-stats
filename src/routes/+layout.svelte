@@ -23,7 +23,8 @@
 			],
 			[
 				{ href: '/goals', label: 'Goals', icon: 'goals' },
-				{ href: '/rewind', label: 'Rewind', icon: 'rewind' }
+				{ href: '/rewind', label: 'Rewind', icon: 'rewind' },
+				{ href: '/share', label: 'Share', icon: 'share' }
 			],
 			[
 				{ href: '/docs', label: 'Docs', icon: 'docs' },
@@ -199,6 +200,9 @@
 			<span class="wordmark">Crag <span>Stats</span></span>
 		</a>
 		<div class="top-actions">
+			<a class="icon-btn" href="/share" title="Share & embed" aria-label="Share & embed">
+				<NavIcon name="share" />
+			</a>
 			<a
 				class="icon-btn"
 				href={data.githubUrl}
