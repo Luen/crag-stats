@@ -44,7 +44,7 @@
 		font-size: 1.2rem;
 	}
 	.type {
-		font-family: Fraunces, Georgia, serif;
+		font-family: var(--font-display);
 		font-size: 1.25rem;
 		color: var(--accent);
 	}
@@ -58,7 +58,7 @@
 		height: 2.1rem;
 		border-radius: 0.35rem;
 		overflow: hidden;
-		background: rgba(28, 36, 24, 0.08);
+		background: color-mix(in srgb, var(--ink) 8%, transparent);
 	}
 	.seg {
 		display: grid;

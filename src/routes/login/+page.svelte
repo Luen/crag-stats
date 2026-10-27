@@ -58,7 +58,7 @@
 		font-weight: 700;
 	}
 	.err {
-		color: #7a1010;
+		color: var(--band-expert);
 	}
 	.sr-only {
 		position: absolute;

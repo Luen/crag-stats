@@ -138,7 +138,7 @@
 		padding: 0.3rem 0.5rem;
 		border: 1px solid var(--line);
 		border-radius: 0.4rem;
-		background: white;
+		background: var(--paper);
 		color: var(--ink);
 	}
 	.toggles {
@@ -152,7 +152,7 @@
 		padding: 0.3rem 0.65rem;
 		border: 1px solid var(--line);
 		border-radius: 0.4rem;
-		background: white;
+		background: var(--paper);
 		color: var(--ink-muted);
 		cursor: pointer;
 	}

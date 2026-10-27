@@ -169,7 +169,7 @@
 		border-radius: 1rem;
 		background: var(--paper);
 		border: 1px solid var(--line);
-		box-shadow: 0 1px 0 rgba(28, 36, 24, 0.04), 0 8px 20px rgba(28, 36, 24, 0.04);
+		box-shadow: 0 1px 0 color-mix(in srgb, var(--ink) 4%, transparent), 0 8px 20px color-mix(in srgb, var(--ink) 4%, transparent);
 		min-height: 8.5rem;
 	}
 	.card.sent {

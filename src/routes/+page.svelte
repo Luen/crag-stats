@@ -366,7 +366,7 @@
 		object-fit: cover;
 		border: 2px solid var(--line);
 		flex-shrink: 0;
-		background: rgba(47, 93, 58, 0.12);
+		background: color-mix(in srgb, var(--accent) 12%, transparent);
 	}
 	.eyebrow {
 		text-transform: uppercase;
@@ -401,7 +401,7 @@
 		width: fit-content;
 		padding: 0.25rem 0.65rem;
 		border-radius: 999px;
-		background: rgba(28, 36, 24, 0.08);
+		background: color-mix(in srgb, var(--ink) 8%, transparent);
 		font-size: 0.8rem;
 		font-weight: 700;
 		text-transform: uppercase;
@@ -429,7 +429,7 @@
 		padding: 0.4rem 0.55rem;
 		border-radius: 0.45rem;
 		border: 1px solid var(--line);
-		background: white;
+		background: var(--paper);
 		width: 100%;
 		max-width: 16rem;
 	}
@@ -444,8 +444,11 @@
 		border-radius: 0.9rem;
 	}
 	.metric.accent {
-		background: rgba(201, 9, 9, 0.08);
-		border: 1px solid rgba(201, 9, 9, 0.22);
+		background: var(--accent-soft);
+		border-color: color-mix(in srgb, var(--accent) 30%, transparent);
+	}
+	.metric.accent strong {
+		color: var(--accent);
 	}
 	.metric span {
 		display: block;
@@ -453,8 +456,11 @@
 		font-size: 0.85rem;
 	}
 	.metric strong {
-		font-size: 1.55rem;
-		font-family: Fraunces, Georgia, serif;
+		font-size: 1.6rem;
+		font-family: var(--font-display);
+		font-weight: 750;
+		letter-spacing: -0.02em;
+		font-variant-numeric: tabular-nums;
 	}
 	.grid {
 		display: grid;
@@ -495,9 +501,9 @@
 		text-decoration: none;
 	}
 	.pyramid-toggles a.active {
-		background: var(--ink);
-		color: var(--paper, #fff);
-		border-color: var(--ink);
+		background: var(--accent);
+		color: #fff;
+		border-color: var(--accent);
 	}
 	.pyramids {
 		display: grid;
@@ -510,7 +516,7 @@
 	}
 	h2 {
 		margin: 0 0 0.85rem;
-		font-size: 1.2rem;
+		font-size: 1.1rem;
 	}
 	.hint {
 		margin: -0.4rem 0 0.8rem;

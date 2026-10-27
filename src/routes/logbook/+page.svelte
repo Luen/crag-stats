@@ -210,9 +210,13 @@
 	}
 	.filters button {
 		cursor: pointer;
-		background: var(--ink);
-		color: var(--paper);
-		border-color: var(--ink);
+		background: var(--accent);
+		color: #fff;
+		border-color: var(--accent);
+		font-weight: 700;
+	}
+	.filters button:hover {
+		background: var(--accent-strong);
 	}
 	.check {
 		display: flex;
@@ -237,6 +241,20 @@
 	th a {
 		color: inherit;
 		text-decoration: none;
+	}
+	th {
+		background: var(--surface-2);
+		color: var(--ink-muted);
+		font-size: 0.72rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		padding-block: 0.7rem;
+		vertical-align: middle;
+		white-space: nowrap;
+	}
+	tbody tr:hover td {
+		background: var(--surface-2);
 	}
 	th a:hover {
 		text-decoration: underline;

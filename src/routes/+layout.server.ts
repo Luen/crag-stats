@@ -1,5 +1,9 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { sql } from 'drizzle-orm';
+import { db, ensureSchema } from '#lib/server/db';
+import { ascents } from '#lib/server/db/schema';
+import { listActiveProjects } from '#lib/server/projects';
 import { isAuthEnabled, authScope } from '#lib/server/auth';
 import { startScheduler } from '#lib/server/scheduler';
 import type { LayoutServerLoad } from './$types';
@@ -17,16 +21,32 @@ function readAppVersion(): string {
 	}
 }
 
+/** Sidebar count badges (Dreeve-style). Cheap COUNT(*) queries; never fatal. */
+function navCounts(): { ascents: number; projects: number } {
+	try {
+		ensureSchema();
+		const a = db.select({ n: sql<number>`count(*)` }).from(ascents).get()?.n ?? 0;
+		// Same "working on" definition as /projects (open + touched within a year).
+		const p = listActiveProjects().workingOn.length;
+		return { ascents: a, projects: p };
+	} catch {
+		return { ascents: 0, projects: 0 };
+	}
+}
+
 export const load: LayoutServerLoad = async ({ locals }) => {
 	const authOn = isAuthEnabled();
 	const scope = authScope();
 	const showSettings = !authOn || locals.authed;
+	// Don't leak logbook size to a visitor who still has to log in.
+	const gated = authOn && scope === 'all' && !locals.authed;
 	return {
 		appVersion: readAppVersion(),
 		githubUrl: 'https://github.com/Luen/crag-stats',
 		authed: locals.authed,
 		authEnabled: authOn,
 		authScope: scope,
-		showSettings
+		showSettings,
+		navCounts: gated ? null : navCounts()
 	};
 };

@@ -27,7 +27,8 @@ Self-hosted climbing analytics for [theCrag](https://www.thecrag.com/), inspired
 | Piece | Choice |
 |---|---|
 | App | SvelteKit 3 + Svelte 5 (runes: `$props`, `$derived`, `$state`) |
-| CSS | Tailwind 4 where useful + existing custom CSS variables in layout |
+| CSS | Tailwind 4 where useful + theme tokens in `src/app.css` (light/dark) |
+| Font | Plus Jakarta Sans (bundled via `@fontsource-variable/plus-jakarta-sans`, no CDN) |
 | DB | SQLite via `better-sqlite3` + Drizzle ORM |
 | Package manager | **pnpm** (pin via `package.json#packageManager`; config in `pnpm-workspace.yaml`) |
 | Node | 24 LTS+ |
@@ -125,6 +126,14 @@ Components: `TickTypeIcon.svelte`, `StyleBadge.svelte`. Keep icons SVG-inline so
 
 ---
 
+## Theme & app shell
+
+- **Tokens only.** Colours come from `src/app.css` (`--bg`, `--paper`, `--surface-2/3`, `--ink`, `--ink-muted`, `--line`, `--accent` rope orange, `--accent-soft`, `--shadow`). Don't hard-code `white`/`#fff` surfaces or ink-tinted `rgba()` — they break dark mode. Use `color-mix(in srgb, var(--ink) N%, transparent)` for tints. `color: #fff` on an accent/coloured fill is fine.
+- SVG presentation attributes can't take `var()` reliably — use `style="stroke: var(--ink)"` instead.
+- **Dark mode:** OS preference by default; header toggle stores `cs_theme` in localStorage → `html[data-theme]`. Applied pre-paint by the inline script in `app.html`.
+- **Shell (Dreeve-style):** fixed top bar (sidebar toggle, logo, GitHub, theme, settings) + grouped icon sidebar with count badges (`navCounts` from `+layout.server.ts`, hidden when `AUTH_SCOPE=all` and logged out). Desktop toggle collapses to a mini icon rail with hover tooltips (`cs_sidebar=mini` → `html[data-sidebar='mini']`); ≤860px it's an off-canvas drawer.
+- Icons: `NavIcon.svelte` (inline outline SVGs). Logo/favicon: `src/lib/assets/favicon.svg` (orange disc, crag + rising grade bars).
+
 ## Docker / release
 
 - Compose: `docker-compose.yml` (build) and `docker-compose.ghcr.yml` (pull image).
@@ -184,5 +193,7 @@ Prefer fixing type errors over `@ts-ignore`. Do not switch the package manager.
 | 2026-10 | Dashboard Projects card: top 3 open by sessions/tries (`listDashboardProjects`); layout id `projects` beside goals. |
 | 2026-10 | Dashboard card show/order via cookie `cs_dash_layout` (Dreeve-style); hero + metrics fixed; Customize panel on `/`. Defaults = current order. See `dashboardLayout.ts`. |
 | 2026-10 | Discipline colours unified via `STYLE_COLORS` in `ticks.ts` (Sport blue, Trad orange, Boulder red) — Style mix + climber-type share the same palette as StyleBadge. |
+
+| 2026-10 | Dreeve-style redesign: theme tokens + dark mode, Plus Jakarta Sans, new logo, top bar + collapsible mini sidebar / mobile drawer, nav count badges. |
 
 _Add a row when you change behaviour agents must know about._

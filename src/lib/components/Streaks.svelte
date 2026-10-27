@@ -52,14 +52,14 @@
 		border-radius: 0.65rem;
 		padding: 0.75rem 0.5rem 0.65rem;
 		text-align: center;
-		background: white;
+		background: var(--paper);
 		border-top: 3px solid var(--accent-2);
 	}
 	.card strong {
 		display: block;
 		font-size: 1.55rem;
 		line-height: 1.1;
-		font-family: Fraunces, Georgia, serif;
+		font-family: var(--font-display);
 	}
 	.card span {
 		color: var(--ink-muted);

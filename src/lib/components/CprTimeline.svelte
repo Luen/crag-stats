@@ -112,7 +112,7 @@
 					{#if cprPoints.length > 1}
 						<polyline
 							fill="none"
-							stroke="#111"
+							style="stroke: var(--ink)"
 							stroke-width="1.2"
 							vector-effect="non-scaling-stroke"
 							points={cprPoints
@@ -127,7 +127,7 @@
 								cx={((p.i + 0.5) / data.buckets.length) * 100}
 								cy={y(p.g)}
 								r="1.1"
-								fill="#111"
+								style="fill: var(--ink)"
 							/>
 						{/each}
 					{/if}
@@ -215,7 +215,7 @@
 		border: 1px solid var(--line);
 		border-radius: 0.4rem;
 		overflow: hidden;
-		background: rgba(255, 255, 255, 0.45);
+		background: color-mix(in srgb, var(--paper) 55%, transparent);
 	}
 	.band {
 		position: absolute;
@@ -231,7 +231,7 @@
 	}
 	.col {
 		position: relative;
-		border-left: 1px solid rgba(28, 36, 24, 0.04);
+		border-left: 1px solid color-mix(in srgb, var(--ink) 4%, transparent);
 	}
 	.candles {
 		position: absolute;
@@ -284,7 +284,7 @@
 	}
 	.vbar {
 		width: 55%;
-		background: rgba(28, 36, 24, 0.28);
+		background: color-mix(in srgb, var(--ink) 28%, transparent);
 		border-radius: 2px 2px 0 0;
 		min-height: 2px;
 	}

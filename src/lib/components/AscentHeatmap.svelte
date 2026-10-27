@@ -137,7 +137,7 @@
 		padding: 0.25rem 0.45rem;
 		border-radius: 0.4rem;
 		border: 1px solid var(--line);
-		background: white;
+		background: var(--paper);
 	}
 	.year,
 	.empty {
@@ -185,7 +185,7 @@
 	}
 	.l0,
 	.cell.empty {
-		background: color-mix(in srgb, var(--line, #e5e5e5) 70%, white);
+		background: var(--surface-3);
 	}
 	.l1 {
 		background: #c6e48b;

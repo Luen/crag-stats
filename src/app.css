@@ -1,5 +1,11 @@
 @import 'tailwindcss';
+@import '@fontsource-variable/plus-jakarta-sans';
 
+/*
+ * Theme tokens. Light is the default; dark applies via the OS preference unless the
+ * user picked a theme (html[data-theme], set before paint by the inline script in app.html).
+ * Components should use these tokens instead of hard-coded neutrals so both themes work.
+ */
 :root {
 	--band-beginner: rgb(84, 180, 26);
 	--band-intermediate: rgb(254, 225, 0);
@@ -7,33 +13,67 @@
 	--band-expert: rgb(201, 9, 9);
 	--band-elite: rgb(178, 24, 130);
 
-	--bg: #f3efe6;
-	--bg-deep: #e7e0d2;
-	--paper: #fffaf2;
-	--ink: #1c2418;
-	--ink-muted: #5c6656;
-	--panel: rgba(255, 252, 246, 0.88);
-	--line: rgba(28, 36, 24, 0.12);
-	--accent: #2f5d3a;
-	--accent-2: #c45c26;
+	--font-sans: 'Plus Jakarta Sans Variable', 'Plus Jakarta Sans', 'Segoe UI', system-ui, sans-serif;
+	--font-display: var(--font-sans);
+
+	/* Rope orange — the brand accent (Dreeve-style single warm accent). */
+	--accent: #ea580c;
+	--accent-strong: #c2410c;
+	--accent-soft: color-mix(in srgb, var(--accent) 10%, var(--paper));
+	--accent-2: #0f766e;
+
+	--bg: #f5f6f8;
+	--bg-deep: #eef0f3;
+	--paper: #ffffff;
+	--surface-2: #f8f9fb;
+	--surface-3: #eceef2;
+	--ink: #161a23;
+	--ink-muted: #667085;
+	--panel: var(--paper);
+	--line: #e6e8ec;
+	--shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 1px 3px rgba(16, 24, 40, 0.04);
+
+	--header-h: 3.75rem;
+	--side-w: 15rem;
+	--side-mini-w: 4.5rem;
+
+	color-scheme: light;
 }
 
-@font-face {
-	font-family: 'Fraunces';
-	font-style: normal;
-	font-weight: 500 700;
-	font-display: swap;
-	src: url('https://cdn.jsdelivr.net/fontsource/fonts/fraunces@latest/latin-500-normal.woff2')
-		format('woff2');
+:root[data-theme='dark'] {
+	--accent: #fb7a3c;
+	--accent-strong: #fdba74;
+	--accent-soft: color-mix(in srgb, var(--accent) 14%, var(--paper));
+	--accent-2: #2dd4bf;
+	--bg: #0f1218;
+	--bg-deep: #0b0d12;
+	--paper: #171b23;
+	--surface-2: #1d222c;
+	--surface-3: #262c38;
+	--ink: #e8eaf0;
+	--ink-muted: #98a1b3;
+	--line: #2a303c;
+	--shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+	color-scheme: dark;
 }
 
-@font-face {
-	font-family: 'Source Sans 3';
-	font-style: normal;
-	font-weight: 400 600;
-	font-display: swap;
-	src: url('https://cdn.jsdelivr.net/fontsource/fonts/source-sans-3@latest/latin-400-normal.woff2')
-		format('woff2');
+@media (prefers-color-scheme: dark) {
+	:root:not([data-theme='light']) {
+		--accent: #fb7a3c;
+		--accent-strong: #fdba74;
+		--accent-soft: color-mix(in srgb, var(--accent) 14%, var(--paper));
+		--accent-2: #2dd4bf;
+		--bg: #0f1218;
+		--bg-deep: #0b0d12;
+		--paper: #171b23;
+		--surface-2: #1d222c;
+		--surface-3: #262c38;
+		--ink: #e8eaf0;
+		--ink-muted: #98a1b3;
+		--line: #2a303c;
+		--shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+		color-scheme: dark;
+	}
 }
 
 html,
@@ -44,19 +84,29 @@ body {
 body {
 	margin: 0;
 	color: var(--ink);
-	font-family: 'Source Sans 3', 'Segoe UI', sans-serif;
-	background:
-		radial-gradient(1200px 600px at 10% -10%, rgba(84, 180, 26, 0.18), transparent 55%),
-		radial-gradient(900px 500px at 90% 0%, rgba(229, 131, 41, 0.16), transparent 50%),
-		linear-gradient(180deg, var(--bg) 0%, var(--bg-deep) 100%);
+	font-family: var(--font-sans);
+	font-size: 0.95rem;
+	line-height: 1.5;
+	background: var(--bg);
+	-webkit-font-smoothing: antialiased;
 }
 
 h1,
 h2,
 h3,
 .brand {
-	font-family: Fraunces, Georgia, serif;
-	letter-spacing: -0.02em;
+	font-family: var(--font-display);
+	font-weight: 700;
+	letter-spacing: -0.015em;
+}
+
+h1 {
+	font-size: clamp(1.5rem, 2.2vw, 1.9rem);
+	line-height: 1.15;
+}
+
+h2 {
+	font-weight: 650;
 }
 
 a {
@@ -64,10 +114,17 @@ a {
 	text-decoration: none;
 }
 
+select,
+input,
+textarea {
+	color: var(--ink);
+	background-color: var(--paper);
+}
+
 .panel {
 	background: var(--panel);
 	border: 1px solid var(--line);
-	backdrop-filter: blur(8px);
+	box-shadow: var(--shadow);
 }
 
 .grade-chip {
@@ -79,6 +136,11 @@ a {
 	font-weight: 600;
 	font-size: 0.85rem;
 	border: 1px solid color-mix(in srgb, var(--chip, #888) 45%, transparent);
-	background: color-mix(in srgb, var(--chip, #888) 18%, white);
+	background: color-mix(in srgb, var(--chip, #888) 18%, var(--paper));
 	color: var(--ink);
+}
+
+:focus-visible {
+	outline: 2px solid var(--accent);
+	outline-offset: 2px;
 }

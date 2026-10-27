@@ -100,6 +100,6 @@
 	dd {
 		margin: 0;
 		font-weight: 600;
-		font-family: Fraunces, Georgia, serif;
+		font-family: var(--font-display);
 	}
 </style>
