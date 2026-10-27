@@ -40,13 +40,31 @@
 	);
 
 	const narrow = $derived((innerWidth.current ?? 900) < 700);
-	const sparseLabels = $derived(narrow || values.length > 18);
+	const sparseLabels = $derived(values.length > (narrow ? 12 : 18));
 
-	function showLabel(month: string, index: number): boolean {
-		if (!sparseLabels) return true;
-		if (month.endsWith('-01')) return true;
-		const step = Math.max(2, Math.ceil(values.length / 12));
-		return index % step === 0 || index === values.length - 1;
+	const MONTH_NAMES = [
+		'Jan',
+		'Feb',
+		'Mar',
+		'Apr',
+		'May',
+		'Jun',
+		'Jul',
+		'Aug',
+		'Sep',
+		'Oct',
+		'Nov',
+		'Dec'
+	];
+
+	// Labels stay horizontal: rotated ones ran into the neighbouring bars. A dense chart
+	// is labelled by year, at each January (and the first column), so every label has
+	// the next eleven empty columns to spill into. A sparse chart names every month.
+	function axisLabel(month: string, index: number): string | null {
+		const isYearStart = month.endsWith('-01') || index === 0;
+		if (sparseLabels) return isYearStart ? month.slice(0, 4) : null;
+		const name = MONTH_NAMES[Number(month.slice(5, 7)) - 1] ?? month;
+		return yearFilter === 'all' && isYearStart ? `${name} '${month.slice(2, 4)}` : name;
 	}
 
 	function formatValue(v: number): string {
@@ -104,8 +122,8 @@
 							<div class="stack">
 								<div class="bar" style:height="{(point.value / max) * 100}%"></div>
 							</div>
-							<span class={['m', { hidden: !showLabel(point.month, i) }]}
-								>{point.month.slice(2)}</span
+							<span class={['m', { year: sparseLabels }]} aria-hidden="true"
+								>{axisLabel(point.month, i) ?? ''}</span
 							>
 						</a>
 					{/each}
@@ -199,15 +217,15 @@
 		min-height: 2px;
 	}
 	.m {
-		font-size: 0.65rem;
-		text-align: center;
+		justify-self: center;
+		height: 1rem;
+		font-size: 0.7rem;
+		line-height: 1rem;
+		white-space: nowrap;
 		color: var(--ink-muted);
-		transform: rotate(-45deg);
-		transform-origin: top center;
-		height: 1.6rem;
 	}
-	.m.hidden {
-		visibility: hidden;
+	.m.year {
+		justify-self: start;
 	}
 	.empty {
 		color: var(--ink-muted);
