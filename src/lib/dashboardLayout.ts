@@ -127,6 +127,18 @@ export function parseLayoutCookie(raw: string | undefined | null): DashLayoutIte
 	}
 }
 
+/**
+ * Site-wide layout (app_settings.dashboard_layout) wins; the old per-browser cookie is only a
+ * fallback so an admin's pre-0.4 customisation isn't lost before they save once.
+ */
+export function resolveDashLayout(
+	stored: string | null | undefined,
+	legacyCookie?: string | null
+): DashLayoutItem[] {
+	if (stored) return parseLayoutCookie(stored);
+	return parseLayoutCookie(legacyCookie);
+}
+
 export function serializeLayout(layout: DashLayoutItem[]): string {
 	return JSON.stringify(normalizeLayout(layout).map((i) => ({ id: i.id, enabled: i.enabled })));
 }

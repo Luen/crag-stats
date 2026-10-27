@@ -5,7 +5,8 @@ import {
 	packLayoutRows,
 	parseLayoutCookie,
 	serializeLayout,
-	moveLayoutItem
+	moveLayoutItem,
+	resolveDashLayout
 } from './dashboardLayout';
 
 describe('dashboardLayout', () => {
@@ -57,5 +58,26 @@ describe('dashboardLayout', () => {
 		];
 		const down = moveLayoutItem(normalizeLayout(base), 'heatmap', 1);
 		expect(down[0]?.id).toBe('badges');
+	});
+});
+
+describe('resolveDashLayout', () => {
+	it('prefers the site-wide stored layout over the legacy cookie', () => {
+		const stored = defaultLayout().map((item, i) => ({ ...item, enabled: i !== 0 }));
+		const cookie = defaultLayout().map((item, i) => ({ ...item, enabled: i !== 1 }));
+		const out = resolveDashLayout(serializeLayout(stored), serializeLayout(cookie));
+		expect(out[0].enabled).toBe(false);
+		expect(out[1].enabled).toBe(true);
+	});
+
+	it('round-trips through serialize/parse', () => {
+		const layout = defaultLayout().map((item, i) => ({ ...item, enabled: i % 2 === 0 }));
+		expect(resolveDashLayout(serializeLayout(layout))).toEqual(normalizeLayout(layout));
+	});
+
+	it('falls back to the cookie, then the default', () => {
+		const cookie = defaultLayout().map((item, i) => ({ ...item, enabled: i !== 2 }));
+		expect(resolveDashLayout(null, serializeLayout(cookie))[2].enabled).toBe(false);
+		expect(resolveDashLayout(null, null)).toEqual(defaultLayout());
 	});
 });
