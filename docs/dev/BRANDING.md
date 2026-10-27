@@ -13,7 +13,7 @@ File: `src/lib/assets/favicon.svg`. It is both the favicon and the header mark.
 - A solid **rope-orange (`#ea580c`) two-peaked crag**. Three **rising bars** (a grade pyramid / bar chart) are cut out of the rock face and are **transparent**: they're done with an SVG `<mask>`, not painted white, so the page background shows through in light and dark mode.
 - The bars run **through the base** of the mountain (the mask rects extend past y=56), so there's no orange sliver under them and they merge into the background. Their tops sit a little below the slopes (y = 43 / 35 / 27) to give them room to breathe.
 - No circle, no gradient, no outline. Keep it flat and single-colour.
-- Wordmark: **"Crag Stats"** in Plus Jakarta Sans 800, tight tracking. "Crag" is in `--ink` and "Stats" in `--accent`. Use this same lockup everywhere the name appears as a logo (header, login card). Never write the whole name in orange.
+- Wordmark: **"Crag Stats"** in Plus Jakarta Sans 800, tight tracking. "Crag" is in `--ink` and "Stats" in `--brand`. Use this same lockup everywhere the name appears as a logo (header, login card). Never write the whole name in orange.
 - Minimum size: about 16px (favicon). Below about 20px the bars blur, which is acceptable.
 
 ## Typography
@@ -24,30 +24,36 @@ File: `src/lib/assets/favicon.svg`. It is both the favicon and the header mark.
 
 ## Colour tokens (`src/app.css`)
 
-Always use tokens. **Don't** hard-code `white`, `#fff` surfaces or ink-tinted `rgba(...)`: they break dark mode. For tints use `color-mix(in srgb, var(--ink) 8%, transparent)` or `color-mix(in srgb, var(--accent) 12%, var(--paper))`. `color: #fff` on a solid accent or data-coloured fill is fine.
+Always use tokens. **Don't** hard-code `white`, `#fff` surfaces or ink-tinted `rgba(...)`: they break dark mode. For tints use `color-mix(in srgb, var(--ink) 8%, transparent)` or `color-mix(in srgb, var(--accent) 12%, var(--paper))`. Text on a solid `--accent` fill uses `var(--on-accent)` (white in light mode, near-black in dark); `#fff` is fine on band/discipline fills.
 
-| Token                 | Light               | Dark      | Use                                                          |
-| --------------------- | ------------------- | --------- | ------------------------------------------------------------ |
-| `--bg`                | `#f5f6f8`           | `#0f1218` | Page background                                              |
-| `--paper` / `--panel` | `#ffffff`           | `#171b23` | Cards, header, sidebar                                       |
-| `--surface-2`         | `#f8f9fb`           | `#1d222c` | Table header, hover rows, inset blocks                       |
-| `--surface-3`         | `#eceef2`           | `#262c38` | Icon-button hover, version pill, empty heatmap cells         |
-| `--ink`               | `#161a23`           | `#e8eaf0` | Text                                                         |
-| `--ink-muted`         | `#667085`           | `#98a1b3` | Secondary text, icons                                        |
-| `--line`              | `#e6e8ec`           | `#2a303c` | Borders, dividers                                            |
-| `--accent`            | `#ea580c`           | `#fb7a3c` | Brand: active nav, badges, primary buttons, highlight metric |
-| `--accent-strong`     | `#c2410c`           | `#fdba74` | Button hover                                                 |
-| `--accent-soft`       | 10% accent on paper | 14%       | Active nav background, highlight card                        |
-| `--accent-2`          | `#0f766e`           | `#2dd4bf` | Secondary accent (sparingly)                                 |
-| `--shadow`            | very soft           | subtle    | `.panel` elevation                                           |
+| Token                 | Light              | Dark      | Use                                                                   |
+| --------------------- | ------------------ | --------- | --------------------------------------------------------------------- |
+| `--bg`                | `#f5f6f8`          | `#0f1218` | Page background                                                       |
+| `--paper` / `--panel` | `#ffffff`          | `#171b23` | Cards, header, sidebar                                                |
+| `--surface-2`         | `#f8f9fb`          | `#1d222c` | Table header, hover rows, inset blocks                                |
+| `--surface-3`         | `#eceef2`          | `#262c38` | Icon-button hover, version pill, empty heatmap cells                  |
+| `--ink`               | `#161a23`          | `#e8eaf0` | Text                                                                  |
+| `--ink-muted`         | `#576071`          | `#98a1b3` | Secondary text, icons                                                 |
+| `--line`              | `#e6e8ec`          | `#2a303c` | Borders, dividers                                                     |
+| `--brand`             | `#ea580c`          | `#fb7a3c` | Logo + wordmark orange only                                           |
+| `--accent`            | `#c2410c`          | `#fb7a3c` | UI orange: active nav, badges, primary buttons, highlight metric (AA) |
+| `--on-accent`         | `#ffffff`          | `#1c0f06` | Text on solid `--accent` fills                                        |
+| `--accent-strong`     | `#9a3412`          | `#fdba74` | Button hover                                                          |
+| `--accent-soft`       | 8% accent on paper | 14%       | Active nav background, highlight card                                 |
+| `--accent-2`          | `#0f766e`          | `#2dd4bf` | Secondary accent (sparingly)                                          |
+| `--shadow`            | very soft          | subtle    | `.panel` elevation                                                    |
+
+More tokens: `--style-*` (discipline colours, kept equal to `STYLE_BADGE_COLORS` by a unit test), `--danger`, `--gold` / `--gold-soft` (stars), `--series-1/2` (chart series), `--heat-1..4` (ascent calendar, dark-aware), `--shadow-lg`, `--scrim`.
+
+**Contrast (WCAG AA) is tested** by the axe e2e suite in both themes. Text drawn in a data colour should be mixed toward ink, e.g. `color-mix(in srgb, var(--badge) 55%, var(--ink))`: this darkens it in light mode and lightens it in dark mode.
 
 Gotcha: SVG presentation attributes (`fill="var(--x)"`) don't reliably take `var()`. Use `style="fill: var(--ink)"` instead.
 
 ### Dark mode
 
 - The OS preference is the default (`@media (prefers-color-scheme: dark)` on `:root:not([data-theme='light'])`).
-- The header moon/sun button sets `html[data-theme='light'|'dark']` and stores it in `localStorage.cs_theme`.
-- An inline script in `src/app.html` applies the saved theme **before first paint**, so there's no flash. If you add tokens, define them in **both** dark blocks in `app.css`.
+- The header button cycles **System → Light → Dark**. Light/Dark set `html[data-theme]` and `localStorage.cs_theme`; System removes both and follows the OS again.
+- A nonce'd inline script in `src/app.html` applies the saved theme **before first paint**, so there's no flash. If you add tokens, define them in **both** dark blocks in `app.css`.
 
 ## Data colours (theCrag-aligned) — don't rebrand these
 
@@ -103,7 +109,7 @@ Because the brand accent is orange, it sits close to _Trad_ and _Experienced_. T
 ## Components & patterns
 
 - Cards: `.panel` (paper, 1px `--line`, `--shadow`) with a radius of about 0.9–1rem. Card titles are `h2` at about 1.1rem, weight 650.
-- Primary button: accent background, white text, 700 weight, `--accent-strong` on hover. Secondary button: paper background with a `--line` border. Links that act as actions (for example the CSV backup download) use `.btn` / `.btn.secondary` with an icon, not a plain text link.
+- Primary button: accent background, `--on-accent` text, 700 weight, `--accent-strong` on hover. Secondary button: paper background with a `--line` border. Links that act as actions (for example the CSV backup download) use `.btn` / `.btn.secondary` with an icon, not a plain text link.
 - Tables: a `--surface-2` header row, with header text in small uppercase `--ink-muted` (0.72rem, letter-spacing 0.05em). Rows highlight on hover with `--surface-2`.
 - Pills and filters: the active state is solid accent with white text.
 - Highlight metric (for example, onsights): `--accent-soft` background with the number in accent.

@@ -150,10 +150,18 @@ pnpm install
 pnpm dev
 pnpm test           # Vitest unit tests (grade fixes, URLs, mapAscent) — run before commit
 pnpm check          # svelte-check — run before claiming done
+pnpm lint           # Prettier --check + ESLint (CI enforces it; run `pnpm format` to fix)
 pnpm build
+pnpm test:e2e       # Playwright + axe against the production build (run `pnpm build` first)
 ```
 
-CI (`.github/workflows/ci.yml`) runs `pnpm check`, `pnpm test`, and `pnpm build` on push/PR.
+CI (`.github/workflows/ci.yml`) runs `pnpm lint`, `pnpm check`, `pnpm test`, `pnpm build` and `pnpm test:e2e` on push/PR.
+
+- **E2E** (`e2e/`, `playwright.config.ts`): three `node build` servers on 4301–4303 (open, `AUTH_SCOPE=settings`, `AUTH_SCOPE=all`) with throwaway DBs in `e2e/.tmp`; the `setup` project imports `samples/thecrag-logbook-sample.csv`. The axe test fails on serious/critical violations in light **and** dark — fix contrast with tokens, don't weaken the test.
+- **adapter-node assumes https** for CSRF origin checks unless `PROTOCOL_HEADER` is set (it ignores `ORIGIN` in this version). Tests set `PROTOCOL_HEADER=x-forwarded-proto` and send `x-forwarded-proto: http`.
+- **CSP** is configured in `vite.config.ts` (`csp`, nonce mode). Inline scripts need `nonce="%sveltekit.nonce%"`; images allow `https:`/`data:`; no third-party scripts.
+- **Dates/numbers:** use `formatDateTime` / `formatNumber` from `#lib/dates` with `data.dateDisplay` (layout) — never bare `toLocaleString()` (SSR/hydration mismatch, #36).
+- `.git-blame-ignore-revs` lists the bulk Prettier commit.
 
 Prefer fixing type errors over `@ts-ignore`. Do not switch the package manager.
 
@@ -220,5 +228,7 @@ You'll often notice things outside the task at hand. **Don't silently fix them i
 | 2026-10 | `app_settings` table (0008): grade system + "Show in search engines" (dynamic `robots.txt`, `X-Robots-Tag`, meta noindex; forced off for `AUTH_SCOPE=all`). Sync status + grade picker moved from the dashboard hero to Settings; Customize dashboard is admin-only. |
 
 | 2026-10 | v0.3.0: README showcase (logo, badges, `docs/screenshots/`; regeneration steps in `docs/dev/BRANDING.md`). Rewind/Goals selects use `--paper` (were white in dark mode). |
+
+| 2026-10 | Issues #36–#45: DISPLAY_LOCALE/TZ date formatting; site-wide dashboard layout; cheap project badge count; lint in CI + repo-wide Prettier; CSP; colour tokens (`--style-*`, `--danger`, `--gold`, `--heat-*`); logbook nowrap; System/Light/Dark theme + drawer focus; OG/sitemap/manifest/icons; Playwright + axe e2e. UI accent is now `#c2410c` (AA); `--brand` `#ea580c` for logo/wordmark. Fresh DBs under `node build` now find `./migrations`. |
 
 _Add a row when you change behaviour agents must know about._
