@@ -23,6 +23,8 @@ ENV HOST=0.0.0.0
 ENV PORT=3000
 ENV DATABASE_PATH=/data/crag-stats.sqlite
 ENV MIGRATIONS_DIR=/app/migrations
+# impers may download curl-impersonate into a cache under HOME on first route-history import.
+ENV HOME=/tmp
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends ca-certificates \

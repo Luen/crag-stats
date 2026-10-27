@@ -4,6 +4,7 @@ import { getDashboardStats, listLogbook, wipeAllData } from './analytics';
 import {
 	buildFirstAscentStats,
 	getFirstAscentMarks,
+	isFirstAscentImportSkipped,
 	parseFirstAscentKind,
 	routeExists,
 	setFirstAscent,
@@ -101,5 +102,13 @@ describe('first ascent marks', () => {
 		setFirstAscent('thecrag', route, 'FA');
 		wipeAllData();
 		expect(getFirstAscentMarks().size).toBe(0);
+	});
+
+	it('records an import skip when unmarked so re-import can leave them alone', () => {
+		setFirstAscent('thecrag', route, 'FA', { source: 'import' });
+		setFirstAscent('thecrag', route, null);
+		expect(isFirstAscentImportSkipped('thecrag', route)).toBe(true);
+		setFirstAscent('thecrag', route, 'FA', { source: 'manual' });
+		expect(isFirstAscentImportSkipped('thecrag', route)).toBe(false);
 	});
 });

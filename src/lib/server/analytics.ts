@@ -1066,6 +1066,9 @@ export function wipeAllData() {
 	db.run(sql`DELETE FROM projects`);
 	db.run(sql`DELETE FROM goals`);
 	db.run(sql`DELETE FROM first_ascents`);
+	db.run(sql`DELETE FROM first_ascent_import_skips`);
+	db.run(sql`DELETE FROM route_history`);
+	db.run(sql`DELETE FROM route_history_import_state`);
 	db.run(sql`DELETE FROM ascents`);
 	db.run(sql`DELETE FROM routes`);
 	db.run(sql`DELETE FROM profiles`);

@@ -172,7 +172,7 @@ export const appSettings = sqliteTable('app_settings', {
 	updatedAt: text('updated_at').notNull()
 });
 
-/** Owner-marked first ascents (migration 0009); theCrag's API doesn't expose route history. */
+/** Owner-marked first ascents (migration 0009); optional import from route history (#68). */
 export const firstAscents = sqliteTable(
 	'first_ascents',
 	{
@@ -180,7 +180,53 @@ export const firstAscents = sqliteTable(
 		routeExternalId: text('route_external_id').notNull(),
 		/** FA | FFA */
 		kind: text('kind').notNull().default('FA'),
+		createdAt: text('created_at').notNull(),
+		/** manual | import — migration 0010 */
+		source: text('source').notNull().default('manual')
+	},
+	(t) => [primaryKey({ columns: [t.provider, t.routeExternalId] })]
+);
+
+/** Cached public history rows from `/api/route/…?show=info` (migration 0010). */
+export const routeHistory = sqliteTable(
+	'route_history',
+	{
+		provider: text('provider').notNull(),
+		routeExternalId: text('route_external_id').notNull(),
+		historyExternalId: text('history_external_id').notNull(),
+		type: text('type').notNull(),
+		climbers: text('climbers'),
+		historyDate: text('history_date'),
+		rawJson: text('raw_json'),
+		updatedAt: text('updated_at').notNull()
+	},
+	(t) => [
+		primaryKey({ columns: [t.provider, t.routeExternalId, t.historyExternalId] }),
+		index('route_history_route_idx').on(t.provider, t.routeExternalId)
+	]
+);
+
+/** Routes the owner unmarked; import skips these unless reapply is set (migration 0010). */
+export const firstAscentImportSkips = sqliteTable(
+	'first_ascent_import_skips',
+	{
+		provider: text('provider').notNull(),
+		routeExternalId: text('route_external_id').notNull(),
 		createdAt: text('created_at').notNull()
 	},
 	(t) => [primaryKey({ columns: [t.provider, t.routeExternalId] })]
 );
+
+/** Resumable Settings → Import route history progress (migration 0010). */
+export const routeHistoryImportState = sqliteTable('route_history_import_state', {
+	provider: text('provider').primaryKey(),
+	offset: integer('offset').notNull().default(0),
+	total: integer('total').notNull().default(0),
+	fetched: integer('fetched').notNull().default(0),
+	marked: integer('marked').notNull().default(0),
+	skipped: integer('skipped').notNull().default(0),
+	errors: integer('errors').notNull().default(0),
+	status: text('status').notNull().default('idle'),
+	lastError: text('last_error'),
+	updatedAt: text('updated_at').notNull()
+});

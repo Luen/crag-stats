@@ -2,6 +2,7 @@
 allowBuilds:
   better-sqlite3: true
   esbuild: true
+  koffi: true
 
 overrides:
   esbuild: '>=0.25.0'

@@ -25,6 +25,8 @@
 	<p class="banner ok">Dashboard layout saved. <a href="/">View dashboard</a></p>
 {:else if form?.saved}
 	<p class="banner ok">Preferences saved.</p>
+{:else if form?.routeHistoryImport}
+	<p class="banner ok">{form.routeHistoryImport.message ?? 'Route history import finished.'}</p>
 {:else if form?.ok}
 	<p class="banner ok">Done.</p>
 {/if}
@@ -154,6 +156,74 @@
 		</form>
 		{#if form?.imported != null}
 			<p class="ok">Parsed {form.imported} ascents.</p>
+		{/if}
+	</article>
+
+	<article class="panel">
+		<h2>Import route history</h2>
+		<p class="hint">
+			Pulls public FA / FFA entries from theCrag's route API for every route in your local logbook,
+			and marks ones that name your <code>@login</code>. Uses browser TLS impersonation (<code
+				>impers</code
+			>) because Cloudflare blocks plain server requests to
+			<code>/api/route</code> — prefer asking theCrag for proper access when you can.
+			<a href="/docs/first-ascents">How first ascents work</a>
+		</p>
+		{#if data.routeHistoryImport.updatedAt}
+			<p class="status">
+				<span
+					class={[
+						'pill',
+						{
+							ok:
+								data.routeHistoryImport.status === 'done' ||
+								data.routeHistoryImport.status === 'idle',
+							err: data.routeHistoryImport.status === 'error'
+						}
+					]}>{data.routeHistoryImport.status}</span
+				>
+				<span>
+					{data.routeHistoryImport.offset}/{data.routeHistoryImport.total} routes · marked
+					{data.routeHistoryImport.marked} · skipped {data.routeHistoryImport.skipped}
+				</span>
+			</p>
+			{#if data.routeHistoryImport.lastError}
+				<p class="err">{data.routeHistoryImport.lastError}</p>
+			{/if}
+		{/if}
+		{#if data.hasApiKey}
+			<form method="POST" action="?/importRouteHistory" class="stack">
+				<label class="check">
+					<input type="checkbox" name="restart" />
+					<span>
+						<strong>Start over</strong>
+						<small class="hint">Reset progress and fetch from the first route again.</small>
+					</span>
+				</label>
+				<label class="check">
+					<input type="checkbox" name="replaceExisting" />
+					<span>
+						<strong>Replace existing FA / FFA marks</strong>
+						<small class="hint">Off by default — never overwrites marks you already set.</small>
+					</span>
+				</label>
+				<label class="check">
+					<input type="checkbox" name="reapplyUnmarked" />
+					<span>
+						<strong>Re-apply previously unmarked</strong>
+						<small class="hint"
+							>Off by default — routes you unmarked in the logbook stay unmarked.</small
+						>
+					</span>
+				</label>
+				<button type="submit"
+					>{data.routeHistoryImport.resumable ? 'Resume import' : 'Import route history'}</button
+				>
+			</form>
+		{:else}
+			<p class="hint">
+				Needs <code>THECRAG_API_KEY</code> (same key as API sync).
+			</p>
 		{/if}
 	</article>
 

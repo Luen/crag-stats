@@ -57,9 +57,10 @@ src/lib/server/
   cpr.ts                 # approximate CPR (not a proprietary theCrag clone)
   ingest.ts              # upsert + reconcileProviderAscents
   sync.ts                # runTheCragSync (full pull + prune)
-  providers/thecrag/     # API + CSV mappers
+  routeHistoryImport.ts  # Settings FA/FFA import via /api/route + impers (#68)
+  providers/thecrag/     # API + CSV + routeHistoryApi/Parse
   db/schema.ts
-migrations/              # 0001_init.sql, …
+migrations/              # 0001_init.sql, … 0010_route_history.sql
 scripts/                 # migrate, docker-entrypoint, worker
 .github/workflows/       # ci, docker-release (tag/release → GHCR)
 ```
@@ -109,7 +110,7 @@ Height quirk: theCrag may return height as `[value, unit]` arrays — parse in t
 - **Climber type:** if one of Sport / Trad / Boulder is ≥ **40%** of ascents → “Sport climber” (etc.); else “Rock climber”.
 - **CPR timelines:** approximate model in `cpr.ts` (power factor P=5, tick shifts, ~0.7 grade/year decay). Link/docs: theCrag CPR articles. Label UI as approximate — not a byte-for-byte clone.
 - **Notable ascents:** by style + by area; use `StyleBadge` + `TickTypeIcon` (theCrag-like SVGs).
-- **First ascents:** theCrag has no FA tick type. FAs live in route history, which the logbook API doesn't return. So the owner marks FA/FFA per route from the logbook (`first_ascents`, migration 0009, keyed by provider route id so marks survive syncs and prunes; wiped by Settings → Wipe). The card uses the route grade and keeps route (Ewbank) and boulder (V) ranges separate. Mark/unmark actions require `locals.authed`.
+- **First ascents:** theCrag has no FA tick type. FAs live in route history (not the logbook API). Owner can mark FA/FFA in the logbook (`first_ascents`, migration 0009) or **Settings → Import route history** (`routeHistoryImport.ts`, migration 0010): batches `/api/route/ids?show=info` via `impers` (Cloudflare blocks plain `fetch` on `/api/route`; logbook sync stays on normal `fetch`). Auto-mark only when `climbers` contains `@` + `profiles.login`; skip existing marks and previously unmarked routes unless the Settings checkboxes say otherwise. Cache public history in `route_history`. Fail soft if `impers`/koffi cannot load. Prefer negotiating proper theCrag API access long-term. Mark/unmark require `locals.authed`.
 - Summary metrics: onsights, successful ascents, distance climbed (km).
 
 ---
@@ -200,6 +201,7 @@ Prefer fixing type errors over `@ts-ignore`. Do not switch the package manager.
 - Don’t commit secrets, sample private notes, or real API keys.
 - Don’t expand scope into wearables / Mountain Project until the matching epic is in play — keep PRs focused.
 - Don’t claim CPR is identical to theCrag’s proprietary score.
+- Don’t HTML-scrape theCrag route pages for history — use `/api/route/…?show=info` (via `impers` while Cloudflare blocks plain fetch). Don’t use impersonation for the logbook sync path.
 
 ---
 
@@ -263,5 +265,7 @@ You'll often notice things outside the task at hand. **Don't silently fix them i
 | 2026-10 | Private ascent notes are opt-in (`SHOW_PRIVATE_NOTES` / Settings, owner only). First ascents card plus owner-marked FA/FFA in the logbook (migration 0009, `/docs/first-ascents`). |
 
 | 2026-10 | Customize dashboard moved to Settings (`/settings#dashboard`, actions `saveDashboardLayout` / `resetDashboardLayout`); the dashboard keeps an owner-only "Customize dashboard" link. |
+
+| 2026-10 | #68: Settings → Import route history. `impers` + `/api/route/ids?show=info` (migration 0010: `route_history`, import state, FA import skips). Auto-marks FA/FFA when `@login` matches; never overwrites/re-applies unmarked without checkboxes. |
 
 _Add a row when you change behaviour agents must know about._

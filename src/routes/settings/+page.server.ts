@@ -19,6 +19,7 @@ import { hasTheCragApiKey } from '#lib/server/env';
 import { upsertAscents } from '#lib/server/ingest';
 import { parseTheCragCsv } from '#lib/server/providers/thecrag';
 import { refreshProjects } from '#lib/server/projects';
+import { getRouteHistoryImportStatus, runRouteHistoryImport } from '#lib/server/routeHistoryImport';
 import { getSyncStatus, runTheCragSync } from '#lib/server/sync';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -32,7 +33,8 @@ export const load: PageServerLoad = async ({ cookies }) => {
 		dashLayout: resolveDashLayout(
 			getAppSetting('dashboard_layout'),
 			cookies.get(DASH_LAYOUT_COOKIE)
-		)
+		),
+		routeHistoryImport: getRouteHistoryImportStatus()
 	};
 };
 
@@ -111,5 +113,29 @@ export const actions: Actions = {
 		}
 		wipeAllData();
 		return { ok: true, wiped: true };
+	},
+	/** Owner-only (settings gate): pull public route history and auto-mark FA/FFA (#68). */
+	importRouteHistory: async ({ request }) => {
+		const form = await request.formData();
+		try {
+			const result = await runRouteHistoryImport({
+				restart: form.get('restart') === 'on',
+				replaceExisting: form.get('replaceExisting') === 'on',
+				reapplyUnmarked: form.get('reapplyUnmarked') === 'on'
+			});
+			if (!result.ok) {
+				return fail(400, {
+					ok: false,
+					message: result.message ?? 'Route history import failed',
+					routeHistoryImport: result
+				});
+			}
+			return { ok: true, routeHistoryImport: result };
+		} catch (err) {
+			return fail(400, {
+				ok: false,
+				message: err instanceof Error ? err.message : String(err)
+			});
+		}
 	}
 };
