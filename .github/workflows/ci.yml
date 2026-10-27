@@ -31,6 +31,8 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y python3 make g++
 
       - run: pnpm install --frozen-lockfile
+      - name: Lint (Prettier + ESLint)
+        run: pnpm lint
       - run: pnpm check
       - name: Unit tests
         run: pnpm test
