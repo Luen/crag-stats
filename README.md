@@ -26,6 +26,8 @@ cp .env.example .env
 # optional: set THECRAG_API_KEY and APP_PASSWORD
 
 pnpm install
+pnpm test   # grade / URL / ascent mapping unit tests (also runs in CI)
+pnpm check
 pnpm dev
 ```
 
