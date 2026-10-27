@@ -16,7 +16,7 @@
 </p>
 
 <p align="center">
-  <em>Grade pyramids, CPR timelines, projects, goals and a yearly rewind. Your data stays on your machine.</em>
+  <em>Grade pyramids, CPR, training load, projects, first ascents, badges and shareable stat cards. Your data stays on your machine.</em>
 </p>
 
 <p align="center">
@@ -51,16 +51,39 @@ Inspired by [Dreeve](https://dreeve.app/) (Stats for Strava) and [RoxClimbs](htt
 
 ## Features
 
-- **theCrag API sync** — personal Logbook Read API key; full reconcile on every sync (upsert + prune deletes) + daily schedule. Upstream is source of truth.
-- **CSV import** — full logbook export for users without supporter API access (upsert only)
-- **Dashboard** — climber type, style pyramids, notable ascents, CPR timelines, volume, height, top crags
-- **Grade bands & colours** — Beginner → Elite palette aligned with [theCrag grades](https://www.thecrag.com/en/article/grades); site-wide grade system set in Settings
-- **Logbook** — searchable / filterable ascent history with theCrag-like tick icons
-- **Projects, goals & rewind** — auto-detected projects, goal progress bars, yearly snapshot
-- **Dreeve-style UI** — light/dark themes, collapsible sidebar, mobile drawer
-- **Privacy controls** — optional password gate (`APP_PASSWORD` / `AUTH_SCOPE`), search-engine visibility toggle, one-click wipe
-- **Docker / GHCR** — public multi-arch images (`amd64` + `arm64`) with automatic DB migrations on boot
-- Provider-shaped architecture ready for Mountain Project later
+### Your logbook, kept in sync
+
+- **theCrag API sync:** uses your personal Logbook Read API key. Every sync is a full reconcile (new and edited ticks are updated, deleted ones removed), on a daily schedule. A fresh install syncs as soon as it starts. theCrag stays the source of truth.
+- **CSV import** for climbers without supporter API access (adds and updates, never deletes).
+- **Logbook:** search and filter by style, tick, crag, sector, grade, year and season, with theCrag-style tick icons.
+
+### Dashboard
+
+- **Climber type, grade pyramids** per discipline, **notable ascents**, **hardest sends** (routes and boulders ranked separately), volume, height, top crags and tick types.
+- **CPR timelines:** an approximation of theCrag's Climber Performance Rating.
+- **Training load:** an intensity-weighted fatigue/fitness model that flags spikes. Working an ungraded route counts as climbing at your max.
+- **Eddington numbers:** send days, vertical days, and route and boulder grade indexes.
+- **First ascents:** mark your FAs and FFAs in the logbook to get a card with counts, grade ranges and styles, plus badges and milestones dated by your first send.
+- **Solo climbing:** top-rope solo, lead solo, free solo, deep water solo and aid solo, plus ascents with no partner tagged.
+- **Badges & milestones**, streaks, a climbing-story blurb, monthly and yearly stats, style mix, partners, stars and quality, rock types.
+- **Projects** auto-detected from unsent attempts. Ungraded routes get a "New route?" badge.
+- **Goals** with progress bars that fill from your logbook. Only the owner can add or change them.
+- **Rewind:** your year at a glance.
+- **Customize the dashboard** (which cards and in what order) from Settings. Grade system is site-wide.
+- **How it works** pages at `/docs` for every analytic.
+
+### Share
+
+- **Share & embed:** live SVG stat cards (summary, Eddington numbers, hardest sends) for blogs and forum profiles, in light or dark, with copyable HTML or Markdown. The page warns you when the site is only reachable on your local network.
+
+### Privacy & self-hosting
+
+- **Optional password gate** (`APP_PASSWORD` / `AUTH_SCOPE`), a search-engine visibility toggle, and a one-click wipe.
+- **Private notes are hidden by default.** You can opt in to see them yourself; visitors never see them.
+- **Docker / GHCR:** multi-arch images (`amd64` + `arm64`), with database migrations applied automatically on start. Upgrading straight from any older release is tested.
+- **Nightly dependency updates:** in-major upgrades with a 3-day cooldown, the full test suite, then a patch release.
+- **Dreeve-style UI:** light and dark themes, a collapsible sidebar and a mobile drawer.
+- Provider-shaped architecture, ready for Mountain Project later.
 
 Contributor / agent notes: see [AGENTS.md](./AGENTS.md) (living document).
 
@@ -84,7 +107,7 @@ Open http://localhost:5173 — then **Settings** → sync API or upload CSV.
 
 Public images are published to GitHub Container Registry on each version tag / release:
 
-`ghcr.io/luen/crag-stats:latest` (also semver tags like `v0.1.0`)
+`ghcr.io/luen/crag-stats:latest`, plus version tags like `0.5.1`, `0.5` and `0` (no `v` prefix).
 
 ```bash
 cp .env.example .env
@@ -97,7 +120,7 @@ docker compose -f docker-compose.ghcr.yml up -d
 Pin a release:
 
 ```bash
-CRAG_STATS_IMAGE_TAG=v0.1.0 docker compose -f docker-compose.ghcr.yml up -d
+CRAG_STATS_IMAGE_TAG=0.5 docker compose -f docker-compose.ghcr.yml up -d
 ```
 
 Upgrades:
@@ -107,7 +130,7 @@ docker compose -f docker-compose.ghcr.yml pull
 docker compose -f docker-compose.ghcr.yml up -d
 ```
 
-**Database migrations run automatically** on container start (`scripts/docker-entrypoint.mjs` + `/migrations/*.sql`). Your SQLite volume is preserved across upgrades.
+**Database migrations run automatically** on container start (`scripts/docker-entrypoint.mjs` + `/migrations/*.sql`). Your SQLite volume is preserved across upgrades, and you can skip releases: every pending migration is applied in order. That's covered by a test that upgrades every older schema to the latest.
 
 ### Build locally instead
 
