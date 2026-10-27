@@ -43,7 +43,7 @@
 		"typescript": "^6.0.3",
 		"typescript-eslint": "^8.60.1",
 		"vite": "^8.3.0",
-		"vitest": "3.2.4"
+		"vitest": "^4.1.12"
 	},
 	"imports": {
 		"#lib": "./src/lib/index.ts",
@@ -63,6 +63,10 @@
 		"onlyBuiltDependencies": [
 			"better-sqlite3",
 			"esbuild"
-		]
+		],
+		"overrides": {
+			"esbuild": ">=0.25.0",
+			"tinypool": ">=2.1.2"
+		}
 	}
 }

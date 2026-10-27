@@ -74,6 +74,22 @@ function monthKey(iso: string | null | undefined): string | null {
 	return iso.slice(0, 7);
 }
 
+/** Strict YYYY-MM-DD with real calendar month/day (rejects 2018-00-00 etc.). */
+function validDay(iso: string | null | undefined): string | null {
+	const d = (iso || '').slice(0, 10);
+	const m = d.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+	if (!m) return null;
+	const year = Number(m[1]);
+	const month = Number(m[2]);
+	const day = Number(m[3]);
+	if (month < 1 || month > 12 || day < 1 || day > 31) return null;
+	const dt = new Date(`${d}T12:00:00`);
+	if (Number.isNaN(dt.getTime())) return null;
+	// Reject JS date rollover (e.g. 2024-02-31 → March)
+	if (dt.getFullYear() !== year || dt.getMonth() + 1 !== month || dt.getDate() !== day) return null;
+	return d;
+}
+
 function displayStyle(gearStyle: string | null | undefined): string {
 	const s = (gearStyle || '').trim();
 	if (!s) return 'Unknown';
@@ -410,8 +426,8 @@ export function getDashboardStats(preferredSystem: GradeSystem = 'ewbank'): Dash
 
 	const dayMap = new Map<string, { count: number; sends: number }>();
 	for (const row of all) {
-		const day = (row.ascentDate || '').slice(0, 10);
-		if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) continue;
+		const day = validDay(row.ascentDate);
+		if (!day) continue;
 		const slot = dayMap.get(day) ?? { count: 0, sends: 0 };
 		slot.count += 1;
 		if (row.isSend) slot.sends += 1;
@@ -600,8 +616,8 @@ export function getDashboardStats(preferredSystem: GradeSystem = 'ewbank'): Dash
 
 	let earliest: string | null = null;
 	for (const row of all) {
-		const d = (row.ascentDate || '').slice(0, 10);
-		if (!/^\d{4}-\d{2}-\d{2}$/.test(d)) continue;
+		const d = validDay(row.ascentDate);
+		if (!d) continue;
 		if (!earliest || d < earliest) earliest = d;
 	}
 
@@ -903,15 +919,20 @@ function buildStreaks(dayMap: Map<string, { count: number; sends: number }>): {
 
 	let currentDays = 0;
 	if (daySet.has(todayIso) || daySet.has(yIso)) {
-		let cursor = daySet.has(todayIso) ? new Date(`${todayIso}T12:00:00`) : new Date(`${yIso}T12:00:00`);
-		while (daySet.has(cursor.toISOString().slice(0, 10))) {
+		let cursor = daySet.has(todayIso)
+			? new Date(`${todayIso}T12:00:00`)
+			: new Date(`${yIso}T12:00:00`);
+		let guard = 0;
+		while (daySet.has(cursor.toISOString().slice(0, 10)) && guard < 4000) {
 			currentDays += 1;
+			guard += 1;
 			cursor.setDate(cursor.getDate() - 1);
 		}
 	}
 
-	const weekKey = (iso: string) => {
+	const weekKey = (iso: string): string | null => {
 		const d = new Date(`${iso}T12:00:00`);
+		if (Number.isNaN(d.getTime())) return null;
 		const tmp = new Date(d);
 		tmp.setDate(tmp.getDate() + 3 - ((tmp.getDay() + 6) % 7));
 		const week1 = new Date(tmp.getFullYear(), 0, 4);
@@ -920,19 +941,26 @@ function buildStreaks(dayMap: Map<string, { count: number; sends: number }>): {
 			Math.round(
 				((tmp.getTime() - week1.getTime()) / 86400000 - 3 + ((week1.getDay() + 6) % 7)) / 7
 			);
+		if (!Number.isFinite(week) || week < 1 || week > 53) return null;
 		return `${tmp.getFullYear()}-W${String(week).padStart(2, '0')}`;
 	};
-	const weeks = [...new Set(days.map(weekKey))].sort();
+	const weeks = [...new Set(days.map(weekKey).filter((k): k is string => Boolean(k)))].sort();
 	let currentWeeks = 0;
 	if (weeks.length) {
 		const lastWeek = weeks[weeks.length - 1];
 		const weekSet = new Set(weeks);
-		// count contiguous ISO weeks ending at last active week
 		const [yStr, wStr] = lastWeek.split('-W');
 		let y = Number(yStr);
 		let w = Number(wStr);
-		while (weekSet.has(`${y}-W${String(w).padStart(2, '0')}`)) {
+		let guard = 0;
+		while (
+			Number.isFinite(y) &&
+			Number.isFinite(w) &&
+			weekSet.has(`${y}-W${String(w).padStart(2, '0')}`) &&
+			guard < 3000
+		) {
 			currentWeeks += 1;
+			guard += 1;
 			w -= 1;
 			if (w < 1) {
 				y -= 1;
@@ -946,8 +974,15 @@ function buildStreaks(dayMap: Map<string, { count: number; sends: number }>): {
 	if (months.length) {
 		const monthSet = new Set(months);
 		let [y, m] = months[months.length - 1].split('-').map(Number);
-		while (monthSet.has(`${y}-${String(m).padStart(2, '0')}`)) {
+		let guard = 0;
+		while (
+			Number.isFinite(y) &&
+			Number.isFinite(m) &&
+			monthSet.has(`${y}-${String(m).padStart(2, '0')}`) &&
+			guard < 600
+		) {
 			currentMonths += 1;
+			guard += 1;
 			m -= 1;
 			if (m < 1) {
 				y -= 1;

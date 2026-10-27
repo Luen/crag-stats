@@ -264,16 +264,17 @@ function parseFrench(raw: string): number | null {
  * Ranges use the midpoint (e.g. V1/2 → 1.5).
  */
 function parseVScale(raw: string): number | null {
-	const text = raw.trim();
+	// Collapse whitespace first so matchers need no nested `\s*` (avoids ReDoS).
+	const text = raw.trim().replace(/\s+/g, '');
 
-	const vb = text.match(/^V\s*B\s*([+-])?$/i);
+	const vb = text.match(/^VB([+-])?$/i);
 	if (vb) {
 		if (vb[1] === '-') return -1.5;
 		if (vb[1] === '+') return -0.5;
 		return -1;
 	}
 
-	const range = text.match(/^V\s*(\d+)\s*[\/\-–]\s*V?\s*(\d+)\s*([+-])?$/i);
+	const range = text.match(/^V(\d+)[\/\-–]V?(\d+)([+-])?$/i);
 	if (range) {
 		const a = Number(range[1]);
 		const b = Number(range[2]);
@@ -284,7 +285,7 @@ function parseVScale(raw: string): number | null {
 		return mid;
 	}
 
-	const m = text.match(/^V\s*(\d+)\s*([+-])?$/i);
+	const m = text.match(/^V(\d+)([+-])?$/i);
 	if (!m) return null;
 	const n = Number(m[1]);
 	if (Number.isNaN(n)) return null;
@@ -295,7 +296,8 @@ function parseVScale(raw: string): number | null {
 
 /** Display label for a V score (preserves ranges when raw was a range). */
 export function formatVScaleLabel(score: number, raw?: string | null): string {
-	const range = (raw ?? '').trim().match(/^V\s*(\d+)\s*[\/\-–]\s*V?\s*(\d+)/i);
+	const compact = (raw ?? '').trim().replace(/\s+/g, '');
+	const range = compact.match(/^V(\d+)[\/\-–]V?(\d+)/i);
 	if (range) return `V${range[1]}/${range[2]}`;
 	return convertFromVScale(score, 'v_scale');
 }
