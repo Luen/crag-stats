@@ -132,7 +132,8 @@ Components: `TickTypeIcon.svelte`, `StyleBadge.svelte`. Keep icons SVG-inline so
 - SVG presentation attributes can't take `var()` reliably — use `style="stroke: var(--ink)"` instead.
 - **Dark mode:** OS preference by default; header toggle stores `cs_theme` in localStorage → `html[data-theme]`. Applied pre-paint by the inline script in `app.html`.
 - **Shell (Dreeve-style):** fixed top bar (sidebar toggle, logo, GitHub, theme, settings) + grouped icon sidebar with count badges (`navCounts` from `+layout.server.ts`, hidden when `AUTH_SCOPE=all` and logged out). Desktop toggle collapses to a mini icon rail with hover tooltips (`cs_sidebar=mini` → `html[data-sidebar='mini']`); ≤860px it's an off-canvas drawer.
-- Icons: `NavIcon.svelte` (inline outline SVGs). Logo/favicon: `src/lib/assets/favicon.svg` (orange disc, crag + rising grade bars).
+- Icons: `NavIcon.svelte` (inline outline SVGs). Logo/favicon: `src/lib/assets/favicon.svg` (flat orange crag, grade bars masked out / transparent — no circle, no gradient).
+- Full style guide (tokens, logo, theCrag band + discipline colours, shell): **`docs/dev/BRANDING.md`** — update it with any visual change.
 
 ## Docker / release
 
