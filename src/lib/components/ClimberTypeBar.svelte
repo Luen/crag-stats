@@ -9,7 +9,7 @@
 		<h2>Climber type</h2>
 		<strong class="type">{climberType}</strong>
 	</header>
-	<p class="hint">≥40% in one discipline → that climber type; otherwise “Rock climber”.</p>
+	<p class="hint"><a href="/docs/climber-type">How is this decided?</a></p>
 	{#if shares.length}
 		<div class="bar" role="img" aria-label="Climbing style distribution">
 			{#each shares as s (s.style)}
@@ -54,8 +54,11 @@
 	}
 	.hint {
 		margin: 0.35rem 0 0.85rem;
-		color: var(--ink-muted);
-		font-size: 0.9rem;
+		font-size: 0.85rem;
+	}
+	.hint a {
+		color: var(--accent);
+		font-weight: 600;
 	}
 	.bar {
 		display: flex;

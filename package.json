@@ -1,7 +1,7 @@
 {
 	"name": "crag-stats",
 	"private": true,
-	"version": "0.3.0",
+	"version": "0.4.0",
 	"type": "module",
 	"packageManager": "pnpm@12.15.0",
 	"engines": {
@@ -63,6 +63,7 @@
 		"cookie": "^2.0.1",
 		"csv-parse": "^7.0.3",
 		"drizzle-orm": "^0.45.4",
+		"marked": "^18.1.2",
 		"node-cron": "^4.6.0",
 		"zod": "^4.6.7"
 	}

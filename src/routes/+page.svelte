@@ -72,7 +72,9 @@
 	{:else if id === 'gradeBands'}
 		<article class="panel">
 			<h2>Grade bands</h2>
-			<p class="hint">Colours match theCrag: Beginner → Elite</p>
+			<p class="hint">
+				Colours match theCrag: Beginner → Elite · <a href="/docs/grades">About grade bands</a>
+			</p>
 			<BarList
 				items={s.bandBreakdown.map((b) => ({
 					label: b.name,
@@ -120,14 +122,7 @@
 	{:else if id === 'projects'}
 		<ProjectsHighlight projects={data.dashboardProjects} />
 	{:else if id === 'trainingLoad'}
-		<TrainingLoad
-			last7={s.trainingLoad.last7}
-			last28={s.trainingLoad.last28}
-			sendRate7={s.trainingLoad.sendRate7}
-			sendRate28={s.trainingLoad.sendRate28}
-			restDays7={s.trainingLoad.restDays7}
-			restDays28={s.trainingLoad.restDays28}
-		/>
+		<TrainingLoad load={s.trainingLoad} />
 	{:else if id === 'milestones'}
 		<Milestones items={s.milestones.items} />
 	{:else if id === 'styleMix'}

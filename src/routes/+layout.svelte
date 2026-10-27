@@ -25,12 +25,19 @@
 				{ href: '/goals', label: 'Goals', icon: 'goals' },
 				{ href: '/rewind', label: 'Rewind', icon: 'rewind' }
 			],
-			data.showSettings ? [{ href: '/settings', label: 'Settings', icon: 'settings' }] : []
+			[
+				{ href: '/docs', label: 'Docs', icon: 'docs' },
+				...(data.showSettings ? [{ href: '/settings', label: 'Settings', icon: 'settings' }] : [])
+			]
 		].filter((g) => g.length > 0) as NavLink[][]
 	);
 
+	/** Exact match, or a section prefix (e.g. /docs/cpr → Docs). */
+	const isActive = (href: string) =>
+		page.url.pathname === href || (href !== '/' && page.url.pathname.startsWith(`${href}/`));
+
 	const current = $derived(
-		groups.flat().find((l) => l.href === page.url.pathname) ??
+		groups.flat().find((l) => isActive(l.href)) ??
 			(page.url.pathname === '/login' ? { label: 'Sign in' } : null)
 	);
 
@@ -240,8 +247,8 @@
 				{#each group as link (link.href)}
 					<a
 						href={link.href}
-						class={{ active: page.url.pathname === link.href }}
-						aria-current={page.url.pathname === link.href ? 'page' : undefined}
+						class={{ active: isActive(link.href) }}
+						aria-current={isActive(link.href) ? 'page' : undefined}
 					>
 						<span class="ico"><NavIcon name={link.icon} /></span>
 						<span class="label">{link.label}</span>
