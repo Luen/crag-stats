@@ -87,7 +87,7 @@ Because the brand accent is orange, it sits close to *Trad* and *Experienced*. T
 
 ## App shell (`src/routes/+layout.svelte`)
 
-- **Top bar** (fixed, `--header-h` 3.75rem): sidebar toggle · logo plus wordmark · then GitHub, theme toggle and settings on the right.
+- **Top bar** (fixed, `--header-h` 3.75rem): sidebar toggle · logo plus wordmark · then GitHub, theme toggle, settings and (when signed in with `APP_PASSWORD` set) a log-out icon on the right. Log out is also in Settings → Admin session.
 - **Sidebar** (`--side-w` 15rem): Dreeve-style groups separated by `<hr>`:
   Dashboard | Logbook, Projects, Sectors | Goals, Rewind | Settings.
   - Icons come from `src/lib/components/NavIcon.svelte` (Lucide-style outline, 24px grid, 1.8 stroke). Projects uses a quickdraw.

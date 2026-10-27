@@ -138,6 +138,13 @@
 					<NavIcon name="settings" />
 				</a>
 			{/if}
+			{#if data.authEnabled && data.authed}
+				<form method="POST" action="/logout" class="logout">
+					<button type="submit" class="icon-btn" title="Log out" aria-label="Log out">
+						<NavIcon name="logout" />
+					</button>
+				</form>
+			{/if}
 		</div>
 	</header>
 
@@ -267,6 +274,9 @@
 	.icon-btn:hover {
 		background: var(--surface-3);
 		color: var(--ink);
+	}
+	.logout {
+		display: contents;
 	}
 
 	/* ---------- Sidebar ---------- */
