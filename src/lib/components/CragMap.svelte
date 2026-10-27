@@ -80,7 +80,7 @@
 		display: block;
 	}
 	.bg {
-		fill: rgba(47, 93, 58, 0.06);
+		fill: color-mix(in srgb, var(--accent) 6%, transparent);
 		stroke: var(--line);
 	}
 	.dot {
@@ -89,7 +89,7 @@
 		stroke-width: 1.5;
 	}
 	a:hover .dot {
-		fill: rgba(47, 93, 58, 0.65);
+		fill: color-mix(in srgb, var(--accent) 65%, transparent);
 		stroke: var(--accent);
 	}
 	.label {

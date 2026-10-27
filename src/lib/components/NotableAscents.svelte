@@ -143,12 +143,12 @@
 		border: 1px solid var(--line);
 		border-radius: 0.75rem;
 		overflow: hidden;
-		background: color-mix(in srgb, var(--paper, #fffaf2) 55%, white);
+		background: var(--surface-2);
 	}
 	.group-head {
 		padding: 0.55rem 0.75rem;
 		border-bottom: 1px solid var(--line);
-		background: color-mix(in srgb, var(--panel) 80%, white);
+		background: var(--surface-2);
 	}
 	.area {
 		font-weight: 700;
@@ -188,7 +188,7 @@
 		max-width: 7.5rem;
 		border-radius: 999px;
 		overflow: hidden;
-		background: rgba(28, 36, 24, 0.06);
+		background: color-mix(in srgb, var(--ink) 6%, transparent);
 	}
 	.bands span {
 		display: block;

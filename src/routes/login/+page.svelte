@@ -1,11 +1,15 @@
 <script lang="ts">
+	import favicon from '#lib/assets/favicon.svg';
 	import type { PageProps } from './$types';
 	let { data, form }: PageProps = $props();
 </script>
 
 <section class="panel">
-	<h1>Crag Stats</h1>
-	<p>Enter the app password to continue.</p>
+	<div class="brand">
+		<img src={favicon} alt="" width="52" height="52" />
+		<h1>Crag<span>Stats</span></h1>
+	</div>
+	<p class="lede">Enter the app password to continue.</p>
 	{#if form?.message}
 		<p class="err" role="alert">{form.message}</p>
 	{/if}
@@ -30,15 +34,33 @@
 	.panel {
 		max-width: 24rem;
 		margin: 4rem auto;
-		padding: 1.5rem;
+		padding: 2rem 1.75rem 1.75rem;
 		border-radius: 1rem;
+	}
+	/* Same lockup as the header: mark + "Crag" in ink, "Stats" in accent. */
+	.brand {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.5rem;
 	}
 	h1 {
 		margin: 0;
+		font-size: 1.75rem;
+		font-weight: 800;
+		letter-spacing: -0.03em;
+		color: var(--ink);
+	}
+	h1 span {
 		color: var(--accent);
+		margin-left: 0.2em;
 	}
 	p {
 		color: var(--ink-muted);
+	}
+	.lede {
+		text-align: center;
+		margin: 0.4rem 0 1.25rem;
 	}
 	form {
 		display: grid;
@@ -53,12 +75,16 @@
 	}
 	button {
 		background: var(--accent);
-		color: white;
+		color: #fff;
 		border: none;
 		font-weight: 700;
+		cursor: pointer;
+	}
+	button:hover {
+		background: var(--accent-strong);
 	}
 	.err {
-		color: #7a1010;
+		color: var(--band-expert);
 	}
 	.sr-only {
 		position: absolute;

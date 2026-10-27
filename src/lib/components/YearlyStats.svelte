@@ -168,7 +168,7 @@
 		border: 1px solid var(--line);
 		border-radius: 0.75rem;
 		padding: 0.75rem 0.85rem;
-		background: color-mix(in srgb, var(--paper, #fffaf2) 70%, white);
+		background: var(--surface-2);
 	}
 	.card .year {
 		font-weight: 700;

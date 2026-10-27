@@ -45,7 +45,7 @@
 			<path
 				d="M3.2 8.1 6.4 11.2 12.8 4.4"
 				fill="none"
-				stroke="#1a1a1a"
+				style="stroke: var(--ink)"
 				stroke-width="2"
 				stroke-linecap="round"
 				stroke-linejoin="round"
@@ -67,12 +67,12 @@
 				font-size="8.5"
 				font-family="system-ui,Segoe UI,sans-serif"
 				font-weight="700"
-				fill="#1a1a1a">Top</text
+				style="fill: var(--ink)">Top</text
 			>
 			<path
 				d="M8.05 2.1 9.35 3.35 11.5 1.1"
 				fill="none"
-				stroke="#1a1a1a"
+				style="stroke: var(--ink)"
 				stroke-width="1.35"
 				stroke-linecap="round"
 				stroke-linejoin="round"

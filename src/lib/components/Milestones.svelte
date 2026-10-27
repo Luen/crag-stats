@@ -72,7 +72,7 @@
 		border: 1px solid var(--line);
 		border-radius: 0.35rem;
 		padding: 0.2rem 0.4rem;
-		background: white;
+		background: var(--paper);
 		white-space: nowrap;
 	}
 	.body {

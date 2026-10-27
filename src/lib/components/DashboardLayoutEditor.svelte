@@ -143,7 +143,7 @@
 		padding: 0.35rem 0.45rem;
 		border: 1px solid var(--line);
 		border-radius: 0.45rem;
-		background: color-mix(in srgb, var(--paper, #fffaf2) 60%, white);
+		background: var(--surface-2);
 	}
 	.en {
 		display: flex;
@@ -172,7 +172,7 @@
 		height: 1.75rem;
 		border-radius: 0.35rem;
 		border: 1px solid var(--line);
-		background: white;
+		background: var(--paper);
 		cursor: pointer;
 		font: inherit;
 		line-height: 1;

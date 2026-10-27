@@ -81,7 +81,7 @@
 	.track {
 		height: 0.45rem;
 		border-radius: 999px;
-		background: rgba(28, 36, 24, 0.08);
+		background: color-mix(in srgb, var(--ink) 8%, transparent);
 		overflow: hidden;
 		margin-top: 0.25rem;
 	}

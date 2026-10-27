@@ -43,6 +43,6 @@
 		border-radius: 0.35rem;
 		background: color-mix(in srgb, var(--accent, #1d6fa5) 12%, transparent);
 		color: var(--ink-muted, #5a5a5a);
-		border: 1px solid color-mix(in srgb, var(--line, #ddd) 80%, transparent);
+		border: 1px solid color-mix(in srgb, var(--line) 80%, transparent);
 	}
 </style>

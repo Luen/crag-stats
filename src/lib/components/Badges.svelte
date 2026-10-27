@@ -146,7 +146,7 @@
 		height: 2rem;
 		border-radius: 999px;
 		border: 1px solid var(--line);
-		background: white;
+		background: var(--paper);
 		color: var(--ink);
 		font-size: 1.25rem;
 		line-height: 1;
@@ -163,7 +163,7 @@
 		border: 1px solid var(--line);
 		border-radius: 0.85rem;
 		padding: 0.9rem 0.85rem 0.75rem;
-		background: color-mix(in srgb, var(--paper, #fffaf2) 70%, white);
+		background: var(--surface-2);
 		display: grid;
 		grid-template-rows: auto auto 1fr auto;
 		gap: 0.35rem;
@@ -180,7 +180,7 @@
 		display: grid;
 		place-items: center;
 		color: var(--accent);
-		background: color-mix(in srgb, var(--accent) 14%, white);
+		background: color-mix(in srgb, var(--accent) 14%, var(--paper));
 	}
 	.card[data-tone='warm'] .icon {
 		color: #c45c26;
@@ -188,7 +188,7 @@
 	}
 	.card[data-tone='green'] .icon {
 		color: #2f5d3a;
-		background: rgba(47, 93, 58, 0.14);
+		background: color-mix(in srgb, var(--accent) 14%, transparent);
 	}
 	.card[data-tone='blue'] .icon {
 		color: #1d6fa5;
@@ -201,7 +201,7 @@
 	h3 {
 		margin: 0;
 		font-size: 0.95rem;
-		font-family: Fraunces, Georgia, serif;
+		font-family: var(--font-display);
 	}
 	.detail {
 		margin: 0;

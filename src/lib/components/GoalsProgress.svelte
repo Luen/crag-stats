@@ -101,7 +101,7 @@
 		margin-top: 0.4rem;
 		height: 0.5rem;
 		border-radius: 999px;
-		background: rgba(28, 36, 24, 0.08);
+		background: color-mix(in srgb, var(--ink) 8%, transparent);
 		overflow: hidden;
 	}
 	.bar span {

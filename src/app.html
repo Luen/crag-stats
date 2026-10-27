@@ -4,6 +4,16 @@
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<meta name="text-scale" content="scale" />
+		<meta name="theme-color" content="#ea580c" />
+		<script>
+			// Apply saved theme + sidebar mode before first paint (no flash). See +layout.svelte.
+			try {
+				var d = document.documentElement;
+				var t = localStorage.getItem('cs_theme');
+				if (t === 'light' || t === 'dark') d.dataset.theme = t;
+				if (localStorage.getItem('cs_sidebar') === 'mini') d.dataset.sidebar = 'mini';
+			} catch (e) {}
+		</script>
 		%sveltekit.head%
 	</head>
 	<body data-sveltekit-preload-data="hover">

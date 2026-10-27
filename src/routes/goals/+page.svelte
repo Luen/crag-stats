@@ -180,13 +180,13 @@
 		font-size: 0.85rem;
 		font-weight: 700;
 		color: var(--accent);
-		background: color-mix(in srgb, var(--accent) 12%, white);
+		background: color-mix(in srgb, var(--accent) 12%, var(--paper));
 		padding: 0.1rem 0.5rem;
 		border-radius: 999px;
 	}
 	.count.muted {
 		color: var(--ink-muted);
-		background: rgba(28, 36, 24, 0.06);
+		background: color-mix(in srgb, var(--ink) 6%, transparent);
 	}
 	.form {
 		display: grid;
@@ -247,7 +247,7 @@
 		padding: 0.85rem 0.9rem;
 		border: 1px solid var(--line);
 		border-radius: 0.75rem;
-		background: color-mix(in srgb, var(--paper, #fffaf2) 55%, white);
+		background: var(--surface-2);
 	}
 	.goal.done {
 		opacity: 0.88;
@@ -285,7 +285,7 @@
 	.bar {
 		height: 0.55rem;
 		border-radius: 999px;
-		background: rgba(28, 36, 24, 0.08);
+		background: color-mix(in srgb, var(--ink) 8%, transparent);
 		overflow: hidden;
 	}
 	.bar span {

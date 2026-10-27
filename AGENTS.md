@@ -27,7 +27,8 @@ Self-hosted climbing analytics for [theCrag](https://www.thecrag.com/), inspired
 | Piece | Choice |
 |---|---|
 | App | SvelteKit 3 + Svelte 5 (runes: `$props`, `$derived`, `$state`) |
-| CSS | Tailwind 4 where useful + existing custom CSS variables in layout |
+| CSS | Tailwind 4 where useful + theme tokens in `src/app.css` (light/dark) |
+| Font | Plus Jakarta Sans (bundled via `@fontsource-variable/plus-jakarta-sans`, no CDN) |
 | DB | SQLite via `better-sqlite3` + Drizzle ORM |
 | Package manager | **pnpm** (pin via `package.json#packageManager`; config in `pnpm-workspace.yaml`) |
 | Node | 24 LTS+ |
@@ -87,7 +88,7 @@ Height quirk: theCrag may return height as `[value, unit]` arrays — parse in t
 
 - Canonical numeric scores lean on **Ewbank** for routes and **V-scale** for boulder; convert for display via `src/lib/grades`.
 - Band palette (Beginner → Elite) matches theCrag article colours — see `bands.ts`. Boulder: VB± green, **V0± yellow** (Intermediate), V1–V4 orange, V5–V10 red, V11+ purple (`bandFromVScale`).
-- Preferred system: cookie `cs_grade_system` + env `PREFERRED_GRADE_SYSTEM`.
+- Preferred system: site-wide `app_settings.grade_system` (Settings → Display & visibility), fallback env `PREFERRED_GRADE_SYSTEM`. `?system=` is a one-off override; the old `cs_grade_system` cookie is no longer read.
 - **Style pyramids** group by Sport / Trad / Boulder / Top rope / … with stacked tick segments. Do not dump mixed VB + `7a` + `19` in one unordered list. Pyramid grade chips/bars link to `/logbook?style=&score=` (integer score buckets).
 - **Grade-system fit:** reject boulder CPR/V-scale on sport/trad (caused Trad `−1` / VB rows). On boulder, bare AU/Ewbank numbers (e.g. Upendi `5`) map to **V5**. Font `5A` must not steal French `5a` on routes.
 - **V-scale ranges** like `V1/2` or `V5/6` must parse as midpoints (1.5, 5.5). Never fall back to gradeBand Ewbank midpoints (21/28/…) as V-scores — that produced fake “V21” / “V28”.
@@ -125,6 +126,15 @@ Components: `TickTypeIcon.svelte`, `StyleBadge.svelte`. Keep icons SVG-inline so
 
 ---
 
+## Theme & app shell
+
+- **Tokens only.** Colours come from `src/app.css` (`--bg`, `--paper`, `--surface-2/3`, `--ink`, `--ink-muted`, `--line`, `--accent` rope orange, `--accent-soft`, `--shadow`). Don't hard-code `white`/`#fff` surfaces or ink-tinted `rgba()` — they break dark mode. Use `color-mix(in srgb, var(--ink) N%, transparent)` for tints. `color: #fff` on an accent/coloured fill is fine.
+- SVG presentation attributes can't take `var()` reliably — use `style="stroke: var(--ink)"` instead.
+- **Dark mode:** OS preference by default; header toggle stores `cs_theme` in localStorage → `html[data-theme]`. Applied pre-paint by the inline script in `app.html`.
+- **Shell (Dreeve-style):** fixed top bar (sidebar toggle, logo, GitHub, theme, settings, log out when signed in) + grouped icon sidebar with count badges (`navCounts` from `+layout.server.ts`, hidden when `AUTH_SCOPE=all` and logged out). Desktop toggle collapses to a mini icon rail with hover tooltips (`cs_sidebar=mini` → `html[data-sidebar='mini']`); ≤860px it's an off-canvas drawer.
+- Icons: `NavIcon.svelte` (inline outline SVGs). Logo/favicon: `src/lib/assets/favicon.svg` (flat orange crag, grade bars masked out / transparent through the base — no circle, no gradient). Wordmark lockup is always ink "Crag" + orange "Stats".
+- Full style guide (tokens, logo, theCrag band + discipline colours, shell): **`docs/dev/BRANDING.md`** — update it with any visual change.
+
 ## Docker / release
 
 - Compose: `docker-compose.yml` (build) and `docker-compose.ghcr.yml` (pull image).
@@ -160,6 +170,26 @@ Prefer fixing type errors over `@ts-ignore`. Do not switch the package manager.
 
 ---
 
+## File issues for what you find
+
+You'll often notice things outside the task at hand. **Don't silently fix them in an unrelated PR, and don't let them go unrecorded: file a GitHub issue.**
+
+- **What to file:**
+  - bugs (even if unconfirmed: say how you'd reproduce them)
+  - code that needs refactoring or is duplicated
+  - performance or security concerns
+  - accessibility gaps
+  - stale docs
+  - missing tests
+  - feature or UX ideas
+- **Before filing**, search open and closed issues (`gh issue list --state all --search "<keywords>"`) and comment on an existing one rather than duplicating it.
+- **One issue per problem.**
+  - Title: `Area: short summary` (e.g. `Logbook: date column wraps on desktop`).
+  - Body: what you saw (file:line, screenshot or steps), why it matters, and a suggested fix or acceptance criteria.
+- **Label it:** `bug`, `enhancement`, `accessibility`, `documentation`, `analytics`, `sync`, `provider:thecrag`, `docker`, `good first issue` as fits. Add `help wanted` when it's well-scoped.
+- **Mention it** to the user (with the link) at the end of your task. Link issues from PRs with `Fixes #n` / `Refs #n`.
+- **Never put private data in an issue:** no logbook notes, API keys, real `.env` values or personal ascent data. Use the sample CSV or synthetic examples.
+
 ## Changelog for agents
 
 | When | Note |
@@ -184,5 +214,9 @@ Prefer fixing type errors over `@ts-ignore`. Do not switch the package manager.
 | 2026-10 | Dashboard Projects card: top 3 open by sessions/tries (`listDashboardProjects`); layout id `projects` beside goals. |
 | 2026-10 | Dashboard card show/order via cookie `cs_dash_layout` (Dreeve-style); hero + metrics fixed; Customize panel on `/`. Defaults = current order. See `dashboardLayout.ts`. |
 | 2026-10 | Discipline colours unified via `STYLE_COLORS` in `ticks.ts` (Sport blue, Trad orange, Boulder red) — Style mix + climber-type share the same palette as StyleBadge. |
+
+| 2026-10 | Dreeve-style redesign: theme tokens + dark mode, Plus Jakarta Sans, new logo, top bar + collapsible mini sidebar / mobile drawer, nav count badges. |
+
+| 2026-10 | `app_settings` table (0008): grade system + "Show in search engines" (dynamic `robots.txt`, `X-Robots-Tag`, meta noindex; forced off for `AUTH_SCOPE=all`). Sync status + grade picker moved from the dashboard hero to Settings; Customize dashboard is admin-only. |
 
 _Add a row when you change behaviour agents must know about._

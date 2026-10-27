@@ -1,9 +1,16 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Crag Stats">
   <title>Crag Stats</title>
-  <!-- Crag silhouette + grade pyramid mark -->
-  <rect width="64" height="64" rx="12" fill="#2f5d3a"/>
-  <path d="M8 48 L22 22 L32 38 L42 18 L56 48 Z" fill="#e8e2d6" opacity="0.95"/>
-  <path d="M20 48 L32 28 L44 48 Z" fill="#c45c26"/>
-  <path d="M26 48 L32 36 L38 48 Z" fill="#f0b429"/>
-  <circle cx="48" cy="14" r="3" fill="#e8e2d6" opacity="0.7"/>
+  <!-- Solid orange crag; the rising grade-pyramid bars are cut out (transparent)
+       and run through the base so they merge into the background. -->
+  <defs>
+    <mask id="cs-bars">
+      <rect width="64" height="64" fill="#fff"/>
+      <g fill="#000">
+        <rect x="18" y="43" width="6" height="18" rx="1"/>
+        <rect x="29" y="35" width="6" height="26" rx="1"/>
+        <rect x="40" y="27" width="6" height="34" rx="1"/>
+      </g>
+    </mask>
+  </defs>
+  <path d="M2 56 L22 18 L30.5 32 L41.5 10 L62 56 Z" fill="#ea580c" mask="url(#cs-bars)"/>
 </svg>

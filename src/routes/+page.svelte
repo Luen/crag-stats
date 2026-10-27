@@ -147,7 +147,10 @@
 	{:else if id === 'pyramids'}
 		<header class="section-head">
 			<h2>Grade pyramids</h2>
-			<p>Split by style · grades shown in your preferred system ({data.gradeSystem})</p>
+			<p>
+				Split by style · grades shown in {systems.find((x) => x.id === data.gradeSystem)?.label ??
+					data.gradeSystem}
+			</p>
 			<nav class="pyramid-toggles" aria-label="Pyramid filter">
 				{#each pyramidModes as mode (mode.id)}
 					<a
@@ -253,24 +256,9 @@
 			</p>
 		</div>
 	</div>
-	<div class="sync">
-		<span class={['pill', { ok: data.sync.status === 'idle', err: data.sync.status === 'error' }]}>
-			{data.sync.status}
-		</span>
-		{#if data.sync.lastSuccessAt}
-			<small>Last sync {new Date(data.sync.lastSuccessAt).toLocaleString()}</small>
-		{:else}
-			<small>No API sync yet — import a CSV or sync from Settings</small>
-		{/if}
-		<form method="POST" action="?/setGradeSystem" class="grade-form">
-			<label for="system">Grade system</label>
-			<select id="system" name="system" onchange={(e) => e.currentTarget.form?.requestSubmit()}>
-				{#each systems as opt (opt.id)}
-					<option value={opt.id} selected={data.gradeSystem === opt.id}>{opt.label}</option>
-				{/each}
-			</select>
-		</form>
-	</div>
+	{#if data.showSettings && data.sync.status === 'error'}
+		<a class="sync-alert" href="/settings">Last sync failed — open Settings</a>
+	{/if}
 </section>
 
 {#if s.totalAscents === 0}
@@ -318,7 +306,9 @@
 		{/if}
 	</section>
 
-	<DashboardLayoutEditor layout={data.dashLayout} />
+	{#if data.showSettings}
+		<DashboardLayoutEditor layout={data.dashLayout} />
+	{/if}
 
 	{#each rows as row, ri (ri)}
 		{#if row.kind === 'full'}
@@ -366,7 +356,7 @@
 		object-fit: cover;
 		border: 2px solid var(--line);
 		flex-shrink: 0;
-		background: rgba(47, 93, 58, 0.12);
+		background: color-mix(in srgb, var(--accent) 12%, transparent);
 	}
 	.eyebrow {
 		text-transform: uppercase;
@@ -388,50 +378,15 @@
 		max-width: 46ch;
 		color: var(--ink-muted);
 	}
-	.sync {
-		display: grid;
-		align-content: start;
-		gap: 0.4rem;
-		flex: 0 1 13rem;
-		min-width: 0;
-		max-width: 100%;
-	}
-	.pill {
-		display: inline-flex;
-		width: fit-content;
-		padding: 0.25rem 0.65rem;
+	.sync-alert {
+		align-self: flex-start;
+		font-size: 0.85rem;
+		font-weight: 700;
+		color: var(--band-expert);
+		background: color-mix(in srgb, var(--band-expert) 10%, var(--paper));
+		border: 1px solid color-mix(in srgb, var(--band-expert) 30%, transparent);
 		border-radius: 999px;
-		background: rgba(28, 36, 24, 0.08);
-		font-size: 0.8rem;
-		font-weight: 700;
-		text-transform: uppercase;
-	}
-	.pill.ok {
-		background: rgba(84, 180, 26, 0.2);
-	}
-	.pill.err {
-		background: rgba(201, 9, 9, 0.15);
-	}
-	.grade-form {
-		display: grid;
-		gap: 0.25rem;
-		margin-top: 0.35rem;
-	}
-	.grade-form label {
-		font-size: 0.75rem;
-		font-weight: 700;
-		color: var(--ink-muted);
-		text-transform: uppercase;
-		letter-spacing: 0.04em;
-	}
-	.grade-form select {
-		font: inherit;
-		padding: 0.4rem 0.55rem;
-		border-radius: 0.45rem;
-		border: 1px solid var(--line);
-		background: white;
-		width: 100%;
-		max-width: 16rem;
+		padding: 0.25rem 0.75rem;
 	}
 	.metrics {
 		display: grid;
@@ -444,8 +399,11 @@
 		border-radius: 0.9rem;
 	}
 	.metric.accent {
-		background: rgba(201, 9, 9, 0.08);
-		border: 1px solid rgba(201, 9, 9, 0.22);
+		background: var(--accent-soft);
+		border-color: color-mix(in srgb, var(--accent) 30%, transparent);
+	}
+	.metric.accent strong {
+		color: var(--accent);
 	}
 	.metric span {
 		display: block;
@@ -453,8 +411,11 @@
 		font-size: 0.85rem;
 	}
 	.metric strong {
-		font-size: 1.55rem;
-		font-family: Fraunces, Georgia, serif;
+		font-size: 1.6rem;
+		font-family: var(--font-display);
+		font-weight: 750;
+		letter-spacing: -0.02em;
+		font-variant-numeric: tabular-nums;
 	}
 	.grid {
 		display: grid;
@@ -495,9 +456,9 @@
 		text-decoration: none;
 	}
 	.pyramid-toggles a.active {
-		background: var(--ink);
-		color: var(--paper, #fff);
-		border-color: var(--ink);
+		background: var(--accent);
+		color: #fff;
+		border-color: var(--accent);
 	}
 	.pyramids {
 		display: grid;
@@ -510,7 +471,7 @@
 	}
 	h2 {
 		margin: 0 0 0.85rem;
-		font-size: 1.2rem;
+		font-size: 1.1rem;
 	}
 	.hint {
 		margin: -0.4rem 0 0.8rem;
@@ -559,12 +520,6 @@
 		.avatar {
 			width: 3.5rem;
 			height: 3.5rem;
-		}
-		.sync {
-			flex: 1 1 auto;
-			width: 100%;
-			padding-top: 0.75rem;
-			border-top: 1px solid var(--line);
 		}
 		.metrics {
 			grid-template-columns: repeat(2, minmax(0, 1fr));
