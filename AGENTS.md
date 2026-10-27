@@ -262,4 +262,6 @@ You'll often notice things outside the task at hand. **Don't silently fix them i
 
 | 2026-10 | Private ascent notes are opt-in (`SHOW_PRIVATE_NOTES` / Settings, owner only). First ascents card plus owner-marked FA/FFA in the logbook (migration 0009, `/docs/first-ascents`). |
 
+| 2026-10 | Customize dashboard moved to Settings (`/settings#dashboard`, actions `saveDashboardLayout` / `resetDashboardLayout`); the dashboard keeps an owner-only "Customize dashboard" link. |
+
 _Add a row when you change behaviour agents must know about._

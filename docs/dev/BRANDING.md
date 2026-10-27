@@ -104,7 +104,7 @@ Because the brand accent is orange, it sits close to _Trad_ and _Experienced_. T
 - **Mobile (≤ 860px)**: the same toggle opens an off-canvas drawer with a backdrop. Esc, tapping the backdrop or navigating closes it. Mini mode doesn't apply on mobile.
 - **Breadcrumb** (home icon plus page label) above content. `<title>` is `Page · Crag Stats`.
 - **Dashboard hero** shows only the profile (avatar, name, climber type). Sync status and grade system live in **Settings**. Admins see a red "Last sync failed" pill on the hero only when a sync errors.
-- **Customize dashboard** is shown only to admins (`showSettings`). The layout actions also return 403 for logged-out visitors.
+- **Dashboard layout** lives in Settings (`/settings#dashboard`, `DashboardLayoutEditor`). The dashboard only shows a small "Customize dashboard" link, and only to admins (`showSettings`). The layout actions (`saveDashboardLayout` / `resetDashboardLayout`) also return 403 for logged-out visitors.
 
 ## Components & patterns
 

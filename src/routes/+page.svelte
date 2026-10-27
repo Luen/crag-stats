@@ -5,7 +5,6 @@
 	import ClimberBlurb from '#lib/components/ClimberBlurb.svelte';
 	import ClimberTypeBar from '#lib/components/ClimberTypeBar.svelte';
 	import CprTimeline from '#lib/components/CprTimeline.svelte';
-	import DashboardLayoutEditor from '#lib/components/DashboardLayoutEditor.svelte';
 	import GradeChip from '#lib/components/GradeChip.svelte';
 	import Badges from '#lib/components/Badges.svelte';
 	import GoalsProgress from '#lib/components/GoalsProgress.svelte';
@@ -332,7 +331,7 @@
 	</section>
 
 	{#if data.showSettings}
-		<DashboardLayoutEditor layout={data.dashLayout} />
+		<p class="customize"><a href="/settings#dashboard">Customize dashboard</a></p>
 	{/if}
 
 	{#each rows as row, ri (ri)}
@@ -357,6 +356,18 @@
 {/if}
 
 <style>
+	.customize {
+		margin: 0 0 0.75rem;
+		text-align: right;
+		font-size: 0.85rem;
+	}
+	.customize a {
+		color: var(--accent);
+		font-weight: 600;
+	}
+	.customize a:hover {
+		text-decoration: underline;
+	}
 	.hero {
 		display: flex;
 		flex-wrap: wrap;
