@@ -1,5 +1,8 @@
 import { createHmac, timingSafeEqual } from 'node:crypto';
+import { timingSafeEqualString, verifySharedSecret } from './cryptoCompare';
 import { env } from './env';
+
+export { verifySharedSecret };
 
 const COOKIE = 'crag_stats_session';
 
@@ -29,14 +32,17 @@ export function isProtectedPath(pathname: string): boolean {
 	return false;
 }
 
+/**
+ * Constant-time password check via HMAC digests so length differences
+ * do not short-circuit (unlike raw Buffer compare of unequal lengths).
+ */
 export function verifyPassword(password: string) {
 	const expected = env('APP_PASSWORD');
 	if (!expected) return true;
-	const a = Buffer.from(password);
-	const b = Buffer.from(expected);
-	if (a.length !== b.length) return false;
-	return timingSafeEqual(a, b);
+	return timingSafeEqualString(`pw:${secret()}:${password}`, `pw:${secret()}:${expected}`);
 }
+
+export { safeRedirectPath } from './safeRedirect';
 
 export function createSessionToken() {
 	const exp = Date.now() + 1000 * 60 * 60 * 24 * 30; // 30 days
@@ -65,4 +71,14 @@ export function verifySessionToken(token: string | undefined | null): boolean {
 
 export function sessionCookieName() {
 	return COOKIE;
+}
+
+export function sessionCookieOptions() {
+	return {
+		path: '/',
+		httpOnly: true,
+		sameSite: 'lax' as const,
+		secure: process.env.NODE_ENV === 'production',
+		maxAge: 60 * 60 * 24 * 30
+	};
 }

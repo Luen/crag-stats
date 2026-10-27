@@ -127,14 +127,16 @@ export function cprGradeAt(best: BestTick[], at: Date): number | null {
 	for (const t of best) {
 		if (new Date(t.date) > at) continue;
 		const decayed = t.shifted - DECAY_PER_YEAR * yearsBetween(t.date, at);
+		if (!Number.isFinite(decayed)) continue;
 		sum += Math.pow(P, decayed);
 	}
-	if (sum <= 0) return null;
-	return Math.log(sum) / Math.log(P);
+	if (sum <= 0 || !Number.isFinite(sum)) return null;
+	const grade = Math.log(sum) / Math.log(P);
+	return Number.isFinite(grade) ? grade : null;
 }
 
 export function cprScoreLabel(grade: number | null): number | null {
-	if (grade == null) return null;
+	if (grade == null || !Number.isFinite(grade)) return null;
 	return Math.round(grade * 100);
 }
 
@@ -250,7 +252,7 @@ export function buildCprTimeline(
 
 		const byFamily = new Map<string, { color: string; order: number; grades: number[] }>();
 		for (const a of list) {
-			if (a.gradeScore == null) continue;
+			if (a.gradeScore == null || !Number.isFinite(a.gradeScore)) continue;
 			const fam = tickFamily(a.tickType);
 			const slot = byFamily.get(fam.family) ?? { color: fam.color, order: fam.order, grades: [] };
 			slot.grades.push(a.gradeScore);
@@ -268,14 +270,21 @@ export function buildCprTimeline(
 			}))
 			.sort((a, b) => b.order - a.order); // grey under, onsight on top visually when stacked
 
-		const onsights = list.filter((a) => (a.tickType || '').toLowerCase().includes('sight') && a.gradeScore != null);
+		const onsights = list.filter(
+			(a) =>
+				(a.tickType || '').toLowerCase().includes('sight') &&
+				a.gradeScore != null &&
+				Number.isFinite(a.gradeScore)
+		);
 		const reds = list.filter(
 			(a) =>
 				a.gradeScore != null &&
+				Number.isFinite(a.gradeScore) &&
 				((a.tickType || '').toLowerCase().includes('red') ||
 					(style === 'boulder' && (a.tickType || '').toLowerCase() === 'send'))
 		);
 
+		const cprGrade = cpr != null && Number.isFinite(cpr) ? cpr : null;
 		buckets.push({
 			period: key,
 			label: key,
@@ -287,8 +296,11 @@ export function buildCprTimeline(
 				max,
 				count
 			})),
-			cprGrade: cpr,
-			cprScore: useApi && apiScore != null ? apiScore : cprScoreLabel(cpr),
+			cprGrade,
+			cprScore:
+				useApi && apiScore != null && Number.isFinite(apiScore)
+					? apiScore
+					: cprScoreLabel(cprGrade),
 			onsightGrade: onsights.length ? Math.max(...onsights.map((a) => a.gradeScore!)) : null,
 			redpointGrade: reds.length ? Math.max(...reds.map((a) => a.gradeScore!)) : null
 		});

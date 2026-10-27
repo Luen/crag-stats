@@ -1,12 +1,11 @@
 import { json } from '@sveltejs/kit';
+import { verifySharedSecret } from '#lib/server/auth';
 import { env } from '#lib/server/env';
 import { runTheCragSync } from '#lib/server/sync';
 import type { RequestHandler } from './$types';
 
 function authorized(request: Request) {
-	const secret = env('SESSION_SECRET');
-	if (!secret) return false;
-	return request.headers.get('x-worker-secret') === secret;
+	return verifySharedSecret(request.headers.get('x-worker-secret'), env('SESSION_SECRET'));
 }
 
 export const POST: RequestHandler = async ({ request, url }) => {

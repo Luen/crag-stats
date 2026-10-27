@@ -8,21 +8,26 @@
 		const vals: number[] = [];
 		for (const b of data.buckets) {
 			for (const c of b.candles) {
-				vals.push(c.min, c.max);
+				if (Number.isFinite(c.min)) vals.push(c.min);
+				if (Number.isFinite(c.max)) vals.push(c.max);
 			}
-			if (b.cprGrade != null) vals.push(b.cprGrade);
+			if (b.cprGrade != null && Number.isFinite(b.cprGrade)) vals.push(b.cprGrade);
 		}
 		if (!vals.length) return { min: gradeMin ?? 0, max: gradeMax ?? 10 };
 		const min = gradeMin ?? Math.floor(Math.min(...vals) - 1);
 		const max = gradeMax ?? Math.ceil(Math.max(...vals) + 1);
+		if (!Number.isFinite(min) || !Number.isFinite(max)) return { min: 0, max: 10 };
 		return { min, max: Math.max(min + 1, max) };
 	});
 
 	const maxVol = $derived(Math.max(1, ...data.buckets.map((b) => b.volume)));
 
 	function y(score: number) {
+		if (!Number.isFinite(score)) return 50;
 		const span = grades.max - grades.min;
-		return ((grades.max - score) / span) * 100;
+		if (!Number.isFinite(span) || span <= 0) return 50;
+		const pct = ((grades.max - score) / span) * 100;
+		return Number.isFinite(pct) ? Math.min(100, Math.max(0, pct)) : 50;
 	}
 
 	function bandStops() {
@@ -38,7 +43,11 @@
 
 	const cprPoints = $derived(
 		data.buckets
-			.map((b, i) => (b.cprGrade == null ? null : { i, g: b.cprGrade, s: b.cprScore }))
+			.map((b, i) =>
+				b.cprGrade != null && Number.isFinite(b.cprGrade)
+					? { i, g: b.cprGrade, s: b.cprScore }
+					: null
+			)
 			.filter(Boolean) as { i: number; g: number; s: number | null }[]
 	);
 </script>
