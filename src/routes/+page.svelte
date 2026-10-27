@@ -457,7 +457,7 @@
 	}
 	.pyramid-toggles a.active {
 		background: var(--accent);
-		color: #fff;
+		color: var(--on-accent);
 		border-color: var(--accent);
 	}
 	.pyramids {

@@ -56,7 +56,7 @@
 
 <article class="panel">
 	<header>
-		<h3 style:color={titleColor}>{title}</h3>
+		<h3 style:--title={titleColor}>{title}</h3>
 		<div class="scores">
 			{#if data.peakScore != null}
 				<span>Peak CPR <strong>{data.peakScore}</strong></span>
@@ -173,6 +173,7 @@
 	}
 	h3 {
 		margin: 0;
+		color: color-mix(in srgb, var(--title, var(--ink)) 60%, var(--ink));
 		text-transform: uppercase;
 		letter-spacing: 0.04em;
 		font-size: 1rem;

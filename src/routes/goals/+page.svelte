@@ -225,7 +225,7 @@
 		border-radius: 0.5rem;
 		border: 1px solid transparent;
 		background: var(--accent);
-		color: #fff;
+		color: var(--on-accent);
 		font-weight: 600;
 		cursor: pointer;
 		width: fit-content;

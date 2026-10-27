@@ -36,7 +36,7 @@
 	{#if points.length === 0}
 		<p class="empty">No rated routes yet.</p>
 	{:else}
-		<svg viewBox="0 0 {w} {h}" role="img" aria-label="Scatter of route stars versus grade score">
+		<svg viewBox="0 0 {w} {h}" role="group" aria-label="Scatter of route stars versus grade score">
 			<!-- axes -->
 			<line x1={pad.l} y1={pad.t} x2={pad.l} y2={h - pad.b} stroke="var(--line)" stroke-width="1" />
 			<line

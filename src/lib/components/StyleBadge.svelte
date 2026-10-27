@@ -17,7 +17,8 @@
 		padding: 0.12rem 0.45rem;
 		border-radius: 0.35rem;
 		border: 1.5px solid var(--badge);
-		color: var(--badge);
+		/* Mixed toward ink: darker in light mode, lighter in dark mode (AA contrast). */
+		color: color-mix(in srgb, var(--badge) 55%, var(--ink));
 		font-size: 0.78rem;
 		font-weight: 700;
 		letter-spacing: 0.01em;

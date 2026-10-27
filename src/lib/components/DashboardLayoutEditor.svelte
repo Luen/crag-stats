@@ -196,7 +196,7 @@
 		border-radius: 0.45rem;
 		border: 1px solid transparent;
 		background: var(--accent);
-		color: white;
+		color: var(--on-accent);
 		cursor: pointer;
 	}
 	.actions .secondary,

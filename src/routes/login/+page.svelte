@@ -7,7 +7,7 @@
 <section class="panel">
 	<div class="brand">
 		<img src={favicon} alt="" width="52" height="52" />
-		<h1>Crag<span>Stats</span></h1>
+		<h1>Crag <span>Stats</span></h1>
 	</div>
 	<p class="lede">Enter the app password to continue.</p>
 	{#if form?.message}
@@ -52,8 +52,7 @@
 		color: var(--ink);
 	}
 	h1 span {
-		color: var(--accent);
-		margin-left: 0.2em;
+		color: var(--brand);
 	}
 	p {
 		color: var(--ink-muted);
@@ -75,7 +74,7 @@
 	}
 	button {
 		background: var(--accent);
-		color: #fff;
+		color: var(--on-accent);
 		border: none;
 		font-weight: 700;
 		cursor: pointer;

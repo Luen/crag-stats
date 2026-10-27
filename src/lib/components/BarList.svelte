@@ -68,7 +68,7 @@
 		color: var(--ink-muted);
 	}
 	.meta {
-		opacity: 0.8;
+		color: var(--ink-muted);
 	}
 	.track {
 		height: 0.45rem;

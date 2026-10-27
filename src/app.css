@@ -16,10 +16,13 @@
 	--font-sans: 'Plus Jakarta Sans Variable', 'Plus Jakarta Sans', 'Segoe UI', system-ui, sans-serif;
 	--font-display: var(--font-sans);
 
-	/* Rope orange — the brand accent (Dreeve-style single warm accent). */
-	--accent: #ea580c;
-	--accent-strong: #c2410c;
-	--accent-soft: color-mix(in srgb, var(--accent) 10%, var(--paper));
+	/* Rope orange. --brand is the logo/wordmark orange; --accent is the UI orange, a shade
+	   deeper so text and white-on-orange buttons meet WCAG AA (4.5:1). */
+	--brand: #ea580c;
+	--accent: #c2410c;
+	--accent-strong: #9a3412;
+	--on-accent: #ffffff;
+	--accent-soft: color-mix(in srgb, var(--accent) 8%, var(--paper));
 	--accent-2: #0f766e;
 
 	--bg: #f5f6f8;
@@ -28,7 +31,7 @@
 	--surface-2: #f8f9fb;
 	--surface-3: #eceef2;
 	--ink: #161a23;
-	--ink-muted: #667085;
+	--ink-muted: #576071;
 	--panel: var(--paper);
 	--line: #e6e8ec;
 	--shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 1px 3px rgba(16, 24, 40, 0.04);
@@ -65,6 +68,8 @@
 :root[data-theme='dark'] {
 	--accent: #fb7a3c;
 	--accent-strong: #fdba74;
+	--on-accent: #1c0f06;
+	--brand: #fb7a3c;
 	--accent-soft: color-mix(in srgb, var(--accent) 14%, var(--paper));
 	--accent-2: #2dd4bf;
 	--bg: #0f1218;
@@ -88,6 +93,8 @@
 	:root:not([data-theme='light']) {
 		--accent: #fb7a3c;
 		--accent-strong: #fdba74;
+		--on-accent: #1c0f06;
+		--brand: #fb7a3c;
 		--accent-soft: color-mix(in srgb, var(--accent) 14%, var(--paper));
 		--accent-2: #2dd4bf;
 		--bg: #0f1218;

@@ -187,9 +187,9 @@
 		>
 			<NavIcon name="sidebar" />
 		</button>
-		<a class="brand" href="/" aria-label="Crag Stats home">
+		<a class="brand" href="/">
 			<img class="brand-mark" src={favicon} alt="" width="34" height="34" />
-			<span class="wordmark">Crag<span>Stats</span></span>
+			<span class="wordmark">Crag <span>Stats</span></span>
 		</a>
 		<div class="top-actions">
 			<a
@@ -242,7 +242,6 @@
 						href={link.href}
 						class={{ active: page.url.pathname === link.href }}
 						aria-current={page.url.pathname === link.href ? 'page' : undefined}
-						aria-label={link.label}
 					>
 						<span class="ico"><NavIcon name={link.icon} /></span>
 						<span class="label">{link.label}</span>
@@ -328,8 +327,7 @@
 		white-space: nowrap;
 	}
 	.wordmark span {
-		color: var(--accent);
-		margin-left: 0.2em;
+		color: var(--brand);
 	}
 	.top-actions {
 		margin-left: auto;
@@ -465,7 +463,14 @@
 			justify-content: center;
 			padding: 0;
 		}
-		:global(html[data-sidebar='mini']) .label,
+		:global(html[data-sidebar='mini']) .label {
+			position: absolute;
+			width: 1px;
+			height: 1px;
+			overflow: hidden;
+			clip: rect(0 0 0 0);
+			white-space: nowrap;
+		}
 		:global(html[data-sidebar='mini']) .count {
 			display: none;
 		}

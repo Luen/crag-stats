@@ -115,7 +115,13 @@
 			<strong>not</strong> prune deletes (API sync does).
 		</p>
 		<form method="POST" action="?/importCsv" enctype="multipart/form-data" class="stack">
-			<input type="file" name="file" accept=".csv,text/csv" required />
+			<input
+				type="file"
+				name="file"
+				accept=".csv,text/csv"
+				aria-label="theCrag logbook CSV export"
+				required
+			/>
 			<button type="submit">Import CSV</button>
 		</form>
 		{#if form?.imported != null}
@@ -277,7 +283,7 @@
 	button,
 	.btn {
 		background: var(--accent);
-		color: #fff;
+		color: var(--on-accent);
 		border: none;
 		font-weight: 700;
 		cursor: pointer;
@@ -304,6 +310,7 @@
 	}
 	button.danger {
 		background: var(--band-expert);
+		color: #fff;
 	}
 	button.danger:hover {
 		background: var(--band-expert);

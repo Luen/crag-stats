@@ -223,7 +223,7 @@
 	.filters button {
 		cursor: pointer;
 		background: var(--accent);
-		color: #fff;
+		color: var(--on-accent);
 		border-color: var(--accent);
 		font-weight: 700;
 	}
