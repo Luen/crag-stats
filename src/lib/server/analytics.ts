@@ -29,6 +29,7 @@ import {
 } from './dashboardExtras';
 import { db, ensureSchema } from './db';
 import { ascents, profiles, routes } from './db/schema';
+import { pickHardestSends } from './hardestSends';
 import { repairGradesFromRawJson } from './repairGrades';
 import { buildTrainingLoadView } from './trainingLoad';
 
@@ -654,27 +655,33 @@ export function getDashboardStats(
 	const rockAgg = buildRockTypeStats(extraRows);
 	const rockBlurb = rockTypeBlurb(rockAgg.dominant, rockAgg.dominantPct);
 
-	const hardestSends = all
-		.filter((r) => r.isSend && effectiveScore(r) != null)
-		.sort((a, b) => (effectiveScore(b) ?? 0) - (effectiveScore(a) ?? 0))
-		.slice(0, 10)
-		.map((r) => {
-			const isBoulder = normalizeClimbStyle(r.gearStyle) === 'boulder';
-			const score = effectiveScore(r);
-			const raw = effectiveRaw(r);
-			return {
-				routeName: displayRouteName(r.routeName, r.pitchLabel, r.ascentLabel),
-				gradeRaw: raw,
-				gradeLabel: score != null ? formatGrade(score, isBoulder, preferredSystem, raw) : raw,
-				gradeBand: effectiveBand(r),
-				pitchLabel: r.pitchLabel,
-				tickType: r.tickType,
-				ascentDate: r.ascentDate,
-				cragName: r.cragName,
-				cragUrl: r.cragUrl,
-				url: linkFor(r)
-			};
-		});
+	// Ewbank and V-scale scores aren't comparable, so rank each discipline separately (#58).
+	const hardestSends = pickHardestSends(
+		all.filter((r) => r.isSend),
+		effectiveScore,
+		(r) => (normalizeClimbStyle(r.gearStyle) === 'boulder' ? 'boulder' : 'route')
+	).map(({ row: r, discipline }) => {
+		const isBoulder = discipline === 'boulder';
+		const score = effectiveScore(r);
+		const raw = effectiveRaw(r);
+		return {
+			discipline,
+			routeName: displayRouteName(r.routeName, r.pitchLabel, r.ascentLabel),
+			gradeRaw: raw,
+			gradeLabel: score != null ? formatGrade(score, isBoulder, preferredSystem, raw) : raw,
+			// Stored bands can be Ewbank-derived; boulder bands come from the V-score.
+			gradeBand:
+				isBoulder && score != null
+					? (bandFromVScale(score)?.id ?? effectiveBand(r))
+					: effectiveBand(r),
+			pitchLabel: r.pitchLabel,
+			tickType: r.tickType,
+			ascentDate: r.ascentDate,
+			cragName: r.cragName,
+			cragUrl: r.cragUrl,
+			url: linkFor(r)
+		};
+	});
 
 	const recent = [...all]
 		.sort((a, b) => (b.ascentDate || '').localeCompare(a.ascentDate || ''))

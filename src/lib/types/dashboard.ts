@@ -99,7 +99,9 @@ export type DashboardStats = {
 		trad: CprTimelineData;
 		boulder: CprTimelineData;
 	};
+	/** Routes (ranked on Ewbank) first, then boulders (ranked on V-scale). */
 	hardestSends: {
+		discipline: 'route' | 'boulder';
 		routeName: string;
 		gradeRaw: string | null;
 		gradeLabel: string | null;

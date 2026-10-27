@@ -182,10 +182,14 @@
 		<CprTimeline title="Trad" data={s.cpr.trad} />
 		<CprTimeline title="Boulder" data={s.cpr.boulder} />
 	{:else if id === 'hardest'}
+		{@const mixed = new Set(s.hardestSends.map((c) => c.discipline)).size > 1}
 		<article class="panel">
 			<h2>Hardest sends</h2>
 			<ul class="list">
-				{#each s.hardestSends as climb (climb.routeName + (climb.ascentDate ?? ''))}
+				{#each s.hardestSends as climb, i (climb.discipline + climb.routeName + (climb.ascentDate ?? ''))}
+					{#if mixed && climb.discipline !== s.hardestSends[i - 1]?.discipline}
+						<li class="group-label">{climb.discipline === 'boulder' ? 'Boulders' : 'Routes'}</li>
+					{/if}
 					<li>
 						<div>
 							<strong>
@@ -499,6 +503,14 @@
 		justify-content: space-between;
 		gap: 0.75rem;
 		align-items: center;
+	}
+	.list li.group-label {
+		margin-top: 0.3rem;
+		color: var(--ink-muted);
+		font-size: 0.75rem;
+		font-weight: 700;
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
 	}
 	.sub {
 		color: var(--ink-muted);
