@@ -25,7 +25,8 @@ import {
 	buildRockTypeStats,
 	buildStarsScatter,
 	buildStyleMixOverTime,
-	buildYearlyStats
+	buildYearlyStats,
+	firstAscentSends
 } from './dashboardExtras';
 import { db, ensureSchema } from './db';
 import { buildEddington } from './eddington';
@@ -632,9 +633,12 @@ export function getDashboardStats(
 		apiCprScore: a.cprDecayedScore ?? a.cprScore ?? null
 	}));
 
+	const faMarks = getFirstAscentMarks();
 	const extraRows = all.map((a) => ({
 		ascentDate: a.ascentDate,
 		ascentId: a.id,
+		routeId: a.routeId,
+		firstAscent: firstAscentKindFor(faMarks, a.routeProvider, a.routeExternalId),
 		gearStyle: a.gearStyle,
 		isSend: a.isSend,
 		heightM: a.heightM,
@@ -799,12 +803,15 @@ export function getDashboardStats(
 			return base;
 		})(),
 		firstAscents: (() => {
-			const marks = getFirstAscentMarks();
-			if (!marks.size) return buildFirstAscentStats([]);
-			// One row per marked route: route grade (not a pitch), earliest logged date.
+			if (!faMarks.size) return buildFirstAscentStats([]);
+			// One row per marked route: route grade (not a pitch), dated by the first send
+			// (same as the FA badges and milestones), else the earliest logged ascent.
+			const sendDay = new Map(
+				firstAscentSends(extraRows).map((s) => [s.row.routeId as number, s.day])
+			);
 			const byRoute = new Map<number, FirstAscentRow>();
 			for (const r of all) {
-				const kind = firstAscentKindFor(marks, r.routeProvider, r.routeExternalId);
+				const kind = firstAscentKindFor(faMarks, r.routeProvider, r.routeExternalId);
 				if (!kind) continue;
 				const day = validDay(r.ascentDate);
 				const prev = byRoute.get(r.routeId);
@@ -830,6 +837,7 @@ export function getDashboardStats(
 					date: day
 				});
 			}
+			for (const fa of byRoute.values()) fa.date = sendDay.get(fa.routeId) ?? fa.date;
 			return buildFirstAscentStats([...byRoute.values()]);
 		})(),
 		eddington: buildEddington(

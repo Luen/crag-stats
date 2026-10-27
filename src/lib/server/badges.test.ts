@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { BADGE_CATALOG, buildBadges, formatBadgeDate } from './badges';
-import type { DashboardExtraRow } from './dashboardExtras';
+import { buildMilestones, firstAscentSends, type DashboardExtraRow } from './dashboardExtras';
 
 function row(partial: Partial<DashboardExtraRow> & { ascentDate: string }): DashboardExtraRow {
 	return {
@@ -166,5 +166,53 @@ describe('buildBadges', () => {
 		expect(earned.some((b) => b.id === 'first_send')).toBe(true);
 		expect(earned.some((b) => b.id === 'band_intermediate')).toBe(true);
 		expect(earned.some((b) => b.id === 'new_high')).toBe(true);
+	});
+});
+
+describe('first ascent badges and milestones', () => {
+	// Route 1: an attempt, then the first send (2021-03-05), then a repeat. Marked FA.
+	const fa = (p: Partial<DashboardExtraRow> & { ascentDate: string }) =>
+		row({ routeId: 1, routeName: 'New Line', firstAscent: 'FA', ...p });
+
+	it('dates the FA by the first send of the marked route', () => {
+		const rows = [
+			fa({ ascentDate: '2021-03-01', ascentId: 1 }),
+			fa({ ascentDate: '2021-03-05', ascentId: 2, isSend: true, tickType: 'Red point' }),
+			fa({ ascentDate: '2022-01-01', ascentId: 3, isSend: true, tickType: 'Red point' })
+		];
+		const earned = buildBadges(rows).earned;
+		const badge = earned.find((b) => b.id === 'first_fa');
+		expect(badge?.date).toBe('2021-03-05');
+		expect(badge?.detail).toContain('First ascent · New Line');
+		expect(earned.some((b) => b.id === 'first_ffa')).toBe(false);
+
+		expect(buildMilestones(rows).items.filter((i) => i.kind === 'fa')).toEqual([
+			{ kind: 'fa', label: 'First ascent', date: '2021-03-05', detail: 'New Line' }
+		]);
+		expect(firstAscentSends(rows).map((s) => s.day)).toEqual(['2021-03-05']);
+	});
+
+	it("doesn't earn anything until the marked route is sent", () => {
+		const rows = [fa({ ascentDate: '2021-03-01', ascentId: 1 })];
+		expect(buildBadges(rows).earned.some((b) => b.id === 'first_fa')).toBe(false);
+		expect(buildMilestones(rows).items.some((i) => i.kind === 'fa')).toBe(false);
+	});
+
+	it('counts distinct routes for Route Developer, mixing FA and FFA', () => {
+		const rows = Array.from({ length: 5 }, (_, i) =>
+			row({
+				ascentDate: `2023-0${i + 1}-10`,
+				ascentId: i + 1,
+				routeId: 10 + i,
+				routeName: `Line ${i}`,
+				isSend: true,
+				tickType: 'Red point',
+				firstAscent: i === 2 ? 'FFA' : 'FA'
+			})
+		);
+		const earned = buildBadges(rows).earned;
+		expect(earned.find((b) => b.id === 'first_ffa')?.date).toBe('2023-03-10');
+		expect(earned.find((b) => b.id === 'fa_5')?.date).toBe('2023-05-10');
+		expect(earned.some((b) => b.id === 'fa_10')).toBe(false);
 	});
 });
