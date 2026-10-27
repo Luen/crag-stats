@@ -24,8 +24,16 @@ export const load: PageServerLoad = async ({ cookies, url }) => {
 	const preferred = fromQuery ? parseGradeSystem(fromQuery) : getPreferredGradeSystem();
 	const pyramidMode = parsePyramidMode(url.searchParams.get('pyramid'));
 
+	const stats = getDashboardStats(preferred, { pyramidMode });
 	return {
-		stats: getDashboardStats(preferred, { pyramidMode }),
+		stats,
+		// Share-preview text (#44); the layout only emits it when indexing is allowed.
+		og: {
+			title: stats.profileName ? `${stats.profileName}'s crag year · Crag Stats` : 'Crag Stats',
+			description:
+				stats.blurb.paragraphs[0] ??
+				'Self-hosted climbing analytics for a theCrag logbook: grade pyramids, CPR, projects and goals.'
+		},
 		sync: getSyncStatus(),
 		gradeSystem: preferred,
 		pyramidMode,

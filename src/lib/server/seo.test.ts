@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { isNoindexPath, resolveSearchIndexing, robotsTxt } from './seo';
+import { isNoindexPath, resolveSearchIndexing, robotsTxt, sitemapXml } from './seo';
 
 describe('resolveSearchIndexing', () => {
 	it('defaults to allowed', () => {
@@ -52,5 +52,21 @@ describe('robotsTxt', () => {
 		expect(txt).toContain('Allow: /');
 		expect(txt).toContain('Disallow: /settings');
 		expect(txt).not.toMatch(/^Disallow: \/$/m);
+	});
+});
+
+describe('sitemap', () => {
+	it('robots.txt links the sitemap only when indexing is on', () => {
+		expect(robotsTxt(true, 'https://crag.example')).toContain(
+			'Sitemap: https://crag.example/sitemap.xml'
+		);
+		expect(robotsTxt(false, 'https://crag.example')).not.toContain('Sitemap');
+	});
+
+	it('lists public pages with absolute URLs and no admin paths', () => {
+		const xml = sitemapXml('https://crag.example');
+		expect(xml).toContain('<loc>https://crag.example/logbook</loc>');
+		expect(xml).not.toContain('/settings');
+		expect(xml).not.toContain('/login');
 	});
 });

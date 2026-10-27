@@ -31,8 +31,11 @@ export function isNoindexPath(pathname: string): boolean {
 	);
 }
 
+/** Public pages listed in sitemap.xml (admin/auth paths are never listed). */
+export const SITEMAP_PATHS = ['/', '/logbook', '/projects', '/sectors', '/goals', '/rewind'];
+
 /** robots.txt body for the current indexing state. */
-export function robotsTxt(allowed: boolean): string {
+export function robotsTxt(allowed: boolean, origin?: string): string {
 	if (!allowed) return 'User-agent: *\nDisallow: /\n';
 	return [
 		'User-agent: *',
@@ -41,6 +44,23 @@ export function robotsTxt(allowed: boolean): string {
 		'Disallow: /login',
 		'Disallow: /logout',
 		'Disallow: /api/',
+		...(origin ? ['', `Sitemap: ${origin}/sitemap.xml`] : []),
+		''
+	].join('\n');
+}
+
+function xmlEscape(s: string): string {
+	return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+/** sitemap.xml for the public pages. */
+export function sitemapXml(origin: string, paths: readonly string[] = SITEMAP_PATHS): string {
+	const urls = paths.map((p) => `  <url><loc>${xmlEscape(origin + p)}</loc></url>`).join('\n');
+	return [
+		'<?xml version="1.0" encoding="UTF-8"?>',
+		'<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+		urls,
+		'</urlset>',
 		''
 	].join('\n');
 }

@@ -130,12 +130,34 @@
 	}
 
 	const fmt = (n: number) => formatNumber(n, data.dateDisplay);
+
+	const pageOg = $derived(page.data.og as { title?: string; description?: string } | undefined);
+	const ogTitle = $derived(
+		pageOg?.title ?? (current ? `${current.label} · Crag Stats` : 'Crag Stats')
+	);
+	const ogDescription = $derived(
+		pageOg?.description ?? 'Self-hosted climbing analytics for a theCrag logbook.'
+	);
 </script>
 
 <svelte:head>
 	<link rel="icon" href={favicon} />
+	<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+	<link rel="manifest" href="/manifest.webmanifest" />
 	{#if data.noindex}
 		<meta name="robots" content="noindex, nofollow" />
+	{:else}
+		<!-- Share previews (#44): only when the site may be indexed, never on login/admin pages. -->
+		<meta name="description" content={ogDescription} />
+		<meta property="og:type" content="website" />
+		<meta property="og:site_name" content="Crag Stats" />
+		<meta property="og:title" content={ogTitle} />
+		<meta property="og:description" content={ogDescription} />
+		<meta property="og:url" content={page.url.origin + page.url.pathname} />
+		<meta property="og:image" content="{page.url.origin}/og-image.png" />
+		<meta property="og:image:width" content="1200" />
+		<meta property="og:image:height" content="630" />
+		<meta name="twitter:card" content="summary_large_image" />
 	{/if}
 	<title
 		>{current && current.label !== 'Dashboard'
