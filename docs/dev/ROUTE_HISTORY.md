@@ -38,9 +38,11 @@ That works around theCrag's bot protection. theCrag says broader API access is n
 - An existing mark is never overwritten, and a route in `first_ascent_import_skips` (the owner unmarked it) is never re-marked.
 - `applyCachedHistoryMarks({ replaceExisting, reapplyUnmarked })` re-applies from `route_history` without any network. That's Settings → _Re-apply from saved history_.
 
-## Tables (migration `0010_route_history.sql`)
+## Tables (migration `0010_route_history.sql`, upgrade `0011_route_history_fetch_once.sql`)
 
 `route_history` (public history rows, including types other than FA/FFA, kept for #76), `route_history_fetches`, `first_ascent_import_skips`, `route_history_import_state`. All are cleared by `wipeAllData()`.
+
+`0011` rebuilds `route_history_import_state` and adds `route_history_fetches` for databases that already applied the first draft of `0010` (offset/total progress). `schema_migrations` never re-runs an edited file, so that upgrade has to be a new migration.
 
 ## Tests
 
