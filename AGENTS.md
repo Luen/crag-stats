@@ -170,6 +170,26 @@ Prefer fixing type errors over `@ts-ignore`. Do not switch the package manager.
 
 ---
 
+## File issues for what you find
+
+You'll often notice things outside the task at hand. **Don't silently fix them in an unrelated PR, and don't let them go unrecorded: file a GitHub issue.**
+
+- **What to file:**
+  - bugs (even if unconfirmed: say how you'd reproduce them)
+  - code that needs refactoring or is duplicated
+  - performance or security concerns
+  - accessibility gaps
+  - stale docs
+  - missing tests
+  - feature or UX ideas
+- **Before filing**, search open and closed issues (`gh issue list --state all --search "<keywords>"`) and comment on an existing one rather than duplicating it.
+- **One issue per problem.**
+  - Title: `Area: short summary` (e.g. `Logbook: date column wraps on desktop`).
+  - Body: what you saw (file:line, screenshot or steps), why it matters, and a suggested fix or acceptance criteria.
+- **Label it:** `bug`, `enhancement`, `accessibility`, `documentation`, `analytics`, `sync`, `provider:thecrag`, `docker`, `good first issue` as fits. Add `help wanted` when it's well-scoped.
+- **Mention it** to the user (with the link) at the end of your task. Link issues from PRs with `Fixes #n` / `Refs #n`.
+- **Never put private data in an issue:** no logbook notes, API keys, real `.env` values or personal ascent data. Use the sample CSV or synthetic examples.
+
 ## Changelog for agents
 
 | When | Note |
