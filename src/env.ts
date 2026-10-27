@@ -32,6 +32,11 @@ export const variables = defineEnvVars({
 		description: 'Display grade system preference',
 		schema: optionalString
 	},
+	SHOW_PRIVATE_NOTES: {
+		description:
+			'Show private ascent notes to the owner (true/false, default false; Settings overrides)',
+		schema: optionalString
+	},
 	DISPLAY_LOCALE: {
 		description: 'Locale for dates/numbers (BCP 47, default en-AU)',
 		schema: optionalString

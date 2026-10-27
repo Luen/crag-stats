@@ -5,12 +5,13 @@ import { authScope, isAuthEnabled } from './auth';
 import { db, ensureSchema } from './db';
 import { appSettings } from './db/schema';
 import { env } from './env';
+import { resolveShowNotes, type ShowNotes } from './notes';
 import { resolveSearchIndexing, type SearchIndexing } from './seo';
 
 export type { SearchIndexing };
 
 /** Keys stored in `app_settings` (migration 0008). */
-export type AppSettingKey = 'search_indexing' | 'grade_system' | 'dashboard_layout';
+export type AppSettingKey = 'search_indexing' | 'grade_system' | 'dashboard_layout' | 'show_notes';
 
 export function getAppSetting(key: AppSettingKey): string | null {
 	ensureSchema();
@@ -36,6 +37,14 @@ export function getSearchIndexing(): SearchIndexing {
 		authEnabled: isAuthEnabled(),
 		scope: authScope(),
 		stored: getAppSetting('search_indexing')
+	});
+}
+
+/** Private ascent notes: Settings value → SHOW_PRIVATE_NOTES env → off. */
+export function getShowNotes(): ShowNotes {
+	return resolveShowNotes({
+		stored: getAppSetting('show_notes'),
+		envValue: env('SHOW_PRIVATE_NOTES')
 	});
 }
 

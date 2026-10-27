@@ -1,6 +1,11 @@
 import { fail } from '@sveltejs/kit';
 import { parseGradeSystem, wipeAllData } from '#lib/server/analytics';
-import { getPreferredGradeSystem, getSearchIndexing, setAppSetting } from '#lib/server/appSettings';
+import {
+	getPreferredGradeSystem,
+	getSearchIndexing,
+	getShowNotes,
+	setAppSetting
+} from '#lib/server/appSettings';
 import { hasTheCragApiKey } from '#lib/server/env';
 import { upsertAscents } from '#lib/server/ingest';
 import { parseTheCragCsv } from '#lib/server/providers/thecrag';
@@ -13,7 +18,8 @@ export const load: PageServerLoad = async () => {
 		sync: getSyncStatus(),
 		hasApiKey: hasTheCragApiKey(),
 		gradeSystem: getPreferredGradeSystem(),
-		searchIndexing: getSearchIndexing()
+		searchIndexing: getSearchIndexing(),
+		showNotes: getShowNotes()
 	};
 };
 
@@ -25,6 +31,7 @@ export const actions: Actions = {
 		if (!getSearchIndexing().forcedOff) {
 			setAppSetting('search_indexing', form.get('indexing') === 'on' ? 'on' : 'off');
 		}
+		setAppSetting('show_notes', form.get('notes') === 'on' ? 'on' : 'off');
 		return { ok: true, saved: true };
 	},
 	sync: async () => {

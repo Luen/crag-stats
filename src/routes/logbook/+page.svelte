@@ -72,7 +72,13 @@
 </section>
 
 <form class="panel filters" method="GET">
-	<input name="q" value={data.q} placeholder="Search route, crag, partners, notes…" />
+	<input
+		name="q"
+		value={data.q}
+		placeholder={data.notesShown
+			? 'Search route, crag, partners, notes…'
+			: 'Search route, crag, partners…'}
+	/>
 	<input name="style" value={data.style} placeholder="Style (Sport, Trad…)" />
 	<input name="tick" value={data.tick} placeholder="Tick (Onsight…)" />
 	<input name="crag" value={data.crag} placeholder="Crag" />
@@ -139,7 +145,14 @@
 						{/if}
 						<TagChips tags={row.tags} />
 						{#if row.comment}
-							<div class="note">{row.comment.slice(0, 120)}</div>
+							{#if row.comment.length > 140}
+								<details class="note">
+									<summary>{row.comment.slice(0, 120)}…</summary>
+									<p>{row.comment}</p>
+								</details>
+							{:else}
+								<div class="note">{row.comment}</div>
+							{/if}
 						{/if}
 					</td>
 					<td class="nowrap"><GradeChip grade={row.gradeRaw} band={row.gradeBand} /></td>
@@ -289,6 +302,14 @@
 		margin-top: 0.25rem;
 		font-size: 0.8rem;
 		color: var(--ink-muted);
+		white-space: pre-line;
+		max-width: 48ch;
+	}
+	.note summary {
+		cursor: pointer;
+	}
+	.note p {
+		margin: 0.25rem 0 0;
 	}
 	.chip {
 		display: inline-block;

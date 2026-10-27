@@ -1,7 +1,9 @@
 import { listLogbook } from '#lib/server/analytics';
+import { getShowNotes } from '#lib/server/appSettings';
+import { notesVisible } from '#lib/server/notes';
 import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ url }) => {
+export const load: PageServerLoad = async ({ url, locals }) => {
 	const q = url.searchParams.get('q') ?? '';
 	const style = url.searchParams.get('style') ?? '';
 	const tick = url.searchParams.get('tick') ?? '';
@@ -20,6 +22,7 @@ export const load: PageServerLoad = async ({ url }) => {
 	const band = bandRaw != null && bandRaw !== '' ? Number(bandRaw) : undefined;
 	const page = Math.max(1, Number(url.searchParams.get('page') || '1'));
 	const limit = 50;
+	const notesShown = notesVisible(getShowNotes().enabled, locals.authed);
 	const { total, rows } = listLogbook({
 		q: q || undefined,
 		style: style || undefined,
@@ -35,11 +38,13 @@ export const load: PageServerLoad = async ({ url }) => {
 		score: score != null && Number.isFinite(score) ? score : undefined,
 		band: band != null && Number.isFinite(band) ? band : undefined,
 		limit,
-		offset: (page - 1) * limit
+		offset: (page - 1) * limit,
+		includeNotes: notesShown
 	});
 	return {
 		total,
 		rows,
+		notesShown,
 		q,
 		style,
 		tick,
