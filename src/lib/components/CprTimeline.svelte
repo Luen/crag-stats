@@ -91,7 +91,7 @@
 					></div>
 				{/each}
 				<div class="cols" style:--n={data.buckets.length}>
-					{#each data.buckets as b, i (b.period)}
+					{#each data.buckets as b (b.period)}
 						<div class="col">
 							<div class="candles">
 								{#each b.candles as c (c.family)}

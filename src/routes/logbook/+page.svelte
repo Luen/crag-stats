@@ -8,6 +8,8 @@
 	let { data }: PageProps = $props();
 
 	function pageHref(page: number) {
+		// Throwaway query builder for an href, not reactive state.
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity
 		const p = new URLSearchParams();
 		if (data.q) p.set('q', data.q);
 		if (data.style) p.set('style', data.style);
@@ -27,6 +29,8 @@
 	}
 
 	function sortHref(col: string) {
+		// Throwaway query builder for an href, not reactive state.
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity
 		const p = new URLSearchParams();
 		if (data.q) p.set('q', data.q);
 		if (data.style) p.set('style', data.style);

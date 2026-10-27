@@ -307,7 +307,7 @@ export function buildCprTimeline(
 	}
 
 	const now = new Date();
-	let currentGrade: number | null = null;
+	let currentGrade: number | null;
 	if (useApi) {
 		const lastApi = [...styleAscents]
 			.filter((a) => parseApiGrade(a.apiCprGrade) != null)

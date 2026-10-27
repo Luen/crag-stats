@@ -275,7 +275,7 @@ function parseVScale(raw: string): number | null {
 		return -1;
 	}
 
-	const range = text.match(/^V(\d+)[\/\-–]V?(\d+)([+-])?$/i);
+	const range = text.match(/^V(\d+)[/\-–]V?(\d+)([+-])?$/i);
 	if (range) {
 		const a = Number(range[1]);
 		const b = Number(range[2]);
@@ -298,7 +298,7 @@ function parseVScale(raw: string): number | null {
 /** Display label for a V score (preserves ranges when raw was a range). */
 export function formatVScaleLabel(score: number, raw?: string | null): string {
 	const compact = (raw ?? '').trim().replace(/\s+/g, '');
-	const range = compact.match(/^V(\d+)[\/\-–]V?(\d+)/i);
+	const range = compact.match(/^V(\d+)[/\-–]V?(\d+)/i);
 	if (range) return `V${range[1]}/${range[2]}`;
 	return convertFromVScale(score, 'v_scale');
 }

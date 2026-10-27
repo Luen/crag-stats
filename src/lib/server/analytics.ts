@@ -948,7 +948,7 @@ export function listLogbook(filters?: {
 		return 0;
 	};
 	rows = [...rows].sort((a, b) => {
-		let cmp = 0;
+		let cmp: number;
 		if (sortKey === 'grade') {
 			cmp = (a.effectiveGradeScore ?? a.gradeScore ?? -1) - (b.effectiveGradeScore ?? b.gradeScore ?? -1);
 		} else if (sortKey === 'quality') {
@@ -1136,7 +1136,7 @@ function buildStreaks(dayMap: Map<string, { count: number; sends: number }>): {
 
 	let currentDays = 0;
 	if (daySet.has(todayIso) || daySet.has(yIso)) {
-		let cursor = daySet.has(todayIso)
+		const cursor = daySet.has(todayIso)
 			? new Date(`${todayIso}T12:00:00`)
 			: new Date(`${yIso}T12:00:00`);
 		let guard = 0;

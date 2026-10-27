@@ -51,9 +51,9 @@ function enrichGoal(g: Goal): GoalView {
 	const venue = asVenue(g);
 	const targetNum = Number(g.targetValue);
 	const currentNum = Number(g.progressValue);
-	let pct = 0;
-	let progressLabel = g.progressValue ?? '—';
-	let targetLabel = g.targetValue ?? '—';
+	let pct: number;
+	let progressLabel: string;
+	let targetLabel: string;
 
 	if (g.kind === 'grade') {
 		const target = g.targetGradeScore ?? targetNum;
