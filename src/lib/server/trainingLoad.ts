@@ -27,6 +27,14 @@ function scoreOf(row: DashboardExtraRow): number | null {
 	return s != null && Number.isFinite(s) ? s : null;
 }
 
+/**
+ * Working an ungraded route (no route grade, no grade of your own on the tick) usually
+ * means a new line or project at your limit, so it loads like an ascent at your max.
+ */
+export function isUngradedWork(row: DashboardExtraRow): boolean {
+	return !row.isSend && scoreOf(row) == null;
+}
+
 function dayOf(iso: string | null | undefined): string | null {
 	const d = (iso ?? '').slice(0, 10);
 	return /^\d{4}-\d{2}-\d{2}$/.test(d) && !d.includes('-00') ? d : null;
@@ -88,7 +96,8 @@ export function buildTrainingLoadView(
 		const day = dayOf(row.ascentDate);
 		if (!day || day > today || day < start) continue;
 		const k = kindOf(row);
-		const score = scoreOf(row);
+		// Ungraded attempts count as at your max (isUngradedWork); ungraded sends stay light.
+		const score = scoreOf(row) ?? (isUngradedWork(row) ? ref[k] : null);
 		const load = 10 * ascentIntensity(score, ref[k], k) * styleFactor(row);
 		daily.set(day, (daily.get(day) ?? 0) + load);
 		if (day >= start28 && score != null && ref[k] != null) {

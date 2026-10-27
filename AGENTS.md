@@ -107,6 +107,7 @@ Height quirk: theCrag may return height as `[value, unit]` arrays — parse in t
 
 - **Climber type:** if one of Sport / Trad / Boulder is ≥ **40%** of ascents → “Sport climber” (etc.); else “Rock climber”.
 - **CPR timelines:** approximate model in `cpr.ts` (power factor P=5, tick shifts, ~0.7 grade/year decay). Link/docs: theCrag CPR articles. Label UI as approximate — not a byte-for-byte clone.
+- **Ungraded routes = likely projects.** theCrag's API has no project flag. Ungraded routes come back with `grade: null`, `gradeBand: 0`. `isUngradedRoute()` (`projects.ts`) also accepts a literal "Project"/"Proj" grade, and project cards show `NewRouteBadge` ("New route?"). In training load, `isUngradedWork()` treats an unsent tick with no grade at all (route or your own) as at your 12-month max; ungraded sends stay at 0.3.
 - **Notable ascents:** by style + by area; use `StyleBadge` + `TickTypeIcon` (theCrag-like SVGs).
 - Summary metrics: onsights, successful ascents, distance climbed (km).
 
