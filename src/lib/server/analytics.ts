@@ -29,6 +29,12 @@ import {
 } from './dashboardExtras';
 import { db, ensureSchema } from './db';
 import { buildEddington } from './eddington';
+import {
+	buildFirstAscentStats,
+	firstAscentKindFor,
+	getFirstAscentMarks,
+	type FirstAscentRow
+} from './firstAscents';
 import { ascents, profiles, routes } from './db/schema';
 import { pickHardestSends } from './hardestSends';
 import { repairGradesFromRawJson } from './repairGrades';
@@ -294,6 +300,8 @@ export function getDashboardStats(
 			ascentUrl: ascents.ascentUrl,
 			ascentExternalId: ascents.externalId,
 			routeId: routes.id,
+			routeProvider: routes.provider,
+			routeExternalId: routes.externalId,
 			routeName: routes.name,
 			gradeRaw: routes.gradeRaw,
 			gradeScore: routes.gradeScore,
@@ -790,6 +798,40 @@ export function getDashboardStats(
 			if (rockBlurb) base.paragraphs.push(rockBlurb);
 			return base;
 		})(),
+		firstAscents: (() => {
+			const marks = getFirstAscentMarks();
+			if (!marks.size) return buildFirstAscentStats([]);
+			// One row per marked route: route grade (not a pitch), earliest logged date.
+			const byRoute = new Map<number, FirstAscentRow>();
+			for (const r of all) {
+				const kind = firstAscentKindFor(marks, r.routeProvider, r.routeExternalId);
+				if (!kind) continue;
+				const day = validDay(r.ascentDate);
+				const prev = byRoute.get(r.routeId);
+				if (prev) {
+					if (day && (!prev.date || day < prev.date)) prev.date = day;
+					continue;
+				}
+				const isBoulder = normalizeClimbStyle(r.gearStyle) === 'boulder';
+				const score = r.gradeScore;
+				byRoute.set(r.routeId, {
+					routeId: r.routeId,
+					kind,
+					routeName: r.routeName,
+					style: displayStyle(r.gearStyle),
+					isBoulder,
+					score,
+					gradeLabel:
+						score != null ? formatGrade(score, isBoulder, preferredSystem, r.gradeRaw) : r.gradeRaw,
+					band:
+						isBoulder && score != null ? (bandFromVScale(score)?.id ?? r.gradeBand) : r.gradeBand,
+					cragName: r.cragName,
+					url: r.url,
+					date: day
+				});
+			}
+			return buildFirstAscentStats([...byRoute.values()]);
+		})(),
 		eddington: buildEddington(
 			all.map((r) => ({
 				day: validDay(r.ascentDate),
@@ -862,6 +904,8 @@ export function listLogbook(filters?: {
 		.select({
 			id: ascents.id,
 			externalId: ascents.externalId,
+			routeProvider: routes.provider,
+			routeExternalId: routes.externalId,
 			ascentDate: ascents.ascentDate,
 			tickType: ascents.tickType,
 			isSend: ascents.isSend,
@@ -994,10 +1038,12 @@ export function listLogbook(filters?: {
 	});
 
 	const total = rows.length;
+	const faMarks = getFirstAscentMarks();
 	return {
 		total,
 		rows: rows.slice(offset, offset + limit).map((r) => ({
 			...r,
+			firstAscent: firstAscentKindFor(faMarks, r.routeProvider, r.routeExternalId),
 			displayName: displayRouteName(r.routeName, r.pitchLabel, r.ascentLabel),
 			gradeBand: r.effectiveGradeBand ?? r.gradeBand,
 			gradeRaw: r.effectiveGradeRaw ?? r.gradeRaw,
@@ -1011,6 +1057,7 @@ export function wipeAllData() {
 	ensureSchema();
 	db.run(sql`DELETE FROM projects`);
 	db.run(sql`DELETE FROM goals`);
+	db.run(sql`DELETE FROM first_ascents`);
 	db.run(sql`DELETE FROM ascents`);
 	db.run(sql`DELETE FROM routes`);
 	db.run(sql`DELETE FROM profiles`);

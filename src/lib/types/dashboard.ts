@@ -71,6 +71,39 @@ export type EddingtonStats = {
 	activeDays: number;
 };
 
+type FirstAscentRange = {
+	min: string;
+	minBand: number | null;
+	max: string;
+	maxBand: number | null;
+	/** Graded FAs in this range */
+	count: number;
+} | null;
+
+/** Owner-marked first ascents (FA / FFA); see firstAscents.ts. */
+export type FirstAscentStats = {
+	total: number;
+	fa: number;
+	ffa: number;
+	byStyle: { style: string; count: number; color: string }[];
+	/** Routes on Ewbank-based scores, shown in the preferred system */
+	routeRange: FirstAscentRange;
+	/** Boulders on the V-scale (or Font) */
+	boulderRange: FirstAscentRange;
+	firstYear: number | null;
+	latestYear: number | null;
+	recent: {
+		routeName: string;
+		kind: 'FA' | 'FFA';
+		style: string;
+		gradeLabel: string | null;
+		band: number | null;
+		cragName: string | null;
+		url: string | null;
+		date: string | null;
+	}[];
+};
+
 export type HeatmapDay = { date: string; count: number; sends: number };
 
 export type DashboardStats = {
@@ -149,6 +182,7 @@ export type DashboardStats = {
 		paragraphs: string[];
 	};
 	eddington: EddingtonStats;
+	firstAscents: FirstAscentStats;
 	streaks: {
 		currentDays: number;
 		currentWeeks: number;

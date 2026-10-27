@@ -1,7 +1,22 @@
+import { fail } from '@sveltejs/kit';
 import { listLogbook } from '#lib/server/analytics';
 import { getShowNotes } from '#lib/server/appSettings';
+import { parseFirstAscentKind, routeExists, setFirstAscent } from '#lib/server/firstAscents';
 import { notesVisible } from '#lib/server/notes';
-import type { PageServerLoad } from './$types';
+import type { Actions, PageServerLoad } from './$types';
+
+export const actions: Actions = {
+	/** Owner-only: mark (kind=FA|FFA) or unmark (kind empty) a route as a first ascent. */
+	firstAscent: async ({ request, locals }) => {
+		if (!locals.authed) return fail(403, { message: 'Log in to mark first ascents' });
+		const form = await request.formData();
+		const provider = String(form.get('provider') || '');
+		const route = String(form.get('route') || '');
+		if (!routeExists(provider, route)) return fail(400, { message: 'Unknown route' });
+		setFirstAscent(provider, route, parseFirstAscentKind(form.get('kind')));
+		return { ok: true };
+	}
+};
 
 export const load: PageServerLoad = async ({ url, locals }) => {
 	const q = url.searchParams.get('q') ?? '';
@@ -45,6 +60,7 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 		total,
 		rows,
 		notesShown,
+		canMarkFirstAscents: locals.authed,
 		q,
 		style,
 		tick,

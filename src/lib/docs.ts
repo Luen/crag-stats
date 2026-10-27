@@ -40,6 +40,11 @@ export const DOC_PAGES: readonly DocPage[] = [
 		title: 'Eddington numbers',
 		summary:
 			"Cycling's Eddington number adapted to climbing: send days, vertical days and grade indexes."
+	},
+	{
+		slug: 'first-ascents',
+		title: 'First ascents',
+		summary: 'Marking your FAs and FFAs, and how the First ascents card counts them.'
 	}
 ];
 
