@@ -77,9 +77,10 @@ const EWBANK_TO_FRENCH: Record<number, string> = {
 	7: '3a',
 	8: '3b',
 	9: '3c',
-	10: '4a',
-	11: '4a',
-	12: '4b',
+	// theCrag's table: Ewbank 12 ≈ 3c+, 13 ≈ 4a/4a+ (was non-monotonic: 12 → 4b, 13 → 4a).
+	10: '3c',
+	11: '3c+',
+	12: '3c+',
 	13: '4a',
 	14: '4b',
 	15: '4c',
