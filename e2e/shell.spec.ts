@@ -39,6 +39,22 @@ test.describe('app shell', () => {
 		await expect(page.locator('html')).not.toHaveAttribute('data-theme', /.+/);
 	});
 
+	test('docs: every page renders and the dashboard links into them', async ({ page }) => {
+		await page.goto('/docs');
+		const links = page.locator('.toc a');
+		await expect(links).toHaveCount(6);
+		for (const slug of ['climber-type', 'grades', 'tick-types', 'cpr', 'training-load']) {
+			const r = await page.goto(`/docs/${slug}`);
+			expect(r?.status(), slug).toBe(200);
+			await expect(page.locator('.prose h1')).toBeVisible();
+		}
+		await expect(page.locator('.prose table').first()).toBeVisible();
+		expect((await page.goto('/docs/nope'))?.status()).toBe(404);
+		await page.goto('/');
+		await page.getByRole('link', { name: 'How is this decided?' }).click();
+		await expect(page).toHaveURL(/\/docs\/climber-type$/);
+	});
+
 	test('pages render with seeded data and a CSP header', async ({ page }) => {
 		const res = await page.goto('/logbook');
 		expect(res?.headers()['content-security-policy']).toContain("default-src 'self'");

@@ -72,7 +72,9 @@
 	{:else if id === 'gradeBands'}
 		<article class="panel">
 			<h2>Grade bands</h2>
-			<p class="hint">Colours match theCrag: Beginner → Elite</p>
+			<p class="hint">
+				Colours match theCrag: Beginner → Elite · <a href="/docs/grades">About grade bands</a>
+			</p>
 			<BarList
 				items={s.bandBreakdown.map((b) => ({
 					label: b.name,

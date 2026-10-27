@@ -13,6 +13,7 @@
 		| 'sun'
 		| 'moon'
 		| 'monitor'
+		| 'docs'
 		| 'logout';
 </script>
 
@@ -81,6 +82,9 @@
 			/>
 		{:else if name === 'moon'}
 			<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5Z" />
+		{:else if name === 'docs'}
+			<path d="M2 4h6a4 4 0 0 1 4 4v13a3 3 0 0 0-3-3H2Z" />
+			<path d="M22 4h-6a4 4 0 0 0-4 4v13a3 3 0 0 1 3-3h7Z" />
 		{:else if name === 'monitor'}
 			<rect x="3" y="4" width="18" height="12" rx="2" />
 			<path d="M8 20h8M12 16v4" />

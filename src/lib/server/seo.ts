@@ -1,3 +1,5 @@
+import { DOC_PAGES } from '#lib/docs';
+
 /** Pure search-engine visibility rules (no DB) — see appSettings.ts and robots.txt. */
 
 export type SearchIndexing = {
@@ -32,7 +34,16 @@ export function isNoindexPath(pathname: string): boolean {
 }
 
 /** Public pages listed in sitemap.xml (admin/auth paths are never listed). */
-export const SITEMAP_PATHS = ['/', '/logbook', '/projects', '/sectors', '/goals', '/rewind'];
+export const SITEMAP_PATHS = [
+	'/',
+	'/logbook',
+	'/projects',
+	'/sectors',
+	'/goals',
+	'/rewind',
+	'/docs',
+	...DOC_PAGES.map((d) => `/docs/${d.slug}`)
+];
 
 /** robots.txt body for the current indexing state. */
 export function robotsTxt(allowed: boolean, origin?: string): string {

@@ -5,7 +5,7 @@ import { expect, test } from '@playwright/test';
 for (const scheme of ['light', 'dark'] as const) {
 	test.describe(`${scheme} theme`, () => {
 		test.use({ colorScheme: scheme });
-		for (const path of ['/', '/logbook', '/settings']) {
+		for (const path of ['/', '/logbook', '/settings', '/docs/grades', '/docs/training-load']) {
 			test(`axe: ${path}`, async ({ page }) => {
 				await page.goto(path);
 				const results = await new AxeBuilder({ page }).analyze();
