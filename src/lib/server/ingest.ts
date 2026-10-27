@@ -1,6 +1,14 @@
 import { eq, and, sql } from 'drizzle-orm';
 import { db, ensureSchema } from './db';
-import { ascents, profiles, projects, routes, syncState } from './db/schema';
+import {
+	ascents,
+	profiles,
+	projects,
+	routeHistory,
+	routeHistoryFetches,
+	routes,
+	syncState
+} from './db/schema';
 import type { CanonicalAscent, ProviderProfile } from './providers/types';
 
 function nowIso() {
@@ -176,7 +184,7 @@ export function reconcileProviderAscents(
 		}
 
 		const orphans = txDb
-			.select({ id: routes.id })
+			.select({ id: routes.id, externalId: routes.externalId })
 			.from(routes)
 			.where(
 				and(
@@ -188,6 +196,23 @@ export function reconcileProviderAscents(
 
 		for (const r of orphans) {
 			deletedProjects += txDb.delete(projects).where(eq(projects.routeId, r.id)).run().changes;
+			// Drop cached history for orphaned routes. Keep first_ascents / import skips keyed by
+			// provider route id so owner marks survive prune and reappear if the route returns.
+			txDb
+				.delete(routeHistory)
+				.where(
+					and(eq(routeHistory.provider, provider), eq(routeHistory.routeExternalId, r.externalId))
+				)
+				.run();
+			txDb
+				.delete(routeHistoryFetches)
+				.where(
+					and(
+						eq(routeHistoryFetches.provider, provider),
+						eq(routeHistoryFetches.routeExternalId, r.externalId)
+					)
+				)
+				.run();
 			deletedRoutes += txDb.delete(routes).where(eq(routes.id, r.id)).run().changes;
 		}
 	});

@@ -16,20 +16,22 @@ That works around theCrag's bot protection. theCrag says broader API access is n
 
 ## Pacing and caching (`src/lib/server/routeHistoryEngine.ts`)
 
-| Rule                                          | Constant / table                                                                          |
-| --------------------------------------------- | ----------------------------------------------------------------------------------------- |
-| Each route checked once, ever                 | `route_history_fetches` (`ok` or `missing`)                                               |
-| At most 20 routes per run                     | `ROUTES_PER_RUN`, sent as 2 requests of 10 (`BATCH_SIZE`)                                 |
-| ≥ 1.1 s between any two requests, across runs | `MIN_REQUEST_GAP_MS` (in-process `lastRequestAt`)                                         |
-| ≥ 1 minute between runs                       | `MIN_RUN_INTERVAL_MS`                                                                     |
-| One `impers` session per run                  | `openRouteHistoryClient()`, closed in `finally`                                           |
-| Stop at the first error, no retries           | the run ends; nothing is retried in a loop                                                |
-| Block, 429, 503, or HTML instead of JSON      | `RouteHistoryBlockedError`: back off 24 h, doubling to 7 days, and at least `Retry-After` |
-| Other errors                                  | back off 1 h, doubling to 24 h                                                            |
+| Rule                                            | Constant / table                                                                          |
+| ----------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| Each route checked once, ever                   | `route_history_fetches` (`ok` or `missing`)                                               |
+| At most 20 routes per run                       | `ROUTES_PER_RUN`, sent as 2 requests of 10 (`BATCH_SIZE`)                                 |
+| ≥ 1.1 s between any two requests, across runs   | `MIN_REQUEST_GAP_MS` (in-process `lastRequestAt`)                                         |
+| ≥ 1 minute between runs                         | `MIN_RUN_INTERVAL_MS`                                                                     |
+| One `impers` session per run                    | `openRouteHistoryClient()`, closed in `finally`                                           |
+| Stop at the first error, no retries             | the run ends; nothing is retried in a loop                                                |
+| Block: any 403, 429, 503, or HTML/CF error body | `RouteHistoryBlockedError`: back off 24 h, doubling to 7 days, and at least `Retry-After` |
+| Other errors / `impers` unavailable             | back off 1 h (unavailable: flat 24 h), doubling to 24 h                                   |
 
-- **When runs happen:** `triggerRouteHistoryImport()` (in `routeHistoryImport.ts`) runs in the background after each successful `runTheCragSync()` (daily cron, the worker, or Settings → Sync), and from Settings → _Check next 20 routes now_. The form action returns immediately; the page shows progress from `route_history_import_state`.
+Pacing (`running`, `lastRequestAt`) is **process-local**. The usual Docker deploy is one `app` container; don't run multiple Node processes against the same DB without a DB-backed lease.
+
+- **When runs happen:** `triggerRouteHistoryImport()` runs in the background after each successful `runTheCragSync()` (daily cron, the worker, or Settings → Sync). Settings → _Check next 20 routes now_ **awaits** `runRouteHistoryImport()` and shows the real outcome (`ran` / `waiting` / `busy` / `done` / error), so it won't claim a check started when the engine refused.
 - **Order:** ungraded routes first (likeliest new lines), then most recently climbed.
-- **Missing routes:** a route the response leaves out is recorded as `missing` and not asked for again. Only _Refresh all_ (`resetRouteHistoryFetches()`) makes routes eligible again, and that's still 20 per run.
+- **Missing routes:** a route the response leaves out is recorded as `missing` and not asked for again. Only _Refresh all_ (`resetRouteHistoryFetches()`) makes routes eligible again, and that's still 20 per run. Refresh updates cached history on the next fetches; use _Re-apply from saved history_ (with _Replace existing_ if needed) to push corrections into `first_ascents`.
 
 ## Marks
 

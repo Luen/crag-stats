@@ -32,7 +32,10 @@ describe('readRouteResponse', () => {
 			blocked({ status: 429, text: '', headers: { 'retry-after': '120' } })?.retryAfterSeconds
 		).toBe(120);
 		expect(blocked({ status: 403, text: '<h1>Sorry, you have been blocked</h1>' })).not.toBeNull();
+		// Bare 403 without the usual copy still takes the long block backoff.
+		expect(blocked({ status: 403, text: 'forbidden' })).not.toBeNull();
 		expect(blocked({ status: 503, text: 'Just a moment...' })).not.toBeNull();
+		expect(blocked({ status: 502, text: '<html>cloudflare</html>' })).not.toBeNull();
 		expect(
 			blocked({ status: 200, text: '<!DOCTYPE html><title>Just a moment</title>' })
 		).not.toBeNull();

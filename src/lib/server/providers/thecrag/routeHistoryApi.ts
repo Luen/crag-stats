@@ -100,11 +100,26 @@ export function parseRoutePayload(json: unknown): RouteWithHistory[] {
 	return out;
 }
 
+function looksLikeChallengePage(text: string): boolean {
+	return (
+		/sorry, you have been blocked|just a moment|attention required|cf-browser-verification|cloudflare/i.test(
+			text
+		) || /^\s*</.test(text)
+	);
+}
+
 /** Interpret one response: blocks and throttling become RouteHistoryBlockedError. */
 export function readRouteResponse(res: ImpersResponse): RouteWithHistory[] {
 	const retryAfter = parseRetryAfter(header(res, 'retry-after'));
-	const challenge = /sorry, you have been blocked|just a moment|attention required/i.test(res.text);
-	if (res.status === 429 || res.status === 503 || (res.status === 403 && challenge)) {
+	const challenge = looksLikeChallengePage(res.text);
+	// Any 403, plus 429/503, plus other 4xx/5xx that look like CF/HTML — long block backoff.
+	// A bare 403 without the usual challenge copy still means "go away", not a 1 h soft error.
+	if (
+		res.status === 429 ||
+		res.status === 503 ||
+		res.status === 403 ||
+		(res.status >= 400 && challenge)
+	) {
 		throw new RouteHistoryBlockedError(
 			res.status === 429
 				? 'theCrag asked us to slow down (429).'
