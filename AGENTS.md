@@ -30,7 +30,7 @@ Self-hosted climbing analytics for [theCrag](https://www.thecrag.com/), inspired
 | CSS | Tailwind 4 where useful + existing custom CSS variables in layout |
 | DB | SQLite via `better-sqlite3` + Drizzle ORM |
 | Package manager | **pnpm** (pin via `package.json#packageManager`; config in `pnpm-workspace.yaml`) |
-| Node | 22+ |
+| Node | 24 LTS+ |
 | Deploy | Docker multi-arch → GHCR (`ghcr.io/luen/crag-stats`) |
 | Migrations | Versioned SQL in `/migrations`, run on container boot via `scripts/docker-entrypoint.mjs` |
 | i18n | Planned (Crowdin epic/issue) — not implemented yet |
@@ -177,5 +177,7 @@ Prefer fixing type errors over `@ts-ignore`. Do not switch the package manager.
 | 2026-10 | Auth harden: login rate limit, safe redirects, HMAC password/worker-secret compares, security headers, `/logout`. CF Access for `crag.luenwarneke.com` settings/login. CPR SVG NaN guards. |
 | 2026-10 | Mobile: heatmap/charts scroll, yearly cards, notable stacked groups; pyramid active pill `--paper` + “All” label. |
 | 2026-10 | pnpm 12.15.0 via `packageManager`; config in `pnpm-workspace.yaml` (`allowBuilds`, `minimumReleaseAge: 0`). Docker reads pin from package.json. |
+| 2026-10 | Runtime pin Node 24 LTS (CI, Docker `node:24-bookworm-slim`, `engines.node`, `.nvmrc`). |
+| 2026-10 | `/projects` RoxClimbs-style auto-projecting cards: open = unsent attempts; sent shelf = fought-then-sent within ~31 days; first-go sends never projects. No create form. |
 
 _Add a row when you change behaviour agents must know about._
