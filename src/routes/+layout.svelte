@@ -1,9 +1,10 @@
 <script lang="ts">
 	import favicon from '#lib/assets/favicon.svg';
 	import '../app.css';
-	import { onMount } from 'svelte';
+	import { onMount, tick } from 'svelte';
 	import { afterNavigate } from '$app/navigation';
 	import { page } from '$app/state';
+	import { formatNumber } from '#lib/dates';
 	import NavIcon, { type NavIconName } from '#lib/components/NavIcon.svelte';
 	import type { LayoutProps } from './$types';
 
@@ -37,14 +38,33 @@
 	// Initial state comes from html[data-sidebar], set pre-paint in app.html.
 	let mini = $state(false);
 	let drawerOpen = $state(false);
-	let dark = $state(false);
+	let isMobile = $state(false);
+
+	// Theme: follow the OS ("system") unless the user picked light/dark (#43).
+	type Theme = 'system' | 'light' | 'dark';
+	const THEME_ORDER: Theme[] = ['system', 'light', 'dark'];
+	const THEME_LABEL: Record<Theme, string> = { system: 'System', light: 'Light', dark: 'Dark' };
+	const THEME_ICON: Record<Theme, NavIconName> = { system: 'monitor', light: 'sun', dark: 'moon' };
+	let theme = $state<Theme>('system');
+	const nextTheme = $derived(THEME_ORDER[(THEME_ORDER.indexOf(theme) + 1) % THEME_ORDER.length]);
+
+	let toggleBtn: HTMLButtonElement | undefined = $state();
+	let sideEl: HTMLElement | undefined = $state();
 
 	onMount(() => {
 		const root = document.documentElement;
 		mini = root.dataset.sidebar === 'mini';
-		dark =
-			root.dataset.theme === 'dark' ||
-			(!root.dataset.theme && matchMedia('(prefers-color-scheme: dark)').matches);
+		const t = root.dataset.theme;
+		theme = t === 'light' || t === 'dark' ? t : 'system';
+
+		const mq = matchMedia('(max-width: 860px)');
+		isMobile = mq.matches;
+		const onChange = (e: MediaQueryListEvent) => {
+			isMobile = e.matches;
+			if (!e.matches) drawerOpen = false;
+		};
+		mq.addEventListener('change', onChange);
+		return () => mq.removeEventListener('change', onChange);
 	});
 
 	afterNavigate(() => {
@@ -60,9 +80,39 @@
 		}
 	}
 
+	async function openDrawer() {
+		drawerOpen = true;
+		await tick();
+		sideEl?.querySelector<HTMLElement>('a[href]')?.focus();
+	}
+
+	function closeDrawer() {
+		if (!drawerOpen) return;
+		const hadFocus = sideEl?.contains(document.activeElement) ?? false;
+		drawerOpen = false;
+		if (hadFocus) toggleBtn?.focus();
+	}
+
+	/** Keep Tab inside the open mobile drawer. */
+	function trapFocus(e: KeyboardEvent) {
+		if (!drawerOpen || e.key !== 'Tab' || !sideEl) return;
+		const items = [...sideEl.querySelectorAll<HTMLElement>('a[href], button:not([disabled])')];
+		if (items.length === 0) return;
+		const first = items[0];
+		const last = items[items.length - 1];
+		if (e.shiftKey && document.activeElement === first) {
+			e.preventDefault();
+			last.focus();
+		} else if (!e.shiftKey && document.activeElement === last) {
+			e.preventDefault();
+			first.focus();
+		}
+	}
+
 	function toggleSidebar() {
-		if (matchMedia('(max-width: 860px)').matches) {
-			drawerOpen = !drawerOpen;
+		if (isMobile) {
+			if (drawerOpen) closeDrawer();
+			else void openDrawer();
 			return;
 		}
 		mini = !mini;
@@ -71,42 +121,75 @@
 		save('cs_sidebar', mini ? 'mini' : null);
 	}
 
-	function toggleTheme() {
-		dark = !dark;
-		const theme = dark ? 'dark' : 'light';
-		document.documentElement.dataset.theme = theme;
-		save('cs_theme', theme);
+	function cycleTheme() {
+		theme = nextTheme;
+		const root = document.documentElement;
+		if (theme === 'system') delete root.dataset.theme;
+		else root.dataset.theme = theme;
+		save('cs_theme', theme === 'system' ? null : theme);
 	}
 
-	const fmt = (n: number) => n.toLocaleString();
+	const fmt = (n: number) => formatNumber(n, data.dateDisplay);
+
+	const pageOg = $derived(page.data.og as { title?: string; description?: string } | undefined);
+	const ogTitle = $derived(
+		pageOg?.title ?? (current ? `${current.label} · Crag Stats` : 'Crag Stats')
+	);
+	const ogDescription = $derived(
+		pageOg?.description ?? 'Self-hosted climbing analytics for a theCrag logbook.'
+	);
 </script>
 
 <svelte:head>
 	<link rel="icon" href={favicon} />
+	<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+	<link rel="manifest" href="/manifest.webmanifest" />
 	{#if data.noindex}
 		<meta name="robots" content="noindex, nofollow" />
+	{:else}
+		<!-- Share previews (#44): only when the site may be indexed, never on login/admin pages. -->
+		<meta name="description" content={ogDescription} />
+		<meta property="og:type" content="website" />
+		<meta property="og:site_name" content="Crag Stats" />
+		<meta property="og:title" content={ogTitle} />
+		<meta property="og:description" content={ogDescription} />
+		<meta property="og:url" content={page.url.origin + page.url.pathname} />
+		<meta property="og:image" content="{page.url.origin}/og-image.png" />
+		<meta property="og:image:width" content="1200" />
+		<meta property="og:image:height" content="630" />
+		<meta name="twitter:card" content="summary_large_image" />
 	{/if}
-	<title>{current && current.label !== 'Dashboard' ? `${current.label} · Crag Stats` : 'Crag Stats'}</title>
+	<title
+		>{current && current.label !== 'Dashboard'
+			? `${current.label} · Crag Stats`
+			: 'Crag Stats'}</title
+	>
 </svelte:head>
 
-<svelte:window onkeydown={(e) => e.key === 'Escape' && (drawerOpen = false)} />
+<svelte:window
+	onkeydown={(e) => {
+		if (e.key === 'Escape') closeDrawer();
+		else trapFocus(e);
+	}}
+/>
 
 <div class="app" class:drawer-open={drawerOpen}>
 	<header class="topbar">
 		<button
+			bind:this={toggleBtn}
 			type="button"
 			class="icon-btn"
 			onclick={toggleSidebar}
 			aria-label={drawerOpen ? 'Close menu' : mini ? 'Expand sidebar' : 'Collapse sidebar'}
-			aria-expanded={drawerOpen || !mini}
+			aria-expanded={isMobile ? drawerOpen : !mini}
 			aria-controls="side-nav"
 			title={mini ? 'Expand sidebar' : 'Collapse sidebar'}
 		>
 			<NavIcon name="sidebar" />
 		</button>
-		<a class="brand" href="/" aria-label="Crag Stats home">
+		<a class="brand" href="/">
 			<img class="brand-mark" src={favicon} alt="" width="34" height="34" />
-			<span class="wordmark">Crag<span>Stats</span></span>
+			<span class="wordmark">Crag <span>Stats</span></span>
 		</a>
 		<div class="top-actions">
 			<a
@@ -122,19 +205,14 @@
 			<button
 				type="button"
 				class="icon-btn"
-				onclick={toggleTheme}
-				title={dark ? 'Switch to light mode' : 'Switch to dark mode'}
-				aria-label={dark ? 'Switch to light mode' : 'Switch to dark mode'}
+				onclick={cycleTheme}
+				title="Theme: {THEME_LABEL[theme]} — switch to {THEME_LABEL[nextTheme]}"
+				aria-label="Theme: {THEME_LABEL[theme]}. Switch to {THEME_LABEL[nextTheme]}"
 			>
-				<NavIcon name={dark ? 'sun' : 'moon'} />
+				<NavIcon name={THEME_ICON[theme]} />
 			</button>
 			{#if data.showSettings}
-				<a
-					class="icon-btn"
-					href="/settings"
-					title="Settings & sync"
-					aria-label="Settings & sync"
-				>
+				<a class="icon-btn" href="/settings" title="Settings & sync" aria-label="Settings & sync">
 					<NavIcon name="settings" />
 				</a>
 			{/if}
@@ -148,7 +226,14 @@
 		</div>
 	</header>
 
-	<aside class="side" id="side-nav" aria-label="Primary">
+	<!-- Off-screen drawer is inert on mobile so hidden links aren't tabbable. -->
+	<aside
+		bind:this={sideEl}
+		class="side"
+		id="side-nav"
+		aria-label="Primary"
+		inert={isMobile && !drawerOpen}
+	>
 		<nav>
 			{#each groups as group, gi (gi)}
 				{#if gi > 0}<hr />{/if}
@@ -157,7 +242,6 @@
 						href={link.href}
 						class={{ active: page.url.pathname === link.href }}
 						aria-current={page.url.pathname === link.href ? 'page' : undefined}
-						aria-label={link.label}
 					>
 						<span class="ico"><NavIcon name={link.icon} /></span>
 						<span class="label">{link.label}</span>
@@ -179,12 +263,7 @@
 			>
 		</div>
 	</aside>
-	<button
-		type="button"
-		class="backdrop"
-		tabindex="-1"
-		aria-label="Close menu"
-		onclick={() => (drawerOpen = false)}
+	<button type="button" class="backdrop" tabindex="-1" aria-label="Close menu" onclick={closeDrawer}
 	></button>
 
 	<div class="content">
@@ -248,8 +327,7 @@
 		white-space: nowrap;
 	}
 	.wordmark span {
-		color: var(--accent);
-		margin-left: 0.2em;
+		color: var(--brand);
 	}
 	.top-actions {
 		margin-left: auto;
@@ -385,7 +463,14 @@
 			justify-content: center;
 			padding: 0;
 		}
-		:global(html[data-sidebar='mini']) .label,
+		:global(html[data-sidebar='mini']) .label {
+			position: absolute;
+			width: 1px;
+			height: 1px;
+			overflow: hidden;
+			clip: rect(0 0 0 0);
+			white-space: nowrap;
+		}
 		:global(html[data-sidebar='mini']) .count {
 			display: none;
 		}
@@ -467,7 +552,7 @@
 		}
 		.drawer-open .side {
 			transform: none;
-			box-shadow: 0 10px 40px rgba(0, 0, 0, 0.18);
+			box-shadow: var(--shadow-lg);
 		}
 		.backdrop {
 			display: block;
@@ -476,7 +561,7 @@
 			z-index: 25;
 			border: 0;
 			padding: 0;
-			background: rgba(10, 12, 16, 0.35);
+			background: var(--scrim);
 			opacity: 0;
 			pointer-events: none;
 			transition: opacity 0.2s;

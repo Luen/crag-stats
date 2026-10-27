@@ -81,7 +81,9 @@ export function gradeSystemFitsStyle(
 	return true;
 }
 
-function toEffective(parsed: ParsedGrade): Pick<EffectiveGrade, 'raw' | 'score' | 'band' | 'system'> {
+function toEffective(
+	parsed: ParsedGrade
+): Pick<EffectiveGrade, 'raw' | 'score' | 'band' | 'system'> {
 	// Prefer display label (e.g. V5 for bare AU "5" on boulder) over API raw.
 	return {
 		raw: parsed.label || parsed.raw || null,
@@ -160,15 +162,14 @@ export function resolveEffectiveGrade(opts: {
 				pitchLabel,
 				pitchesClimbed: climbed.length,
 				pitchesTotal: pitches.length,
-				heightM: heightAny ? heightSum : opts.routeHeightM ?? null,
+				heightM: heightAny ? heightSum : (opts.routeHeightM ?? null),
 				partialMultipitch: pitches.length > 0 && (partial || climbed.length === 1)
 			};
 		}
 	}
 
 	const routeParsed = parseWith(opts.routeGrade, routeStyle, opts.routeGradeBand, null);
-	const routeIsExplicitV =
-		isBoulderStyle(routeStyle) && parseVish(opts.routeGrade);
+	const routeIsExplicitV = isBoulderStyle(routeStyle) && parseVish(opts.routeGrade);
 
 	// Prefer ascent grade when its system fits the route (e.g. bare "5" on boulder → V5).
 	// Skip boulder V/BLDV overlays on sport/trad (Gropefest Trad 8 + CPR VB).
@@ -176,15 +177,18 @@ export function resolveEffectiveGrade(opts: {
 	// (Splinder: route V0 + ascent AU "12" must not become V12).
 	const candidates: { raw?: string | null; sys?: string | null; band?: number | null }[] = [
 		{ raw: opts.ascentGrade, sys: opts.ascentGradeSystem, band: opts.ascentGradeBand },
-		{ raw: opts.cprGrade, sys: inferCprSystem(opts.cprGrade, opts.ascentGradeSystem), band: opts.cprBand }
+		{
+			raw: opts.cprGrade,
+			sys: inferCprSystem(opts.cprGrade, opts.ascentGradeSystem),
+			band: opts.cprBand
+		}
 	];
 
 	for (const c of candidates) {
 		if (!c.raw) continue;
 		if (!gradeSystemFitsStyle(c.sys, routeStyle)) continue;
 		const sys = (c.sys || '').toUpperCase();
-		const auOnBoulder =
-			isBoulderStyle(routeStyle) && (sys === 'AU' || sys.includes('EWBANK'));
+		const auOnBoulder = isBoulderStyle(routeStyle) && (sys === 'AU' || sys.includes('EWBANK'));
 		if (auOnBoulder && routeIsExplicitV && routeParsed.score != null) {
 			continue;
 		}

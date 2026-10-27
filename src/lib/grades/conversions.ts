@@ -9,14 +9,7 @@
 
 import { bandFromEwbank, bandFromVScale, type GradeBand } from './bands';
 
-export type GradeSystem =
-	| 'ewbank'
-	| 'yds'
-	| 'french'
-	| 'uiaa'
-	| 'v_scale'
-	| 'font'
-	| 'unknown';
+export type GradeSystem = 'ewbank' | 'yds' | 'french' | 'uiaa' | 'v_scale' | 'font' | 'unknown';
 
 export type ParsedGrade = {
 	system: GradeSystem;
@@ -275,7 +268,7 @@ function parseVScale(raw: string): number | null {
 		return -1;
 	}
 
-	const range = text.match(/^V(\d+)[\/\-–]V?(\d+)([+-])?$/i);
+	const range = text.match(/^V(\d+)[/\-–]V?(\d+)([+-])?$/i);
 	if (range) {
 		const a = Number(range[1]);
 		const b = Number(range[2]);
@@ -298,7 +291,7 @@ function parseVScale(raw: string): number | null {
 /** Display label for a V score (preserves ranges when raw was a range). */
 export function formatVScaleLabel(score: number, raw?: string | null): string {
 	const compact = (raw ?? '').trim().replace(/\s+/g, '');
-	const range = compact.match(/^V(\d+)[\/\-–]V?(\d+)/i);
+	const range = compact.match(/^V(\d+)[/\-–]V?(\d+)/i);
 	if (range) return `V${range[1]}/${range[2]}`;
 	return convertFromVScale(score, 'v_scale');
 }
@@ -329,9 +322,7 @@ export function detectAndParseGrade(
 		const band =
 			opts?.gradeBand != null
 				? bandFromEwbank(
-						opts.gradeBand <= 5
-							? [6, 15, 21, 28, 35][opts.gradeBand - 1]
-							: opts.gradeBand
+						opts.gradeBand <= 5 ? [6, 15, 21, 28, 35][opts.gradeBand - 1] : opts.gradeBand
 					)
 				: null;
 		return { system: 'unknown', raw: '', score: null, label: '—', band, isBoulder };
@@ -351,10 +342,7 @@ export function detectAndParseGrade(
 				system: looksV || (forceBoulderGrade && !forceFont) ? 'v_scale' : 'font',
 				raw: text,
 				score: v,
-				label:
-					preferred === 'font'
-						? convertFromVScale(v, 'font')
-						: formatVScaleLabel(v, text),
+				label: preferred === 'font' ? convertFromVScale(v, 'font') : formatVScaleLabel(v, text),
 				band: bandFromVScale(v),
 				isBoulder: true
 			};
@@ -423,10 +411,14 @@ export function detectAndParseGrade(
 			system,
 			raw: text,
 			score: ew,
-			label: convertFromEwbank(ew, preferred === 'v_scale' || preferred === 'font' ? 'ewbank' : preferred),
-			band: opts?.gradeBand && opts.gradeBand <= 5
-				? bandFromEwbank([6, 15, 21, 28, 35][opts.gradeBand - 1])
-				: bandFromEwbank(ew),
+			label: convertFromEwbank(
+				ew,
+				preferred === 'v_scale' || preferred === 'font' ? 'ewbank' : preferred
+			),
+			band:
+				opts?.gradeBand && opts.gradeBand <= 5
+					? bandFromEwbank([6, 15, 21, 28, 35][opts.gradeBand - 1])
+					: bandFromEwbank(ew),
 			isBoulder: false
 		};
 	}
@@ -456,9 +448,13 @@ export function detectAndParseGrade(
 
 export function parseHeightMeters(raw: string | null | undefined): number | null {
 	if (!raw) return null;
-	const m = String(raw).trim().match(/^([\d.]+)\s*(m|metres|meters)?$/i);
+	const m = String(raw)
+		.trim()
+		.match(/^([\d.]+)\s*(m|metres|meters)?$/i);
 	if (m) return Number(m[1]);
-	const ft = String(raw).trim().match(/^([\d.]+)\s*(ft|feet)'?$/i);
+	const ft = String(raw)
+		.trim()
+		.match(/^([\d.]+)\s*(ft|feet)'?$/i);
 	if (ft) return Number(ft[1]) * 0.3048;
 	return null;
 }

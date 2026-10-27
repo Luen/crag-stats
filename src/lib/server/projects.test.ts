@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
 	classifyRouteProject,
+	countTouched,
 	isLikelyIndoorRoute,
 	isRecentlySent,
 	isTouchedWithin,
@@ -158,6 +159,22 @@ describe('isLikelyIndoorRoute', () => {
 	it('leaves outdoor routes alone', () => {
 		expect(isLikelyIndoorRoute({ gearStyle: 'Sport', cragName: 'El Chorro', name: 'Hades' })).toBe(
 			false
+		);
+	});
+});
+
+describe('countTouched', () => {
+	it('matches the working-on rule (touched within a year)', () => {
+		const now = new Date('2026-10-27T00:00:00Z');
+		const rows = [
+			{ lastAttemptAt: '2026-10-01' },
+			{ lastAttemptAt: '2025-11-01' },
+			{ lastAttemptAt: '2024-01-01' },
+			{ lastAttemptAt: null }
+		];
+		expect(countTouched(rows, now)).toBe(2);
+		expect(countTouched(rows, now)).toBe(
+			rows.filter((r) => isTouchedWithin(r.lastAttemptAt, now)).length
 		);
 	});
 });

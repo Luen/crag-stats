@@ -22,7 +22,12 @@
 {#snippet projectCard(p: ProjectCard)}
 	<article class="card" class:sent={p.status === 'sent'}>
 		<div class="card-top">
-			<span class="star" class:filled={(p.stars ?? 0) > 0} title={starTitle(p.stars)} aria-hidden="true">
+			<span
+				class="star"
+				class:filled={(p.stars ?? 0) > 0}
+				title={starTitle(p.stars)}
+				aria-hidden="true"
+			>
 				<svg viewBox="0 0 24 24" width="18" height="18" focusable="false">
 					<path
 						d="M12 3.6l2.4 4.86 5.36.78-3.88 3.78.92 5.34L12 16.9l-4.8 2.52.92-5.34-3.88-3.78 5.36-.78L12 3.6z"
@@ -91,7 +96,9 @@
 <section class="block">
 	<div class="section-head">
 		<h2>Recently sent</h2>
-		<span class="count muted">{data.recentlySent.length} route{data.recentlySent.length === 1 ? '' : 's'}</span>
+		<span class="count muted"
+			>{data.recentlySent.length} route{data.recentlySent.length === 1 ? '' : 's'}</span
+		>
 	</div>
 	{#if data.recentlySent.length === 0}
 		<p class="empty">No fought-then-sent projects in the last month.</p>
@@ -169,7 +176,9 @@
 		border-radius: 1rem;
 		background: var(--paper);
 		border: 1px solid var(--line);
-		box-shadow: 0 1px 0 color-mix(in srgb, var(--ink) 4%, transparent), 0 8px 20px color-mix(in srgb, var(--ink) 4%, transparent);
+		box-shadow:
+			0 1px 0 color-mix(in srgb, var(--ink) 4%, transparent),
+			0 8px 20px color-mix(in srgb, var(--ink) 4%, transparent);
 		min-height: 8.5rem;
 	}
 	.card.sent {
@@ -200,13 +209,13 @@
 		stroke-linejoin: round;
 	}
 	.star.filled {
-		color: #c9a227;
-		background: color-mix(in srgb, #f5e6a8 55%, var(--paper));
-		border-color: color-mix(in srgb, #c9a227 35%, var(--line));
+		color: var(--gold);
+		background: color-mix(in srgb, var(--gold-soft) 55%, var(--paper));
+		border-color: color-mix(in srgb, var(--gold) 35%, var(--line));
 	}
 	.star.filled svg {
 		fill: currentColor;
-		stroke: color-mix(in srgb, #8a6d12 70%, currentColor);
+		stroke: color-mix(in srgb, var(--gold) 70%, var(--ink));
 	}
 	.badges {
 		display: flex;

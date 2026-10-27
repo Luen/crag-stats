@@ -72,7 +72,9 @@
 						<div>
 							<span class="label">Ascents</span>
 							<span class="val">{row.ascents}</span>
-							<span class={['delta', deltaClass(row.deltaAscents)]}>{fmtDelta(row.deltaAscents)}</span>
+							<span class={['delta', deltaClass(row.deltaAscents)]}
+								>{fmtDelta(row.deltaAscents)}</span
+							>
 						</div>
 						<div>
 							<span class="label">Sends</span>
@@ -147,7 +149,7 @@
 		font-weight: 600;
 	}
 	.down {
-		color: #a33;
+		color: var(--danger);
 		font-weight: 600;
 	}
 	.flat {

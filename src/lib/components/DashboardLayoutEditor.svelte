@@ -54,7 +54,7 @@
 	{#if open}
 		<p class="hint">
 			Choose which cards to show and their order (like Dreeve). Hero and summary metrics stay fixed.
-			Saved in your browser cookie.
+			Saved for the whole site, so every visitor sees this layout.
 		</p>
 		<form method="POST" action="?/setDashboardLayout" class="form">
 			<input type="hidden" name="layout" value={JSON.stringify(draft)} />
@@ -196,7 +196,7 @@
 		border-radius: 0.45rem;
 		border: 1px solid transparent;
 		background: var(--accent);
-		color: white;
+		color: var(--on-accent);
 		cursor: pointer;
 	}
 	.actions .secondary,

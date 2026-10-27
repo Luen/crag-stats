@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { formatDateTime } from '#lib/dates';
 	import type { PageProps } from './$types';
 
 	let { data, form }: PageProps = $props();
@@ -82,7 +83,7 @@
 				>{data.sync.status}</span
 			>
 			{#if data.sync.lastSuccessAt}
-				<span>Last sync {new Date(data.sync.lastSuccessAt).toLocaleString()}</span>
+				<span>Last sync {formatDateTime(data.sync.lastSuccessAt, data.dateDisplay)}</span>
 			{:else}
 				<span>No API sync yet</span>
 			{/if}
@@ -114,7 +115,13 @@
 			<strong>not</strong> prune deletes (API sync does).
 		</p>
 		<form method="POST" action="?/importCsv" enctype="multipart/form-data" class="stack">
-			<input type="file" name="file" accept=".csv,text/csv" required />
+			<input
+				type="file"
+				name="file"
+				accept=".csv,text/csv"
+				aria-label="theCrag logbook CSV export"
+				required
+			/>
 			<button type="submit">Import CSV</button>
 		</form>
 		{#if form?.imported != null}
@@ -276,7 +283,7 @@
 	button,
 	.btn {
 		background: var(--accent);
-		color: #fff;
+		color: var(--on-accent);
 		border: none;
 		font-weight: 700;
 		cursor: pointer;
@@ -303,9 +310,11 @@
 	}
 	button.danger {
 		background: var(--band-expert);
+		color: #fff;
 	}
 	button.danger:hover {
-		background: color-mix(in srgb, var(--band-expert) 85%, #000);
+		background: var(--band-expert);
+		filter: brightness(0.9);
 	}
 	.backup {
 		display: flex;
@@ -323,10 +332,10 @@
 		margin-bottom: 0.8rem;
 	}
 	.ok {
-		background: rgba(84, 180, 26, 0.18);
+		background: color-mix(in srgb, var(--band-beginner) 18%, var(--paper));
 	}
 	.err {
-		background: rgba(201, 9, 9, 0.12);
+		background: color-mix(in srgb, var(--band-expert) 12%, var(--paper));
 		color: var(--band-expert);
 	}
 </style>

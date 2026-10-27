@@ -127,6 +127,18 @@ export function parseLayoutCookie(raw: string | undefined | null): DashLayoutIte
 	}
 }
 
+/**
+ * Site-wide layout (app_settings.dashboard_layout) wins; the old per-browser cookie is only a
+ * fallback so an admin's pre-0.4 customisation isn't lost before they save once.
+ */
+export function resolveDashLayout(
+	stored: string | null | undefined,
+	legacyCookie?: string | null
+): DashLayoutItem[] {
+	if (stored) return parseLayoutCookie(stored);
+	return parseLayoutCookie(legacyCookie);
+}
+
 export function serializeLayout(layout: DashLayoutItem[]): string {
 	return JSON.stringify(normalizeLayout(layout).map((i) => ({ id: i.id, enabled: i.enabled })));
 }
@@ -177,7 +189,11 @@ export function packLayoutRows(layout: DashLayoutItem[]): DashRow[] {
 	return rows;
 }
 
-export function moveLayoutItem(layout: DashLayoutItem[], id: DashCardId, dir: -1 | 1): DashLayoutItem[] {
+export function moveLayoutItem(
+	layout: DashLayoutItem[],
+	id: DashCardId,
+	dir: -1 | 1
+): DashLayoutItem[] {
 	const items = normalizeLayout(layout);
 	const idx = items.findIndex((i) => i.id === id);
 	if (idx < 0) return items;

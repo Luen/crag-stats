@@ -11,7 +11,26 @@ export default defineConfig({
 				runes: ({ filename }) =>
 					filename.split(/[/\\]/).includes('node_modules') ? undefined : true
 			},
-			adapter: adapter({ out: 'build' })
+			adapter: adapter({ out: 'build' }),
+			// Content-Security-Policy (#40). `auto` = per-request nonces for SSR pages; the
+			// pre-paint theme script in app.html carries %sveltekit.nonce%.
+			csp: {
+				mode: 'auto',
+				directives: {
+					'default-src': ['self'],
+					'script-src': ['self'],
+					// Svelte `style:` directives + transitions use inline styles.
+					'style-src': ['self', 'unsafe-inline'],
+					// theCrag avatars / route images + inline data: SVG.
+					'img-src': ['self', 'data:', 'https:'],
+					'font-src': ['self', 'data:'],
+					'connect-src': ['self'],
+					'object-src': ['none'],
+					'base-uri': ['self'],
+					'form-action': ['self'],
+					'frame-ancestors': ['none']
+				}
+			}
 		})
 	],
 	server: {

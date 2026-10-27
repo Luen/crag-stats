@@ -202,7 +202,7 @@
 		min-width: 0;
 	}
 	.stars {
-		color: #d4a017;
+		color: var(--gold);
 		font-size: 0.8rem;
 	}
 	.ago {

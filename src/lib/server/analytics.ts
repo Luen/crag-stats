@@ -139,8 +139,7 @@ function formatGrade(
 		if (system === 'font') return convertFromVScale(score, 'font');
 		return formatVScaleLabel(score, raw);
 	}
-	const routeSystem: GradeSystem =
-		system === 'v_scale' || system === 'font' ? 'ewbank' : system;
+	const routeSystem: GradeSystem = system === 'v_scale' || system === 'font' ? 'ewbank' : system;
 	return convertFromEwbank(score, routeSystem);
 }
 
@@ -262,10 +261,8 @@ export function getDashboardStats(
 					acct.indoorAscentCount != null
 						? Number(acct.indoorAscentCount)
 						: profile.indoorAscentCount,
-				heightClimbed:
-					height != null && Number.isFinite(height) ? height : profile.heightClimbed,
-				routesTicked:
-					acct.routesTicked != null ? Number(acct.routesTicked) : profile.routesTicked
+				heightClimbed: height != null && Number.isFinite(height) ? height : profile.heightClimbed,
+				routesTicked: acct.routesTicked != null ? Number(acct.routesTicked) : profile.routesTicked
 			};
 			db.update(profiles).set(patched).where(eq(profiles.id, profile.id)).run();
 			Object.assign(profile, patched);
@@ -405,9 +402,8 @@ export function getDashboardStats(
 		// Ewbank-derived and paint V0 green.
 		const band =
 			rowScore != null && isBoulder
-				? bandFromVScale(rowScore)?.id ?? null
-				: (rowBand ??
-					(rowScore != null ? bandFromEwbank(rowScore)?.id ?? null : null));
+				? (bandFromVScale(rowScore)?.id ?? null)
+				: (rowBand ?? (rowScore != null ? (bandFromEwbank(rowScore)?.id ?? null) : null));
 
 		if (row.isSend && band) bandMap.set(band, (bandMap.get(band) ?? 0) + 1);
 
@@ -504,7 +500,7 @@ export function getDashboardStats(
 			const rows = [...grades.entries()]
 				.map(([score, v]) => {
 					const total = [...v.ticks.values()].reduce((s, n) => s + n, 0);
-					const bandId = isBoulder ? bandFromVScale(score)?.id ?? v.band : v.band;
+					const bandId = isBoulder ? (bandFromVScale(score)?.id ?? v.band) : v.band;
 					const band = bandById(bandId ?? 0);
 					const params = new URLSearchParams({
 						style,
@@ -548,8 +544,7 @@ export function getDashboardStats(
 				groupUrl: hardest?.cragUrl && hardest.cragName === group ? hardest.cragUrl : null,
 				tickType,
 				count: agg.count,
-				hardestGrade:
-					hScore != null ? formatGrade(hScore, isBoulder, preferredSystem, hRaw) : hRaw,
+				hardestGrade: hScore != null ? formatGrade(hScore, isBoulder, preferredSystem, hRaw) : hRaw,
 				hardestBand: hardest ? effectiveBand(hardest) : null,
 				hardestRoute: hardest
 					? displayRouteName(hardest.routeName, hardest.pitchLabel, hardest.ascentLabel)
@@ -911,9 +906,7 @@ export function listLogbook(filters?: {
 	}
 	if (filters?.multipitch) {
 		rows = rows.filter(
-			(r) =>
-				Boolean(r.pitchLabel) ||
-				(r.pitchesTotal != null && r.pitchesTotal > 1)
+			(r) => Boolean(r.pitchLabel) || (r.pitchesTotal != null && r.pitchesTotal > 1)
 		);
 	}
 	if (filters?.season === 'ytd') {
@@ -948,9 +941,11 @@ export function listLogbook(filters?: {
 		return 0;
 	};
 	rows = [...rows].sort((a, b) => {
-		let cmp = 0;
+		let cmp: number;
 		if (sortKey === 'grade') {
-			cmp = (a.effectiveGradeScore ?? a.gradeScore ?? -1) - (b.effectiveGradeScore ?? b.gradeScore ?? -1);
+			cmp =
+				(a.effectiveGradeScore ?? a.gradeScore ?? -1) -
+				(b.effectiveGradeScore ?? b.gradeScore ?? -1);
 		} else if (sortKey === 'quality') {
 			cmp = qualityRank(a.quality) - qualityRank(b.quality);
 		} else if (sortKey === 'stars') {
@@ -988,8 +983,7 @@ export function wipeAllData() {
 function formatDurationHuman(fromIso: string, to = new Date()): string {
 	const from = new Date(`${fromIso}T12:00:00`);
 	if (Number.isNaN(from.getTime())) return 'a while';
-	let months =
-		(to.getFullYear() - from.getFullYear()) * 12 + (to.getMonth() - from.getMonth());
+	let months = (to.getFullYear() - from.getFullYear()) * 12 + (to.getMonth() - from.getMonth());
 	if (to.getDate() < from.getDate()) months -= 1;
 	months = Math.max(0, months);
 	const years = Math.floor(months / 12);
@@ -1136,7 +1130,7 @@ function buildStreaks(dayMap: Map<string, { count: number; sends: number }>): {
 
 	let currentDays = 0;
 	if (daySet.has(todayIso) || daySet.has(yIso)) {
-		let cursor = daySet.has(todayIso)
+		const cursor = daySet.has(todayIso)
 			? new Date(`${todayIso}T12:00:00`)
 			: new Date(`${yIso}T12:00:00`);
 		let guard = 0;
@@ -1238,7 +1232,9 @@ function buildAthleteProfile(
 		const cutIso = cutoff.toISOString().slice(0, 10);
 		const rows = all.filter((r) => (r.ascentDate || '') >= cutIso);
 		const days = new Set(
-			rows.map((r) => (r.ascentDate || '').slice(0, 10)).filter((d) => /^\d{4}-\d{2}-\d{2}$/.test(d))
+			rows
+				.map((r) => (r.ascentDate || '').slice(0, 10))
+				.filter((d) => /^\d{4}-\d{2}-\d{2}$/.test(d))
 		);
 		const styles = new Set(rows.map((r) => displayStyle(r.gearStyle)));
 		const sends = rows.filter((r) => r.isSend).length;
@@ -1258,7 +1254,14 @@ function buildAthleteProfile(
 		const consistency = Math.min(100, (sends / Math.max(1, rows.length)) * 100);
 		const ambition = Math.min(100, (onsights / Math.max(1, rows.length)) * 120);
 
-		return { volume, variety, density, duration, intensity, consistency: (consistency + ambition) / 2 };
+		return {
+			volume,
+			variety,
+			density,
+			duration,
+			intensity,
+			consistency: (consistency + ambition) / 2
+		};
 	};
 
 	const a30 = scoreAxes(30);

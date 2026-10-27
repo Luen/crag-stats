@@ -10,7 +10,7 @@ import { resolveSearchIndexing, type SearchIndexing } from './seo';
 export type { SearchIndexing };
 
 /** Keys stored in `app_settings` (migration 0008). */
-export type AppSettingKey = 'search_indexing' | 'grade_system';
+export type AppSettingKey = 'search_indexing' | 'grade_system' | 'dashboard_layout';
 
 export function getAppSetting(key: AppSettingKey): string | null {
 	ensureSchema();
@@ -24,6 +24,11 @@ export function setAppSetting(key: AppSettingKey, value: string) {
 		.values({ key, value, updatedAt })
 		.onConflictDoUpdate({ target: appSettings.key, set: { value, updatedAt } })
 		.run();
+}
+
+export function deleteAppSetting(key: AppSettingKey) {
+	ensureSchema();
+	db.delete(appSettings).where(eq(appSettings.key, key)).run();
 }
 
 export function getSearchIndexing(): SearchIndexing {

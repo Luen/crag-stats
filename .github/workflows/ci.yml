@@ -31,7 +31,20 @@ jobs:
         run: sudo apt-get update && sudo apt-get install -y python3 make g++
 
       - run: pnpm install --frozen-lockfile
+      - name: Lint (Prettier + ESLint)
+        run: pnpm lint
       - run: pnpm check
       - name: Unit tests
         run: pnpm test
       - run: pnpm build
+      - name: Install Playwright Chromium
+        run: pnpm exec playwright install --with-deps chromium
+      - name: E2E tests (Playwright + axe)
+        run: pnpm test:e2e
+      - name: Upload Playwright traces
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-traces
+          path: test-results/
+          retention-days: 7

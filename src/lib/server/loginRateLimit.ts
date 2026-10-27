@@ -4,8 +4,7 @@
  */
 
 export type RateLimitDecision =
-	| { ok: true; remaining: number }
-	| { ok: false; retryAfterSec: number; message: string };
+	{ ok: true; remaining: number } | { ok: false; retryAfterSec: number; message: string };
 
 type Bucket = {
 	fails: number;
@@ -27,9 +26,10 @@ function now() {
 }
 
 export function clientKeyFromRequest(request: Request, getClientAddress?: () => string): string {
-	const xf = request.headers.get('cf-connecting-ip')
-		|| request.headers.get('x-forwarded-for')?.split(',')[0]?.trim()
-		|| request.headers.get('x-real-ip');
+	const xf =
+		request.headers.get('cf-connecting-ip') ||
+		request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+		request.headers.get('x-real-ip');
 	if (xf) return `ip:${xf}`;
 	try {
 		if (getClientAddress) return `ip:${getClientAddress()}`;

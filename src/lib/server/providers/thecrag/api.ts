@@ -127,7 +127,11 @@ export function flattenRouteTags(
 function partnersFromWith(value: ApiAscent['with']): string | null {
 	if (value == null) return null;
 	if (Array.isArray(value)) {
-		const joined = value.map(String).map((s) => s.trim()).filter(Boolean).join(', ');
+		const joined = value
+			.map(String)
+			.map((s) => s.trim())
+			.filter(Boolean)
+			.join(', ');
 		return joined || null;
 	}
 	const s = String(value).trim();
@@ -171,7 +175,10 @@ export function extractLatLon(source: unknown): { lat: number; lon: number } | n
 	const obj = source as Record<string, unknown>;
 
 	const lat =
-		finiteCoord(obj.lat) ?? finiteCoord(obj.latitude) ?? finiteCoord(obj.Lat) ?? finiteCoord(obj.Latitude);
+		finiteCoord(obj.lat) ??
+		finiteCoord(obj.latitude) ??
+		finiteCoord(obj.Lat) ??
+		finiteCoord(obj.Latitude);
 	const lon =
 		finiteCoord(obj.lon) ??
 		finiteCoord(obj.long) ??
@@ -261,8 +268,7 @@ export function mapAscent(a: ApiAscent): CanonicalAscent | null {
 	const parent = route.ancestors?.parent;
 	const country = route.ancestors?.country?.name;
 	const areaId = tlc?.id ?? parent?.id ?? null;
-	const areaStub =
-		tlc?.urlAncestorStub ?? parent?.urlAncestorStub ?? route.urlAncestorStub ?? null;
+	const areaStub = tlc?.urlAncestorStub ?? parent?.urlAncestorStub ?? route.urlAncestorStub ?? null;
 	const tags = flattenRouteTags(route.tags);
 	const boltsRaw = route.bolts;
 	const bolts =
@@ -360,7 +366,9 @@ export async function fetchTheCragPage(
 
 	const json = (await res.json()) as ApiResponse;
 	const data = json.data;
-	const ascents = (data?.ascents ?? []).map(mapAscent).filter((a): a is CanonicalAscent => a != null);
+	const ascents = (data?.ascents ?? [])
+		.map(mapAscent)
+		.filter((a): a is CanonicalAscent => a != null);
 	const perPage = data?.perPage ?? 250;
 	const total = data?.numberAscents ?? ascents.length;
 	const done = page * perPage >= total || ascents.length === 0;

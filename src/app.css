@@ -16,10 +16,13 @@
 	--font-sans: 'Plus Jakarta Sans Variable', 'Plus Jakarta Sans', 'Segoe UI', system-ui, sans-serif;
 	--font-display: var(--font-sans);
 
-	/* Rope orange — the brand accent (Dreeve-style single warm accent). */
-	--accent: #ea580c;
-	--accent-strong: #c2410c;
-	--accent-soft: color-mix(in srgb, var(--accent) 10%, var(--paper));
+	/* Rope orange. --brand is the logo/wordmark orange; --accent is the UI orange, a shade
+	   deeper so text and white-on-orange buttons meet WCAG AA (4.5:1). */
+	--brand: #ea580c;
+	--accent: #c2410c;
+	--accent-strong: #9a3412;
+	--on-accent: #ffffff;
+	--accent-soft: color-mix(in srgb, var(--accent) 8%, var(--paper));
 	--accent-2: #0f766e;
 
 	--bg: #f5f6f8;
@@ -28,10 +31,32 @@
 	--surface-2: #f8f9fb;
 	--surface-3: #eceef2;
 	--ink: #161a23;
-	--ink-muted: #667085;
+	--ink-muted: #576071;
 	--panel: var(--paper);
 	--line: #e6e8ec;
 	--shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 1px 3px rgba(16, 24, 40, 0.04);
+
+	/* Discipline colours — keep in sync with STYLE_BADGE_COLORS in src/lib/ticks.ts. */
+	--style-sport: #1d6fa5;
+	--style-trad: #e07a2f;
+	--style-boulder: #a12b4a;
+	--style-toprope: #7b5ea7;
+	--style-alpine: #2a9d8f;
+	--style-aid: #6c757d;
+	--style-unknown: #9aa0a6;
+
+	/* Semantic UI colours. */
+	--danger: #c44569;
+	--gold: #c9a227;
+	--gold-soft: #f5e6a8;
+	--series-1: var(--style-alpine);
+	--series-2: var(--style-sport);
+	--heat-1: #c6e48b;
+	--heat-2: #7bc96f;
+	--heat-3: #239a3b;
+	--heat-4: #196127;
+	--shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.18);
+	--scrim: rgba(10, 12, 16, 0.35);
 
 	--header-h: 3.75rem;
 	--side-w: 15rem;
@@ -43,6 +68,8 @@
 :root[data-theme='dark'] {
 	--accent: #fb7a3c;
 	--accent-strong: #fdba74;
+	--on-accent: #1c0f06;
+	--brand: #fb7a3c;
 	--accent-soft: color-mix(in srgb, var(--accent) 14%, var(--paper));
 	--accent-2: #2dd4bf;
 	--bg: #0f1218;
@@ -54,6 +81,11 @@
 	--ink-muted: #98a1b3;
 	--line: #2a303c;
 	--shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+	--gold-soft: #5c4a12;
+	--heat-1: #0e4429;
+	--heat-2: #006d32;
+	--heat-3: #26a641;
+	--heat-4: #39d353;
 	color-scheme: dark;
 }
 
@@ -61,6 +93,8 @@
 	:root:not([data-theme='light']) {
 		--accent: #fb7a3c;
 		--accent-strong: #fdba74;
+		--on-accent: #1c0f06;
+		--brand: #fb7a3c;
 		--accent-soft: color-mix(in srgb, var(--accent) 14%, var(--paper));
 		--accent-2: #2dd4bf;
 		--bg: #0f1218;
@@ -72,6 +106,11 @@
 		--ink-muted: #98a1b3;
 		--line: #2a303c;
 		--shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+		--gold-soft: #5c4a12;
+		--heat-1: #0e4429;
+		--heat-2: #006d32;
+		--heat-3: #26a641;
+		--heat-4: #39d353;
 		color-scheme: dark;
 	}
 }

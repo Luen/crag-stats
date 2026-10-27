@@ -43,7 +43,7 @@
 			{/each}
 		</div>
 		<div class="legend">
-			{#each [...new Map(pyramid.rows.flatMap((r) => r.segments.map((s) => [s.tick, s.color]))).entries()] as [tick, color] (tick)}
+			{#each [...new Map(pyramid.rows.flatMap( (r) => r.segments.map( (s) => [s.tick, s.color] ) )).entries()] as [tick, color] (tick)}
 				<span><i style:background={color}></i>{tick}</span>
 			{/each}
 		</div>
@@ -96,7 +96,7 @@
 	}
 	.g a:hover :global(.grade-chip),
 	.bar-link:hover .stack {
-		outline: 2px solid var(--accent, #1d6fa5);
+		outline: 2px solid var(--accent);
 		outline-offset: 1px;
 	}
 	.bar-link {

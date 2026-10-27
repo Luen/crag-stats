@@ -24,8 +24,22 @@ let migrated = false;
  */
 export function ensureSchema() {
 	if (migrated) return;
-	runMigrations(sqlite, process.env.MIGRATIONS_DIR || join(rootDir, 'migrations'));
+	runMigrations(sqlite, resolveMigrationsDir());
 	migrated = true;
+}
+
+/**
+ * MIGRATIONS_DIR wins; otherwise the source-relative path (dev) or ./migrations from the
+ * working directory. The bundled server (`node build`) lives at a different depth, so the
+ * source-relative guess misses there and a fresh DB would get no tables.
+ */
+function resolveMigrationsDir(): string {
+	const candidates = [
+		process.env.MIGRATIONS_DIR,
+		join(rootDir, 'migrations'),
+		join(process.cwd(), 'migrations')
+	].filter((d): d is string => Boolean(d));
+	return candidates.find((d) => existsSync(d)) ?? candidates[0];
 }
 
 function runMigrations(database: Database.Database, migrationsDir: string) {
@@ -45,9 +59,7 @@ function runMigrations(database: Database.Database, migrationsDir: string) {
 		.filter((f) => f.endsWith('.sql'))
 		.sort();
 	const has = database.prepare(`SELECT 1 AS ok FROM schema_migrations WHERE id = ?`);
-	const insert = database.prepare(
-		`INSERT INTO schema_migrations (id, applied_at) VALUES (?, ?)`
-	);
+	const insert = database.prepare(`INSERT INTO schema_migrations (id, applied_at) VALUES (?, ?)`);
 
 	for (const file of files) {
 		if (has.get(file)) continue;

@@ -15,7 +15,13 @@
 				<span class="pill">{g.kindLabel}</span>
 			</div>
 			<p class="meta">{g.targetLabel}</p>
-			<div class="bar" role="progressbar" aria-valuenow={g.progressPct} aria-valuemin={0} aria-valuemax={100}>
+			<div
+				class="bar"
+				role="progressbar"
+				aria-valuenow={g.progressPct}
+				aria-valuemin={0}
+				aria-valuemax={100}
+			>
 				<span style:width="{g.progressPct}%"></span>
 			</div>
 			<p class="progress-line">
@@ -49,8 +55,8 @@
 <section class="panel head">
 	<h1>Goals</h1>
 	<p>
-		Progress fills from your theCrag logbook. Grade goals track a send ≥ target this year (outdoor by
-		default). Custom goals stay manual.
+		Progress fills from your theCrag logbook. Grade goals track a send ≥ target this year (outdoor
+		by default). Custom goals stay manual.
 	</p>
 </section>
 
@@ -219,7 +225,7 @@
 		border-radius: 0.5rem;
 		border: 1px solid transparent;
 		background: var(--accent);
-		color: #fff;
+		color: var(--on-accent);
 		font-weight: 600;
 		cursor: pointer;
 		width: fit-content;
@@ -231,8 +237,8 @@
 	}
 	button.danger {
 		background: transparent;
-		border-color: #c44569;
-		color: #c44569;
+		border-color: var(--danger);
+		color: var(--danger);
 	}
 	.list {
 		display: grid;
@@ -296,7 +302,7 @@
 		min-width: 0;
 	}
 	.goal.done .bar span {
-		background: color-mix(in srgb, var(--accent) 70%, #1c2418);
+		background: var(--accent-strong);
 	}
 	.progress-line {
 		display: flex;
@@ -317,7 +323,7 @@
 		gap: 0.4rem;
 	}
 	.banner.err {
-		color: #c44569;
+		color: var(--danger);
 		margin: 0 0 0.75rem;
 	}
 </style>

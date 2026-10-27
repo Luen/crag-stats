@@ -57,10 +57,7 @@
 			aria-label="Climber profile radar"
 		>
 			{#each rings as ring (ring)}
-				<polygon
-					class="ring"
-					points={poly(axes.map(() => ring * 100))}
-				/>
+				<polygon class="ring" points={poly(axes.map(() => ring * 100))} />
 			{/each}
 			{#each axes as axis, i (axis.key)}
 				{@const [x, y] = point(i, axes.length, 100)}
@@ -71,7 +68,8 @@
 					x={lp.x}
 					y={lp.y}
 					dy={lp.y < cy - 2 ? '-0.2em' : lp.y > cy + 2 ? '0.75em' : '0.35em'}
-					text-anchor={lp.x < cx - 6 ? 'end' : lp.x > cx + 6 ? 'start' : 'middle'}>{axis.label}</text
+					text-anchor={lp.x < cx - 6 ? 'end' : lp.x > cx + 6 ? 'start' : 'middle'}
+					>{axis.label}</text
 				>
 			{/each}
 			<polygon class="fill90" points={poly(last90)} />
@@ -115,10 +113,10 @@
 		vertical-align: -1px;
 	}
 	.l90::before {
-		background: #2a9d8f;
+		background: var(--series-1);
 	}
 	.l30::before {
-		background: #1d6fa5;
+		background: var(--series-2);
 	}
 	.radar {
 		width: 100%;
@@ -141,13 +139,13 @@
 		fill: var(--ink-muted);
 	}
 	.fill90 {
-		fill: rgba(42, 157, 143, 0.22);
-		stroke: #2a9d8f;
+		fill: color-mix(in srgb, var(--series-1) 22%, transparent);
+		stroke: var(--series-1);
 		stroke-width: 2;
 	}
 	.fill30 {
-		fill: rgba(29, 111, 165, 0.18);
-		stroke: #1d6fa5;
+		fill: color-mix(in srgb, var(--series-2) 18%, transparent);
+		stroke: var(--series-2);
 		stroke-width: 2;
 	}
 	.empty {

@@ -12,7 +12,11 @@
 	const label = $derived(grade?.trim() || '—');
 </script>
 
-<span class="grade-chip" style:--chip={meta?.color ?? '#8a8a8a'} title={meta?.name ?? 'Unknown band'}>
+<span
+	class="grade-chip"
+	style:--chip={meta?.color ?? 'var(--style-unknown)'}
+	title={meta?.name ?? 'Unknown band'}
+>
 	{#if meta}
 		<span class="dot" style:background={meta.color}></span>
 	{/if}
@@ -24,6 +28,6 @@
 		width: 0.55rem;
 		height: 0.55rem;
 		border-radius: 999px;
-		box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.12);
+		box-shadow: 0 0 0 1px color-mix(in srgb, var(--ink) 12%, transparent);
 	}
 </style>

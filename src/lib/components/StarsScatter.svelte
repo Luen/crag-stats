@@ -36,16 +36,9 @@
 	{#if points.length === 0}
 		<p class="empty">No rated routes yet.</p>
 	{:else}
-		<svg viewBox="0 0 {w} {h}" role="img" aria-label="Scatter of route stars versus grade score">
+		<svg viewBox="0 0 {w} {h}" role="group" aria-label="Scatter of route stars versus grade score">
 			<!-- axes -->
-			<line
-				x1={pad.l}
-				y1={pad.t}
-				x2={pad.l}
-				y2={h - pad.b}
-				stroke="var(--line)"
-				stroke-width="1"
-			/>
+			<line x1={pad.l} y1={pad.t} x2={pad.l} y2={h - pad.b} stroke="var(--line)" stroke-width="1" />
 			<line
 				x1={pad.l}
 				y1={h - pad.b}
@@ -55,9 +48,7 @@
 				stroke-width="1"
 			/>
 			{#each [0, 1, 2, 3] as star (star)}
-				<text x={pad.l - 8} y={yOf(star) + 3} text-anchor="end" class="axis"
-					>{star}★</text
-				>
+				<text x={pad.l - 8} y={yOf(star) + 3} text-anchor="end" class="axis">{star}★</text>
 			{/each}
 			<text x={pad.l} y={h - 6} class="axis">Grade →</text>
 			<text x={w - pad.r} y={h - 6} text-anchor="end" class="axis">{Math.round(scoreMax)}</text>
@@ -65,24 +56,12 @@
 			{#each points as p, i (`${p.routeName}-${p.score}-${p.stars}-${i}`)}
 				{#if p.url}
 					<a href={p.url} target="_blank" rel="noreferrer">
-						<circle
-							cx={xOf(p.score)}
-							cy={yOf(p.stars)}
-							r="4.5"
-							fill="var(--accent)"
-							opacity="0.75"
-						>
+						<circle cx={xOf(p.score)} cy={yOf(p.stars)} r="4.5" fill="var(--accent)" opacity="0.75">
 							<title>{p.routeName}: {p.stars}★ · score {p.score}</title>
 						</circle>
 					</a>
 				{:else}
-					<circle
-						cx={xOf(p.score)}
-						cy={yOf(p.stars)}
-						r="4.5"
-						fill="var(--accent)"
-						opacity="0.75"
-					>
+					<circle cx={xOf(p.score)} cy={yOf(p.stars)} r="4.5" fill="var(--accent)" opacity="0.75">
 						<title>{p.routeName}: {p.stars}★ · score {p.score}</title>
 					</circle>
 				{/if}

@@ -35,11 +35,11 @@
 	function bandStops() {
 		// approximate beginner→elite backgrounds for route grades; boulder uses different scale but same colours
 		return [
-			{ top: 0, h: 20, color: 'rgba(178,24,130,0.12)' },
-			{ top: 20, h: 20, color: 'rgba(201,9,9,0.10)' },
-			{ top: 40, h: 20, color: 'rgba(229,131,41,0.12)' },
-			{ top: 60, h: 20, color: 'rgba(254,225,0,0.14)' },
-			{ top: 80, h: 20, color: 'rgba(84,180,26,0.12)' }
+			{ top: 0, h: 20, color: 'color-mix(in srgb, var(--band-elite) 12%, transparent)' },
+			{ top: 20, h: 20, color: 'color-mix(in srgb, var(--band-expert) 10%, transparent)' },
+			{ top: 40, h: 20, color: 'color-mix(in srgb, var(--band-experienced) 12%, transparent)' },
+			{ top: 60, h: 20, color: 'color-mix(in srgb, var(--band-intermediate) 14%, transparent)' },
+			{ top: 80, h: 20, color: 'color-mix(in srgb, var(--band-beginner) 12%, transparent)' }
 		];
 	}
 
@@ -56,7 +56,7 @@
 
 <article class="panel">
 	<header>
-		<h3 style:color={titleColor}>{title}</h3>
+		<h3 style:--title={titleColor}>{title}</h3>
 		<div class="scores">
 			{#if data.peakScore != null}
 				<span>Peak CPR <strong>{data.peakScore}</strong></span>
@@ -91,7 +91,7 @@
 					></div>
 				{/each}
 				<div class="cols" style:--n={data.buckets.length}>
-					{#each data.buckets as b, i (b.period)}
+					{#each data.buckets as b (b.period)}
 						<div class="col">
 							<div class="candles">
 								{#each b.candles as c (c.family)}
@@ -173,6 +173,7 @@
 	}
 	h3 {
 		margin: 0;
+		color: color-mix(in srgb, var(--title, var(--ink)) 60%, var(--ink));
 		text-transform: uppercase;
 		letter-spacing: 0.04em;
 		font-size: 1rem;

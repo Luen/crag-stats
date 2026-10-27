@@ -1,8 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import {
-	gradeSystemFitsStyle,
-	resolveEffectiveGrade
-} from './effectiveGrade';
+import { gradeSystemFitsStyle, resolveEffectiveGrade } from './effectiveGrade';
 
 describe('gradeSystemFitsStyle', () => {
 	it('rejects boulder CPR systems on trad/sport (Trad −1 / VB bug)', () => {

@@ -1,14 +1,6 @@
 /** Normalize theCrag tick labels for icons / styling. */
 export type TickKind =
-	| 'onsight'
-	| 'flash'
-	| 'redpoint'
-	| 'pinkpoint'
-	| 'tick'
-	| 'send'
-	| 'clean'
-	| 'toprope'
-	| 'other';
+	'onsight' | 'flash' | 'redpoint' | 'pinkpoint' | 'tick' | 'send' | 'clean' | 'toprope' | 'other';
 
 export function tickKind(tick: string | null | undefined): TickKind {
 	const t = (tick || '').trim().toLowerCase();

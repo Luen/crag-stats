@@ -8,7 +8,9 @@
 		[...new Set(data.map((d) => d.date.slice(0, 4)))].sort((a, b) => b.localeCompare(a))
 	);
 	let selectedYear = $state<string | null>(null);
-	const year = $derived(selectedYear && years.includes(selectedYear) ? selectedYear : (years[0] ?? ''));
+	const year = $derived(
+		selectedYear && years.includes(selectedYear) ? selectedYear : (years[0] ?? '')
+	);
 
 	const byDate = $derived(new Map(data.map((d) => [d.date, d])));
 
@@ -29,7 +31,7 @@
 				dow: d.getDay()
 			});
 		}
-		const cols: typeof cells[] = [];
+		const cols: (typeof cells)[] = [];
 		let col: typeof cells = [];
 		// pad first column
 		const firstDow = cells[0]?.dow ?? 0;
@@ -180,7 +182,7 @@
 		text-decoration: none;
 	}
 	a.cell:hover {
-		outline: 1px solid var(--ink, #222);
+		outline: 1px solid var(--ink);
 		outline-offset: 1px;
 	}
 	.l0,
@@ -188,16 +190,16 @@
 		background: var(--surface-3);
 	}
 	.l1 {
-		background: #c6e48b;
+		background: var(--heat-1);
 	}
 	.l2 {
-		background: #7bc96f;
+		background: var(--heat-2);
 	}
 	.l3 {
-		background: #239a3b;
+		background: var(--heat-3);
 	}
 	.l4 {
-		background: #196127;
+		background: var(--heat-4);
 	}
 	.swipe-hint {
 		display: none;

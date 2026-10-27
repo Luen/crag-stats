@@ -41,8 +41,8 @@
 		letter-spacing: 0.02em;
 		padding: 0.1rem 0.4rem;
 		border-radius: 0.35rem;
-		background: color-mix(in srgb, var(--accent, #1d6fa5) 12%, transparent);
-		color: var(--ink-muted, #5a5a5a);
+		background: color-mix(in srgb, var(--accent) 12%, transparent);
+		color: var(--ink-muted);
 		border: 1px solid color-mix(in srgb, var(--line) 80%, transparent);
 	}
 </style>

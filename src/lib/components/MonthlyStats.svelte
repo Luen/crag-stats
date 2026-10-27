@@ -159,7 +159,7 @@
 	.toggles button.active {
 		background: var(--accent);
 		border-color: var(--accent);
-		color: white;
+		color: var(--on-accent);
 	}
 	.chart-scroll {
 		overflow-x: auto;

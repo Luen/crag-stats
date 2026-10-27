@@ -237,7 +237,10 @@ export function refreshProjects(now: Date = new Date()) {
 		}
 	}
 
-	const existingProjects = db.select({ id: projects.id, routeId: projects.routeId }).from(projects).all();
+	const existingProjects = db
+		.select({ id: projects.id, routeId: projects.routeId })
+		.from(projects)
+		.all();
 	for (const row of existingProjects) {
 		if (!keepIds.has(row.routeId)) {
 			db.delete(projects).where(eq(projects.id, row.id)).run();
@@ -345,6 +348,28 @@ export function listProjects(status?: 'open' | 'sent' | 'archived'): ProjectList
 	}));
 }
 
+/**
+ * Count of "working on" projects (same rule as listActiveProjects().workingOn) for the
+ * sidebar badge. Reads one column instead of the full listProjects() join (#38).
+ */
+export function countActiveProjects(now: Date = new Date()): number {
+	ensureSchema();
+	const rows = db
+		.select({ lastAttemptAt: projects.lastAttemptAt })
+		.from(projects)
+		.where(eq(projects.status, 'open'))
+		.all();
+	return countTouched(rows, now);
+}
+
+/** Pure helper (unit-tested): how many open rows were touched within the stale window. */
+export function countTouched(
+	rows: { lastAttemptAt: string | null }[],
+	now: Date = new Date()
+): number {
+	return rows.filter((r) => isTouchedWithin(r.lastAttemptAt, now)).length;
+}
+
 /** Working-on (open, touched within a year) + recently-sent shelf (~31 days). */
 export function listActiveProjects(now: Date = new Date()) {
 	const all = listProjects();
@@ -357,10 +382,7 @@ export function listActiveProjects(now: Date = new Date()) {
 	return { workingOn, recentlySent };
 }
 
-type RankableProject = Pick<
-	ProjectListItem,
-	'id' | 'sessionCount' | 'tryCount' | 'lastAttemptAt'
->;
+type RankableProject = Pick<ProjectListItem, 'id' | 'sessionCount' | 'tryCount' | 'lastAttemptAt'>;
 
 /** Rank open projects for the dashboard card (most sessions/tries, then recent). */
 export function rankDashboardProjects<T extends RankableProject>(

@@ -27,8 +27,7 @@ function mapRow(row: CsvRow): CanonicalAscent | null {
 	const ascentParsed = detectAndParseGrade(ascentGradeRaw || gradeRaw, {
 		gearStyle: row['Ascent Gear Style']?.trim() || gearStyle
 	});
-	const heightM =
-		parseHeightMeters(row['Ascent Height']) ?? parseHeightMeters(row['Route Height']);
+	const heightM = parseHeightMeters(row['Ascent Height']) ?? parseHeightMeters(row['Route Height']);
 
 	return {
 		provider: 'thecrag',

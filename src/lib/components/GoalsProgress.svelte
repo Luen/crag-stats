@@ -20,7 +20,9 @@
 	</header>
 
 	{#if goals.length === 0}
-		<p class="empty">No active goals — <a href="/goals">set one</a> and progress fills from your logbook.</p>
+		<p class="empty">
+			No active goals — <a href="/goals">set one</a> and progress fills from your logbook.
+		</p>
 	{:else}
 		<ul>
 			{#each goals as g (g.id)}
