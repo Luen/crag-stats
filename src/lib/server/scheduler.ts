@@ -17,10 +17,7 @@ export function startScheduler() {
 
 	cron.schedule(expr, () => {
 		runTheCragSync().catch((err) => {
-			console.error(
-				'[crag-stats] scheduled sync failed:',
-				err instanceof Error ? err.message : err
-			);
+			console.error('[crag-stats] scheduled sync failed:', err instanceof Error ? err.message : err);
 		});
 	});
 	started = true;

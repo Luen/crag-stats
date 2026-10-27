@@ -23,10 +23,7 @@ export function upsertAscents(batch: CanonicalAscent[]): { routes: number; ascen
 				.select()
 				.from(routes)
 				.where(
-					and(
-						eq(routes.provider, item.route.provider),
-						eq(routes.externalId, item.route.externalId)
-					)
+					and(eq(routes.provider, item.route.provider), eq(routes.externalId, item.route.externalId))
 				)
 				.get();
 
@@ -86,9 +83,9 @@ export function upsertAscents(batch: CanonicalAscent[]): { routes: number; ascen
 				tickLabel: item.tickLabel ?? null,
 				ascentGearStyle: item.ascentGearStyle ?? null,
 				ascentGradeRaw: item.ascentGradeRaw ?? null,
-				effectiveGradeRaw:
-					item.effectiveGradeRaw ?? item.ascentGradeRaw ?? item.route.gradeRaw ?? null,
-				effectiveGradeScore: item.effectiveGradeScore ?? item.route.gradeScore ?? null,
+				effectiveGradeRaw: item.effectiveGradeRaw ?? item.ascentGradeRaw ?? item.route.gradeRaw ?? null,
+				effectiveGradeScore:
+					item.effectiveGradeScore ?? item.route.gradeScore ?? null,
 				effectiveGradeBand: item.effectiveGradeBand ?? item.route.gradeBand ?? null,
 				pitchLabel: item.pitchLabel ?? null,
 				ascentLabel: item.ascentLabel ?? null,
@@ -162,9 +159,7 @@ export function reconcileProviderAscents(
 
 	const seenSet = new Set(seen);
 	const staleIds =
-		seen.length === 0
-			? local.map((a) => a.id)
-			: local.filter((a) => !seenSet.has(a.externalId)).map((a) => a.id);
+		seen.length === 0 ? local.map((a) => a.id) : local.filter((a) => !seenSet.has(a.externalId)).map((a) => a.id);
 
 	let deletedAscents = 0;
 	let deletedRoutes = 0;

@@ -8,7 +8,11 @@ import {
 	progressPct,
 	type GoalKind
 } from './goalsShared';
-import { matchesVenueScope, normalizeVenueScope, type VenueScope } from './venue';
+import {
+	matchesVenueScope,
+	normalizeVenueScope,
+	type VenueScope
+} from './venue';
 
 export type { GoalKind } from './goalsShared';
 export { defaultVenueForKind, kindLabel, parseGoalGradeScore, progressPct } from './goalsShared';
@@ -55,7 +59,8 @@ function enrichGoal(g: Goal): GoalView {
 		const target = g.targetGradeScore ?? targetNum;
 		const current = Number.isFinite(currentNum) ? currentNum : 0;
 		pct = g.completed ? 100 : progressPct(current, target);
-		progressLabel = current > 0 ? `Best send ${current}` : 'No qualifying send yet';
+		progressLabel =
+			current > 0 ? `Best send ${current}` : 'No qualifying send yet';
 		targetLabel = Number.isFinite(target) ? `Send ≥ ${target}` : 'Grade goal';
 		if (g.year) targetLabel += ` · ${g.year}`;
 	} else if (g.kind === 'height_year') {
@@ -93,7 +98,12 @@ function enrichGoal(g: Goal): GoalView {
 export function listGoals(): GoalView[] {
 	ensureSchema();
 	updateGoalProgress();
-	return db.select().from(goals).orderBy(desc(goals.createdAt)).all().map(enrichGoal);
+	return db
+		.select()
+		.from(goals)
+		.orderBy(desc(goals.createdAt))
+		.all()
+		.map(enrichGoal);
 }
 
 export function listActiveGoals(limit = 3): GoalView[] {
@@ -264,7 +274,8 @@ export function updateGoalProgress(): void {
 				best = best == null ? score : Math.max(best, score);
 			}
 			progressValue = best != null ? String(Math.round(best * 10) / 10) : '0';
-			completed = target != null && Number.isFinite(target) && best != null && best >= target;
+			completed =
+				target != null && Number.isFinite(target) && best != null && best >= target;
 		}
 
 		if (completed && !g.completed) {

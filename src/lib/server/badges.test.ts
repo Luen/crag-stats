@@ -29,13 +29,7 @@ describe('buildBadges', () => {
 
 	it('earns first moves, session, and send from logbook order', () => {
 		const rows: DashboardExtraRow[] = [
-			row({
-				ascentDate: '2020-01-01',
-				tickType: 'Attempt',
-				isSend: false,
-				routeName: 'Warmup',
-				ascentId: 1
-			}),
+			row({ ascentDate: '2020-01-01', tickType: 'Attempt', isSend: false, routeName: 'Warmup', ascentId: 1 }),
 			row({
 				ascentDate: '2020-01-02',
 				tickType: 'Red point',

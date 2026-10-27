@@ -49,7 +49,7 @@ const TRAD_SHIFT: Record<string, number> = {
 	'pink point': -0.8,
 	pinkpoint: -0.8,
 	'free solo': 0.5,
-	solo: 0.3
+	'solo': 0.3
 };
 
 const BOULDER_SHIFT: Record<string, number> = {
@@ -153,12 +153,7 @@ export type TimelineBucket = {
 	redpointGrade: number | null;
 };
 
-const TICK_FAMILY: {
-	match: (t: string) => boolean;
-	family: string;
-	color: string;
-	order: number;
-}[] = [
+const TICK_FAMILY: { match: (t: string) => boolean; family: string; color: string; order: number }[] = [
 	{ match: (t) => t.includes('sight'), family: 'onsight', color: '#54b41a', order: 0 },
 	{ match: (t) => t.includes('flash'), family: 'flash', color: '#fee100', order: 1 },
 	{
@@ -219,9 +214,7 @@ export function buildCprTimeline(
 	currentGrade: number | null;
 	source: 'api' | 'approx';
 } {
-	const styleAscents = inputs.filter(
-		(a) => normalizeClimbStyle(a.gearStyle) === style && a.ascentDate
-	);
+	const styleAscents = inputs.filter((a) => normalizeClimbStyle(a.gearStyle) === style && a.ascentDate);
 	const best = bestTicksByRoute(inputs, style);
 	const apiPoints = styleAscents.filter((a) => parseApiGrade(a.apiCprGrade) != null);
 	const useApi = apiPoints.length >= Math.max(3, Math.ceil(styleAscents.length * 0.2));
@@ -239,12 +232,7 @@ export function buildCprTimeline(
 
 	for (const key of keys) {
 		const list = periods.get(key)!;
-		const end = new Date(
-			list
-				.map((a) => a.ascentDate!)
-				.sort()
-				.at(-1)!
-		);
+		const end = new Date(list.map((a) => a.ascentDate!).sort().at(-1)!);
 		const approx = cprGradeAt(best, end);
 
 		let apiGrade: number | null = null;

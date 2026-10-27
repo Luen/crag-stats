@@ -12,7 +12,9 @@ function weekKey(iso: string): string | null {
 	const week1 = new Date(tmp.getFullYear(), 0, 4);
 	const week =
 		1 +
-		Math.round(((tmp.getTime() - week1.getTime()) / 86400000 - 3 + ((week1.getDay() + 6) % 7)) / 7);
+		Math.round(
+			((tmp.getTime() - week1.getTime()) / 86400000 - 3 + ((week1.getDay() + 6) % 7)) / 7
+		);
 	if (!Number.isFinite(week) || week < 1 || week > 53) return null;
 	return `${tmp.getFullYear()}-W${String(week).padStart(2, '0')}`;
 }
