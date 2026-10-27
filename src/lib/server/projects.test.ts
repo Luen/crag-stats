@@ -4,6 +4,7 @@ import {
 	isLikelyIndoorRoute,
 	isRecentlySent,
 	isTouchedWithin,
+	rankDashboardProjects,
 	summarizeRouteAscents,
 	triesFromAscent
 } from './projects';
@@ -123,6 +124,27 @@ describe('summarizeRouteAscents', () => {
 		expect(classifyRouteProject(stats)).toBe('open');
 		expect(stats.tryCount).toBe(1);
 		expect(stats.sessionCount).toBe(1);
+	});
+});
+
+describe('rankDashboardProjects', () => {
+	it('prefers most sessions, then tries, and fills from recent sends', () => {
+		const open = [
+			{ id: 1, sessionCount: 2, tryCount: 5, lastAttemptAt: '2026-01-01' },
+			{ id: 2, sessionCount: 5, tryCount: 5, lastAttemptAt: '2025-12-01' },
+			{ id: 3, sessionCount: 5, tryCount: 9, lastAttemptAt: '2025-11-01' }
+		];
+		expect(rankDashboardProjects(open, [], 2).map((p) => p.id)).toEqual([3, 2]);
+		expect(
+			rankDashboardProjects(
+				[{ id: 1, sessionCount: 1, tryCount: 1, lastAttemptAt: '2026-01-01' }],
+				[
+					{ id: 9, sessionCount: 4, tryCount: 4, lastAttemptAt: '2026-02-01' },
+					{ id: 8, sessionCount: 3, tryCount: 3, lastAttemptAt: '2026-01-15' }
+				],
+				3
+			).map((p) => p.id)
+		).toEqual([1, 9, 8]);
 	});
 });
 

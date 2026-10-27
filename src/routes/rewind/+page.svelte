@@ -3,11 +3,12 @@
 
 	let { data }: PageProps = $props();
 	const s = $derived(data.summary);
+	const year = $derived(s.year ?? data.year);
 </script>
 
 <section class="panel head">
-	<h1>Rewind</h1>
-	<p>Yearly climbing snapshot from your synced logbook.</p>
+	<h1>Rewind {year}</h1>
+	<p>Your {year} climbing snapshot from your synced logbook.</p>
 </section>
 
 <section class="panel controls">
@@ -30,19 +31,19 @@
 
 <section class="stats">
 	<article class="panel metric">
-		<span class="label">Ascents</span>
+		<span class="label">Ascents in {year}</span>
 		<strong>{s.ascents}</strong>
 	</article>
 	<article class="panel metric">
-		<span class="label">Sends</span>
+		<span class="label">Sends in {year}</span>
 		<strong>{s.sends}</strong>
 	</article>
 	<article class="panel metric">
-		<span class="label">Onsights</span>
+		<span class="label">Onsights in {year}</span>
 		<strong>{s.onsights}</strong>
 	</article>
 	<article class="panel metric">
-		<span class="label">Height</span>
+		<span class="label">Height in {year}</span>
 		<strong>{s.heightKm} km</strong>
 		<span class="sub">{s.heightM} m</span>
 	</article>
@@ -50,7 +51,7 @@
 
 <section class="grid">
 	<article class="panel">
-		<h2>Top crags</h2>
+		<h2>Top crags of {year}</h2>
 		{#if s.topCrags.length === 0}
 			<p class="empty">No ascents in {s.year}.</p>
 		{:else}
@@ -65,7 +66,7 @@
 		{/if}
 	</article>
 	<article class="panel">
-		<h2>Hardest send</h2>
+		<h2>Hardest send in {year}</h2>
 		{#if !s.hardestSend}
 			<p class="empty">No sends logged in {s.year}.</p>
 		{:else}

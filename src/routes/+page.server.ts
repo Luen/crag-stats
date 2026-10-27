@@ -8,6 +8,7 @@ import {
 import { getDashboardStats, parseGradeSystem, parsePyramidMode } from '#lib/server/analytics';
 import { env } from '#lib/server/env';
 import { listActiveGoals } from '#lib/server/goals';
+import { listDashboardProjects } from '#lib/server/projects';
 import { getSyncStatus } from '#lib/server/sync';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -39,6 +40,7 @@ export const load: PageServerLoad = async ({ cookies, url }) => {
 		gradeSystem: preferred,
 		pyramidMode,
 		activeGoals: listActiveGoals(3),
+		dashboardProjects: listDashboardProjects(3),
 		dashLayout: parseLayoutCookie(cookies.get(DASH_LAYOUT_COOKIE))
 	};
 };

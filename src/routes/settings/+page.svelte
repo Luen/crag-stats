@@ -85,6 +85,16 @@
 			<button type="submit" class="danger">Wipe all local data</button>
 		</form>
 	</article>
+
+	{#if data.authEnabled && data.authed}
+		<article class="panel">
+			<h2>Admin session</h2>
+			<p class="hint">End your signed-in session on this device. You will need the app password to return.</p>
+			<form method="POST" action="/logout">
+				<button type="submit" class="secondary">Log out</button>
+			</form>
+		</article>
+	{/if}
 </section>
 
 <style>
