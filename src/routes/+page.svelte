@@ -1,10 +1,13 @@
 <script lang="ts">
 	import AscentHeatmap from '#lib/components/AscentHeatmap.svelte';
+	import AthleteProfile from '#lib/components/AthleteProfile.svelte';
 	import BarList from '#lib/components/BarList.svelte';
+	import ClimberBlurb from '#lib/components/ClimberBlurb.svelte';
 	import ClimberTypeBar from '#lib/components/ClimberTypeBar.svelte';
 	import CprTimeline from '#lib/components/CprTimeline.svelte';
 	import GradeChip from '#lib/components/GradeChip.svelte';
 	import NotableAscents from '#lib/components/NotableAscents.svelte';
+	import Streaks from '#lib/components/Streaks.svelte';
 	import StylePyramid from '#lib/components/StylePyramid.svelte';
 	import TagChips from '#lib/components/TagChips.svelte';
 	import TickTypeIcon from '#lib/components/TickTypeIcon.svelte';
@@ -92,6 +95,21 @@
 
 	<section class="stack">
 		<ClimberTypeBar shares={s.styleShare} climberType={s.climberType} />
+	</section>
+
+	<section class="stack">
+		<ClimberBlurb paragraphs={s.blurb.paragraphs} />
+	</section>
+
+	<section class="duo">
+		<Streaks
+			currentDays={s.streaks.currentDays}
+			currentWeeks={s.streaks.currentWeeks}
+			currentMonths={s.streaks.currentMonths}
+			longestDays={s.streaks.longestDays}
+			lastActiveDate={s.streaks.lastActiveDate}
+		/>
+		<AthleteProfile axes={s.athleteProfile.axes} />
 	</section>
 
 	<section class="stack">
@@ -330,6 +348,12 @@
 		gap: 0.9rem;
 		margin-bottom: 1rem;
 	}
+	.duo {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 0.9rem;
+		margin-bottom: 1rem;
+	}
 	.section-head h2 {
 		margin: 0;
 	}
@@ -386,7 +410,8 @@
 	}
 	@media (max-width: 840px) {
 		.metrics,
-		.grid {
+		.grid,
+		.duo {
 			grid-template-columns: 1fr;
 		}
 	}

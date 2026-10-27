@@ -162,17 +162,62 @@ export function convertFromEwbank(ew: number, system: GradeSystem): string {
 			return ewbankToYds(n) ?? String(n);
 		case 'french':
 			return ewbankToFrench(n) ?? String(n);
+		case 'v_scale':
+		case 'font':
+			return convertFromVScale(ewbankToVScale(n), system);
 		case 'ewbank':
 		default:
 			return String(n);
 	}
 }
 
+/**
+ * Approximate Ewbank → V-scale when theCrag stores boulder CPR in AU.
+ * Tuned so AU ~10–12 land near VB+/V0 (not V10/V12).
+ */
+export function ewbankToVScale(ew: number): number {
+	const n = Math.round(ew);
+	if (n <= 8) return -1.5; // VB-
+	if (n === 9) return -0.7; // VB
+	if (n === 10) return -0.3; // VB+
+	if (n === 11) return -0.3;
+	if (n === 12) return 0; // V0
+	if (n === 13) return 0.3; // V0+
+	if (n === 14) return 1;
+	if (n === 15) return 1.5;
+	if (n === 16) return 2;
+	if (n === 17) return 2.5;
+	if (n === 18) return 3;
+	if (n === 19) return 3.5;
+	if (n === 20) return 4;
+	if (n === 21) return 5;
+	if (n === 22) return 5.5;
+	if (n === 23) return 6;
+	if (n === 24) return 7;
+	if (n === 25) return 8;
+	if (n === 26) return 9;
+	if (n === 27) return 10;
+	if (n === 28) return 11;
+	if (n === 29) return 12;
+	if (n === 30) return 13;
+	if (n >= 31) return Math.min(17, n - 17);
+	return 0;
+}
+
 export function convertFromVScale(v: number, system: GradeSystem): string {
-	const n = Math.round(v);
-	if (system === 'font') return V_TO_FONT[n] ?? `V${n}`;
-	if (n < 0) return 'VB';
-	return `V${n}`;
+	if (system === 'font') {
+		const n = Math.round(v);
+		return V_TO_FONT[n] ?? (n < 0 ? '1A' : `V${n}`);
+	}
+	// Preserve VB± / V0± nuance instead of Math.round(-0.5) → 0 → "V0"
+	if (v <= -1.25) return 'VB-';
+	if (v <= -0.75) return 'VB';
+	if (v < 0) return 'VB+';
+	const base = Math.round(v);
+	const delta = v - base;
+	if (delta <= -0.2) return `V${base}-`;
+	if (delta >= 0.2) return `V${base}+`;
+	return `V${base}`;
 }
 
 function parseEwbank(raw: string): number | null {
@@ -312,8 +357,24 @@ export function detectAndParseGrade(
 			};
 		}
 
-		// Boulder logged with a bare AU/Ewbank number (e.g. Upendi "5") → V5.
-		if (isBoulder && /^\d{1,2}$/.test(text)) {
+		// AU/Ewbank system on boulder is usually a *converted* display of the
+		// boulder grade (e.g. V0 shown as "12"), NOT V12. Callers should prefer
+		// the route's V-scale grade; if we must parse here, map via ewbank→V.
+		const sysIsAu = sys === 'AU' || sys.includes('EWBANK');
+		if (isBoulder && /^\d{1,2}$/.test(text) && sysIsAu) {
+			const v = ewbankToVScale(Number(text));
+			return {
+				system: 'v_scale',
+				raw: text,
+				score: v,
+				label: preferred === 'font' ? convertFromVScale(v, 'font') : formatVScaleLabel(v),
+				band: bandFromVScale(v),
+				isBoulder: true
+			};
+		}
+
+		// Boulder logged with a bare number and no AU system (e.g. Upendi "5") → V5.
+		if (isBoulder && /^\d{1,2}$/.test(text) && !sysIsAu) {
 			const n = Number(text);
 			return {
 				system: 'v_scale',

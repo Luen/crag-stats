@@ -1,8 +1,24 @@
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { startScheduler } from '#lib/server/scheduler';
+import type { LayoutServerLoad } from './$types';
 
 // Start daily sync when the Node server boots (no-op in environments without API key).
 startScheduler();
 
-export function load() {
-	return {};
+function readAppVersion(): string {
+	try {
+		const raw = readFileSync(join(process.cwd(), 'package.json'), 'utf8');
+		const pkg = JSON.parse(raw) as { version?: string };
+		return pkg.version ? `v${pkg.version}` : 'dev';
+	} catch {
+		return 'dev';
+	}
 }
+
+export const load: LayoutServerLoad = async () => {
+	return {
+		appVersion: readAppVersion(),
+		githubUrl: 'https://github.com/Luen/crag-stats'
+	};
+};

@@ -124,4 +124,19 @@ export type DashboardStats = {
 		tags: RouteTag[];
 		url: string | null;
 	}[];
+	blurb: {
+		startedOn: string | null;
+		durationLabel: string | null;
+		paragraphs: string[];
+	};
+	streaks: {
+		currentDays: number;
+		currentWeeks: number;
+		currentMonths: number;
+		longestDays: number;
+		lastActiveDate: string | null;
+	};
+	athleteProfile: {
+		axes: { key: string; label: string; last30: number; last90: number }[];
+	};
 };

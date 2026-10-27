@@ -15,6 +15,25 @@
 		const band = row.bandShares.find((b) => b.band === bandId);
 		return ((band?.count ?? 0) / total) * 100;
 	}
+
+	/** theCrag-style: rowspan the group column while tick types stack underneath. */
+	function withRowspans(rows: NotableRow[]) {
+		const counts = new Map<string, number>();
+		for (const r of rows) counts.set(r.group, (counts.get(r.group) ?? 0) + 1);
+		let prev: string | null = null;
+		return rows.map((row) => {
+			const first = row.group !== prev;
+			prev = row.group;
+			return {
+				row,
+				showGroup: first,
+				rowspan: first ? (counts.get(row.group) ?? 1) : 0
+			};
+		});
+	}
+
+	const styleRows = $derived(withRowspans(byStyle));
+	const areaRows = $derived(withRowspans(byArea));
 </script>
 
 <article class="panel">
@@ -31,9 +50,11 @@
 				</tr>
 			</thead>
 			<tbody>
-				{#each byStyle as row (row.group + row.tickType)}
+				{#each styleRows as { row, showGroup, rowspan } (row.group + row.tickType)}
 					<tr>
-						<td class="group"><StyleBadge style={row.group} /></td>
+						{#if showGroup}
+							<td class="group" {rowspan}><StyleBadge style={row.group} /></td>
+						{/if}
 						<td><TickTypeIcon tick={row.tickType} /></td>
 						<td>
 							<div class="bands">
@@ -80,15 +101,17 @@
 				</tr>
 			</thead>
 			<tbody>
-				{#each byArea as row (row.group + row.tickType)}
+				{#each areaRows as { row, showGroup, rowspan } (row.group + row.tickType)}
 					<tr>
-						<td class="group">
-							{#if row.groupUrl}
-								<a href={row.groupUrl} target="_blank" rel="noreferrer">{row.group}</a>
-							{:else}
-								{row.group}
-							{/if}
-						</td>
+						{#if showGroup}
+							<td class="group" {rowspan}>
+								{#if row.groupUrl}
+									<a href={row.groupUrl} target="_blank" rel="noreferrer">{row.group}</a>
+								{:else}
+									{row.group}
+								{/if}
+							</td>
+						{/if}
 						<td><TickTypeIcon tick={row.tickType} /></td>
 						<td>
 							<div class="bands">
@@ -159,6 +182,8 @@
 	}
 	.group {
 		font-weight: 700;
+		vertical-align: top;
+		padding-top: 0.65rem;
 	}
 	.num {
 		font-weight: 700;

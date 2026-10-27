@@ -23,7 +23,29 @@ function linkFor(row: { ascentUrl: string | null; ascentExternalId: string; url:
 export type { DashboardStats, NotableRow, StylePyramid } from '#lib/types/dashboard';
 
 /** Bump when a new one-shot data repair must run after a schema/parser change. */
-const REPAIR_GEN = 5;
+const REPAIR_GEN = 6;
+
+const TICK_ORDER = [
+	'Onsight',
+	'Flash',
+	'Red point',
+	'Pink point',
+	'Tick',
+	'Send',
+	'Clean',
+	'Repeat',
+	'Top rope',
+	'Second',
+	'Attempt'
+];
+
+function tickSortKey(tick: string): number {
+	const exact = TICK_ORDER.indexOf(tick);
+	if (exact >= 0) return exact;
+	const lower = tick.toLowerCase();
+	const soft = TICK_ORDER.findIndex((t) => lower.includes(t.toLowerCase().split(' ')[0]));
+	return soft >= 0 ? soft : 50;
+}
 let repairedGen = 0;
 
 const STYLE_COLORS: Record<string, string> = {
@@ -447,40 +469,68 @@ export function getDashboardStats(preferredSystem: GradeSystem = 'ewbank'): Dash
 		})
 		.filter((p) => p.total > 0);
 
-	const toNotableRows = (map: Map<string, NotableAgg>): NotableRow[] =>
-		[...map.entries()]
-			.map(([key, agg]) => {
-				const [group, tickType] = key.split('||');
-				const hardest = agg.hardest;
-				const isBoulder = normalizeClimbStyle(hardest?.gearStyle) === 'boulder';
-				const hScore = hardest ? effectiveScore(hardest) : null;
-				const hRaw = hardest ? effectiveRaw(hardest) : null;
-				return {
-					group,
-					groupUrl: hardest?.cragUrl && hardest.cragName === group ? hardest.cragUrl : null,
-					tickType,
-					count: agg.count,
-					hardestGrade:
-						hScore != null
-							? formatGrade(hScore, isBoulder, preferredSystem, hRaw)
-							: hRaw,
-					hardestBand: hardest ? effectiveBand(hardest) : null,
-					hardestRoute: hardest
-						? displayRouteName(hardest.routeName, hardest.pitchLabel, hardest.ascentLabel)
-						: null,
-					hardestUrl: hardest ? linkFor(hardest) : null,
-					hardestDate: relativeTime(hardest?.ascentDate ?? null),
-					hardestStars: hardest?.stars ?? null,
-					hardestPitchLabel: hardest?.pitchLabel ?? null,
-					bandShares: GRADE_BANDS.map((b) => ({
-						band: b.id,
-						name: b.name,
-						count: agg.bandCounts.get(b.id) ?? 0,
-						color: b.color
-					}))
-				};
-			})
-			.sort((a, b) => b.count - a.count);
+	const toNotableRows = (
+		map: Map<string, NotableAgg>,
+		groupMode: 'style' | 'area'
+	): NotableRow[] => {
+		const rows = [...map.entries()].map(([key, agg]) => {
+			const [group, tickType] = key.split('||');
+			const hardest = agg.hardest;
+			const isBoulder = normalizeClimbStyle(hardest?.gearStyle) === 'boulder';
+			const hScore = hardest ? effectiveScore(hardest) : null;
+			const hRaw = hardest ? effectiveRaw(hardest) : null;
+			return {
+				group,
+				groupUrl: hardest?.cragUrl && hardest.cragName === group ? hardest.cragUrl : null,
+				tickType,
+				count: agg.count,
+				hardestGrade:
+					hScore != null ? formatGrade(hScore, isBoulder, preferredSystem, hRaw) : hRaw,
+				hardestBand: hardest ? effectiveBand(hardest) : null,
+				hardestRoute: hardest
+					? displayRouteName(hardest.routeName, hardest.pitchLabel, hardest.ascentLabel)
+					: null,
+				hardestUrl: hardest ? linkFor(hardest) : null,
+				hardestDate: relativeTime(hardest?.ascentDate ?? null),
+				hardestStars: hardest?.stars ?? null,
+				hardestPitchLabel: hardest?.pitchLabel ?? null,
+				bandShares: GRADE_BANDS.map((b) => ({
+					band: b.id,
+					name: b.name,
+					count: agg.bandCounts.get(b.id) ?? 0,
+					color: b.color
+				}))
+			};
+		});
+
+		if (groupMode === 'style') {
+			const styleTotals = new Map<string, number>();
+			for (const r of rows) styleTotals.set(r.group, (styleTotals.get(r.group) ?? 0) + r.count);
+			return rows.sort((a, b) => {
+				const ta = styleTotals.get(a.group) ?? 0;
+				const tb = styleTotals.get(b.group) ?? 0;
+				if (tb !== ta) return tb - ta;
+				const ia = styleOrder.indexOf(a.group);
+				const ib = styleOrder.indexOf(b.group);
+				if (ia !== ib) return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
+				const tickDiff = tickSortKey(a.tickType) - tickSortKey(b.tickType);
+				if (tickDiff !== 0) return tickDiff;
+				return b.count - a.count;
+			});
+		}
+
+		const areaTotals = new Map<string, number>();
+		for (const r of rows) areaTotals.set(r.group, (areaTotals.get(r.group) ?? 0) + r.count);
+		return rows.sort((a, b) => {
+			const ta = areaTotals.get(a.group) ?? 0;
+			const tb = areaTotals.get(b.group) ?? 0;
+			if (tb !== ta) return tb - ta;
+			if (a.group !== b.group) return a.group.localeCompare(b.group);
+			const tickDiff = tickSortKey(a.tickType) - tickSortKey(b.tickType);
+			if (tickDiff !== 0) return tickDiff;
+			return b.count - a.count;
+		});
+	};
 
 	const cprInputs = all.map((a) => ({
 		routeId: a.routeId,
@@ -548,6 +598,13 @@ export function getDashboardStats(preferredSystem: GradeSystem = 'ewbank'): Dash
 			? Math.round(profile.heightClimbed)
 			: null;
 
+	let earliest: string | null = null;
+	for (const row of all) {
+		const d = (row.ascentDate || '').slice(0, 10);
+		if (!/^\d{4}-\d{2}-\d{2}$/.test(d)) continue;
+		if (!earliest || d < earliest) earliest = d;
+	}
+
 	return {
 		profileName: profile?.name ?? null,
 		climberType,
@@ -590,8 +647,22 @@ export function getDashboardStats(preferredSystem: GradeSystem = 'ewbank'): Dash
 			count: bandMap.get(b.id) ?? 0,
 			color: b.color
 		})),
-		notableByStyle: toNotableRows(notableStyle).slice(0, 40),
-		notableByArea: toNotableRows(notableArea).slice(0, 40),
+		notableByStyle: toNotableRows(notableStyle, 'style').slice(0, 40),
+		notableByArea: toNotableRows(notableArea, 'area').slice(0, 40),
+		blurb: buildClimberBlurb({
+			firstDate: earliest,
+			activeDays: dayMap.size,
+			totalAscents: all.length,
+			totalSends: sends,
+			onsightCount,
+			heightM: accountHeightM ?? heightM,
+			distinctRoutes: routeSet.size,
+			distinctCrags: cragMap.size,
+			outdoorAscents,
+			indoorAscents
+		}),
+		streaks: buildStreaks(dayMap),
+		athleteProfile: buildAthleteProfile(all, dayMap),
 		cpr: {
 			sport: buildCprTimeline(cprInputs, 'sport'),
 			trad: buildCprTimeline(cprInputs, 'trad'),
@@ -721,4 +792,239 @@ export function wipeAllData() {
 	db.run(sql`DELETE FROM routes`);
 	db.run(sql`DELETE FROM profiles`);
 	db.run(sql`DELETE FROM sync_state`);
+}
+
+function formatDurationHuman(fromIso: string, to = new Date()): string {
+	const from = new Date(`${fromIso}T12:00:00`);
+	if (Number.isNaN(from.getTime())) return 'a while';
+	let months =
+		(to.getFullYear() - from.getFullYear()) * 12 + (to.getMonth() - from.getMonth());
+	if (to.getDate() < from.getDate()) months -= 1;
+	months = Math.max(0, months);
+	const years = Math.floor(months / 12);
+	const rem = months % 12;
+	if (years <= 0) return rem <= 1 ? `${Math.max(1, rem)} month` : `${rem} months`;
+	if (rem === 0) return years === 1 ? '1 year' : `${years} years`;
+	return `${years} year${years === 1 ? '' : 's'} and ${rem} month${rem === 1 ? '' : 's'}`;
+}
+
+function buildClimberBlurb(input: {
+	firstDate: string | null;
+	activeDays: number;
+	totalAscents: number;
+	totalSends: number;
+	onsightCount: number;
+	heightM: number;
+	distinctRoutes: number;
+	distinctCrags: number;
+	outdoorAscents: number | null;
+	indoorAscents: number | null;
+}): {
+	startedOn: string | null;
+	durationLabel: string | null;
+	paragraphs: string[];
+} {
+	const heightM = Math.round(input.heightM);
+	const heightKm = Math.round((heightM / 1000) * 10) / 10;
+	const everest = heightM > 0 ? Math.round((heightM / 8849) * 10) / 10 : 0;
+	const elCap = heightM > 0 ? Math.round((heightM / 900) * 10) / 10 : 0;
+	const worldLaps = heightKm > 0 ? Math.round((heightKm / 40075) * 100) / 100 : 0;
+	const perDay =
+		input.activeDays > 0 ? Math.round((input.totalAscents / input.activeDays) * 10) / 10 : 0;
+
+	if (!input.firstDate) {
+		return {
+			startedOn: null,
+			durationLabel: null,
+			paragraphs: [
+				`You've logged ${input.totalAscents} ascents across ${input.distinctCrags} crags so far.`
+			]
+		};
+	}
+
+	const duration = formatDurationHuman(input.firstDate);
+	const outdoorBit =
+		input.outdoorAscents != null
+			? ` ${input.outdoorAscents} outdoor` +
+				(input.indoorAscents != null ? ` / ${input.indoorAscents} indoor` : '')
+			: '';
+
+	const paragraphs = [
+		`Since I began climbing ${duration} ago on ${input.firstDate}, I've logged ${input.activeDays} active days at the crag.`,
+		`In that time I've racked up ${input.totalAscents} logged ascents (${input.totalSends} sends, ${input.onsightCount} onsights)${outdoorBit}, on ${input.distinctRoutes} routes across ${input.distinctCrags} areas.`,
+		heightM > 0
+			? `That's about ${heightKm} km of rock — roughly ${everest}× Everest or ${elCap}× El Capitan${worldLaps > 0 ? `, and ${worldLaps} trips around the world if you laid the rope end-to-end` : ''}.`
+			: null,
+		`On average that's ${perDay} ascents per active day.`
+	].filter((p): p is string => Boolean(p));
+
+	return { startedOn: input.firstDate, durationLabel: duration, paragraphs };
+}
+
+function buildStreaks(dayMap: Map<string, { count: number; sends: number }>): {
+	currentDays: number;
+	currentWeeks: number;
+	currentMonths: number;
+	longestDays: number;
+	lastActiveDate: string | null;
+} {
+	const days = [...dayMap.keys()].sort();
+	if (!days.length) {
+		return {
+			currentDays: 0,
+			currentWeeks: 0,
+			currentMonths: 0,
+			longestDays: 0,
+			lastActiveDate: null
+		};
+	}
+
+	const daySet = new Set(days);
+	let longest = 1;
+	let run = 1;
+	for (let i = 1; i < days.length; i++) {
+		const prev = new Date(`${days[i - 1]}T12:00:00`);
+		const cur = new Date(`${days[i]}T12:00:00`);
+		const diff = Math.round((cur.getTime() - prev.getTime()) / 86400000);
+		if (diff === 1) {
+			run += 1;
+			longest = Math.max(longest, run);
+		} else {
+			run = 1;
+		}
+	}
+
+	const last = days[days.length - 1];
+	const today = new Date();
+	const todayIso = today.toISOString().slice(0, 10);
+	const yesterday = new Date(today);
+	yesterday.setDate(yesterday.getDate() - 1);
+	const yIso = yesterday.toISOString().slice(0, 10);
+
+	let currentDays = 0;
+	if (daySet.has(todayIso) || daySet.has(yIso)) {
+		let cursor = daySet.has(todayIso) ? new Date(`${todayIso}T12:00:00`) : new Date(`${yIso}T12:00:00`);
+		while (daySet.has(cursor.toISOString().slice(0, 10))) {
+			currentDays += 1;
+			cursor.setDate(cursor.getDate() - 1);
+		}
+	}
+
+	const weekKey = (iso: string) => {
+		const d = new Date(`${iso}T12:00:00`);
+		const tmp = new Date(d);
+		tmp.setDate(tmp.getDate() + 3 - ((tmp.getDay() + 6) % 7));
+		const week1 = new Date(tmp.getFullYear(), 0, 4);
+		const week =
+			1 +
+			Math.round(
+				((tmp.getTime() - week1.getTime()) / 86400000 - 3 + ((week1.getDay() + 6) % 7)) / 7
+			);
+		return `${tmp.getFullYear()}-W${String(week).padStart(2, '0')}`;
+	};
+	const weeks = [...new Set(days.map(weekKey))].sort();
+	let currentWeeks = 0;
+	if (weeks.length) {
+		const lastWeek = weeks[weeks.length - 1];
+		const weekSet = new Set(weeks);
+		// count contiguous ISO weeks ending at last active week
+		const [yStr, wStr] = lastWeek.split('-W');
+		let y = Number(yStr);
+		let w = Number(wStr);
+		while (weekSet.has(`${y}-W${String(w).padStart(2, '0')}`)) {
+			currentWeeks += 1;
+			w -= 1;
+			if (w < 1) {
+				y -= 1;
+				w = 52;
+			}
+		}
+	}
+
+	const months = [...new Set(days.map((d) => d.slice(0, 7)))].sort();
+	let currentMonths = 0;
+	if (months.length) {
+		const monthSet = new Set(months);
+		let [y, m] = months[months.length - 1].split('-').map(Number);
+		while (monthSet.has(`${y}-${String(m).padStart(2, '0')}`)) {
+			currentMonths += 1;
+			m -= 1;
+			if (m < 1) {
+				y -= 1;
+				m = 12;
+			}
+		}
+	}
+
+	return {
+		currentDays,
+		currentWeeks,
+		currentMonths,
+		longestDays: longest,
+		lastActiveDate: last
+	};
+}
+
+function buildAthleteProfile(
+	all: {
+		ascentDate: string | null;
+		isSend: boolean;
+		tickType: string | null;
+		gearStyle: string | null;
+		heightM: number | null;
+		routeHeightM: number | null;
+		effectiveGradeScore: number | null;
+		gradeScore: number | null;
+	}[],
+	dayMap: Map<string, { count: number; sends: number }>
+): {
+	axes: { key: string; label: string; last30: number; last90: number }[];
+} {
+	const scoreAxes = (sinceDays: number) => {
+		const cutoff = new Date();
+		cutoff.setDate(cutoff.getDate() - sinceDays);
+		const cutIso = cutoff.toISOString().slice(0, 10);
+		const rows = all.filter((r) => (r.ascentDate || '') >= cutIso);
+		const days = new Set(
+			rows.map((r) => (r.ascentDate || '').slice(0, 10)).filter((d) => /^\d{4}-\d{2}-\d{2}$/.test(d))
+		);
+		const styles = new Set(rows.map((r) => displayStyle(r.gearStyle)));
+		const sends = rows.filter((r) => r.isSend).length;
+		const onsights = rows.filter((r) => (r.tickType || '').toLowerCase().includes('sight')).length;
+		const height = rows.reduce((s, r) => s + (r.heightM ?? r.routeHeightM ?? 0), 0);
+		const scores = rows
+			.map((r) => r.effectiveGradeScore ?? r.gradeScore)
+			.filter((n): n is number => n != null);
+		const avgScore = scores.length ? scores.reduce((a, b) => a + b, 0) / scores.length : 0;
+		const maxScore = scores.length ? Math.max(...scores) : 0;
+
+		const volume = Math.min(100, (rows.length / Math.max(1, sinceDays * 0.35)) * 100);
+		const variety = Math.min(100, (styles.size / 4) * 100);
+		const density = Math.min(100, (days.size / Math.max(1, sinceDays * 0.4)) * 100);
+		const duration = Math.min(100, (height / Math.max(1, sinceDays * 25)) * 100);
+		const intensity = Math.min(100, ((avgScore + maxScore) / 2 / 30) * 100);
+		const consistency = Math.min(100, (sends / Math.max(1, rows.length)) * 100);
+		const ambition = Math.min(100, (onsights / Math.max(1, rows.length)) * 120);
+
+		return { volume, variety, density, duration, intensity, consistency: (consistency + ambition) / 2 };
+	};
+
+	const a30 = scoreAxes(30);
+	const a90 = scoreAxes(90);
+	void dayMap;
+
+	return {
+		axes: [
+			{ key: 'volume', label: 'Volume', last30: a30.volume, last90: a90.volume },
+			{ key: 'variety', label: 'Style variety', last30: a30.variety, last90: a90.variety },
+			{ key: 'density', label: 'Density', last30: a30.density, last90: a90.density },
+			{ key: 'duration', label: 'Height', last30: a30.duration, last90: a90.duration },
+			{ key: 'intensity', label: 'Intensity', last30: a30.intensity, last90: a90.intensity },
+			{ key: 'consistency', label: 'Consistency', last30: a30.consistency, last90: a90.consistency }
+		].map((a) => ({
+			...a,
+			last30: Math.round(a.last30),
+			last90: Math.round(a.last90)
+		}))
+	};
 }

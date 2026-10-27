@@ -167,17 +167,27 @@ export function resolveEffectiveGrade(opts: {
 	}
 
 	const routeParsed = parseWith(opts.routeGrade, routeStyle, opts.routeGradeBand, null);
+	const routeIsExplicitV =
+		isBoulderStyle(routeStyle) && parseVish(opts.routeGrade);
 
-	// Prefer ascent grade when its system fits the route (e.g. AU "5" on boulder → V5).
+	// Prefer ascent grade when its system fits the route (e.g. bare "5" on boulder → V5).
 	// Skip boulder V/BLDV overlays on sport/trad (Gropefest Trad 8 + CPR VB).
+	// Skip AU/Ewbank ascent overlays when the route already has an explicit V-grade
+	// (Splinder: route V0 + ascent AU "12" must not become V12).
 	const candidates: { raw?: string | null; sys?: string | null; band?: number | null }[] = [
 		{ raw: opts.ascentGrade, sys: opts.ascentGradeSystem, band: opts.ascentGradeBand },
-		{ raw: opts.cprGrade, sys: null, band: opts.cprBand }
+		{ raw: opts.cprGrade, sys: inferCprSystem(opts.cprGrade, opts.ascentGradeSystem), band: opts.cprBand }
 	];
 
 	for (const c of candidates) {
 		if (!c.raw) continue;
 		if (!gradeSystemFitsStyle(c.sys, routeStyle)) continue;
+		const sys = (c.sys || '').toUpperCase();
+		const auOnBoulder =
+			isBoulderStyle(routeStyle) && (sys === 'AU' || sys.includes('EWBANK'));
+		if (auOnBoulder && routeIsExplicitV && routeParsed.score != null) {
+			continue;
+		}
 		// Also skip when the *parsed* result is boulder-scaled but route is not
 		const parsed = parseWith(c.raw, routeStyle, c.band, c.sys);
 		if (!isBoulderStyle(routeStyle) && parsed.isBoulder) continue;
@@ -200,6 +210,20 @@ export function resolveEffectiveGrade(opts: {
 		heightM: opts.routeHeightM ?? null,
 		partialMultipitch: false
 	};
+}
+
+function parseVish(raw: string | null | undefined): boolean {
+	return Boolean(raw && /^V\d|^VB/i.test(raw.trim()));
+}
+
+function inferCprSystem(
+	cprGrade: string | null | undefined,
+	ascentSys: string | null | undefined
+): string | null {
+	if (ascentSys) return ascentSys;
+	if (cprGrade && /^V|^VB/i.test(cprGrade.trim())) return 'BLDV';
+	if (cprGrade && /^\d{1,2}$/.test(cprGrade.trim())) return 'AU';
+	return null;
 }
 
 /** Recompute route-level parse (for V1/2 style fixes). */
