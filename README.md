@@ -125,7 +125,7 @@ docker compose up --build -d
 | `SESSION_SECRET`         | Cookie + worker shared secret                                                                         |
 | `DATABASE_PATH`          | SQLite file path                                                                                      |
 | `SYNC_CRON`              | Cron expression (default `0 6 * * *`)                                                                 |
-| `DISPLAY_LOCALE` / `TZ` | Locale (default `en-AU`) and IANA time zone used to display dates and times |
+| `DISPLAY_LOCALE` / `TZ`  | Locale (default `en-AU`) and IANA time zone used to display dates and times                           |
 | `PREFERRED_GRADE_SYSTEM` | Default grade system until one is saved in Settings: `ewbank` / `french` / `yds` / `v_scale` / `font` |
 
 ## Privacy
