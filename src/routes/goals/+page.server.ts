@@ -9,9 +9,13 @@ import {
 } from '#lib/server/goals';
 import type { Actions, PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async () => {
+// Goals are the owner's: visitors can read progress but never create or change goals.
+const NOT_OWNER = { ok: false, message: 'Log in to change goals' };
+
+export const load: PageServerLoad = async ({ locals }) => {
 	const goals = listGoals();
 	return {
+		canEdit: locals.authed,
 		goals,
 		active: goals.filter((g) => !g.completed),
 		achieved: goals.filter((g) => g.completed)
@@ -19,7 +23,8 @@ export const load: PageServerLoad = async () => {
 };
 
 export const actions: Actions = {
-	create: async ({ request }) => {
+	create: async ({ request, locals }) => {
+		if (!locals.authed) return fail(403, NOT_OWNER);
 		const form = await request.formData();
 		const kind = String(form.get('kind') || 'custom') as GoalKind;
 		const title = String(form.get('title') || '').trim();
@@ -51,21 +56,24 @@ export const actions: Actions = {
 		});
 		return { ok: true };
 	},
-	complete: async ({ request }) => {
+	complete: async ({ request, locals }) => {
+		if (!locals.authed) return fail(403, NOT_OWNER);
 		const form = await request.formData();
 		const id = Number(form.get('id'));
 		if (!Number.isFinite(id)) return fail(400, { ok: false, message: 'Invalid goal' });
 		setGoalCompleted(id, true);
 		return { ok: true };
 	},
-	reopen: async ({ request }) => {
+	reopen: async ({ request, locals }) => {
+		if (!locals.authed) return fail(403, NOT_OWNER);
 		const form = await request.formData();
 		const id = Number(form.get('id'));
 		if (!Number.isFinite(id)) return fail(400, { ok: false, message: 'Invalid goal' });
 		setGoalCompleted(id, false);
 		return { ok: true };
 	},
-	delete: async ({ request }) => {
+	delete: async ({ request, locals }) => {
+		if (!locals.authed) return fail(403, NOT_OWNER);
 		const form = await request.formData();
 		const id = Number(form.get('id'));
 		if (!Number.isFinite(id)) return fail(400, { ok: false, message: 'Invalid goal' });

@@ -9,8 +9,8 @@
 		completed: boolean;
 	};
 
-	type Props = { goals: GoalCard[] };
-	let { goals }: Props = $props();
+	type Props = { goals: GoalCard[]; canEdit?: boolean };
+	let { goals, canEdit = false }: Props = $props();
 </script>
 
 <article class="panel">
@@ -21,7 +21,11 @@
 
 	{#if goals.length === 0}
 		<p class="empty">
-			No active goals — <a href="/goals">set one</a> and progress fills from your logbook.
+			{#if canEdit}
+				No active goals — <a href="/goals">set one</a> and progress fills from your logbook.
+			{:else}
+				No active goals right now.
+			{/if}
 		</p>
 	{:else}
 		<ul>
