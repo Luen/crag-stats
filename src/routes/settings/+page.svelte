@@ -73,8 +73,12 @@
 	<article class="panel">
 		<h2>Privacy & data control</h2>
 		<p class="hint">
-			Revoking a theCrag key does not delete data already synced here. Use wipe to remove the local
-			copy.
+			Revoking a theCrag key does not delete data already synced here. Wipe only removes the
+			<strong>local</strong> SQLite copy on this machine — it never deletes your theCrag logbook.
+			See <a href="https://github.com/Luen/crag-stats/blob/main/docs/PRIVACY.md">PRIVACY.md</a>.
+		</p>
+		<p class="hint">
+			<a href="/settings/export">Download local logbook as CSV</a> (backup / re-import).
 		</p>
 		<form method="POST" action="?/wipe" class="stack">
 			<input name="confirm" placeholder="Type DELETE to confirm" required />

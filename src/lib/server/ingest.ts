@@ -47,6 +47,8 @@ export function upsertAscents(batch: CanonicalAscent[]): { routes: number; ascen
 				bolts: item.route.bolts ?? null,
 				parentName: item.route.parentName ?? null,
 				parentExternalId: item.route.parentExternalId ?? null,
+				lat: item.route.lat ?? null,
+				lon: item.route.lon ?? null,
 				updatedAt
 			};
 
@@ -96,8 +98,13 @@ export function upsertAscents(batch: CanonicalAscent[]): { routes: number; ascen
 				isSend: item.isSend,
 				isAttempt: item.isAttempt,
 				epoch: item.epoch ?? null,
+				numberAttempts: item.numberAttempts ?? null,
 				cprBase: item.cprBase ?? null,
 				cprScore: item.cprScore ?? null,
+				cprShiftedScore: item.cprShiftedScore ?? null,
+				cprShiftedGrade: item.cprShiftedGrade ?? null,
+				cprDecayedScore: item.cprDecayedScore ?? null,
+				cprDecayedGrade: item.cprDecayedGrade ?? null,
 				ascentUrl: item.ascentUrl ?? null,
 				rawJson: item.rawJson ?? null,
 				updatedAt

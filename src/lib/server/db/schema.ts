@@ -44,6 +44,8 @@ export const routes = sqliteTable(
 		bolts: integer('bolts'),
 		parentName: text('parent_name'),
 		parentExternalId: text('parent_external_id'),
+		lat: real('lat'),
+		lon: real('lon'),
 		updatedAt: text('updated_at').notNull()
 	},
 	(t) => [uniqueIndex('routes_provider_ext').on(t.provider, t.externalId)]
@@ -81,8 +83,13 @@ export const ascents = sqliteTable(
 		isSend: integer('is_send', { mode: 'boolean' }).notNull().default(false),
 		isAttempt: integer('is_attempt', { mode: 'boolean' }).notNull().default(false),
 		epoch: integer('epoch'),
+		numberAttempts: integer('number_attempts'),
 		cprBase: text('cpr_base'),
 		cprScore: real('cpr_score'),
+		cprShiftedScore: real('cpr_shifted_score'),
+		cprShiftedGrade: text('cpr_shifted_grade'),
+		cprDecayedScore: real('cpr_decayed_score'),
+		cprDecayedGrade: text('cpr_decayed_grade'),
 		/** Public theCrag ascent page (/ascent/{external_id}) */
 		ascentUrl: text('ascent_url'),
 		rawJson: text('raw_json'),

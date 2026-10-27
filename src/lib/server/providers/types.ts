@@ -28,6 +28,8 @@ export type CanonicalRoute = {
 	bolts?: number | null;
 	parentName?: string | null;
 	parentExternalId?: string | null;
+	lat?: number | null;
+	lon?: number | null;
 };
 
 export type CanonicalAscent = {
@@ -56,8 +58,13 @@ export type CanonicalAscent = {
 	isSend: boolean;
 	isAttempt: boolean;
 	epoch?: number | null;
+	numberAttempts?: number | null;
 	cprBase?: string | null;
 	cprScore?: number | null;
+	cprShiftedScore?: number | null;
+	cprShiftedGrade?: string | null;
+	cprDecayedScore?: number | null;
+	cprDecayedGrade?: string | null;
 	/** Direct link to this ascent on theCrag (/ascent/{id}) */
 	ascentUrl?: string | null;
 	rawJson?: string | null;

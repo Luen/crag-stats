@@ -6,12 +6,21 @@
 	import ClimberTypeBar from '#lib/components/ClimberTypeBar.svelte';
 	import CprTimeline from '#lib/components/CprTimeline.svelte';
 	import GradeChip from '#lib/components/GradeChip.svelte';
+	import Milestones from '#lib/components/Milestones.svelte';
+	import MonthlyStats from '#lib/components/MonthlyStats.svelte';
 	import NotableAscents from '#lib/components/NotableAscents.svelte';
+	import PartnerLeaderboard from '#lib/components/PartnerLeaderboard.svelte';
+	import QualityBreakdown from '#lib/components/QualityBreakdown.svelte';
+	import RockTypePanel from '#lib/components/RockTypePanel.svelte';
+	import StarsScatter from '#lib/components/StarsScatter.svelte';
 	import Streaks from '#lib/components/Streaks.svelte';
+	import StyleMixChart from '#lib/components/StyleMixChart.svelte';
 	import StylePyramid from '#lib/components/StylePyramid.svelte';
 	import TagChips from '#lib/components/TagChips.svelte';
 	import TickTypeIcon from '#lib/components/TickTypeIcon.svelte';
+	import TrainingLoad from '#lib/components/TrainingLoad.svelte';
 	import VolumeChart from '#lib/components/VolumeChart.svelte';
+	import YearlyStats from '#lib/components/YearlyStats.svelte';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -24,16 +33,27 @@
 		{ id: 'v_scale', label: 'V-Scale' },
 		{ id: 'font', label: 'Fontainebleau' }
 	] as const;
+
+	const pyramidModes = [
+		{ id: 'all', label: 'Sends + attempts' },
+		{ id: 'sends', label: 'Sends only' },
+		{ id: 'onsight', label: 'Onsight only' }
+	] as const;
 </script>
 
 <section class="hero panel">
-	<div>
-		<p class="eyebrow">Personal climbing analytics</p>
-		<h1>{s.profileName ? `${s.profileName}'s crag year` : 'Your climbing, quantified'}</h1>
-		<p class="lede">
-			{s.climberType}. Turn theCrag history into performance analytics, projects, and training
-			focus.
-		</p>
+	<div class="hero-main">
+		{#if s.avatar}
+			<img class="avatar" src={s.avatar} alt="" width="72" height="72" />
+		{/if}
+		<div>
+			<p class="eyebrow">Personal climbing analytics</p>
+			<h1>{s.profileName ? `${s.profileName}'s crag year` : 'Your climbing, quantified'}</h1>
+			<p class="lede">
+				{s.climberType}. Turn theCrag history into performance analytics, projects, and training
+				focus.
+			</p>
+		</div>
 	</div>
 	<div class="sync">
 		<span class={['pill', { ok: data.sync.status === 'idle', err: data.sync.status === 'error' }]}>
@@ -155,10 +175,51 @@
 		</article>
 	</section>
 
+	<section class="duo">
+		<MonthlyStats months={s.monthly.months} years={s.monthly.years} />
+		<YearlyStats years={s.yearly.years} />
+	</section>
+
+	<section class="duo">
+		<TrainingLoad
+			last7={s.trainingLoad.last7}
+			last28={s.trainingLoad.last28}
+			sendRate7={s.trainingLoad.sendRate7}
+			sendRate28={s.trainingLoad.sendRate28}
+			restDays7={s.trainingLoad.restDays7}
+			restDays28={s.trainingLoad.restDays28}
+		/>
+		<Milestones items={s.milestones.items} />
+	</section>
+
+	<section class="stack">
+		<StyleMixChart months={s.styleMix.months} />
+	</section>
+
+	<section class="grid">
+		<PartnerLeaderboard partners={s.partners} />
+		<RockTypePanel
+			types={s.rockTypes.types}
+			dominant={s.rockTypes.dominant}
+			info={s.rockTypes.info}
+		/>
+		<StarsScatter points={s.starsScatter} />
+		<QualityBreakdown ratings={s.qualityBreakdown} />
+	</section>
+
 	<section class="stack">
 		<header class="section-head">
 			<h2>Grade pyramids</h2>
 			<p>Split by style · grades shown in your preferred system ({data.gradeSystem})</p>
+			<nav class="pyramid-toggles" aria-label="Pyramid filter">
+				{#each pyramidModes as mode (mode.id)}
+					<a
+						href="?pyramid={mode.id}"
+						class={{ active: s.pyramidMode === mode.id }}
+						aria-current={s.pyramidMode === mode.id ? 'page' : undefined}>{mode.label}</a
+					>
+				{/each}
+			</nav>
 		</header>
 		<div class="pyramids">
 			{#each s.stylePyramids as pyramid (pyramid.style)}
@@ -253,6 +314,22 @@
 		padding: 1.4rem 1.5rem;
 		margin-bottom: 1rem;
 		border-radius: 1rem;
+	}
+	.hero-main {
+		display: flex;
+		gap: 1rem;
+		align-items: flex-start;
+		min-width: 0;
+		flex: 1;
+	}
+	.avatar {
+		width: 4.5rem;
+		height: 4.5rem;
+		border-radius: 50%;
+		object-fit: cover;
+		border: 2px solid var(--line);
+		flex-shrink: 0;
+		background: rgba(47, 93, 58, 0.12);
 	}
 	.eyebrow {
 		text-transform: uppercase;
@@ -360,6 +437,25 @@
 	.section-head p {
 		margin: 0.25rem 0 0;
 		color: var(--ink-muted);
+	}
+	.pyramid-toggles {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.4rem;
+		margin-top: 0.65rem;
+	}
+	.pyramid-toggles a {
+		font-size: 0.8rem;
+		padding: 0.25rem 0.65rem;
+		border-radius: 999px;
+		border: 1px solid var(--line);
+		color: var(--ink-muted);
+		text-decoration: none;
+	}
+	.pyramid-toggles a.active {
+		background: var(--ink);
+		color: var(--paper);
+		border-color: var(--ink);
 	}
 	.pyramids {
 		display: grid;

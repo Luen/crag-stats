@@ -1,4 +1,5 @@
 import { detectAndParseGrade, parseHeightMeters } from '#lib/grades';
+import { resolveTheCragAvatar } from '#lib/thecragAvatar';
 import { theCragAreaUrl, theCragAscentUrl, theCragRouteUrl } from '#lib/thecragUrls';
 import {
 	classifyTick,
@@ -18,6 +19,11 @@ type ApiAreaNode = {
 	urlAncestorStub?: string;
 	urlStub?: string;
 	geometry?: unknown;
+	lat?: number | string | null;
+	lon?: number | string | null;
+	long?: number | string | null;
+	longitude?: number | string | null;
+	latitude?: number | string | null;
 };
 type ApiTagLeaf = { id?: number | string; name?: string };
 /** route.tags: { Aspect: { NE: { name, id, ... } }, ... } */
@@ -34,10 +40,17 @@ type ApiRoute = {
 	bolts?: number | string;
 	tags?: ApiRouteTags;
 	urlAncestorStub?: string;
+	lat?: number | string | null;
+	lon?: number | string | null;
+	long?: number | string | null;
+	longitude?: number | string | null;
+	latitude?: number | string | null;
+	geometry?: unknown;
 	ancestors?: {
 		parent?: ApiAreaNode;
 		country?: ApiAreaNode & { name?: string };
 		TLC?: ApiAreaNode;
+		[key: string]: ApiAreaNode | undefined;
 	};
 };
 type ApiAscent = {
@@ -146,6 +159,77 @@ function heightFromRoute(route?: ApiRoute): number | null {
 	return heightFromUnknown(route.height) ?? heightFromUnknown(route.displayHeight);
 }
 
+function finiteCoord(value: unknown): number | null {
+	if (value == null) return null;
+	const n = typeof value === 'number' ? value : Number(value);
+	return Number.isFinite(n) ? n : null;
+}
+
+/** Pull lat/lon from common theCrag geo shapes (Point geometry, lat/long fields). */
+export function extractLatLon(source: unknown): { lat: number; lon: number } | null {
+	if (!source || typeof source !== 'object') return null;
+	const obj = source as Record<string, unknown>;
+
+	const lat =
+		finiteCoord(obj.lat) ?? finiteCoord(obj.latitude) ?? finiteCoord(obj.Lat) ?? finiteCoord(obj.Latitude);
+	const lon =
+		finiteCoord(obj.lon) ??
+		finiteCoord(obj.long) ??
+		finiteCoord(obj.longitude) ??
+		finiteCoord(obj.Lng) ??
+		finiteCoord(obj.Lon) ??
+		finiteCoord(obj.Longitude);
+
+	if (lat != null && lon != null && Math.abs(lat) <= 90 && Math.abs(lon) <= 180) {
+		return { lat, lon };
+	}
+
+	const geometry = obj.geometry;
+	if (geometry && typeof geometry === 'object') {
+		const g = geometry as { type?: string; coordinates?: unknown };
+		const coords = g.coordinates;
+		if (Array.isArray(coords) && coords.length >= 2) {
+			// GeoJSON Point: [lon, lat]
+			const glon = finiteCoord(coords[0]);
+			const glat = finiteCoord(coords[1]);
+			if (glat != null && glon != null && Math.abs(glat) <= 90 && Math.abs(glon) <= 180) {
+				return { lat: glat, lon: glon };
+			}
+		}
+	}
+
+	return null;
+}
+
+/** Prefer route coords, then TLC / parent / any ancestor node with geometry. */
+export function resolveRouteCoords(route?: ApiRoute | null): { lat: number; lon: number } | null {
+	if (!route) return null;
+	const fromRoute = extractLatLon(route);
+	if (fromRoute) return fromRoute;
+
+	const ancestors = route.ancestors;
+	if (!ancestors || typeof ancestors !== 'object') return null;
+
+	const preferred = [ancestors.TLC, ancestors.parent, ancestors.country];
+	for (const node of preferred) {
+		const hit = extractLatLon(node);
+		if (hit) return hit;
+	}
+
+	for (const node of Object.values(ancestors)) {
+		const hit = extractLatLon(node);
+		if (hit) return hit;
+	}
+
+	return null;
+}
+
+function cprNumeric(block?: { score?: number; rating?: number } | null): number | null {
+	if (!block) return null;
+	const n = block.rating ?? block.score;
+	return n != null && Number.isFinite(n) ? n : null;
+}
+
 export function mapAscent(a: ApiAscent): CanonicalAscent | null {
 	const route = a.route;
 	if (!a.id || !route?.id || !route.name) return null;
@@ -187,6 +271,11 @@ export function mapAscent(a: ApiAscent): CanonicalAscent | null {
 			: typeof boltsRaw === 'string' && boltsRaw.trim()
 				? Number(boltsRaw)
 				: null;
+	const coords = resolveRouteCoords(route);
+	const attempts =
+		a.numberAttempts != null && Number.isFinite(Number(a.numberAttempts))
+			? Number(a.numberAttempts)
+			: null;
 
 	return {
 		provider: 'thecrag',
@@ -211,7 +300,9 @@ export function mapAscent(a: ApiAscent): CanonicalAscent | null {
 			tags: tags.length ? tags : null,
 			bolts: bolts != null && Number.isFinite(bolts) ? bolts : null,
 			parentName: parent?.name ?? null,
-			parentExternalId: parent?.id != null ? String(parent.id) : null
+			parentExternalId: parent?.id != null ? String(parent.id) : null,
+			lat: coords?.lat ?? null,
+			lon: coords?.lon ?? null
 		},
 		ascentDate: a.date ?? null,
 		logDate: a.logDate ?? null,
@@ -233,8 +324,13 @@ export function mapAscent(a: ApiAscent): CanonicalAscent | null {
 		isSend,
 		isAttempt,
 		epoch: a.epoch ?? null,
+		numberAttempts: attempts,
 		cprBase: a.cpr?.base?.grade ?? null,
-		cprScore: a.cpr?.base?.rating ?? a.cpr?.base?.score ?? null,
+		cprScore: cprNumeric(a.cpr?.base),
+		cprShiftedScore: cprNumeric(a.cpr?.shifted),
+		cprShiftedGrade: a.cpr?.shifted?.grade ?? null,
+		cprDecayedScore: cprNumeric(a.cpr?.decayed),
+		cprDecayedGrade: a.cpr?.decayed?.grade ?? null,
 		/** Public logbook entry for this ascent */
 		ascentUrl: theCragAscentUrl(a.id),
 		rawJson: JSON.stringify(a)
@@ -279,7 +375,7 @@ export async function fetchTheCragPage(
 			login: data.account.login ?? null,
 			country: data.account.country ?? null,
 			ascentCount: data.account.ascentCount ?? null,
-			avatar: data.account.avatar ?? null,
+			avatar: resolveTheCragAvatar(data.account.avatar),
 			typeOfClimber: data.account.typeOfClimber ?? null,
 			outdoorAscentCount: data.account.outdoorAscentCount ?? null,
 			indoorAscentCount: data.account.indoorAscentCount ?? null,

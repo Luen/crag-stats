@@ -1,5 +1,5 @@
 import { redirect } from '@sveltejs/kit';
-import { getDashboardStats, parseGradeSystem } from '#lib/server/analytics';
+import { getDashboardStats, parseGradeSystem, parsePyramidMode } from '#lib/server/analytics';
 import { env } from '#lib/server/env';
 import { getSyncStatus } from '#lib/server/sync';
 import type { Actions, PageServerLoad } from './$types';
@@ -10,6 +10,7 @@ export const load: PageServerLoad = async ({ cookies, url }) => {
 	const fromQuery = url.searchParams.get('system');
 	const fromCookie = cookies.get(COOKIE);
 	const preferred = parseGradeSystem(fromQuery || fromCookie || env('PREFERRED_GRADE_SYSTEM', 'ewbank'));
+	const pyramidMode = parsePyramidMode(url.searchParams.get('pyramid'));
 
 	if (fromQuery && fromQuery !== fromCookie) {
 		cookies.set(COOKIE, preferred, {
@@ -20,9 +21,10 @@ export const load: PageServerLoad = async ({ cookies, url }) => {
 	}
 
 	return {
-		stats: getDashboardStats(preferred),
+		stats: getDashboardStats(preferred, { pyramidMode }),
 		sync: getSyncStatus(),
-		gradeSystem: preferred
+		gradeSystem: preferred,
+		pyramidMode
 	};
 };
 
