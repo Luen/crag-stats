@@ -165,7 +165,7 @@ pnpm test:e2e       # Playwright + axe against the production build (run `pnpm b
 CI (`.github/workflows/ci.yml`) runs `pnpm lint`, `pnpm check`, `pnpm test`, `pnpm build` and `pnpm test:e2e` on push/PR.
 
 - **E2E** (`e2e/`, `playwright.config.ts`): three `node build` servers on 4301–4303 (open, `AUTH_SCOPE=settings`, `AUTH_SCOPE=all`) with throwaway DBs in `e2e/.tmp`; the `setup` project imports `samples/thecrag-logbook-sample.csv`. The axe test fails on serious/critical violations in light **and** dark — fix contrast with tokens, don't weaken the test.
-- **adapter-node assumes https** for CSRF origin checks unless `PROTOCOL_HEADER` is set (it ignores `ORIGIN` in this version). Tests set `PROTOCOL_HEADER=x-forwarded-proto` and send `x-forwarded-proto: http`.
+- **Start the app with `node scripts/server.mjs`** (Docker `CMD`, `pnpm start`, e2e), not `node build`. adapter-node assumes https for CSRF origin checks and ignores `ORIGIN` in this version; `server.mjs` fills in `X-Forwarded-Proto` from the real connection when no proxy sent one, or pins protocol/host from `ORIGIN` (#47). Pure logic in `scripts/serverOrigin.mjs` (unit-tested).
 - **CSP** is configured in `vite.config.ts` (`csp`, nonce mode). Inline scripts need `nonce="%sveltekit.nonce%"`; images allow `https:`/`data:`; no third-party scripts.
 - **Dates/numbers:** use `formatDateTime` / `formatNumber` from `#lib/dates` with `data.dateDisplay` (layout) — never bare `toLocaleString()` (SSR/hydration mismatch, #36).
 - `.git-blame-ignore-revs` lists the bulk Prettier commit.
@@ -239,5 +239,7 @@ You'll often notice things outside the task at hand. **Don't silently fix them i
 | 2026-10 | Issues #36–#45: DISPLAY_LOCALE/TZ date formatting; site-wide dashboard layout; cheap project badge count; lint in CI + repo-wide Prettier; CSP; colour tokens (`--style-*`, `--danger`, `--gold`, `--heat-*`); logbook nowrap; System/Light/Dark theme + drawer focus; OG/sitemap/manifest/icons; Playwright + axe e2e. UI accent is now `#c2410c` (AA); `--brand` `#ea580c` for logo/wordmark. Fresh DBs under `node build` now find `./migrations`. |
 
 | 2026-10 | In-app docs at `/docs` (climber type, grades + conversion tables, tick types, CPR, training load). Training load is now an intensity-weighted acute:chronic model (`src/lib/server/trainingLoad.ts`). CPR timeline redesigned (real band boundaries, monotone curve, legend). Ewbank→French 10–13 fixed (was non-monotonic). |
+
+| 2026-10 | #47: `scripts/server.mjs` entry (plain-HTTP LAN + proxy + `ORIGIN`) replaces `node build`; e2e runs plain HTTP with a CSRF negative test. |
 
 _Add a row when you change behaviour agents must know about._

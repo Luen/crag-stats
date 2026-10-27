@@ -33,10 +33,11 @@ COPY --from=build /app/build ./build
 COPY --from=build /app/package.json ./package.json
 COPY --from=build /app/node_modules ./node_modules
 COPY --from=build /app/migrations ./migrations
-COPY scripts/migrate.mjs scripts/docker-entrypoint.mjs scripts/worker.mjs ./scripts/
+COPY scripts/migrate.mjs scripts/docker-entrypoint.mjs scripts/worker.mjs scripts/server.mjs scripts/serverOrigin.mjs ./scripts/
 
 EXPOSE 3000
 VOLUME ["/data"]
 
 ENTRYPOINT ["node", "scripts/docker-entrypoint.mjs"]
-CMD ["node", "build"]
+# server.mjs wraps build/ so plain-HTTP and proxied access both pass CSRF (#47).
+CMD ["node", "scripts/server.mjs"]

@@ -35,3 +35,6 @@ vite.config.ts.timestamp-*
 /e2e/.tmp
 /test-results
 /playwright-report
+
+# Claude Code worktrees (local only)
+/.claude/worktrees/
