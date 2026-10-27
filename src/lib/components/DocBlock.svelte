@@ -53,7 +53,9 @@
 		</table>
 	</div>
 {:else if name === 'route-conversions'}
-	<div class="table-wrap tall">
+	<!-- Scrollable region: focusable so keyboard users can scroll it (axe). -->
+	<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+	<div class="table-wrap tall" tabindex="0" role="region" aria-label="Route grade conversions">
 		<table>
 			<thead><tr><th>Ewbank</th><th>French</th><th>YDS</th><th>Band</th></tr></thead>
 			<tbody>
@@ -69,7 +71,9 @@
 		</table>
 	</div>
 {:else if name === 'boulder-conversions'}
-	<div class="table-wrap tall">
+	<!-- Scrollable region: focusable so keyboard users can scroll it (axe). -->
+	<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+	<div class="table-wrap tall" tabindex="0" role="region" aria-label="Boulder grade conversions">
 		<table>
 			<thead><tr><th>V-scale</th><th>Font</th><th>Band</th></tr></thead>
 			<tbody>
