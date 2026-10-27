@@ -1,5 +1,10 @@
 import { fail } from '@sveltejs/kit';
-import { wipeAllData } from '#lib/server/analytics';
+import { parseGradeSystem, wipeAllData } from '#lib/server/analytics';
+import {
+	getPreferredGradeSystem,
+	getSearchIndexing,
+	setAppSetting
+} from '#lib/server/appSettings';
 import { hasTheCragApiKey } from '#lib/server/env';
 import { upsertAscents } from '#lib/server/ingest';
 import { parseTheCragCsv } from '#lib/server/providers/thecrag';
@@ -10,11 +15,22 @@ import type { Actions, PageServerLoad } from './$types';
 export const load: PageServerLoad = async () => {
 	return {
 		sync: getSyncStatus(),
-		hasApiKey: hasTheCragApiKey()
+		hasApiKey: hasTheCragApiKey(),
+		gradeSystem: getPreferredGradeSystem(),
+		searchIndexing: getSearchIndexing()
 	};
 };
 
 export const actions: Actions = {
+	savePreferences: async ({ request }) => {
+		const form = await request.formData();
+		setAppSetting('grade_system', parseGradeSystem(String(form.get('system') || 'ewbank')));
+		// Checkbox: absent when unticked. Ignored while AUTH_SCOPE=all forces it off.
+		if (!getSearchIndexing().forcedOff) {
+			setAppSetting('search_indexing', form.get('indexing') === 'on' ? 'on' : 'off');
+		}
+		return { ok: true, saved: true };
+	},
 	sync: async () => {
 		try {
 			const result = await runTheCragSync();

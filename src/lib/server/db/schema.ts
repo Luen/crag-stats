@@ -156,3 +156,10 @@ export type Ascent = typeof ascents.$inferSelect;
 export type Project = typeof projects.$inferSelect;
 export type Goal = typeof goals.$inferSelect;
 export type SyncState = typeof syncState.$inferSelect;
+
+/** Site-wide key/value preferences edited in /settings. */
+export const appSettings = sqliteTable('app_settings', {
+	key: text('key').primaryKey(),
+	value: text('value').notNull(),
+	updatedAt: text('updated_at').notNull()
+});

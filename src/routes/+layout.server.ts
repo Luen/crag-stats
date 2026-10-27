@@ -4,8 +4,10 @@ import { sql } from 'drizzle-orm';
 import { db, ensureSchema } from '#lib/server/db';
 import { ascents } from '#lib/server/db/schema';
 import { listActiveProjects } from '#lib/server/projects';
+import { getSearchIndexing } from '#lib/server/appSettings';
 import { isAuthEnabled, authScope } from '#lib/server/auth';
 import { startScheduler } from '#lib/server/scheduler';
+import { isNoindexPath } from '#lib/server/seo';
 import type { LayoutServerLoad } from './$types';
 
 // Start daily sync when the Node server boots (no-op in environments without API key).
@@ -25,7 +27,11 @@ function readAppVersion(): string {
 function navCounts(): { ascents: number; projects: number } {
 	try {
 		ensureSchema();
-		const a = db.select({ n: sql<number>`count(*)` }).from(ascents).get()?.n ?? 0;
+		const a =
+			db
+				.select({ n: sql<number>`count(*)` })
+				.from(ascents)
+				.get()?.n ?? 0;
 		// Same "working on" definition as /projects (open + touched within a year).
 		const p = listActiveProjects().workingOn.length;
 		return { ascents: a, projects: p };
@@ -34,7 +40,7 @@ function navCounts(): { ascents: number; projects: number } {
 	}
 }
 
-export const load: LayoutServerLoad = async ({ locals }) => {
+export const load: LayoutServerLoad = async ({ locals, url }) => {
 	const authOn = isAuthEnabled();
 	const scope = authScope();
 	const showSettings = !authOn || locals.authed;
@@ -47,6 +53,7 @@ export const load: LayoutServerLoad = async ({ locals }) => {
 		authEnabled: authOn,
 		authScope: scope,
 		showSettings,
-		navCounts: gated ? null : navCounts()
+		navCounts: gated ? null : navCounts(),
+		noindex: isNoindexPath(url.pathname) || !getSearchIndexing().allowed
 	};
 };

@@ -113,47 +113,245 @@ function routeLine(name: string | null | undefined, date: string | null): string
 
 /** Static catalog — order is display order for locked badges. */
 export const BADGE_CATALOG: readonly BadgeDef[] = [
-	{ id: 'first_moves', title: 'First Moves', hint: 'Log your first climb', icon: 'carabiner', tone: 'warm' },
-	{ id: 'first_session', title: 'First Session', hint: 'Complete your first day out', icon: 'knot', tone: 'warm' },
-	{ id: 'first_send', title: 'First Send', hint: 'Send any route or boulder', icon: 'send', tone: 'green' },
-	{ id: 'first_onsight', title: 'First Onsight', hint: 'Onsight a route', icon: 'eye', tone: 'blue' },
-	{ id: 'first_flash', title: 'First Flash', hint: 'Flash a route or boulder', icon: 'bolt', tone: 'green' },
-	{ id: 'ascents_10', title: 'Getting Started', hint: 'Log 10 ascents', icon: 'route', tone: 'warm' },
-	{ id: 'ascents_25', title: 'Quarter Century', hint: 'Log 25 ascents', icon: 'route', tone: 'warm' },
+	{
+		id: 'first_moves',
+		title: 'First Moves',
+		hint: 'Log your first climb',
+		icon: 'carabiner',
+		tone: 'warm'
+	},
+	{
+		id: 'first_session',
+		title: 'First Session',
+		hint: 'Complete your first day out',
+		icon: 'knot',
+		tone: 'warm'
+	},
+	{
+		id: 'first_send',
+		title: 'First Send',
+		hint: 'Send any route or boulder',
+		icon: 'send',
+		tone: 'green'
+	},
+	{
+		id: 'first_onsight',
+		title: 'First Onsight',
+		hint: 'Onsight a route',
+		icon: 'eye',
+		tone: 'blue'
+	},
+	{
+		id: 'first_flash',
+		title: 'First Flash',
+		hint: 'Flash a route or boulder',
+		icon: 'bolt',
+		tone: 'green'
+	},
+	{
+		id: 'ascents_10',
+		title: 'Getting Started',
+		hint: 'Log 10 ascents',
+		icon: 'route',
+		tone: 'warm'
+	},
+	{
+		id: 'ascents_25',
+		title: 'Quarter Century',
+		hint: 'Log 25 ascents',
+		icon: 'route',
+		tone: 'warm'
+	},
 	{ id: 'ascents_50', title: 'Fifty Climbs', hint: 'Log 50 ascents', icon: 'route', tone: 'warm' },
 	{ id: 'ascents_100', title: 'Century', hint: 'Log 100 ascents', icon: 'star', tone: 'green' },
 	{ id: 'ascents_250', title: 'Two-Fifty', hint: 'Log 250 ascents', icon: 'star', tone: 'green' },
-	{ id: 'ascents_500', title: 'Half Thousand', hint: 'Log 500 ascents', icon: 'star', tone: 'blue' },
-	{ id: 'ascents_1000', title: 'Thousand Climbs', hint: 'Log 1,000 ascents', icon: 'mountain', tone: 'purple' },
+	{
+		id: 'ascents_500',
+		title: 'Half Thousand',
+		hint: 'Log 500 ascents',
+		icon: 'star',
+		tone: 'blue'
+	},
+	{
+		id: 'ascents_1000',
+		title: 'Thousand Climbs',
+		hint: 'Log 1,000 ascents',
+		icon: 'mountain',
+		tone: 'purple'
+	},
 	{ id: 'sends_10', title: 'Ten Sends', hint: 'Send 10 climbs', icon: 'send', tone: 'green' },
 	{ id: 'sends_25', title: 'Send Machine', hint: 'Send 25 climbs', icon: 'send', tone: 'green' },
 	{ id: 'sends_50', title: 'Fifty Sends', hint: 'Send 50 climbs', icon: 'send', tone: 'blue' },
-	{ id: 'sends_100', title: 'Hundred Sends', hint: 'Send 100 climbs', icon: 'send', tone: 'purple' },
-	{ id: 'onsight_10', title: 'Onsight Specialist', hint: 'Onsight 10 routes', icon: 'eye', tone: 'blue' },
-	{ id: 'onsight_25', title: 'Onsight Ace', hint: 'Onsight 25 routes', icon: 'eye', tone: 'purple' },
+	{
+		id: 'sends_100',
+		title: 'Hundred Sends',
+		hint: 'Send 100 climbs',
+		icon: 'send',
+		tone: 'purple'
+	},
+	{
+		id: 'onsight_10',
+		title: 'Onsight Specialist',
+		hint: 'Onsight 10 routes',
+		icon: 'eye',
+		tone: 'blue'
+	},
+	{
+		id: 'onsight_25',
+		title: 'Onsight Ace',
+		hint: 'Onsight 25 routes',
+		icon: 'eye',
+		tone: 'purple'
+	},
 	{ id: 'flash_10', title: 'Quick Study', hint: 'Flash 10 climbs', icon: 'bolt', tone: 'green' },
 	{ id: 'flash_25', title: 'Flasher', hint: 'Flash 25 climbs', icon: 'bolt', tone: 'green' },
-	{ id: 'weekend_5', title: 'Weekend Warrior', hint: 'Send on 5 weekend days', icon: 'sun', tone: 'warm' },
-	{ id: 'weekend_15', title: 'Weekend Climber', hint: 'Send on 15 weekend days', icon: 'sun', tone: 'green' },
-	{ id: 'sessions_10', title: 'Regular', hint: 'Climb on 10 different days', icon: 'calendar', tone: 'warm' },
-	{ id: 'sessions_50', title: 'Dedicated', hint: 'Climb on 50 different days', icon: 'calendar', tone: 'green' },
-	{ id: 'sessions_100', title: 'Hundred Days', hint: 'Climb on 100 different days', icon: 'calendar', tone: 'blue' },
-	{ id: 'height_1km', title: 'Kilometre Climber', hint: 'Climb a cumulative 1 km', icon: 'mountain', tone: 'warm' },
-	{ id: 'height_5km', title: 'Five K Vertical', hint: 'Climb a cumulative 5 km', icon: 'mountain', tone: 'green' },
-	{ id: 'height_10km', title: 'Ten K Vertical', hint: 'Climb a cumulative 10 km', icon: 'mountain', tone: 'blue' },
-	{ id: 'height_20km', title: 'Twenty K Vertical', hint: 'Climb a cumulative 20 km', icon: 'mountain', tone: 'purple' },
-	{ id: 'country_1', title: 'Home Crag Country', hint: 'Climb in a logged country', icon: 'flag', tone: 'warm' },
-	{ id: 'country_2', title: 'Two Countries', hint: 'Climb in 2 countries', icon: 'globe', tone: 'green' },
-	{ id: 'country_5', title: 'Globe Trotter', hint: 'Climb in 5 countries', icon: 'globe', tone: 'blue' },
-	{ id: 'country_10', title: 'World Traveller', hint: 'Climb in 10 countries', icon: 'globe', tone: 'purple' },
-	{ id: 'style_sport', title: 'Sport Starter', hint: 'Send a sport route', icon: 'carabiner', tone: 'blue' },
-	{ id: 'style_trad', title: 'Trad Curious', hint: 'Send a trad route', icon: 'knot', tone: 'warm' },
-	{ id: 'style_boulder', title: 'Boulder Start', hint: 'Send a boulder problem', icon: 'route', tone: 'green' },
-	{ id: 'band_intermediate', title: 'Intermediate', hint: 'Send an Intermediate-band climb', icon: 'star', tone: 'warm' },
-	{ id: 'band_experienced', title: 'Experienced', hint: 'Send an Experienced-band climb', icon: 'star', tone: 'green' },
-	{ id: 'band_expert', title: 'Expert', hint: 'Send an Expert-band climb', icon: 'star', tone: 'blue' },
-	{ id: 'band_elite', title: 'Elite', hint: 'Send an Elite-band climb', icon: 'star', tone: 'purple' },
-	{ id: 'new_high', title: 'New High', hint: 'Set a personal grade high', icon: 'flag', tone: 'green' }
+	{
+		id: 'weekend_5',
+		title: 'Weekend Warrior',
+		hint: 'Send on 5 weekend days',
+		icon: 'sun',
+		tone: 'warm'
+	},
+	{
+		id: 'weekend_15',
+		title: 'Weekend Climber',
+		hint: 'Send on 15 weekend days',
+		icon: 'sun',
+		tone: 'green'
+	},
+	{
+		id: 'sessions_10',
+		title: 'Regular',
+		hint: 'Climb on 10 different days',
+		icon: 'calendar',
+		tone: 'warm'
+	},
+	{
+		id: 'sessions_50',
+		title: 'Dedicated',
+		hint: 'Climb on 50 different days',
+		icon: 'calendar',
+		tone: 'green'
+	},
+	{
+		id: 'sessions_100',
+		title: 'Hundred Days',
+		hint: 'Climb on 100 different days',
+		icon: 'calendar',
+		tone: 'blue'
+	},
+	{
+		id: 'height_1km',
+		title: 'Kilometre Climber',
+		hint: 'Climb a cumulative 1 km',
+		icon: 'mountain',
+		tone: 'warm'
+	},
+	{
+		id: 'height_5km',
+		title: 'Five K Vertical',
+		hint: 'Climb a cumulative 5 km',
+		icon: 'mountain',
+		tone: 'green'
+	},
+	{
+		id: 'height_10km',
+		title: 'Ten K Vertical',
+		hint: 'Climb a cumulative 10 km',
+		icon: 'mountain',
+		tone: 'blue'
+	},
+	{
+		id: 'height_20km',
+		title: 'Twenty K Vertical',
+		hint: 'Climb a cumulative 20 km',
+		icon: 'mountain',
+		tone: 'purple'
+	},
+	{
+		id: 'country_1',
+		title: 'Home Crag Country',
+		hint: 'Climb in a logged country',
+		icon: 'flag',
+		tone: 'warm'
+	},
+	{
+		id: 'country_2',
+		title: 'Two Countries',
+		hint: 'Climb in 2 countries',
+		icon: 'globe',
+		tone: 'green'
+	},
+	{
+		id: 'country_5',
+		title: 'Globe Trotter',
+		hint: 'Climb in 5 countries',
+		icon: 'globe',
+		tone: 'blue'
+	},
+	{
+		id: 'country_10',
+		title: 'World Traveller',
+		hint: 'Climb in 10 countries',
+		icon: 'globe',
+		tone: 'purple'
+	},
+	{
+		id: 'style_sport',
+		title: 'Sport Starter',
+		hint: 'Send a sport route',
+		icon: 'carabiner',
+		tone: 'blue'
+	},
+	{
+		id: 'style_trad',
+		title: 'Trad Curious',
+		hint: 'Send a trad route',
+		icon: 'knot',
+		tone: 'warm'
+	},
+	{
+		id: 'style_boulder',
+		title: 'Boulder Start',
+		hint: 'Send a boulder problem',
+		icon: 'route',
+		tone: 'green'
+	},
+	{
+		id: 'band_intermediate',
+		title: 'Intermediate',
+		hint: 'Send an Intermediate-band climb',
+		icon: 'star',
+		tone: 'warm'
+	},
+	{
+		id: 'band_experienced',
+		title: 'Experienced',
+		hint: 'Send an Experienced-band climb',
+		icon: 'star',
+		tone: 'green'
+	},
+	{
+		id: 'band_expert',
+		title: 'Expert',
+		hint: 'Send an Expert-band climb',
+		icon: 'star',
+		tone: 'blue'
+	},
+	{
+		id: 'band_elite',
+		title: 'Elite',
+		hint: 'Send an Elite-band climb',
+		icon: 'star',
+		tone: 'purple'
+	},
+	{
+		id: 'new_high',
+		title: 'New High',
+		hint: 'Set a personal grade high',
+		icon: 'flag',
+		tone: 'green'
+	}
 ] as const;
 
 const COUNT_BADGES: { id: string; n: number; label: (n: number) => string }[] = [
@@ -203,10 +401,7 @@ const COUNTRY_BADGES = [
 	{ id: 'country_10', n: 10 }
 ];
 
-function hitAt(
-	row: DashboardExtraRow,
-	prefix: string
-): Hit {
+function hitAt(row: DashboardExtraRow, prefix: string): Hit {
 	const date = dayKey(row.ascentDate)!;
 	const routeName = (row.routeName || '').trim() || null;
 	const href = row.ascentUrl || row.url || null;
@@ -295,7 +490,10 @@ export function buildBadges(rows: DashboardExtraRow[]): BadgesResult {
 		}
 		for (const b of COUNTRY_BADGES) {
 			if (countries.size === b.n && country) {
-				mark(b.id, hitAt(row, b.n === 1 ? `Climbed in ${country}` : `${b.n} countries · ${country}`));
+				mark(
+					b.id,
+					hitAt(row, b.n === 1 ? `Climbed in ${country}` : `${b.n} countries · ${country}`)
+				);
 			}
 		}
 
@@ -303,15 +501,16 @@ export function buildBadges(rows: DashboardExtraRow[]): BadgesResult {
 
 		sendCount += 1;
 		if (sendCount === 1) {
-			const how = kind === 'onsight' || kind === 'flash' || kind === 'redpoint' || kind === 'pinkpoint'
-				? kind === 'onsight'
-					? 'Onsight'
-					: kind === 'flash'
-						? 'Flash'
-						: kind === 'redpoint'
-							? 'Red point'
-							: 'Pink point'
-				: null;
+			const how =
+				kind === 'onsight' || kind === 'flash' || kind === 'redpoint' || kind === 'pinkpoint'
+					? kind === 'onsight'
+						? 'Onsight'
+						: kind === 'flash'
+							? 'Flash'
+							: kind === 'redpoint'
+								? 'Red point'
+								: 'Pink point'
+					: null;
 			mark('first_send', hitAt(row, how ? `First send (${how})` : 'First send'));
 		}
 		for (const b of SEND_BADGES) {

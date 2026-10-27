@@ -88,7 +88,7 @@ Height quirk: theCrag may return height as `[value, unit]` arrays — parse in t
 
 - Canonical numeric scores lean on **Ewbank** for routes and **V-scale** for boulder; convert for display via `src/lib/grades`.
 - Band palette (Beginner → Elite) matches theCrag article colours — see `bands.ts`. Boulder: VB± green, **V0± yellow** (Intermediate), V1–V4 orange, V5–V10 red, V11+ purple (`bandFromVScale`).
-- Preferred system: cookie `cs_grade_system` + env `PREFERRED_GRADE_SYSTEM`.
+- Preferred system: site-wide `app_settings.grade_system` (Settings → Display & visibility), fallback env `PREFERRED_GRADE_SYSTEM`. `?system=` is a one-off override; the old `cs_grade_system` cookie is no longer read.
 - **Style pyramids** group by Sport / Trad / Boulder / Top rope / … with stacked tick segments. Do not dump mixed VB + `7a` + `19` in one unordered list. Pyramid grade chips/bars link to `/logbook?style=&score=` (integer score buckets).
 - **Grade-system fit:** reject boulder CPR/V-scale on sport/trad (caused Trad `−1` / VB rows). On boulder, bare AU/Ewbank numbers (e.g. Upendi `5`) map to **V5**. Font `5A` must not steal French `5a` on routes.
 - **V-scale ranges** like `V1/2` or `V5/6` must parse as midpoints (1.5, 5.5). Never fall back to gradeBand Ewbank midpoints (21/28/…) as V-scores — that produced fake “V21” / “V28”.
@@ -132,7 +132,7 @@ Components: `TickTypeIcon.svelte`, `StyleBadge.svelte`. Keep icons SVG-inline so
 - SVG presentation attributes can't take `var()` reliably — use `style="stroke: var(--ink)"` instead.
 - **Dark mode:** OS preference by default; header toggle stores `cs_theme` in localStorage → `html[data-theme]`. Applied pre-paint by the inline script in `app.html`.
 - **Shell (Dreeve-style):** fixed top bar (sidebar toggle, logo, GitHub, theme, settings) + grouped icon sidebar with count badges (`navCounts` from `+layout.server.ts`, hidden when `AUTH_SCOPE=all` and logged out). Desktop toggle collapses to a mini icon rail with hover tooltips (`cs_sidebar=mini` → `html[data-sidebar='mini']`); ≤860px it's an off-canvas drawer.
-- Icons: `NavIcon.svelte` (inline outline SVGs). Logo/favicon: `src/lib/assets/favicon.svg` (flat orange crag, grade bars masked out / transparent — no circle, no gradient).
+- Icons: `NavIcon.svelte` (inline outline SVGs). Logo/favicon: `src/lib/assets/favicon.svg` (flat orange crag, grade bars masked out / transparent through the base — no circle, no gradient). Wordmark lockup is always ink "Crag" + orange "Stats".
 - Full style guide (tokens, logo, theCrag band + discipline colours, shell): **`docs/dev/BRANDING.md`** — update it with any visual change.
 
 ## Docker / release
@@ -196,5 +196,7 @@ Prefer fixing type errors over `@ts-ignore`. Do not switch the package manager.
 | 2026-10 | Discipline colours unified via `STYLE_COLORS` in `ticks.ts` (Sport blue, Trad orange, Boulder red) — Style mix + climber-type share the same palette as StyleBadge. |
 
 | 2026-10 | Dreeve-style redesign: theme tokens + dark mode, Plus Jakarta Sans, new logo, top bar + collapsible mini sidebar / mobile drawer, nav count badges. |
+
+| 2026-10 | `app_settings` table (0008): grade system + "Show in search engines" (dynamic `robots.txt`, `X-Robots-Tag`, meta noindex; forced off for `AUTH_SCOPE=all`). Sync status + grade picker moved from the dashboard hero to Settings; Customize dashboard is admin-only. |
 
 _Add a row when you change behaviour agents must know about._

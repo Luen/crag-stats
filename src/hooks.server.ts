@@ -6,12 +6,14 @@ import {
 	verifySessionToken,
 	verifySharedSecret
 } from '#lib/server/auth';
+import { getSearchIndexing } from '#lib/server/appSettings';
 import { ensureSchema } from '#lib/server/db';
 import { env } from '#lib/server/env';
+import { isNoindexPath } from '#lib/server/seo';
 
 ensureSchema();
 
-const PUBLIC = new Set(['/login', '/logout', '/health']);
+const PUBLIC = new Set(['/login', '/logout', '/health', '/robots.txt']);
 
 const SECURITY_HEADERS: Record<string, string> = {
 	'X-Content-Type-Options': 'nosniff',
@@ -20,13 +22,20 @@ const SECURITY_HEADERS: Record<string, string> = {
 	'Permissions-Policy': 'camera=(), microphone=(), geolocation=()'
 };
 
+function finish(res: Response, path: string): Response {
+	for (const [k, v] of Object.entries(SECURITY_HEADERS)) res.headers.set(k, v);
+	// Search-engine visibility (Settings toggle; always off behind AUTH_SCOPE=all and on admin paths).
+	if (isNoindexPath(path) || !getSearchIndexing().allowed) {
+		res.headers.set('X-Robots-Tag', 'noindex, nofollow');
+	}
+	return res;
+}
+
 export const handle: Handle = async ({ event, resolve }) => {
 	const path = event.url.pathname;
 
 	if (path === '/health' || path.startsWith('/health/')) {
-		const res = await resolve(event);
-		for (const [k, v] of Object.entries(SECURITY_HEADERS)) res.headers.set(k, v);
-		return res;
+		return finish(await resolve(event), path);
 	}
 
 	// Worker can trigger sync with shared secret even when password gate is on
@@ -34,9 +43,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 		const secret = env('SESSION_SECRET');
 		const header = event.request.headers.get('x-worker-secret');
 		if (verifySharedSecret(header, secret)) {
-			const res = await resolve(event);
-			for (const [k, v] of Object.entries(SECURITY_HEADERS)) res.headers.set(k, v);
-			return res;
+			return finish(await resolve(event), path);
 		}
 	}
 
@@ -51,16 +58,14 @@ export const handle: Handle = async ({ event, resolve }) => {
 				headers: { 'content-type': 'application/json', ...SECURITY_HEADERS }
 			});
 		}
-		return new Response(null, {
-			status: 303,
-			headers: {
-				location: `/login?next=${encodeURIComponent(path)}`,
-				...SECURITY_HEADERS
-			}
-		});
+		return finish(
+			new Response(null, {
+				status: 303,
+				headers: { location: `/login?next=${encodeURIComponent(path)}` }
+			}),
+			path
+		);
 	}
 
-	const res = await resolve(event);
-	for (const [k, v] of Object.entries(SECURITY_HEADERS)) res.headers.set(k, v);
-	return res;
+	return finish(await resolve(event), path);
 };

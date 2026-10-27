@@ -83,6 +83,9 @@
 
 <svelte:head>
 	<link rel="icon" href={favicon} />
+	{#if data.noindex}
+		<meta name="robots" content="noindex, nofollow" />
+	{/if}
 	<title>{current && current.label !== 'Dashboard' ? `${current.label} · Crag Stats` : 'Crag Stats'}</title>
 </svelte:head>
 

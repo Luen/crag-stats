@@ -11,8 +11,9 @@ Visual direction: a clean, card-based analytics dashboard in the style of [Dreev
 File: `src/lib/assets/favicon.svg`. It is both the favicon and the header mark.
 
 - A solid **rope-orange (`#ea580c`) two-peaked crag**. Three **rising bars** (a grade pyramid / bar chart) are cut out of the rock face and are **transparent**: they're done with an SVG `<mask>`, not painted white, so the page background shows through in light and dark mode.
+- The bars run **through the base** of the mountain (the mask rects extend past y=56), so there's no orange sliver under them and they merge into the background. Their tops sit a little below the slopes (y = 43 / 35 / 27) to give them room to breathe.
 - No circle, no gradient, no outline. Keep it flat and single-colour.
-- Wordmark: **"Crag Stats"** in Plus Jakarta Sans 800, tight tracking. "Crag" is in `--ink` and "Stats" in `--accent`.
+- Wordmark: **"Crag Stats"** in Plus Jakarta Sans 800, tight tracking. "Crag" is in `--ink` and "Stats" in `--accent`. Use this same lockup everywhere the name appears as a logo (header, login card). Never write the whole name in orange.
 - Minimum size: about 16px (favicon). Below about 20px the bars blur, which is acceptable.
 
 ## Typography
@@ -96,12 +97,21 @@ Because the brand accent is orange, it sits close to *Trad* and *Experienced*. T
 - **Mini sidebar** (desktop): the toggle collapses the sidebar to an icon rail (`--side-mini-w` 4.5rem) with hover/focus tooltips. It's stored in `localStorage.cs_sidebar = 'mini'` and applied pre-paint as `html[data-sidebar='mini']`.
 - **Mobile (≤ 860px)**: the same toggle opens an off-canvas drawer with a backdrop. Esc, tapping the backdrop or navigating closes it. Mini mode doesn't apply on mobile.
 - **Breadcrumb** (home icon plus page label) above content. `<title>` is `Page · Crag Stats`.
+- **Dashboard hero** shows only the profile (avatar, name, climber type). Sync status and grade system live in **Settings**. Admins see a red "Last sync failed" pill on the hero only when a sync errors.
+- **Customize dashboard** is shown only to admins (`showSettings`). The layout actions also return 403 for logged-out visitors.
 
 ## Components & patterns
 
 - Cards: `.panel` (paper, 1px `--line`, `--shadow`) with a radius of about 0.9–1rem. Card titles are `h2` at about 1.1rem, weight 650.
-- Primary button: accent background, white text, 700 weight, `--accent-strong` on hover. Secondary button: paper background with a `--line` border.
+- Primary button: accent background, white text, 700 weight, `--accent-strong` on hover. Secondary button: paper background with a `--line` border. Links that act as actions (for example the CSV backup download) use `.btn` / `.btn.secondary` with an icon, not a plain text link.
 - Tables: a `--surface-2` header row, with header text in small uppercase `--ink-muted` (0.72rem, letter-spacing 0.05em). Rows highlight on hover with `--surface-2`.
 - Pills and filters: the active state is solid accent with white text.
 - Highlight metric (for example, onsights): `--accent-soft` background with the number in accent.
 - Focus: a 2px accent `:focus-visible` outline globally.
+
+## Settings-driven site preferences
+
+Stored in the `app_settings` key/value table (migration `0008`) through `src/lib/server/appSettings.ts`:
+
+- `grade_system`: the site-wide display grade system, used for every visitor. Resolution order: Settings value, then `PREFERRED_GRADE_SYSTEM` env, then Ewbank. `?system=` on `/` is a one-off override for a shared link. The old per-browser `cs_grade_system` cookie is no longer read.
+- `search_indexing`: **Show in search engines** (default on). When off, `/robots.txt` disallows everything and every response carries `X-Robots-Tag: noindex, nofollow` plus a `<meta name="robots">` tag. It's forced off when `APP_PASSWORD` is set with `AUTH_SCOPE=all`. `/settings`, `/login`, `/logout` and `/api/` are always noindex. The pure rules live in `src/lib/server/seo.ts` (unit-tested). `robots.txt` is a dynamic route (`src/routes/robots.txt/+server.ts`) and is public even behind the password gate.

@@ -34,7 +34,11 @@ export async function runTheCragSync(opts?: { full?: boolean }) {
 	syncing = true;
 	const provider = 'thecrag';
 	getOrCreateSyncState(provider);
-	updateSyncState(provider, { status: 'running', lastSyncAt: new Date().toISOString(), lastError: null });
+	updateSyncState(provider, {
+		status: 'running',
+		lastSyncAt: new Date().toISOString(),
+		lastError: null
+	});
 
 	try {
 		const seen = new Set<string>();

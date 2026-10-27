@@ -9,12 +9,7 @@ import {
 
 describe('splitPartners', () => {
 	it('splits on commas, and, semicolons, and strips @handles', () => {
-		expect(splitPartners('@alice, Bob and carol;@dave')).toEqual([
-			'alice',
-			'Bob',
-			'carol',
-			'dave'
-		]);
+		expect(splitPartners('@alice, Bob and carol;@dave')).toEqual(['alice', 'Bob', 'carol', 'dave']);
 	});
 
 	it('handles slash separators and empty input', () => {

@@ -7,10 +7,7 @@ export function isLikelyIndoorRoute(opts: {
 }): boolean {
 	const style = (opts.gearStyle ?? '').toLowerCase();
 	if (/\b(gym|indoor)\b/.test(style)) return true;
-	const blob = [opts.name, opts.cragName, opts.tagsJson]
-		.filter(Boolean)
-		.join(' ')
-		.toLowerCase();
+	const blob = [opts.name, opts.cragName, opts.tagsJson].filter(Boolean).join(' ').toLowerCase();
 	return /\b(climbing\s+gym|bouldering\s+gym|indoor\s+gym|\bgym\b|indoor)\b/.test(blob);
 }
 

@@ -1,4 +1,4 @@
-import { redirect } from '@sveltejs/kit';
+import { fail, redirect } from '@sveltejs/kit';
 import {
 	DASH_LAYOUT_COOKIE,
 	defaultLayout,
@@ -6,13 +6,11 @@ import {
 	serializeLayout
 } from '#lib/dashboardLayout';
 import { getDashboardStats, parseGradeSystem, parsePyramidMode } from '#lib/server/analytics';
-import { env } from '#lib/server/env';
+import { getPreferredGradeSystem } from '#lib/server/appSettings';
 import { listActiveGoals } from '#lib/server/goals';
 import { listDashboardProjects } from '#lib/server/projects';
 import { getSyncStatus } from '#lib/server/sync';
 import type { Actions, PageServerLoad } from './$types';
-
-const GRADE_COOKIE = 'cs_grade_system';
 
 const layoutCookieOpts = {
 	path: '/',
@@ -21,18 +19,10 @@ const layoutCookieOpts = {
 };
 
 export const load: PageServerLoad = async ({ cookies, url }) => {
+	// Site default from Settings; `?system=` is a one-off override for shared links.
 	const fromQuery = url.searchParams.get('system');
-	const fromCookie = cookies.get(GRADE_COOKIE);
-	const preferred = parseGradeSystem(fromQuery || fromCookie || env('PREFERRED_GRADE_SYSTEM', 'ewbank'));
+	const preferred = fromQuery ? parseGradeSystem(fromQuery) : getPreferredGradeSystem();
 	const pyramidMode = parsePyramidMode(url.searchParams.get('pyramid'));
-
-	if (fromQuery && fromQuery !== fromCookie) {
-		cookies.set(GRADE_COOKIE, preferred, {
-			path: '/',
-			maxAge: 60 * 60 * 24 * 365,
-			sameSite: 'lax'
-		});
-	}
 
 	return {
 		stats: getDashboardStats(preferred, { pyramidMode }),
@@ -46,18 +36,8 @@ export const load: PageServerLoad = async ({ cookies, url }) => {
 };
 
 export const actions: Actions = {
-	setGradeSystem: async ({ request, cookies }) => {
-		const form = await request.formData();
-		const system = parseGradeSystem(String(form.get('system') || 'ewbank'));
-		cookies.set(GRADE_COOKIE, system, {
-			path: '/',
-			maxAge: 60 * 60 * 24 * 365,
-			sameSite: 'lax'
-		});
-		throw redirect(303, '/');
-	},
-
-	setDashboardLayout: async ({ request, cookies }) => {
+	setDashboardLayout: async ({ request, cookies, locals }) => {
+		if (!locals.authed) return fail(403);
 		const form = await request.formData();
 		const raw = String(form.get('layout') || '');
 		const layout = raw ? parseLayoutCookie(raw) : defaultLayout();
@@ -65,7 +45,8 @@ export const actions: Actions = {
 		throw redirect(303, '/');
 	},
 
-	resetDashboardLayout: async ({ cookies }) => {
+	resetDashboardLayout: async ({ cookies, locals }) => {
+		if (!locals.authed) return fail(403);
 		cookies.delete(DASH_LAYOUT_COOKIE, { path: '/' });
 		throw redirect(303, '/');
 	}

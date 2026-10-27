@@ -2,20 +2,68 @@
 	import type { PageProps } from './$types';
 
 	let { data, form }: PageProps = $props();
+
+	const systems = [
+		{ id: 'ewbank', label: 'Ewbanks (AU/NZ)' },
+		{ id: 'french', label: 'French' },
+		{ id: 'yds', label: 'YDS' },
+		{ id: 'v_scale', label: 'V-Scale' },
+		{ id: 'font', label: 'Fontainebleau' }
+	] as const;
 </script>
 
 <section class="panel head">
 	<h1>Settings</h1>
-	<p>Sync sources, imports, and local data control.</p>
+	<p>Sync, display preferences, search visibility, imports and local data control.</p>
 </section>
 
 {#if form?.message}
 	<p class="banner err">{form.message}</p>
+{:else if form?.saved}
+	<p class="banner ok">Preferences saved.</p>
 {:else if form?.ok}
 	<p class="banner ok">Done.</p>
 {/if}
 
 <section class="grid">
+	<article class="panel">
+		<h2>Display & visibility</h2>
+		<form method="POST" action="?/savePreferences" class="prefs">
+			<label class="field">
+				<span>Grade system</span>
+				<select name="system">
+					{#each systems as opt (opt.id)}
+						<option value={opt.id} selected={data.gradeSystem === opt.id}>{opt.label}</option>
+					{/each}
+				</select>
+				<small class="hint"
+					>Used for the dashboard for every visitor. Boulders always show V-scale or Font.</small
+				>
+			</label>
+			<label class="check">
+				<input
+					type="checkbox"
+					name="indexing"
+					checked={data.searchIndexing.allowed}
+					disabled={data.searchIndexing.forcedOff}
+				/>
+				<span>
+					<strong>Show in search engines</strong>
+					<small class="hint">
+						{#if data.searchIndexing.forcedOff}
+							Off — the whole site is password protected (<code>AUTH_SCOPE=all</code>).
+						{:else}
+							Untick to ask Google &amp; co. not to index this site (<code>robots.txt</code>,
+							<code>noindex</code> meta tag and <code>X-Robots-Tag</code> header). Settings and login
+							are never indexed.
+						{/if}
+					</small>
+				</span>
+			</label>
+			<button type="submit">Save preferences</button>
+		</form>
+	</article>
+
 	<article class="panel">
 		<h2>theCrag API sync</h2>
 		<p class="hint">
@@ -29,10 +77,14 @@
 			<strong>Upstream is source of truth.</strong> Each sync pulls the full logbook, updates changed
 			ascents (comments, grades, ticks), and deletes local rows that were removed on theCrag.
 		</p>
-		<p>
-			Status: <strong>{data.sync.status}</strong>
+		<p class="status">
+			<span class={['pill', { ok: data.sync.status === 'idle', err: data.sync.status === 'error' }]}
+				>{data.sync.status}</span
+			>
 			{#if data.sync.lastSuccessAt}
-				· last success {new Date(data.sync.lastSuccessAt).toLocaleString()}
+				<span>Last sync {new Date(data.sync.lastSuccessAt).toLocaleString()}</span>
+			{:else}
+				<span>No API sync yet</span>
 			{/if}
 		</p>
 		{#if data.sync.lastError}
@@ -77,9 +129,26 @@
 			<strong>local</strong> SQLite copy on this machine — it never deletes your theCrag logbook.
 			See <a href="https://github.com/Luen/crag-stats/blob/main/docs/PRIVACY.md">PRIVACY.md</a>.
 		</p>
-		<p class="hint">
-			<a href="/settings/export">Download local logbook as CSV</a> (backup / re-import).
-		</p>
+		<div class="backup">
+			<a class="btn secondary" href="/settings/export" download>
+				<svg
+					viewBox="0 0 24 24"
+					width="17"
+					height="17"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="2"
+					stroke-linecap="round"
+					stroke-linejoin="round"
+					aria-hidden="true"
+					><path
+						d="M12 3v12m0 0-4.5-4.5M12 15l4.5-4.5M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"
+					/></svg
+				>
+				Download logbook CSV
+			</a>
+			<small class="hint">Backup / re-import</small>
+		</div>
 		<form method="POST" action="?/wipe" class="stack">
 			<input name="confirm" placeholder="Type DELETE to confirm" required />
 			<button type="submit" class="danger">Wipe all local data</button>
@@ -89,7 +158,9 @@
 	{#if data.authEnabled && data.authed}
 		<article class="panel">
 			<h2>Admin session</h2>
-			<p class="hint">End your signed-in session on this device. You will need the app password to return.</p>
+			<p class="hint">
+				End your signed-in session on this device. You will need the app password to return.
+			</p>
 			<form method="POST" action="/logout">
 				<button type="submit" class="secondary">Log out</button>
 			</form>
@@ -119,6 +190,70 @@
 		display: grid;
 		gap: 0.9rem;
 	}
+	.prefs {
+		display: grid;
+		gap: 1rem;
+		max-width: 36rem;
+	}
+	.field {
+		display: grid;
+		gap: 0.3rem;
+	}
+	.field > span {
+		font-size: 0.75rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		color: var(--ink-muted);
+	}
+	.field select {
+		font: inherit;
+		padding: 0.5rem 0.6rem;
+		border-radius: 0.55rem;
+		border: 1px solid var(--line);
+		max-width: 18rem;
+	}
+	.prefs .hint {
+		margin: 0;
+		font-size: 0.85rem;
+	}
+	.check {
+		display: flex;
+		gap: 0.65rem;
+		align-items: flex-start;
+	}
+	.check input {
+		margin-top: 0.3rem;
+		width: 1.05rem;
+		height: 1.05rem;
+		accent-color: var(--accent);
+	}
+	.check span {
+		display: grid;
+		gap: 0.15rem;
+	}
+	.status {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.6rem;
+		color: var(--ink-muted);
+	}
+	.pill {
+		padding: 0.2rem 0.65rem;
+		border-radius: 999px;
+		background: var(--surface-3);
+		color: var(--ink);
+		font-size: 0.75rem;
+		font-weight: 700;
+		text-transform: uppercase;
+	}
+	.pill.ok {
+		background: color-mix(in srgb, var(--band-beginner) 20%, var(--paper));
+	}
+	.pill.err {
+		background: color-mix(in srgb, var(--band-expert) 16%, var(--paper));
+	}
 	.actions,
 	.stack {
 		display: flex;
@@ -131,27 +266,56 @@
 		align-items: stretch;
 	}
 	button,
+	.btn,
 	input {
 		font: inherit;
 		padding: 0.55rem 0.8rem;
 		border-radius: 0.55rem;
 		border: 1px solid var(--line);
 	}
-	button {
+	button,
+	.btn {
 		background: var(--accent);
-		color: white;
+		color: #fff;
 		border: none;
 		font-weight: 700;
 		cursor: pointer;
 		width: fit-content;
 	}
-	button.secondary {
-		background: transparent;
+	button:hover,
+	.btn:hover {
+		background: var(--accent-strong);
+	}
+	.btn {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.45rem;
+	}
+	button.secondary,
+	.btn.secondary {
+		background: var(--paper);
 		color: var(--ink);
 		border: 1px solid var(--line);
 	}
+	button.secondary:hover,
+	.btn.secondary:hover {
+		background: var(--surface-2);
+	}
 	button.danger {
-		background: rgb(201, 9, 9);
+		background: var(--band-expert);
+	}
+	button.danger:hover {
+		background: color-mix(in srgb, var(--band-expert) 85%, #000);
+	}
+	.backup {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.65rem;
+		margin-bottom: 1.1rem;
+	}
+	.backup .hint {
+		margin: 0;
 	}
 	.banner {
 		padding: 0.7rem 1rem;
@@ -163,6 +327,6 @@
 	}
 	.err {
 		background: rgba(201, 9, 9, 0.12);
-		color: #7a1010;
+		color: var(--band-expert);
 	}
 </style>

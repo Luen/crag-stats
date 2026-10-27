@@ -1,13 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Crag Stats">
   <title>Crag Stats</title>
-  <!-- Solid orange crag; the rising grade-pyramid bars are cut out (transparent). -->
+  <!-- Solid orange crag; the rising grade-pyramid bars are cut out (transparent)
+       and run through the base so they merge into the background. -->
   <defs>
     <mask id="cs-bars">
       <rect width="64" height="64" fill="#fff"/>
       <g fill="#000">
-        <rect x="18" y="41" width="6" height="11" rx="1"/>
-        <rect x="29" y="33" width="6" height="19" rx="1"/>
-        <rect x="40" y="25" width="6" height="27" rx="1"/>
+        <rect x="18" y="43" width="6" height="18" rx="1"/>
+        <rect x="29" y="35" width="6" height="26" rx="1"/>
+        <rect x="40" y="27" width="6" height="34" rx="1"/>
       </g>
     </mask>
   </defs>
