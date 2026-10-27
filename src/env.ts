@@ -12,6 +12,10 @@ export const variables = defineEnvVars({
 		description: 'Optional password gate for the UI',
 		schema: optionalString
 	},
+	AUTH_SCOPE: {
+		description: 'Password gate scope: settings (default) or all',
+		schema: optionalString
+	},
 	SESSION_SECRET: {
 		description: 'Cookie signing + worker shared secret',
 		schema: optionalString

@@ -6,15 +6,17 @@
 
 	let { children, data }: LayoutProps = $props();
 
-	const links = [
-		{ href: '/', label: 'Dashboard' },
-		{ href: '/logbook', label: 'Logbook' },
-		{ href: '/projects', label: 'Projects' },
-		{ href: '/sectors', label: 'Sectors' },
-		{ href: '/goals', label: 'Goals' },
-		{ href: '/rewind', label: 'Rewind' },
-		{ href: '/settings', label: 'Settings' }
-	];
+	const links = $derived(
+		[
+			{ href: '/', label: 'Dashboard' },
+			{ href: '/logbook', label: 'Logbook' },
+			{ href: '/projects', label: 'Projects' },
+			{ href: '/sectors', label: 'Sectors' },
+			{ href: '/goals', label: 'Goals' },
+			{ href: '/rewind', label: 'Rewind' },
+			data.showSettings ? { href: '/settings', label: 'Settings' } : null
+		].filter((l): l is { href: string; label: string } => l != null)
+	);
 </script>
 
 <svelte:head>

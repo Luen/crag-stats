@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { isAuthEnabled, authScope } from '#lib/server/auth';
 import { startScheduler } from '#lib/server/scheduler';
 import type { LayoutServerLoad } from './$types';
 
@@ -16,9 +17,16 @@ function readAppVersion(): string {
 	}
 }
 
-export const load: LayoutServerLoad = async () => {
+export const load: LayoutServerLoad = async ({ locals }) => {
+	const authOn = isAuthEnabled();
+	const scope = authScope();
+	const showSettings = !authOn || locals.authed;
 	return {
 		appVersion: readAppVersion(),
-		githubUrl: 'https://github.com/Luen/crag-stats'
+		githubUrl: 'https://github.com/Luen/crag-stats',
+		authed: locals.authed,
+		authEnabled: authOn,
+		authScope: scope,
+		showSettings
 	};
 };

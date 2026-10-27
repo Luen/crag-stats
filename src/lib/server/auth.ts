@@ -7,8 +7,26 @@ function secret() {
 	return env('SESSION_SECRET', 'dev-insecure-session-secret');
 }
 
+export type AuthScope = 'settings' | 'all';
+
 export function isAuthEnabled() {
 	return Boolean(env('APP_PASSWORD').trim());
+}
+
+/** `settings` = protect admin surfaces only; `all` = entire UI. Default settings. */
+export function authScope(): AuthScope {
+	const raw = env('AUTH_SCOPE', 'settings').trim().toLowerCase();
+	return raw === 'all' ? 'all' : 'settings';
+}
+
+/** Paths that require a session when AUTH_SCOPE=settings. */
+export function isProtectedPath(pathname: string): boolean {
+	if (!isAuthEnabled()) return false;
+	if (authScope() === 'all') return true;
+	if (pathname === '/settings' || pathname.startsWith('/settings/')) return true;
+	// Browser-triggered sync should not be anonymous when a password is set
+	if (pathname === '/api/sync') return true;
+	return false;
 }
 
 export function verifyPassword(password: string) {

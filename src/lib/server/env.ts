@@ -1,6 +1,7 @@
 import {
 	THECRAG_API_KEY,
 	APP_PASSWORD,
+	AUTH_SCOPE,
 	SESSION_SECRET,
 	DATABASE_PATH,
 	SYNC_CRON,
@@ -11,6 +12,7 @@ import {
 const cache: Record<string, string | undefined> = {
 	THECRAG_API_KEY,
 	APP_PASSWORD,
+	AUTH_SCOPE,
 	SESSION_SECRET,
 	DATABASE_PATH,
 	SYNC_CRON,

@@ -1,5 +1,10 @@
 import type { Handle } from '@sveltejs/kit/hooks';
-import { isAuthEnabled, sessionCookieName, verifySessionToken } from '#lib/server/auth';
+import {
+	isAuthEnabled,
+	isProtectedPath,
+	sessionCookieName,
+	verifySessionToken
+} from '#lib/server/auth';
 import { ensureSchema } from '#lib/server/db';
 import { env } from '#lib/server/env';
 
@@ -23,20 +28,21 @@ export const handle: Handle = async ({ event, resolve }) => {
 		}
 	}
 
-	if (isAuthEnabled() && !PUBLIC.has(path)) {
-		const token = event.cookies.get(sessionCookieName());
-		if (!verifySessionToken(token)) {
-			if (path.startsWith('/api/')) {
-				return new Response(JSON.stringify({ error: 'Unauthorized' }), {
-					status: 401,
-					headers: { 'content-type': 'application/json' }
-				});
-			}
-			return new Response(null, {
-				status: 303,
-				headers: { location: `/login?next=${encodeURIComponent(path)}` }
+	const token = event.cookies.get(sessionCookieName());
+	const authed = verifySessionToken(token);
+	event.locals.authed = !isAuthEnabled() || authed;
+
+	if (isAuthEnabled() && isProtectedPath(path) && !PUBLIC.has(path) && !authed) {
+		if (path.startsWith('/api/')) {
+			return new Response(JSON.stringify({ error: 'Unauthorized' }), {
+				status: 401,
+				headers: { 'content-type': 'application/json' }
 			});
 		}
+		return new Response(null, {
+			status: 303,
+			headers: { location: `/login?next=${encodeURIComponent(path)}` }
+		});
 	}
 
 	return resolve(event);

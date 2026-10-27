@@ -4,13 +4,19 @@
 #   docker compose -f docker-compose.ghcr.yml pull
 #   docker compose -f docker-compose.ghcr.yml up -d
 #
-# Pin a version with CRAG_STATS_IMAGE_TAG=v0.1.0
+# Pin a version with CRAG_STATS_IMAGE_TAG=v0.2.0
+# Host publish port (separate from in-container PORT): HOST_PORT=8097
+# Bind loopback only (Cloudflare Tunnel): HOST_BIND=127.0.0.1
 
 services:
   app:
     image: ghcr.io/luen/crag-stats:${CRAG_STATS_IMAGE_TAG:-latest}
+    container_name: crag-stats
+    labels:
+      # Watchtower --label-enable (safe if your watchtower uses it)
+      com.centurylinklabs.watchtower.enable: 'true'
     ports:
-      - '${PORT:-3000}:3000'
+      - '${HOST_BIND:-127.0.0.1}:${HOST_PORT:-8097}:3000'
     env_file:
       - .env
     environment:
@@ -24,6 +30,9 @@ services:
 
   worker:
     image: ghcr.io/luen/crag-stats:${CRAG_STATS_IMAGE_TAG:-latest}
+    container_name: crag-stats-worker
+    labels:
+      com.centurylinklabs.watchtower.enable: 'true'
     command: ['node', 'scripts/worker.mjs']
     env_file:
       - .env

@@ -80,7 +80,14 @@
 		<h2>Get started</h2>
 		<ol>
 			<li>Add <code>THECRAG_API_KEY</code> for Supporters, or</li>
-			<li>Upload a theCrag CSV export on <a href="/settings">Settings</a></li>
+			<li>
+				Upload a theCrag CSV export
+				{#if data.showSettings}
+					on <a href="/settings">Settings</a>
+				{:else}
+					via Settings (sign in at <a href="/login?next=/settings">/login</a>)
+				{/if}
+			</li>
 		</ol>
 	</section>
 {:else}
