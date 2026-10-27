@@ -33,6 +33,28 @@
 	--line: #e6e8ec;
 	--shadow: 0 1px 2px rgba(16, 24, 40, 0.04), 0 1px 3px rgba(16, 24, 40, 0.04);
 
+	/* Discipline colours — keep in sync with STYLE_BADGE_COLORS in src/lib/ticks.ts. */
+	--style-sport: #1d6fa5;
+	--style-trad: #e07a2f;
+	--style-boulder: #a12b4a;
+	--style-toprope: #7b5ea7;
+	--style-alpine: #2a9d8f;
+	--style-aid: #6c757d;
+	--style-unknown: #9aa0a6;
+
+	/* Semantic UI colours. */
+	--danger: #c44569;
+	--gold: #c9a227;
+	--gold-soft: #f5e6a8;
+	--series-1: var(--style-alpine);
+	--series-2: var(--style-sport);
+	--heat-1: #c6e48b;
+	--heat-2: #7bc96f;
+	--heat-3: #239a3b;
+	--heat-4: #196127;
+	--shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.18);
+	--scrim: rgba(10, 12, 16, 0.35);
+
 	--header-h: 3.75rem;
 	--side-w: 15rem;
 	--side-mini-w: 4.5rem;
@@ -54,6 +76,11 @@
 	--ink-muted: #98a1b3;
 	--line: #2a303c;
 	--shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+	--gold-soft: #5c4a12;
+	--heat-1: #0e4429;
+	--heat-2: #006d32;
+	--heat-3: #26a641;
+	--heat-4: #39d353;
 	color-scheme: dark;
 }
 
@@ -72,6 +99,11 @@
 		--ink-muted: #98a1b3;
 		--line: #2a303c;
 		--shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+		--gold-soft: #5c4a12;
+		--heat-1: #0e4429;
+		--heat-2: #006d32;
+		--heat-3: #26a641;
+		--heat-4: #39d353;
 		color-scheme: dark;
 	}
 }

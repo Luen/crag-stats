@@ -71,6 +71,7 @@
 		font-size: 0.72rem;
 		font-weight: 800;
 		letter-spacing: 0.02em;
+		/* Intentional: keeps white labels legible on any discipline colour. */
 		text-shadow: 0 1px 1px rgba(0, 0, 0, 0.25);
 		min-width: 0;
 	}

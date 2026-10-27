@@ -149,7 +149,7 @@
 		font-weight: 600;
 	}
 	.down {
-		color: #a33;
+		color: var(--danger);
 		font-weight: 600;
 	}
 	.flat {

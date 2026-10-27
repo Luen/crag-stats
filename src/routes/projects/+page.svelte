@@ -209,13 +209,13 @@
 		stroke-linejoin: round;
 	}
 	.star.filled {
-		color: #c9a227;
-		background: color-mix(in srgb, #f5e6a8 55%, var(--paper));
-		border-color: color-mix(in srgb, #c9a227 35%, var(--line));
+		color: var(--gold);
+		background: color-mix(in srgb, var(--gold-soft) 55%, var(--paper));
+		border-color: color-mix(in srgb, var(--gold) 35%, var(--line));
 	}
 	.star.filled svg {
 		fill: currentColor;
-		stroke: color-mix(in srgb, #8a6d12 70%, currentColor);
+		stroke: color-mix(in srgb, var(--gold) 70%, var(--ink));
 	}
 	.badges {
 		display: flex;

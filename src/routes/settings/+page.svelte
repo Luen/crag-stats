@@ -306,7 +306,8 @@
 		background: var(--band-expert);
 	}
 	button.danger:hover {
-		background: color-mix(in srgb, var(--band-expert) 85%, #000);
+		background: var(--band-expert);
+		filter: brightness(0.9);
 	}
 	.backup {
 		display: flex;
@@ -324,10 +325,10 @@
 		margin-bottom: 0.8rem;
 	}
 	.ok {
-		background: rgba(84, 180, 26, 0.18);
+		background: color-mix(in srgb, var(--band-beginner) 18%, var(--paper));
 	}
 	.err {
-		background: rgba(201, 9, 9, 0.12);
+		background: color-mix(in srgb, var(--band-expert) 12%, var(--paper));
 		color: var(--band-expert);
 	}
 </style>

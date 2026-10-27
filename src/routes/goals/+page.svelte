@@ -237,8 +237,8 @@
 	}
 	button.danger {
 		background: transparent;
-		border-color: #c44569;
-		color: #c44569;
+		border-color: var(--danger);
+		color: var(--danger);
 	}
 	.list {
 		display: grid;
@@ -302,7 +302,7 @@
 		min-width: 0;
 	}
 	.goal.done .bar span {
-		background: color-mix(in srgb, var(--accent) 70%, #1c2418);
+		background: var(--accent-strong);
 	}
 	.progress-line {
 		display: flex;
@@ -323,7 +323,7 @@
 		gap: 0.4rem;
 	}
 	.banner.err {
-		color: #c44569;
+		color: var(--danger);
 		margin: 0 0 0.75rem;
 	}
 </style>

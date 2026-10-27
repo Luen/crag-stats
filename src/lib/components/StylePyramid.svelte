@@ -96,7 +96,7 @@
 	}
 	.g a:hover :global(.grade-chip),
 	.bar-link:hover .stack {
-		outline: 2px solid var(--accent, #1d6fa5);
+		outline: 2px solid var(--accent);
 		outline-offset: 1px;
 	}
 	.bar-link {

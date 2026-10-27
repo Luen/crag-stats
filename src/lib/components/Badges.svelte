@@ -202,20 +202,20 @@
 		background: color-mix(in srgb, var(--accent) 14%, var(--paper));
 	}
 	.card[data-tone='warm'] .icon {
-		color: #c45c26;
-		background: rgba(196, 92, 38, 0.14);
+		color: var(--style-trad);
+		background: color-mix(in srgb, var(--style-trad) 14%, transparent);
 	}
 	.card[data-tone='green'] .icon {
-		color: #2f5d3a;
-		background: color-mix(in srgb, var(--accent) 14%, transparent);
+		color: var(--band-beginner);
+		background: color-mix(in srgb, var(--band-beginner) 14%, transparent);
 	}
 	.card[data-tone='blue'] .icon {
-		color: #1d6fa5;
-		background: rgba(29, 111, 165, 0.14);
+		color: var(--style-sport);
+		background: color-mix(in srgb, var(--style-sport) 14%, transparent);
 	}
 	.card[data-tone='purple'] .icon {
-		color: #7b5ea7;
-		background: rgba(123, 94, 167, 0.14);
+		color: var(--style-toprope);
+		background: color-mix(in srgb, var(--style-toprope) 14%, transparent);
 	}
 	h3 {
 		margin: 0;

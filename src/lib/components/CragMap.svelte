@@ -79,8 +79,8 @@
 		stroke: var(--line);
 	}
 	.dot {
-		fill: rgba(29, 111, 165, 0.55);
-		stroke: #1d6fa5;
+		fill: color-mix(in srgb, var(--style-sport) 55%, transparent);
+		stroke: var(--style-sport);
 		stroke-width: 1.5;
 	}
 	a:hover .dot {

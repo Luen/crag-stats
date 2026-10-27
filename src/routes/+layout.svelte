@@ -467,7 +467,7 @@
 		}
 		.drawer-open .side {
 			transform: none;
-			box-shadow: 0 10px 40px rgba(0, 0, 0, 0.18);
+			box-shadow: var(--shadow-lg);
 		}
 		.backdrop {
 			display: block;
@@ -476,7 +476,7 @@
 			z-index: 25;
 			border: 0;
 			padding: 0;
-			background: rgba(10, 12, 16, 0.35);
+			background: var(--scrim);
 			opacity: 0;
 			pointer-events: none;
 			transition: opacity 0.2s;
