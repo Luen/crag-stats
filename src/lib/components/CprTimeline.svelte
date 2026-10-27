@@ -53,6 +53,11 @@
 			{#if data.currentScore != null}
 				<span>Current <strong>{data.currentScore}</strong></span>
 			{/if}
+			<span
+				class="src"
+				title={data.source === 'api' ? 'theCrag CPR from API' : 'Approximate CPR model'}
+				>{data.source === 'api' ? 'API CPR' : 'Approx CPR'}</span
+			>
 		</div>
 	</header>
 
@@ -67,7 +72,12 @@
 			</div>
 			<div class="plot">
 				{#each bandStops() as stop (stop.top)}
-					<div class="band" style:top="{stop.top}%" style:height="{stop.h}%" style:background={stop.color}></div>
+					<div
+						class="band"
+						style:top="{stop.top}%"
+						style:height="{stop.h}%"
+						style:background={stop.color}
+					></div>
 				{/each}
 				<div class="cols" style:--n={data.buckets.length}>
 					{#each data.buckets as b, i (b.period)}
@@ -115,14 +125,22 @@
 		</div>
 		<div class="volume" style:--n={data.buckets.length}>
 			{#each data.buckets as b (b.period)}
-				<div class="vcol" title="{b.period}: {b.volume} ascents">
+				<a
+					class="vcol"
+					href="/logbook?style={encodeURIComponent(title)}&year={b.period.slice(0, 4)}"
+					title="{b.period}: {b.volume} ascents — open logbook"
+				>
 					<span class="vn">{b.volume}</span>
 					<div class="vbar" style:height="{(b.volume / maxVol) * 100}%"></div>
-				</div>
+				</a>
 			{/each}
 		</div>
 		<p class="footnote">
-			Approximate CPR (power factor 5, tick shifts, 0.7 grade/year decay) inspired by
+			{#if data.source === 'api'}
+				CPR curve from theCrag API (decayed) where available · candles still show your ticks ·
+			{:else}
+				Approximate CPR (power factor 5, tick shifts, 0.7 grade/year decay) ·
+			{/if}
 			<a href="https://www.thecrag.com/en/article/cprtimeline" target="_blank" rel="noreferrer"
 				>theCrag CPR timeline</a
 			>.
@@ -153,6 +171,18 @@
 		gap: 1rem;
 		font-size: 0.9rem;
 		color: var(--ink-muted);
+		align-items: center;
+		flex-wrap: wrap;
+	}
+	.src {
+		font-size: 0.75rem;
+		padding: 0.1rem 0.45rem;
+		border-radius: 999px;
+		border: 1px solid var(--line);
+	}
+	.vcol {
+		text-decoration: none;
+		color: inherit;
 	}
 	.chart {
 		display: grid;

@@ -65,8 +65,13 @@ export function repairGradesFromRawJson(): { routes: number; ascents: number } {
 					heightM: mapped.heightM ?? null,
 					quality: mapped.quality ?? null,
 					partners: mapped.partners ?? null,
+					numberAttempts: mapped.numberAttempts ?? null,
 					cprBase: mapped.cprBase ?? null,
 					cprScore: mapped.cprScore ?? null,
+					cprShiftedScore: mapped.cprShiftedScore ?? null,
+					cprShiftedGrade: mapped.cprShiftedGrade ?? null,
+					cprDecayedScore: mapped.cprDecayedScore ?? null,
+					cprDecayedGrade: mapped.cprDecayedGrade ?? null,
 					ascentUrl: mapped.ascentUrl ?? theCragAscentUrl(row.externalId),
 					updatedAt
 				})
@@ -91,6 +96,8 @@ export function repairGradesFromRawJson(): { routes: number; ascents: number } {
 					bolts: mapped.route.bolts ?? null,
 					parentName: mapped.route.parentName ?? null,
 					parentExternalId: mapped.route.parentExternalId ?? null,
+					lat: mapped.route.lat ?? null,
+					lon: mapped.route.lon ?? null,
 					updatedAt
 				})
 				.where(eq(routes.id, row.routeId))

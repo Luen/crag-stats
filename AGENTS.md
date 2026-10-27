@@ -169,5 +169,7 @@ Prefer fixing type errors over `@ts-ignore`. Do not switch the package manager.
 | 2026-03 | AU ascent grades on V-scale boulder routes must not become V12 (prefer route V-grade). Notable rowspan grouping. Side nav + version. Blurb/streaks/climber profile. |
 | 2026-03 | Vitest suite (`pnpm test`) for grade/URL/mapAscent regressions; CI runs tests. |
 | 2026-03 | Streaks: reject invalid ascent dates (`2018-00-00`); guard week/month loops — NaN week keys hung the dashboard. |
+| 2026-03 | Phase 4–5: CPR shifted/decayed + attempts + route lat/lon (migration 0006); Goals / Rewind / Sectors pages; SVG CragMap (no Leaflet dep). |
+| 2026-03 | Dashboard extras: monthly/yearly/milestones/training load, style mix, partners, stars/quality, rock types + blurb; CPR prefers API when dense; logbook sort/band/multipitch/season/sector; pyramid `?pyramid=` toggles. |
 
 _Add a row when you change behaviour agents must know about._

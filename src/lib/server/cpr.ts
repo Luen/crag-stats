@@ -17,6 +17,9 @@ export type CprAscentInput = {
 	gearStyle: string | null;
 	isSend: boolean;
 	isAttempt: boolean;
+	/** theCrag CPR decayed/base grade when present (numeric string or number) */
+	apiCprGrade?: number | null;
+	apiCprScore?: number | null;
 };
 
 const P = 5;
@@ -193,12 +196,26 @@ function periodKey(iso: string): string {
 	return `${d.getUTCFullYear()}-Q${q}`;
 }
 
+function parseApiGrade(v: number | null | undefined): number | null {
+	if (v == null || !Number.isFinite(v)) return null;
+	return v;
+}
+
 export function buildCprTimeline(
 	inputs: CprAscentInput[],
 	style: CprStyle
-): { buckets: TimelineBucket[]; peakScore: number | null; currentScore: number | null; peakGrade: number | null; currentGrade: number | null } {
+): {
+	buckets: TimelineBucket[];
+	peakScore: number | null;
+	currentScore: number | null;
+	peakGrade: number | null;
+	currentGrade: number | null;
+	source: 'api' | 'approx';
+} {
 	const styleAscents = inputs.filter((a) => normalizeClimbStyle(a.gearStyle) === style && a.ascentDate);
 	const best = bestTicksByRoute(inputs, style);
+	const apiPoints = styleAscents.filter((a) => parseApiGrade(a.apiCprGrade) != null);
+	const useApi = apiPoints.length >= Math.max(3, Math.ceil(styleAscents.length * 0.2));
 
 	const periods = new Map<string, CprAscentInput[]>();
 	for (const a of styleAscents) {
@@ -214,7 +231,22 @@ export function buildCprTimeline(
 	for (const key of keys) {
 		const list = periods.get(key)!;
 		const end = new Date(list.map((a) => a.ascentDate!).sort().at(-1)!);
-		const cpr = cprGradeAt(best, end);
+		const approx = cprGradeAt(best, end);
+
+		let apiGrade: number | null = null;
+		let apiScore: number | null = null;
+		if (useApi) {
+			const withApi = list
+				.filter((a) => parseApiGrade(a.apiCprGrade) != null)
+				.sort((a, b) => (a.ascentDate || '').localeCompare(b.ascentDate || ''));
+			const last = withApi.at(-1);
+			if (last) {
+				apiGrade = parseApiGrade(last.apiCprGrade);
+				apiScore = last.apiCprScore ?? null;
+			}
+		}
+
+		const cpr = useApi && apiGrade != null ? apiGrade : approx;
 
 		const byFamily = new Map<string, { color: string; order: number; grades: number[] }>();
 		for (const a of list) {
@@ -256,14 +288,23 @@ export function buildCprTimeline(
 				count
 			})),
 			cprGrade: cpr,
-			cprScore: cprScoreLabel(cpr),
+			cprScore: useApi && apiScore != null ? apiScore : cprScoreLabel(cpr),
 			onsightGrade: onsights.length ? Math.max(...onsights.map((a) => a.gradeScore!)) : null,
 			redpointGrade: reds.length ? Math.max(...reds.map((a) => a.gradeScore!)) : null
 		});
 	}
 
 	const now = new Date();
-	const currentGrade = cprGradeAt(best, now);
+	let currentGrade: number | null = null;
+	if (useApi) {
+		const lastApi = [...styleAscents]
+			.filter((a) => parseApiGrade(a.apiCprGrade) != null)
+			.sort((a, b) => (a.ascentDate || '').localeCompare(b.ascentDate || ''))
+			.at(-1);
+		currentGrade = parseApiGrade(lastApi?.apiCprGrade) ?? cprGradeAt(best, now);
+	} else {
+		currentGrade = cprGradeAt(best, now);
+	}
 	let peakGrade: number | null = null;
 	for (const b of buckets) {
 		if (b.cprGrade != null && (peakGrade == null || b.cprGrade > peakGrade)) peakGrade = b.cprGrade;
@@ -274,6 +315,7 @@ export function buildCprTimeline(
 		peakGrade,
 		currentGrade,
 		peakScore: cprScoreLabel(peakGrade),
-		currentScore: cprScoreLabel(currentGrade)
+		currentScore: cprScoreLabel(currentGrade),
+		source: useApi ? 'api' : 'approx'
 	};
 }

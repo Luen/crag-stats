@@ -11,13 +11,17 @@
 {:else}
 	<div class="chart" style:--n={data.length}>
 		{#each data as point (point.month)}
-			<div class="col" title="{point.month}: {point.count} ascents ({point.sends} sends)">
+			<a
+				class="col"
+				href="/logbook?year={point.month.slice(0, 4)}"
+				title="{point.month}: {point.count} ascents ({point.sends} sends)"
+			>
 				<div class="stack">
 					<div class="bar total" style:height="{(point.count / max) * 100}%"></div>
 					<div class="bar sends" style:height="{(point.sends / max) * 100}%"></div>
 				</div>
 				<span class="m">{point.month.slice(2)}</span>
-			</div>
+			</a>
 		{/each}
 	</div>
 	<div class="legend">
@@ -39,6 +43,11 @@
 		grid-template-rows: 1fr auto;
 		height: 100%;
 		gap: 0.35rem;
+		text-decoration: none;
+		color: inherit;
+	}
+	.col:hover .bar.total {
+		opacity: 0.85;
 	}
 	.stack {
 		position: relative;
@@ -49,44 +58,44 @@
 		left: 15%;
 		right: 15%;
 		bottom: 0;
-		border-radius: 4px 4px 0 0;
+		border-radius: 3px 3px 0 0;
 	}
-	.total {
-		background: rgba(47, 93, 58, 0.28);
+	.bar.total {
+		background: color-mix(in oklab, var(--accent) 35%, transparent);
 	}
-	.sends {
+	.bar.sends {
 		background: var(--accent);
 	}
 	.m {
 		font-size: 0.65rem;
 		text-align: center;
 		color: var(--ink-muted);
-		transform: rotate(-45deg);
-		transform-origin: top center;
-		height: 1.6rem;
+		overflow: hidden;
+		text-overflow: ellipsis;
 	}
 	.legend {
 		display: flex;
 		gap: 1rem;
-		margin-top: 0.75rem;
-		font-size: 0.85rem;
+		margin-top: 0.5rem;
+		font-size: 0.8rem;
 		color: var(--ink-muted);
 	}
 	.legend i {
 		display: inline-block;
-		width: 0.7rem;
-		height: 0.7rem;
+		width: 0.65rem;
+		height: 0.65rem;
 		border-radius: 2px;
-		margin-right: 0.3rem;
+		margin-right: 0.25rem;
+		vertical-align: middle;
 	}
 	.legend .t {
-		background: rgba(47, 93, 58, 0.28);
+		background: color-mix(in oklab, var(--accent) 35%, transparent);
 	}
 	.legend .s {
 		background: var(--accent);
 	}
 	.empty {
 		color: var(--ink-muted);
-		margin: 0;
+		font-size: 0.9rem;
 	}
 </style>

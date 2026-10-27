@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { flattenRouteTags, mapAscent } from './api';
+import { extractLatLon, flattenRouteTags, mapAscent } from './api';
 
 describe('flattenRouteTags', () => {
 	it('flattens nested theCrag tag maps into chips', () => {
@@ -149,5 +149,65 @@ describe('mapAscent — multipitch', () => {
 		expect(mapped!.effectiveGradeScore).toBe(21);
 		expect(mapped!.pitchLabel).toBe('P1–P2');
 		expect(mapped!.heightM).toBe(55);
+	});
+});
+
+describe('mapAscent — CPR / attempts / geo', () => {
+	it('maps numberAttempts and shifted/decayed CPR', () => {
+		const mapped = mapAscent({
+			id: 101,
+			numberAttempts: 4,
+			tick: { name: 'Red point' },
+			cpr: {
+				base: { grade: '22', rating: 1200 },
+				shifted: { grade: '23', rating: 1250 },
+				decayed: { grade: '21', score: 1100 }
+			},
+			route: {
+				id: 101,
+				name: 'Geo Test',
+				grade: '22',
+				style: 'Sport',
+				urlAncestorStub: 'australia/x'
+			}
+		});
+		expect(mapped!.numberAttempts).toBe(4);
+		expect(mapped!.cprBase).toBe('22');
+		expect(mapped!.cprScore).toBe(1200);
+		expect(mapped!.cprShiftedGrade).toBe('23');
+		expect(mapped!.cprShiftedScore).toBe(1250);
+		expect(mapped!.cprDecayedGrade).toBe('21');
+		expect(mapped!.cprDecayedScore).toBe(1100);
+	});
+
+	it('extracts lat/lon from TLC GeoJSON Point', () => {
+		const mapped = mapAscent({
+			id: 102,
+			tick: { name: 'Onsight' },
+			route: {
+				id: 102,
+				name: 'Point Route',
+				grade: '18',
+				style: 'Sport',
+				urlAncestorStub: 'australia/x',
+				ancestors: {
+					TLC: {
+						id: 9,
+						name: 'Arapiles',
+						geometry: { type: 'Point', coordinates: [141.84, -36.75] }
+					}
+				}
+			}
+		});
+		expect(mapped!.route.lat).toBe(-36.75);
+		expect(mapped!.route.lon).toBe(141.84);
+		expect(mapped!.route.cragName).toBe('Arapiles');
+	});
+
+	it('extractLatLon reads latitude/longitude fields', () => {
+		expect(extractLatLon({ latitude: '-36.7', longitude: '141.8' })).toEqual({
+			lat: -36.7,
+			lon: 141.8
+		});
 	});
 });

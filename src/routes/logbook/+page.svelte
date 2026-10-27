@@ -13,11 +13,41 @@
 		if (data.style) p.set('style', data.style);
 		if (data.tick) p.set('tick', data.tick);
 		if (data.crag) p.set('crag', data.crag);
+		if (data.sector) p.set('sector', data.sector);
 		if (data.day) p.set('day', data.day);
+		if (data.season) p.set('season', data.season);
+		if (data.sort && data.sort !== 'date') p.set('sort', data.sort);
+		if (data.order && data.order !== 'desc') p.set('order', data.order);
+		if (data.multipitch) p.set('multipitch', '1');
 		if (data.year !== '') p.set('year', String(data.year));
 		if (data.score !== '') p.set('score', String(data.score));
+		if (data.band !== '') p.set('band', String(data.band));
 		p.set('page', String(page));
 		return `?${p.toString()}`;
+	}
+
+	function sortHref(col: string) {
+		const p = new URLSearchParams();
+		if (data.q) p.set('q', data.q);
+		if (data.style) p.set('style', data.style);
+		if (data.tick) p.set('tick', data.tick);
+		if (data.crag) p.set('crag', data.crag);
+		if (data.sector) p.set('sector', data.sector);
+		if (data.day) p.set('day', data.day);
+		if (data.season) p.set('season', data.season);
+		if (data.multipitch) p.set('multipitch', '1');
+		if (data.year !== '') p.set('year', String(data.year));
+		if (data.score !== '') p.set('score', String(data.score));
+		if (data.band !== '') p.set('band', String(data.band));
+		p.set('sort', col);
+		const nextOrder = data.sort === col && data.order === 'desc' ? 'asc' : 'desc';
+		p.set('order', nextOrder);
+		return `?${p.toString()}`;
+	}
+
+	function sortMark(col: string) {
+		if (data.sort !== col) return '';
+		return data.order === 'asc' ? ' ↑' : ' ↓';
 	}
 </script>
 
@@ -31,6 +61,9 @@
 		{#if data.day}
 			· {data.day}
 		{/if}
+		{#if data.sector}
+			· sector {data.sector}
+		{/if}
 	</p>
 </section>
 
@@ -39,13 +72,33 @@
 	<input name="style" value={data.style} placeholder="Style (Sport, Trad…)" />
 	<input name="tick" value={data.tick} placeholder="Tick (Onsight…)" />
 	<input name="crag" value={data.crag} placeholder="Crag" />
+	<input name="sector" value={data.sector} placeholder="Sector / parent" />
 	<input name="year" value={data.year} placeholder="Year" inputmode="numeric" />
+	<select name="band" aria-label="Grade band" value={String(data.band)}>
+		<option value="">Any band</option>
+		<option value="1">Beginner</option>
+		<option value="2">Intermediate</option>
+		<option value="3">Experienced</option>
+		<option value="4">Expert</option>
+		<option value="5">Elite</option>
+	</select>
+	<select name="season" aria-label="Season" value={data.season}>
+		<option value="">Any time</option>
+		<option value="ytd">Year to date</option>
+		<option value="last_year">Last year</option>
+	</select>
+	<label class="check">
+		<input type="checkbox" name="multipitch" value="1" checked={data.multipitch} />
+		Multipitch only
+	</label>
 	{#if data.score !== ''}
 		<input type="hidden" name="score" value={data.score} />
 	{/if}
 	{#if data.day}
 		<input type="hidden" name="day" value={data.day} />
 	{/if}
+	<input type="hidden" name="sort" value={data.sort} />
+	<input type="hidden" name="order" value={data.order} />
 	<button type="submit">Filter</button>
 </form>
 
@@ -53,13 +106,14 @@
 	<table>
 		<thead>
 			<tr>
-				<th>Date</th>
+				<th><a href={sortHref('date')}>Date{sortMark('date')}</a></th>
 				<th>Route</th>
-				<th>Grade</th>
+				<th><a href={sortHref('grade')}>Grade{sortMark('grade')}</a></th>
 				<th>Tick</th>
-				<th>Quality</th>
+				<th><a href={sortHref('quality')}>Quality{sortMark('quality')}</a></th>
+				<th><a href={sortHref('stars')}>★{sortMark('stars')}</a></th>
 				<th>With</th>
-				<th>Crag</th>
+				<th>Crag / sector</th>
 				<th>Style</th>
 			</tr>
 		</thead>
@@ -73,6 +127,12 @@
 						{:else}
 							{row.displayName}
 						{/if}
+						{#if row.pitchLabel}
+							<span class="chip">{row.pitchLabel}</span>
+						{/if}
+						{#if row.numberAttempts != null && row.numberAttempts > 1}
+							<span class="chip">{row.numberAttempts} attempts</span>
+						{/if}
 						<TagChips tags={row.tags} />
 						{#if row.comment}
 							<div class="note">{row.comment.slice(0, 120)}</div>
@@ -81,6 +141,7 @@
 					<td><GradeChip grade={row.gradeRaw} band={row.gradeBand} /></td>
 					<td><TickTypeIcon tick={row.tickType} /></td>
 					<td class="muted">{row.quality || '—'}</td>
+					<td class="muted">{row.stars != null ? row.stars : '—'}</td>
 					<td class="muted">{row.partners || '—'}</td>
 					<td>
 						{#if row.cragName}
@@ -91,6 +152,11 @@
 							{#if row.cragUrl}
 								<a class="ext" href={row.cragUrl} target="_blank" rel="noreferrer">↗</a>
 							{/if}
+						{/if}
+						{#if row.parentName}
+							<div class="sector">
+								<a href="/logbook?sector={encodeURIComponent(row.parentName)}">{row.parentName}</a>
+							</div>
 						{/if}
 					</td>
 					<td><StyleBadge style={row.ascentGearStyle || row.gearStyle} /></td>
@@ -131,21 +197,30 @@
 		display: grid;
 		grid-template-columns: 2fr repeat(4, 1fr) auto;
 		gap: 0.5rem;
+		align-items: center;
 	}
-	input,
-	button {
+	.filters input,
+	.filters select,
+	.filters button {
 		font: inherit;
-		padding: 0.55rem 0.7rem;
-		border-radius: 0.55rem;
+		padding: 0.45rem 0.55rem;
+		border-radius: 0.45rem;
 		border: 1px solid var(--line);
-		background: white;
+		background: var(--paper);
 	}
-	button {
-		background: var(--accent);
-		color: white;
-		border: none;
-		font-weight: 700;
+	.filters button {
 		cursor: pointer;
+		background: var(--ink);
+		color: var(--paper);
+		border-color: var(--ink);
+	}
+	.check {
+		display: flex;
+		align-items: center;
+		gap: 0.35rem;
+		font-size: 0.85rem;
+		color: var(--ink-muted);
+		white-space: nowrap;
 	}
 	table {
 		width: 100%;
@@ -155,37 +230,50 @@
 	th,
 	td {
 		text-align: left;
-		padding: 0.55rem 0.35rem;
+		padding: 0.55rem 0.4rem;
 		border-bottom: 1px solid var(--line);
 		vertical-align: top;
 	}
-	th {
-		color: var(--ink-muted);
-		font-weight: 600;
-		font-size: 0.8rem;
-		text-transform: uppercase;
-		letter-spacing: 0.04em;
+	th a {
+		color: inherit;
+		text-decoration: none;
 	}
-	.note {
-		color: var(--ink-muted);
-		font-size: 0.82rem;
-		margin-top: 0.2rem;
+	th a:hover {
+		text-decoration: underline;
 	}
 	.muted {
 		color: var(--ink-muted);
-		font-size: 0.85rem;
+	}
+	.note {
+		margin-top: 0.25rem;
+		font-size: 0.8rem;
+		color: var(--ink-muted);
+	}
+	.chip {
+		display: inline-block;
+		margin-left: 0.35rem;
+		font-size: 0.72rem;
+		padding: 0.05rem 0.35rem;
+		border-radius: 999px;
+		border: 1px solid var(--line);
+		color: var(--ink-muted);
+	}
+	.sector {
+		font-size: 0.8rem;
+		margin-top: 0.15rem;
 	}
 	.ext {
 		margin-left: 0.25rem;
-		font-size: 0.75rem;
+		font-size: 0.8rem;
 		color: var(--ink-muted);
 		text-decoration: none;
 	}
 	.pager {
 		display: flex;
+		justify-content: center;
 		gap: 1rem;
 		align-items: center;
-		color: var(--ink-muted);
+		margin: 0.5rem 0 1.5rem;
 	}
 	@media (max-width: 900px) {
 		.filters {

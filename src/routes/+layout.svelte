@@ -10,6 +10,9 @@
 		{ href: '/', label: 'Dashboard' },
 		{ href: '/logbook', label: 'Logbook' },
 		{ href: '/projects', label: 'Projects' },
+		{ href: '/sectors', label: 'Sectors' },
+		{ href: '/goals', label: 'Goals' },
+		{ href: '/rewind', label: 'Rewind' },
 		{ href: '/settings', label: 'Settings' }
 	];
 </script>
@@ -21,7 +24,10 @@
 
 <div class="frame">
 	<aside class="side">
-		<a class="brand" href="/">Crag Stats</a>
+		<a class="brand" href="/">
+			<img class="brand-mark" src={favicon} alt="" width="28" height="28" />
+			<span>Crag Stats</span>
+		</a>
 		<nav>
 			{#each links as link (link.href)}
 				<a href={link.href} class:active={page.url.pathname === link.href}>{link.label}</a>
@@ -84,10 +90,17 @@
 		height: 100vh;
 	}
 	.brand {
-		font-size: 1.35rem;
+		display: flex;
+		align-items: center;
+		gap: 0.45rem;
+		font-size: 1.2rem;
 		font-weight: 700;
 		color: var(--accent);
 		padding: 0.25rem 0.45rem;
+	}
+	.brand-mark {
+		border-radius: 0.4rem;
+		flex-shrink: 0;
 	}
 	.side nav {
 		display: flex;

@@ -52,6 +52,8 @@ export type CprTimelineData = {
 	currentScore: number | null;
 	peakGrade: number | null;
 	currentGrade: number | null;
+	/** Prefer API decayed CPR when enough points exist; else approximate model */
+	source: 'api' | 'approx';
 };
 
 export type RouteTag = { category: string; name: string };
@@ -139,4 +141,50 @@ export type DashboardStats = {
 	athleteProfile: {
 		axes: { key: string; label: string; last30: number; last90: number }[];
 	};
+	monthly: {
+		months: {
+			month: string;
+			byStyle: Record<string, number>;
+			ascents: number;
+			sends: number;
+			heightM: number;
+		}[];
+		years: number[];
+	};
+	yearly: {
+		years: {
+			year: number;
+			ascents: number;
+			sends: number;
+			onsights: number;
+			heightM: number;
+			deltaAscents: number | null;
+			deltaHeightM: number | null;
+			deltaOnsights: number | null;
+		}[];
+	};
+	milestones: {
+		items: { kind: string; label: string; date: string | null; detail: string }[];
+	};
+	trainingLoad: {
+		last7: { ascents: number; sends: number; activeDays: number; heightM: number };
+		last28: { ascents: number; sends: number; activeDays: number; heightM: number };
+		sendRate7: number;
+		sendRate28: number;
+		restDays7: number;
+		restDays28: number;
+	};
+	styleMix: {
+		months: { month: string; Sport: number; Trad: number; Boulder: number; Other: number }[];
+	};
+	partners: { name: string; count: number }[];
+	starsScatter: { stars: number; score: number; routeName: string; url: string | null }[];
+	qualityBreakdown: { quality: string; count: number }[];
+	rockTypes: {
+		types: { name: string; count: number; pct: number }[];
+		dominant: string | null;
+		dominantPct: number | null;
+		info: { name: string; summary: string; tips: string } | null;
+	};
+	pyramidMode: 'all' | 'sends' | 'onsight';
 };

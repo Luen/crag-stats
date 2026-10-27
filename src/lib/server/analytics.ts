@@ -10,12 +10,34 @@ import {
 	type GradeSystem
 } from '#lib/grades';
 import type { DashboardStats, NotableRow, StylePyramid } from '#lib/types/dashboard';
-import { buildCprTimeline, normalizeClimbStyle } from './cpr';
-import { db, ensureSchema } from './db';
-import { ascents, profiles, routes } from './db/schema';
+import { rockTypeBlurb, rockTypeInfo } from '#lib/rockTypes';
+import { resolveTheCragAvatar } from '#lib/thecragAvatar';
 import { theCragAscentUrl } from '#lib/thecragUrls';
 import { tickKind } from '#lib/ticks';
+import { buildCprTimeline, normalizeClimbStyle } from './cpr';
+import {
+	buildMilestones,
+	buildMonthlyStats,
+	buildPartnerLeaderboard,
+	buildQualityBreakdown,
+	buildRockTypeStats,
+	buildStarsScatter,
+	buildStyleMixOverTime,
+	buildTrainingLoad,
+	buildYearlyStats
+} from './dashboardExtras';
+import { db, ensureSchema } from './db';
+import { ascents, profiles, routes } from './db/schema';
 import { repairGradesFromRawJson } from './repairGrades';
+
+export type PyramidMode = 'all' | 'sends' | 'onsight';
+
+export function parsePyramidMode(raw: string | null | undefined): PyramidMode {
+	const v = (raw || '').trim().toLowerCase();
+	if (v === 'sends' || v === 'send') return 'sends';
+	if (v === 'onsight' || v === 'onsights') return 'onsight';
+	return 'all';
+}
 
 function linkFor(row: { ascentUrl: string | null; ascentExternalId: string; url: string | null }) {
 	return row.ascentUrl || theCragAscentUrl(row.ascentExternalId) || row.url;
@@ -24,7 +46,7 @@ function linkFor(row: { ascentUrl: string | null; ascentExternalId: string; url:
 export type { DashboardStats, NotableRow, StylePyramid } from '#lib/types/dashboard';
 
 /** Bump when a new one-shot data repair must run after a schema/parser change. */
-const REPAIR_GEN = 6;
+const REPAIR_GEN = 7;
 
 const TICK_ORDER = [
 	'Onsight',
@@ -199,7 +221,11 @@ export function parseGradeSystem(raw: string | null | undefined): GradeSystem {
 	return 'ewbank';
 }
 
-export function getDashboardStats(preferredSystem: GradeSystem = 'ewbank'): DashboardStats {
+export function getDashboardStats(
+	preferredSystem: GradeSystem = 'ewbank',
+	opts?: { pyramidMode?: PyramidMode }
+): DashboardStats {
+	const pyramidMode = opts?.pyramidMode ?? 'all';
 	ensureSchema();
 	// Cheap: fill missing ascent logbook links without a full re-parse
 	db.run(
@@ -216,11 +242,11 @@ export function getDashboardStats(preferredSystem: GradeSystem = 'ewbank'): Dash
 	}
 
 	const profile = db.select().from(profiles).limit(1).get();
-	// Backfill profile outdoor/indoor/etc from stored account JSON once columns exist
-	if (profile?.rawJson && profile.outdoorAscentCount == null) {
+	// Backfill / repair profile fields from stored account JSON
+	if (profile?.rawJson && (profile.outdoorAscentCount == null || !profile.avatar)) {
 		try {
 			const acct = JSON.parse(profile.rawJson) as {
-				avatar?: string;
+				avatar?: unknown;
 				typeOfClimber?: string;
 				outdoorAscentCount?: number;
 				indoorAscentCount?: number;
@@ -234,14 +260,20 @@ export function getDashboardStats(preferredSystem: GradeSystem = 'ewbank'): Dash
 						? Number(acct.heightClimbed[0])
 						: null;
 			const patched = {
-				avatar: acct.avatar ?? profile.avatar ?? null,
+				avatar: resolveTheCragAvatar(acct.avatar) ?? profile.avatar ?? null,
 				typeOfClimber: acct.typeOfClimber ?? profile.typeOfClimber ?? null,
 				outdoorAscentCount:
-					acct.outdoorAscentCount != null ? Number(acct.outdoorAscentCount) : null,
+					acct.outdoorAscentCount != null
+						? Number(acct.outdoorAscentCount)
+						: profile.outdoorAscentCount,
 				indoorAscentCount:
-					acct.indoorAscentCount != null ? Number(acct.indoorAscentCount) : null,
-				heightClimbed: height != null && Number.isFinite(height) ? height : null,
-				routesTicked: acct.routesTicked != null ? Number(acct.routesTicked) : null
+					acct.indoorAscentCount != null
+						? Number(acct.indoorAscentCount)
+						: profile.indoorAscentCount,
+				heightClimbed:
+					height != null && Number.isFinite(height) ? height : profile.heightClimbed,
+				routesTicked:
+					acct.routesTicked != null ? Number(acct.routesTicked) : profile.routesTicked
 			};
 			db.update(profiles).set(patched).where(eq(profiles.id, profile.id)).run();
 			Object.assign(profile, patched);
@@ -280,7 +312,13 @@ export function getDashboardStats(preferredSystem: GradeSystem = 'ewbank'): Dash
 			url: routes.url,
 			stars: routes.stars,
 			routeHeightM: routes.heightM,
-			tagsJson: routes.tagsJson
+			tagsJson: routes.tagsJson,
+			parentName: routes.parentName,
+			numberAttempts: ascents.numberAttempts,
+			cprDecayedGrade: ascents.cprDecayedGrade,
+			cprDecayedScore: ascents.cprDecayedScore,
+			cprBase: ascents.cprBase,
+			cprScore: ascents.cprScore
 		})
 		.from(ascents)
 		.innerJoin(routes, eq(ascents.routeId, routes.id))
@@ -380,7 +418,14 @@ export function getDashboardStats(preferredSystem: GradeSystem = 'ewbank'): Dash
 
 		if (row.isSend && band) bandMap.set(band, (bandMap.get(band) ?? 0) + 1);
 
-		if (rowScore != null && (row.isSend || row.isAttempt)) {
+		const includeInPyramid =
+			rowScore != null &&
+			(pyramidMode === 'onsight'
+				? kind === 'onsight'
+				: pyramidMode === 'sends'
+					? row.isSend
+					: row.isSend || row.isAttempt);
+		if (includeInPyramid && rowScore != null) {
 			const styleKey = style === 'Top rope' ? 'Top rope' : style;
 			if (!pyramid.has(styleKey)) pyramid.set(styleKey, new Map());
 			const byGrade = pyramid.get(styleKey)!;
@@ -556,6 +601,12 @@ export function getDashboardStats(preferredSystem: GradeSystem = 'ewbank'): Dash
 		});
 	};
 
+	const parseCprGradeNum = (raw: string | null | undefined): number | null => {
+		if (!raw) return null;
+		const n = Number(String(raw).replace(/^[Vv]/, '').trim());
+		return Number.isFinite(n) ? n : null;
+	};
+
 	const cprInputs = all.map((a) => ({
 		routeId: a.routeId,
 		ascentDate: a.ascentDate,
@@ -563,8 +614,38 @@ export function getDashboardStats(preferredSystem: GradeSystem = 'ewbank'): Dash
 		gradeScore: effectiveScore(a),
 		gearStyle: a.gearStyle,
 		isSend: a.isSend,
-		isAttempt: a.isAttempt
+		isAttempt: a.isAttempt,
+		apiCprGrade: parseCprGradeNum(a.cprDecayedGrade) ?? parseCprGradeNum(a.cprBase),
+		apiCprScore: a.cprDecayedScore ?? a.cprScore ?? null
 	}));
+
+	const extraRows = all.map((a) => ({
+		ascentDate: a.ascentDate,
+		gearStyle: a.gearStyle,
+		isSend: a.isSend,
+		heightM: a.heightM,
+		routeHeightM: a.routeHeightM,
+		tickType: a.tickType,
+		partners: a.partners,
+		quality: a.quality,
+		stars: a.stars,
+		gradeScore: a.gradeScore,
+		effectiveGradeScore: a.effectiveGradeScore,
+		routeName: displayRouteName(a.routeName, a.pitchLabel, a.ascentLabel),
+		url: linkFor(a),
+		ascentUrl: a.ascentUrl,
+		tagsJson: a.tagsJson
+	}));
+	const monthly = buildMonthlyStats(extraRows);
+	const yearly = buildYearlyStats(extraRows);
+	const milestones = buildMilestones(extraRows);
+	const trainingLoad = buildTrainingLoad(extraRows);
+	const styleMix = buildStyleMixOverTime(extraRows);
+	const partners = buildPartnerLeaderboard(extraRows).partners;
+	const starsScatter = buildStarsScatter(extraRows).points;
+	const qualityBreakdown = buildQualityBreakdown(extraRows).ratings;
+	const rockAgg = buildRockTypeStats(extraRows);
+	const rockBlurb = rockTypeBlurb(rockAgg.dominant, rockAgg.dominantPct);
 
 	const hardestSends = all
 		.filter((r) => r.isSend && effectiveScore(r) != null)
@@ -632,7 +713,7 @@ export function getDashboardStats(preferredSystem: GradeSystem = 'ewbank'): Dash
 	return {
 		profileName: profile?.name ?? null,
 		climberType,
-		avatar: profile?.avatar ?? null,
+		avatar: resolveTheCragAvatar(profile?.avatar) ?? profile?.avatar ?? null,
 		totalAscents: all.length,
 		totalSends: sends,
 		totalAttempts: attempts,
@@ -673,22 +754,26 @@ export function getDashboardStats(preferredSystem: GradeSystem = 'ewbank'): Dash
 		})),
 		notableByStyle: toNotableRows(notableStyle, 'style').slice(0, 40),
 		notableByArea: toNotableRows(notableArea, 'area').slice(0, 40),
-		blurb: buildClimberBlurb({
-			firstDate: earliest,
-			activeDays: dayMap.size,
-			totalAscents: all.length,
-			totalSends: sends,
-			onsightCount,
-			flashCount,
-			redpointCount,
-			pinkpointCount,
-			climberType,
-			heightM: accountHeightM ?? heightM,
-			distinctRoutes: routeSet.size,
-			distinctCrags: cragMap.size,
-			outdoorAscents,
-			indoorAscents
-		}),
+		blurb: (() => {
+			const base = buildClimberBlurb({
+				firstDate: earliest,
+				activeDays: dayMap.size,
+				totalAscents: all.length,
+				totalSends: sends,
+				onsightCount,
+				flashCount,
+				redpointCount,
+				pinkpointCount,
+				climberType,
+				heightM: accountHeightM ?? heightM,
+				distinctRoutes: routeSet.size,
+				distinctCrags: cragMap.size,
+				outdoorAscents,
+				indoorAscents
+			});
+			if (rockBlurb) base.paragraphs.push(rockBlurb);
+			return base;
+		})(),
 		streaks: buildStreaks(dayMap),
 		athleteProfile: buildAthleteProfile(all, dayMap),
 		cpr: {
@@ -697,7 +782,22 @@ export function getDashboardStats(preferredSystem: GradeSystem = 'ewbank'): Dash
 			boulder: buildCprTimeline(cprInputs, 'boulder')
 		},
 		hardestSends,
-		recent
+		recent,
+		monthly,
+		yearly,
+		milestones,
+		trainingLoad,
+		styleMix,
+		partners,
+		starsScatter,
+		qualityBreakdown,
+		rockTypes: {
+			types: rockAgg.types,
+			dominant: rockAgg.dominant,
+			dominantPct: rockAgg.dominantPct,
+			info: rockTypeInfo(rockAgg.dominant)
+		},
+		pyramidMode
 	};
 }
 
@@ -706,11 +806,22 @@ export function listLogbook(filters?: {
 	style?: string;
 	tick?: string;
 	crag?: string;
+	sector?: string;
 	year?: number;
 	/** Exact YYYY-MM-DD */
 	day?: string;
 	/** Exact effective/route grade score bucket (from pyramid links) */
 	score?: number;
+	/** Grade band id 1–5 */
+	band?: number;
+	/** Only multipitch ascents (pitch label or pitchesTotal > 1) */
+	multipitch?: boolean;
+	/** ytd | last_year | or leave empty */
+	season?: string;
+	/** date | grade | quality | stars */
+	sort?: string;
+	/** asc | desc */
+	order?: string;
 	limit?: number;
 	offset?: number;
 }) {
@@ -731,6 +842,8 @@ export function listLogbook(filters?: {
 			quality: ascents.quality,
 			ascentLabel: ascents.ascentLabel,
 			pitchLabel: ascents.pitchLabel,
+			pitchesTotal: ascents.pitchesTotal,
+			numberAttempts: ascents.numberAttempts,
 			ascentGearStyle: ascents.ascentGearStyle,
 			ascentUrl: ascents.ascentUrl,
 			effectiveGradeRaw: ascents.effectiveGradeRaw,
@@ -748,6 +861,8 @@ export function listLogbook(filters?: {
 			heightM: routes.heightM,
 			routeUrl: routes.url,
 			stars: routes.stars,
+			parentName: routes.parentName,
+			bolts: routes.bolts,
 			tagsJson: routes.tagsJson
 		})
 		.from(ascents)
@@ -771,6 +886,10 @@ export function listLogbook(filters?: {
 		const c = filters.crag.toLowerCase();
 		rows = rows.filter((r) => (r.cragName || '').toLowerCase().includes(c));
 	}
+	if (filters?.sector) {
+		const s = filters.sector.toLowerCase();
+		rows = rows.filter((r) => (r.parentName || '').toLowerCase().includes(s));
+	}
 	if (filters?.year != null && Number.isFinite(filters.year)) {
 		const y = String(filters.year);
 		rows = rows.filter((r) => (r.ascentDate || '').startsWith(y));
@@ -786,6 +905,24 @@ export function listLogbook(filters?: {
 			return score != null && Math.round(score) === target;
 		});
 	}
+	if (filters?.band != null && Number.isFinite(filters.band)) {
+		const b = filters.band;
+		rows = rows.filter((r) => (r.effectiveGradeBand ?? r.gradeBand) === b);
+	}
+	if (filters?.multipitch) {
+		rows = rows.filter(
+			(r) =>
+				Boolean(r.pitchLabel) ||
+				(r.pitchesTotal != null && r.pitchesTotal > 1)
+		);
+	}
+	if (filters?.season === 'ytd') {
+		const y = new Date().getUTCFullYear();
+		rows = rows.filter((r) => (r.ascentDate || '').startsWith(String(y)));
+	} else if (filters?.season === 'last_year') {
+		const y = new Date().getUTCFullYear() - 1;
+		rows = rows.filter((r) => (r.ascentDate || '').startsWith(String(y)));
+	}
 	if (filters?.q) {
 		const q = filters.q.toLowerCase();
 		rows = rows.filter(
@@ -793,10 +930,36 @@ export function listLogbook(filters?: {
 				r.routeName.toLowerCase().includes(q) ||
 				(r.ascentLabel || '').toLowerCase().includes(q) ||
 				(r.cragName || '').toLowerCase().includes(q) ||
+				(r.parentName || '').toLowerCase().includes(q) ||
 				(r.partners || '').toLowerCase().includes(q) ||
 				(r.comment || '').toLowerCase().includes(q)
 		);
 	}
+
+	const sortKey = (filters?.sort || 'date').toLowerCase();
+	const asc = (filters?.order || 'desc').toLowerCase() === 'asc';
+	const qualityRank = (q: string | null) => {
+		const s = (q || '').toLowerCase();
+		if (s.includes('classic') || s.includes('*****') || s === '5') return 5;
+		if (s.includes('****') || s === '4') return 4;
+		if (s.includes('***') || s === '3') return 3;
+		if (s.includes('**') || s === '2') return 2;
+		if (s.includes('*') || s === '1') return 1;
+		return 0;
+	};
+	rows = [...rows].sort((a, b) => {
+		let cmp = 0;
+		if (sortKey === 'grade') {
+			cmp = (a.effectiveGradeScore ?? a.gradeScore ?? -1) - (b.effectiveGradeScore ?? b.gradeScore ?? -1);
+		} else if (sortKey === 'quality') {
+			cmp = qualityRank(a.quality) - qualityRank(b.quality);
+		} else if (sortKey === 'stars') {
+			cmp = (a.stars ?? -1) - (b.stars ?? -1);
+		} else {
+			cmp = (a.ascentDate || '').localeCompare(b.ascentDate || '');
+		}
+		return asc ? cmp : -cmp;
+	});
 
 	const total = rows.length;
 	return {
