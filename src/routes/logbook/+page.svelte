@@ -281,6 +281,15 @@
 		}
 		.table-wrap {
 			overflow-x: auto;
+			-webkit-overflow-scrolling: touch;
+		}
+		table {
+			min-width: 42rem;
+		}
+	}
+	@media (max-width: 520px) {
+		.filters {
+			grid-template-columns: 1fr;
 		}
 	}
 </style>
