@@ -1,7 +1,7 @@
 <script lang="ts">
 	import favicon from '#lib/assets/favicon.svg';
 	import '../app.css';
-	import { onMount } from 'svelte';
+	import { onMount, tick } from 'svelte';
 	import { afterNavigate } from '$app/navigation';
 	import { page } from '$app/state';
 	import { formatNumber } from '#lib/dates';
@@ -38,14 +38,33 @@
 	// Initial state comes from html[data-sidebar], set pre-paint in app.html.
 	let mini = $state(false);
 	let drawerOpen = $state(false);
-	let dark = $state(false);
+	let isMobile = $state(false);
+
+	// Theme: follow the OS ("system") unless the user picked light/dark (#43).
+	type Theme = 'system' | 'light' | 'dark';
+	const THEME_ORDER: Theme[] = ['system', 'light', 'dark'];
+	const THEME_LABEL: Record<Theme, string> = { system: 'System', light: 'Light', dark: 'Dark' };
+	const THEME_ICON: Record<Theme, NavIconName> = { system: 'monitor', light: 'sun', dark: 'moon' };
+	let theme = $state<Theme>('system');
+	const nextTheme = $derived(THEME_ORDER[(THEME_ORDER.indexOf(theme) + 1) % THEME_ORDER.length]);
+
+	let toggleBtn: HTMLButtonElement | undefined = $state();
+	let sideEl: HTMLElement | undefined = $state();
 
 	onMount(() => {
 		const root = document.documentElement;
 		mini = root.dataset.sidebar === 'mini';
-		dark =
-			root.dataset.theme === 'dark' ||
-			(!root.dataset.theme && matchMedia('(prefers-color-scheme: dark)').matches);
+		const t = root.dataset.theme;
+		theme = t === 'light' || t === 'dark' ? t : 'system';
+
+		const mq = matchMedia('(max-width: 860px)');
+		isMobile = mq.matches;
+		const onChange = (e: MediaQueryListEvent) => {
+			isMobile = e.matches;
+			if (!e.matches) drawerOpen = false;
+		};
+		mq.addEventListener('change', onChange);
+		return () => mq.removeEventListener('change', onChange);
 	});
 
 	afterNavigate(() => {
@@ -61,9 +80,39 @@
 		}
 	}
 
+	async function openDrawer() {
+		drawerOpen = true;
+		await tick();
+		sideEl?.querySelector<HTMLElement>('a[href]')?.focus();
+	}
+
+	function closeDrawer() {
+		if (!drawerOpen) return;
+		const hadFocus = sideEl?.contains(document.activeElement) ?? false;
+		drawerOpen = false;
+		if (hadFocus) toggleBtn?.focus();
+	}
+
+	/** Keep Tab inside the open mobile drawer. */
+	function trapFocus(e: KeyboardEvent) {
+		if (!drawerOpen || e.key !== 'Tab' || !sideEl) return;
+		const items = [...sideEl.querySelectorAll<HTMLElement>('a[href], button:not([disabled])')];
+		if (items.length === 0) return;
+		const first = items[0];
+		const last = items[items.length - 1];
+		if (e.shiftKey && document.activeElement === first) {
+			e.preventDefault();
+			last.focus();
+		} else if (!e.shiftKey && document.activeElement === last) {
+			e.preventDefault();
+			first.focus();
+		}
+	}
+
 	function toggleSidebar() {
-		if (matchMedia('(max-width: 860px)').matches) {
-			drawerOpen = !drawerOpen;
+		if (isMobile) {
+			if (drawerOpen) closeDrawer();
+			else void openDrawer();
 			return;
 		}
 		mini = !mini;
@@ -72,11 +121,12 @@
 		save('cs_sidebar', mini ? 'mini' : null);
 	}
 
-	function toggleTheme() {
-		dark = !dark;
-		const theme = dark ? 'dark' : 'light';
-		document.documentElement.dataset.theme = theme;
-		save('cs_theme', theme);
+	function cycleTheme() {
+		theme = nextTheme;
+		const root = document.documentElement;
+		if (theme === 'system') delete root.dataset.theme;
+		else root.dataset.theme = theme;
+		save('cs_theme', theme === 'system' ? null : theme);
 	}
 
 	const fmt = (n: number) => formatNumber(n, data.dateDisplay);
@@ -94,16 +144,22 @@
 	>
 </svelte:head>
 
-<svelte:window onkeydown={(e) => e.key === 'Escape' && (drawerOpen = false)} />
+<svelte:window
+	onkeydown={(e) => {
+		if (e.key === 'Escape') closeDrawer();
+		else trapFocus(e);
+	}}
+/>
 
 <div class="app" class:drawer-open={drawerOpen}>
 	<header class="topbar">
 		<button
+			bind:this={toggleBtn}
 			type="button"
 			class="icon-btn"
 			onclick={toggleSidebar}
 			aria-label={drawerOpen ? 'Close menu' : mini ? 'Expand sidebar' : 'Collapse sidebar'}
-			aria-expanded={drawerOpen || !mini}
+			aria-expanded={isMobile ? drawerOpen : !mini}
 			aria-controls="side-nav"
 			title={mini ? 'Expand sidebar' : 'Collapse sidebar'}
 		>
@@ -127,11 +183,11 @@
 			<button
 				type="button"
 				class="icon-btn"
-				onclick={toggleTheme}
-				title={dark ? 'Switch to light mode' : 'Switch to dark mode'}
-				aria-label={dark ? 'Switch to light mode' : 'Switch to dark mode'}
+				onclick={cycleTheme}
+				title="Theme: {THEME_LABEL[theme]} — switch to {THEME_LABEL[nextTheme]}"
+				aria-label="Theme: {THEME_LABEL[theme]}. Switch to {THEME_LABEL[nextTheme]}"
 			>
-				<NavIcon name={dark ? 'sun' : 'moon'} />
+				<NavIcon name={THEME_ICON[theme]} />
 			</button>
 			{#if data.showSettings}
 				<a class="icon-btn" href="/settings" title="Settings & sync" aria-label="Settings & sync">
@@ -148,7 +204,14 @@
 		</div>
 	</header>
 
-	<aside class="side" id="side-nav" aria-label="Primary">
+	<!-- Off-screen drawer is inert on mobile so hidden links aren't tabbable. -->
+	<aside
+		bind:this={sideEl}
+		class="side"
+		id="side-nav"
+		aria-label="Primary"
+		inert={isMobile && !drawerOpen}
+	>
 		<nav>
 			{#each groups as group, gi (gi)}
 				{#if gi > 0}<hr />{/if}
@@ -179,12 +242,7 @@
 			>
 		</div>
 	</aside>
-	<button
-		type="button"
-		class="backdrop"
-		tabindex="-1"
-		aria-label="Close menu"
-		onclick={() => (drawerOpen = false)}
+	<button type="button" class="backdrop" tabindex="-1" aria-label="Close menu" onclick={closeDrawer}
 	></button>
 
 	<div class="content">

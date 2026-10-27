@@ -12,6 +12,7 @@
 		| 'github'
 		| 'sun'
 		| 'moon'
+		| 'monitor'
 		| 'logout';
 </script>
 
@@ -80,6 +81,9 @@
 			/>
 		{:else if name === 'moon'}
 			<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5Z" />
+		{:else if name === 'monitor'}
+			<rect x="3" y="4" width="18" height="12" rx="2" />
+			<path d="M8 20h8M12 16v4" />
 		{:else if name === 'logout'}
 			<path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
 			<path d="m16 17 5-5-5-5M21 12H9" />
