@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { innerWidth } from 'svelte/reactivity/window';
+
 	type MonthRow = {
 		month: string;
 		byStyle: Record<string, number>;
@@ -16,6 +18,7 @@
 
 	type Metric = 'ascents' | 'sends' | 'heightM';
 
+	// years are oldest→newest from analytics; keep "all" as default and scroll wide ranges
 	let yearFilter = $state<string>('all');
 	let metric = $state<Metric>('ascents');
 
@@ -35,6 +38,16 @@
 	const metricLabel = $derived(
 		metric === 'ascents' ? 'Ascents' : metric === 'sends' ? 'Sends' : 'Height (m)'
 	);
+
+	const narrow = $derived((innerWidth.current ?? 900) < 700);
+	const sparseLabels = $derived(narrow || values.length > 18);
+
+	function showLabel(month: string, index: number): boolean {
+		if (!sparseLabels) return true;
+		if (month.endsWith('-01')) return true;
+		const step = Math.max(2, Math.ceil(values.length / 12));
+		return index % step === 0 || index === values.length - 1;
+	}
 
 	function formatValue(v: number): string {
 		if (metric === 'heightM') return `${Math.round(v)} m`;
@@ -80,19 +93,23 @@
 		{#if values.length === 0}
 			<p class="empty">No months for this year.</p>
 		{:else}
-			<div class="chart" style:--n={values.length}>
-				{#each values as point (point.month)}
-					<a
-						class="col"
-						href={`/logbook?year=${point.month.slice(0, 4)}`}
-						title="{point.month}: {formatValue(point.value)} {metricLabel}"
-					>
-						<div class="stack">
-							<div class="bar" style:height="{(point.value / max) * 100}%"></div>
-						</div>
-						<span class="m">{point.month.slice(2)}</span>
-					</a>
-				{/each}
+			<div class="chart-scroll">
+				<div class="chart" style:--n={values.length}>
+					{#each values as point, i (point.month)}
+						<a
+							class="col"
+							href={`/logbook?year=${point.month.slice(0, 4)}`}
+							title="{point.month}: {formatValue(point.value)} {metricLabel}"
+						>
+							<div class="stack">
+								<div class="bar" style:height="{(point.value / max) * 100}%"></div>
+							</div>
+							<span class={['m', { hidden: !showLabel(point.month, i) }]}
+								>{point.month.slice(2)}</span
+							>
+						</a>
+					{/each}
+				</div>
 			</div>
 		{/if}
 	{/if}
@@ -102,6 +119,8 @@
 	.panel {
 		padding: 1.1rem 1.2rem;
 		border-radius: 1rem;
+		max-width: 100%;
+		min-width: 0;
 	}
 	h2 {
 		margin: 0 0 0.75rem;
@@ -142,12 +161,20 @@
 		border-color: var(--accent);
 		color: white;
 	}
+	.chart-scroll {
+		overflow-x: auto;
+		max-width: 100%;
+		-webkit-overflow-scrolling: touch;
+		scrollbar-width: thin;
+		padding-bottom: 0.25rem;
+	}
 	.chart {
 		display: grid;
-		grid-template-columns: repeat(var(--n), minmax(0, 1fr));
+		grid-template-columns: repeat(var(--n), minmax(0.85rem, 1fr));
 		align-items: end;
 		gap: 0.35rem;
 		height: 160px;
+		min-width: max(100%, calc(var(--n) * 1.15rem));
 	}
 	.col {
 		display: grid;
@@ -156,7 +183,7 @@
 		gap: 0.35rem;
 		text-decoration: none;
 		color: inherit;
-		min-width: 0;
+		min-width: 0.85rem;
 	}
 	.stack {
 		position: relative;
@@ -178,6 +205,9 @@
 		transform: rotate(-45deg);
 		transform-origin: top center;
 		height: 1.6rem;
+	}
+	.m.hidden {
+		visibility: hidden;
 	}
 	.empty {
 		color: var(--ink-muted);

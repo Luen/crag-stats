@@ -105,6 +105,7 @@
 				{/each}
 			</div>
 		</div>
+		<p class="swipe-hint" aria-hidden="true">swipe →</p>
 		<div class="legend">
 			<span>Less</span>
 			<i class="l0"></i><i class="l1"></i><i class="l2"></i><i class="l3"></i><i class="l4"></i>
@@ -117,6 +118,8 @@
 	.panel {
 		padding: 1rem 1.15rem;
 		border-radius: 1rem;
+		max-width: 100%;
+		min-width: 0;
 	}
 	header {
 		display: flex;
@@ -143,7 +146,18 @@
 	}
 	.scroll {
 		overflow-x: auto;
-		padding-bottom: 0.25rem;
+		max-width: 100%;
+		min-width: 0;
+		padding-bottom: 0.35rem;
+		-webkit-overflow-scrolling: touch;
+		scrollbar-width: thin;
+	}
+	.scroll::-webkit-scrollbar {
+		height: 6px;
+	}
+	.scroll::-webkit-scrollbar-thumb {
+		background: color-mix(in srgb, var(--ink-muted) 45%, transparent);
+		border-radius: 999px;
 	}
 	.grid {
 		display: grid;
@@ -185,6 +199,12 @@
 	.l4 {
 		background: #196127;
 	}
+	.swipe-hint {
+		display: none;
+		margin: 0.2rem 0 0;
+		font-size: 0.72rem;
+		color: var(--ink-muted);
+	}
 	.legend {
 		display: flex;
 		align-items: center;
@@ -198,5 +218,19 @@
 		height: 0.65rem;
 		border-radius: 2px;
 		display: inline-block;
+	}
+	@media (max-width: 640px) {
+		.grid {
+			grid-template-rows: repeat(7, 0.58rem);
+			grid-auto-columns: 0.58rem;
+			gap: 0.14rem;
+		}
+		.cell {
+			width: 0.58rem;
+			height: 0.58rem;
+		}
+		.swipe-hint {
+			display: block;
+		}
 	}
 </style>

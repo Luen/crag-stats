@@ -35,7 +35,7 @@
 	] as const;
 
 	const pyramidModes = [
-		{ id: 'all', label: 'Sends + attempts' },
+		{ id: 'all', label: 'All' },
 		{ id: 'sends', label: 'Sends only' },
 		{ id: 'onsight', label: 'Onsight only' }
 	] as const;
@@ -467,7 +467,7 @@
 	}
 	.pyramid-toggles a.active {
 		background: var(--ink);
-		color: var(--paper);
+		color: var(--paper, #fff);
 		border-color: var(--ink);
 	}
 	.pyramids {

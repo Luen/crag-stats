@@ -32,7 +32,7 @@
 		</a>
 		<nav>
 			{#each links as link (link.href)}
-				<a href={link.href} class:active={page.url.pathname === link.href}>{link.label}</a>
+				<a href={link.href} class={{ active: page.url.pathname === link.href }}>{link.label}</a>
 			{/each}
 		</nav>
 		<div class="side-foot">
@@ -58,7 +58,7 @@
 			</a>
 			<nav class="mobile-nav" aria-label="Primary">
 				{#each links as link (link.href)}
-					<a href={link.href} class:active={page.url.pathname === link.href}>{link.label}</a>
+					<a href={link.href} class={{ active: page.url.pathname === link.href }}>{link.label}</a>
 				{/each}
 			</nav>
 		</header>
@@ -160,6 +160,12 @@
 	.main-col {
 		padding: 1.25rem 1.25rem 3rem;
 		min-width: 0;
+		max-width: 100%;
+	}
+	.main-col main {
+		min-width: 0;
+		max-width: 100%;
+		overflow-x: clip;
 	}
 	.top {
 		display: none;

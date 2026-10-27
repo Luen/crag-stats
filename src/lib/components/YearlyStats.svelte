@@ -63,6 +63,39 @@
 				</tbody>
 			</table>
 		</div>
+
+		<ul class="cards">
+			{#each years as row (row.year)}
+				<li class="card">
+					<a class="year" href={`/logbook?year=${row.year}`}>{row.year}</a>
+					<div class="metrics">
+						<div>
+							<span class="label">Ascents</span>
+							<span class="val">{row.ascents}</span>
+							<span class={['delta', deltaClass(row.deltaAscents)]}>{fmtDelta(row.deltaAscents)}</span>
+						</div>
+						<div>
+							<span class="label">Sends</span>
+							<span class="val">{row.sends}</span>
+						</div>
+						<div>
+							<span class="label">Onsights</span>
+							<span class="val">{row.onsights}</span>
+							<span class={['delta', deltaClass(row.deltaOnsights)]}
+								>{fmtDelta(row.deltaOnsights)}</span
+							>
+						</div>
+						<div>
+							<span class="label">Height</span>
+							<span class="val">{Math.round(row.heightM)} m</span>
+							<span class={['delta', deltaClass(row.deltaHeightM)]}
+								>{fmtDelta(row.deltaHeightM, ' m')}</span
+							>
+						</div>
+					</div>
+				</li>
+			{/each}
+		</ul>
 	{/if}
 </article>
 
@@ -70,6 +103,8 @@
 	.panel {
 		padding: 1.1rem 1.2rem;
 		border-radius: 1rem;
+		max-width: 100%;
+		min-width: 0;
 	}
 	h2 {
 		margin: 0 0 0.75rem;
@@ -77,9 +112,13 @@
 	}
 	.table-wrap {
 		overflow-x: auto;
+		max-width: 100%;
+		-webkit-overflow-scrolling: touch;
+		scrollbar-width: thin;
 	}
 	table {
 		width: 100%;
+		min-width: 36rem;
 		border-collapse: collapse;
 		font-size: 0.9rem;
 	}
@@ -117,5 +156,55 @@
 	.empty {
 		color: var(--ink-muted);
 		margin: 0;
+	}
+	.cards {
+		display: none;
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		gap: 0.65rem;
+	}
+	.card {
+		border: 1px solid var(--line);
+		border-radius: 0.75rem;
+		padding: 0.75rem 0.85rem;
+		background: color-mix(in srgb, var(--paper, #fffaf2) 70%, white);
+	}
+	.card .year {
+		font-weight: 700;
+		font-size: 1.05rem;
+		text-decoration: underline;
+		text-underline-offset: 2px;
+	}
+	.metrics {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 0.55rem 0.85rem;
+		margin-top: 0.65rem;
+	}
+	.metrics .label {
+		display: block;
+		font-size: 0.72rem;
+		text-transform: uppercase;
+		letter-spacing: 0.03em;
+		color: var(--ink-muted);
+		font-weight: 600;
+	}
+	.metrics .val {
+		font-weight: 700;
+		margin-right: 0.35rem;
+	}
+	.metrics .delta {
+		font-size: 0.85rem;
+		font-weight: 600;
+	}
+	@media (max-width: 560px) {
+		.table-wrap {
+			display: none;
+		}
+		.cards {
+			display: flex;
+			flex-direction: column;
+		}
 	}
 </style>
