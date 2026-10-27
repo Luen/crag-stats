@@ -1,4 +1,5 @@
 import type { GradeSystem } from '#lib/grades';
+import type { TrainingLoadView } from './trainingLoad';
 
 export type PyramidTickSegment = { tick: string; count: number; color: string };
 
@@ -194,14 +195,7 @@ export type DashboardStats = {
 		earnedCount: number;
 		totalCount: number;
 	};
-	trainingLoad: {
-		last7: { ascents: number; sends: number; activeDays: number; heightM: number };
-		last28: { ascents: number; sends: number; activeDays: number; heightM: number };
-		sendRate7: number;
-		sendRate28: number;
-		restDays7: number;
-		restDays28: number;
-	};
+	trainingLoad: TrainingLoadView;
 	styleMix: {
 		months: { month: string; Sport: number; Trad: number; Boulder: number; Other: number }[];
 	};

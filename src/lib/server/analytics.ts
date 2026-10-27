@@ -25,12 +25,12 @@ import {
 	buildRockTypeStats,
 	buildStarsScatter,
 	buildStyleMixOverTime,
-	buildTrainingLoad,
 	buildYearlyStats
 } from './dashboardExtras';
 import { db, ensureSchema } from './db';
 import { ascents, profiles, routes } from './db/schema';
 import { repairGradesFromRawJson } from './repairGrades';
+import { buildTrainingLoadView } from './trainingLoad';
 
 export type PyramidMode = 'all' | 'sends' | 'onsight';
 
@@ -633,7 +633,7 @@ export function getDashboardStats(
 	const yearly = buildYearlyStats(extraRows);
 	const milestones = buildMilestones(extraRows);
 	const badges = buildBadges(extraRows);
-	const trainingLoad = buildTrainingLoad(extraRows);
+	const trainingLoad = buildTrainingLoadView(extraRows);
 	const styleMix = buildStyleMixOverTime(extraRows);
 	const partners = buildPartnerLeaderboard(extraRows).partners;
 	const starsScatter = buildStarsScatter(extraRows).points;
