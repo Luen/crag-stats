@@ -6,6 +6,8 @@ import { ascents } from '#lib/server/db/schema';
 import { listActiveProjects } from '#lib/server/projects';
 import { getSearchIndexing } from '#lib/server/appSettings';
 import { isAuthEnabled, authScope } from '#lib/server/auth';
+import { resolveDateDisplay } from '#lib/dates';
+import { env } from '#lib/server/env';
 import { startScheduler } from '#lib/server/scheduler';
 import { isNoindexPath } from '#lib/server/seo';
 import type { LayoutServerLoad } from './$types';
@@ -54,6 +56,7 @@ export const load: LayoutServerLoad = async ({ locals, url }) => {
 		authScope: scope,
 		showSettings,
 		navCounts: gated ? null : navCounts(),
+		dateDisplay: resolveDateDisplay(env('DISPLAY_LOCALE'), env('TZ')),
 		noindex: isNoindexPath(url.pathname) || !getSearchIndexing().allowed
 	};
 };

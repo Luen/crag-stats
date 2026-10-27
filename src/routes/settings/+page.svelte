@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { formatDateTime } from '#lib/dates';
 	import type { PageProps } from './$types';
 
 	let { data, form }: PageProps = $props();
@@ -82,7 +83,7 @@
 				>{data.sync.status}</span
 			>
 			{#if data.sync.lastSuccessAt}
-				<span>Last sync {new Date(data.sync.lastSuccessAt).toLocaleString()}</span>
+				<span>Last sync {formatDateTime(data.sync.lastSuccessAt, data.dateDisplay)}</span>
 			{:else}
 				<span>No API sync yet</span>
 			{/if}

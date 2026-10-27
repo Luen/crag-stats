@@ -6,6 +6,8 @@ import {
 	DATABASE_PATH,
 	SYNC_CRON,
 	PREFERRED_GRADE_SYSTEM,
+	DISPLAY_LOCALE,
+	TZ,
 	NODE_ENV
 } from '$app/env/private';
 
@@ -17,6 +19,8 @@ const cache: Record<string, string | undefined> = {
 	DATABASE_PATH,
 	SYNC_CRON,
 	PREFERRED_GRADE_SYSTEM,
+	DISPLAY_LOCALE,
+	TZ,
 	NODE_ENV
 };
 

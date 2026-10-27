@@ -32,6 +32,14 @@ export const variables = defineEnvVars({
 		description: 'Display grade system preference',
 		schema: optionalString
 	},
+	DISPLAY_LOCALE: {
+		description: 'Locale for dates/numbers (BCP 47, default en-AU)',
+		schema: optionalString
+	},
+	TZ: {
+		description: 'Time zone for displayed times (IANA, e.g. Australia/Brisbane)',
+		schema: optionalString
+	},
 	HOST: {
 		description: 'Listen host',
 		schema: optionalString

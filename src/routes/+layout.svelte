@@ -4,6 +4,7 @@
 	import { onMount } from 'svelte';
 	import { afterNavigate } from '$app/navigation';
 	import { page } from '$app/state';
+	import { formatNumber } from '#lib/dates';
 	import NavIcon, { type NavIconName } from '#lib/components/NavIcon.svelte';
 	import type { LayoutProps } from './$types';
 
@@ -78,7 +79,7 @@
 		save('cs_theme', theme);
 	}
 
-	const fmt = (n: number) => n.toLocaleString();
+	const fmt = (n: number) => formatNumber(n, data.dateDisplay);
 </script>
 
 <svelte:head>
