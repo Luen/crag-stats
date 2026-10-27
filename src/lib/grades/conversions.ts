@@ -179,8 +179,8 @@ export function ewbankToVScale(ew: number): number {
 	const n = Math.round(ew);
 	if (n <= 8) return -1.5; // VB-
 	if (n === 9) return -0.7; // VB
-	if (n === 10) return -0.3; // VB+
-	if (n === 11) return -0.3;
+	if (n === 10) return -0.5; // VB+
+	if (n === 11) return -0.3; // V0-
 	if (n === 12) return 0; // V0
 	if (n === 13) return 0.3; // V0+
 	if (n === 14) return 1;
@@ -212,7 +212,8 @@ export function convertFromVScale(v: number, system: GradeSystem): string {
 	// Preserve VB± / V0± nuance instead of Math.round(-0.5) → 0 → "V0"
 	if (v <= -1.25) return 'VB-';
 	if (v <= -0.75) return 'VB';
-	if (v < 0) return 'VB+';
+	if (v <= -0.4) return 'VB+';
+	if (v < 0) return 'V0-';
 	const base = Math.round(v);
 	const delta = v - base;
 	if (delta <= -0.2) return `V${base}-`;

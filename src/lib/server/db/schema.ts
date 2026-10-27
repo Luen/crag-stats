@@ -144,6 +144,9 @@ export const goals = sqliteTable('goals', {
 	year: integer('year'),
 	progressValue: text('progress_value'),
 	completed: integer('completed', { mode: 'boolean' }).notNull().default(false),
+	/** outdoor | indoor | any — filters auto progress from logbook */
+	venueScope: text('venue_scope').notNull().default('any'),
+	achievedAt: text('achieved_at'),
 	createdAt: text('created_at').notNull(),
 	updatedAt: text('updated_at').notNull()
 });

@@ -1,9 +1,7 @@
-import { listProjects, refreshProjects } from '#lib/server/projects';
+import { listActiveProjects, refreshProjects } from '#lib/server/projects';
 
 export function load() {
 	refreshProjects();
-	return {
-		open: listProjects('open'),
-		sent: listProjects('sent')
-	};
+	const { workingOn, recentlySent } = listActiveProjects();
+	return { workingOn, recentlySent };
 }

@@ -166,6 +166,34 @@ export type DashboardStats = {
 	milestones: {
 		items: { kind: string; label: string; date: string | null; detail: string }[];
 	};
+	badges: {
+		earned: {
+			id: string;
+			title: string;
+			hint: string;
+			icon: string;
+			tone: string;
+			earned: boolean;
+			detail: string | null;
+			date: string | null;
+			routeName: string | null;
+			href: string | null;
+		}[];
+		locked: {
+			id: string;
+			title: string;
+			hint: string;
+			icon: string;
+			tone: string;
+			earned: boolean;
+			detail: string | null;
+			date: string | null;
+			routeName: string | null;
+			href: string | null;
+		}[];
+		earnedCount: number;
+		totalCount: number;
+	};
 	trainingLoad: {
 		last7: { ascents: number; sends: number; activeDays: number; heightM: number };
 		last28: { ascents: number; sends: number; activeDays: number; heightM: number };

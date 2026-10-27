@@ -47,7 +47,7 @@ Self-hosted climbing analytics for [theCrag](https://www.thecrag.com/), inspired
 
 ```
 src/lib/grades/          # bands, conversions (Ewbank ↔ French/YDS/V/Font)
-src/lib/ticks.ts         # tick kind + style badge colours
+src/lib/ticks.ts         # tick kind + STYLE_COLORS (Sport blue / Trad orange / Boulder red)
 src/lib/types/dashboard.ts
 src/lib/components/      # UI: pyramids, CPR, notable, TickTypeIcon, StyleBadge, …
 src/lib/server/
@@ -86,7 +86,7 @@ Height quirk: theCrag may return height as `[value, unit]` arrays — parse in t
 ## Grades & colours
 
 - Canonical numeric scores lean on **Ewbank** for routes and **V-scale** for boulder; convert for display via `src/lib/grades`.
-- Band palette (Beginner → Elite) matches theCrag article colours — see `bands.ts`.
+- Band palette (Beginner → Elite) matches theCrag article colours — see `bands.ts`. Boulder: VB± green, **V0± yellow** (Intermediate), V1–V4 orange, V5–V10 red, V11+ purple (`bandFromVScale`).
 - Preferred system: cookie `cs_grade_system` + env `PREFERRED_GRADE_SYSTEM`.
 - **Style pyramids** group by Sport / Trad / Boulder / Top rope / … with stacked tick segments. Do not dump mixed VB + `7a` + `19` in one unordered list. Pyramid grade chips/bars link to `/logbook?style=&score=` (integer score buckets).
 - **Grade-system fit:** reject boulder CPR/V-scale on sport/trad (caused Trad `−1` / VB rows). On boulder, bare AU/Ewbank numbers (e.g. Upendi `5`) map to **V5**. Font `5A` must not steal French `5a` on routes.
@@ -178,6 +178,10 @@ Prefer fixing type errors over `@ts-ignore`. Do not switch the package manager.
 | 2026-10 | Mobile: heatmap/charts scroll, yearly cards, notable stacked groups; pyramid active pill `--paper` + “All” label. |
 | 2026-10 | pnpm 12.15.0 via `packageManager`; config in `pnpm-workspace.yaml` (`allowBuilds`, `minimumReleaseAge: 0`). Docker reads pin from package.json. |
 | 2026-10 | Runtime pin Node 24 LTS (CI, Docker `node:24-bookworm-slim`, `engines.node`, `.nvmrc`). |
-| 2026-10 | `/projects` RoxClimbs-style auto-projecting cards: open = unsent attempts; sent shelf = fought-then-sent within ~31 days; first-go sends never projects. No create form. |
+| 2026-10 | Badges carousel on dashboard (RoxClimbs-style milestones from logbook: sends, onsights, countries, height, bands). |
+| 2026-10 | Goals: Active/Achieved + progress bars; grade = send ≥ X this year; venue_scope outdoor/indoor/any (migration 0007); dashboard shows 3 active goals. |
+| 2026-10 | `/projects` RoxClimbs-style auto-projecting cards: open = unsent attempts touched within 1 year; sent shelf = fought-then-sent within ~31 days; first-go sends never projects. No create form. |
+| 2026-10 | Dashboard card show/order via cookie `cs_dash_layout` (Dreeve-style); hero + metrics fixed; Customize panel on `/`. Defaults = current order. See `dashboardLayout.ts`. |
+| 2026-10 | Discipline colours unified via `STYLE_COLORS` in `ticks.ts` (Sport blue, Trad orange, Boulder red) — Style mix + climber-type share the same palette as StyleBadge. |
 
 _Add a row when you change behaviour agents must know about._

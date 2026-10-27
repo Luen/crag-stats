@@ -3,25 +3,55 @@
 
 	let { data, form }: PageProps = $props();
 
-	let kind = $state('height_year');
-
-	function kindLabel(k: string) {
-		switch (k) {
-			case 'height_year':
-				return 'Height / year';
-			case 'days_month':
-				return 'Days this month';
-			case 'grade':
-				return 'Grade';
-			default:
-				return 'Custom';
-		}
-	}
+	let kind = $state('grade');
+	let venueScope = $state('outdoor');
 </script>
+
+{#snippet goalCard(g: (typeof data.goals)[number])}
+	<article class={['goal', { done: g.completed }]}>
+		<div class="goal-main">
+			<div class="goal-top">
+				<strong>{g.title}</strong>
+				<span class="pill">{g.kindLabel}</span>
+			</div>
+			<p class="meta">{g.targetLabel}</p>
+			<div class="bar" role="progressbar" aria-valuenow={g.progressPct} aria-valuemin={0} aria-valuemax={100}>
+				<span style:width="{g.progressPct}%"></span>
+			</div>
+			<p class="progress-line">
+				{g.progressLabel}
+				<span class="pct">{g.progressPct}%</span>
+			</p>
+			{#if g.completed && g.achievedAt}
+				<p class="achieved">Achieved {(g.achievedAt || '').slice(0, 10)}</p>
+			{/if}
+		</div>
+		<div class="actions">
+			{#if g.completed}
+				<form method="POST" action="?/reopen">
+					<input type="hidden" name="id" value={g.id} />
+					<button type="submit" class="secondary">Reopen</button>
+				</form>
+			{:else}
+				<form method="POST" action="?/complete">
+					<input type="hidden" name="id" value={g.id} />
+					<button type="submit" class="secondary">Mark complete</button>
+				</form>
+			{/if}
+			<form method="POST" action="?/delete">
+				<input type="hidden" name="id" value={g.id} />
+				<button type="submit" class="danger">Delete</button>
+			</form>
+		</div>
+	</article>
+{/snippet}
 
 <section class="panel head">
 	<h1>Goals</h1>
-	<p>Track yearly height, monthly days out, grade targets, or custom milestones.</p>
+	<p>
+		Progress fills from your theCrag logbook. Grade goals track a send ≥ target this year (outdoor by
+		default). Custom goals stay manual.
+	</p>
 </section>
 
 {#if form?.message}
@@ -34,17 +64,40 @@
 		<label>
 			Kind
 			<select name="kind" bind:value={kind}>
+				<option value="grade">Grade this year (send ≥ X)</option>
 				<option value="height_year">Height this year (m)</option>
 				<option value="days_month">Climbing days this month</option>
-				<option value="grade">Send a grade (score)</option>
-				<option value="custom">Custom</option>
+				<option value="custom">Custom (manual)</option>
 			</select>
 		</label>
 		<label>
 			Title
-			<input name="title" required placeholder="e.g. 5 km vertical in 2026" />
+			<input
+				name="title"
+				required
+				placeholder={kind === 'grade'
+					? 'e.g. Lead outdoor 25 this year'
+					: 'e.g. 5 km vertical in 2026'}
+			/>
 		</label>
-		{#if kind === 'height_year' || kind === 'days_month' || kind === 'custom'}
+		<label>
+			Venue
+			<select name="venueScope" bind:value={venueScope}>
+				<option value="outdoor">Outdoor</option>
+				<option value="indoor">Indoor / gym</option>
+				<option value="any">Any</option>
+			</select>
+		</label>
+		{#if kind === 'grade'}
+			<label>
+				Target grade
+				<input name="grade" required placeholder="25 · 7a · V5 · 5.12a" />
+			</label>
+			<label>
+				Year
+				<input name="year" type="number" value={new Date().getFullYear()} />
+			</label>
+		{:else if kind === 'height_year' || kind === 'days_month' || kind === 'custom'}
 			<label>
 				Target
 				<input
@@ -59,65 +112,39 @@
 				<input name="year" type="number" value={new Date().getFullYear()} />
 			</label>
 		{/if}
-		{#if kind === 'grade'}
-			<label>
-				Target grade score
-				<input name="targetGradeScore" type="number" step="0.5" placeholder="25" />
-			</label>
-		{/if}
 		<button type="submit">Add</button>
 	</form>
 </section>
 
 <section class="panel">
-	<h2>Your goals ({data.goals.length})</h2>
-	{#if data.goals.length === 0}
-		<p class="empty">No goals yet.</p>
+	<div class="section-head">
+		<h2>Active</h2>
+		<span class="count">{data.active.length}</span>
+	</div>
+	{#if data.active.length === 0}
+		<p class="empty">No active goals — add one above.</p>
 	{:else}
-		<ul>
-			{#each data.goals as g (g.id)}
-				<li class={{ done: g.completed }}>
-					<div>
-						<strong>{g.title}</strong>
-						<div class="sub">
-							{kindLabel(g.kind)}
-							{#if g.targetValue}
-								· target {g.targetValue}{#if g.kind === 'height_year'}m{/if}
-							{/if}
-							{#if g.targetGradeScore != null}
-								· score ≥ {g.targetGradeScore}
-							{/if}
-							{#if g.year}
-								· {g.year}
-							{/if}
-							{#if g.progressValue != null}
-								· progress {g.progressValue}{#if g.kind === 'height_year'}m{/if}
-							{/if}
-							{#if g.completed}
-								· complete
-							{/if}
-						</div>
-					</div>
-					<div class="actions">
-						{#if g.completed}
-							<form method="POST" action="?/reopen">
-								<input type="hidden" name="id" value={g.id} />
-								<button type="submit" class="secondary">Reopen</button>
-							</form>
-						{:else}
-							<form method="POST" action="?/complete">
-								<input type="hidden" name="id" value={g.id} />
-								<button type="submit" class="secondary">Mark complete</button>
-							</form>
-						{/if}
-						<form method="POST" action="?/delete">
-							<input type="hidden" name="id" value={g.id} />
-							<button type="submit" class="danger">Delete</button>
-						</form>
-					</div>
-				</li>
+		<div class="list">
+			{#each data.active as g (g.id)}
+				{@render goalCard(g)}
 			{/each}
-		</ul>
+		</div>
+	{/if}
+</section>
+
+<section class="panel achieved-panel">
+	<div class="section-head">
+		<h2>Achieved</h2>
+		<span class="count muted">{data.achieved.length}</span>
+	</div>
+	{#if data.achieved.length === 0}
+		<p class="empty">Completed goals land here.</p>
+	{:else}
+		<div class="list">
+			{#each data.achieved as g (g.id)}
+				{@render goalCard(g)}
+			{/each}
+		</div>
 	{/if}
 </section>
 
@@ -127,11 +154,13 @@
 		padding: 1.1rem 1.2rem;
 		border-radius: 1rem;
 	}
-	.head {
+	.head,
+	.form-panel,
+	.panel {
 		margin-bottom: 0.9rem;
 	}
-	.form-panel {
-		margin-bottom: 0.9rem;
+	.achieved-panel {
+		margin-bottom: 0;
 	}
 	h1,
 	h2 {
@@ -140,6 +169,24 @@
 	.head p {
 		margin: 0.35rem 0 0;
 		color: var(--ink-muted);
+	}
+	.section-head {
+		display: flex;
+		align-items: baseline;
+		gap: 0.55rem;
+		margin-bottom: 0.75rem;
+	}
+	.count {
+		font-size: 0.85rem;
+		font-weight: 700;
+		color: var(--accent);
+		background: color-mix(in srgb, var(--accent) 12%, white);
+		padding: 0.1rem 0.5rem;
+		border-radius: 999px;
+	}
+	.count.muted {
+		color: var(--ink-muted);
+		background: rgba(28, 36, 24, 0.06);
 	}
 	.form {
 		display: grid;
@@ -187,28 +234,82 @@
 		border-color: #c44569;
 		color: #c44569;
 	}
-	ul {
-		list-style: none;
-		margin: 0.85rem 0 0;
-		padding: 0;
+	.list {
 		display: grid;
 		gap: 0.75rem;
 	}
-	li {
+	.goal {
 		display: flex;
 		justify-content: space-between;
-		gap: 0.75rem;
-		align-items: center;
+		gap: 0.85rem;
+		align-items: flex-start;
 		flex-wrap: wrap;
+		padding: 0.85rem 0.9rem;
+		border: 1px solid var(--line);
+		border-radius: 0.75rem;
+		background: color-mix(in srgb, var(--paper, #fffaf2) 55%, white);
 	}
-	li.done strong {
-		text-decoration: line-through;
-		opacity: 0.75;
+	.goal.done {
+		opacity: 0.88;
 	}
-	.sub,
+	.goal-main {
+		flex: 1 1 14rem;
+		min-width: 0;
+	}
+	.goal-top {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.45rem;
+		align-items: center;
+	}
+	.pill {
+		font-size: 0.72rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.03em;
+		color: var(--ink-muted);
+		border: 1px solid var(--line);
+		border-radius: 999px;
+		padding: 0.1rem 0.45rem;
+	}
+	.meta,
+	.progress-line,
+	.achieved,
 	.empty {
 		color: var(--ink-muted);
 		font-size: 0.88rem;
+	}
+	.meta {
+		margin: 0.35rem 0 0.55rem;
+	}
+	.bar {
+		height: 0.55rem;
+		border-radius: 999px;
+		background: rgba(28, 36, 24, 0.08);
+		overflow: hidden;
+	}
+	.bar span {
+		display: block;
+		height: 100%;
+		border-radius: inherit;
+		background: var(--accent);
+		min-width: 0;
+	}
+	.goal.done .bar span {
+		background: color-mix(in srgb, var(--accent) 70%, #1c2418);
+	}
+	.progress-line {
+		display: flex;
+		justify-content: space-between;
+		margin: 0.4rem 0 0;
+	}
+	.pct {
+		font-weight: 700;
+		color: var(--ink);
+	}
+	.achieved {
+		margin: 0.25rem 0 0;
+		font-size: 0.8rem;
 	}
 	.actions {
 		display: flex;

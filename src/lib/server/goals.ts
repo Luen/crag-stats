@@ -1,8 +1,29 @@
 import { desc, eq } from 'drizzle-orm';
 import { db, ensureSchema } from './db';
-import { ascents, goals, type Goal } from './db/schema';
+import { ascents, goals, routes, type Goal } from './db/schema';
+import {
+	defaultVenueForKind,
+	kindLabel,
+	parseGoalGradeScore,
+	progressPct,
+	type GoalKind
+} from './goalsShared';
+import {
+	matchesVenueScope,
+	normalizeVenueScope,
+	type VenueScope
+} from './venue';
 
-export type GoalKind = 'grade' | 'height_year' | 'days_month' | 'custom';
+export type { GoalKind } from './goalsShared';
+export { defaultVenueForKind, kindLabel, parseGoalGradeScore, progressPct } from './goalsShared';
+
+export type GoalView = Goal & {
+	venueScope: VenueScope;
+	progressPct: number;
+	progressLabel: string;
+	targetLabel: string;
+	kindLabel: string;
+};
 
 function nowIso() {
 	return new Date().toISOString();
@@ -22,10 +43,73 @@ function validDay(iso: string | null | undefined): string | null {
 	return d;
 }
 
-export function listGoals(): Goal[] {
+function asVenue(g: Goal): VenueScope {
+	return normalizeVenueScope(g.venueScope);
+}
+
+function enrichGoal(g: Goal): GoalView {
+	const venue = asVenue(g);
+	const targetNum = Number(g.targetValue);
+	const currentNum = Number(g.progressValue);
+	let pct = 0;
+	let progressLabel = g.progressValue ?? '—';
+	let targetLabel = g.targetValue ?? '—';
+
+	if (g.kind === 'grade') {
+		const target = g.targetGradeScore ?? targetNum;
+		const current = Number.isFinite(currentNum) ? currentNum : 0;
+		pct = g.completed ? 100 : progressPct(current, target);
+		progressLabel =
+			current > 0 ? `Best send ${current}` : 'No qualifying send yet';
+		targetLabel = Number.isFinite(target) ? `Send ≥ ${target}` : 'Grade goal';
+		if (g.year) targetLabel += ` · ${g.year}`;
+	} else if (g.kind === 'height_year') {
+		const metres = Number.isFinite(currentNum) ? currentNum : 0;
+		const target = Number.isFinite(targetNum) ? targetNum : 0;
+		pct = g.completed ? 100 : progressPct(metres, target);
+		progressLabel = `${Math.round(metres)} m`;
+		targetLabel = `${Math.round(target)} m${g.year ? ` · ${g.year}` : ''}`;
+	} else if (g.kind === 'days_month') {
+		const days = Number.isFinite(currentNum) ? currentNum : 0;
+		const target = Number.isFinite(targetNum) ? targetNum : 0;
+		pct = g.completed ? 100 : progressPct(days, target);
+		progressLabel = `${days} day${days === 1 ? '' : 's'}`;
+		targetLabel = `${target} days this month`;
+	} else {
+		pct = g.completed ? 100 : 0;
+		progressLabel = g.completed ? 'Done' : g.progressValue || 'Manual';
+		targetLabel = g.targetValue || 'Custom';
+	}
+
+	if (venue !== 'any') {
+		targetLabel += venue === 'outdoor' ? ' · outdoor' : ' · indoor';
+	}
+
+	return {
+		...g,
+		venueScope: venue,
+		progressPct: pct,
+		progressLabel,
+		targetLabel,
+		kindLabel: kindLabel(g.kind)
+	};
+}
+
+export function listGoals(): GoalView[] {
 	ensureSchema();
 	updateGoalProgress();
-	return db.select().from(goals).orderBy(desc(goals.createdAt)).all();
+	return db
+		.select()
+		.from(goals)
+		.orderBy(desc(goals.createdAt))
+		.all()
+		.map(enrichGoal);
+}
+
+export function listActiveGoals(limit = 3): GoalView[] {
+	return listGoals()
+		.filter((g) => !g.completed)
+		.slice(0, limit);
 }
 
 export function createGoal(input: {
@@ -34,7 +118,8 @@ export function createGoal(input: {
 	targetValue?: string | null;
 	targetGradeScore?: number | null;
 	year?: number | null;
-}): Goal {
+	venueScope?: string | null;
+}): GoalView {
 	ensureSchema();
 	const updatedAt = nowIso();
 	const kind = String(input.kind || 'custom').trim() || 'custom';
@@ -42,9 +127,20 @@ export function createGoal(input: {
 	const year =
 		input.year != null && Number.isFinite(input.year)
 			? Math.trunc(input.year)
-			: kind === 'height_year'
+			: kind === 'height_year' || kind === 'grade'
 				? new Date().getFullYear()
 				: null;
+
+	let venueScope = normalizeVenueScope(input.venueScope);
+	if (!input.venueScope) venueScope = defaultVenueForKind(kind);
+
+	let targetGradeScore =
+		input.targetGradeScore != null && Number.isFinite(input.targetGradeScore)
+			? input.targetGradeScore
+			: null;
+	if (kind === 'grade' && targetGradeScore == null && input.targetValue) {
+		targetGradeScore = parseGoalGradeScore(input.targetValue);
+	}
 
 	const inserted = db
 		.insert(goals)
@@ -52,13 +148,12 @@ export function createGoal(input: {
 			kind,
 			title,
 			targetValue: input.targetValue?.trim() || null,
-			targetGradeScore:
-				input.targetGradeScore != null && Number.isFinite(input.targetGradeScore)
-					? input.targetGradeScore
-					: null,
+			targetGradeScore,
 			year,
+			venueScope,
 			progressValue: null,
 			completed: false,
+			achievedAt: null,
 			createdAt: updatedAt,
 			updatedAt
 		})
@@ -66,7 +161,7 @@ export function createGoal(input: {
 		.get();
 
 	updateGoalProgress();
-	return db.select().from(goals).where(eq(goals.id, inserted.id)).get()!;
+	return enrichGoal(db.select().from(goals).where(eq(goals.id, inserted.id)).get()!);
 }
 
 export function deleteGoal(id: number) {
@@ -77,88 +172,129 @@ export function deleteGoal(id: number) {
 export function setGoalCompleted(id: number, completed: boolean) {
 	ensureSchema();
 	db.update(goals)
-		.set({ completed, updatedAt: nowIso() })
+		.set({
+			completed,
+			achievedAt: completed ? nowIso() : null,
+			updatedAt: nowIso()
+		})
 		.where(eq(goals.id, id))
 		.run();
 }
 
+type AscentRouteRow = {
+	ascentDate: string | null;
+	heightM: number | null;
+	isSend: boolean;
+	effectiveGradeScore: number | null;
+	gearStyle: string | null;
+	routeName: string | null;
+	cragName: string | null;
+	tagsJson: string | null;
+};
+
 /**
- * Recompute auto progress for height_year / days_month / grade goals from ascents.
- * Custom goals keep manual progress_value / completed.
+ * Recompute auto progress for height_year / days_month / grade from ascents.
+ * Grade = send ≥ target score within goal year + venue scope (default outdoor).
+ * Custom goals keep manual completed flag.
  */
 export function updateGoalProgress(): void {
 	ensureSchema();
 	const rows = db.select().from(goals).all();
 	if (rows.length === 0) return;
 
-	const ascentRows = db
+	const ascentRows: AscentRouteRow[] = db
 		.select({
 			ascentDate: ascents.ascentDate,
 			heightM: ascents.heightM,
 			isSend: ascents.isSend,
-			effectiveGradeScore: ascents.effectiveGradeScore
+			effectiveGradeScore: ascents.effectiveGradeScore,
+			gearStyle: routes.gearStyle,
+			routeName: routes.name,
+			cragName: routes.cragName,
+			tagsJson: routes.tagsJson
 		})
 		.from(ascents)
+		.innerJoin(routes, eq(ascents.routeId, routes.id))
 		.all();
 
 	const now = new Date();
 	const currentYear = now.getFullYear();
 	const currentMonth = `${currentYear}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-
-	const heightByYear = new Map<number, number>();
-	const daysThisMonth = new Set<string>();
-	let hardestSendScore: number | null = null;
-
-	for (const a of ascentRows) {
-		const day = validDay(a.ascentDate);
-		if (!day) continue;
-		const y = Number(day.slice(0, 4));
-		if (a.heightM != null && Number.isFinite(a.heightM)) {
-			heightByYear.set(y, (heightByYear.get(y) ?? 0) + a.heightM);
-		}
-		if (day.startsWith(currentMonth)) daysThisMonth.add(day);
-		if (a.isSend && a.effectiveGradeScore != null && Number.isFinite(a.effectiveGradeScore)) {
-			hardestSendScore =
-				hardestSendScore == null
-					? a.effectiveGradeScore
-					: Math.max(hardestSendScore, a.effectiveGradeScore);
-		}
-	}
-
 	const updatedAt = nowIso();
+
 	for (const g of rows) {
 		if (g.kind === 'custom') continue;
 
+		const venue = asVenue(g);
+		const qualifying = ascentRows.filter((a) =>
+			matchesVenueScope(venue, {
+				gearStyle: a.gearStyle,
+				name: a.routeName,
+				cragName: a.cragName,
+				tagsJson: a.tagsJson
+			})
+		);
+
 		let progressValue: string | null = g.progressValue;
 		let completed = g.completed;
+		let achievedAt = g.achievedAt;
 
 		if (g.kind === 'height_year') {
 			const y = g.year ?? currentYear;
-			const metres = Math.round(heightByYear.get(y) ?? 0);
+			let metres = 0;
+			for (const a of qualifying) {
+				const day = validDay(a.ascentDate);
+				if (!day || Number(day.slice(0, 4)) !== y) continue;
+				if (a.heightM != null && Number.isFinite(a.heightM)) metres += a.heightM;
+			}
+			metres = Math.round(metres);
 			progressValue = String(metres);
 			const target = Number(g.targetValue);
-			if (Number.isFinite(target) && target > 0) {
-				completed = metres >= target;
-			}
+			completed = Number.isFinite(target) && target > 0 && metres >= target;
 		} else if (g.kind === 'days_month') {
-			const days = daysThisMonth.size;
-			progressValue = String(days);
+			const days = new Set<string>();
+			for (const a of qualifying) {
+				const day = validDay(a.ascentDate);
+				if (!day || !day.startsWith(currentMonth)) continue;
+				days.add(day);
+			}
+			progressValue = String(days.size);
 			const target = Number(g.targetValue);
-			if (Number.isFinite(target) && target > 0) {
-				completed = days >= target;
-			}
+			completed = Number.isFinite(target) && target > 0 && days.size >= target;
 		} else if (g.kind === 'grade') {
-			const score = g.targetGradeScore;
-			if (score != null && Number.isFinite(score)) {
-				progressValue =
-					hardestSendScore != null ? String(Math.round(hardestSendScore * 10) / 10) : '0';
-				completed = hardestSendScore != null && hardestSendScore >= score;
+			const y = g.year ?? currentYear;
+			const target = g.targetGradeScore;
+			let best: number | null = null;
+			for (const a of qualifying) {
+				if (!a.isSend) continue;
+				const day = validDay(a.ascentDate);
+				if (!day || Number(day.slice(0, 4)) !== y) continue;
+				const score = a.effectiveGradeScore;
+				if (score == null || !Number.isFinite(score)) continue;
+				best = best == null ? score : Math.max(best, score);
 			}
+			progressValue = best != null ? String(Math.round(best * 10) / 10) : '0';
+			completed =
+				target != null && Number.isFinite(target) && best != null && best >= target;
 		}
 
-		if (progressValue === g.progressValue && completed === g.completed) continue;
+		if (completed && !g.completed) {
+			achievedAt = updatedAt;
+		} else if (!completed && g.completed && g.kind !== 'custom') {
+			// Auto goals can reopen (e.g. new month) — clear shelf stamp.
+			achievedAt = null;
+		}
+
+		if (
+			progressValue === g.progressValue &&
+			completed === g.completed &&
+			achievedAt === g.achievedAt
+		) {
+			continue;
+		}
+
 		db.update(goals)
-			.set({ progressValue, completed, updatedAt })
+			.set({ progressValue, completed, achievedAt, updatedAt })
 			.where(eq(goals.id, g.id))
 			.run();
 	}

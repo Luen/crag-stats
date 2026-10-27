@@ -8,6 +8,8 @@ import { tickKind } from '#lib/ticks';
 /** Minimal row shape shared by extras builders. */
 export type DashboardExtraRow = {
 	ascentDate: string | null;
+	/** Stable id for same-day ordering (badges / milestones). */
+	ascentId?: number | null;
 	gearStyle?: string | null;
 	isSend?: boolean | null;
 	heightM?: number | null;
@@ -18,10 +20,12 @@ export type DashboardExtraRow = {
 	stars?: number | null;
 	gradeScore?: number | null;
 	effectiveGradeScore?: number | null;
+	gradeBand?: number | null;
 	routeName?: string | null;
 	url?: string | null;
 	ascentUrl?: string | null;
 	tagsJson?: string | null;
+	country?: string | null;
 };
 
 export type MonthlyStat = {

@@ -36,9 +36,11 @@ describe('detectAndParseGrade — VB± labels', () => {
 		expect(detectAndParseGrade('VB-', { gearStyle: 'Boulder' }).score).toBe(-1.5);
 	});
 
-	it('formatVScaleLabel keeps VB+ (does not round -0.5 → V0)', () => {
+	it('formatVScaleLabel keeps VB+ / V0- distinct (does not round -0.5 → V0)', () => {
 		expect(formatVScaleLabel(-0.5, 'VB+')).toBe('VB+');
 		expect(convertFromVScale(-0.5, 'v_scale')).toBe('VB+');
+		expect(convertFromVScale(-0.3, 'v_scale')).toBe('V0-');
+		expect(convertFromVScale(0, 'v_scale')).toBe('V0');
 		expect(convertFromVScale(-1, 'v_scale')).toBe('VB');
 		expect(convertFromVScale(-1.5, 'v_scale')).toBe('VB-');
 	});

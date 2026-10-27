@@ -5,7 +5,10 @@
 	import ClimberBlurb from '#lib/components/ClimberBlurb.svelte';
 	import ClimberTypeBar from '#lib/components/ClimberTypeBar.svelte';
 	import CprTimeline from '#lib/components/CprTimeline.svelte';
+	import DashboardLayoutEditor from '#lib/components/DashboardLayoutEditor.svelte';
 	import GradeChip from '#lib/components/GradeChip.svelte';
+	import Badges from '#lib/components/Badges.svelte';
+	import GoalsProgress from '#lib/components/GoalsProgress.svelte';
 	import Milestones from '#lib/components/Milestones.svelte';
 	import MonthlyStats from '#lib/components/MonthlyStats.svelte';
 	import NotableAscents from '#lib/components/NotableAscents.svelte';
@@ -21,10 +24,12 @@
 	import TrainingLoad from '#lib/components/TrainingLoad.svelte';
 	import VolumeChart from '#lib/components/VolumeChart.svelte';
 	import YearlyStats from '#lib/components/YearlyStats.svelte';
+	import { packLayoutRows, type DashCardId } from '#lib/dashboardLayout';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
 	const s = $derived(data.stats);
+	const rows = $derived(packLayoutRows(data.dashLayout));
 
 	const systems = [
 		{ id: 'ewbank', label: 'Ewbanks' },
@@ -40,6 +45,194 @@
 		{ id: 'onsight', label: 'Onsight only' }
 	] as const;
 </script>
+
+{#snippet card(id: DashCardId)}
+	{#if id === 'climberType'}
+		<ClimberTypeBar shares={s.styleShare} climberType={s.climberType} />
+	{:else if id === 'blurb'}
+		<ClimberBlurb paragraphs={s.blurb.paragraphs} />
+	{:else if id === 'streaks'}
+		<Streaks
+			currentDays={s.streaks.currentDays}
+			currentWeeks={s.streaks.currentWeeks}
+			currentMonths={s.streaks.currentMonths}
+			longestDays={s.streaks.longestDays}
+			lastActiveDate={s.streaks.lastActiveDate}
+		/>
+	{:else if id === 'athleteProfile'}
+		<AthleteProfile axes={s.athleteProfile.axes} />
+	{:else if id === 'heatmap'}
+		<AscentHeatmap data={s.heatmap} />
+	{:else if id === 'volume'}
+		<article class="panel">
+			<h2>Volume</h2>
+			<VolumeChart data={s.volumeByMonth} />
+		</article>
+	{:else if id === 'gradeBands'}
+		<article class="panel">
+			<h2>Grade bands</h2>
+			<p class="hint">Colours match theCrag: Beginner → Elite</p>
+			<BarList
+				items={s.bandBreakdown.map((b) => ({
+					label: b.name,
+					value: b.count,
+					color: b.color
+				}))}
+			/>
+		</article>
+	{:else if id === 'topCrags'}
+		<article class="panel">
+			<h2>Top crags</h2>
+			<BarList
+				items={s.topCrags.map((c) => ({
+					label: c.crag,
+					value: c.count,
+					meta: c.maxGrade ? `up to ${c.maxGrade}` : undefined,
+					color: 'var(--accent-2)',
+					href: `/logbook?crag=${encodeURIComponent(c.crag)}`
+				}))}
+			/>
+		</article>
+	{:else if id === 'tickTypes'}
+		<article class="panel">
+			<h2>Tick types</h2>
+			<BarList
+				items={s.tickBreakdown.slice(0, 12).map((t) => ({
+					label: t.tick,
+					value: t.count
+				}))}
+			/>
+		</article>
+	{:else if id === 'monthly'}
+		<MonthlyStats months={s.monthly.months} years={s.monthly.years} />
+	{:else if id === 'yearly'}
+		<YearlyStats years={s.yearly.years} />
+	{:else if id === 'badges'}
+		<Badges
+			earned={s.badges.earned}
+			locked={s.badges.locked}
+			earnedCount={s.badges.earnedCount}
+			totalCount={s.badges.totalCount}
+		/>
+	{:else if id === 'goals'}
+		<GoalsProgress goals={data.activeGoals} />
+	{:else if id === 'trainingLoad'}
+		<TrainingLoad
+			last7={s.trainingLoad.last7}
+			last28={s.trainingLoad.last28}
+			sendRate7={s.trainingLoad.sendRate7}
+			sendRate28={s.trainingLoad.sendRate28}
+			restDays7={s.trainingLoad.restDays7}
+			restDays28={s.trainingLoad.restDays28}
+		/>
+	{:else if id === 'milestones'}
+		<Milestones items={s.milestones.items} />
+	{:else if id === 'styleMix'}
+		<StyleMixChart months={s.styleMix.months} />
+	{:else if id === 'partners'}
+		<PartnerLeaderboard partners={s.partners} />
+	{:else if id === 'rockTypes'}
+		<RockTypePanel
+			types={s.rockTypes.types}
+			dominant={s.rockTypes.dominant}
+			info={s.rockTypes.info}
+		/>
+	{:else if id === 'stars'}
+		<StarsScatter points={s.starsScatter} />
+	{:else if id === 'quality'}
+		<QualityBreakdown ratings={s.qualityBreakdown} />
+	{:else if id === 'pyramids'}
+		<header class="section-head">
+			<h2>Grade pyramids</h2>
+			<p>Split by style · grades shown in your preferred system ({data.gradeSystem})</p>
+			<nav class="pyramid-toggles" aria-label="Pyramid filter">
+				{#each pyramidModes as mode (mode.id)}
+					<a
+						href="?pyramid={mode.id}"
+						class={{ active: s.pyramidMode === mode.id }}
+						aria-current={s.pyramidMode === mode.id ? 'page' : undefined}>{mode.label}</a
+					>
+				{/each}
+			</nav>
+		</header>
+		<div class="pyramids">
+			{#each s.stylePyramids as pyramid (pyramid.style)}
+				<StylePyramid {pyramid} />
+			{/each}
+		</div>
+	{:else if id === 'notable'}
+		<NotableAscents byStyle={s.notableByStyle} byArea={s.notableByArea} />
+	{:else if id === 'cpr'}
+		<header class="section-head">
+			<h2>CPR timelines</h2>
+			<p>Sport · Trad · Boulder performance over time</p>
+		</header>
+		<CprTimeline title="Sport" data={s.cpr.sport} />
+		<CprTimeline title="Trad" data={s.cpr.trad} />
+		<CprTimeline title="Boulder" data={s.cpr.boulder} />
+	{:else if id === 'hardest'}
+		<article class="panel">
+			<h2>Hardest sends</h2>
+			<ul class="list">
+				{#each s.hardestSends as climb (climb.routeName + (climb.ascentDate ?? ''))}
+					<li>
+						<div>
+							<strong>
+								{#if climb.url}
+									<a href={climb.url} target="_blank" rel="noreferrer">{climb.routeName}</a>
+								{:else}
+									{climb.routeName}
+								{/if}
+							</strong>
+							<div class="sub">
+								{#if climb.cragUrl && climb.cragName}
+									<a href={climb.cragUrl} target="_blank" rel="noreferrer">{climb.cragName}</a>
+								{:else}
+									{climb.cragName}
+								{/if}
+								· <TickTypeIcon tick={climb.tickType} />
+							</div>
+						</div>
+						<GradeChip grade={climb.gradeLabel ?? climb.gradeRaw} band={climb.gradeBand} />
+					</li>
+				{/each}
+			</ul>
+		</article>
+	{:else if id === 'recent'}
+		<article class="panel">
+			<h2>Recent</h2>
+			<ul class="list">
+				{#each s.recent as climb (climb.id)}
+					<li>
+						<div>
+							<strong>
+								{#if climb.url}
+									<a href={climb.url} target="_blank" rel="noreferrer">{climb.routeName}</a>
+								{:else}
+									{climb.routeName}
+								{/if}
+							</strong>
+							<div class="sub">
+								{(climb.ascentDate || '').slice(0, 10)} · <TickTypeIcon tick={climb.tickType} /> ·
+								{#if climb.cragName}
+									<a href="/logbook?crag={encodeURIComponent(climb.cragName)}">{climb.cragName}</a>
+								{/if}
+								{#if climb.quality}
+									· {climb.quality}
+								{/if}
+								{#if climb.partners}
+									· with {climb.partners}
+								{/if}
+							</div>
+							<TagChips tags={climb.tags} />
+						</div>
+						<GradeChip grade={climb.gradeLabel ?? climb.gradeRaw} band={climb.gradeBand} />
+					</li>
+				{/each}
+			</ul>
+		</article>
+	{/if}
+{/snippet}
 
 <section class="hero panel">
 	<div class="hero-main">
@@ -120,196 +313,27 @@
 		{/if}
 	</section>
 
-	<section class="stack">
-		<ClimberTypeBar shares={s.styleShare} climberType={s.climberType} />
-	</section>
+	<DashboardLayoutEditor layout={data.dashLayout} />
 
-	<section class="stack">
-		<ClimberBlurb paragraphs={s.blurb.paragraphs} />
-	</section>
-
-	<section class="duo">
-		<Streaks
-			currentDays={s.streaks.currentDays}
-			currentWeeks={s.streaks.currentWeeks}
-			currentMonths={s.streaks.currentMonths}
-			longestDays={s.streaks.longestDays}
-			lastActiveDate={s.streaks.lastActiveDate}
-		/>
-		<AthleteProfile axes={s.athleteProfile.axes} />
-	</section>
-
-	<section class="stack">
-		<AscentHeatmap data={s.heatmap} />
-	</section>
-
-	<section class="grid">
-		<article class="panel">
-			<h2>Volume</h2>
-			<VolumeChart data={s.volumeByMonth} />
-		</article>
-		<article class="panel">
-			<h2>Grade bands</h2>
-			<p class="hint">Colours match theCrag: Beginner → Elite</p>
-			<BarList
-				items={s.bandBreakdown.map((b) => ({
-					label: b.name,
-					value: b.count,
-					color: b.color
-				}))}
-			/>
-		</article>
-		<article class="panel">
-			<h2>Top crags</h2>
-			<BarList
-				items={s.topCrags.map((c) => ({
-					label: c.crag,
-					value: c.count,
-					meta: c.maxGrade ? `up to ${c.maxGrade}` : undefined,
-					color: 'var(--accent-2)',
-					href: `/logbook?crag=${encodeURIComponent(c.crag)}`
-				}))}
-			/>
-		</article>
-		<article class="panel">
-			<h2>Tick types</h2>
-			<BarList
-				items={s.tickBreakdown.slice(0, 12).map((t) => ({
-					label: t.tick,
-					value: t.count
-				}))}
-			/>
-		</article>
-	</section>
-
-	<section class="duo">
-		<MonthlyStats months={s.monthly.months} years={s.monthly.years} />
-		<YearlyStats years={s.yearly.years} />
-	</section>
-
-	<section class="duo">
-		<TrainingLoad
-			last7={s.trainingLoad.last7}
-			last28={s.trainingLoad.last28}
-			sendRate7={s.trainingLoad.sendRate7}
-			sendRate28={s.trainingLoad.sendRate28}
-			restDays7={s.trainingLoad.restDays7}
-			restDays28={s.trainingLoad.restDays28}
-		/>
-		<Milestones items={s.milestones.items} />
-	</section>
-
-	<section class="stack">
-		<StyleMixChart months={s.styleMix.months} />
-	</section>
-
-	<section class="grid">
-		<PartnerLeaderboard partners={s.partners} />
-		<RockTypePanel
-			types={s.rockTypes.types}
-			dominant={s.rockTypes.dominant}
-			info={s.rockTypes.info}
-		/>
-		<StarsScatter points={s.starsScatter} />
-		<QualityBreakdown ratings={s.qualityBreakdown} />
-	</section>
-
-	<section class="stack">
-		<header class="section-head">
-			<h2>Grade pyramids</h2>
-			<p>Split by style · grades shown in your preferred system ({data.gradeSystem})</p>
-			<nav class="pyramid-toggles" aria-label="Pyramid filter">
-				{#each pyramidModes as mode (mode.id)}
-					<a
-						href="?pyramid={mode.id}"
-						class={{ active: s.pyramidMode === mode.id }}
-						aria-current={s.pyramidMode === mode.id ? 'page' : undefined}>{mode.label}</a
-					>
+	{#each rows as row, ri (ri)}
+		{#if row.kind === 'full'}
+			<section class="stack">
+				{@render card(row.id)}
+			</section>
+		{:else if row.kind === 'duo'}
+			<section class="duo">
+				{#each row.ids as id (id)}
+					{@render card(id)}
 				{/each}
-			</nav>
-		</header>
-		<div class="pyramids">
-			{#each s.stylePyramids as pyramid (pyramid.style)}
-				<StylePyramid {pyramid} />
-			{/each}
-		</div>
-	</section>
-
-	<section class="stack">
-		<NotableAscents byStyle={s.notableByStyle} byArea={s.notableByArea} />
-	</section>
-
-	<section class="stack">
-		<header class="section-head">
-			<h2>CPR timelines</h2>
-			<p>Sport · Trad · Boulder performance over time</p>
-		</header>
-		<CprTimeline title="Sport" data={s.cpr.sport} />
-		<CprTimeline title="Trad" data={s.cpr.trad} />
-		<CprTimeline title="Boulder" data={s.cpr.boulder} />
-	</section>
-
-	<section class="grid">
-		<article class="panel">
-			<h2>Hardest sends</h2>
-			<ul class="list">
-				{#each s.hardestSends as climb (climb.routeName + (climb.ascentDate ?? ''))}
-					<li>
-						<div>
-							<strong>
-								{#if climb.url}
-									<a href={climb.url} target="_blank" rel="noreferrer">{climb.routeName}</a>
-								{:else}
-									{climb.routeName}
-								{/if}
-							</strong>
-							<div class="sub">
-								{#if climb.cragUrl && climb.cragName}
-									<a href={climb.cragUrl} target="_blank" rel="noreferrer">{climb.cragName}</a>
-								{:else}
-									{climb.cragName}
-								{/if}
-								· <TickTypeIcon tick={climb.tickType} />
-							</div>
-						</div>
-						<GradeChip grade={climb.gradeLabel ?? climb.gradeRaw} band={climb.gradeBand} />
-					</li>
+			</section>
+		{:else}
+			<section class="grid">
+				{#each row.ids as id (id)}
+					{@render card(id)}
 				{/each}
-			</ul>
-		</article>
-		<article class="panel">
-			<h2>Recent</h2>
-			<ul class="list">
-				{#each s.recent as climb (climb.id)}
-					<li>
-						<div>
-							<strong>
-								{#if climb.url}
-									<a href={climb.url} target="_blank" rel="noreferrer">{climb.routeName}</a>
-								{:else}
-									{climb.routeName}
-								{/if}
-							</strong>
-							<div class="sub">
-								{(climb.ascentDate || '').slice(0, 10)} · <TickTypeIcon tick={climb.tickType} /> ·
-								{#if climb.cragName}
-									<a href="/logbook?crag={encodeURIComponent(climb.cragName)}">{climb.cragName}</a>
-								{/if}
-								{#if climb.quality}
-									· {climb.quality}
-								{/if}
-								{#if climb.partners}
-									· with {climb.partners}
-								{/if}
-							</div>
-							<TagChips tags={climb.tags} />
-						</div>
-						<GradeChip grade={climb.gradeLabel ?? climb.gradeRaw} band={climb.gradeBand} />
-					</li>
-				{/each}
-			</ul>
-		</article>
-	</section>
+			</section>
+		{/if}
+	{/each}
 {/if}
 
 <style>

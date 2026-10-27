@@ -74,12 +74,28 @@ export function bandFromEwbank(grade: number | null | undefined): GradeBand | nu
 	return GRADE_BANDS[GRADE_BANDS.length - 1];
 }
 
-/** V-Scale → band (boulder table on theCrag grades page). */
+/**
+ * V-Scale → band (boulder table on theCrag grades page).
+ * Beginner: VB± · Intermediate: V0± · Experienced: V1–V4 · Expert: V5–V10 · Elite: V11+.
+ */
 export function bandFromVScale(v: number | null | undefined): GradeBand | null {
 	if (v == null || Number.isNaN(v)) return null;
-	if (v < 0) return GRADE_BANDS[0];
+	// VB+ is ~-0.5; V0- is ~-0.3 — do not treat all negatives as Beginner.
+	if (v <= -0.4) return GRADE_BANDS[0];
 	if (v < 1) return GRADE_BANDS[1];
 	if (v <= 4) return GRADE_BANDS[2];
 	if (v <= 10) return GRADE_BANDS[3];
 	return GRADE_BANDS[4];
+}
+
+/**
+ * Pyramid bucket for boulder scores.
+ * Keeps VB+ out of the V0 row (Math.round(-0.5) === 0), merges V0-/V0/V0+.
+ */
+export function boulderPyramidScoreKey(v: number): number {
+	if (v <= -1.25) return -1.5;
+	if (v <= -0.75) return -1;
+	if (v <= -0.4) return -0.5;
+	if (v < 0.65) return 0;
+	return Math.round(v);
 }

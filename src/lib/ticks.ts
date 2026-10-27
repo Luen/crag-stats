@@ -25,6 +25,7 @@ export function tickKind(tick: string | null | undefined): TickKind {
 	return 'other';
 }
 
+/** theCrag-like discipline colours — use everywhere (pyramids, mix chart, climber type, badges). */
 export const STYLE_BADGE_COLORS: Record<string, string> = {
 	Sport: '#1d6fa5',
 	Trad: '#e07a2f',
@@ -34,6 +35,9 @@ export const STYLE_BADGE_COLORS: Record<string, string> = {
 	Aid: '#6c757d',
 	Unknown: '#9aa0a6'
 };
+
+/** Alias for non-badge call sites (charts, share bars). */
+export const STYLE_COLORS = STYLE_BADGE_COLORS;
 
 export function styleBadgeColor(style: string | null | undefined): string {
 	const key = (style || '').trim();

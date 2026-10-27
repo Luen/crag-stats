@@ -3,13 +3,19 @@ import {
 	createGoal,
 	deleteGoal,
 	listGoals,
+	parseGoalGradeScore,
 	setGoalCompleted,
 	type GoalKind
 } from '#lib/server/goals';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async () => {
-	return { goals: listGoals() };
+	const goals = listGoals();
+	return {
+		goals,
+		active: goals.filter((g) => !g.completed),
+		achieved: goals.filter((g) => g.completed)
+	};
 };
 
 export const actions: Actions = {
@@ -19,19 +25,29 @@ export const actions: Actions = {
 		const title = String(form.get('title') || '').trim();
 		const targetValue = String(form.get('targetValue') || '').trim() || null;
 		const yearRaw = String(form.get('year') || '').trim();
-		const gradeRaw = String(form.get('targetGradeScore') || '').trim();
+		const gradeRaw = String(form.get('targetGradeScore') || form.get('grade') || '').trim();
+		const venueScope = String(form.get('venueScope') || '').trim() || null;
 		if (!title) return fail(400, { ok: false, message: 'Title is required' });
 
 		const year = yearRaw ? Number(yearRaw) : null;
-		const targetGradeScore = gradeRaw ? Number(gradeRaw) : null;
+		let targetGradeScore = gradeRaw ? parseGoalGradeScore(gradeRaw) : null;
+		if (kind === 'grade' && targetGradeScore == null && targetValue) {
+			targetGradeScore = parseGoalGradeScore(targetValue);
+		}
+		if (kind === 'grade' && (targetGradeScore == null || !Number.isFinite(targetGradeScore))) {
+			return fail(400, {
+				ok: false,
+				message: 'Enter a target grade (e.g. 25, 7a, V5) or numeric score'
+			});
+		}
 
 		createGoal({
 			kind,
 			title,
-			targetValue,
+			targetValue: kind === 'grade' ? String(targetGradeScore) : targetValue,
 			year: year != null && Number.isFinite(year) ? year : null,
-			targetGradeScore:
-				targetGradeScore != null && Number.isFinite(targetGradeScore) ? targetGradeScore : null
+			targetGradeScore,
+			venueScope
 		});
 		return { ok: true };
 	},

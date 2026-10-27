@@ -1,8 +1,10 @@
 <script lang="ts">
+	import { styleBadgeColor } from '#lib/ticks';
 	import type { CprTimelineData } from '#lib/types/dashboard';
 
 	type Props = { title: string; data: CprTimelineData; gradeMin?: number; gradeMax?: number };
 	let { title, data, gradeMin, gradeMax }: Props = $props();
+	const titleColor = $derived(styleBadgeColor(title));
 
 	const grades = $derived.by(() => {
 		const vals: number[] = [];
@@ -54,7 +56,7 @@
 
 <article class="panel">
 	<header>
-		<h3>{title}</h3>
+		<h3 style:color={titleColor}>{title}</h3>
 		<div class="scores">
 			{#if data.peakScore != null}
 				<span>Peak CPR <strong>{data.peakScore}</strong></span>

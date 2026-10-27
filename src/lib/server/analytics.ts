@@ -3,6 +3,7 @@ import {
 	bandById,
 	bandFromEwbank,
 	bandFromVScale,
+	boulderPyramidScoreKey,
 	convertFromEwbank,
 	convertFromVScale,
 	formatVScaleLabel,
@@ -13,8 +14,9 @@ import type { DashboardStats, NotableRow, StylePyramid } from '#lib/types/dashbo
 import { rockTypeBlurb, rockTypeInfo } from '#lib/rockTypes';
 import { resolveTheCragAvatar } from '#lib/thecragAvatar';
 import { theCragAscentUrl } from '#lib/thecragUrls';
-import { tickKind } from '#lib/ticks';
+import { styleBadgeColor, tickKind } from '#lib/ticks';
 import { buildCprTimeline, normalizeClimbStyle } from './cpr';
+import { buildBadges } from './badges';
 import {
 	buildMilestones,
 	buildMonthlyStats,
@@ -70,16 +72,6 @@ function tickSortKey(tick: string): number {
 	return soft >= 0 ? soft : 50;
 }
 let repairedGen = 0;
-
-const STYLE_COLORS: Record<string, string> = {
-	Sport: '#1d6fa5',
-	Trad: '#e07a2f',
-	Boulder: '#c44569',
-	'Top rope': '#7b5ea7',
-	Alpine: '#2a9d8f',
-	Aid: '#6c757d',
-	Unknown: '#9aa0a6'
-};
 
 const TICK_COLORS: Record<string, string> = {
 	Onsight: '#54b41a',
@@ -314,6 +306,7 @@ export function getDashboardStats(
 			routeHeightM: routes.heightM,
 			tagsJson: routes.tagsJson,
 			parentName: routes.parentName,
+			country: routes.country,
 			numberAttempts: ascents.numberAttempts,
 			cprDecayedGrade: ascents.cprDecayedGrade,
 			cprDecayedScore: ascents.cprDecayedScore,
@@ -408,13 +401,13 @@ export function getDashboardStats(
 		}
 
 		const isBoulder = normalizeClimbStyle(row.gearStyle) === 'boulder';
+		// Boulder bands always from V-score (theCrag table). Stored bands can be
+		// Ewbank-derived and paint V0 green.
 		const band =
-			rowBand ??
-			(rowScore != null
-				? isBoulder
-					? bandFromVScale(rowScore)?.id ?? null
-					: bandFromEwbank(rowScore)?.id ?? null
-				: null);
+			rowScore != null && isBoulder
+				? bandFromVScale(rowScore)?.id ?? null
+				: (rowBand ??
+					(rowScore != null ? bandFromEwbank(rowScore)?.id ?? null : null));
 
 		if (row.isSend && band) bandMap.set(band, (bandMap.get(band) ?? 0) + 1);
 
@@ -429,8 +422,8 @@ export function getDashboardStats(
 			const styleKey = style === 'Top rope' ? 'Top rope' : style;
 			if (!pyramid.has(styleKey)) pyramid.set(styleKey, new Map());
 			const byGrade = pyramid.get(styleKey)!;
-			// Integer buckets so V0- / V0 / V0+ don't create duplicate "V0" rows
-			const key = Math.round(rowScore);
+			// Boulder: keep VB+ out of V0; merge V0-/V0/V0+. Routes: integer score.
+			const key = isBoulder ? boulderPyramidScoreKey(rowScore) : Math.round(rowScore);
 			const slot = byGrade.get(key) ?? {
 				ticks: new Map<string, number>(),
 				band,
@@ -438,7 +431,8 @@ export function getDashboardStats(
 			};
 			const tickKey = row.isAttempt ? 'Other' : tick;
 			slot.ticks.set(tickKey, (slot.ticks.get(tickKey) ?? 0) + 1);
-			if (band) slot.band = band;
+			// Prefer Intermediate for a merged V0 row if any V0± landed here.
+			if (band != null && (slot.band == null || band > slot.band)) slot.band = band;
 			byGrade.set(key, slot);
 		}
 
@@ -466,7 +460,7 @@ export function getDashboardStats(
 			style,
 			count,
 			pct: Math.round((count / totalForShare) * 1000) / 10,
-			color: STYLE_COLORS[style] ?? STYLE_COLORS.Unknown
+			color: styleBadgeColor(style)
 		}))
 		.sort((a, b) => b.count - a.count);
 
@@ -510,7 +504,8 @@ export function getDashboardStats(
 			const rows = [...grades.entries()]
 				.map(([score, v]) => {
 					const total = [...v.ticks.values()].reduce((s, n) => s + n, 0);
-					const band = bandById(v.band ?? 0);
+					const bandId = isBoulder ? bandFromVScale(score)?.id ?? v.band : v.band;
+					const band = bandById(bandId ?? 0);
 					const params = new URLSearchParams({
 						style,
 						score: String(score)
@@ -518,7 +513,7 @@ export function getDashboardStats(
 					return {
 						grade: formatGrade(score, isBoulder, preferredSystem, null),
 						score,
-						band: v.band,
+						band: bandId,
 						color: band?.color ?? '#888',
 						total,
 						href: `/logbook?${params.toString()}`,
@@ -621,6 +616,7 @@ export function getDashboardStats(
 
 	const extraRows = all.map((a) => ({
 		ascentDate: a.ascentDate,
+		ascentId: a.id,
 		gearStyle: a.gearStyle,
 		isSend: a.isSend,
 		heightM: a.heightM,
@@ -631,14 +627,17 @@ export function getDashboardStats(
 		stars: a.stars,
 		gradeScore: a.gradeScore,
 		effectiveGradeScore: a.effectiveGradeScore,
+		gradeBand: a.gradeBand ?? a.effectiveGradeBand,
 		routeName: displayRouteName(a.routeName, a.pitchLabel, a.ascentLabel),
 		url: linkFor(a),
 		ascentUrl: a.ascentUrl,
-		tagsJson: a.tagsJson
+		tagsJson: a.tagsJson,
+		country: a.country
 	}));
 	const monthly = buildMonthlyStats(extraRows);
 	const yearly = buildYearlyStats(extraRows);
 	const milestones = buildMilestones(extraRows);
+	const badges = buildBadges(extraRows);
 	const trainingLoad = buildTrainingLoad(extraRows);
 	const styleMix = buildStyleMixOverTime(extraRows);
 	const partners = buildPartnerLeaderboard(extraRows).partners;
@@ -786,6 +785,7 @@ export function getDashboardStats(
 		monthly,
 		yearly,
 		milestones,
+		badges,
 		trainingLoad,
 		styleMix,
 		partners,
