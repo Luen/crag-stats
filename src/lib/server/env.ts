@@ -7,6 +7,7 @@ import {
 	SYNC_CRON,
 	PREFERRED_GRADE_SYSTEM,
 	SHOW_PRIVATE_NOTES,
+	ROUTE_HISTORY_IMPORT,
 	DISPLAY_LOCALE,
 	TZ,
 	NODE_ENV
@@ -21,6 +22,7 @@ const cache: Record<string, string | undefined> = {
 	SYNC_CRON,
 	PREFERRED_GRADE_SYSTEM,
 	SHOW_PRIVATE_NOTES,
+	ROUTE_HISTORY_IMPORT,
 	DISPLAY_LOCALE,
 	TZ,
 	NODE_ENV
@@ -37,4 +39,9 @@ export function env(name: string, fallback = ''): string {
 
 export function hasTheCragApiKey() {
 	return Boolean(env('THECRAG_API_KEY').trim());
+}
+
+/** Boolean env flag: true / 1 / yes / on (any case). Anything else, or unset, is false. */
+export function envFlag(name: string): boolean {
+	return ['1', 'true', 'yes', 'on'].includes(env(name).trim().toLowerCase());
 }

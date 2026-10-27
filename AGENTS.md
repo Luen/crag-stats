@@ -57,7 +57,8 @@ src/lib/server/
   cpr.ts                 # approximate CPR (not a proprietary theCrag clone)
   ingest.ts              # upsert + reconcileProviderAscents
   sync.ts                # runTheCragSync (full pull + prune)
-  routeHistoryImport.ts  # Settings FA/FFA import via /api/route + impers (#68)
+  routeHistoryEngine.ts  # opt-in FA/FFA route-history import: cache, pacing, marks (#68)
+  routeHistoryImport.ts  # env + impers wiring, background trigger after sync
   providers/thecrag/     # API + CSV + routeHistoryApi/Parse
   db/schema.ts
 migrations/              # 0001_init.sql, … 0010_route_history.sql
@@ -110,7 +111,7 @@ Height quirk: theCrag may return height as `[value, unit]` arrays — parse in t
 - **Climber type:** if one of Sport / Trad / Boulder is ≥ **40%** of ascents → “Sport climber” (etc.); else “Rock climber”.
 - **CPR timelines:** approximate model in `cpr.ts` (power factor P=5, tick shifts, ~0.7 grade/year decay). Link/docs: theCrag CPR articles. Label UI as approximate — not a byte-for-byte clone.
 - **Notable ascents:** by style + by area; use `StyleBadge` + `TickTypeIcon` (theCrag-like SVGs).
-- **First ascents:** theCrag has no FA tick type. FAs live in route history (not the logbook API). Owner can mark FA/FFA in the logbook (`first_ascents`, migration 0009) or **Settings → Import route history** (`routeHistoryImport.ts`, migration 0010): batches `/api/route/ids?show=info` via `impers` (Cloudflare blocks plain `fetch` on `/api/route`; logbook sync stays on normal `fetch`). Auto-mark only when `climbers` contains `@` + `profiles.login`; skip existing marks and previously unmarked routes unless the Settings checkboxes say otherwise. Cache public history in `route_history`. Fail soft if `impers`/koffi cannot load. Prefer negotiating proper theCrag API access long-term. Mark/unmark require `locals.authed`.
+- **First ascents:** theCrag has no FA tick type; FAs live in route history, which the logbook API doesn't return. The owner marks FA/FFA in the logbook (`first_ascents`, 0009). Optionally (`ROUTE_HISTORY_IMPORT=true`, **off by default**) `routeHistoryEngine.ts` imports public history in the background after each sync: each route **once** (`route_history_fetches`), **20 routes per run**, ≥1.1 s between requests, one `impers` session per run, stop + back off (≥24 h, honours Retry-After) on any block. Auto-marks only on an exact `@login` match and never overrides manual marks/unmarks. Details: `docs/dev/ROUTE_HISTORY.md`. Mark/unmark and import actions require `locals.authed`.
 - Summary metrics: onsights, successful ascents, distance climbed (km).
 
 ---
@@ -201,7 +202,7 @@ Prefer fixing type errors over `@ts-ignore`. Do not switch the package manager.
 - Don’t commit secrets, sample private notes, or real API keys.
 - Don’t expand scope into wearables / Mountain Project until the matching epic is in play — keep PRs focused.
 - Don’t claim CPR is identical to theCrag’s proprietary score.
-- Don’t HTML-scrape theCrag route pages for history — use `/api/route/…?show=info` (via `impers` while Cloudflare blocks plain fetch). Don’t use impersonation for the logbook sync path.
+- Don’t HTML-scrape theCrag route pages, and don’t loosen the route-history limits (once per route, 20 per run, ≥1 s gap, stop on block). `impers` is only for the opt-in `/api/route` import, never the logbook sync. Prefer negotiated theCrag API access.
 
 ---
 
@@ -266,6 +267,6 @@ You'll often notice things outside the task at hand. **Don't silently fix them i
 
 | 2026-10 | Customize dashboard moved to Settings (`/settings#dashboard`, actions `saveDashboardLayout` / `resetDashboardLayout`); the dashboard keeps an owner-only "Customize dashboard" link. |
 
-| 2026-10 | #68: Settings → Import route history. `impers` + `/api/route/ids?show=info` (migration 0010: `route_history`, import state, FA import skips). Auto-marks FA/FFA when `@login` matches; never overwrites/re-applies unmarked without checkboxes. |
+| 2026-10 | #68: opt-in route-history import (`ROUTE_HISTORY_IMPORT`, off by default). Runs in the background after sync: each route once, 20 per run, ≥1 s between requests, back-off on blocks. Migration 0010: `route_history`, `route_history_fetches`, import state, FA import skips. Dev notes in `docs/dev/ROUTE_HISTORY.md`. |
 
 _Add a row when you change behaviour agents must know about._

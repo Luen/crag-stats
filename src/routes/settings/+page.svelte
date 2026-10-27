@@ -5,6 +5,8 @@
 
 	let { data, form }: PageProps = $props();
 
+	const rh = $derived(data.routeHistory);
+
 	const systems = [
 		{ id: 'ewbank', label: 'Ewbanks (AU/NZ)' },
 		{ id: 'french', label: 'French' },
@@ -25,8 +27,8 @@
 	<p class="banner ok">Dashboard layout saved. <a href="/">View dashboard</a></p>
 {:else if form?.saved}
 	<p class="banner ok">Preferences saved.</p>
-{:else if form?.routeHistoryImport}
-	<p class="banner ok">{form.routeHistoryImport.message ?? 'Route history import finished.'}</p>
+{:else if form?.routeHistoryMessage}
+	<p class="banner ok">{form.routeHistoryMessage}</p>
 {:else if form?.ok}
 	<p class="banner ok">Done.</p>
 {/if}
@@ -162,68 +164,84 @@
 	<article class="panel">
 		<h2>Import route history</h2>
 		<p class="hint">
-			Pulls public FA / FFA entries from theCrag's route API for every route in your local logbook,
-			and marks ones that name your <code>@login</code>. Uses browser TLS impersonation (<code
-				>impers</code
-			>) because Cloudflare blocks plain server requests to
-			<code>/api/route</code> — prefer asking theCrag for proper access when you can.
+			Reads the public FA / FFA history of routes in your logbook from theCrag and marks the ones
+			that name your <code>@login</code>. Each route is checked once (history doesn't change), 20
+			routes per run, at most one request a second, after each logbook sync.
 			<a href="/docs/first-ascents">How first ascents work</a>
 		</p>
-		{#if data.routeHistoryImport.updatedAt}
+		{#if !rh.enabled}
+			<p class="hint">
+				Off. To turn it on, set <code>ROUTE_HISTORY_IMPORT=true</code> in <code>.env</code> and
+				restart. theCrag blocks plain server requests to its route API, so this uses browser
+				impersonation (<code>impers</code>). It's at your own risk under theCrag's terms; manual FA
+				marks always work.
+			</p>
+		{:else if !rh.hasApiKey}
+			<p class="hint">Needs <code>THECRAG_API_KEY</code> (the same key as API sync).</p>
+		{:else}
 			<p class="status">
 				<span
 					class={[
 						'pill',
 						{
-							ok:
-								data.routeHistoryImport.status === 'done' ||
-								data.routeHistoryImport.status === 'idle',
-							err: data.routeHistoryImport.status === 'error'
+							ok: rh.status === 'idle' || rh.status === 'running',
+							err: rh.status === 'error' || rh.status === 'blocked'
 						}
-					]}>{data.routeHistoryImport.status}</span
+					]}>{rh.status}</span
 				>
 				<span>
-					{data.routeHistoryImport.offset}/{data.routeHistoryImport.total} routes · marked
-					{data.routeHistoryImport.marked} · skipped {data.routeHistoryImport.skipped}
+					{rh.fetchedRoutes} of {rh.totalRoutes} routes checked · {rh.importedMarks} FA/FFA imported
+					{#if rh.lastRunAt}
+						· last run {formatDateTime(rh.lastRunAt, data.dateDisplay)} ({rh.lastFetched} checked)
+					{/if}
 				</span>
 			</p>
-			{#if data.routeHistoryImport.lastError}
-				<p class="err">{data.routeHistoryImport.lastError}</p>
+			{#if rh.nextAllowedAt && (rh.status === 'blocked' || rh.status === 'error')}
+				<p class="err">
+					{rh.lastError} Paused until {formatDateTime(rh.nextAllowedAt, data.dateDisplay)}.
+				</p>
 			{/if}
-		{/if}
-		{#if data.hasApiKey}
-			<form method="POST" action="?/importRouteHistory" class="stack">
-				<label class="check">
-					<input type="checkbox" name="restart" />
-					<span>
-						<strong>Start over</strong>
-						<small class="hint">Reset progress and fetch from the first route again.</small>
-					</span>
-				</label>
-				<label class="check">
-					<input type="checkbox" name="replaceExisting" />
-					<span>
-						<strong>Replace existing FA / FFA marks</strong>
-						<small class="hint">Off by default — never overwrites marks you already set.</small>
-					</span>
-				</label>
-				<label class="check">
-					<input type="checkbox" name="reapplyUnmarked" />
-					<span>
-						<strong>Re-apply previously unmarked</strong>
-						<small class="hint"
-							>Off by default — routes you unmarked in the logbook stay unmarked.</small
-						>
-					</span>
-				</label>
-				<button type="submit"
-					>{data.routeHistoryImport.resumable ? 'Resume import' : 'Import route history'}</button
-				>
-			</form>
-		{:else}
-			<p class="hint">
-				Needs <code>THECRAG_API_KEY</code> (same key as API sync).
-			</p>
+			<div class="actions">
+				<form method="POST" action="?/fetchRouteHistory">
+					<button type="submit" disabled={rh.running || rh.pendingRoutes === 0}>
+						{rh.pendingRoutes === 0 ? 'All routes checked' : `Check next ${rh.perRun} routes now`}
+					</button>
+				</form>
+			</div>
+			<details>
+				<summary>Re-apply or refresh</summary>
+				<form method="POST" action="?/reapplyRouteHistory" class="stack">
+					<p class="hint">
+						Re-applies marks from history already saved here. No requests to theCrag.
+					</p>
+					<label class="check">
+						<input type="checkbox" name="replaceExisting" />
+						<span>
+							<strong>Replace existing FA / FFA marks</strong>
+							<small class="hint">Off by default: marks you set stay as they are.</small>
+						</span>
+					</label>
+					<label class="check">
+						<input type="checkbox" name="reapplyUnmarked" />
+						<span>
+							<strong>Re-apply routes I unmarked</strong>
+							<small class="hint">Off by default: routes you unmarked stay unmarked.</small>
+						</span>
+					</label>
+					<button type="submit" class="secondary">Re-apply from saved history</button>
+				</form>
+				<form method="POST" action="?/refreshRouteHistory" class="stack">
+					<p class="hint">
+						Check every route again, still 20 per run. Only useful if theCrag's history was
+						corrected.
+					</p>
+					<label class="field">
+						<span>Type <code>REFRESH</code> to confirm</span>
+						<input name="confirm" autocomplete="off" />
+					</label>
+					<button type="submit" class="secondary">Refresh all routes</button>
+				</form>
+			</details>
 		{/if}
 	</article>
 

@@ -4,9 +4,9 @@ The **First ascents** card counts the routes and boulders where you did the firs
 
 ## Marking a first ascent
 
-theCrag records first ascents in each route's **history** (the FA / FFA entries on the route page), not as a tick type. Its logbook API doesn't return route history, so Crag Stats can't detect them during a normal sync. You can mark them yourself, or import them from route history (below).
+theCrag records first ascents in each route's **history** (the FA / FFA entries on the route page), not as a tick type. Its logbook API doesn't return route history, so a normal sync can't see them. You can mark them yourself, or turn on the optional import below.
 
-### Manual mark
+### Mark one yourself
 
 1. Open the **Logbook** and find any ascent of the route.
 2. Hover the row (or tab to it) and press **Mark FA** or **FFA**.
@@ -16,23 +16,33 @@ Only someone who can open Settings can mark FAs: anyone if no `APP_PASSWORD` is 
 
 The mark is stored against theCrag's route ID, so it survives re-syncs. It disappears from the card if every ascent of the route is deleted on theCrag, and it comes back if you log the route again. **Settings → Wipe** removes all marks.
 
-### Import from route history
+### Import them from route history (optional, off by default)
 
-**Settings → Import route history** walks every route in your local logbook and calls theCrag's `/api/route/ids?show=info` endpoint (batch of 10, ~1 request per second, resumable). When a history row's `climbers` field includes your `@login` (from the synced profile) as **First Ascent** or **First Free Ascent**, that route is marked automatically.
+If your server owner turns it on (`ROUTE_HISTORY_IMPORT=true`), Crag Stats reads each logbook route's public history from theCrag in the background and marks the FAs and FFAs that name you.
 
-- Free-text climber names without `@login` are skipped — too ambiguous.
-- Existing marks are left alone unless you tick **Replace existing FA / FFA marks**.
-- Routes you unmarked stay unmarked unless you tick **Re-apply previously unmarked**.
-- Public history rows are cached locally (`route_history`) for later features (setter / notable badges); private notes are never stored from this path.
+- **Only entries naming your theCrag username** (`@yourlogin`) count. Plain-text names are ignored because they're too easy to mix up.
+- **Your choices win.** Marks you set stay as they are, and routes you unmarked stay unmarked. **Settings → Route history → Re-apply** can override either, using history already saved, without asking theCrag again.
+- **Gentle on theCrag.** Each route is checked **once** (first ascents don't change), at most **20 routes per run** and one request a second. A run happens after each logbook sync, or when you press **Check next 20 routes now**. If theCrag pushes back, the import pauses for at least a day.
+- Settings shows how many of your routes have been checked so far. With the daily sync, a few hundred routes take a few weeks; pressing the button speeds that up.
 
-Cloudflare blocks plain server requests to `/api/route`, so the importer uses [impers](https://github.com/lexiforest/impers) (browser TLS impersonation). Prefer asking theCrag for proper route/anonweb API access when you can. If impersonation fails to load on your platform, the Settings action fails with a clear error and leaves manual marks intact.
+Only public route history is saved, never your private ascent notes. **Settings → Wipe** removes it along with your marks.
 
 ## What the card shows
 
 - **Count:** how many routes you've marked. When you have FFAs, it also shows the FA / FFA split.
-- **Years:** from the year of your first FA to your latest. Each FA is dated by your earliest logged ascent of the route.
+- **Years:** from the year of your first FA to your latest. Each FA is dated by your **first logged send** of the route (see below).
 - **Grade range:** your easiest and hardest FA, using the route's grade (not a single pitch). Routes and boulders are listed separately, because Ewbank and V-grades can't be compared. Grades show in your display grade system.
 - **Styles:** how your FAs split across sport, trad, boulder and so on, using the route's style on theCrag.
 - **Latest:** your five most recent FAs.
 
 The card only appears for visitors once at least one FA is marked. Until then, the owner sees a short how-to instead.
+
+## When an FA counts, and its date
+
+A first ascent is the send, so each one is dated by your **first logged send** of the marked route. Earlier attempts and hang-dogs while you worked it don't count, and neither do later repeats. If you've only logged attempts so far, the route still appears on the card (dated by your earliest ascent), but it doesn't earn badges or a milestone until you log the send.
+
+## Badges and milestones
+
+- **First Ascent** and **First Free Ascent:** your first send of a route you marked FA, or FFA.
+- **Route Developer** (5) and **Pioneer** (10): first ascents of that many different routes, FA and FFA combined.
+- Each FA also adds a milestone on the date of that first send.

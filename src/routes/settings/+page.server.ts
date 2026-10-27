@@ -19,7 +19,13 @@ import { hasTheCragApiKey } from '#lib/server/env';
 import { upsertAscents } from '#lib/server/ingest';
 import { parseTheCragCsv } from '#lib/server/providers/thecrag';
 import { refreshProjects } from '#lib/server/projects';
-import { getRouteHistoryImportStatus, runRouteHistoryImport } from '#lib/server/routeHistoryImport';
+import {
+	getRouteHistoryStatus,
+	isRouteHistoryImportEnabled,
+	reapplyRouteHistoryMarks,
+	refreshAllRouteHistory,
+	triggerRouteHistoryImport
+} from '#lib/server/routeHistoryImport';
 import { getSyncStatus, runTheCragSync } from '#lib/server/sync';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -34,7 +40,7 @@ export const load: PageServerLoad = async ({ cookies }) => {
 			getAppSetting('dashboard_layout'),
 			cookies.get(DASH_LAYOUT_COOKIE)
 		),
-		routeHistoryImport: getRouteHistoryImportStatus()
+		routeHistory: getRouteHistoryStatus()
 	};
 };
 
@@ -114,28 +120,40 @@ export const actions: Actions = {
 		wipeAllData();
 		return { ok: true, wiped: true };
 	},
-	/** Owner-only (settings gate): pull public route history and auto-mark FA/FFA (#68). */
-	importRouteHistory: async ({ request }) => {
-		const form = await request.formData();
-		try {
-			const result = await runRouteHistoryImport({
-				restart: form.get('restart') === 'on',
-				replaceExisting: form.get('replaceExisting') === 'on',
-				reapplyUnmarked: form.get('reapplyUnmarked') === 'on'
-			});
-			if (!result.ok) {
-				return fail(400, {
-					ok: false,
-					message: result.message ?? 'Route history import failed',
-					routeHistoryImport: result
-				});
-			}
-			return { ok: true, routeHistoryImport: result };
-		} catch (err) {
-			return fail(400, {
-				ok: false,
-				message: err instanceof Error ? err.message : String(err)
-			});
+	// Route history (#68), opt-in via ROUTE_HISTORY_IMPORT. /settings is already owner-gated.
+	/** Check the next 20 unchecked routes in the background; returns immediately. */
+	fetchRouteHistory: async ({ locals }) => {
+		if (!locals.authed) return fail(403);
+		if (!isRouteHistoryImportEnabled()) {
+			return fail(400, { ok: false, message: 'Set ROUTE_HISTORY_IMPORT=true to enable this.' });
 		}
+		triggerRouteHistoryImport('settings');
+		return { ok: true, routeHistoryMessage: 'Checking the next routes in the background.' };
+	},
+	/** Re-apply FA/FFA marks from history already cached locally (no requests to theCrag). */
+	reapplyRouteHistory: async ({ request, locals }) => {
+		if (!locals.authed) return fail(403);
+		const form = await request.formData();
+		const { marked, routes } = reapplyRouteHistoryMarks({
+			replaceExisting: form.get('replaceExisting') === 'on',
+			reapplyUnmarked: form.get('reapplyUnmarked') === 'on'
+		});
+		return {
+			ok: true,
+			routeHistoryMessage: `Re-applied cached history for ${routes} routes: ${marked} marks changed.`
+		};
+	},
+	/** Forget which routes were checked, so they're fetched again gradually (20 per run). */
+	refreshRouteHistory: async ({ request, locals }) => {
+		if (!locals.authed) return fail(403);
+		const form = await request.formData();
+		if (String(form.get('confirm') || '') !== 'REFRESH') {
+			return fail(400, { ok: false, message: 'Type REFRESH to confirm' });
+		}
+		const n = refreshAllRouteHistory();
+		return {
+			ok: true,
+			routeHistoryMessage: `${n} routes will be checked again, 20 per run.`
+		};
 	}
 };

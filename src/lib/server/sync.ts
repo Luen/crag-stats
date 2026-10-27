@@ -9,6 +9,7 @@ import {
 } from './ingest';
 import { refreshProjects } from './projects';
 import { repairGradesFromRawJson } from './repairGrades';
+import { triggerRouteHistoryImport } from './routeHistoryImport';
 
 let syncing = false;
 
@@ -65,6 +66,9 @@ export async function runTheCragSync(opts?: { full?: boolean }) {
 			lastSuccessAt: new Date().toISOString(),
 			lastError: null
 		});
+
+		// Opt-in (ROUTE_HISTORY_IMPORT): check the next 20 routes' history in the background.
+		triggerRouteHistoryImport('after sync');
 
 		return {
 			skipped: false as const,

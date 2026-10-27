@@ -217,16 +217,33 @@ export const firstAscentImportSkips = sqliteTable(
 	(t) => [primaryKey({ columns: [t.provider, t.routeExternalId] })]
 );
 
-/** Resumable Settings → Import route history progress (migration 0010). */
+/**
+ * Routes theCrag already answered for (migration 0010). FA/FFA history never changes, so a
+ * route listed here is never fetched again unless the owner chooses "Refresh all".
+ */
+export const routeHistoryFetches = sqliteTable(
+	'route_history_fetches',
+	{
+		provider: text('provider').notNull(),
+		routeExternalId: text('route_external_id').notNull(),
+		/** ok (history stored, maybe empty) | missing (not in the response) */
+		status: text('status').notNull(),
+		historyCount: integer('history_count').notNull().default(0),
+		fetchedAt: text('fetched_at').notNull()
+	},
+	(t) => [primaryKey({ columns: [t.provider, t.routeExternalId] })]
+);
+
+/** Last background import run and back-off after errors or blocks (migration 0010). */
 export const routeHistoryImportState = sqliteTable('route_history_import_state', {
 	provider: text('provider').primaryKey(),
-	offset: integer('offset').notNull().default(0),
-	total: integer('total').notNull().default(0),
-	fetched: integer('fetched').notNull().default(0),
-	marked: integer('marked').notNull().default(0),
-	skipped: integer('skipped').notNull().default(0),
-	errors: integer('errors').notNull().default(0),
+	/** idle | running | blocked | error */
 	status: text('status').notNull().default('idle'),
+	lastRunAt: text('last_run_at'),
+	lastFetched: integer('last_fetched').notNull().default(0),
+	lastMarked: integer('last_marked').notNull().default(0),
 	lastError: text('last_error'),
+	consecutiveFailures: integer('consecutive_failures').notNull().default(0),
+	nextAllowedAt: text('next_allowed_at'),
 	updatedAt: text('updated_at').notNull()
 });

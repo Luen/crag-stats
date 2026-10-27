@@ -60,12 +60,5 @@
 		"impers": "0.1.2",
 		"marked": "^18.1.2",
 		"node-cron": "^4.6.0"
-	},
-	"pnpm": {
-		"onlyBuiltDependencies": [
-			"better-sqlite3",
-			"esbuild",
-			"koffi"
-		]
 	}
 }
