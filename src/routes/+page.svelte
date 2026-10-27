@@ -19,6 +19,7 @@
 	import Streaks from '#lib/components/Streaks.svelte';
 	import Eddington from '#lib/components/Eddington.svelte';
 	import FirstAscents from '#lib/components/FirstAscents.svelte';
+	import SoloClimbing from '#lib/components/SoloClimbing.svelte';
 	import StyleMixChart from '#lib/components/StyleMixChart.svelte';
 	import StylePyramid from '#lib/components/StylePyramid.svelte';
 	import TagChips from '#lib/components/TagChips.svelte';
@@ -83,6 +84,8 @@
 		<Eddington data={s.eddington} />
 	{:else if id === 'firstAscents'}
 		<FirstAscents data={s.firstAscents} canEdit={data.showSettings} />
+	{:else if id === 'solo'}
+		<SoloClimbing data={s.solo} />
 	{:else if id === 'athleteProfile'}
 		<AthleteProfile axes={s.athleteProfile.axes} />
 	{:else if id === 'heatmap'}

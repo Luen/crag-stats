@@ -42,7 +42,7 @@ test.describe('app shell', () => {
 	test('docs: every page renders and the dashboard links into them', async ({ page }) => {
 		await page.goto('/docs');
 		const links = page.locator('.toc a');
-		await expect(links).toHaveCount(8);
+		await expect(links).toHaveCount(9);
 		for (const slug of [
 			'eddington',
 			'climber-type',
