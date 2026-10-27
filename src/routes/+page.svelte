@@ -18,6 +18,7 @@
 	import RockTypePanel from '#lib/components/RockTypePanel.svelte';
 	import StarsScatter from '#lib/components/StarsScatter.svelte';
 	import Streaks from '#lib/components/Streaks.svelte';
+	import Eddington from '#lib/components/Eddington.svelte';
 	import StyleMixChart from '#lib/components/StyleMixChart.svelte';
 	import StylePyramid from '#lib/components/StylePyramid.svelte';
 	import TagChips from '#lib/components/TagChips.svelte';
@@ -69,6 +70,8 @@
 			longestDays={s.streaks.longestDays}
 			lastActiveDate={s.streaks.lastActiveDate}
 		/>
+	{:else if id === 'eddington'}
+		<Eddington data={s.eddington} />
 	{:else if id === 'athleteProfile'}
 		<AthleteProfile axes={s.athleteProfile.axes} />
 	{:else if id === 'heatmap'}

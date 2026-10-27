@@ -138,3 +138,13 @@ chrome --headless=new --hide-scrollbars --user-data-dir=/tmp/cs-shots \
   --window-size=1440,1300 --virtual-time-budget=20000 --blink-settings=preferredColorScheme=1 \
   --screenshot=docs/screenshots/dashboard-light.png http://localhost:5173/
 ```
+
+## GitHub social preview
+
+`docs/social-preview.png` (1280×640) is the repo's social preview image (GitHub → Settings → General → Social preview). Its source is `docs/dev/social-preview.html`. It uses made-up numbers and loads the bundled Plus Jakarta Sans from `node_modules`, so run `pnpm install` first. Regenerate from the repo root:
+
+```bash
+chrome --headless=new --hide-scrollbars --user-data-dir=/tmp/cs-shots --window-size=1280,640 \
+  --virtual-time-budget=5000 --allow-file-access-from-files \
+  --screenshot=docs/social-preview.png "file://$PWD/docs/dev/social-preview.html"
+```

@@ -1,0 +1,312 @@
+<!doctype html>
+<!--
+	Source for docs/social-preview.png (GitHub repo → Settings → Social preview, 1280×640).
+	Regenerate from the repo root after `pnpm install` (see docs/dev/BRANDING.md).
+	All numbers are made up; no real logbook data.
+-->
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<title>Crag Stats social preview</title>
+		<style>
+			@font-face {
+				font-family: 'Plus Jakarta Sans';
+				src: url('../../node_modules/@fontsource-variable/plus-jakarta-sans/files/plus-jakarta-sans-latin-wght-normal.woff2')
+					format('woff2');
+				font-weight: 200 800;
+			}
+			:root {
+				--bg: #0f1218;
+				--paper: #171b23;
+				--surface: #1d222c;
+				--line: #2a303c;
+				--ink: #e8eaf0;
+				--muted: #98a1b3;
+				--brand: #fb7a3c;
+				--sport: #1d6fa5;
+				--trad: #e07a2f;
+				--boulder: #a12b4a;
+				--b1: rgb(84, 180, 26);
+				--b2: rgb(254, 225, 0);
+				--b3: rgb(229, 131, 41);
+				--b4: rgb(201, 9, 9);
+				--b5: rgb(178, 24, 130);
+			}
+			* {
+				box-sizing: border-box;
+			}
+			html,
+			body {
+				margin: 0;
+				width: 1280px;
+				height: 640px;
+				overflow: hidden;
+				background: var(--bg);
+				color: var(--ink);
+				font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+			}
+			.glow {
+				position: absolute;
+				inset: 0;
+				background:
+					radial-gradient(600px 420px at 8% 0%, rgba(251, 122, 60, 0.18), transparent 70%),
+					radial-gradient(700px 500px at 100% 100%, rgba(29, 111, 165, 0.16), transparent 70%);
+			}
+			.left {
+				position: absolute;
+				left: 80px;
+				top: 0;
+				bottom: 0;
+				width: 560px;
+				display: flex;
+				flex-direction: column;
+				justify-content: center;
+			}
+			.lockup {
+				display: flex;
+				align-items: center;
+				gap: 22px;
+			}
+			.lockup svg {
+				width: 104px;
+				height: 104px;
+			}
+			.word {
+				font-size: 84px;
+				font-weight: 800;
+				letter-spacing: -0.035em;
+				line-height: 1;
+			}
+			.word span {
+				color: var(--brand);
+			}
+			.tag {
+				margin: 34px 0 0;
+				font-size: 32px;
+				line-height: 1.3;
+				font-weight: 500;
+				color: var(--ink);
+				letter-spacing: -0.01em;
+			}
+			.sub {
+				margin: 18px 0 0;
+				font-size: 21px;
+				line-height: 1.5;
+				color: var(--muted);
+			}
+			.chips {
+				display: flex;
+				gap: 10px;
+				margin-top: 34px;
+			}
+			.chips span {
+				padding: 8px 16px;
+				border: 1px solid var(--line);
+				border-radius: 999px;
+				font-size: 17px;
+				font-weight: 600;
+				color: var(--muted);
+				background: color-mix(in srgb, var(--paper) 70%, transparent);
+			}
+			/* Mock dashboard, tilted, bleeding off the right edge. */
+			.mock {
+				position: absolute;
+				left: 700px;
+				top: 34px;
+				width: 640px;
+				transform: rotate(-4deg);
+				display: grid;
+				grid-template-columns: 1fr 1fr;
+				gap: 16px;
+			}
+			.card {
+				background: var(--paper);
+				border: 1px solid var(--line);
+				border-radius: 18px;
+				padding: 20px 22px;
+				box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+			}
+			.card h3 {
+				margin: 0 0 14px;
+				font-size: 16px;
+				font-weight: 700;
+			}
+			.stat strong {
+				display: block;
+				font-size: 38px;
+				font-weight: 800;
+				letter-spacing: -0.02em;
+			}
+			.stat em {
+				font-style: normal;
+				color: var(--muted);
+				font-size: 15px;
+			}
+			.stat.hot strong {
+				color: var(--brand);
+			}
+			.wide {
+				grid-column: span 2;
+			}
+			.pyr {
+				display: grid;
+				gap: 5px;
+			}
+			.row {
+				display: grid;
+				grid-template-columns: 34px 1fr;
+				align-items: center;
+				gap: 10px;
+				font-size: 13px;
+				font-weight: 700;
+				color: var(--muted);
+			}
+			.bar {
+				height: 14px;
+				border-radius: 4px;
+				display: flex;
+				overflow: hidden;
+			}
+			.bar i {
+				display: block;
+				height: 100%;
+			}
+			.mix {
+				display: flex;
+				height: 26px;
+				border-radius: 8px;
+				overflow: hidden;
+				font-size: 12px;
+				font-weight: 800;
+				color: #fff;
+			}
+			.mix div {
+				display: grid;
+				place-items: center;
+			}
+			.edd {
+				display: grid;
+				grid-template-columns: repeat(4, 1fr);
+				gap: 8px;
+			}
+			.edd div {
+				border: 1px solid var(--line);
+				border-top: 3px solid #2dd4bf;
+				border-radius: 10px;
+				padding: 8px 6px;
+				text-align: center;
+				background: var(--surface);
+			}
+			.edd strong {
+				display: block;
+				font-size: 24px;
+				font-weight: 800;
+			}
+			.edd span {
+				font-size: 11px;
+				color: var(--muted);
+			}
+			.bands {
+				position: absolute;
+				left: 0;
+				right: 0;
+				bottom: 0;
+				height: 10px;
+				display: flex;
+			}
+			.bands i {
+				flex: 1;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="glow"></div>
+
+		<div class="mock" aria-hidden="true">
+			<div class="card stat hot"><strong>412</strong><em>onsighted</em></div>
+			<div class="card stat"><strong>18.6 km</strong><em>distance climbed</em></div>
+			<div class="card wide">
+				<h3>Sport pyramid</h3>
+				<div class="pyr">
+					<div class="row">
+						<span>24</span>
+						<div class="bar" style="width: 22%">
+							<i style="width: 100%; background: var(--b3)"></i>
+						</div>
+					</div>
+					<div class="row">
+						<span>23</span>
+						<div class="bar" style="width: 38%">
+							<i style="width: 100%; background: var(--b3)"></i>
+						</div>
+					</div>
+					<div class="row">
+						<span>22</span>
+						<div class="bar" style="width: 55%">
+							<i style="width: 100%; background: var(--b3)"></i>
+						</div>
+					</div>
+					<div class="row">
+						<span>21</span>
+						<div class="bar" style="width: 74%">
+							<i style="width: 100%; background: var(--b3)"></i>
+						</div>
+					</div>
+					<div class="row">
+						<span>20</span>
+						<div class="bar" style="width: 90%">
+							<i style="width: 100%; background: var(--b3)"></i>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="card wide">
+				<h3>Climber type · Sport climber</h3>
+				<div class="mix">
+					<div style="width: 48%; background: var(--sport)">SPORT 48%</div>
+					<div style="width: 27%; background: var(--trad)">TRAD 27%</div>
+					<div style="width: 25%; background: var(--boulder)">BOULDER 25%</div>
+				</div>
+			</div>
+			<div class="card wide">
+				<h3>Eddington numbers</h3>
+				<div class="edd">
+					<div><strong>9</strong><span>send days</span></div>
+					<div><strong>14</strong><span>vertical</span></div>
+					<div><strong>21</strong><span>route grade</span></div>
+					<div><strong>4</strong><span>boulder grade</span></div>
+				</div>
+			</div>
+		</div>
+
+		<div class="left">
+			<div class="lockup">
+				<svg viewBox="0 0 64 64" aria-hidden="true">
+					<mask id="cs-bars">
+						<rect width="64" height="64" fill="#fff" />
+						<g fill="#000">
+							<rect x="18" y="43" width="6" height="18" rx="1" />
+							<rect x="29" y="35" width="6" height="26" rx="1" />
+							<rect x="40" y="27" width="6" height="34" rx="1" />
+						</g>
+					</mask>
+					<path d="M2 56 L22 18 L30.5 32 L41.5 10 L62 56 Z" fill="#fb7a3c" mask="url(#cs-bars)" />
+				</svg>
+				<div class="word">Crag <span>Stats</span></div>
+			</div>
+			<p class="tag">Self-hosted climbing analytics for your theCrag logbook.</p>
+			<p class="sub">
+				Grade pyramids, CPR, projects, goals and Eddington numbers. Your data, your server.
+			</p>
+			<div class="chips">
+				<span>Docker</span><span>SvelteKit</span><span>SQLite</span><span>MIT</span>
+			</div>
+		</div>
+
+		<div class="bands" aria-hidden="true">
+			<i style="background: var(--b1)"></i><i style="background: var(--b2)"></i
+			><i style="background: var(--b3)"></i><i style="background: var(--b4)"></i
+			><i style="background: var(--b5)"></i>
+		</div>
+	</body>
+</html>
