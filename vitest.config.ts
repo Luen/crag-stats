@@ -15,6 +15,9 @@ export default defineConfig({
 		name: 'crag-stats',
 		environment: 'node',
 		include: ['src/**/*.{test,spec}.ts'],
+		// Each test file gets its own in-memory SQLite (#lib/server/db opens DATABASE_PATH on
+		// import). Parallel workers sharing one WAL file failed with "disk I/O error" (#57).
+		env: { DATABASE_PATH: ':memory:' },
 		reporters: ['default']
 	}
 });
