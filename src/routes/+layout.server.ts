@@ -3,7 +3,7 @@ import { join } from 'node:path';
 import { sql } from 'drizzle-orm';
 import { db, ensureSchema } from '#lib/server/db';
 import { ascents } from '#lib/server/db/schema';
-import { listActiveProjects } from '#lib/server/projects';
+import { countActiveProjects } from '#lib/server/projects';
 import { getSearchIndexing } from '#lib/server/appSettings';
 import { isAuthEnabled, authScope } from '#lib/server/auth';
 import { resolveDateDisplay } from '#lib/dates';
@@ -35,7 +35,7 @@ function navCounts(): { ascents: number; projects: number } {
 				.from(ascents)
 				.get()?.n ?? 0;
 		// Same "working on" definition as /projects (open + touched within a year).
-		const p = listActiveProjects().workingOn.length;
+		const p = countActiveProjects();
 		return { ascents: a, projects: p };
 	} catch {
 		return { ascents: 0, projects: 0 };
