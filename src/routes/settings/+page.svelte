@@ -1,4 +1,5 @@
 <script lang="ts">
+	import DashboardLayoutEditor from '#lib/components/DashboardLayoutEditor.svelte';
 	import { formatDateTime } from '#lib/dates';
 	import type { PageProps } from './$types';
 
@@ -20,6 +21,8 @@
 
 {#if form?.message}
 	<p class="banner err">{form.message}</p>
+{:else if form?.layoutSaved}
+	<p class="banner ok">Dashboard layout saved. <a href="/">View dashboard</a></p>
 {:else if form?.saved}
 	<p class="banner ok">Preferences saved.</p>
 {:else if form?.ok}
@@ -83,6 +86,11 @@
 			</label>
 			<button type="submit">Save preferences</button>
 		</form>
+	</article>
+
+	<article class="panel" id="dashboard">
+		<h2>Dashboard layout</h2>
+		<DashboardLayoutEditor layout={data.dashLayout} />
 	</article>
 
 	<article class="panel">

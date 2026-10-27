@@ -1,6 +1,15 @@
 import { fail } from '@sveltejs/kit';
+import {
+	DASH_LAYOUT_COOKIE,
+	defaultLayout,
+	parseLayoutCookie,
+	resolveDashLayout,
+	serializeLayout
+} from '#lib/dashboardLayout';
 import { parseGradeSystem, wipeAllData } from '#lib/server/analytics';
 import {
+	deleteAppSetting,
+	getAppSetting,
 	getPreferredGradeSystem,
 	getSearchIndexing,
 	getShowNotes,
@@ -13,17 +22,37 @@ import { refreshProjects } from '#lib/server/projects';
 import { getSyncStatus, runTheCragSync } from '#lib/server/sync';
 import type { Actions, PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async () => {
+export const load: PageServerLoad = async ({ cookies }) => {
 	return {
 		sync: getSyncStatus(),
 		hasApiKey: hasTheCragApiKey(),
 		gradeSystem: getPreferredGradeSystem(),
 		searchIndexing: getSearchIndexing(),
-		showNotes: getShowNotes()
+		showNotes: getShowNotes(),
+		dashLayout: resolveDashLayout(
+			getAppSetting('dashboard_layout'),
+			cookies.get(DASH_LAYOUT_COOKIE)
+		)
 	};
 };
 
 export const actions: Actions = {
+	// Site-wide dashboard layout (#37). /settings is already gated; check again anyway.
+	saveDashboardLayout: async ({ request, cookies, locals }) => {
+		if (!locals.authed) return fail(403);
+		const form = await request.formData();
+		const raw = String(form.get('layout') || '');
+		const layout = raw ? parseLayoutCookie(raw) : defaultLayout();
+		setAppSetting('dashboard_layout', serializeLayout(layout));
+		cookies.delete(DASH_LAYOUT_COOKIE, { path: '/' });
+		return { ok: true, layoutSaved: true };
+	},
+	resetDashboardLayout: async ({ cookies, locals }) => {
+		if (!locals.authed) return fail(403);
+		deleteAppSetting('dashboard_layout');
+		cookies.delete(DASH_LAYOUT_COOKIE, { path: '/' });
+		return { ok: true, layoutSaved: true };
+	},
 	savePreferences: async ({ request }) => {
 		const form = await request.formData();
 		setAppSetting('grade_system', parseGradeSystem(String(form.get('system') || 'ewbank')));
