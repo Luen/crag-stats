@@ -10,6 +10,7 @@
 	import Badges from '#lib/components/Badges.svelte';
 	import GoalsProgress from '#lib/components/GoalsProgress.svelte';
 	import Milestones from '#lib/components/Milestones.svelte';
+	import ProjectsHighlight from '#lib/components/ProjectsHighlight.svelte';
 	import MonthlyStats from '#lib/components/MonthlyStats.svelte';
 	import NotableAscents from '#lib/components/NotableAscents.svelte';
 	import PartnerLeaderboard from '#lib/components/PartnerLeaderboard.svelte';
@@ -116,6 +117,8 @@
 		/>
 	{:else if id === 'goals'}
 		<GoalsProgress goals={data.activeGoals} />
+	{:else if id === 'projects'}
+		<ProjectsHighlight projects={data.dashboardProjects} />
 	{:else if id === 'trainingLoad'}
 		<TrainingLoad
 			last7={s.trainingLoad.last7}
@@ -149,6 +152,8 @@
 				{#each pyramidModes as mode (mode.id)}
 					<a
 						href="?pyramid={mode.id}"
+						data-sveltekit-reset="false"
+						data-sveltekit-replacestate
 						class={{ active: s.pyramidMode === mode.id }}
 						aria-current={s.pyramidMode === mode.id ? 'page' : undefined}>{mode.label}</a
 					>

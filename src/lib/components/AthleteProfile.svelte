@@ -4,14 +4,27 @@
 	let { axes }: Props = $props();
 
 	const size = 220;
+	const pad = 38;
 	const cx = size / 2;
 	const cy = size / 2;
-	const radius = 78;
+	const radius = 72;
+	const labelRadius = radius + 16;
+
+	function axisAngle(i: number, n: number) {
+		return -Math.PI / 2 + (i / n) * Math.PI * 2;
+	}
 
 	function point(i: number, n: number, value: number) {
-		const angle = -Math.PI / 2 + (i / n) * Math.PI * 2;
+		const angle = axisAngle(i, n);
 		const r = (Math.max(0, Math.min(100, value)) / 100) * radius;
 		return [cx + Math.cos(angle) * r, cy + Math.sin(angle) * r] as const;
+	}
+
+	function labelPoint(i: number, n: number) {
+		const angle = axisAngle(i, n);
+		const x = cx + Math.cos(angle) * labelRadius;
+		const y = cy + Math.sin(angle) * labelRadius;
+		return { x, y };
 	}
 
 	function poly(values: number[]) {
@@ -37,7 +50,12 @@
 		</div>
 	</header>
 	{#if axes.length}
-		<svg viewBox="0 0 {size} {size}" class="radar" role="img" aria-label="Climber profile radar">
+		<svg
+			viewBox="{-pad} {-pad} {size + pad * 2} {size + pad * 2}"
+			class="radar"
+			role="img"
+			aria-label="Climber profile radar"
+		>
 			{#each rings as ring (ring)}
 				<polygon
 					class="ring"
@@ -46,9 +64,14 @@
 			{/each}
 			{#each axes as axis, i (axis.key)}
 				{@const [x, y] = point(i, axes.length, 100)}
+				{@const lp = labelPoint(i, axes.length)}
 				<line class="spoke" x1={cx} y1={cy} x2={x} y2={y} />
-				<text class="label" x={x + (x < cx ? -6 : x > cx ? 6 : 0)} y={y + (y < cy ? -4 : 12)}
-					text-anchor={x < cx - 8 ? 'end' : x > cx + 8 ? 'start' : 'middle'}>{axis.label}</text
+				<text
+					class="label"
+					x={lp.x}
+					y={lp.y}
+					dy={lp.y < cy - 2 ? '-0.2em' : lp.y > cy + 2 ? '0.75em' : '0.35em'}
+					text-anchor={lp.x < cx - 6 ? 'end' : lp.x > cx + 6 ? 'start' : 'middle'}>{axis.label}</text
 				>
 			{/each}
 			<polygon class="fill90" points={poly(last90)} />
@@ -102,6 +125,7 @@
 		max-width: 280px;
 		margin: 0 auto;
 		display: block;
+		overflow: visible;
 	}
 	.ring {
 		fill: none;

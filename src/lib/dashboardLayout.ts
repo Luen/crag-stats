@@ -21,6 +21,7 @@ export type DashCardId =
 	| 'yearly'
 	| 'badges'
 	| 'goals'
+	| 'projects'
 	| 'trainingLoad'
 	| 'milestones'
 	| 'styleMix'
@@ -60,6 +61,7 @@ export const DEFAULT_DASH_CARDS: readonly DashCardDef[] = [
 	{ id: 'yearly', label: 'Yearly stats', width: 'half' },
 	{ id: 'badges', label: 'Badges', width: 'full' },
 	{ id: 'goals', label: 'Active goals', width: 'half' },
+	{ id: 'projects', label: 'Projects', width: 'half' },
 	{ id: 'trainingLoad', label: 'Training load', width: 'half' },
 	{ id: 'milestones', label: 'Milestones', width: 'full' },
 	{ id: 'styleMix', label: 'Style mix', width: 'full' },

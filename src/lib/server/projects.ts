@@ -357,6 +357,39 @@ export function listActiveProjects(now: Date = new Date()) {
 	return { workingOn, recentlySent };
 }
 
+type RankableProject = Pick<
+	ProjectListItem,
+	'id' | 'sessionCount' | 'tryCount' | 'lastAttemptAt'
+>;
+
+/** Rank open projects for the dashboard card (most sessions/tries, then recent). */
+export function rankDashboardProjects<T extends RankableProject>(
+	workingOn: T[],
+	recentlySent: T[] = [],
+	limit = 3
+): T[] {
+	const ranked = [...workingOn].sort((a, b) => {
+		const bySessions = (b.sessionCount || 0) - (a.sessionCount || 0);
+		if (bySessions !== 0) return bySessions;
+		const byTries = (b.tryCount || 0) - (a.tryCount || 0);
+		if (byTries !== 0) return byTries;
+		return String(b.lastAttemptAt ?? '').localeCompare(String(a.lastAttemptAt ?? ''));
+	});
+	if (ranked.length >= limit) return ranked.slice(0, limit);
+	const need = limit - ranked.length;
+	const fill = recentlySent.filter((p) => !ranked.some((r) => r.id === p.id)).slice(0, need);
+	return [...ranked, ...fill];
+}
+
+/**
+ * Dashboard highlight: top open projects by sessions / tries logged,
+ * then most recently touched. Falls back to recent sends if few open.
+ */
+export function listDashboardProjects(limit = 3, now: Date = new Date()): ProjectListItem[] {
+	const { workingOn, recentlySent } = listActiveProjects(now);
+	return rankDashboardProjects(workingOn, recentlySent, limit);
+}
+
 export function getProjectAttempts(routeId: number) {
 	ensureSchema();
 	return db
