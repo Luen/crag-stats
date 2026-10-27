@@ -117,14 +117,14 @@ docker compose up --build -d
 
 ## Environment
 
-| Variable | Purpose |
-|---|---|
-| `THECRAG_API_KEY` | Personal logbook read key ([docs](https://www.thecrag.com/en/article/logbookreadapi)) |
-| `APP_PASSWORD` | Optional UI password gate |
-| `AUTH_SCOPE` | `settings` (default: protect admin only) or `all` (whole site; also forces search engines off) |
-| `SESSION_SECRET` | Cookie + worker shared secret |
-| `DATABASE_PATH` | SQLite file path |
-| `SYNC_CRON` | Cron expression (default `0 6 * * *`) |
+| Variable                 | Purpose                                                                                               |
+| ------------------------ | ----------------------------------------------------------------------------------------------------- |
+| `THECRAG_API_KEY`        | Personal logbook read key ([docs](https://www.thecrag.com/en/article/logbookreadapi))                 |
+| `APP_PASSWORD`           | Optional UI password gate                                                                             |
+| `AUTH_SCOPE`             | `settings` (default: protect admin only) or `all` (whole site; also forces search engines off)        |
+| `SESSION_SECRET`         | Cookie + worker shared secret                                                                         |
+| `DATABASE_PATH`          | SQLite file path                                                                                      |
+| `SYNC_CRON`              | Cron expression (default `0 6 * * *`)                                                                 |
 | `PREFERRED_GRADE_SYSTEM` | Default grade system until one is saved in Settings: `ewbank` / `french` / `yds` / `v_scale` / `font` |
 
 ## Privacy

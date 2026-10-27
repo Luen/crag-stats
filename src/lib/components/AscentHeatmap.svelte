@@ -8,7 +8,9 @@
 		[...new Set(data.map((d) => d.date.slice(0, 4)))].sort((a, b) => b.localeCompare(a))
 	);
 	let selectedYear = $state<string | null>(null);
-	const year = $derived(selectedYear && years.includes(selectedYear) ? selectedYear : (years[0] ?? ''));
+	const year = $derived(
+		selectedYear && years.includes(selectedYear) ? selectedYear : (years[0] ?? '')
+	);
 
 	const byDate = $derived(new Map(data.map((d) => [d.date, d])));
 
@@ -29,7 +31,7 @@
 				dow: d.getDay()
 			});
 		}
-		const cols: typeof cells[] = [];
+		const cols: (typeof cells)[] = [];
 		let col: typeof cells = [];
 		// pad first column
 		const firstDow = cells[0]?.dow ?? 0;

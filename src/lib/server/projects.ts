@@ -237,7 +237,10 @@ export function refreshProjects(now: Date = new Date()) {
 		}
 	}
 
-	const existingProjects = db.select({ id: projects.id, routeId: projects.routeId }).from(projects).all();
+	const existingProjects = db
+		.select({ id: projects.id, routeId: projects.routeId })
+		.from(projects)
+		.all();
 	for (const row of existingProjects) {
 		if (!keepIds.has(row.routeId)) {
 			db.delete(projects).where(eq(projects.id, row.id)).run();
@@ -357,10 +360,7 @@ export function listActiveProjects(now: Date = new Date()) {
 	return { workingOn, recentlySent };
 }
 
-type RankableProject = Pick<
-	ProjectListItem,
-	'id' | 'sessionCount' | 'tryCount' | 'lastAttemptAt'
->;
+type RankableProject = Pick<ProjectListItem, 'id' | 'sessionCount' | 'tryCount' | 'lastAttemptAt'>;
 
 /** Rank open projects for the dashboard card (most sessions/tries, then recent). */
 export function rankDashboardProjects<T extends RankableProject>(

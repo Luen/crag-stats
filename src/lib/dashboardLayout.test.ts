@@ -26,9 +26,11 @@ describe('dashboardLayout', () => {
 		expect(parsed.find((i) => i.id === 'heatmap')?.enabled).toBe(false);
 		expect(parsed.find((i) => i.id === 'climberType')).toBeTruthy();
 		expect(parseLayoutCookie('not-json')).toEqual(defaultLayout());
-		expect(normalizeLayout([{ id: 'nope' as never, enabled: true }]).every((i) => i.id !== ('nope' as never))).toBe(
-			true
-		);
+		expect(
+			normalizeLayout([{ id: 'nope' as never, enabled: true }]).every(
+				(i) => i.id !== ('nope' as never)
+			)
+		).toBe(true);
 	});
 
 	it('packs half and quarter widths into rows', () => {

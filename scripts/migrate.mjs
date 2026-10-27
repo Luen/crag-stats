@@ -36,9 +36,7 @@ export function runMigrations(databasePath = dbPath) {
 		.sort();
 
 	const applied = [];
-	const insert = db.prepare(
-		`INSERT INTO schema_migrations (id, applied_at) VALUES (?, ?)`
-	);
+	const insert = db.prepare(`INSERT INTO schema_migrations (id, applied_at) VALUES (?, ?)`);
 	const has = db.prepare(`SELECT 1 AS ok FROM schema_migrations WHERE id = ?`);
 
 	for (const file of files) {
@@ -61,8 +59,6 @@ const isMain = process.argv[1] && fileURLToPath(import.meta.url) === process.arg
 if (isMain) {
 	const result = runMigrations();
 	console.log(
-		result.applied.length
-			? `[migrate] done (${result.applied.length} new)`
-			: '[migrate] up to date'
+		result.applied.length ? `[migrate] done (${result.applied.length} new)` : '[migrate] up to date'
 	);
 }

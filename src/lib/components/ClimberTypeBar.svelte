@@ -14,7 +14,11 @@
 		<div class="bar" role="img" aria-label="Climbing style distribution">
 			{#each shares as s (s.style)}
 				{#if s.pct >= 2}
-					<span class="seg" style:flex={s.pct} style:background={s.color} title="{s.style}: {s.pct}%"
+					<span
+						class="seg"
+						style:flex={s.pct}
+						style:background={s.color}
+						title="{s.style}: {s.pct}%"
 						>{#if s.pct >= 8}{s.style.toUpperCase()} {Math.round(s.pct)}%{/if}</span
 					>
 				{/if}

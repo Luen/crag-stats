@@ -45,9 +45,7 @@ function runMigrations(database: Database.Database, migrationsDir: string) {
 		.filter((f) => f.endsWith('.sql'))
 		.sort();
 	const has = database.prepare(`SELECT 1 AS ok FROM schema_migrations WHERE id = ?`);
-	const insert = database.prepare(
-		`INSERT INTO schema_migrations (id, applied_at) VALUES (?, ?)`
-	);
+	const insert = database.prepare(`INSERT INTO schema_migrations (id, applied_at) VALUES (?, ?)`);
 
 	for (const file of files) {
 		if (has.get(file)) continue;

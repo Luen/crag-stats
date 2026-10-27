@@ -29,23 +29,59 @@
 		<section>
 			<h3>Last 7 days</h3>
 			<dl>
-				<div><dt>Ascents</dt><dd>{last7.ascents}</dd></div>
-				<div><dt>Sends</dt><dd>{last7.sends}</dd></div>
-				<div><dt>Active days</dt><dd>{last7.activeDays}</dd></div>
-				<div><dt>Rest days</dt><dd>{restDays7}</dd></div>
-				<div><dt>Height</dt><dd>{Math.round(last7.heightM)} m</dd></div>
-				<div><dt>Send rate</dt><dd>{pct(sendRate7)}</dd></div>
+				<div>
+					<dt>Ascents</dt>
+					<dd>{last7.ascents}</dd>
+				</div>
+				<div>
+					<dt>Sends</dt>
+					<dd>{last7.sends}</dd>
+				</div>
+				<div>
+					<dt>Active days</dt>
+					<dd>{last7.activeDays}</dd>
+				</div>
+				<div>
+					<dt>Rest days</dt>
+					<dd>{restDays7}</dd>
+				</div>
+				<div>
+					<dt>Height</dt>
+					<dd>{Math.round(last7.heightM)} m</dd>
+				</div>
+				<div>
+					<dt>Send rate</dt>
+					<dd>{pct(sendRate7)}</dd>
+				</div>
 			</dl>
 		</section>
 		<section>
 			<h3>Last 28 days</h3>
 			<dl>
-				<div><dt>Ascents</dt><dd>{last28.ascents}</dd></div>
-				<div><dt>Sends</dt><dd>{last28.sends}</dd></div>
-				<div><dt>Active days</dt><dd>{last28.activeDays}</dd></div>
-				<div><dt>Rest days</dt><dd>{restDays28}</dd></div>
-				<div><dt>Height</dt><dd>{Math.round(last28.heightM)} m</dd></div>
-				<div><dt>Send rate</dt><dd>{pct(sendRate28)}</dd></div>
+				<div>
+					<dt>Ascents</dt>
+					<dd>{last28.ascents}</dd>
+				</div>
+				<div>
+					<dt>Sends</dt>
+					<dd>{last28.sends}</dd>
+				</div>
+				<div>
+					<dt>Active days</dt>
+					<dd>{last28.activeDays}</dd>
+				</div>
+				<div>
+					<dt>Rest days</dt>
+					<dd>{restDays28}</dd>
+				</div>
+				<div>
+					<dt>Height</dt>
+					<dd>{Math.round(last28.heightM)} m</dd>
+				</div>
+				<div>
+					<dt>Send rate</dt>
+					<dd>{pct(sendRate28)}</dd>
+				</div>
 			</dl>
 		</section>
 	</div>

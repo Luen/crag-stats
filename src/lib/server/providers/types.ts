@@ -129,8 +129,8 @@ export const SEND_TICKS = new Set(
 );
 
 export const ATTEMPT_TICKS = new Set(
-	['attempt', 'hang dog', 'hangdog', 'working', 'retreat', 'dab', 'hit', 'target', 'mark'].map((s) =>
-		s.toLowerCase()
+	['attempt', 'hang dog', 'hangdog', 'working', 'retreat', 'dab', 'hit', 'target', 'mark'].map(
+		(s) => s.toLowerCase()
 	)
 );
 

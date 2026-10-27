@@ -26,20 +26,20 @@ File: `src/lib/assets/favicon.svg`. It is both the favicon and the header mark.
 
 Always use tokens. **Don't** hard-code `white`, `#fff` surfaces or ink-tinted `rgba(...)`: they break dark mode. For tints use `color-mix(in srgb, var(--ink) 8%, transparent)` or `color-mix(in srgb, var(--accent) 12%, var(--paper))`. `color: #fff` on a solid accent or data-coloured fill is fine.
 
-| Token | Light | Dark | Use |
-|---|---|---|---|
-| `--bg` | `#f5f6f8` | `#0f1218` | Page background |
-| `--paper` / `--panel` | `#ffffff` | `#171b23` | Cards, header, sidebar |
-| `--surface-2` | `#f8f9fb` | `#1d222c` | Table header, hover rows, inset blocks |
-| `--surface-3` | `#eceef2` | `#262c38` | Icon-button hover, version pill, empty heatmap cells |
-| `--ink` | `#161a23` | `#e8eaf0` | Text |
-| `--ink-muted` | `#667085` | `#98a1b3` | Secondary text, icons |
-| `--line` | `#e6e8ec` | `#2a303c` | Borders, dividers |
-| `--accent` | `#ea580c` | `#fb7a3c` | Brand: active nav, badges, primary buttons, highlight metric |
-| `--accent-strong` | `#c2410c` | `#fdba74` | Button hover |
-| `--accent-soft` | 10% accent on paper | 14% | Active nav background, highlight card |
-| `--accent-2` | `#0f766e` | `#2dd4bf` | Secondary accent (sparingly) |
-| `--shadow` | very soft | subtle | `.panel` elevation |
+| Token                 | Light               | Dark      | Use                                                          |
+| --------------------- | ------------------- | --------- | ------------------------------------------------------------ |
+| `--bg`                | `#f5f6f8`           | `#0f1218` | Page background                                              |
+| `--paper` / `--panel` | `#ffffff`           | `#171b23` | Cards, header, sidebar                                       |
+| `--surface-2`         | `#f8f9fb`           | `#1d222c` | Table header, hover rows, inset blocks                       |
+| `--surface-3`         | `#eceef2`           | `#262c38` | Icon-button hover, version pill, empty heatmap cells         |
+| `--ink`               | `#161a23`           | `#e8eaf0` | Text                                                         |
+| `--ink-muted`         | `#667085`           | `#98a1b3` | Secondary text, icons                                        |
+| `--line`              | `#e6e8ec`           | `#2a303c` | Borders, dividers                                            |
+| `--accent`            | `#ea580c`           | `#fb7a3c` | Brand: active nav, badges, primary buttons, highlight metric |
+| `--accent-strong`     | `#c2410c`           | `#fdba74` | Button hover                                                 |
+| `--accent-soft`       | 10% accent on paper | 14%       | Active nav background, highlight card                        |
+| `--accent-2`          | `#0f766e`           | `#2dd4bf` | Secondary accent (sparingly)                                 |
+| `--shadow`            | very soft           | subtle    | `.panel` elevation                                           |
 
 Gotcha: SVG presentation attributes (`fill="var(--x)"`) don't reliably take `var()`. Use `style="fill: var(--ink)"` instead.
 
@@ -55,27 +55,27 @@ These are data semantics, not brand colours. They stay the same in both themes a
 
 ### Grade bands (`src/lib/grades/bands.ts`, CSS `--band-*`)
 
-| Band | Colour | Value |
-|---|---|---|
-| Beginner | Green | `rgb(84, 180, 26)` |
-| Intermediate | Yellow | `rgb(254, 225, 0)` |
-| Experienced | Orange | `rgb(229, 131, 41)` |
-| Expert | Red | `rgb(201, 9, 9)` |
-| Elite | Purple | `rgb(178, 24, 130)` |
+| Band         | Colour | Value               |
+| ------------ | ------ | ------------------- |
+| Beginner     | Green  | `rgb(84, 180, 26)`  |
+| Intermediate | Yellow | `rgb(254, 225, 0)`  |
+| Experienced  | Orange | `rgb(229, 131, 41)` |
+| Expert       | Red    | `rgb(201, 9, 9)`    |
+| Elite        | Purple | `rgb(178, 24, 130)` |
 
 Boulder V-scale banding (`bandFromVScale`): VB± green, **V0± yellow**, V1–V4 orange, V5–V10 red, V11+ purple.
 
 ### Disciplines (`STYLE_COLORS` in `src/lib/ticks.ts`)
 
-| Style | Colour | Value |
-|---|---|---|
-| Sport | Blue | `#1d6fa5` |
-| Trad | Orange | `#e07a2f` |
-| Boulder | Red (crimson) | `#a12b4a` |
-| Top rope | Purple | `#7b5ea7` |
-| Alpine | Teal | `#2a9d8f` |
-| Aid | Grey | `#6c757d` |
-| Unknown | Light grey | `#9aa0a6` |
+| Style    | Colour        | Value     |
+| -------- | ------------- | --------- |
+| Sport    | Blue          | `#1d6fa5` |
+| Trad     | Orange        | `#e07a2f` |
+| Boulder  | Red (crimson) | `#a12b4a` |
+| Top rope | Purple        | `#7b5ea7` |
+| Alpine   | Teal          | `#2a9d8f` |
+| Aid      | Grey          | `#6c757d` |
+| Unknown  | Light grey    | `#9aa0a6` |
 
 Use `STYLE_COLORS` / `styleBadgeColor()` everywhere: pyramids, style mix, climber-type bar, `StyleBadge`. Never invent a per-component palette.
 
@@ -83,7 +83,7 @@ Use `STYLE_COLORS` / `styleBadgeColor()` everywhere: pyramids, style mix, climbe
 
 Onsight = blue eye · Flash = yellow bolt with red outline · Red point = red dot · Pink point = pink dot · Tick = check in `--ink` · Clean/Send = green check · Top rope = "Top" plus a check. All inline SVG, so they theme and print cleanly.
 
-Because the brand accent is orange, it sits close to *Trad* and *Experienced*. That's acceptable: the accent marks UI chrome (navigation, buttons, highlights) and data colours mark data. Don't use `--accent` to encode data.
+Because the brand accent is orange, it sits close to _Trad_ and _Experienced_. That's acceptable: the accent marks UI chrome (navigation, buttons, highlights) and data colours mark data. Don't use `--accent` to encode data.
 
 ## App shell (`src/routes/+layout.svelte`)
 

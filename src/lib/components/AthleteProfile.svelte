@@ -57,10 +57,7 @@
 			aria-label="Climber profile radar"
 		>
 			{#each rings as ring (ring)}
-				<polygon
-					class="ring"
-					points={poly(axes.map(() => ring * 100))}
-				/>
+				<polygon class="ring" points={poly(axes.map(() => ring * 100))} />
 			{/each}
 			{#each axes as axis, i (axis.key)}
 				{@const [x, y] = point(i, axes.length, 100)}
@@ -71,7 +68,8 @@
 					x={lp.x}
 					y={lp.y}
 					dy={lp.y < cy - 2 ? '-0.2em' : lp.y > cy + 2 ? '0.75em' : '0.35em'}
-					text-anchor={lp.x < cx - 6 ? 'end' : lp.x > cx + 6 ? 'start' : 'middle'}>{axis.label}</text
+					text-anchor={lp.x < cx - 6 ? 'end' : lp.x > cx + 6 ? 'start' : 'middle'}
+					>{axis.label}</text
 				>
 			{/each}
 			<polygon class="fill90" points={poly(last90)} />

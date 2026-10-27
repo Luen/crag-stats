@@ -15,7 +15,13 @@
 				<span class="pill">{g.kindLabel}</span>
 			</div>
 			<p class="meta">{g.targetLabel}</p>
-			<div class="bar" role="progressbar" aria-valuenow={g.progressPct} aria-valuemin={0} aria-valuemax={100}>
+			<div
+				class="bar"
+				role="progressbar"
+				aria-valuenow={g.progressPct}
+				aria-valuemin={0}
+				aria-valuemax={100}
+			>
 				<span style:width="{g.progressPct}%"></span>
 			</div>
 			<p class="progress-line">
@@ -49,8 +55,8 @@
 <section class="panel head">
 	<h1>Goals</h1>
 	<p>
-		Progress fills from your theCrag logbook. Grade goals track a send ≥ target this year (outdoor by
-		default). Custom goals stay manual.
+		Progress fills from your theCrag logbook. Grade goals track a send ≥ target this year (outdoor
+		by default). Custom goals stay manual.
 	</p>
 </section>
 

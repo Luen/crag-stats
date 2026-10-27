@@ -177,7 +177,11 @@ export function packLayoutRows(layout: DashLayoutItem[]): DashRow[] {
 	return rows;
 }
 
-export function moveLayoutItem(layout: DashLayoutItem[], id: DashCardId, dir: -1 | 1): DashLayoutItem[] {
+export function moveLayoutItem(
+	layout: DashLayoutItem[],
+	id: DashCardId,
+	dir: -1 | 1
+): DashLayoutItem[] {
 	const items = normalizeLayout(layout);
 	const idx = items.findIndex((i) => i.id === id);
 	if (idx < 0) return items;

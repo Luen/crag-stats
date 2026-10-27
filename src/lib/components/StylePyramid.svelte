@@ -43,7 +43,7 @@
 			{/each}
 		</div>
 		<div class="legend">
-			{#each [...new Map(pyramid.rows.flatMap((r) => r.segments.map((s) => [s.tick, s.color]))).entries()] as [tick, color] (tick)}
+			{#each [...new Map(pyramid.rows.flatMap( (r) => r.segments.map( (s) => [s.tick, s.color] ) )).entries()] as [tick, color] (tick)}
 				<span><i style:background={color}></i>{tick}</span>
 			{/each}
 		</div>

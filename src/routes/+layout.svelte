@@ -86,7 +86,11 @@
 	{#if data.noindex}
 		<meta name="robots" content="noindex, nofollow" />
 	{/if}
-	<title>{current && current.label !== 'Dashboard' ? `${current.label} · Crag Stats` : 'Crag Stats'}</title>
+	<title
+		>{current && current.label !== 'Dashboard'
+			? `${current.label} · Crag Stats`
+			: 'Crag Stats'}</title
+	>
 </svelte:head>
 
 <svelte:window onkeydown={(e) => e.key === 'Escape' && (drawerOpen = false)} />
@@ -129,12 +133,7 @@
 				<NavIcon name={dark ? 'sun' : 'moon'} />
 			</button>
 			{#if data.showSettings}
-				<a
-					class="icon-btn"
-					href="/settings"
-					title="Settings & sync"
-					aria-label="Settings & sync"
-				>
+				<a class="icon-btn" href="/settings" title="Settings & sync" aria-label="Settings & sync">
 					<NavIcon name="settings" />
 				</a>
 			{/if}

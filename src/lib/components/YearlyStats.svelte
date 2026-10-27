@@ -72,7 +72,9 @@
 						<div>
 							<span class="label">Ascents</span>
 							<span class="val">{row.ascents}</span>
-							<span class={['delta', deltaClass(row.deltaAscents)]}>{fmtDelta(row.deltaAscents)}</span>
+							<span class={['delta', deltaClass(row.deltaAscents)]}
+								>{fmtDelta(row.deltaAscents)}</span
+							>
 						</div>
 						<div>
 							<span class="label">Sends</span>

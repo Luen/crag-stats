@@ -24,17 +24,17 @@ Self-hosted climbing analytics for [theCrag](https://www.thecrag.com/), inspired
 
 ## Stack & tooling
 
-| Piece | Choice |
-|---|---|
-| App | SvelteKit 3 + Svelte 5 (runes: `$props`, `$derived`, `$state`) |
-| CSS | Tailwind 4 where useful + theme tokens in `src/app.css` (light/dark) |
-| Font | Plus Jakarta Sans (bundled via `@fontsource-variable/plus-jakarta-sans`, no CDN) |
-| DB | SQLite via `better-sqlite3` + Drizzle ORM |
-| Package manager | **pnpm** (pin via `package.json#packageManager`; config in `pnpm-workspace.yaml`) |
-| Node | 24 LTS+ |
-| Deploy | Docker multi-arch → GHCR (`ghcr.io/luen/crag-stats`) |
-| Migrations | Versioned SQL in `/migrations`, run on container boot via `scripts/docker-entrypoint.mjs` |
-| i18n | Planned (Crowdin epic/issue) — not implemented yet |
+| Piece           | Choice                                                                                    |
+| --------------- | ----------------------------------------------------------------------------------------- |
+| App             | SvelteKit 3 + Svelte 5 (runes: `$props`, `$derived`, `$state`)                            |
+| CSS             | Tailwind 4 where useful + theme tokens in `src/app.css` (light/dark)                      |
+| Font            | Plus Jakarta Sans (bundled via `@fontsource-variable/plus-jakarta-sans`, no CDN)          |
+| DB              | SQLite via `better-sqlite3` + Drizzle ORM                                                 |
+| Package manager | **pnpm** (pin via `package.json#packageManager`; config in `pnpm-workspace.yaml`)         |
+| Node            | 24 LTS+                                                                                   |
+| Deploy          | Docker multi-arch → GHCR (`ghcr.io/luen/crag-stats`)                                      |
+| Migrations      | Versioned SQL in `/migrations`, run on container boot via `scripts/docker-entrypoint.mjs` |
+| i18n            | Planned (Crowdin epic/issue) — not implemented yet                                        |
 
 **Import alias:** `#lib/...` → `src/lib/...` (see `svelte.config` / `tsconfig` paths).
 
@@ -94,7 +94,7 @@ Height quirk: theCrag may return height as `[value, unit]` arrays — parse in t
 - **V-scale ranges** like `V1/2` or `V5/6` must parse as midpoints (1.5, 5.5). Never fall back to gradeBand Ewbank midpoints (21/28/…) as V-scores — that produced fake “V21” / “V28”.
 - **Multipitch:** use `ascent.pitch[]` from the API. Effective grade = hardest **climbed** pitch (not the full route grade). Store `effective_grade_*` + `pitch_label` (e.g. `P1`) on ascents. Analytics/hardest lists must use effective grades. `repairGradesFromRawJson()` re-derives from stored `raw_json` after parser fixes (also partners/quality/label/tags).
 - **Ascent meta from API:** `with` → partners, `quality`/`qualityLabel`, `label` → ascent_label (prefer over route name when set), `route.tags` → tags_json chips, account `outdoorAscentCount` / `indoorAscentCount` / `typeOfClimber` / `heightClimbed`.
-- **URLs:** `urlAncestorStub` is an *area* path and often has **no leading slash**. Never concatenate as `https://www.thecrag.com${stub}` (produces `thecrag.comaustralia/...`). Use helpers in `src/lib/thecragUrls.ts`:
+- **URLs:** `urlAncestorStub` is an _area_ path and often has **no leading slash**. Never concatenate as `https://www.thecrag.com${stub}` (produces `thecrag.comaustralia/...`). Use helpers in `src/lib/thecragUrls.ts`:
   - Route: `https://www.thecrag.com/en/climbing/{stub}/route/{routeId}`
   - Area/crag (TLC): `https://www.thecrag.com/en/climbing/{stub}/area/{areaId}` (e.g. Castle Hill)
   - Ascent (preferred for “your tick” links): `https://www.thecrag.com/ascent/{ascentId}`
@@ -112,15 +112,15 @@ Height quirk: theCrag may return height as `[value, unit]` arrays — parse in t
 
 ## UI icons (theCrag-like)
 
-| Tick | Visual |
-|---|---|
-| Onsight | Blue eye |
-| Flash | Yellow bolt, red outline |
-| Red point | Red filled circle |
-| Pink point | Pink filled circle |
-| Tick | Black check |
-| Clean / Send | Green check |
-| Top rope | “Top” text + small check |
+| Tick         | Visual                   |
+| ------------ | ------------------------ |
+| Onsight      | Blue eye                 |
+| Flash        | Yellow bolt, red outline |
+| Red point    | Red filled circle        |
+| Pink point   | Pink filled circle       |
+| Tick         | Black check              |
+| Clean / Send | Green check              |
+| Top rope     | “Top” text + small check |
 
 Components: `TickTypeIcon.svelte`, `StyleBadge.svelte`. Keep icons SVG-inline so they theme/print cleanly.
 
@@ -192,28 +192,28 @@ You'll often notice things outside the task at hand. **Don't silently fix them i
 
 ## Changelog for agents
 
-| When | Note |
-|---|---|
-| 2026-03 | Initial MVP: sync, CSV, dashboard, pyramids, CPR approx, GHCR, pnpm |
-| 2026-03 | Sync made full reconcile (upsert + prune). Tick/style SVG icons. This file created as living docs. |
-| 2026-03 | Fixed V1/2 range parsing; multipitch effective grades (pitch ticks); hardest ascents use ascent effective grade. |
-| 2026-03 | Fixed broken theCrag links (missing slash / area stub); link to `/ascent/{id}` or `/en/climbing/.../route/{id}`. |
-| 2026-03 | Grade-system fit + AU boulder→V; pyramid→logbook links; partners/quality/label/tags; outdoor/indoor; ascent heatmap (#12–#25). |
-| 2026-03 | AU ascent grades on V-scale boulder routes must not become V12 (prefer route V-grade). Notable rowspan grouping. Side nav + version. Blurb/streaks/climber profile. |
-| 2026-03 | Vitest suite (`pnpm test`) for grade/URL/mapAscent regressions; CI runs tests. |
-| 2026-03 | Streaks: reject invalid ascent dates (`2018-00-00`); guard week/month loops — NaN week keys hung the dashboard. |
-| 2026-03 | Phase 4–5: CPR shifted/decayed + attempts + route lat/lon (migration 0006); Goals / Rewind / Sectors pages; SVG CragMap (no Leaflet dep). |
+| When    | Note                                                                                                                                                                                                                    |
+| ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026-03 | Initial MVP: sync, CSV, dashboard, pyramids, CPR approx, GHCR, pnpm                                                                                                                                                     |
+| 2026-03 | Sync made full reconcile (upsert + prune). Tick/style SVG icons. This file created as living docs.                                                                                                                      |
+| 2026-03 | Fixed V1/2 range parsing; multipitch effective grades (pitch ticks); hardest ascents use ascent effective grade.                                                                                                        |
+| 2026-03 | Fixed broken theCrag links (missing slash / area stub); link to `/ascent/{id}` or `/en/climbing/.../route/{id}`.                                                                                                        |
+| 2026-03 | Grade-system fit + AU boulder→V; pyramid→logbook links; partners/quality/label/tags; outdoor/indoor; ascent heatmap (#12–#25).                                                                                          |
+| 2026-03 | AU ascent grades on V-scale boulder routes must not become V12 (prefer route V-grade). Notable rowspan grouping. Side nav + version. Blurb/streaks/climber profile.                                                     |
+| 2026-03 | Vitest suite (`pnpm test`) for grade/URL/mapAscent regressions; CI runs tests.                                                                                                                                          |
+| 2026-03 | Streaks: reject invalid ascent dates (`2018-00-00`); guard week/month loops — NaN week keys hung the dashboard.                                                                                                         |
+| 2026-03 | Phase 4–5: CPR shifted/decayed + attempts + route lat/lon (migration 0006); Goals / Rewind / Sectors pages; SVG CragMap (no Leaflet dep).                                                                               |
 | 2026-03 | Dashboard extras: monthly/yearly/milestones/training load, style mix, partners, stars/quality, rock types + blurb; CPR prefers API when dense; logbook sort/band/multipitch/season/sector; pyramid `?pyramid=` toggles. |
-| 2026-10 | Auth harden: login rate limit, safe redirects, HMAC password/worker-secret compares, security headers, `/logout`. CF Access for `crag.luenwarneke.com` settings/login. CPR SVG NaN guards. |
-| 2026-10 | Mobile: heatmap/charts scroll, yearly cards, notable stacked groups; pyramid active pill `--paper` + “All” label. |
-| 2026-10 | pnpm 12.15.0 via `packageManager`; config in `pnpm-workspace.yaml` (`allowBuilds`, `minimumReleaseAge: 0`). Docker reads pin from package.json. |
-| 2026-10 | Runtime pin Node 24 LTS (CI, Docker `node:24-bookworm-slim`, `engines.node`, `.nvmrc`). |
-| 2026-10 | Badges carousel on dashboard (RoxClimbs-style milestones from logbook: sends, onsights, countries, height, bands). |
-| 2026-10 | Goals: Active/Achieved + progress bars; grade = send ≥ X this year; venue_scope outdoor/indoor/any (migration 0007); dashboard shows 3 active goals. |
-| 2026-10 | `/projects` RoxClimbs-style auto-projecting cards: open = unsent attempts touched within 1 year; sent shelf = fought-then-sent within ~31 days; first-go sends never projects. No create form. |
-| 2026-10 | Dashboard Projects card: top 3 open by sessions/tries (`listDashboardProjects`); layout id `projects` beside goals. |
-| 2026-10 | Dashboard card show/order via cookie `cs_dash_layout` (Dreeve-style); hero + metrics fixed; Customize panel on `/`. Defaults = current order. See `dashboardLayout.ts`. |
-| 2026-10 | Discipline colours unified via `STYLE_COLORS` in `ticks.ts` (Sport blue, Trad orange, Boulder red) — Style mix + climber-type share the same palette as StyleBadge. |
+| 2026-10 | Auth harden: login rate limit, safe redirects, HMAC password/worker-secret compares, security headers, `/logout`. CF Access for `crag.luenwarneke.com` settings/login. CPR SVG NaN guards.                              |
+| 2026-10 | Mobile: heatmap/charts scroll, yearly cards, notable stacked groups; pyramid active pill `--paper` + “All” label.                                                                                                       |
+| 2026-10 | pnpm 12.15.0 via `packageManager`; config in `pnpm-workspace.yaml` (`allowBuilds`, `minimumReleaseAge: 0`). Docker reads pin from package.json.                                                                         |
+| 2026-10 | Runtime pin Node 24 LTS (CI, Docker `node:24-bookworm-slim`, `engines.node`, `.nvmrc`).                                                                                                                                 |
+| 2026-10 | Badges carousel on dashboard (RoxClimbs-style milestones from logbook: sends, onsights, countries, height, bands).                                                                                                      |
+| 2026-10 | Goals: Active/Achieved + progress bars; grade = send ≥ X this year; venue_scope outdoor/indoor/any (migration 0007); dashboard shows 3 active goals.                                                                    |
+| 2026-10 | `/projects` RoxClimbs-style auto-projecting cards: open = unsent attempts touched within 1 year; sent shelf = fought-then-sent within ~31 days; first-go sends never projects. No create form.                          |
+| 2026-10 | Dashboard Projects card: top 3 open by sessions/tries (`listDashboardProjects`); layout id `projects` beside goals.                                                                                                     |
+| 2026-10 | Dashboard card show/order via cookie `cs_dash_layout` (Dreeve-style); hero + metrics fixed; Customize panel on `/`. Defaults = current order. See `dashboardLayout.ts`.                                                 |
+| 2026-10 | Discipline colours unified via `STYLE_COLORS` in `ticks.ts` (Sport blue, Trad orange, Boulder red) — Style mix + climber-type share the same palette as StyleBadge.                                                     |
 
 | 2026-10 | Dreeve-style redesign: theme tokens + dark mode, Plus Jakarta Sans, new logo, top bar + collapsible mini sidebar / mobile drawer, nav count badges. |
 
