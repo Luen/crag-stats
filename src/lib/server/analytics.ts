@@ -851,6 +851,8 @@ export function listLogbook(filters?: {
 	order?: string;
 	limit?: number;
 	offset?: number;
+	/** Private ascent notes; only when the viewer may see them (see notes.ts). Default off. */
+	includeNotes?: boolean;
 }) {
 	ensureSchema();
 	const limit = filters?.limit ?? 100;
@@ -896,6 +898,9 @@ export function listLogbook(filters?: {
 		.innerJoin(routes, eq(ascents.routeId, routes.id))
 		.orderBy(desc(ascents.ascentDate))
 		.all();
+
+	// Drop notes up front so they can't reach the page or be probed through search.
+	if (!filters?.includeNotes) rows = rows.map((r) => ({ ...r, comment: null }));
 
 	if (filters?.style) {
 		const s = filters.style.toLowerCase();

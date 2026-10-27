@@ -128,6 +128,7 @@ docker compose up --build -d
 | `ORIGIN`                 | Public URL, only needed behind a proxy that doesn't send `X-Forwarded-Proto` (see [DEPLOY.md](docs/DEPLOY.md#http-https-and-reverse-proxies)) |
 | `DISPLAY_LOCALE` / `TZ`  | Locale (default `en-AU`) and IANA time zone used to display dates and times                                                                   |
 | `PREFERRED_GRADE_SYSTEM` | Default grade system until one is saved in Settings: `ewbank` / `french` / `yds` / `v_scale` / `font`                                         |
+| `SHOW_PRIVATE_NOTES`     | `true` to show your private ascent notes in the logbook (default `false`). Only people who can open Settings see them. Settings overrides it. |
 
 ## Privacy
 

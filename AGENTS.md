@@ -14,6 +14,7 @@ Self-hosted climbing analytics for [theCrag](https://www.thecrag.com/), inspired
    - Do **not** invent a second editable logbook that drifts from theCrag.
    - CSV import is upsert-only (no prune). Prefer API sync when the user has a supporter key.
 2. **Privacy.** API keys expose private notes. Never commit `.env`. Wipe must remain available in Settings.
+   - Ascent notes (`ascents.comment`) are private and hidden by default. They reach a page only via `listLogbook({ includeNotes })` when `notesVisible(getShowNotes().enabled, locals.authed)` (`src/lib/server/notes.ts`; Settings toggle → `SHOW_PRIVATE_NOTES` → off). When hidden they're nulled before filtering, so search can't probe them. Never put notes in dashboard stats, embeds, OG text or anything else visitors can load.
    - `APP_PASSWORD` + `AUTH_SCOPE=settings|all` gate admin (or whole UI). Login is rate-limited in-process (5 fails / 15 min + min gap).
    - Prefer Cloudflare Access on `/settings*` + `/login*` in front of public tunnels; app password remains a second factor.
    - Open redirects are blocked via `safeRedirectPath`; passwords compared via HMAC digests (timing-safe).

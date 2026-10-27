@@ -61,6 +61,26 @@
 					</small>
 				</span>
 			</label>
+			<label class="check">
+				<input type="checkbox" name="notes" checked={data.showNotes.enabled} />
+				<span>
+					<strong>Show my private ascent notes</strong>
+					<small class="hint">
+						Shows the notes from your theCrag ticks in the logbook, and lets logbook search match
+						them.
+						{#if data.authEnabled}
+							Only shown while you're logged in. Visitors never see them.
+						{:else}
+							<strong
+								>No <code>APP_PASSWORD</code> is set, so anyone who can open this site will see them.</strong
+							> Best for offline or home-network installs.
+						{/if}
+						{#if data.showNotes.source === 'env'}
+							Default from <code>SHOW_PRIVATE_NOTES</code>; saving here overrides it.
+						{/if}
+					</small>
+				</span>
+			</label>
 			<button type="submit">Save preferences</button>
 		</form>
 	</article>
