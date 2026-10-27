@@ -10,15 +10,18 @@ Each ascent gets a load score:
 
 **Intensity** compares the ascent's grade with your **hardest send of the last 12 months** in the same discipline. Routes are compared on Ewbank and boulders on the V-scale.
 
-| Grade compared with your 12-month max | Intensity |
-| ------------------------------------- | --------- |
-| At your max                           | 1.0       |
-| 2 Ewbank grades (1 V-grade) below     | 0.5       |
-| 4 Ewbank grades (2 V-grades) below    | 0.25      |
-| Above your max (a new high)           | up to 1.5 |
-| Ungraded, or no sends in 12 months    | 0.3       |
+| Grade compared with your 12-month max   | Intensity |
+| --------------------------------------- | --------- |
+| At your max                             | 1.0       |
+| 2 Ewbank grades (1 V-grade) below       | 0.5       |
+| 4 Ewbank grades (2 V-grades) below      | 0.25      |
+| Above your max (a new high)             | up to 1.5 |
+| Working an ungraded route (see below)   | 1.0       |
+| Ungraded send, or no sends in 12 months | 0.3       |
 
 Climbing near your limit counts much more than mileage well below it. A day of ten easy routes and a day spent on one project can come out similar.
+
+**Ungraded projects:** an attempt, hang-dog or other unsent tick on a route with no grade is treated as climbing **at your max**. Ungraded routes you keep working are usually new lines or projects near your limit. The same attempts also count towards the near-limit share. If you gave the tick a grade yourself on theCrag, that grade is used instead. An ungraded _send_ still counts as light (0.3), since an unnamed easy route shouldn't look like a limit day.
 
 **Style factor:** a lead send is 1.0. Attempts and hang-dogs are 0.8, because working a route is still real effort. Top-roping or seconding is 0.8× on top of that.
 

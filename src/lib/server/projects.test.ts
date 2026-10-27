@@ -5,10 +5,23 @@ import {
 	isLikelyIndoorRoute,
 	isRecentlySent,
 	isTouchedWithin,
+	isUngradedRoute,
 	rankDashboardProjects,
 	summarizeRouteAscents,
 	triesFromAscent
 } from './projects';
+
+describe('isUngradedRoute', () => {
+	it('flags routes theCrag has no grade for, and literal project grades', () => {
+		expect(isUngradedRoute(null, null)).toBe(true);
+		expect(isUngradedRoute(null, '  ')).toBe(true);
+		expect(isUngradedRoute(null, 'Project')).toBe(true);
+		expect(isUngradedRoute(null, 'open proj')).toBe(true);
+		expect(isUngradedRoute(24, '24')).toBe(false);
+		// Unparsed but real grades aren't projects.
+		expect(isUngradedRoute(null, 'HVS 5a')).toBe(false);
+	});
+});
 
 describe('classifyRouteProject', () => {
 	it('marks open when there are unsent attempts and no sends', () => {

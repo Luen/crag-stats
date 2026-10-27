@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import type { DashboardExtraRow } from './dashboardExtras';
-import { ascentIntensity, buildTrainingLoadView, loadStatus, styleFactor } from './trainingLoad';
+import {
+	ascentIntensity,
+	buildTrainingLoadView,
+	isUngradedWork,
+	loadStatus,
+	styleFactor
+} from './trainingLoad';
 
 const TODAY = '2026-10-27';
 
@@ -80,5 +86,40 @@ describe('buildTrainingLoadView', () => {
 		const view = buildTrainingLoadView([send(300, 20)], TODAY);
 		expect(view.status).toBe('idle');
 		expect(view.acute).toBe(0);
+	});
+
+	it('counts working an ungraded route as climbing at your max', () => {
+		const base = send(100, 24);
+		const work = { ascentDate: day(0), gearStyle: 'Sport', isSend: false, gradeScore: null };
+		const atMax = { ...work, gradeScore: 24 };
+		const ungradedSend = { ...work, isSend: true };
+
+		// Same load as an attempt on a graded route at your max (24).
+		expect(buildTrainingLoadView([base, work], TODAY).acute).toBe(
+			buildTrainingLoadView([base, atMax], TODAY).acute
+		);
+		// Ungraded *sends* stay light (0.3), well below an at-max attempt (1.0 × 0.8).
+		expect(buildTrainingLoadView([base, ungradedSend], TODAY).acute).toBeLessThan(
+			buildTrainingLoadView([base, work], TODAY).acute
+		);
+		// And it counts towards the near-limit share.
+		expect(buildTrainingLoadView([base, work], TODAY).limitShare28).toBe(100);
+	});
+
+	it('keeps an ungraded attempt light when there is no recent max to compare with', () => {
+		const work = { ascentDate: day(0), gearStyle: 'Sport', isSend: false, gradeScore: null };
+		const view = buildTrainingLoadView([work], TODAY);
+		expect(view.acute).toBeCloseTo(Math.round(10 * 0.3 * 0.8 * (2 / 8) * 10) / 10);
+	});
+});
+
+describe('isUngradedWork', () => {
+	it('needs an unsent tick with no grade at all', () => {
+		expect(isUngradedWork({ ascentDate: TODAY, isSend: false })).toBe(true);
+		expect(isUngradedWork({ ascentDate: TODAY, isSend: true })).toBe(false);
+		// Your own grade on the tick wins over the assumption.
+		expect(isUngradedWork({ ascentDate: TODAY, isSend: false, effectiveGradeScore: 20 })).toBe(
+			false
+		);
 	});
 });
