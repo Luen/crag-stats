@@ -9,15 +9,14 @@ export const PORTS = { open: 4301, settings: 4302, all: 4303 } as const;
 export const TEST_PASSWORD = 'e2e-test-password';
 
 const server = (name: keyof typeof PORTS, env: Record<string, string>) => ({
-	command: 'node build',
+	// Same entry as Docker; plain HTTP like a LAN install (#47).
+	command: 'node scripts/server.mjs',
 	port: PORTS[name],
 	reuseExistingServer: false,
 	timeout: 60_000,
 	env: {
 		PORT: String(PORTS[name]),
 		HOST: '127.0.0.1',
-		// adapter-node assumes https unless told otherwise; tests send x-forwarded-proto: http.
-		PROTOCOL_HEADER: 'x-forwarded-proto',
 		DATABASE_PATH: `e2e/.tmp/${name}.sqlite`,
 		SESSION_SECRET: 'e2e-session-secret',
 		THECRAG_API_KEY: '',
@@ -37,13 +36,17 @@ export default defineConfig({
 	reporter: process.env.CI ? [['github'], ['list']] : 'list',
 	use: {
 		baseURL: `http://localhost:${PORTS.open}`,
-		trace: 'retain-on-failure',
-		extraHTTPHeaders: { 'x-forwarded-proto': 'http' }
+		trace: 'retain-on-failure'
 	},
 	webServer: [
 		server('open', {}),
 		server('settings', { APP_PASSWORD: TEST_PASSWORD, AUTH_SCOPE: 'settings' }),
-		server('all', { APP_PASSWORD: TEST_PASSWORD, AUTH_SCOPE: 'all' })
+		// Also covers the explicit ORIGIN override path.
+		server('all', {
+			APP_PASSWORD: TEST_PASSWORD,
+			AUTH_SCOPE: 'all',
+			ORIGIN: `http://localhost:${PORTS.all}`
+		})
 	],
 	projects: [
 		{ name: 'setup', testMatch: /seed\.setup\.ts/ },
