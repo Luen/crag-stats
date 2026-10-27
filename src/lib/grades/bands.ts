@@ -99,3 +99,18 @@ export function boulderPyramidScoreKey(v: number): number {
 	if (v < 0.65) return 0;
 	return Math.round(v);
 }
+
+/**
+ * Whether a route's canonical score is on the V-scale (boulder grades) rather than Ewbank.
+ * The stored grade system decides: deep water solos and highballs are often V-graded
+ * without being boulders (#72). Gear style is only the fallback when the system is unknown.
+ */
+export function usesVScale(
+	gradeSystem: string | null | undefined,
+	gearStyle: string | null | undefined
+): boolean {
+	const sys = (gradeSystem ?? '').trim().toLowerCase();
+	if (sys === 'v_scale' || sys === 'font') return true;
+	if (sys && sys !== 'unknown') return false;
+	return (gearStyle ?? '').toLowerCase().includes('boulder');
+}
