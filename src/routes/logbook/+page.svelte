@@ -124,8 +124,8 @@
 		<tbody>
 			{#each data.rows as row (row.id)}
 				<tr>
-					<td>{(row.ascentDate || '').slice(0, 10)}</td>
-					<td>
+					<td class="date">{(row.ascentDate || '').slice(0, 10)}</td>
+					<td class="route">
 						{#if row.url}
 							<a href={row.url} target="_blank" rel="noreferrer">{row.displayName}</a>
 						{:else}
@@ -142,8 +142,8 @@
 							<div class="note">{row.comment.slice(0, 120)}</div>
 						{/if}
 					</td>
-					<td><GradeChip grade={row.gradeRaw} band={row.gradeBand} /></td>
-					<td><TickTypeIcon tick={row.tickType} /></td>
+					<td class="nowrap"><GradeChip grade={row.gradeRaw} band={row.gradeBand} /></td>
+					<td class="nowrap"><TickTypeIcon tick={row.tickType} /></td>
 					<td class="muted">{row.quality || '—'}</td>
 					<td class="muted">{row.stars != null ? row.stars : '—'}</td>
 					<td class="muted">{row.partners || '—'}</td>
@@ -163,7 +163,7 @@
 							</div>
 						{/if}
 					</td>
-					<td><StyleBadge style={row.ascentGearStyle || row.gearStyle} /></td>
+					<td class="nowrap"><StyleBadge style={row.ascentGearStyle || row.gearStyle} /></td>
 				</tr>
 			{/each}
 		</tbody>
@@ -199,9 +199,17 @@
 	}
 	.filters {
 		display: grid;
-		grid-template-columns: 2fr repeat(4, 1fr) auto;
+		grid-template-columns: minmax(0, 2fr) repeat(5, minmax(0, 1fr));
 		gap: 0.5rem;
 		align-items: center;
+	}
+	.filters > :global(*) {
+		min-width: 0;
+		box-sizing: border-box;
+	}
+	.filters input,
+	.filters select {
+		width: 100%;
 	}
 	.filters input,
 	.filters select,
@@ -241,6 +249,17 @@
 		padding: 0.55rem 0.4rem;
 		border-bottom: 1px solid var(--line);
 		vertical-align: top;
+	}
+	/* #42: keep short values on one line; Route / Crag take the flexible width. */
+	td.date {
+		white-space: nowrap;
+		font-variant-numeric: tabular-nums;
+	}
+	td.nowrap {
+		white-space: nowrap;
+	}
+	td.route {
+		min-width: 12rem;
 	}
 	th a {
 		color: inherit;
