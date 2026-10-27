@@ -3,6 +3,7 @@
 	import StyleBadge from '#lib/components/StyleBadge.svelte';
 	import TagChips from '#lib/components/TagChips.svelte';
 	import TickTypeIcon from '#lib/components/TickTypeIcon.svelte';
+	import { enhance } from '$app/forms';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -137,6 +138,13 @@
 						{:else}
 							{row.displayName}
 						{/if}
+						{#if row.firstAscent}
+							<span
+								class="chip fa"
+								title={row.firstAscent === 'FFA' ? 'First free ascent' : 'First ascent'}
+								>{row.firstAscent}</span
+							>
+						{/if}
 						{#if row.pitchLabel}
 							<span class="chip">{row.pitchLabel}</span>
 						{/if}
@@ -153,6 +161,28 @@
 							{:else}
 								<div class="note">{row.comment}</div>
 							{/if}
+						{/if}
+						{#if data.canMarkFirstAscents}
+							<form method="POST" action="?/firstAscent" class="fa-edit" use:enhance>
+								<input type="hidden" name="provider" value={row.routeProvider} />
+								<input type="hidden" name="route" value={row.routeExternalId} />
+								{#if row.firstAscent}
+									<button type="submit" name="kind" value="">Unmark {row.firstAscent}</button>
+								{:else}
+									<button
+										type="submit"
+										name="kind"
+										value="FA"
+										aria-label="Mark {row.displayName} as my first ascent">Mark FA</button
+									>
+									<button
+										type="submit"
+										name="kind"
+										value="FFA"
+										aria-label="Mark {row.displayName} as my first free ascent">FFA</button
+									>
+								{/if}
+							</form>
 						{/if}
 					</td>
 					<td class="nowrap"><GradeChip grade={row.gradeRaw} band={row.gradeBand} /></td>
@@ -319,6 +349,37 @@
 		border-radius: 999px;
 		border: 1px solid var(--line);
 		color: var(--ink-muted);
+	}
+	.chip.fa {
+		border-color: var(--accent);
+		color: var(--accent);
+		font-weight: 700;
+	}
+	/* Owner-only FA controls: shown on row hover/focus, always on touch screens. */
+	.fa-edit {
+		display: flex;
+		gap: 0.3rem;
+		margin-top: 0.25rem;
+		opacity: 0;
+	}
+	tr:hover .fa-edit,
+	.fa-edit:focus-within {
+		opacity: 1;
+	}
+	@media (hover: none) {
+		.fa-edit {
+			opacity: 1;
+		}
+	}
+	.fa-edit button {
+		font: inherit;
+		font-size: 0.72rem;
+		padding: 0.05rem 0.45rem;
+		border-radius: 999px;
+		border: 1px solid var(--line);
+		background: var(--paper);
+		color: var(--ink-muted);
+		cursor: pointer;
 	}
 	.sector {
 		font-size: 0.8rem;

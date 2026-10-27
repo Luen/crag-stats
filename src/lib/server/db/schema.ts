@@ -1,4 +1,12 @@
-import { sqliteTable, text, integer, real, uniqueIndex, index } from 'drizzle-orm/sqlite-core';
+import {
+	sqliteTable,
+	text,
+	integer,
+	real,
+	uniqueIndex,
+	index,
+	primaryKey
+} from 'drizzle-orm/sqlite-core';
 
 export const profiles = sqliteTable('profiles', {
 	id: integer('id').primaryKey({ autoIncrement: true }),
@@ -163,3 +171,16 @@ export const appSettings = sqliteTable('app_settings', {
 	value: text('value').notNull(),
 	updatedAt: text('updated_at').notNull()
 });
+
+/** Owner-marked first ascents (migration 0009); theCrag's API doesn't expose route history. */
+export const firstAscents = sqliteTable(
+	'first_ascents',
+	{
+		provider: text('provider').notNull(),
+		routeExternalId: text('route_external_id').notNull(),
+		/** FA | FFA */
+		kind: text('kind').notNull().default('FA'),
+		createdAt: text('created_at').notNull()
+	},
+	(t) => [primaryKey({ columns: [t.provider, t.routeExternalId] })]
+);

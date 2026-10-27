@@ -12,6 +12,7 @@ export type DashCardId =
 	| 'blurb'
 	| 'streaks'
 	| 'eddington'
+	| 'firstAscents'
 	| 'athleteProfile'
 	| 'heatmap'
 	| 'volume'
@@ -54,6 +55,7 @@ export const DEFAULT_DASH_CARDS: readonly DashCardDef[] = [
 	{ id: 'streaks', label: 'Streaks', width: 'half' },
 	{ id: 'athleteProfile', label: 'Athlete profile', width: 'half' },
 	{ id: 'eddington', label: 'Eddington numbers', width: 'full' },
+	{ id: 'firstAscents', label: 'First ascents', width: 'full' },
 	{ id: 'heatmap', label: 'Ascent calendar', width: 'full' },
 	{ id: 'volume', label: 'Volume', width: 'quarter' },
 	{ id: 'gradeBands', label: 'Grade bands', width: 'quarter' },

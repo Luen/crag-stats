@@ -108,6 +108,7 @@ Height quirk: theCrag may return height as `[value, unit]` arrays — parse in t
 - **Climber type:** if one of Sport / Trad / Boulder is ≥ **40%** of ascents → “Sport climber” (etc.); else “Rock climber”.
 - **CPR timelines:** approximate model in `cpr.ts` (power factor P=5, tick shifts, ~0.7 grade/year decay). Link/docs: theCrag CPR articles. Label UI as approximate — not a byte-for-byte clone.
 - **Notable ascents:** by style + by area; use `StyleBadge` + `TickTypeIcon` (theCrag-like SVGs).
+- **First ascents:** theCrag has no FA tick type. FAs live in route history, which the logbook API doesn't return. So the owner marks FA/FFA per route from the logbook (`first_ascents`, migration 0009, keyed by provider route id so marks survive syncs and prunes; wiped by Settings → Wipe). The card uses the route grade and keeps route (Ewbank) and boulder (V) ranges separate. Mark/unmark actions require `locals.authed`.
 - Summary metrics: onsights, successful ascents, distance climbed (km).
 
 ---
@@ -257,5 +258,7 @@ You'll often notice things outside the task at hand. **Don't silently fix them i
 | 2026-10 | In-app docs at `/docs` (climber type, grades + conversion tables, tick types, CPR, training load). Training load is now an intensity-weighted acute:chronic model (`src/lib/server/trainingLoad.ts`). CPR timeline redesigned (real band boundaries, monotone curve, legend). Ewbank→French 10–13 fixed (was non-monotonic). |
 
 | 2026-10 | #47: `scripts/server.mjs` entry (plain-HTTP LAN + proxy + `ORIGIN`) replaces `node build`; e2e runs plain HTTP with a CSRF negative test. |
+
+| 2026-10 | Private ascent notes are opt-in (`SHOW_PRIVATE_NOTES` / Settings, owner only). First ascents card plus owner-marked FA/FFA in the logbook (migration 0009, `/docs/first-ascents`). |
 
 _Add a row when you change behaviour agents must know about._

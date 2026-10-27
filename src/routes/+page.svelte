@@ -19,6 +19,7 @@
 	import StarsScatter from '#lib/components/StarsScatter.svelte';
 	import Streaks from '#lib/components/Streaks.svelte';
 	import Eddington from '#lib/components/Eddington.svelte';
+	import FirstAscents from '#lib/components/FirstAscents.svelte';
 	import StyleMixChart from '#lib/components/StyleMixChart.svelte';
 	import StylePyramid from '#lib/components/StylePyramid.svelte';
 	import TagChips from '#lib/components/TagChips.svelte';
@@ -31,7 +32,16 @@
 
 	let { data }: PageProps = $props();
 	const s = $derived(data.stats);
-	const rows = $derived(packLayoutRows(data.dashLayout));
+	// Visitors don't get an empty First ascents card; the owner sees how to mark one.
+	const rows = $derived(
+		packLayoutRows(
+			data.dashLayout.map((i) =>
+				i.id === 'firstAscents' && !data.showSettings && s.firstAscents.total === 0
+					? { ...i, enabled: false }
+					: i
+			)
+		)
+	);
 
 	const systems = [
 		{ id: 'ewbank', label: 'Ewbanks' },
@@ -72,6 +82,8 @@
 		/>
 	{:else if id === 'eddington'}
 		<Eddington data={s.eddington} />
+	{:else if id === 'firstAscents'}
+		<FirstAscents data={s.firstAscents} canEdit={data.showSettings} />
 	{:else if id === 'athleteProfile'}
 		<AthleteProfile axes={s.athleteProfile.axes} />
 	{:else if id === 'heatmap'}
