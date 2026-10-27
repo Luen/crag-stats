@@ -115,3 +115,20 @@ Stored in the `app_settings` key/value table (migration `0008`) through `src/lib
 
 - `grade_system`: the site-wide display grade system, used for every visitor. Resolution order: Settings value, then `PREFERRED_GRADE_SYSTEM` env, then Ewbank. `?system=` on `/` is a one-off override for a shared link. The old per-browser `cs_grade_system` cookie is no longer read.
 - `search_indexing`: **Show in search engines** (default on). When off, `/robots.txt` disallows everything and every response carries `X-Robots-Tag: noindex, nofollow` plus a `<meta name="robots">` tag. It's forced off when `APP_PASSWORD` is set with `AUTH_SCOPE=all`. `/settings`, `/login`, `/logout` and `/api/` are always noindex. The pure rules live in `src/lib/server/seo.ts` (unit-tested). `robots.txt` is a dynamic route (`src/routes/robots.txt/+server.ts`) and is public even behind the password gate.
+
+## README screenshots
+
+The README showcase images live in `docs/screenshots/`. Regenerate them when the UI changes noticeably, with `pnpm dev` running and a synced database. They use headless Chrome:
+
+- `--blink-settings=preferredColorScheme=1` for light mode, `=0` for dark.
+- Pass a normal desktop `--user-agent`: theCrag's image CDN refuses the `HeadlessChrome` UA, so avatars break without it.
+- Headless Chrome won't lay out narrower than about 500px. Use `--window-size=500,1000 --force-device-scale-factor=2` for the mobile shot.
+- `charts.png` is a crop (PIL) of a tall `--window-size=1440,6000` capture. Avoid sections with other people's names (the Partners card).
+- Use a throwaway `--user-data-dir` so your own browser storage (theme or sidebar) doesn't leak into the shots.
+
+```bash
+chrome --headless=new --hide-scrollbars --user-data-dir=/tmp/cs-shots \
+  --user-agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0.0.0 Safari/537.36" \
+  --window-size=1440,1300 --virtual-time-budget=20000 --blink-settings=preferredColorScheme=1 \
+  --screenshot=docs/screenshots/dashboard-light.png http://localhost:5173/
+```

@@ -211,7 +211,7 @@
 		padding: 0.45rem 0.55rem;
 		border-radius: 0.45rem;
 		border: 1px solid var(--line);
-		background: #fff;
+		background: var(--paper);
 		color: var(--ink);
 	}
 	button {
