@@ -18,7 +18,8 @@ export type BadgeIcon =
 	| 'calendar'
 	| 'globe'
 	| 'route'
-	| 'send';
+	| 'send'
+	| 'hanger';
 
 export type BadgeTone = 'warm' | 'green' | 'blue' | 'purple' | 'slate';
 
@@ -351,6 +352,36 @@ export const BADGE_CATALOG: readonly BadgeDef[] = [
 		hint: 'Set a personal grade high',
 		icon: 'flag',
 		tone: 'green'
+	},
+	// First ascents rely on the owner marking FA/FFA in the logbook (theCrag's API has no
+	// route history); each is dated by the first send of the marked route.
+	{
+		id: 'first_fa',
+		title: 'First Ascent',
+		hint: 'Send a route and mark it as your FA in the logbook',
+		icon: 'hanger',
+		tone: 'purple'
+	},
+	{
+		id: 'first_ffa',
+		title: 'First Free Ascent',
+		hint: 'Send a route and mark it as your FFA in the logbook',
+		icon: 'hanger',
+		tone: 'blue'
+	},
+	{
+		id: 'fa_5',
+		title: 'Route Developer',
+		hint: 'Log 5 first ascents (FA or FFA)',
+		icon: 'hanger',
+		tone: 'warm'
+	},
+	{
+		id: 'fa_10',
+		title: 'Pioneer',
+		hint: 'Log 10 first ascents (FA or FFA)',
+		icon: 'hanger',
+		tone: 'purple'
 	}
 ] as const;
 
@@ -453,6 +484,7 @@ export function buildBadges(rows: DashboardExtraRow[]): BadgesResult {
 	const countries = new Set<string>();
 	let maxRoute = -Infinity;
 	let maxBoulder = -Infinity;
+	const faRoutes = new Set<number>();
 
 	for (const { row, day } of dated) {
 		ascentCount += 1;
@@ -554,6 +586,15 @@ export function buildBadges(rows: DashboardExtraRow[]): BadgesResult {
 		if (band === 3) mark('band_experienced', hitAt(row, 'First Experienced-band send'));
 		if (band === 4) mark('band_expert', hitAt(row, 'First Expert-band send'));
 		if (band === 5) mark('band_elite', hitAt(row, 'First Elite-band send'));
+
+		// First send of a route the owner marked FA/FFA dates that first ascent.
+		if (row.firstAscent && row.routeId != null && !faRoutes.has(row.routeId)) {
+			faRoutes.add(row.routeId);
+			const what = row.firstAscent === 'FFA' ? 'First free ascent' : 'First ascent';
+			mark(row.firstAscent === 'FFA' ? 'first_ffa' : 'first_fa', hitAt(row, what));
+			if (faRoutes.size === 5) mark('fa_5', hitAt(row, `${what} #5`));
+			if (faRoutes.size === 10) mark('fa_10', hitAt(row, `${what} #10`));
+		}
 
 		const score = scoreOf(row);
 		if (score != null) {

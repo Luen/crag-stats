@@ -27,7 +27,34 @@ export type DashboardExtraRow = {
 	ascentUrl?: string | null;
 	tagsJson?: string | null;
 	country?: string | null;
+	routeId?: number | null;
+	/** Owner-marked first ascent of this route (firstAscents.ts) */
+	firstAscent?: 'FA' | 'FFA' | null;
 };
+
+/**
+ * The first logged send of each route marked FA/FFA, in date order: that send dates the
+ * first ascent for badges, milestones and the First ascents card.
+ */
+export function firstAscentSends(
+	rows: DashboardExtraRow[]
+): { row: DashboardExtraRow; day: string; kind: 'FA' | 'FFA' }[] {
+	const sorted = rows
+		.filter((r) => r.isSend && r.firstAscent && r.routeId != null && dayKey(r.ascentDate))
+		.sort(
+			(a, b) =>
+				(a.ascentDate || '').localeCompare(b.ascentDate || '') ||
+				(a.ascentId ?? 0) - (b.ascentId ?? 0)
+		);
+	const seen = new Set<number>();
+	const out: { row: DashboardExtraRow; day: string; kind: 'FA' | 'FFA' }[] = [];
+	for (const row of sorted) {
+		if (seen.has(row.routeId!)) continue;
+		seen.add(row.routeId!);
+		out.push({ row, day: dayKey(row.ascentDate)!, kind: row.firstAscent! });
+	}
+	return out;
+}
 
 export type MonthlyStat = {
 	month: string;
@@ -49,7 +76,7 @@ export type YearlyStat = {
 };
 
 export type MilestoneItem = {
-	kind: 'grade' | 'count' | 'height';
+	kind: 'grade' | 'count' | 'height' | 'fa';
 	label: string;
 	date: string | null;
 	detail: string;
@@ -312,6 +339,16 @@ export function buildMilestones(rows: DashboardExtraRow[]): { items: MilestoneIt
 				});
 			}
 		}
+	}
+
+	// Owner-marked first ascents, dated by the first send of the route.
+	for (const fa of firstAscentSends(rows)) {
+		items.push({
+			kind: 'fa',
+			label: fa.kind === 'FFA' ? 'First free ascent' : 'First ascent',
+			date: fa.day,
+			detail: (fa.row.routeName || 'Unknown').trim() || 'Unknown'
+		});
 	}
 
 	items.sort((a, b) => {
