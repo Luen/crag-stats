@@ -317,6 +317,7 @@
 		display: flex;
 		flex-wrap: wrap;
 		justify-content: space-between;
+		align-items: flex-start;
 		gap: 1.25rem;
 		padding: 1.4rem 1.5rem;
 		margin-bottom: 1rem;
@@ -327,7 +328,7 @@
 		gap: 1rem;
 		align-items: flex-start;
 		min-width: 0;
-		flex: 1;
+		flex: 1 1 16rem;
 	}
 	.avatar {
 		width: 4.5rem;
@@ -348,9 +349,10 @@
 	}
 	h1 {
 		margin: 0;
-		font-size: clamp(1.8rem, 4vw, 2.6rem);
+		font-size: clamp(1.45rem, 5.5vw, 2.6rem);
 		max-width: 18ch;
-		line-height: 1.05;
+		line-height: 1.1;
+		overflow-wrap: anywhere;
 	}
 	.lede {
 		margin: 0.7rem 0 0;
@@ -361,7 +363,9 @@
 		display: grid;
 		align-content: start;
 		gap: 0.4rem;
-		min-width: 13rem;
+		flex: 0 1 13rem;
+		min-width: 0;
+		max-width: 100%;
 	}
 	.pill {
 		display: inline-flex;
@@ -397,6 +401,8 @@
 		border-radius: 0.45rem;
 		border: 1px solid var(--line);
 		background: white;
+		width: 100%;
+		max-width: 16rem;
 	}
 	.metrics {
 		display: grid;
@@ -512,10 +518,42 @@
 		color: var(--ink-muted);
 	}
 	@media (max-width: 840px) {
-		.metrics,
+		.hero {
+			flex-direction: column;
+			padding: 1.1rem 1rem;
+			gap: 1rem;
+		}
+		.hero-main {
+			flex: 1 1 auto;
+			width: 100%;
+		}
+		.avatar {
+			width: 3.5rem;
+			height: 3.5rem;
+		}
+		.sync {
+			flex: 1 1 auto;
+			width: 100%;
+			padding-top: 0.75rem;
+			border-top: 1px solid var(--line);
+		}
+		.metrics {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
 		.grid,
 		.duo {
 			grid-template-columns: 1fr;
+		}
+		.pyramids {
+			grid-template-columns: 1fr;
+		}
+	}
+	@media (max-width: 420px) {
+		.metrics {
+			grid-template-columns: 1fr;
+		}
+		.metric strong {
+			font-size: 1.35rem;
 		}
 	}
 </style>

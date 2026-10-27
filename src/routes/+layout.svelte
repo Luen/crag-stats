@@ -51,7 +51,12 @@
 
 	<div class="main-col">
 		<header class="top">
-			<nav class="mobile-nav">
+			<a class="brand mobile-brand" href="/">
+				<img class="brand-mark" src={favicon} alt="" width="28" height="28" />
+				<span>Crag Stats</span>
+				<span class="ver">{data.appVersion}</span>
+			</a>
+			<nav class="mobile-nav" aria-label="Primary">
 				{#each links as link (link.href)}
 					<a href={link.href} class:active={page.url.pathname === link.href}>{link.label}</a>
 				{/each}
@@ -159,18 +164,34 @@
 	.top {
 		display: none;
 		margin-bottom: 1rem;
+		gap: 0.65rem;
+	}
+	.mobile-brand {
+		padding: 0;
+		margin-bottom: 0.15rem;
+	}
+	.mobile-brand .ver {
+		margin-left: 0.15rem;
+		font-family: 'Source Sans 3', 'Segoe UI', sans-serif;
+		letter-spacing: 0;
 	}
 	.mobile-nav {
 		display: flex;
-		flex-wrap: wrap;
+		flex-wrap: nowrap;
 		gap: 0.35rem;
+		overflow-x: auto;
+		-webkit-overflow-scrolling: touch;
+		scrollbar-width: thin;
+		padding-bottom: 0.15rem;
 	}
 	.mobile-nav a {
 		padding: 0.4rem 0.7rem;
 		border-radius: 999px;
 		color: var(--ink-muted);
 		font-weight: 600;
-		font-size: 0.9rem;
+		font-size: 0.85rem;
+		white-space: nowrap;
+		flex-shrink: 0;
 	}
 	footer {
 		margin-top: 2.5rem;
@@ -189,7 +210,11 @@
 			display: none;
 		}
 		.top {
-			display: block;
+			display: flex;
+			flex-direction: column;
+		}
+		.main-col {
+			padding: 0.85rem 0.85rem 2.5rem;
 		}
 	}
 </style>
