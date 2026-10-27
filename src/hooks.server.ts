@@ -1,4 +1,5 @@
-import type { Handle } from '@sveltejs/kit/hooks';
+import { building } from '$app/env';
+import type { Handle, ServerInit } from '@sveltejs/kit/hooks';
 import {
 	isAuthEnabled,
 	isProtectedPath,
@@ -9,9 +10,16 @@ import {
 import { getSearchIndexing } from '#lib/server/appSettings';
 import { ensureSchema } from '#lib/server/db';
 import { env } from '#lib/server/env';
+import { startScheduler } from '#lib/server/scheduler';
 import { isNoindexPath } from '#lib/server/seo';
 
 ensureSchema();
+
+// Runs once when the Node server boots (not per request): daily cron + an
+// immediate first sync on a fresh install. No-op without THECRAG_API_KEY.
+export const init: ServerInit = () => {
+	if (!building) startScheduler();
+};
 
 const PUBLIC = new Set(['/login', '/logout', '/health', '/robots.txt']);
 

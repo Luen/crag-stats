@@ -8,12 +8,8 @@ import { getSearchIndexing } from '#lib/server/appSettings';
 import { isAuthEnabled, authScope } from '#lib/server/auth';
 import { resolveDateDisplay } from '#lib/dates';
 import { env } from '#lib/server/env';
-import { startScheduler } from '#lib/server/scheduler';
 import { isNoindexPath } from '#lib/server/seo';
 import type { LayoutServerLoad } from './$types';
-
-// Start daily sync when the Node server boots (no-op in environments without API key).
-startScheduler();
 
 function readAppVersion(): string {
 	try {
