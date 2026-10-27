@@ -33,13 +33,13 @@ export function isProtectedPath(pathname: string): boolean {
 }
 
 /**
- * Constant-time password check via HMAC digests so length differences
- * do not short-circuit (unlike raw Buffer compare of unequal lengths).
+ * Constant-time password check (padded buffer compare — no fast hash of the
+ * password). Login is also rate-limited in-process.
  */
 export function verifyPassword(password: string) {
 	const expected = env('APP_PASSWORD');
 	if (!expected) return true;
-	return timingSafeEqualString(`pw:${secret()}:${password}`, `pw:${secret()}:${expected}`);
+	return timingSafeEqualString(password, expected);
 }
 
 export { safeRedirectPath } from './safeRedirect';

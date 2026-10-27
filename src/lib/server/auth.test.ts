@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { verifySharedSecret } from './cryptoCompare';
+import { timingSafeEqualString, verifySharedSecret } from './cryptoCompare';
 import { safeRedirectPath } from './safeRedirect';
 import {
 	_resetLoginRateLimitForTests,
@@ -26,6 +26,19 @@ describe('safeRedirectPath', () => {
 	it('uses fallback', () => {
 		expect(safeRedirectPath(null, '/settings')).toBe('/settings');
 		expect(safeRedirectPath('//x', '/settings')).toBe('/settings');
+	});
+});
+
+describe('timingSafeEqualString', () => {
+	it('matches equal strings including empty', () => {
+		expect(timingSafeEqualString('secret', 'secret')).toBe(true);
+		expect(timingSafeEqualString('', '')).toBe(true);
+	});
+
+	it('rejects unequal content and length (incl. NUL padding tricks)', () => {
+		expect(timingSafeEqualString('secret', 'Secret')).toBe(false);
+		expect(timingSafeEqualString('ab', 'a')).toBe(false);
+		expect(timingSafeEqualString('a\0', 'a')).toBe(false);
 	});
 });
 
