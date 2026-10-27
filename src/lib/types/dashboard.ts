@@ -89,6 +89,8 @@ export type DashboardStats = {
 	}[];
 	volumeByMonth: { month: string; count: number; sends: number }[];
 	stylePyramids: StylePyramid[];
+	/** Every filter's pyramids, so the dashboard toggles them without a reload. */
+	stylePyramidsByMode: Record<'all' | 'sends' | 'onsight', StylePyramid[]>;
 	bandBreakdown: { band: number; name: string; count: number; color: string }[];
 	notableByStyle: NotableRow[];
 	notableByArea: NotableRow[];
@@ -200,7 +202,13 @@ export type DashboardStats = {
 		months: { month: string; Sport: number; Trad: number; Boulder: number; Other: number }[];
 	};
 	partners: { name: string; count: number }[];
-	starsScatter: { stars: number; score: number; routeName: string; url: string | null }[];
+	starsScatter: {
+		stars: number;
+		score: number;
+		kind: 'route' | 'boulder';
+		routeName: string;
+		url: string | null;
+	}[];
 	qualityBreakdown: { quality: string; count: number }[];
 	rockTypes: {
 		types: { name: string; count: number; pct: number }[];

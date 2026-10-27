@@ -33,6 +33,7 @@ import { repairGradesFromRawJson } from './repairGrades';
 import { buildTrainingLoadView } from './trainingLoad';
 
 export type PyramidMode = 'all' | 'sends' | 'onsight';
+const PYRAMID_MODES: PyramidMode[] = ['all', 'sends', 'onsight'];
 
 export function parsePyramidMode(raw: string | null | undefined): PyramidMode {
 	const v = (raw || '').trim().toLowerCase();
@@ -337,11 +338,17 @@ export function getDashboardStats(
 	let redpointCount = 0;
 	let pinkpointCount = 0;
 
-	// style -> scoreKey -> { segments, band, isBoulder }
-	const pyramid = new Map<
+	// mode -> style -> scoreKey -> { segments, band, isBoulder }. Every mode is built in the
+	// one pass so the dashboard can switch filters client-side, without a reload.
+	type PyramidAgg = Map<
 		string,
 		Map<number, { ticks: Map<string, number>; band: number | null; isBoulder: boolean }>
-	>();
+	>;
+	const pyramids: Record<PyramidMode, PyramidAgg> = {
+		all: new Map(),
+		sends: new Map(),
+		onsight: new Map()
+	};
 
 	type NotableAgg = {
 		count: number;
@@ -407,14 +414,15 @@ export function getDashboardStats(
 
 		if (row.isSend && band) bandMap.set(band, (bandMap.get(band) ?? 0) + 1);
 
-		const includeInPyramid =
-			rowScore != null &&
-			(pyramidMode === 'onsight'
-				? kind === 'onsight'
-				: pyramidMode === 'sends'
-					? row.isSend
-					: row.isSend || row.isAttempt);
-		if (includeInPyramid && rowScore != null) {
+		for (const mode of PYRAMID_MODES) {
+			const includeInPyramid =
+				mode === 'onsight'
+					? kind === 'onsight'
+					: mode === 'sends'
+						? row.isSend
+						: row.isSend || row.isAttempt;
+			if (!includeInPyramid || rowScore == null) continue;
+			const pyramid = pyramids[mode];
 			const styleKey = style === 'Top rope' ? 'Top rope' : style;
 			if (!pyramid.has(styleKey)) pyramid.set(styleKey, new Map());
 			const byGrade = pyramid.get(styleKey)!;
@@ -481,53 +489,58 @@ export function getDashboardStats(
 		.sort((a, b) => a.date.localeCompare(b.date));
 
 	const styleOrder = ['Boulder', 'Sport', 'Trad', 'Top rope', 'Alpine', 'Aid'];
-	const stylePyramids: StylePyramid[] = [...pyramid.entries()]
-		.sort((a, b) => {
-			const ia = styleOrder.indexOf(a[0]);
-			const ib = styleOrder.indexOf(b[0]);
-			return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
-		})
-		.map(([style, grades]) => {
-			const isBoulder = style === 'Boulder';
-			const system: GradeSystem = isBoulder
-				? preferredSystem === 'font'
-					? 'font'
-					: 'v_scale'
-				: preferredSystem === 'v_scale' || preferredSystem === 'font'
-					? 'ewbank'
-					: preferredSystem;
+	const buildStylePyramids = (pyramid: PyramidAgg): StylePyramid[] =>
+		[...pyramid.entries()]
+			.sort((a, b) => {
+				const ia = styleOrder.indexOf(a[0]);
+				const ib = styleOrder.indexOf(b[0]);
+				return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
+			})
+			.map(([style, grades]) => {
+				const isBoulder = style === 'Boulder';
+				const system: GradeSystem = isBoulder
+					? preferredSystem === 'font'
+						? 'font'
+						: 'v_scale'
+					: preferredSystem === 'v_scale' || preferredSystem === 'font'
+						? 'ewbank'
+						: preferredSystem;
 
-			const rows = [...grades.entries()]
-				.map(([score, v]) => {
-					const total = [...v.ticks.values()].reduce((s, n) => s + n, 0);
-					const bandId = isBoulder ? (bandFromVScale(score)?.id ?? v.band) : v.band;
-					const band = bandById(bandId ?? 0);
-					const params = new URLSearchParams({
-						style,
-						score: String(score)
-					});
-					return {
-						grade: formatGrade(score, isBoulder, preferredSystem, null),
-						score,
-						band: bandId,
-						color: band?.color ?? '#888',
-						total,
-						href: `/logbook?${params.toString()}`,
-						segments: [...v.ticks.entries()]
-							.map(([tick, count]) => ({ tick, count, color: tickColor(tick) }))
-							.sort((a, b) => b.count - a.count)
-					};
-				})
-				.sort((a, b) => a.score - b.score);
+				const rows = [...grades.entries()]
+					.map(([score, v]) => {
+						const total = [...v.ticks.values()].reduce((s, n) => s + n, 0);
+						const bandId = isBoulder ? (bandFromVScale(score)?.id ?? v.band) : v.band;
+						const band = bandById(bandId ?? 0);
+						const params = new URLSearchParams({
+							style,
+							score: String(score)
+						});
+						return {
+							grade: formatGrade(score, isBoulder, preferredSystem, null),
+							score,
+							band: bandId,
+							color: band?.color ?? '#888',
+							total,
+							href: `/logbook?${params.toString()}`,
+							segments: [...v.ticks.entries()]
+								.map(([tick, count]) => ({ tick, count, color: tickColor(tick) }))
+								.sort((a, b) => b.count - a.count)
+						};
+					})
+					.sort((a, b) => a.score - b.score);
 
-			return {
-				style,
-				total: rows.reduce((s, r) => s + r.total, 0),
-				system,
-				rows
-			};
-		})
-		.filter((p) => p.total > 0);
+				return {
+					style,
+					total: rows.reduce((s, r) => s + r.total, 0),
+					system,
+					rows
+				};
+			})
+			.filter((p) => p.total > 0);
+	const stylePyramidsByMode = Object.fromEntries(
+		PYRAMID_MODES.map((mode) => [mode, buildStylePyramids(pyramids[mode])])
+	) as Record<PyramidMode, StylePyramid[]>;
+	const stylePyramids = stylePyramidsByMode[pyramidMode];
 
 	const toNotableRows = (
 		map: Map<string, NotableAgg>,
@@ -740,6 +753,7 @@ export function getDashboardStats(
 			.sort((a, b) => a.month.localeCompare(b.month))
 			.slice(-24),
 		stylePyramids,
+		stylePyramidsByMode,
 		bandBreakdown: GRADE_BANDS.map((b) => ({
 			band: b.id,
 			name: b.name,

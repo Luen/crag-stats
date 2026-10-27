@@ -45,6 +45,15 @@
 		{ id: 'sends', label: 'Sends only' },
 		{ id: 'onsight', label: 'Onsight only' }
 	] as const;
+
+	// Recent rows carry tags, so they run taller than Hardest sends beside them; a short
+	// list keeps the two cards level instead of leaving a blank column under the shorter one.
+	const RECENT_LIMIT = 5;
+
+	// Every filter ships with the page, so switching is local state: no navigation, no
+	// scroll jump. `?pyramid=` still picks the starting filter for shared links.
+	let pyramidOverride = $state<(typeof pyramidModes)[number]['id'] | null>(null);
+	const pyramidMode = $derived(pyramidOverride ?? data.pyramidMode);
 </script>
 
 {#snippet card(id: DashCardId)}
@@ -148,18 +157,17 @@
 			</p>
 			<nav class="pyramid-toggles" aria-label="Pyramid filter">
 				{#each pyramidModes as mode (mode.id)}
-					<a
-						href="?pyramid={mode.id}"
-						data-sveltekit-reset="false"
-						data-sveltekit-replacestate
-						class={{ active: s.pyramidMode === mode.id }}
-						aria-current={s.pyramidMode === mode.id ? 'page' : undefined}>{mode.label}</a
+					<button
+						type="button"
+						class={{ active: pyramidMode === mode.id }}
+						aria-pressed={pyramidMode === mode.id}
+						onclick={() => (pyramidOverride = mode.id)}>{mode.label}</button
 					>
 				{/each}
 			</nav>
 		</header>
 		<div class="pyramids">
-			{#each s.stylePyramids as pyramid (pyramid.style)}
+			{#each s.stylePyramidsByMode[pyramidMode] as pyramid (pyramid.style)}
 				<StylePyramid {pyramid} />
 			{/each}
 		</div>
@@ -205,7 +213,7 @@
 		<article class="panel">
 			<h2>Recent</h2>
 			<ul class="list">
-				{#each s.recent as climb (climb.id)}
+				{#each s.recent.slice(0, RECENT_LIMIT) as climb (climb.id)}
 					<li>
 						<div>
 							<strong>
@@ -233,6 +241,9 @@
 					</li>
 				{/each}
 			</ul>
+			{#if s.recent.length > RECENT_LIMIT}
+				<a class="more" href="/logbook">All ascents in the logbook →</a>
+			{/if}
 		</article>
 	{/if}
 {/snippet}
@@ -442,15 +453,18 @@
 		gap: 0.4rem;
 		margin-top: 0.65rem;
 	}
-	.pyramid-toggles a {
+	.pyramid-toggles button {
+		font: inherit;
 		font-size: 0.8rem;
+		background: none;
+		cursor: pointer;
 		padding: 0.25rem 0.65rem;
 		border-radius: 999px;
 		border: 1px solid var(--line);
 		color: var(--ink-muted);
 		text-decoration: none;
 	}
-	.pyramid-toggles a.active {
+	.pyramid-toggles button.active {
 		background: var(--accent);
 		color: var(--on-accent);
 		border-color: var(--accent);
@@ -489,6 +503,12 @@
 	.sub {
 		color: var(--ink-muted);
 		font-size: 0.85rem;
+	}
+	.more {
+		display: inline-block;
+		margin-top: 0.85rem;
+		font-size: 0.85rem;
+		color: var(--ink-muted);
 	}
 	.list a {
 		text-decoration: underline;

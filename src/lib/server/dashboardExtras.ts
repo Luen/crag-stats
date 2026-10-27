@@ -4,6 +4,7 @@
  */
 import { formatVScaleLabel } from '#lib/grades';
 import { tickKind } from '#lib/ticks';
+import { normalizeClimbStyle } from './cpr';
 
 /** Minimal row shape shared by extras builders. */
 export type DashboardExtraRow = {
@@ -417,10 +418,17 @@ export function buildPartnerLeaderboard(rows: DashboardExtraRow[]): {
 	return { partners };
 }
 
-export function buildStarsScatter(rows: DashboardExtraRow[]): {
-	points: { stars: number; score: number; routeName: string; url: string | null }[];
-} {
-	const points: { stars: number; score: number; routeName: string; url: string | null }[] = [];
+export type StarsScatterPoint = {
+	stars: number;
+	score: number;
+	/** Boulder scores are V-grades and route scores Ewbanks, so they never share an axis. */
+	kind: 'route' | 'boulder';
+	routeName: string;
+	url: string | null;
+};
+
+export function buildStarsScatter(rows: DashboardExtraRow[]): { points: StarsScatterPoint[] } {
+	const points: StarsScatterPoint[] = [];
 	for (const row of rows) {
 		if (!row.isSend) continue;
 		const stars = row.stars;
@@ -429,6 +437,7 @@ export function buildStarsScatter(rows: DashboardExtraRow[]): {
 		points.push({
 			stars,
 			score,
+			kind: normalizeClimbStyle(row.gearStyle) === 'boulder' ? 'boulder' : 'route',
 			routeName: (row.routeName || 'Unknown').trim() || 'Unknown',
 			url: linkOf(row)
 		});
