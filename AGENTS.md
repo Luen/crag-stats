@@ -298,5 +298,6 @@ You'll often notice things outside the task at hand. **Don't silently fix them i
 | 2026-10 | #130: Project training load uses explicit ascent/CSV/pitch grade evidence; effective route fallback grades are not personal overrides. |
 | 2026-10 | #28: Best months exposes monthly seasonality and ascent counts in a keyboard/screen-reader accessible values table. |
 | 2026-10 | #128: route-info fields distinguish absent (preserve) from explicit null (clear); refresh can remove stale beta, access warnings and ratings. |
+| 2026-10 | Dashboard First ascents card title links to `/logbook?fa=any`. |
 
 _Add a row when you change behaviour agents must know about._
