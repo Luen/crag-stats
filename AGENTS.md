@@ -276,5 +276,4 @@ You'll often notice things outside the task at hand. **Don't silently fix them i
 | 2026-10 | #129: sector links use an exact sectorPath beneath the crag (including descendants); legacy sector names also match cached ancestors. |
 | 2026-10 | #128: route-info fields distinguish absent (preserve) from explicit null (clear); refresh can remove stale beta, access warnings and ratings. |
 
-
 _Add a row when you change behaviour agents must know about._
