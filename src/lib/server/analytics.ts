@@ -27,6 +27,8 @@ import {
 } from './logbookSort';
 import { buildCprTimeline } from './cpr';
 import { buildBadges } from './badges';
+import { communityAscentBadgeHits } from './communityBadges';
+import type { DateDisplay } from '#lib/dates';
 import { buildRouteDeveloperImpact } from './routeDeveloperImpact';
 import { countOwnerSetRoutes, setterBadgeHits } from './routeSetters';
 import {
@@ -245,7 +247,7 @@ export function parseGradeSystem(raw: string | null | undefined): GradeSystem {
 
 export function getDashboardStats(
 	preferredSystem: GradeSystem = 'ewbank',
-	opts?: { pyramidMode?: PyramidMode }
+	opts?: { pyramidMode?: PyramidMode; dateDisplay?: DateDisplay }
 ): DashboardStats {
 	const pyramidMode = opts?.pyramidMode ?? 'all';
 	ensureSchema();
@@ -688,7 +690,12 @@ export function getDashboardStats(
 	const monthly = buildMonthlyStats(extraRows);
 	const yearly = buildYearlyStats(extraRows);
 	const milestones = buildMilestones(extraRows);
-	const badges = buildBadges(extraRows, setterBadgeHits());
+	const developerImpact = buildRouteDeveloperImpact();
+	const badges = buildBadges(
+		extraRows,
+		setterBadgeHits(),
+		communityAscentBadgeHits(developerImpact, opts?.dateDisplay)
+	);
 	const trainingLoad = buildTrainingLoadView(extraRows);
 	const styleMix = buildStyleMixOverTime(extraRows);
 	const partners = buildPartnerLeaderboard(extraRows, 7).partners;
@@ -865,7 +872,7 @@ export function getDashboardStats(
 		})(),
 		firstAscents: (() => {
 			const routesSet = countOwnerSetRoutes();
-			const impact = buildRouteDeveloperImpact();
+			const impact = developerImpact;
 			const community = {
 				routesPutUp: impact.routesPutUp,
 				communityAscents: impact.communityAscents,

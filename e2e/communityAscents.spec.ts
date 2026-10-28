@@ -42,6 +42,10 @@ test('community snapshots distinguish missing, partial, zero and positive counts
 			.filter({ has: page.getByRole('heading', { name: 'First ascents', exact: true }) });
 		await expect(card).toContainText('Community ascents unavailable: 0 of 2');
 		await expect(card.locator('.list li')).toHaveCount(2);
+		const sharedBadge = page
+			.locator('article.card')
+			.filter({ has: page.getByRole('heading', { name: 'Shared Crag', exact: true }) });
+		await expect(sharedBadge).toContainText('Locked');
 		expect(errors).toEqual([]);
 
 		db.prepare('UPDATE routes SET ascent_count = 1, ascent_count_own = 1 WHERE id = ?').run(ids[0]);
@@ -68,6 +72,19 @@ test('community snapshots distinguish missing, partial, zero and positive counts
 		await page.reload();
 		// Owner snapshot stays paired with the fetch — live repeats must not shrink the estimate (#140).
 		await expect(communityTile.locator('strong')).toHaveText('4');
+		// Crossing a threshold updates the actual badge carousel from the paired cache.
+		db.prepare('UPDATE routes SET ascent_count = 51 WHERE id = ?').run(ids[0]);
+		await page.reload();
+		await expect(sharedBadge).toContainText('~50 community ascents (estimate)');
+		await expect(sharedBadge).toContainText('Earned');
+		const crowdBadge = page
+			.locator('article.card')
+			.filter({ has: page.getByRole('heading', { name: 'Crowd Pleaser', exact: true }) });
+		await expect(crowdBadge).toContainText('Earned');
+		const sportBadge = page
+			.locator('article.card')
+			.filter({ has: page.getByRole('heading', { name: 'Sport Magnet', exact: true }) });
+		await expect(sportBadge).toContainText('~50 on sport/bolted (estimate)');
 		expect(errors).toEqual([]);
 	} finally {
 		for (const id of ids) {
