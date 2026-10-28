@@ -98,6 +98,28 @@
 	</article>
 
 	<article class="panel">
+		<h2>CSV import</h2>
+		<p class="hint">
+			For everyone without supporter API access. Export from theCrag:
+			<em>Action → Export logbook as CSV</em>. CSV import upserts rows but does
+			<strong>not</strong> prune deletes (API sync does).
+		</p>
+		<form method="POST" action="?/importCsv" enctype="multipart/form-data" class="stack">
+			<input
+				type="file"
+				name="file"
+				accept=".csv,text/csv"
+				aria-label="theCrag logbook CSV export"
+				required
+			/>
+			<button type="submit">Import CSV</button>
+		</form>
+		{#if form?.imported != null}
+			<p class="ok">Parsed {form.imported} ascents.</p>
+		{/if}
+	</article>
+
+	<article class="panel">
 		<h2>theCrag API sync</h2>
 		<p class="hint">
 			Uses <code>THECRAG_API_KEY</code> from your environment. Keys grant read access to private
@@ -136,28 +158,6 @@
 			<p class="hint">
 				No API key configured. Set <code>THECRAG_API_KEY</code> in <code>.env</code>.
 			</p>
-		{/if}
-	</article>
-
-	<article class="panel">
-		<h2>CSV import</h2>
-		<p class="hint">
-			For everyone without supporter API access. Export from theCrag:
-			<em>Action → Export logbook as CSV</em>. CSV import upserts rows but does
-			<strong>not</strong> prune deletes (API sync does).
-		</p>
-		<form method="POST" action="?/importCsv" enctype="multipart/form-data" class="stack">
-			<input
-				type="file"
-				name="file"
-				accept=".csv,text/csv"
-				aria-label="theCrag logbook CSV export"
-				required
-			/>
-			<button type="submit">Import CSV</button>
-		</form>
-		{#if form?.imported != null}
-			<p class="ok">Parsed {form.imported} ascents.</p>
 		{/if}
 	</article>
 
