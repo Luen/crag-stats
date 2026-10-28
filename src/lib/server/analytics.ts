@@ -22,6 +22,7 @@ import {
 	buildMilestones,
 	buildMonthlyStats,
 	buildPartnerLeaderboard,
+	splitPartners,
 	buildQualityBreakdown,
 	buildRockTypeStats,
 	buildStarsScatter,
@@ -970,6 +971,7 @@ export function listLogbook(filters?: {
 	minStars?: number;
 	/** Substring on ascents.partners */
 	with?: string;
+	partnerMatch?: 'exact' | 'contains';
 	/** Route tags_json Rock type name (case-insensitive exact match) */
 	rock?: string;
 	/** date | grade | quality | stars */
@@ -1114,7 +1116,11 @@ export function listLogbook(filters?: {
 	}
 	if (filters?.with) {
 		const w = filters.with.toLowerCase();
-		rows = rows.filter((r) => (r.partners || '').toLowerCase().includes(w));
+		rows = rows.filter((r) =>
+			filters.partnerMatch === 'exact'
+				? splitPartners(r.partners).some((partner) => partner.toLowerCase() === w)
+				: (r.partners || '').toLowerCase().includes(w)
+		);
 	}
 	if (filters?.rock) {
 		const rock = filters.rock.trim().toLowerCase();

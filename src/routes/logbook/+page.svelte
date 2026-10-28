@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { SvelteURLSearchParams } from 'svelte/reactivity';
 	import GradeChip from '#lib/components/GradeChip.svelte';
 	import StyleBadge from '#lib/components/StyleBadge.svelte';
 	import TagChips from '#lib/components/TagChips.svelte';
@@ -9,9 +10,8 @@
 	let { data }: PageProps = $props();
 
 	function filterParams() {
-		// Throwaway query builder for an href, not reactive state.
-		// eslint-disable-next-line svelte/prefer-svelte-reactivity
-		const p = new URLSearchParams();
+		// Query builder for hrefs, rebuilt when called.
+		const p = new SvelteURLSearchParams();
 		if (data.q) p.set('q', data.q);
 		if (data.style) p.set('style', data.style);
 		if (data.tick) p.set('tick', data.tick);
@@ -26,6 +26,7 @@
 		if (data.history) p.set('history', data.history);
 		if (data.quality) p.set('quality', data.quality);
 		if (data.with) p.set('with', data.with);
+		if (data.partnerMatch === 'exact') p.set('partnerMatch', 'exact');
 		if (data.rock) p.set('rock', data.rock);
 		if (data.minStars !== '') p.set('minStars', String(data.minStars));
 		if (data.year !== '') p.set('year', String(data.year));
@@ -94,6 +95,11 @@
 	<input name="crag" value={data.crag} placeholder="Crag" />
 	<input name="sector" value={data.sector} placeholder="Sector / parent" />
 	<input name="with" value={data.with} placeholder="With (partner)" />
+	<select name="partnerMatch" aria-label="Partner match" value={data.partnerMatch}
+		><option value="contains">Partner name contains</option><option value="exact"
+			>Exact partner name</option
+		></select
+	>
 	<input name="rock" value={data.rock} placeholder="Rock type (Granite…)" />
 	<input name="year" value={data.year} placeholder="Year" inputmode="numeric" />
 	<input name="from" value={data.from} placeholder="From (YYYY-MM-DD)" />

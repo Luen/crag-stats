@@ -27,7 +27,9 @@
 			{#each partners as p (p.name)}
 				<li>
 					<div class="row">
-						<a class="label" href={`/logbook?with=${encodeURIComponent(p.name)}`}>{p.name}</a>
+						<a class="label" href={`/logbook?partnerMatch=exact&with=${encodeURIComponent(p.name)}`}
+							>{p.name}</a
+						>
 						<span class="value">{p.count}</span>
 					</div>
 					<div class="track">

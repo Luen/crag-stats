@@ -273,4 +273,6 @@ You'll often notice things outside the task at hand. **Don't silently fix them i
 | 2026-10 | Logbook filters: `fa=FA|FFA|any|none`, `history=pending` (owner + import on only), plus `quality`, `minStars`, `with`, `from`/`to`. Marks load before filter/page in `listLogbook`. |
 | 2026-10 | #109: `/partners` full leaderboard; dashboard partners capped at 7; partner and rock-type rows link to logbook `?with=` / `?rock=`; logbook `rock` filter on route `tags_json`. |
 
+| 2026-10 | #109: partner leaderboard links use partnerMatch=exact with the same tokenization as counts; free-text With defaults to substring matching. |
+
 _Add a row when you change behaviour agents must know about._
