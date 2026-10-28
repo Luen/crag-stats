@@ -4,7 +4,6 @@ import { parseGradeSystem } from './analytics';
 import { authScope, isAuthEnabled } from './auth';
 import { db, ensureSchema } from './db';
 import { appSettings } from './db/schema';
-import { env } from './env';
 import { resolveShowNotes, type ShowNotes } from './notes';
 import { resolveSearchIndexing, type SearchIndexing } from './seo';
 
@@ -40,15 +39,12 @@ export function getSearchIndexing(): SearchIndexing {
 	});
 }
 
-/** Private ascent notes: Settings value → SHOW_PRIVATE_NOTES env → off. */
+/** Private ascent notes: Settings only; off when unset. */
 export function getShowNotes(): ShowNotes {
-	return resolveShowNotes({
-		stored: getAppSetting('show_notes'),
-		envValue: env('SHOW_PRIVATE_NOTES')
-	});
+	return resolveShowNotes({ stored: getAppSetting('show_notes') });
 }
 
-/** Site default grade system: Settings value → PREFERRED_GRADE_SYSTEM env → Ewbank. */
+/** Site default grade system: Settings only; Ewbank when unset. */
 export function getPreferredGradeSystem(): GradeSystem {
-	return parseGradeSystem(getAppSetting('grade_system') || env('PREFERRED_GRADE_SYSTEM', 'ewbank'));
+	return parseGradeSystem(getAppSetting('grade_system') || 'ewbank');
 }

@@ -82,9 +82,6 @@
 								>No <code>APP_PASSWORD</code> is set, so anyone who can open this site will see them.</strong
 							> Best for offline or home-network installs.
 						{/if}
-						{#if data.showNotes.source === 'env'}
-							Default from <code>SHOW_PRIVATE_NOTES</code>; saving here overrides it.
-						{/if}
 					</small>
 				</span>
 			</label>

@@ -14,7 +14,7 @@ Self-hosted climbing analytics for [theCrag](https://www.thecrag.com/), inspired
    - Do **not** invent a second editable logbook that drifts from theCrag.
    - CSV import is upsert-only (no prune). Prefer API sync when the user has a supporter key.
 2. **Privacy.** API keys expose private notes. Never commit `.env`. Wipe must remain available in Settings.
-   - Ascent notes (`ascents.comment`) are private and hidden by default. They reach a page only via `listLogbook({ includeNotes })` when `notesVisible(getShowNotes().enabled, locals.authed)` (`src/lib/server/notes.ts`; Settings toggle → `SHOW_PRIVATE_NOTES` → off). When hidden they're nulled before filtering, so search can't probe them. Never put notes in dashboard stats, embeds, OG text or anything else visitors can load.
+   - Ascent notes (`ascents.comment`) are private and hidden by default. They reach a page only via `listLogbook({ includeNotes })` when `notesVisible(getShowNotes().enabled, locals.authed)` (`src/lib/server/notes.ts`; Settings toggle only, off when unset). When hidden they're nulled before filtering, so search can't probe them. Never put notes in dashboard stats, embeds, OG text or anything else visitors can load.
    - `APP_PASSWORD` + `AUTH_SCOPE=settings|all` gate admin (or whole UI). Login is rate-limited in-process (5 fails / 15 min + min gap).
    - Prefer Cloudflare Access on `/settings*` + `/login*` in front of public tunnels; app password remains a second factor.
    - Open redirects are blocked via `safeRedirectPath`; passwords compared via HMAC digests (timing-safe).
@@ -92,7 +92,7 @@ Height quirk: theCrag may return height as `[value, unit]` arrays — parse in t
 
 - Canonical numeric scores lean on **Ewbank** for routes and **V-scale** for boulder; convert for display via `src/lib/grades`.
 - Band palette (Beginner → Elite) matches theCrag article colours — see `bands.ts`. Boulder: VB± green, **V0± yellow** (Intermediate), V1–V4 orange, V5–V10 red, V11+ purple (`bandFromVScale`).
-- Preferred system: site-wide `app_settings.grade_system` (Settings → Display & visibility), fallback env `PREFERRED_GRADE_SYSTEM`. `?system=` is a one-off override; the old `cs_grade_system` cookie is no longer read.
+- Preferred system: site-wide `app_settings.grade_system` (Settings → Display & visibility), default Ewbank when unset. `?system=` is a one-off override; the old `cs_grade_system` cookie is no longer read.
 - **Style pyramids** group by Sport / Trad / Boulder / Top rope / … with stacked tick segments. Do not dump mixed VB + `7a` + `19` in one unordered list. Pyramid grade chips/bars link to `/logbook?style=&score=` (integer score buckets).
 - **Scale comes from the grade system, not gear style (#72).** Decide "is this score V-scale?" with `usesVScale(route.gradeSystem, gearStyle)` (`src/lib/grades/bands.ts`). V-graded DWS/highballs are V-scale; gear style is only the fallback when the system is `unknown`. Pyramids key such styles as `"<Style> · V"`. Never test `gearStyle` for `boulder` to pick a scale.
 - **Grade-system fit:** reject boulder CPR/V-scale on sport/trad (caused Trad `−1` / VB rows). On boulder, bare AU/Ewbank numbers (e.g. Upendi `5`) map to **V5**. Font `5A` must not steal French `5a` on routes.
@@ -264,7 +264,8 @@ You'll often notice things outside the task at hand. **Don't silently fix them i
 
 | 2026-10 | #47: `scripts/server.mjs` entry (plain-HTTP LAN + proxy + `ORIGIN`) replaces `node build`; e2e runs plain HTTP with a CSRF negative test. |
 
-| 2026-10 | Private ascent notes are opt-in (`SHOW_PRIVATE_NOTES` / Settings, owner only). First ascents card plus owner-marked FA/FFA in the logbook (migration 0009, `/docs/first-ascents`). |
+| 2026-10 | Private ascent notes are opt-in (Settings only, owner only). First ascents card plus owner-marked FA/FFA in the logbook (migration 0009, `/docs/first-ascents`). |
+| 2026-10 | #84: `show_notes` and `grade_system` are Settings/DB only — no `SHOW_PRIVATE_NOTES` or `PREFERRED_GRADE_SYSTEM` env. |
 
 | 2026-10 | Customize dashboard moved to Settings (`/settings#dashboard`, actions `saveDashboardLayout` / `resetDashboardLayout`); the dashboard keeps an owner-only "Customize dashboard" link. |
 

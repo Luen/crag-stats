@@ -28,15 +28,6 @@ export const variables = defineEnvVars({
 		description: 'node-cron expression for daily sync',
 		schema: optionalString
 	},
-	PREFERRED_GRADE_SYSTEM: {
-		description: 'Display grade system preference',
-		schema: optionalString
-	},
-	SHOW_PRIVATE_NOTES: {
-		description:
-			'Show private ascent notes to the owner (true/false, default false; Settings overrides)',
-		schema: optionalString
-	},
 	ROUTE_HISTORY_IMPORT: {
 		description:
 			'Opt-in: fetch public FA/FFA route history from theCrag in the background, 20 routes per run (default false)',
