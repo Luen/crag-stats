@@ -6,6 +6,7 @@ import { eq } from 'drizzle-orm';
 import { db, ensureSchema } from './db';
 import { firstAscents, routes } from './db/schema';
 import { listOwnerSetRoutes } from './routeSetters';
+import { parseFirstAscentKind } from './firstAscents';
 
 const PROVIDER = 'thecrag';
 
@@ -24,6 +25,7 @@ export type DeveloperImpactRoute = {
 	/** When ascentCount was written; not route_info_updated_at (#147). */
 	ascentCountFetchedAt: string | null;
 	fromFa: boolean;
+	faKind: 'FA' | 'FFA' | null;
 	fromSetter: boolean;
 	sportOrBolted: boolean;
 };
@@ -52,14 +54,15 @@ function isSportOrBolted(
 /** Aggregate non-owner community ticks on routes the owner FA'd and/or set. */
 export function buildRouteDeveloperImpact(provider = PROVIDER): RouteDeveloperImpact {
 	ensureSchema();
-	const faIds = new Set(
+	const faKinds = new Map(
 		db
-			.select({ routeExternalId: firstAscents.routeExternalId })
+			.select({ routeExternalId: firstAscents.routeExternalId, kind: firstAscents.kind })
 			.from(firstAscents)
 			.where(eq(firstAscents.provider, provider))
 			.all()
-			.map((r) => r.routeExternalId)
+			.map((r) => [r.routeExternalId, r.kind] as const)
 	);
+	const faIds = new Set(faKinds.keys());
 	const setterIds = new Set(listOwnerSetRoutes(provider).map((r) => r.routeExternalId));
 	const allIds = new Set([...faIds, ...setterIds]);
 	if (!allIds.size) {
@@ -114,6 +117,7 @@ export function buildRouteDeveloperImpact(provider = PROVIDER): RouteDeveloperIm
 			othersAscents,
 			ascentCountFetchedAt: m.ascentCountFetchedAt ?? null,
 			fromFa: faIds.has(id),
+			faKind: parseFirstAscentKind(faKinds.get(id)),
 			fromSetter: setterIds.has(id),
 			sportOrBolted
 		});

@@ -95,7 +95,7 @@ describe('buildRouteDeveloperImpact (#135)', () => {
 		db.update(routes).set({ ascentCount: null }).where(eq(routes.externalId, 'pending')).run();
 
 		setFirstAscent('thecrag', 'fa-sport', 'FA');
-		setFirstAscent('thecrag', 'pending', 'FA');
+		setFirstAscent('thecrag', 'pending', 'FFA');
 		db.insert(routeHistory)
 			.values({
 				provider: 'thecrag',
@@ -120,9 +120,12 @@ describe('buildRouteDeveloperImpact (#135)', () => {
 			othersAscents: 10,
 			ascentCountFetchedAt: '2026-01-01T00:00:00.000Z',
 			fromFa: true,
+			faKind: 'FA',
 			sportOrBolted: true
 		});
 		expect(impact.routes.find((r) => r.routeExternalId === 'pending')?.othersAscents).toBeNull();
+		expect(impact.routes.find((r) => r.routeExternalId === 'pending')?.faKind).toBe('FFA');
+		expect(impact.routes.find((r) => r.routeExternalId === 'set-trad')?.faKind).toBeNull();
 
 		// A later logbook change must not change an older community snapshot (#140).
 		upsertAscents([

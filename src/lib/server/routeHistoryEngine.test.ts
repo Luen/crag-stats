@@ -419,12 +419,17 @@ it('refresh clears explicit nulls but preserves omitted route fields (#128)', as
 		};
 	};
 	await runRouteHistoryImportOnce(config, h.deps);
+	const initialCountFetch = db
+		.select()
+		.from(routes)
+		.where(eq(routes.externalId, routeId(0)))
+		.get()!.ascentCountFetchedAt;
 	setFirstAscent('thecrag', routeId(0), 'FA');
 	expect(buildRouteDeveloperImpact().communityAscents).toBe(11);
 	// Delete an owner tick after the fetch: the cached community estimate stays fixed.
 	db.delete(ascents).where(eq(ascents.externalId, '9000')).run();
 	expect(buildRouteDeveloperImpact().communityAscents).toBe(11);
-	info = undefined;
+	info = { qualityScore: 91 };
 	resetRouteHistoryFetches();
 	h.advance(MIN_RUN_INTERVAL_MS);
 	await runRouteHistoryImportOnce(config, h.deps);
@@ -433,10 +438,10 @@ it('refresh clears explicit nulls but preserves omitted route fields (#128)', as
 		.from(routes)
 		.where(eq(routes.externalId, routeId(0)))
 		.get()!;
-	expect(afterUnrelated.qualityScore).toBe(88);
+	expect(afterUnrelated.qualityScore).toBe(91);
 	expect(afterUnrelated.ascentCountOwn).toBe(1);
 	// Unrelated route-info refresh must not move counter freshness (#147).
-	expect(afterUnrelated.ascentCountFetchedAt).toBeTruthy();
+	expect(afterUnrelated.ascentCountFetchedAt).toBe(initialCountFetch);
 	const fetchedBefore = afterUnrelated.ascentCountFetchedAt;
 	// A replacement total captures the new owner count, even when it is zero.
 	info = { ascentCount: 13 };

@@ -32,6 +32,9 @@ test('community snapshots distinguish missing, partial, zero and positive counts
 				VALUES ('thecrag', ?, 'FA', '2026-10-27')`
 			).run(externalId);
 		}
+		db.prepare(
+			"UPDATE first_ascents SET kind = 'FFA' WHERE route_external_id = 'review-community-2'"
+		).run();
 		await page.goto('/');
 		// Same name + same day must not collide on FA list (#144) or hardest sends (#148).
 		await expect(page.getByRole('heading', { name: 'Hardest sends' })).toBeVisible();
@@ -41,7 +44,11 @@ test('community snapshots distinguish missing, partial, zero and positive counts
 			.locator('article')
 			.filter({ has: page.getByRole('heading', { name: 'First ascents', exact: true }) });
 		await expect(card).toContainText('Community ascents unavailable: 0 of 2');
-		await expect(card.locator('.list li')).toHaveCount(2);
+		await expect(card.locator('.list:not(.community) li')).toHaveCount(2);
+		const communityRows = card.locator('.community li');
+		await expect(communityRows).toHaveCount(2);
+		await expect(communityRows.locator('.kind')).toHaveText(['FA', 'FFA']);
+		await expect(communityRows.locator('.missing')).toHaveText(['Unavailable', 'Unavailable']);
 		expect(errors).toEqual([]);
 
 		db.prepare('UPDATE routes SET ascent_count = 1, ascent_count_own = 1 WHERE id = ?').run(ids[0]);
@@ -50,6 +57,9 @@ test('community snapshots distinguish missing, partial, zero and positive counts
 		await expect(communityTile.locator('strong')).toHaveText('0');
 		await expect(card).toContainText('covers 1 of 2');
 		await expect(card).toContainText('Some route counts are unavailable');
+		await expect(communityRows.first().locator('.est')).toHaveText('0');
+		await expect(communityRows.first()).toContainText('Fetch time unknown');
+		await expect(communityRows.last()).toContainText('No paired count yet');
 
 		db.prepare('UPDATE routes SET ascent_count = 1, ascent_count_own = 1 WHERE id = ?').run(ids[1]);
 		await page.reload();
@@ -58,9 +68,15 @@ test('community snapshots distinguish missing, partial, zero and positive counts
 		await expect(card).not.toContainText('warming up');
 		await expect(card).not.toContainText('Some route counts are unavailable');
 
-		db.prepare('UPDATE routes SET ascent_count = 5 WHERE id = ?').run(ids[0]);
+		db.prepare('UPDATE routes SET ascent_count = 5, ascent_count_fetched_at = ? WHERE id = ?').run(
+			'2026-01-02T12:00:00.000Z',
+			ids[0]
+		);
 		await page.reload();
 		await expect(communityTile.locator('strong')).toHaveText('4');
+		await expect(communityRows.first().locator('.est')).toHaveText('4');
+		await expect(communityRows.first()).toContainText('Count fetched');
+		await expect(communityRows.first()).toContainText('2026');
 		db.prepare(
 			`INSERT INTO ascents (provider, external_id, route_id, ascent_date, is_send, updated_at)
 				VALUES ('thecrag', 'review-community-repeat', ?, '2026-10-27', 1, '2026-10-28')`

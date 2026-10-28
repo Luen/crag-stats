@@ -2,12 +2,7 @@
 	import GradeChip from '#lib/components/GradeChip.svelte';
 	import StyleBadge from '#lib/components/StyleBadge.svelte';
 	import type { FirstAscentStats } from '#lib/types/dashboard';
-	import {
-		formatDateTime,
-		formatNumber,
-		DEFAULT_DATE_DISPLAY,
-		type DateDisplay
-	} from '#lib/dates';
+	import { formatDateTime, formatNumber, DEFAULT_DATE_DISPLAY, type DateDisplay } from '#lib/dates';
 
 	type Props = { data: FirstAscentStats; canEdit: boolean; dateDisplay?: DateDisplay };
 	let { data, canEdit, dateDisplay = DEFAULT_DATE_DISPLAY }: Props = $props();
@@ -20,7 +15,9 @@
 				: `${data.firstYear}–${data.latestYear}`
 	);
 	const communityPreview = $derived(data.communityRoutes.slice(0, 8));
-	const communityMore = $derived(Math.max(0, data.communityRoutes.length - communityPreview.length));
+	const communityMore = $derived(
+		Math.max(0, data.communityRoutes.length - communityPreview.length)
+	);
 </script>
 
 <article class="panel">
@@ -151,7 +148,7 @@
 								{/if}
 							</strong>
 							<span class="credits">
-								{#if r.fromFa}<span class="kind">FA</span>{/if}
+								{#if r.faKind}<span class="kind">{r.faKind}</span>{/if}
 								{#if r.fromSetter}<span class="kind setter">Set</span>{/if}
 								{#if r.sportOrBolted}<span class="tag">Sport/bolted</span>{/if}
 							</span>

@@ -136,9 +136,7 @@ describe('migrations survive skipped releases', () => {
 				if (k >= FILES.indexOf('0012_route_info.sql') + 1) {
 					expect(
 						db
-							.prepare(
-								'SELECT ascent_count, ascent_count_own, ascent_count_fetched_at FROM routes'
-							)
+							.prepare('SELECT ascent_count, ascent_count_own, ascent_count_fetched_at FROM routes')
 							.get()
 					).toEqual({
 						ascent_count: 7,

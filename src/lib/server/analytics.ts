@@ -876,6 +876,7 @@ export function getDashboardStats(
 					othersAscents: r.othersAscents,
 					ascentCountFetchedAt: r.ascentCountFetchedAt,
 					fromFa: r.fromFa,
+					faKind: r.faKind,
 					fromSetter: r.fromSetter,
 					sportOrBolted: r.sportOrBolted
 				}))

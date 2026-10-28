@@ -133,6 +133,7 @@ export type FirstAscentStats = {
 		othersAscents: number | null;
 		ascentCountFetchedAt: string | null;
 		fromFa: boolean;
+		faKind: 'FA' | 'FFA' | null;
 		fromSetter: boolean;
 		sportOrBolted: boolean;
 	}[];
