@@ -18,7 +18,7 @@ The mark is stored against theCrag's route ID, so it survives re-syncs. It disap
 
 ### Filter the logbook
 
-On **Logbook**, use the **First ascent mark** control to show only your FAs, FFAs, either, or climbs with no mark yet (`?fa=FA|FFA|any|none`). If route-history import is enabled, **History not checked yet** (`?history=pending`) lists climbs the importer has not fetched.
+On **Logbook**, use the **First ascent mark** control to show only your FAs, FFAs, either, or climbs with no mark yet (`?fa=FA|FFA|any|none`). If route-history import is enabled, the owner also gets **History not checked yet** (`?history=pending`), which lists climbs the importer has not fetched.
 
 ### Import them from route history (optional, off by default)
 
