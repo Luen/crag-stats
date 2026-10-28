@@ -361,4 +361,6 @@ You'll often notice things outside the task at hand. **Don't silently fix them i
 
 | 2026-10 | #169: enabled route imports enrich up to 100 pending routes after each successful sync, in 10-route requests. Pacing, back-off and fetch-once rules still apply. |
 
+| 2026-10 | Snyk triage and the pnpm 12 multi-document scan limitation are recorded in `docs/dev/SECURITY_SCAN.md`. Playwright generates per-run credentials and shares them with workers through test-only environment variables. |
+
 _Add a row when you change behaviour agents must know about._
