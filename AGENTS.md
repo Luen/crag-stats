@@ -363,4 +363,6 @@ You'll often notice things outside the task at hand. **Don't silently fix them i
 
 | 2026-10 | Snyk triage and the pnpm 12 multi-document scan limitation are recorded in `docs/dev/SECURITY_SCAN.md`. Playwright generates per-run credentials and shares them with workers through test-only environment variables. |
 
+| 2026-10 | `node scripts/snyk-projects.mjs` prepares separate temporary application and boot/config projects for pnpm 12 Snyk scans. Scan every emitted project and preserve any failure; never merge their shared importer maps. |
+
 _Add a row when you change behaviour agents must know about._

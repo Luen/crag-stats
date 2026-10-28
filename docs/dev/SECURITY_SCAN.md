@@ -20,23 +20,29 @@ At scan time Snyk listed no fixed version or patch for these advisories. The rep
 
 A source rescan after generating the browser-test credentials reported **two findings**, down from three: the synthetic API-key fixture and the entrypoint finding above. No ignores were added. Dependency versions were not changed; all five dependency advisories remain unresolved.
 
-## Reproducing the application dependency scan
+## Reproducing both lockfile graph scans
 
-The installed Snyk CLI cannot parse this repo's pnpm 12 lockfile directly: it fails with “expected a single document in the stream, but found more”. [pnpm documents](https://pnpm.io/lockfile) the first document as the package-manager/config boot graph and the last as the application graph.
+The installed Snyk CLI rejects pnpm 12's multi-document lockfile. [pnpm documents](https://pnpm.io/lockfile) the first document as the package-manager/config boot graph and the last as the application graph. Both must be covered; merging them would overwrite their shared `.` importer.
 
-For the application scan, copy `package.json` and the **last** lockfile document to a temporary directory, leaving the committed files unchanged. For example, in PowerShell from the repository root:
+After `pnpm install`, run `node scripts/snyk-projects.mjs` from the repository root. It creates separate temporary application and boot projects and prints their paths as JSON. It preserves package versions, integrity metadata and snapshots without changing the repository or resolving dependencies. For the boot project only, config/package-manager roots are projected into ordinary dependencies so Snyk can traverse them. Unsupported or conflicting graph shapes fail instead of silently skipping roots. The helper supports this repo's single-project v9.0 schema; it rejects additional workspace importers until their manifests can be projected explicitly.
+
+Scan every emitted project. For example, in PowerShell:
 
 ```powershell
-$scanDir = Join-Path ([IO.Path]::GetTempPath()) ('crag-stats-snyk-' + [guid]::NewGuid())
-New-Item -ItemType Directory -Path $scanDir | Out-Null
-Copy-Item -LiteralPath package.json -Destination (Join-Path $scanDir 'package.json')
-$documents = (Get-Content pnpm-lock.yaml -Raw) -split '(?m)^---[ \t]*\r?$'
-[IO.File]::WriteAllText((Join-Path $scanDir 'pnpm-lock.yaml'), $documents[-1])
-snyk test --file="$scanDir/pnpm-lock.yaml" --package-manager=pnpm --dev
+$scan = node scripts/snyk-projects.mjs | ConvertFrom-Json
+if ($LASTEXITCODE -ne 0) { throw 'Could not prepare Snyk projects' }
+$scanFailed = $false
+foreach ($project in $scan.projects) {
+    snyk test --file="$($project.lockfile)" --package-manager=pnpm --dev
+    if ($LASTEXITCODE -ne 0) { $scanFailed = $true }
+}
+if ($scanFailed) { throw 'One or more Snyk projects failed; inspect each result above' }
 ```
 
-This scans the locked application graph without re-resolving dependencies. **It does not scan the pnpm boot/config graph.** The boot document currently contains the pinned pnpm tool and platform binaries; it must be covered separately or by a scanner that supports both documents before claiming full lockfile coverage. Do not rewrite the repo lockfile into a single document or switch package managers as a scanner workaround.
+Do not let a clean boot scan hide an application scan failure. The temporary paths are under the OS temp directory; reports/manifests must stay outside Git. A single-document lockfile produces only an application project. Do not rewrite the repo lockfile or switch package managers as a scanner workaround.
+
+The boot graph at v0.6.2 was scanned separately on 28 October 2026: **15 dependencies, no vulnerable paths found**. This is the locked pnpm tool and platform-package inventory, not an inspection of opaque code embedded in executable binaries. The application graph's five advisories remain tracked above.
 
 For source analysis, use `snyk code test --remote-repo-url=https://github.com/Luen/crag-stats`. Scan reports and temporary manifests should remain outside Git; do not commit full reports containing source context or local paths.
 
-The dependency scan also reported that the organisation had reached its monthly private-test allowance. Findings above were returned, but further dependency rescans may require the allowance to reset or an account change by its owner. Do not claim the dependency scan is clean or that the boot graph was scanned.
+The dependency scan also reported that the organisation had reached its monthly private-test allowance. Findings above were returned, but further dependency rescans may require the allowance to reset or an account change by its owner. The original application scan alone did not cover the boot graph; the separate boot result above closes that inventory gap. Do not claim all dependencies are vulnerability-free.
