@@ -32,23 +32,25 @@
 				<p class="achieved">Achieved {(g.achievedAt || '').slice(0, 10)}</p>
 			{/if}
 		</div>
-		<div class="actions">
-			{#if g.completed}
-				<form method="POST" action="?/reopen">
+		{#if data.canEdit}
+			<div class="actions">
+				{#if g.completed}
+					<form method="POST" action="?/reopen">
+						<input type="hidden" name="id" value={g.id} />
+						<button type="submit" class="secondary">Reopen</button>
+					</form>
+				{:else}
+					<form method="POST" action="?/complete">
+						<input type="hidden" name="id" value={g.id} />
+						<button type="submit" class="secondary">Mark complete</button>
+					</form>
+				{/if}
+				<form method="POST" action="?/delete">
 					<input type="hidden" name="id" value={g.id} />
-					<button type="submit" class="secondary">Reopen</button>
+					<button type="submit" class="danger">Delete</button>
 				</form>
-			{:else}
-				<form method="POST" action="?/complete">
-					<input type="hidden" name="id" value={g.id} />
-					<button type="submit" class="secondary">Mark complete</button>
-				</form>
-			{/if}
-			<form method="POST" action="?/delete">
-				<input type="hidden" name="id" value={g.id} />
-				<button type="submit" class="danger">Delete</button>
-			</form>
-		</div>
+			</div>
+		{/if}
 	</article>
 {/snippet}
 
@@ -64,63 +66,65 @@
 	<p class="banner err">{form.message}</p>
 {/if}
 
-<section class="panel form-panel">
-	<h2>Add goal</h2>
-	<form method="POST" action="?/create" class="form">
-		<label>
-			Kind
-			<select name="kind" bind:value={kind}>
-				<option value="grade">Grade this year (send ≥ X)</option>
-				<option value="height_year">Height this year (m)</option>
-				<option value="days_month">Climbing days this month</option>
-				<option value="custom">Custom (manual)</option>
-			</select>
-		</label>
-		<label>
-			Title
-			<input
-				name="title"
-				required
-				placeholder={kind === 'grade'
-					? 'e.g. Lead outdoor 25 this year'
-					: 'e.g. 5 km vertical in 2026'}
-			/>
-		</label>
-		<label>
-			Venue
-			<select name="venueScope" bind:value={venueScope}>
-				<option value="outdoor">Outdoor</option>
-				<option value="indoor">Indoor / gym</option>
-				<option value="any">Any</option>
-			</select>
-		</label>
-		{#if kind === 'grade'}
+{#if data.canEdit}
+	<section class="panel form-panel">
+		<h2>Add goal</h2>
+		<form method="POST" action="?/create" class="form">
 			<label>
-				Target grade
-				<input name="grade" required placeholder="25 · 7a · V5 · 5.12a" />
+				Kind
+				<select name="kind" bind:value={kind}>
+					<option value="grade">Grade this year (send ≥ X)</option>
+					<option value="height_year">Height this year (m)</option>
+					<option value="days_month">Climbing days this month</option>
+					<option value="custom">Custom (manual)</option>
+				</select>
 			</label>
 			<label>
-				Year
-				<input name="year" type="number" value={new Date().getFullYear()} />
-			</label>
-		{:else if kind === 'height_year' || kind === 'days_month' || kind === 'custom'}
-			<label>
-				Target
+				Title
 				<input
-					name="targetValue"
-					placeholder={kind === 'height_year' ? '5000' : kind === 'days_month' ? '8' : 'anything'}
+					name="title"
+					required
+					placeholder={kind === 'grade'
+						? 'e.g. Lead outdoor 25 this year'
+						: 'e.g. 5 km vertical in 2026'}
 				/>
 			</label>
-		{/if}
-		{#if kind === 'height_year'}
 			<label>
-				Year
-				<input name="year" type="number" value={new Date().getFullYear()} />
+				Venue
+				<select name="venueScope" bind:value={venueScope}>
+					<option value="outdoor">Outdoor</option>
+					<option value="indoor">Indoor / gym</option>
+					<option value="any">Any</option>
+				</select>
 			</label>
-		{/if}
-		<button type="submit">Add</button>
-	</form>
-</section>
+			{#if kind === 'grade'}
+				<label>
+					Target grade
+					<input name="grade" required placeholder="25 · 7a · V5 · 5.12a" />
+				</label>
+				<label>
+					Year
+					<input name="year" type="number" value={new Date().getFullYear()} />
+				</label>
+			{:else if kind === 'height_year' || kind === 'days_month' || kind === 'custom'}
+				<label>
+					Target
+					<input
+						name="targetValue"
+						placeholder={kind === 'height_year' ? '5000' : kind === 'days_month' ? '8' : 'anything'}
+					/>
+				</label>
+			{/if}
+			{#if kind === 'height_year'}
+				<label>
+					Year
+					<input name="year" type="number" value={new Date().getFullYear()} />
+				</label>
+			{/if}
+			<button type="submit">Add</button>
+		</form>
+	</section>
+{/if}
 
 <section class="panel">
 	<div class="section-head">

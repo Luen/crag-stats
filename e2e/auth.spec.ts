@@ -25,6 +25,22 @@ test.describe('AUTH_SCOPE=settings', () => {
 		await page.goto(`${settingsOrigin}/settings`);
 		await expect(page).toHaveURL(/\/login/);
 	});
+
+	test('visitors can read goals but not create or change them', async ({ page, request }) => {
+		await page.goto(`${settingsOrigin}/goals`);
+		await expect(page.getByRole('heading', { name: 'Goals', exact: true })).toBeVisible();
+		await expect(page.getByRole('heading', { name: 'Add goal' })).toHaveCount(0);
+		await expect(page.getByRole('button', { name: 'Delete' })).toHaveCount(0);
+
+		// Posting straight to the action is refused too.
+		const res = await request.post(`${settingsOrigin}/goals?/create`, {
+			headers: { origin: settingsOrigin, accept: 'application/json' },
+			multipart: { kind: 'custom', title: 'Sneaky goal' }
+		});
+		expect(await res.text()).toContain('Log in to change goals');
+		await page.reload();
+		await expect(page.getByText('Sneaky goal')).toHaveCount(0);
+	});
 });
 
 test.describe('AUTH_SCOPE=all', () => {

@@ -144,7 +144,7 @@
 			totalCount={s.badges.totalCount}
 		/>
 	{:else if id === 'goals'}
-		<GoalsProgress goals={data.activeGoals} />
+		<GoalsProgress goals={data.activeGoals} canEdit={data.showSettings} />
 	{:else if id === 'projects'}
 		<ProjectsHighlight projects={data.dashboardProjects} />
 	{:else if id === 'trainingLoad'}
