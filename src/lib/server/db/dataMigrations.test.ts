@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { eq, sql } from 'drizzle-orm';
 import { db } from './index';
 import { appSettings, ascents, goals, routes } from './schema';
-import { runDataMigrations } from './dataMigrations';
+import { legacyEnvSettings, runDataMigrations } from './dataMigrations';
 import { getDashboardStats, wipeAllData } from '../analytics';
 import { getFirstAscentMarks, setFirstAscent } from '../firstAscents';
 import { upsertAscents } from '../ingest';
@@ -10,6 +10,7 @@ import * as projects from '../projects';
 import { mapAscent } from '../providers/thecrag/api';
 
 const ID = 'data:0001_repair_cached_grades';
+const ALL = [ID, 'data:0002_legacy_env_settings'];
 
 beforeEach(() => {
 	wipeAllData();
@@ -58,7 +59,7 @@ describe('startup data migrations', () => {
 			.run();
 		const marks = getFirstAscentMarks();
 
-		expect(runDataMigrations()).toEqual([ID]);
+		expect(runDataMigrations()).toEqual(ALL);
 		expect(db.select().from(routes).where(eq(routes.externalId, '81001')).get()!.gradeScore).toBe(
 			-0.7
 		);
@@ -80,7 +81,7 @@ describe('startup data migrations', () => {
 
 	it('persists completion in SQLite and skips the repair on later starts', () => {
 		seedOldGrades();
-		expect(runDataMigrations()).toEqual([ID]);
+		expect(runDataMigrations()).toEqual(ALL);
 		expect(db.get(sql`SELECT id FROM schema_migrations WHERE id = ${ID}`)).toEqual({ id: ID });
 		// A second startup must not re-parse the database just because the process restarted.
 		db.update(routes).set({ gradeScore: 123 }).where(eq(routes.externalId, '81001')).run();
@@ -103,7 +104,7 @@ describe('startup data migrations', () => {
 		expect(
 			db.select().from(ascents).where(eq(ascents.externalId, '81001')).get()!.effectiveGradeScore
 		).toBe(9);
-		expect(runDataMigrations()).toEqual([ID]);
+		expect(runDataMigrations()).toEqual(ALL);
 		expect(db.select().from(routes).where(eq(routes.externalId, '81001')).get()!.gradeScore).toBe(
 			-0.7
 		);
@@ -111,7 +112,7 @@ describe('startup data migrations', () => {
 
 	it('handles a fresh install and leaves SQL migration records intact', () => {
 		const schemaBefore = db.all(sql`SELECT * FROM schema_migrations ORDER BY id`);
-		expect(runDataMigrations()).toEqual([ID]);
+		expect(runDataMigrations()).toEqual(ALL);
 		expect(
 			db.all(sql`SELECT * FROM schema_migrations WHERE id NOT LIKE 'data:%' ORDER BY id`)
 		).toEqual(schemaBefore);
@@ -126,5 +127,46 @@ describe('startup data migrations', () => {
 			9
 		);
 		expect(db.get(sql`SELECT id FROM schema_migrations WHERE id = ${ID}`)).toBeUndefined();
+	});
+});
+
+describe('legacy env settings carry-over (#84)', () => {
+	const none = { gradeSystem: null, showNotes: null };
+
+	it('copies a valid grade system and an enabled notes flag when Settings is empty', () => {
+		expect(
+			legacyEnvSettings({ PREFERRED_GRADE_SYSTEM: ' French ', SHOW_PRIVATE_NOTES: 'true' }, none)
+		).toEqual({ grade_system: 'french', show_notes: 'on' });
+	});
+
+	it('ignores unset, invalid or off values', () => {
+		expect(legacyEnvSettings({}, none)).toEqual({});
+		expect(
+			legacyEnvSettings({ PREFERRED_GRADE_SYSTEM: 'british', SHOW_PRIVATE_NOTES: 'false' }, none)
+		).toEqual({});
+	});
+
+	it('never overrides a value already saved in Settings', () => {
+		expect(
+			legacyEnvSettings(
+				{ PREFERRED_GRADE_SYSTEM: 'yds', SHOW_PRIVATE_NOTES: '1' },
+				{ gradeSystem: 'ewbank', showNotes: 'off' }
+			)
+		).toEqual({});
+	});
+
+	it('writes the carried-over values once at startup', () => {
+		db.delete(appSettings).run();
+		vi.stubEnv('PREFERRED_GRADE_SYSTEM', 'v_scale');
+		vi.stubEnv('SHOW_PRIVATE_NOTES', 'yes');
+		try {
+			expect(runDataMigrations()).toEqual(ALL);
+		} finally {
+			vi.unstubAllEnvs();
+		}
+		const value = (key: string) =>
+			db.select().from(appSettings).where(eq(appSettings.key, key)).get()?.value;
+		expect(value('grade_system')).toBe('v_scale');
+		expect(value('show_notes')).toBe('on');
 	});
 });
