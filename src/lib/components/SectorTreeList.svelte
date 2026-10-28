@@ -14,7 +14,7 @@
 </script>
 
 <ul class="sectors" class:nested={depth > 0} style:--depth={depth}>
-	{#each sectors as sector (sector.name)}
+	{#each sectors as sector ([...parentPath, sector.name].join('\0'))}
 		<li>
 			<div class="row">
 				<a

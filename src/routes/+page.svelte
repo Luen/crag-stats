@@ -125,6 +125,7 @@
 			</p>
 			<BarList
 				items={s.bandBreakdown.map((b) => ({
+					id: `band:${b.band}`,
 					label: b.name,
 					value: b.count,
 					color: b.color
@@ -136,6 +137,7 @@
 			<h2>Top crags</h2>
 			<BarList
 				items={s.topCrags.map((c) => ({
+					id: `crag:${c.crag}`,
 					label: c.crag,
 					value: c.count,
 					meta: c.maxGrade ? `up to ${c.maxGrade}` : undefined,
@@ -149,6 +151,7 @@
 			<h2>Tick types</h2>
 			<BarList
 				items={s.tickBreakdown.slice(0, 12).map((t) => ({
+					id: `tick:${t.tick}`,
 					label: t.tick,
 					value: t.count
 				}))}

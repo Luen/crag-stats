@@ -36,9 +36,13 @@ test('community snapshots distinguish missing, partial, zero and positive counts
 			"UPDATE first_ascents SET kind = 'FFA' WHERE route_external_id = 'review-community-2'"
 		).run();
 		await page.goto('/');
-		// Same name + same day must not collide on FA list (#144) or hardest sends (#148).
+		// Same name + same day must not collide across FA list (#144), hardest sends (#148),
+		// milestones (#151), or other dashboard keyed lists (#158).
 		await expect(page.getByRole('heading', { name: 'Hardest sends' })).toBeVisible();
+		await expect(page.getByRole('heading', { name: 'Milestones' })).toBeVisible();
+		await expect(page.getByRole('heading', { name: 'Notable ascents' })).toBeVisible();
 		await expect(page.locator('body')).not.toContainText('Internal Error');
+		expect(errors.filter((e) => /each_key_duplicate/i.test(e))).toEqual([]);
 		// Keep the locator stable while snapshot coverage changes after reloads.
 		const card = page
 			.locator('article')
