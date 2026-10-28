@@ -279,7 +279,8 @@ export type DashboardStats = {
 	};
 	partners: { name: string; count: number }[];
 	starsScatter: {
-		stars: number;
+		stars: number | null;
+		qualityScore: number | null;
 		score: number;
 		kind: 'route' | 'boulder';
 		routeName: string;

@@ -3,6 +3,7 @@ import {
 	buildMonthlyStats,
 	buildPartnerLeaderboard,
 	buildRockTypeStats,
+	buildStarsScatter,
 	splitPartners,
 	type DashboardExtraRow
 } from './dashboardExtras';
@@ -61,6 +62,23 @@ describe('buildRockTypeStats', () => {
 			{ name: 'Granite', count: 2, pct: 66.7 },
 			{ name: 'Sandstone', count: 1, pct: 33.3 }
 		]);
+	});
+});
+
+describe('buildStarsScatter', () => {
+	it('includes sends with qualityScore even when stars are missing', () => {
+		const { points } = buildStarsScatter([
+			{
+				ascentDate: '2024-01-01',
+				isSend: true,
+				gradeScore: 22,
+				qualityScore: 91,
+				routeName: 'Test Route'
+			}
+		]);
+		expect(points).toHaveLength(1);
+		expect(points[0].qualityScore).toBe(91);
+		expect(points[0].stars).toBeNull();
 	});
 });
 

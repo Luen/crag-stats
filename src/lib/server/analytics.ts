@@ -12,6 +12,7 @@ import {
 	usesVScale
 } from '#lib/grades';
 import type { DashboardStats, NotableRow, StylePyramid } from '#lib/types/dashboard';
+import { routeQualitySortKey } from '#lib/qualityScore';
 import { rockTypeBlurb, rockTypeInfo } from '#lib/rockTypes';
 import { resolveTheCragAvatar } from '#lib/thecragAvatar';
 import { theCragAscentUrl } from '#lib/thecragUrls';
@@ -325,6 +326,7 @@ export function getDashboardStats(
 			cragUrl: routes.cragUrl,
 			url: routes.url,
 			stars: routes.stars,
+			qualityScore: routes.qualityScore,
 			routeHeightM: routes.heightM,
 			tagsJson: routes.tagsJson,
 			parentName: routes.parentName,
@@ -663,6 +665,7 @@ export function getDashboardStats(
 		partners: a.partners,
 		quality: a.quality,
 		stars: a.stars,
+		qualityScore: a.qualityScore,
 		gradeScore: a.gradeScore,
 		gradeSystem: a.gradeSystem,
 		effectiveGradeScore: a.effectiveGradeScore,
@@ -1022,6 +1025,7 @@ export function listLogbook(filters?: {
 			heightM: routes.heightM,
 			routeUrl: routes.url,
 			stars: routes.stars,
+			qualityScore: routes.qualityScore,
 			parentName: routes.parentName,
 			bolts: routes.bolts,
 			tagsJson: routes.tagsJson
@@ -1140,15 +1144,6 @@ export function listLogbook(filters?: {
 
 	const sortKey = (filters?.sort || 'date').toLowerCase();
 	const asc = (filters?.order || 'desc').toLowerCase() === 'asc';
-	const qualityRank = (q: string | null) => {
-		const s = (q || '').toLowerCase();
-		if (s.includes('classic') || s.includes('*****') || s === '5') return 5;
-		if (s.includes('****') || s === '4') return 4;
-		if (s.includes('***') || s === '3') return 3;
-		if (s.includes('**') || s === '2') return 2;
-		if (s.includes('*') || s === '1') return 1;
-		return 0;
-	};
 	rows = [...rows].sort((a, b) => {
 		let cmp: number;
 		if (sortKey === 'grade') {
@@ -1156,7 +1151,17 @@ export function listLogbook(filters?: {
 				(a.effectiveGradeScore ?? a.gradeScore ?? -1) -
 				(b.effectiveGradeScore ?? b.gradeScore ?? -1);
 		} else if (sortKey === 'quality') {
-			cmp = qualityRank(a.quality) - qualityRank(b.quality);
+			cmp =
+				routeQualitySortKey({
+					qualityScore: a.qualityScore,
+					quality: a.quality,
+					stars: a.stars
+				}) -
+				routeQualitySortKey({
+					qualityScore: b.qualityScore,
+					quality: b.quality,
+					stars: b.stars
+				});
 		} else if (sortKey === 'stars') {
 			cmp = (a.stars ?? -1) - (b.stars ?? -1);
 		} else {

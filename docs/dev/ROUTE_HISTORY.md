@@ -69,7 +69,7 @@ Parsing lives in `parseRouteInfoFields()` / `parseRoutePayload()` (`routeHistory
 
 Routes that were already fetched before this migration have no cached info until the owner runs **Refresh all** in Settings (still 20 routes per run), which clears `route_history_fetches` and re-fetches.
 
-Dashboard/UI for these fields is follow-up work; this pass only stores data.
+**`quality_score` (#80):** when cached, the dashboard stars scatter uses a 0–100 quality axis (stars map to the same scale as fallback). Logbook **Quality** sort prefers `quality_score`, then ascent quality labels, then stars. Other route-info dashboard UI is still follow-up.
 
 ## Follow-ups that reuse the same fetch
 

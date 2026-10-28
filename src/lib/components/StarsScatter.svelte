@@ -1,8 +1,10 @@
 <script lang="ts">
 	import { formatVScaleLabel } from '#lib/grades';
+	import { scatterQualityY } from '#lib/qualityScore';
 
 	type Point = {
-		stars: number;
+		stars: number | null;
+		qualityScore: number | null;
 		score: number;
 		kind: 'route' | 'boulder';
 		routeName: string;
@@ -14,8 +16,6 @@
 
 	type Kind = Point['kind'];
 
-	// Route scores are Ewbanks and boulder scores V-grades, so they get separate views;
-	// on one axis V3 lands beside grade 3. Start on whichever the logbook has more of.
 	const counts = $derived({
 		route: points.filter((p) => p.kind === 'route').length,
 		boulder: points.filter((p) => p.kind === 'boulder').length
@@ -26,24 +26,45 @@
 	);
 	const shown = $derived(points.filter((p) => p.kind === kind));
 
+	const useQualityAxis = $derived(
+		shown.some((p) => p.qualityScore != null && Number.isFinite(p.qualityScore))
+	);
+
 	const pad = { l: 34, r: 14, t: 14, b: 30 };
 	const w = 480;
 	const h = 200;
 	const innerW = w - pad.l - pad.r;
 	const innerH = h - pad.t - pad.b;
 
-	// Many sends share a grade and a star rating, and identical dots drew a solid bar.
-	// One bubble per (grade, stars), sized by how many sends it holds.
-	type Bubble = { score: number; stars: number; names: string[]; url: string | null };
+	function qualityY(p: Point): number {
+		return scatterQualityY(p.stars, p.qualityScore) ?? 0;
+	}
+
+	type Bubble = {
+		score: number;
+		y: number;
+		stars: number | null;
+		qualityScore: number | null;
+		names: string[];
+		url: string | null;
+	};
 	const bubbles = $derived.by(() => {
-		// Scratch map, rebuilt on every derive; nothing subscribes to it.
 		// eslint-disable-next-line svelte/prefer-svelte-reactivity
 		const map = new Map<string, Bubble>();
 		for (const p of shown) {
 			const score = Math.round(p.score);
-			const stars = Math.max(0, Math.min(3, Math.round(p.stars)));
-			const key = `${score}|${stars}`;
-			const b = map.get(key) ?? { score, stars, names: [], url: p.url };
+			const y = useQualityAxis
+				? Math.round(qualityY(p))
+				: Math.max(0, Math.min(3, Math.round(p.stars ?? 0)));
+			const key = `${score}|${y}|${useQualityAxis ? 'q' : 's'}`;
+			const b = map.get(key) ?? {
+				score,
+				y,
+				stars: p.stars,
+				qualityScore: p.qualityScore,
+				names: [],
+				url: p.url
+			};
 			b.names.push(p.routeName);
 			map.set(key, b);
 		}
@@ -56,7 +77,7 @@
 		bubbles.length ? Math.max(scoreMin + 1, ...bubbles.map((b) => b.score)) : 1
 	);
 
-	const ticks = $derived.by(() => {
+	const xTicks = $derived.by(() => {
 		const span = scoreMax - scoreMin;
 		const step = span <= 8 ? 1 : span <= 16 ? 2 : span <= 30 ? 4 : 5;
 		const out: number[] = [];
@@ -64,16 +85,15 @@
 		return out;
 	});
 
-	// Mean stars per grade: does climbing harder mean climbing better routes? A grade with
-	// one or two sends swings the line from 0★ to 3★, so it only joins with TREND_MIN_SENDS.
+	const yTicks = $derived(useQualityAxis ? [0, 25, 50, 75, 100] : [0, 1, 2, 3]);
+
 	const TREND_MIN_SENDS = 3;
 	const trend = $derived.by(() => {
-		// Scratch map, rebuilt on every derive; nothing subscribes to it.
 		// eslint-disable-next-line svelte/prefer-svelte-reactivity
 		const byScore = new Map<number, { sum: number; n: number }>();
 		for (const b of bubbles) {
 			const agg = byScore.get(b.score) ?? { sum: 0, n: 0 };
-			agg.sum += b.stars * b.names.length;
+			agg.sum += b.y * b.names.length;
 			agg.n += b.names.length;
 			byScore.set(b.score, agg);
 		}
@@ -87,16 +107,26 @@
 			? trend.map((t, i) => `${i ? 'L' : 'M'}${xOf(t.score)},${yOf(t.mean)}`).join(' ')
 			: ''
 	);
+	const meanQuality = $derived(
+		shown.length ? shown.reduce((s, p) => s + qualityY(p), 0) / shown.length : 0
+	);
 	const meanStars = $derived(
-		shown.length ? shown.reduce((s, p) => s + p.stars, 0) / shown.length : 0
+		shown.filter((p) => p.stars != null).length
+			? shown.reduce((s, p) => s + (p.stars ?? 0), 0) /
+				shown.filter((p) => p.stars != null).length
+			: 0
 	);
 
 	function xOf(score: number): number {
 		return pad.l + ((score - scoreMin) / (scoreMax - scoreMin)) * innerW;
 	}
 
-	function yOf(stars: number): number {
-		const clamped = Math.max(0, Math.min(3, stars));
+	function yOf(value: number): number {
+		if (useQualityAxis) {
+			const clamped = Math.max(0, Math.min(100, value));
+			return pad.t + (1 - clamped / 100) * innerH;
+		}
+		const clamped = Math.max(0, Math.min(3, value));
 		return pad.t + (1 - clamped / 3) * innerH;
 	}
 
@@ -108,9 +138,20 @@
 		return kind === 'boulder' ? formatVScaleLabel(score) : String(score);
 	}
 
+	function yTickLabel(t: number): string {
+		return useQualityAxis ? String(t) : `${t}★`;
+	}
+
 	function describe(b: Bubble): string {
 		const n = b.names.length;
-		const head = `${gradeLabel(b.score)} · ${b.stars}★ · ${n} send${n === 1 ? '' : 's'}`;
+		const qualityPart = useQualityAxis
+			? b.qualityScore != null
+				? `${Math.round(b.qualityScore)} quality`
+				: b.stars != null
+					? `${b.stars}★ (est.)`
+					: `${b.y} quality`
+			: `${b.y}★`;
+		const head = `${gradeLabel(b.score)} · ${qualityPart} · ${n} send${n === 1 ? '' : 's'}`;
 		const more = n > 5 ? ` +${n - 5} more` : '';
 		return `${head}\n${b.names.slice(0, 5).join(', ')}${more}`;
 	}
@@ -118,7 +159,7 @@
 
 <article class="panel">
 	<header>
-		<h2>Stars vs grade</h2>
+		<h2>{useQualityAxis ? 'Quality vs grade' : 'Stars vs grade'}</h2>
 		{#if counts.route && counts.boulder}
 			<div class="toggles" role="group" aria-label="Climb type">
 				<button
@@ -140,23 +181,35 @@
 	{#if shown.length === 0}
 		<p class="empty">No rated routes yet.</p>
 	{:else}
-		<p class="summary">{shown.length} rated sends · average {meanStars.toFixed(1)}★</p>
+		<p class="summary">
+			{shown.length} rated sends ·
+			{#if useQualityAxis}
+				average {Math.round(meanQuality)} quality
+				{#if meanStars > 0}
+					<span class="muted"> ({meanStars.toFixed(1)}★ where no score)</span>
+				{/if}
+			{:else}
+				average {meanStars.toFixed(1)}★
+			{/if}
+		</p>
 		<svg
 			viewBox="0 0 {w} {h}"
 			role="group"
-			aria-label="Sends by grade and star rating; larger bubbles hold more sends"
+			aria-label={useQualityAxis
+				? 'Sends by grade and theCrag quality score; larger bubbles hold more sends'
+				: 'Sends by grade and star rating; larger bubbles hold more sends'}
 		>
-			{#each [0, 1, 2, 3] as star (star)}
+			{#each yTicks as tick (tick)}
 				<line
 					x1={pad.l}
-					y1={yOf(star)}
+					y1={yOf(tick)}
 					x2={w - pad.r}
-					y2={yOf(star)}
-					class={star === 0 ? 'axis-line' : 'grid'}
+					y2={yOf(tick)}
+					class={tick === 0 ? 'axis-line' : 'grid'}
 				/>
-				<text x={pad.l - 8} y={yOf(star) + 4} text-anchor="end" class="axis">{star}★</text>
+				<text x={pad.l - 8} y={yOf(tick) + 4} text-anchor="end" class="axis">{yTickLabel(tick)}</text>
 			{/each}
-			{#each ticks as t (t)}
+			{#each xTicks as t (t)}
 				<text x={xOf(t)} y={h - pad.b + 16} text-anchor="middle" class="axis">{gradeLabel(t)}</text>
 			{/each}
 
@@ -164,23 +217,24 @@
 				<path d={trendPath} class="trend" />
 			{/if}
 
-			{#each bubbles as b (`${b.score}|${b.stars}`)}
+			{#each bubbles as b (`${b.score}|${b.y}|${b.names.length}`)}
 				{#if b.names.length === 1 && b.url}
 					<a href={b.url} target="_blank" rel="noreferrer">
-						<circle cx={xOf(b.score)} cy={yOf(b.stars)} r={radius(1)} class="dot">
+						<circle cx={xOf(b.score)} cy={yOf(b.y)} r={radius(1)} class="dot">
 							<title>{describe(b)}</title>
 						</circle>
 					</a>
 				{:else}
-					<circle cx={xOf(b.score)} cy={yOf(b.stars)} r={radius(b.names.length)} class="dot">
+					<circle cx={xOf(b.score)} cy={yOf(b.y)} r={radius(b.names.length)} class="dot">
 						<title>{describe(b)}</title>
 					</circle>
 				{/if}
-			{/each}
+		{/each}
 		</svg>
 		<p class="legend">
 			<span class="swatch dot-swatch"></span> bubble size = sends
-			<span class="swatch trend-swatch"></span> average stars per grade ({TREND_MIN_SENDS}+ sends)
+			<span class="swatch trend-swatch"></span>
+			{useQualityAxis ? 'average quality per grade' : 'average stars per grade'} ({TREND_MIN_SENDS}+ sends)
 		</p>
 	{/if}
 </article>
@@ -226,6 +280,9 @@
 		margin: 0 0 0.5rem;
 		font-size: 0.8rem;
 		color: var(--ink-muted);
+	}
+	.summary .muted {
+		opacity: 0.85;
 	}
 	.legend {
 		margin: 0.35rem 0 0;
