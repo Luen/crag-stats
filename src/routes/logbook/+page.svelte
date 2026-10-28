@@ -33,6 +33,8 @@
 		if (data.multipitch) p.set('multipitch', '1');
 		if (data.fa) p.set('fa', data.fa);
 		if (data.history) p.set('history', data.history);
+		if (data.project) p.set('project', data.project);
+		if (data.setter) p.set('setter', data.setter);
 		if (data.with) p.set('with', data.with);
 		if (data.partners) p.set('partners', data.partners);
 		for (const m of data.missing) p.append('missing', m);
@@ -94,6 +96,12 @@
 		{/if}
 		{#if data.history === 'pending'}
 			· history pending
+		{/if}
+		{#if data.project}
+			· {data.project === 'yes' ? 'projects' : 'not projects'}
+		{/if}
+		{#if data.setter}
+			· {data.setter === 'me' ? 'routes I set' : 'no setter credit found'}
 		{/if}
 		{#if data.rock}
 			· rock {data.rock}
@@ -178,6 +186,16 @@
 			<option value="FA">My FA</option>
 			<option value="FFA">My FFA</option>
 			<option value="none">No FA/FFA mark</option>
+		</select>
+		<select name="setter" aria-label="Route setter" value={data.setter}>
+			<option value="">Any setter</option>
+			<option value="me">Routes I set</option>
+			<option value="none">No setter credit found</option>
+		</select>
+		<select name="project" aria-label="theCrag project flag" value={data.project}>
+			<option value="">Any project flag</option>
+			<option value="yes">Project</option>
+			<option value="no">Not a project</option>
 		</select>
 		{#if data.historyFilter}
 			<select name="history" aria-label="Route history import" value={data.history}>
@@ -313,7 +331,8 @@
 	<p class="hint">
 		From/to dates override year and season. Route grade min/max use your display system and exclude
 		boulders (filter style for those). Missing route data finds routes without a recorded height or
-		bolt count; Tag contains searches the route tags imported from theCrag.
+		bolt count; Tag contains searches the route tags imported from theCrag. Project filters exclude
+		unknown flags. No setter credit found includes routes whose history has not been imported.
 	</p>
 </form>
 
