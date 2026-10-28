@@ -18,8 +18,7 @@
 
 	const visible = $derived(items.slice(0, maxBars));
 	const max = $derived(Math.max(1, ...visible.map((i) => i.value)));
-	const itemKey = (item: Item, index: number) =>
-		item.id ?? item.href ?? `${item.label}\0${index}`;
+	const itemKey = (item: Item, index: number) => item.id ?? item.href ?? `${item.label}\0${index}`;
 </script>
 
 <ul class="bars">
