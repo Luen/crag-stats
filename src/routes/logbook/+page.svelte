@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { SvelteURLSearchParams } from 'svelte/reactivity';
 	import GradeChip from '#lib/components/GradeChip.svelte';
 	import StyleBadge from '#lib/components/StyleBadge.svelte';
 	import TagChips from '#lib/components/TagChips.svelte';
@@ -10,9 +11,8 @@
 	let { data }: PageProps = $props();
 
 	function filterParams() {
-		// Throwaway query builder for an href, not reactive state.
-		// eslint-disable-next-line svelte/prefer-svelte-reactivity
-		const p = new URLSearchParams();
+		// Query builder for hrefs, rebuilt when called.
+		const p = new SvelteURLSearchParams();
 		if (data.q) p.set('q', data.q);
 		for (const s of data.styles) p.append('style', s);
 		for (const t of data.ticks) p.append('tick', t);
@@ -271,8 +271,8 @@
 	</div>
 	<p class="hint">
 		From/to dates override year and season. Route grade min/max use your display system and exclude
-		boulders (filter style for those). Facet coverage vs theCrag is tracked for agents in
-		<code>docs/dev/LOGBOOK_FACETS.md</code>.
+		boulders (filter style for those). Missing route data finds routes without a recorded height or
+		bolt count; Tag contains searches the route tags imported from theCrag.
 	</p>
 </form>
 
