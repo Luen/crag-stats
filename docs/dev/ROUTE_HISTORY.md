@@ -75,3 +75,5 @@ Routes that were already fetched before this migration have no cached info until
 ## Follow-ups that reuse the same fetch
 
 Setter credits (#76) can join the same payload when we extend the parser. Project flag, seasonality, popularity, quality, beta, ancestors, pitches and flags are cached as above.
+
+Logbook popularity sorting uses relative popularity, falling back to global popularity; routes with only an ascent count remain last in either order. Counts are not popularity scores. Quality sorting shares the label/score fallback helper with the dashboard.
