@@ -36,7 +36,10 @@
 	const rows = $derived(
 		packLayoutRows(
 			data.dashLayout.map((i) =>
-				i.id === 'firstAscents' && !data.showSettings && s.firstAscents.total === 0
+				i.id === 'firstAscents' &&
+				!data.showSettings &&
+				s.firstAscents.total === 0 &&
+				s.firstAscents.routesSet === 0
 					? { ...i, enabled: false }
 					: i
 			)

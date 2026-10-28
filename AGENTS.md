@@ -278,5 +278,7 @@ You'll often notice things outside the task at hand. **Don't silently fix them i
 | 2026-10 | #126/#127: tick facets include top-rope/solo types and preserve selected legacy values; style filters normalize dws and top-rope aliases. |
 
 | 2026-10 | #125: logbook labels retain ordinary ascent methods such as top-rope alongside route discipline, as well as solo variants. |
+| 2026-10 | #76: route setter credits from cached `route_history` — badges (1/5/10/25), `routesSet` on First ascents card; FA milestone badge `fa_5` renamed **5 First Ascents**; **Route Developer** reserved for 5 routes set. |
+| 2026-10 | #134: setter credits with missing or invalid dates keep a null date through badge generation; never fabricate 1970. |
 
 _Add a row when you change behaviour agents must know about._

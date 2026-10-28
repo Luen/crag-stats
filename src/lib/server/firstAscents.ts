@@ -165,6 +165,7 @@ export function buildFirstAscentStats(rows: readonly FirstAscentRow[]): FirstAsc
 		total: rows.length,
 		fa: rows.filter((r) => r.kind === 'FA').length,
 		ffa: rows.filter((r) => r.kind === 'FFA').length,
+		routesSet: 0,
 		byStyle: [...byStyle.entries()]
 			.map(([style, count]) => ({
 				style,

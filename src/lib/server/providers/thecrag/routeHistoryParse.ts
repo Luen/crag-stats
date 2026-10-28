@@ -11,16 +11,26 @@ export type RouteHistoryEntry = {
 	date: string | null;
 };
 
-/** Map upstream history type labels to local FA / FFA marks. */
-export function historyTypeToKind(type: unknown): FirstAscentKind | null {
-	const t = String(type ?? '')
+function normalizeHistoryType(type: unknown): string {
+	return String(type ?? '')
 		.trim()
 		.toLowerCase()
 		.replace(/[_-]+/g, ' ')
 		.replace(/\s+/g, ' ');
+}
+
+/** Map upstream history type labels to local FA / FFA marks. */
+export function historyTypeToKind(type: unknown): FirstAscentKind | null {
+	const t = normalizeHistoryType(type);
 	if (t === 'first free ascent' || t === 'ffa') return 'FFA';
 	if (t === 'first ascent' || t === 'fa') return 'FA';
 	return null;
+}
+
+/** True for theCrag route-history types that credit bolting / setting (not FA/FFA). */
+export function historyTypeIsSetter(type: unknown): boolean {
+	const t = normalizeHistoryType(type);
+	return t === 'route setter' || t === 'rs';
 }
 
 /**
@@ -61,6 +71,18 @@ export function ownerKindsFromHistory(
 	if (ffa) return 'FFA';
 	if (fa) return 'FA';
 	return null;
+}
+
+/** True when any setter-type row names the owner via `@login`. */
+export function ownerIsRouteSetter(
+	entries: readonly RouteHistoryEntry[],
+	login: string | null | undefined
+): boolean {
+	for (const e of entries) {
+		if (!historyTypeIsSetter(e.type)) continue;
+		if (climbersMentionLogin(e.climbers, login)) return true;
+	}
+	return false;
 }
 
 export function normalizeHistoryEntries(raw: unknown): RouteHistoryEntry[] {

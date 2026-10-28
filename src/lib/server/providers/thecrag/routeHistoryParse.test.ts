@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
 	climbersMentionLogin,
+	historyTypeIsSetter,
 	historyTypeToKind,
 	normalizeHistoryEntries,
+	ownerIsRouteSetter,
 	ownerKindsFromHistory
 } from './routeHistoryParse';
 
@@ -14,6 +16,32 @@ describe('historyTypeToKind', () => {
 		expect(historyTypeToKind('FA')).toBe('FA');
 		expect(historyTypeToKind('Route Setter')).toBeNull();
 		expect(historyTypeToKind('')).toBeNull();
+	});
+});
+
+describe('historyTypeIsSetter', () => {
+	it('recognises route setter labels', () => {
+		expect(historyTypeIsSetter('Route Setter')).toBe(true);
+		expect(historyTypeIsSetter('route_setter')).toBe(true);
+		expect(historyTypeIsSetter('RS')).toBe(true);
+		expect(historyTypeIsSetter('First Ascent')).toBe(false);
+	});
+});
+
+describe('ownerIsRouteSetter', () => {
+	it('requires @login on setter rows', () => {
+		expect(
+			ownerIsRouteSetter(
+				[{ id: '1', type: 'Route Setter', climbers: '@luenwarneke', date: null }],
+				'luenwarneke'
+			)
+		).toBe(true);
+		expect(
+			ownerIsRouteSetter(
+				[{ id: '1', type: 'rs', climbers: 'Luke Middleton', date: null }],
+				'luenwarneke'
+			)
+		).toBe(false);
 	});
 });
 
