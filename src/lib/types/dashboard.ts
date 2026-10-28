@@ -1,4 +1,5 @@
 import type { GradeSystem } from '#lib/grades';
+import type { KarmaStats } from './karma';
 import type { RoutePopularityStats } from './routePopularity';
 import type { TrainingLoadView } from './trainingLoad';
 
@@ -349,6 +350,8 @@ export type DashboardStats = {
 	};
 	pyramidMode: 'all' | 'sends' | 'onsight';
 	routePopularity: RoutePopularityStats | null;
+	/** Approximate ascent karma; edit points unavailable without a karma API (#136). */
+	karma: KarmaStats;
 	/** cragCount 0 → hide Best months card. */
 	bestMonths: BestMonthsView;
 };

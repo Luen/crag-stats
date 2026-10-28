@@ -320,5 +320,8 @@ You'll often notice things outside the task at hand. **Don't silently fix them i
 | 2026-10 | #151: each milestone has a stable `id` (grade system/score, count or height threshold, or FA route ID). Svelte keys use that ID; matching route names and dates are valid distinct events. |
 
 | 2026-10 | #154 review: community route rows preserve FA versus FFA credit; unrelated route-info refreshes must retain the counter timestamp. Browser tests distinguish Latest rows from community rows. |
+| 2026-10 | #136: Karma dashboard card approximates ascent points (1× distinct routes / `routesTicked`); edit karma stays unavailable until theCrag exposes it on a syncable API. |
+
+| 2026-10 | #142 / #143: Karma's local tile counts distinct provider-matched routes with logged ascents; orphan metadata contributes no points. Account estimates and local route counts must retain distinct source labels. |
 
 _Add a row when you change behaviour agents must know about._
