@@ -10,6 +10,8 @@
 	let { data }: PageProps = $props();
 
 	function filterParams() {
+		// Throwaway query builder for an href, not reactive state.
+		// eslint-disable-next-line svelte/prefer-svelte-reactivity
 		const p = new URLSearchParams();
 		if (data.q) p.set('q', data.q);
 		for (const s of data.styles) p.append('style', s);
