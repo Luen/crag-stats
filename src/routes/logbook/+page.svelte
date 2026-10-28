@@ -113,10 +113,12 @@
 		<option value="FFA">My FFA</option>
 		<option value="none">No FA/FFA mark</option>
 	</select>
-	<select name="history" aria-label="Route history import" value={data.history}>
-		<option value="">Any history status</option>
-		<option value="pending">History not checked yet</option>
-	</select>
+	{#if data.historyFilter}
+		<select name="history" aria-label="Route history import" value={data.history}>
+			<option value="">Any history status</option>
+			<option value="pending">History not checked yet</option>
+		</select>
+	{/if}
 	<select name="quality" aria-label="Climber quality rating" value={data.quality}>
 		<option value="">Any quality</option>
 		<option value="Mega Classic">Mega Classic</option>

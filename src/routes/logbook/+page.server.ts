@@ -3,6 +3,7 @@ import { listLogbook } from '#lib/server/analytics';
 import { getShowNotes } from '#lib/server/appSettings';
 import { parseFirstAscentKind, routeExists, setFirstAscent } from '#lib/server/firstAscents';
 import { notesVisible } from '#lib/server/notes';
+import { isRouteHistoryImportEnabled } from '#lib/server/routeHistoryImport';
 import type { Actions, PageServerLoad } from './$types';
 
 const ISO_DAY = /^\d{4}-\d{2}-\d{2}$/;
@@ -45,7 +46,9 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 	const order = url.searchParams.get('order') ?? 'desc';
 	const multipitch = url.searchParams.get('multipitch') === '1';
 	const fa = parseFaParam(url.searchParams.get('fa'));
-	const history = parseHistoryParam(url.searchParams.get('history'));
+	// "Not checked yet" only means something to the owner while the import is on; otherwise it'd match every route.
+	const historyFilter = locals.authed && isRouteHistoryImportEnabled();
+	const history = historyFilter ? parseHistoryParam(url.searchParams.get('history')) : '';
 	const quality = url.searchParams.get('quality') ?? '';
 	const withPartner = url.searchParams.get('with') ?? '';
 	const yearRaw = url.searchParams.get('year');
@@ -107,6 +110,7 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 		multipitch,
 		fa,
 		history,
+		historyFilter,
 		quality,
 		with: withPartner,
 		minStars: minStars ?? '',
