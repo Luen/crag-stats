@@ -1,5 +1,6 @@
 <script lang="ts">
 	import NewRouteBadge from '#lib/components/NewRouteBadge.svelte';
+	import ProjectRouteBeta from '#lib/components/ProjectRouteBeta.svelte';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -65,6 +66,10 @@
 			</p>
 		{/if}
 
+		{#if p.publicBeta}
+			<ProjectRouteBeta beta={p.publicBeta} />
+		{/if}
+
 		<p class="footer">{sessionsLabel(p.sessionCount)} · {triesLabel(p.tryCount)}</p>
 	</article>
 {/snippet}
@@ -76,6 +81,7 @@
 		Auto-detected from theCrag: open routes with unsent attempts in the last year, plus sends that
 		had a fight before the send (shown ~31 days). Routes untouched for a year drop off. First-try
 		sends are not projects.
+		<a class="doc-link" href="/docs/projects">Guidebook text &amp; privacy</a>
 	</p>
 </section>
 
@@ -137,6 +143,18 @@
 		max-width: 46rem;
 		color: var(--ink-muted);
 		line-height: 1.45;
+	}
+	.doc-link {
+		display: inline-block;
+		margin-top: 0.35rem;
+		color: var(--accent);
+		font-weight: 600;
+		font-size: 0.9rem;
+		text-decoration: none;
+	}
+	.doc-link:hover {
+		text-decoration: underline;
+		text-underline-offset: 0.12em;
 	}
 	.block {
 		margin-bottom: 1.6rem;
