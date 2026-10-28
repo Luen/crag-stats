@@ -55,15 +55,15 @@ Everything is tested offline with a fake client and clock: `routeHistoryEngine.t
 
 Each successful fetch also upserts nullable columns on the matching `routes` row (when the API sends them):
 
-| Column | Source field | Issues |
-| ------ | ------------- | ------ |
-| `is_project` | `flags` contains Project | #77 |
-| `seasonality_json` | `seasonality` (12 months) | #78 |
-| `ascent_count`, `popularity`, `relative_popularity` | same names | #79 |
-| `quality_score` | `qualityScore` | #80 |
-| `beta_json` | public `beta` excerpts + route page URL (never ascent notes) | #81 |
-| `ancestors_json`, `pitches_json`, `flags_json` | same names | #82 |
-| `route_info_updated_at` | import timestamp | — |
+| Column                                              | Source field                                                 | Issues                                              |
+| --------------------------------------------------- | ------------------------------------------------------------ | --------------------------------------------------- |
+| `is_project`                                        | `flags` contains Project                                     | #77                                                 |
+| `seasonality_json`                                  | `seasonality` (12 months)                                    | #78                                                 |
+| `ascent_count`, `popularity`, `relative_popularity` | same names                                                   | #79                                                 |
+| `quality_score`                                     | `qualityScore`                                               | #80                                                 |
+| `beta_json`                                         | public `beta` excerpts + route page URL (never ascent notes) | #81                                                 |
+| `ancestors_json`, `pitches_json`, `flags_json`      | same names                                                   | #82 — `/sectors` drill-down, multipitch/style hints |
+| `route_info_updated_at`                             | import timestamp                                             | —                                                   |
 
 Parsing lives in `parseRouteInfoFields()` / `parseRoutePayload()` (`routeHistoryApi.ts`); `storeBatch()` writes them in `routeHistoryEngine.ts`. No extra requests — same pacing as history.
 
