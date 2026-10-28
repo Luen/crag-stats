@@ -33,16 +33,14 @@
 				</div>
 				<div class="strip" aria-label="Seasonality and your volume by month">
 					{#each MONTH_LABELS as label, i (label)}
-						<div class="col" title="{label}: season {c.seasonality[i].toFixed(1)}, you {c.yourMonths[i]}">
+						<div
+							class="col"
+							title="{label}: season {c.seasonality[i].toFixed(1)}, you {c.yourMonths[i]}"
+						>
 							<div class="bars">
-								<span
-									class="bar season"
-									style:height="{(c.seasonality[i] / maxSeason) * 100}%"
+								<span class="bar season" style:height="{(c.seasonality[i] / maxSeason) * 100}%"
 								></span>
-								<span
-									class="bar yours"
-									style:height="{(c.yourMonths[i] / maxYours) * 100}%"
-								></span>
+								<span class="bar yours" style:height="{(c.yourMonths[i] / maxYours) * 100}%"></span>
 							</div>
 							<span class="m">{label.slice(0, 1)}</span>
 						</div>

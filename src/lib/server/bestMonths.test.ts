@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { buildBestMonthsView, parseSeasonalityJson } from './bestMonths';
 
-const season = (peak: number) => JSON.stringify(Array.from({ length: 12 }, (_, i) => (i === peak ? 10 : 1)));
+const season = (peak: number) =>
+	JSON.stringify(Array.from({ length: 12 }, (_, i) => (i === peak ? 10 : 1)));
 
 describe('parseSeasonalityJson', () => {
 	it('accepts 12 finite numbers', () => {

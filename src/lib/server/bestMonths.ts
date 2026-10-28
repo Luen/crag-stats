@@ -50,10 +50,7 @@ function peakMonthIndex(values: number[]): number {
 	return peak;
 }
 
-export function buildBestMonthsView(
-	rows: BestMonthsAscentRow[],
-	topN = 6
-): BestMonthsView {
+export function buildBestMonthsView(rows: BestMonthsAscentRow[], topN = 6): BestMonthsView {
 	type CragAcc = {
 		crag: string;
 		url: string | null;
