@@ -6,7 +6,7 @@ The **First ascents** card counts the routes and boulders where you did the firs
 
 - **Owner login** — If `APP_PASSWORD` is set, sign in so you can open Settings and use **Mark FA** / **FFA** in the logbook. Visitors see the card and badges once at least one route is marked, but cannot add marks themselves.
 - **Optional route-history import** — Set `ROUTE_HISTORY_IMPORT=true` on the server if you want Crag Stats to auto-mark FAs and FFAs from public theCrag route history (see below). Manual marks and import both write to the same `first_ascents` table; neither depends on private notes.
-- **Private notes are unrelated** — `SHOW_PRIVATE_NOTES` and **Settings → Show private notes** only control whether your **ascent comments** appear on `/logbook` (and in search). They do not gate the First ascents card, FA/FFA badges, milestones, or route-history import.
+- **Private notes are unrelated** — **Settings → Show private notes** only controls whether your **ascent comments** appear on `/logbook` (and in search). It does not gate the First ascents card, FA/FFA badges, milestones, or route-history import.
 
 ## Marking a first ascent
 
