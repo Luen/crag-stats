@@ -56,6 +56,7 @@ import { ascents, profiles, routeHistoryFetches, routes } from './db/schema';
 import { pickHardestSends } from './hardestSends';
 import { invalidateRouteHistoryRuns } from './routeHistoryEngine';
 import { buildTrainingLoadView, hasPersonalAscentGrade } from './trainingLoad';
+import { buildKarmaStats } from './karma';
 import { buildRoutePopularityStats } from './routePopularity';
 import { buildBestMonthsView } from './bestMonths';
 
@@ -723,6 +724,7 @@ export function getDashboardStats(
 	);
 	const rockAgg = buildRockTypeStats(extraRows);
 	const rockBlurb = rockTypeBlurb(rockAgg.dominant, rockAgg.dominantPct);
+	const karma = buildKarmaStats();
 	const bestMonths = buildBestMonthsView(
 		all.map((a) => ({
 			cragName: a.cragName,
@@ -976,6 +978,7 @@ export function getDashboardStats(
 		},
 		pyramidMode,
 		routePopularity,
+		karma,
 		bestMonths
 	};
 }
