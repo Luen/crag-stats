@@ -30,7 +30,7 @@ import { buildBadges } from './badges';
 import { communityAscentBadgeHits } from './communityBadges';
 import type { DateDisplay } from '#lib/dates';
 import { buildRouteDeveloperImpact } from './routeDeveloperImpact';
-import { countOwnerSetRoutes, setterBadgeHits } from './routeSetters';
+import { countOwnerSetRoutes, listOwnerSetRoutes, setterBadgeHits } from './routeSetters';
 import {
 	buildMilestones,
 	buildMonthlyStats,
@@ -1060,6 +1060,10 @@ export function listLogbook(filters?: {
 	fa?: string;
 	/** pending — route has no route_history_fetches row */
 	history?: string;
+	/** yes | no — theCrag Project flag from route info (#77); unknown matches neither */
+	project?: 'yes' | 'no';
+	/** me | none — cached route history credits the owner as route setter (#76) */
+	setter?: 'me' | 'none';
 	/** Exact match on ascents.quality (legacy single) */
 	quality?: string;
 	qualities?: string[];
@@ -1142,6 +1146,7 @@ export function listLogbook(filters?: {
 			relativePopularity: routes.relativePopularity,
 			parentName: routes.parentName,
 			bolts: routes.bolts,
+			isProject: routes.isProject,
 			tagsJson: routes.tagsJson,
 			ancestorsJson: routes.ancestorsJson
 		})
@@ -1306,6 +1311,23 @@ export function listLogbook(filters?: {
 	}
 	if (fetchedKeys) {
 		rows = rows.filter((r) => !fetchedKeys.has(`${r.routeProvider}:${r.routeExternalId}`));
+	}
+	if (filters?.project === 'yes') {
+		rows = rows.filter((r) => r.isProject === 1);
+	} else if (filters?.project === 'no') {
+		// Null means route info never said either way, so it isn't evidence of "not a project".
+		rows = rows.filter((r) => r.isProject === 0);
+	}
+	if (filters?.setter) {
+		const setterKeys = new Set(
+			[...new Set(rows.map((r) => r.routeProvider))].flatMap((provider) =>
+				listOwnerSetRoutes(provider).map((r) => routeKey(provider, r.routeExternalId))
+			)
+		);
+		const wantSet = filters?.setter === 'me';
+		rows = rows.filter(
+			(r) => setterKeys.has(routeKey(r.routeProvider, r.routeExternalId)) === wantSet
+		);
 	}
 	if (filters?.q) {
 		const q = filters.q.toLowerCase();

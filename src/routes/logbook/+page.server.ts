@@ -32,6 +32,16 @@ function parseHistoryParam(raw: string | null): string {
 	return raw === 'pending' ? 'pending' : '';
 }
 
+function parseProjectParam(raw: string | null): '' | 'yes' | 'no' {
+	if (raw === 'yes' || raw === 'no') return raw;
+	return '';
+}
+
+function parseSetterParam(raw: string | null): '' | 'me' | 'none' {
+	if (raw === 'me' || raw === 'none') return raw;
+	return '';
+}
+
 function parsePartnersParam(raw: string | null): '' | 'has' | 'missing' {
 	if (raw === 'has' || raw === 'missing') return raw;
 	return '';
@@ -92,6 +102,8 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 	// "Not checked yet" only means something to the owner while the import is on; otherwise it'd match every route.
 	const historyFilter = locals.authed && isRouteHistoryImportEnabled();
 	const history = historyFilter ? parseHistoryParam(url.searchParams.get('history')) : '';
+	const project = parseProjectParam(url.searchParams.get('project'));
+	const setter = parseSetterParam(url.searchParams.get('setter'));
 	const withPartner = url.searchParams.get('with') ?? '';
 	const partners = parsePartnersParam(url.searchParams.get('partners'));
 	const missingRaw = multiParams(url, 'missing');
@@ -136,6 +148,8 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 		multipitch: multipitch || undefined,
 		fa: fa || undefined,
 		history: history || undefined,
+		project: project || undefined,
+		setter: setter || undefined,
 		with: withPartner || undefined,
 		partners: partners || undefined,
 		missing: missing.length ? missing : undefined,
@@ -174,6 +188,8 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 		fa,
 		history,
 		historyFilter,
+		project,
+		setter,
 		with: withPartner,
 		partners,
 		missing,

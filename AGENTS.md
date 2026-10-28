@@ -63,7 +63,7 @@ src/lib/server/
   db/schema.ts
 migrations/              # 0001_init.sql, … 0010_route_history.sql
 scripts/                 # migrate, docker-entrypoint, worker
-.github/workflows/       # ci, docker-release (tag/release → GHCR)
+.github/workflows/       # ci, docker-release (version tag → GHCR)
 ```
 
 Client components must **not** import from `#lib/server/*` except via `import type` from shared `#lib/types/*`. Server modules pull in `better-sqlite3`.
@@ -152,7 +152,7 @@ Components: `TickTypeIcon.svelte`, `StyleBadge.svelte`. Keep icons SVG-inline so
 ## Docker / release
 
 - Compose: `docker-compose.yml` (build) and `docker-compose.ghcr.yml` (pull image).
-- `docker-release.yml` builds multi-arch and pushes on version tags (`v0.1.0`, …), published releases, manual dispatch, or `workflow_call`.
+- `docker-release.yml` builds multi-arch and pushes on version tag pushes (`v0.1.0`, …), manual dispatch, or `workflow_call`. There is no `release` trigger: `gh release create` (or a UI release with a new tag) pushes the tag, and a second trigger built every release twice (#164). Publishing a release for an existing tag does not rebuild; use manual dispatch.
 - `nightly-minor-deps-release.yml` runs daily (~00:17 AEST). `npm-check-updates --target semver --cooldown 3` raises package.json ranges within each dependency's major; 0.x packages only get patches. pnpm then re-resolves only the changed specifiers in the lockfile, because frozen installs need the two in sync. After that: lint, check, test, build and e2e, a patch bump, a tag and GitHub release, and the image via `docker-release.yml`. It does nothing when no range moved. It pushes straight to `main`, so branch protection on `main` needs a bypass for Actions.
 - Entrypoint runs migrations before app/worker start; `ensureSchema()` (`src/lib/server/db/index.ts`) applies the same files under `pnpm dev` / `node build`. Persist SQLite via volume (`DATABASE_PATH`).
 
@@ -350,5 +350,11 @@ You'll often notice things outside the task at hand. **Don't silently fix them i
 
 | 2026-10 | #161: `resolveMigrationsDir` walks up from the module to the nearest `crag-stats` package `migrations/` (not a fixed `../../../../`). Nested checkouts / review worktrees no longer inherit a parent's older migrations. `MIGRATIONS_DIR` still wins. |
 | 2026-10 | theCrag returns private ascent comments in `privateMarkdown`, separate from public `markdown`. `ascentNotes()` (`thecrag/api.ts`) joins both into `ascents.comment`, which stays owner-only. Blank comments are stored as null. |
+
+| 2026-10 | #86: `/logbook` adds `project=yes\|no` (route-info Project flag; unknown matches neither) and `setter=me\|none` (cached setter history). Raw `flags_json` names beyond Project/isSport/isTrad/isBoulder are unverified, so no bolted/top-rope/artificial facets yet. See `docs/dev/LOGBOOK_FACETS.md`. |
+
+| 2026-10 | #166 review: setter facets resolve each route provider's owner profile and key credits by provider plus route ID. "No setter credit found" includes routes without imported history; do not describe that as a confirmed absence of setter credit. |
+
+| 2026-10 | #164: `docker-release.yml` triggers on version tag pushes only (no `release: published`), so `gh release create` builds the image once. Nightly releases still publish via `workflow_call`. |
 
 _Add a row when you change behaviour agents must know about._
