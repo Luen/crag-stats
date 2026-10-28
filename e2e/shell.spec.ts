@@ -66,7 +66,15 @@ test.describe('app shell', () => {
 		const res = await page.goto('/logbook');
 		expect(res?.headers()['content-security-policy']).toContain("default-src 'self'");
 		await expect(page.getByText('Sample Sport Route').first()).toBeVisible();
-		for (const path of ['/', '/projects', '/sectors', '/goals', '/rewind', '/share']) {
+		for (const path of [
+			'/',
+			'/projects',
+			'/sectors',
+			'/goals',
+			'/eddington',
+			'/rewind',
+			'/share'
+		]) {
 			const r = await page.goto(path);
 			expect(r?.status(), path).toBe(200);
 		}

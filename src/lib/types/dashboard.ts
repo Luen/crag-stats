@@ -71,6 +71,29 @@ export type EddingtonStats = {
 	activeDays: number;
 };
 
+export type EddingtonTimelinePoint = {
+	period: string;
+	sendsE: number;
+	verticalE: number;
+	routeE: number;
+	boulderE: number;
+};
+
+export type EddingtonMilestoneRow = {
+	target: number;
+	have: number;
+	needed: number;
+	progress: number;
+};
+
+export type EddingtonMilestoneTable = {
+	key: 'sends' | 'vertical' | 'routeGrade' | 'boulderGrade';
+	label: string;
+	unit: number;
+	qualifierLabel: string;
+	rows: EddingtonMilestoneRow[];
+};
+
 type FirstAscentRange = {
 	min: string;
 	minBand: number | null;

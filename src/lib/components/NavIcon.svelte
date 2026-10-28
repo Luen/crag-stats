@@ -5,6 +5,7 @@
 		| 'projects'
 		| 'sectors'
 		| 'goals'
+		| 'eddington'
 		| 'rewind'
 		| 'settings'
 		| 'home'
@@ -62,6 +63,8 @@
 			<circle cx="12" cy="12" r="9" />
 			<circle cx="12" cy="12" r="5" />
 			<circle cx="12" cy="12" r="1.2" fill="currentColor" />
+		{:else if name === 'eddington'}
+			<path d="M4 20V4M4 20h16M8 16V8M12 16V6M16 16v-4" />
 		{:else if name === 'rewind'}
 			<path d="M3 12a9 9 0 1 0 3-6.7L3 8" />
 			<path d="M3 3v5h5" />

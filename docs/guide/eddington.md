@@ -2,7 +2,7 @@
 
 Cyclists use the **Eddington number** _E_: the largest number where you have ridden at least _E_ miles on at least _E_ different days. It grows slowly and is hard to game. Going from 70 to 71 needs 71 rides of 71+ miles, so it rewards consistency more than any one big day.
 
-The **Eddington numbers** card uses the same idea four ways for a climbing logbook.
+The **Eddington numbers** card uses the same idea four ways for a climbing logbook. Open **[Eddington](/eddington)** from the dashboard card title or sidebar for year-by-year growth and upcoming milestone tables.
 
 ## Send days
 
