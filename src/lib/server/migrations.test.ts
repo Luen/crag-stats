@@ -65,6 +65,12 @@ function oldDatabase(path: string, applied: string[]) {
 			`INSERT INTO first_ascents (provider, route_external_id, kind, created_at) VALUES ('thecrag', 'r1', 'FFA', ?)`
 		).run(NOW);
 	}
+	if (applied.includes('0012_route_info.sql')) {
+		db.prepare('UPDATE routes SET ascent_count = 7').run();
+	}
+	if (applied.includes('0013_route_ascent_snapshot.sql')) {
+		db.prepare('UPDATE routes SET ascent_count_own = 2').run();
+	}
 	db.close();
 }
 
@@ -126,6 +132,12 @@ describe('migrations survive skipped releases', () => {
 				}
 				if (k >= FILES.indexOf('0009_first_ascents.sql') + 1) {
 					expect(db.prepare('SELECT kind FROM first_ascents').get()).toEqual({ kind: 'FFA' });
+				}
+				if (k >= FILES.indexOf('0012_route_info.sql') + 1) {
+					expect(db.prepare('SELECT ascent_count, ascent_count_own FROM routes').get()).toEqual({
+						ascent_count: 7,
+						ascent_count_own: k >= FILES.indexOf('0013_route_ascent_snapshot.sql') + 1 ? 2 : null
+					});
 				}
 			} finally {
 				db.close();

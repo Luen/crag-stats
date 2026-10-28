@@ -737,6 +737,7 @@ export function getDashboardStats(
 		const raw = effectiveRaw(r);
 		return {
 			discipline,
+			id: r.id,
 			routeName: displayRouteName(r.routeName, r.pitchLabel, r.ascentLabel),
 			gradeRaw: raw,
 			gradeLabel: score != null ? formatGrade(score, isBoulder, preferredSystem, raw) : raw,
@@ -864,6 +865,7 @@ export function getDashboardStats(
 			const routesSet = countOwnerSetRoutes();
 			const impact = buildRouteDeveloperImpact();
 			const community = {
+				routesPutUp: impact.routesPutUp,
 				communityAscents: impact.communityAscents,
 				sportOrBoltedCommunityAscents: impact.sportOrBoltedAscents,
 				routesWithCommunityData: impact.routesWithCommunityData

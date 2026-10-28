@@ -4,7 +4,7 @@
  */
 import { eq } from 'drizzle-orm';
 import { db, ensureSchema } from './db';
-import { ascents, firstAscents, routes } from './db/schema';
+import { firstAscents, routes } from './db/schema';
 import { listOwnerSetRoutes } from './routeSetters';
 
 const PROVIDER = 'thecrag';
@@ -17,9 +17,9 @@ export type DeveloperImpactRoute = {
 	bolts: number | null;
 	/** Community ascent count from theCrag route info (includes the owner). */
 	ascentCount: number | null;
-	/** Owner's logged ticks of this route. */
-	ownAscents: number;
-	/** max(0, ascentCount − ownAscents); null when ascentCount is missing. */
+	/** Owner's logged ticks when ascentCount was fetched; null for legacy caches. */
+	ownAscents: number | null;
+	/** max(0, ascentCount − ownAscents); null when either snapshot value is missing. */
 	othersAscents: number | null;
 	fromFa: boolean;
 	fromSetter: boolean;
@@ -27,9 +27,9 @@ export type DeveloperImpactRoute = {
 };
 
 export type RouteDeveloperImpact = {
-	/** Distinct routes credited as FA/FFA and/or setter. */
+	/** Distinct currently cached routes credited as FA/FFA and/or setter. */
 	routesPutUp: number;
-	/** Subset with a cached community ascentCount. */
+	/** Subset with paired route/owner count snapshots. */
 	routesWithCommunityData: number;
 	/** Sum of othersAscents across routes with data. */
 	communityAscents: number;
@@ -45,23 +45,6 @@ function isSportOrBolted(
 	const style = (gearStyle ?? '').toLowerCase();
 	if (style.includes('sport')) return true;
 	return bolts != null && Number.isFinite(bolts) && bolts > 0;
-}
-
-function ownAscentCounts(provider: string): Map<string, number> {
-	const rows = db
-		.select({
-			routeExternalId: routes.externalId,
-			ascentId: ascents.id
-		})
-		.from(ascents)
-		.innerJoin(routes, eq(ascents.routeId, routes.id))
-		.where(eq(routes.provider, provider))
-		.all();
-	const counts = new Map<string, number>();
-	for (const r of rows) {
-		counts.set(r.routeExternalId, (counts.get(r.routeExternalId) ?? 0) + 1);
-	}
-	return counts;
 }
 
 /** Aggregate non-owner community ticks on routes the owner FA'd and/or set. */
@@ -87,7 +70,6 @@ export function buildRouteDeveloperImpact(provider = PROVIDER): RouteDeveloperIm
 		};
 	}
 
-	const own = ownAscentCounts(provider);
 	const meta = db
 		.select({
 			externalId: routes.externalId,
@@ -95,7 +77,8 @@ export function buildRouteDeveloperImpact(provider = PROVIDER): RouteDeveloperIm
 			url: routes.url,
 			gearStyle: routes.gearStyle,
 			bolts: routes.bolts,
-			ascentCount: routes.ascentCount
+			ascentCount: routes.ascentCount,
+			ascentCountOwn: routes.ascentCountOwn
 		})
 		.from(routes)
 		.where(eq(routes.provider, provider))
@@ -105,11 +88,17 @@ export function buildRouteDeveloperImpact(provider = PROVIDER): RouteDeveloperIm
 	const out: DeveloperImpactRoute[] = [];
 	for (const id of allIds) {
 		const m = byId.get(id);
+		// Manual marks survive pruning; only routes still in the logbook are fetchable.
+		if (!m) continue;
 		const ascentCount =
-			m?.ascentCount != null && Number.isFinite(m.ascentCount) ? Number(m.ascentCount) : null;
-		const ownAscents = own.get(id) ?? 0;
+			m.ascentCount != null && Number.isFinite(m.ascentCount) && m.ascentCount >= 0
+				? Number(m.ascentCount)
+				: null;
+		const ownAscents = m.ascentCountOwn;
 		const othersAscents =
-			ascentCount == null ? null : Math.max(0, Math.floor(ascentCount) - ownAscents);
+			ascentCount == null || ownAscents == null
+				? null
+				: Math.max(0, Math.floor(ascentCount) - ownAscents);
 		const sportOrBolted = isSportOrBolted(m?.gearStyle, m?.bolts ?? null);
 		out.push({
 			routeExternalId: id,
