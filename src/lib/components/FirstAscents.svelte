@@ -16,7 +16,7 @@
 </script>
 
 <article class="panel">
-	<h2>First ascents</h2>
+	<h2><a href="/logbook?fa=any">First ascents</a></h2>
 	{#if data.total === 0}
 		<p class="empty">
 			No first ascents marked yet. theCrag keeps first ascents in route history, which its API
@@ -118,6 +118,15 @@
 	h2 {
 		margin: 0 0 0.75rem;
 		font-size: 1.05rem;
+	}
+	h2 a {
+		color: var(--ink);
+		text-decoration: underline;
+		text-decoration-color: transparent;
+		text-underline-offset: 0.15em;
+	}
+	h2 a:hover {
+		text-decoration-color: currentColor;
 	}
 	h3 {
 		margin: 1rem 0 0.5rem;
