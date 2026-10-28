@@ -160,7 +160,10 @@
 				<th>Tick</th>
 				<th><a href={sortHref('quality')}>Quality{sortMark('quality')}</a></th>
 				<th><a href={sortHref('stars')}>★{sortMark('stars')}</a></th>
-				<th><a href={sortHref('popularity')} title="Route popularity">Pop.{sortMark('popularity')}</a></th>
+				<th
+					><a href={sortHref('popularity')} title="Route popularity">Pop.{sortMark('popularity')}</a
+					></th
+				>
 				<th>With</th>
 				<th>Crag / sector</th>
 				<th>Style</th>

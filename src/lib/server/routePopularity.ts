@@ -103,17 +103,15 @@ export function buildRoutePopularityStats(
 					(a.ascentCount ?? 999999) - (b.ascentCount ?? 999999)
 			)
 			.slice(0, MAX_GEMS)
-			.map(
-				(r): HiddenGemItem => ({
-					routeName: r.routeName,
-					gradeLabel: r.gradeLabel ?? null,
-					cragName: r.cragName ?? null,
-					url: r.url ?? null,
-					stars: r.stars ?? null,
-					qualityScore: r.qualityScore ?? null,
-					ascentCount: r.ascentCount ?? null,
-					popularityLabel: formatPopLabel(r)
-				})
-			)
+			.map((r): HiddenGemItem => ({
+				routeName: r.routeName,
+				gradeLabel: r.gradeLabel ?? null,
+				cragName: r.cragName ?? null,
+				url: r.url ?? null,
+				stars: r.stars ?? null,
+				qualityScore: r.qualityScore ?? null,
+				ascentCount: r.ascentCount ?? null,
+				popularityLabel: formatPopLabel(r)
+			}))
 	};
 }

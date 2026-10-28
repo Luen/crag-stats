@@ -704,8 +704,7 @@ export function getDashboardStats(
 				ascentCount: a.ascentCount,
 				popularity: a.popularity,
 				relativePopularity: a.relativePopularity,
-				gradeLabel:
-					score != null ? formatGrade(score, isBoulder, preferredSystem, raw) : raw
+				gradeLabel: score != null ? formatGrade(score, isBoulder, preferredSystem, raw) : raw
 			};
 		})
 	);

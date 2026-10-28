@@ -6,9 +6,9 @@ The **Route popularity** card uses community stats theCrag caches on each route:
 
 For each ascent where popularity data exists, we compare **relative popularity** when present, otherwise **global popularity**:
 
-| Bucket | Rule |
-| ------ | ---- |
-| **Beaten track** | Score ≥ 50 |
+| Bucket                   | Rule          |
+| ------------------------ | ------------- |
+| **Beaten track**         | Score ≥ 50    |
 | **Off the beaten track** | Score &lt; 50 |
 
 The card shows what **share of those ticks** fall in each bucket. Ascents on routes without cached stats are excluded from the percentages.
