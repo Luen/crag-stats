@@ -3,6 +3,7 @@
 	import StyleBadge from '#lib/components/StyleBadge.svelte';
 	import TagChips from '#lib/components/TagChips.svelte';
 	import TickTypeIcon from '#lib/components/TickTypeIcon.svelte';
+	import { LOGBOOK_STYLES, LOGBOOK_TICKS } from '#lib/logbookFilters';
 	import { enhance } from '$app/forms';
 	import type { PageProps } from './$types';
 
@@ -85,8 +86,18 @@
 			? 'Search route, crag, partners, notes…'
 			: 'Search route, crag, partners…'}
 	/>
-	<input name="style" value={data.style} placeholder="Style (Sport, Trad…)" />
-	<input name="tick" value={data.tick} placeholder="Tick (Onsight…)" />
+	<select name="style" aria-label="Climb style" value={data.style}>
+		<option value="">Any style</option>
+		{#each LOGBOOK_STYLES as style (style)}
+			<option value={style}>{style}</option>
+		{/each}
+	</select>
+	<select name="tick" aria-label="Tick type" value={data.tick}>
+		<option value="">Any tick</option>
+		{#each LOGBOOK_TICKS as tick (tick)}
+			<option value={tick}>{tick}</option>
+		{/each}
+	</select>
 	<input name="crag" value={data.crag} placeholder="Crag" />
 	<input name="sector" value={data.sector} placeholder="Sector / parent" />
 	<input name="with" value={data.with} placeholder="With (partner)" />
