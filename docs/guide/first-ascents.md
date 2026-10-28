@@ -51,7 +51,7 @@ Only public route history is saved, never your private ascent notes. **Settings 
 
 The card only appears for visitors once at least one FA is marked. Until then, the owner sees a short how-to instead.
 
-Route-history import must be enabled (`ROUTE_HISTORY_IMPORT=true`) to fill count snapshots. Older cached totals do not contain the historical owner count and are unavailable until refreshed. Use **Settings → Import route history → Refresh all routes** to queue a refresh; the existing 20-route run limit, pacing and back-off still apply. Ordinary syncs do not automatically refresh fetch-once route totals.
+Route-history import must be enabled (`ROUTE_HISTORY_IMPORT=true`) to fill count snapshots. Older cached totals do not contain the historical owner count and are unavailable until refreshed. Use **Settings → Import route history → Refresh all routes** to queue a refresh; the existing 100-route run limit, pacing and back-off still apply. Ordinary syncs do not automatically refresh fetch-once route totals.
 
 ## When an FA counts, and its date
 
