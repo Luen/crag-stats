@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest';
-import { buildEddington, eddingtonMetric, eddingtonNumber, type EddingtonRow } from './eddington';
+import {
+	buildEddington,
+	buildEddingtonMilestones,
+	buildEddingtonMilestoneTables,
+	buildEddingtonTimeline,
+	eddingtonMetric,
+	eddingtonNumber,
+	type EddingtonRow
+} from './eddington';
 
 describe('eddingtonNumber', () => {
 	it('is the largest E with E values ≥ E', () => {
@@ -64,5 +72,49 @@ describe('buildEddington', () => {
 		const e = buildEddington(rows);
 		expect(e.routeGrade.value).toBe(2); // 20, 3, 2 → 2 routes ≥ 2, not 3 ≥ 3
 		expect(e.boulderGrade.value).toBe(2); // V5, V2, V1
+	});
+});
+
+describe('buildEddingtonTimeline', () => {
+	const row = (p: Partial<EddingtonRow>): EddingtonRow => ({
+		day: '2024-06-01',
+		routeId: 1,
+		isSend: true,
+		heightM: 0,
+		score: null,
+		isBoulder: false,
+		...p
+	});
+
+	it('grows send-day E year by year', () => {
+		const rows = [
+			row({ day: '2023-01-01', routeId: 1 }),
+			row({ day: '2023-01-01', routeId: 2 }),
+			row({ day: '2024-01-01', routeId: 3 }),
+			row({ day: '2024-01-01', routeId: 4 }),
+			row({ day: '2024-01-01', routeId: 5 })
+		];
+		const tl = buildEddingtonTimeline(rows);
+		expect(tl).toEqual([
+			{ period: '2023', sendsE: 1, verticalE: 0, routeE: 0, boulderE: 0 },
+			{ period: '2024', sendsE: 2, verticalE: 0, routeE: 0, boulderE: 0 }
+		]);
+	});
+});
+
+describe('buildEddingtonMilestones', () => {
+	it('lists progress toward the next targets', () => {
+		expect(buildEddingtonMilestones([10, 9, 3, 3, 1], 1, 3, 2)).toEqual([
+			{ target: 4, have: 2, needed: 2, progress: 0.5 },
+			{ target: 5, have: 2, needed: 3, progress: 0.4 }
+		]);
+	});
+});
+
+describe('buildEddingtonMilestoneTables', () => {
+	it('returns four metric tables', () => {
+		const tables = buildEddingtonMilestoneTables([]);
+		expect(tables).toHaveLength(4);
+		expect(tables.map((t) => t.key)).toEqual(['sends', 'vertical', 'routeGrade', 'boulderGrade']);
 	});
 });

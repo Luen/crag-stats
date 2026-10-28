@@ -1,48 +1,15 @@
 <script lang="ts">
+	import { eddingtonTiles } from '#lib/eddingtonDisplay';
 	import type { EddingtonStats } from '#lib/types/dashboard';
 
 	type Props = { data: EddingtonStats };
 	let { data }: Props = $props();
 
-	const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
-
-	const tiles = $derived.by(() => {
-		const { sends, vertical, routeGrade, boulderGrade, verticalUnitM: unit } = data;
-		return [
-			{
-				key: 'sends',
-				label: 'Send days',
-				value: sends.value,
-				means: `${plural(sends.value, 'day')} with ${sends.value}+ sends`,
-				next: `${plural(sends.needed, 'more day')} of ${sends.next}+ sends for ${sends.next}`
-			},
-			{
-				key: 'vertical',
-				label: 'Vertical days',
-				value: vertical.value,
-				means: `${plural(vertical.value, 'day')} with ${vertical.value * unit}+ m climbed`,
-				next: `${plural(vertical.needed, 'more day')} of ${vertical.next * unit}+ m for ${vertical.next}`
-			},
-			{
-				key: 'routeGrade',
-				label: 'Route grade index',
-				value: routeGrade.value,
-				means: `${plural(routeGrade.value, 'route')} sent at Ewbank ${routeGrade.value}+`,
-				next: `${plural(routeGrade.needed, 'more route')} at ${routeGrade.next}+ for ${routeGrade.next}`
-			},
-			{
-				key: 'boulderGrade',
-				label: 'Boulder grade index',
-				value: boulderGrade.value,
-				means: `${plural(boulderGrade.value, 'problem')} sent at V${boulderGrade.value}+`,
-				next: `${plural(boulderGrade.needed, 'more problem')} at V${boulderGrade.next}+ for ${boulderGrade.next}`
-			}
-		];
-	});
+	const tiles = $derived(eddingtonTiles(data));
 </script>
 
 <article class="panel">
-	<h2>Eddington numbers</h2>
+	<h2><a href="/eddington">Eddington numbers</a></h2>
 	<div class="cards">
 		{#each tiles as t (t.key)}
 			<div class="card">
@@ -67,6 +34,13 @@
 	h2 {
 		margin: 0 0 0.75rem;
 		font-size: 1.05rem;
+	}
+	h2 a {
+		color: inherit;
+		text-decoration: none;
+	}
+	h2 a:hover {
+		color: var(--accent);
 	}
 	.cards {
 		display: grid;
