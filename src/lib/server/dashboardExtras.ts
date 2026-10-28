@@ -445,7 +445,10 @@ export function buildStyleMixOverTime(rows: DashboardExtraRow[]): { months: Styl
 	return { months };
 }
 
-export function buildPartnerLeaderboard(rows: DashboardExtraRow[]): {
+export function buildPartnerLeaderboard(
+	rows: DashboardExtraRow[],
+	limit: number | null = 7
+): {
 	partners: { name: string; count: number }[];
 } {
 	const counts = new Map<string, { name: string; count: number }>();
@@ -457,9 +460,10 @@ export function buildPartnerLeaderboard(rows: DashboardExtraRow[]): {
 			else counts.set(key, { name, count: 1 });
 		}
 	}
-	const partners = [...counts.values()]
-		.sort((a, b) => b.count - a.count || a.name.localeCompare(b.name))
-		.slice(0, 15);
+	const sorted = [...counts.values()].sort(
+		(a, b) => b.count - a.count || a.name.localeCompare(b.name)
+	);
+	const partners = limit == null ? sorted : sorted.slice(0, limit);
 	return { partners };
 }
 

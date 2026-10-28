@@ -19,7 +19,8 @@
 			[
 				{ href: '/logbook', label: 'Logbook', icon: 'logbook', count: data.navCounts?.ascents },
 				{ href: '/projects', label: 'Projects', icon: 'projects', count: data.navCounts?.projects },
-				{ href: '/sectors', label: 'Sectors', icon: 'sectors' }
+				{ href: '/sectors', label: 'Sectors', icon: 'sectors' },
+				{ href: '/partners', label: 'Partners', icon: 'partners' }
 			],
 			[
 				{ href: '/goals', label: 'Goals', icon: 'goals' },

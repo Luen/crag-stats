@@ -33,6 +33,15 @@ describe('buildPartnerLeaderboard', () => {
 		expect(partners.find((p) => p.name === 'alice')?.count).toBe(2);
 		expect(partners.find((p) => p.name === 'carol')?.count).toBe(1);
 	});
+
+	it('limits to top N by default and can return the full list', () => {
+		const rows: DashboardExtraRow[] = [];
+		for (let i = 0; i < 10; i++) {
+			rows.push({ ascentDate: '2024-01-01', partners: `Partner ${i}` });
+		}
+		expect(buildPartnerLeaderboard(rows).partners).toHaveLength(7);
+		expect(buildPartnerLeaderboard(rows, null).partners).toHaveLength(10);
+	});
 });
 
 describe('buildRockTypeStats', () => {

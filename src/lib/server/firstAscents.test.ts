@@ -3,7 +3,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import { getDashboardStats, listLogbook, wipeAllData } from './analytics';
 import { eq } from 'drizzle-orm';
 import { db } from './db';
-import { ascents, routeHistoryFetches } from './db/schema';
+import { ascents, routeHistoryFetches, routes } from './db/schema';
 import {
 	buildFirstAscentStats,
 	getFirstAscentMarks,
@@ -180,6 +180,21 @@ describe('listLogbook FA and history filters', () => {
 		const partner = listLogbook({ with: 'Partner A' });
 		expect(partner.total).toBeGreaterThan(0);
 		expect(partner.rows.every((r) => (r.partners || '').includes('Partner A'))).toBe(true);
+
+		const hardProject = listLogbook({ q: 'Hard Project' }).rows[0];
+		db.update(routes)
+			.set({
+				tagsJson: JSON.stringify([{ category: 'Rock type', name: 'Granite' }])
+			})
+			.where(eq(routes.externalId, hardProject.routeExternalId))
+			.run();
+		const granite = listLogbook({ rock: 'granite' });
+		expect(granite.total).toBeGreaterThan(0);
+		expect(granite.rows.every((r) => r.routeExternalId === hardProject.routeExternalId)).toBe(true);
+		const sandstone = listLogbook({ rock: 'Sandstone' });
+		expect(sandstone.rows.some((r) => r.routeExternalId === hardProject.routeExternalId)).toBe(
+			false
+		);
 
 		const ranged = listLogbook({ from: '2099-01-01', to: '2099-12-31' });
 		expect(ranged.total).toBe(0);
