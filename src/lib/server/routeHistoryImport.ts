@@ -38,7 +38,7 @@ export function getRouteHistoryStatus(): RouteHistoryStatus {
 	return routeHistoryStatus(config());
 }
 
-/** Run one batch of up to 20 routes now and wait for it (tests / scripts). */
+/** Run one batch of up to 100 routes now and wait for it (tests / scripts). */
 export function runRouteHistoryImport(): Promise<RouteHistoryRunResult> {
 	return runRouteHistoryImportOnce(config(), deps);
 }

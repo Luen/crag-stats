@@ -30,7 +30,7 @@ export const variables = defineEnvVars({
 	},
 	ROUTE_HISTORY_IMPORT: {
 		description:
-			'Opt-in: fetch public FA/FFA route history from theCrag in the background, 20 routes per run (default false)',
+			'Opt-in: fetch public FA/FFA route history from theCrag in the background, 100 routes per run (default false)',
 		schema: optionalString
 	},
 	DISPLAY_LOCALE: {

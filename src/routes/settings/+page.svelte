@@ -229,8 +229,10 @@
 				</form>
 				<form method="POST" action="?/refreshRouteHistory" class="stack">
 					<p class="hint">
-						Check every route again, still 20 per run. Only useful if theCrag's history was
-						corrected. After re-fetching, use <strong>Re-apply from saved history</strong> (tick
+						Check every route again, still {data.routeHistory.perRun} per run. Only useful if theCrag's
+						history was corrected. After re-fetching, use
+						<strong>Re-apply from saved history</strong>
+						(tick
 						<strong>Replace existing</strong> if you want corrected history to overwrite current marks).
 					</p>
 					<label class="field">

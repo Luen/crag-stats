@@ -67,7 +67,7 @@ export async function runTheCragSync(opts?: { full?: boolean }) {
 			lastError: null
 		});
 
-		// Opt-in (ROUTE_HISTORY_IMPORT): check the next 20 routes' history in the background.
+		// Opt-in (ROUTE_HISTORY_IMPORT): check the next 100 routes' history in the background.
 		triggerRouteHistoryImport('after sync');
 
 		return {

@@ -19,7 +19,7 @@ That works around theCrag's bot protection. theCrag says broader API access is n
 | Rule                                            | Constant / table                                                                          |
 | ----------------------------------------------- | ----------------------------------------------------------------------------------------- |
 | Each route checked once, ever                   | `route_history_fetches` (`ok` or `missing`)                                               |
-| At most 20 routes per run                       | `ROUTES_PER_RUN`, sent as 2 requests of 10 (`BATCH_SIZE`)                                 |
+| At most 100 routes per run                      | `ROUTES_PER_RUN`, sent as 10 requests of 10 (`BATCH_SIZE`)                                |
 | ≥ 1.1 s between any two requests, across runs   | `MIN_REQUEST_GAP_MS` (in-process `lastRequestAt`)                                         |
 | ≥ 1 minute between runs                         | `MIN_RUN_INTERVAL_MS`                                                                     |
 | One `impers` session per run                    | `openRouteHistoryClient()`, closed in `finally`                                           |
@@ -29,9 +29,9 @@ That works around theCrag's bot protection. theCrag says broader API access is n
 
 Pacing (`running`, `lastRequestAt`) is **process-local**. The usual Docker deploy is one `app` container; don't run multiple Node processes against the same DB without a DB-backed lease.
 
-- **When runs happen:** `triggerRouteHistoryImport()` runs in the background after each successful `runTheCragSync()` (daily cron, the worker, or Settings → Sync). Settings → _Check next 20 routes now_ **awaits** `runRouteHistoryImport()` and shows the real outcome (`ran` / `waiting` / `busy` / `done` / error), so it won't claim a check started when the engine refused.
+- **When runs happen:** `triggerRouteHistoryImport()` runs in the background after each successful `runTheCragSync()` (daily cron, the worker, or Settings → Sync). Settings → _Check next 100 routes now_ **awaits** `runRouteHistoryImport()` and shows the real outcome (`ran` / `waiting` / `busy` / `done` / error), so it won't claim a check started when the engine refused.
 - **Order:** ungraded routes first (likeliest new lines), then most recently climbed.
-- **Missing routes:** a route the response leaves out is recorded as `missing` and not asked for again. Only _Refresh all_ (`resetRouteHistoryFetches()`) makes routes eligible again, and that's still 20 per run. Each successful fetch **replaces** that route's cached `route_history` rows (including clearing them when the API returns none), so upstream deletions are not sticky. Use _Re-apply from saved history_ (with _Replace existing_ if needed) to push corrections into `first_ascents`.
+- **Missing routes:** a route the response leaves out is recorded as `missing` and not asked for again. Only _Refresh all_ (`resetRouteHistoryFetches()`) makes routes eligible again, and that's still 100 per run. Each successful fetch **replaces** that route's cached `route_history` rows (including clearing them when the API returns none), so upstream deletions are not sticky. Use _Re-apply from saved history_ (with _Replace existing_ if needed) to push corrections into `first_ascents`.
 - **Wipe vs in-flight run:** `wipeAllData()` calls `invalidateRouteHistoryRuns()` so a request that was already in flight abandons after its next await and does not write history/marks back into the empty DB.
 
 ## Marks
@@ -67,7 +67,7 @@ Each successful fetch also upserts nullable columns on the matching `routes` row
 
 Parsing lives in `parseRouteInfoFields()` / `parseRoutePayload()` (`routeHistoryApi.ts`); `storeBatch()` writes them in `routeHistoryEngine.ts`. No extra requests — same pacing as history. Omitted fields preserve cached values in partial payloads; explicit null clears them. Successful empty beta/arrays replace the old content.
 
-Routes that were already fetched before this migration have no cached info until the owner runs **Refresh all** in Settings (still 20 routes per run), which clears `route_history_fetches` and re-fetches.
+Routes that were already fetched before this migration have no cached info until the owner runs **Refresh all** in Settings (still 100 routes per run), which clears `route_history_fetches` and re-fetches.
 
 **`quality_score` (#80):** when cached, the dashboard stars scatter uses a 0–100 quality axis (stars map to the same scale as fallback). Logbook **Quality** sort prefers `quality_score`, then ascent quality labels, then stars.
 

@@ -35,8 +35,8 @@ import {
 const PROVIDER = 'thecrag';
 
 /** Routes fetched per run (each sync, or each "Fetch next" click). */
-export const ROUTES_PER_RUN = 20;
-/** Routes per request: 20 routes = 2 requests per run. */
+export const ROUTES_PER_RUN = 100;
+/** Routes per request: 100 routes = 10 requests per run. */
 export const BATCH_SIZE = 10;
 /** Minimum gap between any two requests to theCrag (≥ 1 s, with margin). */
 export const MIN_REQUEST_GAP_MS = 1100;
@@ -492,7 +492,7 @@ export function applyCachedHistoryMarks(rules: MarkRules): { marked: number; rou
 	return { marked, routes: fetches.length };
 }
 
-/** Forget which routes were checked so they're fetched again, 20 per run. Keeps history rows. */
+/** Forget which routes were checked so they're fetched again, 100 per run. Keeps history rows. */
 export function resetRouteHistoryFetches(): number {
 	ensureSchema();
 	return db.delete(routeHistoryFetches).where(eq(routeHistoryFetches.provider, PROVIDER)).run()
