@@ -2,7 +2,7 @@
  * RoxClimbs-inspired badges: real milestones from logged data.
  * Taking a break does not erase a milestone — recognition when something genuinely happened.
  */
-import { formatVScaleLabel } from '#lib/grades';
+import { formatVScaleLabel, usesVScale } from '#lib/grades';
 import { tickKind } from '#lib/ticks';
 import type { DashboardExtraRow } from './dashboardExtras';
 
@@ -78,8 +78,9 @@ function heightOf(row: DashboardExtraRow): number {
 	return h != null && Number.isFinite(h) && h > 0 ? Number(h) : 0;
 }
 
-function isBoulder(gearStyle: string | null | undefined): boolean {
-	return (gearStyle || '').toLowerCase().includes('boulder');
+/** V-scale score (boulders, V-graded DWS/highballs), from the grade system first (#72). */
+function isVScaleRow(row: DashboardExtraRow): boolean {
+	return usesVScale(row.gradeSystem, row.gearStyle);
 }
 
 function isWeekend(iso: string): boolean {
@@ -599,7 +600,7 @@ export function buildBadges(rows: DashboardExtraRow[]): BadgesResult {
 		const score = scoreOf(row);
 		if (score != null) {
 			const n = Math.round(score);
-			const boulder = isBoulder(row.gearStyle);
+			const boulder = isVScaleRow(row);
 			if (boulder) {
 				if (n > maxBoulder) {
 					maxBoulder = n;

@@ -7,6 +7,7 @@
  * 7-day (acute) and 28-day (chronic) exponentially weighted averages; their ratio (ACWR)
  * flags ramps that tend to precede finger and shoulder injuries.
  */
+import { usesVScale } from '#lib/grades';
 import type { LoadStatus, TrainingLoadView } from '#lib/types/trainingLoad';
 import { buildTrainingLoad, type DashboardExtraRow } from './dashboardExtras';
 
@@ -19,7 +20,8 @@ const STEP = { route: 2, boulder: 1 } as const;
 type Kind = keyof typeof STEP;
 
 function kindOf(row: DashboardExtraRow): Kind {
-	return /boulder/i.test(row.gearStyle ?? '') ? 'boulder' : 'route';
+	// Scores on the V-scale compare on V-grades, whatever the style (#72).
+	return usesVScale(row.gradeSystem, row.gearStyle) ? 'boulder' : 'route';
 }
 
 function scoreOf(row: DashboardExtraRow): number | null {
