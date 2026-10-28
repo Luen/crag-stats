@@ -1,0 +1,130 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { eq, sql } from 'drizzle-orm';
+import { db } from './index';
+import { appSettings, ascents, goals, routes } from './schema';
+import { runDataMigrations } from './dataMigrations';
+import { getDashboardStats, wipeAllData } from '../analytics';
+import { getFirstAscentMarks, setFirstAscent } from '../firstAscents';
+import { upsertAscents } from '../ingest';
+import * as projects from '../projects';
+import { mapAscent } from '../providers/thecrag/api';
+
+const ID = 'data:0001_repair_cached_grades';
+
+beforeEach(() => {
+	wipeAllData();
+	db.run(sql`DELETE FROM schema_migrations WHERE id LIKE 'data:%'`);
+});
+afterEach(() => vi.restoreAllMocks());
+
+function seedOldGrades() {
+	for (const [id, gradeSystem, grade] of [
+		[81001, 'AU', '9'],
+		[81002, 'BLDV', '5']
+	] as const) {
+		upsertAscents([
+			mapAscent({
+				id,
+				date: '2026-01-01',
+				gradeSystem,
+				tick: { name: 'Tick' },
+				route: {
+					id,
+					name: `Synthetic boulder ${id}`,
+					grade,
+					style: 'Boulder',
+					ancestors: { country: { name: 'Australia' } }
+				}
+			})!
+		]);
+	}
+	db.update(routes).set({ gradeScore: 9 }).where(eq(routes.externalId, '81001')).run();
+	db.update(ascents).set({ effectiveGradeScore: 9 }).where(eq(ascents.externalId, '81001')).run();
+}
+
+describe('startup data migrations', () => {
+	it('upgrades cached grades while preserving explicit scales and local-only data', () => {
+		seedOldGrades();
+		setFirstAscent('thecrag', '81001', 'FA');
+		const now = new Date().toISOString();
+		db.insert(appSettings)
+			.values([
+				{ key: 'grade_system', value: 'french', updatedAt: now },
+				{ key: 'dashboard_layout', value: 'synthetic-layout', updatedAt: now }
+			])
+			.run();
+		db.insert(goals)
+			.values({ kind: 'custom', title: 'Synthetic goal', createdAt: now, updatedAt: now })
+			.run();
+		const marks = getFirstAscentMarks();
+
+		expect(runDataMigrations()).toEqual([ID]);
+		expect(db.select().from(routes).where(eq(routes.externalId, '81001')).get()!.gradeScore).toBe(
+			-0.7
+		);
+		expect(
+			db.select().from(ascents).where(eq(ascents.externalId, '81001')).get()!.effectiveGradeScore
+		).toBe(-0.7);
+		expect(db.select().from(routes).where(eq(routes.externalId, '81002')).get()!.gradeScore).toBe(
+			5
+		);
+		expect(
+			db.select().from(appSettings).where(eq(appSettings.key, 'grade_system')).get()!.value
+		).toBe('french');
+		expect(
+			db.select().from(appSettings).where(eq(appSettings.key, 'dashboard_layout')).get()!.value
+		).toBe('synthetic-layout');
+		expect(getFirstAscentMarks()).toEqual(marks);
+		expect(db.select().from(goals).get()!.title).toBe('Synthetic goal');
+	});
+
+	it('persists completion in SQLite and skips the repair on later starts', () => {
+		seedOldGrades();
+		expect(runDataMigrations()).toEqual([ID]);
+		expect(db.get(sql`SELECT id FROM schema_migrations WHERE id = ${ID}`)).toEqual({ id: ID });
+		// A second startup must not re-parse the database just because the process restarted.
+		db.update(routes).set({ gradeScore: 123 }).where(eq(routes.externalId, '81001')).run();
+		expect(runDataMigrations()).toEqual([]);
+		expect(db.select().from(routes).where(eq(routes.externalId, '81001')).get()!.gradeScore).toBe(
+			123
+		);
+	});
+
+	it('rolls back the repair and marker on failure, then retries successfully', () => {
+		seedOldGrades();
+		vi.spyOn(projects, 'refreshProjects').mockImplementationOnce(() => {
+			throw new Error('Synthetic migration failure');
+		});
+		expect(() => runDataMigrations()).toThrow('Synthetic migration failure');
+		expect(db.get(sql`SELECT id FROM schema_migrations WHERE id = ${ID}`)).toBeUndefined();
+		expect(db.select().from(routes).where(eq(routes.externalId, '81001')).get()!.gradeScore).toBe(
+			9
+		);
+		expect(
+			db.select().from(ascents).where(eq(ascents.externalId, '81001')).get()!.effectiveGradeScore
+		).toBe(9);
+		expect(runDataMigrations()).toEqual([ID]);
+		expect(db.select().from(routes).where(eq(routes.externalId, '81001')).get()!.gradeScore).toBe(
+			-0.7
+		);
+	});
+
+	it('handles a fresh install and leaves SQL migration records intact', () => {
+		const schemaBefore = db.all(sql`SELECT * FROM schema_migrations ORDER BY id`);
+		expect(runDataMigrations()).toEqual([ID]);
+		expect(
+			db.all(sql`SELECT * FROM schema_migrations WHERE id NOT LIKE 'data:%' ORDER BY id`)
+		).toEqual(schemaBefore);
+		expect(db.select().from(routes).all()).toEqual([]);
+		expect(runDataMigrations()).toEqual([]);
+	});
+
+	it('does not trigger a grade migration from a dashboard request', () => {
+		seedOldGrades();
+		getDashboardStats();
+		expect(db.select().from(routes).where(eq(routes.externalId, '81001')).get()!.gradeScore).toBe(
+			9
+		);
+		expect(db.get(sql`SELECT id FROM schema_migrations WHERE id = ${ID}`)).toBeUndefined();
+	});
+});

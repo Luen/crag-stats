@@ -7,7 +7,6 @@ import {
 	serializeLayout
 } from '#lib/dashboardLayout';
 import { parseGradeSystem, wipeAllData } from '#lib/server/analytics';
-import { repairGradesFromRawJson } from '#lib/server/repairGrades';
 import {
 	deleteAppSetting,
 	getAppSetting,
@@ -87,19 +86,6 @@ export const actions: Actions = {
 		try {
 			const result = await runTheCragSync({ full: true });
 			return { ok: true, result };
-		} catch (err) {
-			return fail(400, {
-				ok: false,
-				message: err instanceof Error ? err.message : String(err)
-			});
-		}
-	},
-	/** Re-derive grades from stored raw_json / grade_raw after parser fixes (#117). */
-	repairGrades: async ({ locals }) => {
-		if (!locals.authed) return fail(403);
-		try {
-			const result = repairGradesFromRawJson();
-			return { ok: true, repaired: result };
 		} catch (err) {
 			return fail(400, {
 				ok: false,

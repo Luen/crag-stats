@@ -32,13 +32,11 @@ Conversions between systems are approximate: grades are cultural, and a "6c" at 
 
 ## Repairing grades after an upgrade
 
-Parser fixes (for example treating an Australian boulder grade `9` as Ewbank→V rather than a fake **V9**) update how new syncs store scores. Rows already in your SQLite file keep the old numbers until they are repaired.
+Parser fixes update how new syncs store scores. Crag Stats automatically repairs cached grades from stored `raw_json` / `grade_raw` when the upgraded server starts, after schema migrations and before scheduled syncs or page requests. No Settings action or dashboard visit is needed.
 
-- Opening the **dashboard** after an upgrade runs a one-shot repair from stored `raw_json` / `grade_raw`.
-- **Settings → theCrag API sync → Repair grades** does the same on demand.
-- A normal **Sync now** also re-derives grades as part of the pull.
+Each versioned data migration runs once per database, with completion saved alongside schema migrations. A failed repair rolls back and is retried on the next startup. Container startup applies the repair to your mounted database; building an image does not repair your running instance.
 
-Private ascent notes are unrelated to this repair.
+A normal **Sync now** also re-derives grades as part of the pull. Private ascent notes are unrelated to this repair.
 
 ## Sources
 

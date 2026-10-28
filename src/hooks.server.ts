@@ -9,16 +9,20 @@ import {
 } from '#lib/server/auth';
 import { getSearchIndexing } from '#lib/server/appSettings';
 import { ensureSchema } from '#lib/server/db';
+import { runDataMigrations } from '#lib/server/db/dataMigrations';
 import { env } from '#lib/server/env';
 import { startScheduler } from '#lib/server/scheduler';
 import { isNoindexPath } from '#lib/server/seo';
 
 ensureSchema();
 
-// Runs once when the Node server boots (not per request): daily cron + an
-// immediate first sync on a fresh install. No-op without THECRAG_API_KEY.
+// Run cached-data upgrades before scheduled work or requests. The scheduler
+// then starts daily cron + an immediate first sync when a key is configured.
 export const init: ServerInit = () => {
-	if (!building) startScheduler();
+	if (building) return;
+	const applied = runDataMigrations();
+	if (applied.length) console.log(`[db] applied data migrations: ${applied.join(', ')}`);
+	startScheduler();
 };
 
 const PUBLIC = new Set(['/login', '/logout', '/health', '/robots.txt']);
