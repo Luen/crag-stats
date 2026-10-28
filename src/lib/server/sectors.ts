@@ -1,19 +1,20 @@
 import { eq, sql } from 'drizzle-orm';
+import type { CragSectorGroup } from '#lib/types/sectors';
 import { db, ensureSchema } from './db';
 import { ascents, routes } from './db/schema';
+import {
+	ancestorAreaNames,
+	gearStyleMismatch,
+	insertSectorPath,
+	parseAncestorsJson,
+	pitchCountFromJson,
+	sectorPathUnderCrag,
+	sectorTreeHasDepth,
+	treeNodeToSectorNode,
+	type SectorTreeNode
+} from './sectorsTree';
 
-export type SectorNode = {
-	name: string;
-	routeCount: number;
-	ascentCount: number;
-};
-
-export type CragSectorGroup = {
-	cragName: string;
-	routeCount: number;
-	ascentCount: number;
-	sectors: SectorNode[];
-};
+export type { CragSectorGroup, SectorNode } from '#lib/types/sectors';
 
 export type CragMapPoint = {
 	crag: string;
@@ -22,13 +23,17 @@ export type CragMapPoint = {
 	count: number;
 };
 
-/** Group climbed routes by crag → sector (parentName). */
+/** Group climbed routes by crag → sector tree (parentName, or ancestors when cached). */
 export function listSectors(): CragSectorGroup[] {
 	ensureSchema();
 	const rows = db
 		.select({
 			cragName: routes.cragName,
 			parentName: routes.parentName,
+			gearStyle: routes.gearStyle,
+			ancestorsJson: routes.ancestorsJson,
+			pitchesJson: routes.pitchesJson,
+			flagsJson: routes.flagsJson,
 			routeId: routes.id,
 			ascentCount: sql<number>`count(${ascents.id})`
 		})
@@ -40,44 +45,78 @@ export function listSectors(): CragSectorGroup[] {
 	type Agg = {
 		routeIds: Set<number>;
 		ascentCount: number;
-		sectors: Map<string, { routeIds: Set<number>; ascentCount: number }>;
+		usedAncestorPaths: boolean;
+		sectors: Map<string, SectorTreeNode>;
 	};
 	const byCrag = new Map<string, Agg>();
 
 	for (const r of rows) {
 		const crag = (r.cragName || 'Unknown').trim() || 'Unknown';
-		const sector = (r.parentName || 'General').trim() || 'General';
 		const ascentsN = Number(r.ascentCount) || 0;
 		let agg = byCrag.get(crag);
 		if (!agg) {
-			agg = { routeIds: new Set(), ascentCount: 0, sectors: new Map() };
+			agg = {
+				routeIds: new Set(),
+				ascentCount: 0,
+				usedAncestorPaths: false,
+				sectors: new Map()
+			};
 			byCrag.set(crag, agg);
 		}
 		agg.routeIds.add(r.routeId);
 		agg.ascentCount += ascentsN;
-		let sec = agg.sectors.get(sector);
-		if (!sec) {
-			sec = { routeIds: new Set(), ascentCount: 0 };
-			agg.sectors.set(sector, sec);
-		}
-		sec.routeIds.add(r.routeId);
-		sec.ascentCount += ascentsN;
+
+		const { segments, usedAncestors } = sectorPathUnderCrag({
+			ancestorsJson: r.ancestorsJson,
+			cragName: crag,
+			parentName: r.parentName
+		});
+		if (usedAncestors) agg.usedAncestorPaths = true;
+
+		insertSectorPath(agg.sectors, segments, r.routeId, ascentsN, {
+			multipitch: pitchCountFromJson(r.pitchesJson) >= 2,
+			styleMismatch: gearStyleMismatch(r.gearStyle, r.flagsJson)
+		});
 	}
 
 	return [...byCrag.entries()]
-		.map(([cragName, agg]) => ({
-			cragName,
-			routeCount: agg.routeIds.size,
-			ascentCount: agg.ascentCount,
-			sectors: [...agg.sectors.entries()]
-				.map(([name, s]) => ({
-					name,
-					routeCount: s.routeIds.size,
-					ascentCount: s.ascentCount
-				}))
-				.sort((a, b) => b.ascentCount - a.ascentCount || a.name.localeCompare(b.name))
-		}))
+		.map(([cragName, agg]) => {
+			const sectors = [...agg.sectors.values()]
+				.map(treeNodeToSectorNode)
+				.sort((a, b) => b.ascentCount - a.ascentCount || a.name.localeCompare(b.name));
+			const hasAreaTree = agg.usedAncestorPaths && sectorTreeHasDepth(sectors);
+			const areaBreadcrumb = agg.usedAncestorPaths
+				? buildCragBreadcrumb(rows, cragName)
+				: undefined;
+			return {
+				cragName,
+				routeCount: agg.routeIds.size,
+				ascentCount: agg.ascentCount,
+				areaBreadcrumb,
+				hasAreaTree,
+				sectors
+			};
+		})
 		.sort((a, b) => b.ascentCount - a.ascentCount || a.cragName.localeCompare(b.cragName));
+}
+
+function buildCragBreadcrumb(
+	rows: {
+		cragName: string | null;
+		ancestorsJson: string | null;
+	}[],
+	cragName: string
+): string | undefined {
+	for (const r of rows) {
+		if ((r.cragName || '').trim() !== cragName) continue;
+		if (!r.ancestorsJson?.trim()) continue;
+		const names = ancestorAreaNames(parseAncestorsJson(r.ancestorsJson));
+		const idx = names.findIndex(
+			(n) => n.localeCompare(cragName, undefined, { sensitivity: 'accent' }) === 0
+		);
+		if (idx > 0) return names.slice(0, idx).join(' → ');
+	}
+	return undefined;
 }
 
 /** Average lat/lon per crag weighted by route volume (ascent counts). */

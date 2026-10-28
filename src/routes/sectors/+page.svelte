@@ -1,5 +1,6 @@
 <script lang="ts">
 	import CragMap from '#lib/components/CragMap.svelte';
+	import SectorTreeList from '#lib/components/SectorTreeList.svelte';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -13,7 +14,10 @@
 
 <section class="panel head">
 	<h1>Sectors</h1>
-	<p>Crags and sectors from your logbook, plus a simple geo plot when coordinates are available.</p>
+	<p>
+		Crags and sectors from your logbook. When route info import has cached ancestor chains, sectors
+		nest below the crag; otherwise you see the usual single parent sector per route.
+	</p>
 </section>
 
 {#if data.mapPoints.length > 0}
@@ -41,24 +45,19 @@
 						<span class="chev" aria-hidden="true">{open[crag.cragName] ? '▾' : '▸'}</span>
 						<strong>{crag.cragName}</strong>
 						<span class="meta"
-							>{crag.routeCount} routes · {crag.ascentCount} ascents · {crag.sectors.length} sectors</span
+							>{crag.routeCount} routes · {crag.ascentCount} ascents · {crag.sectors.length} top sectors</span
 						>
 					</button>
 					<a class="log" href="/logbook?crag={encodeURIComponent(crag.cragName)}">Logbook</a>
+					{#if crag.areaBreadcrumb}
+						<p class="breadcrumb">{crag.areaBreadcrumb}</p>
+					{/if}
 					{#if open[crag.cragName]}
-						<ul class="sectors">
-							{#each crag.sectors as sector (sector.name)}
-								<li>
-									<a
-										href="/logbook?crag={encodeURIComponent(
-											crag.cragName
-										)}&sector={encodeURIComponent(sector.name)}">{sector.name}</a
-									>
-									<span class="meta">{sector.routeCount} routes · {sector.ascentCount} ascents</span
-									>
-								</li>
-							{/each}
-						</ul>
+						<SectorTreeList
+							cragName={crag.cragName}
+							sectors={crag.sectors}
+							nested={crag.hasAreaTree}
+						/>
 					{/if}
 				</li>
 			{/each}
@@ -83,13 +82,18 @@
 	.head p,
 	.hint,
 	.empty,
-	.meta {
+	.meta,
+	.breadcrumb {
 		color: var(--ink-muted);
 		font-size: 0.88rem;
 	}
 	.head p,
 	.hint {
 		margin: 0.35rem 0 0.75rem;
+	}
+	.breadcrumb {
+		grid-column: 1 / -1;
+		margin: 0.15rem 0 0 1.25rem;
 	}
 	.crags {
 		list-style: none;
@@ -130,19 +134,7 @@
 		text-decoration: underline;
 		text-underline-offset: 0.15em;
 	}
-	.sectors {
+	:global(.crags .sectors) {
 		grid-column: 1 / -1;
-		list-style: none;
-		margin: 0.15rem 0 0 1.25rem;
-		padding: 0;
-		display: grid;
-		gap: 0.35rem;
-	}
-	.sectors li {
-		display: flex;
-		justify-content: space-between;
-		gap: 0.75rem;
-		flex-wrap: wrap;
-		font-size: 0.92rem;
 	}
 </style>

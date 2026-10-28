@@ -272,6 +272,7 @@ You'll often notice things outside the task at hand. **Don't silently fix them i
 | 2026-10 | #68: opt-in route-history import (`ROUTE_HISTORY_IMPORT`, off by default). Runs in the background after sync: each route once, 20 per run, ≥1 s between requests, back-off on blocks. Migration 0010: `route_history`, `route_history_fetches`, import state, FA import skips. Dev notes in `docs/dev/ROUTE_HISTORY.md`. |
 | 2026-10 | #68 follow-up: migration `0011` upgrades DBs that applied the first draft of 0010 (offset/total cursor) to the fetch-once `last_run_at` shape. |
 | 2026-10 | Route history import caches route API fields on `routes` (migration `0012`, #77–#82): project flag, seasonality, popularity, qualityScore, beta, ancestors, pitches, flags. Request `show=info,ancestors`. Already-fetched routes need Settings → Refresh all to backfill. `#80`: scatter + logbook quality sort use `routes.quality_score` when present (`#lib/qualityScore.ts`). |
+| 2026-10 | Route history import caches route API fields on `routes` (migration `0012`, #77–#82): project flag, seasonality, popularity, qualityScore, beta, ancestors, pitches, flags. Request `show=info,ancestors`. Already-fetched routes need Settings → Refresh all to backfill. `/sectors` nests areas when `ancestors_json` has depth (#82); pitch/flag hints when import filled `pitches_json` / `flags_json`. |
 | 2026-10 | Logbook filters: `fa=FA|FFA|any|none`, `history=pending` (owner + import on only), plus `quality`, `minStars`, `with`, `from`/`to`. Marks load before filter/page in `listLogbook`. |
 | 2026-10 | Logbook richer filters (#85): multi `style`/`tick`/`quality`, `minScore`/`maxScore` (routes only), `partners=has|missing`, from/to override year/season. |
 | 2026-10 | Logbook facet inventory (#86): `docs/dev/LOGBOOK_FACETS.md`; `missing=height|bolts`, `tag=` substring on `tags_json`. |
@@ -283,6 +284,7 @@ You'll often notice things outside the task at hand. **Don't silently fix them i
 | 2026-10 | #134: setter credits with missing or invalid dates keep a null date through badge generation; never fabricate 1970. |
 
 | 2026-10 | #133: shared qualityScore helpers rank all theCrag labels distinctly; explicit low ratings win over star fallbacks. |
+| 2026-10 | #129: sector links use an exact sectorPath beneath the crag (including descendants); legacy sector names also match cached ancestors. |
 | 2026-10 | #128: route-info fields distinguish absent (preserve) from explicit null (clear); refresh can remove stale beta, access warnings and ratings. |
 
 _Add a row when you change behaviour agents must know about._

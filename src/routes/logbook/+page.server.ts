@@ -7,6 +7,20 @@ import { isRouteHistoryImportEnabled } from '#lib/server/routeHistoryImport';
 import { routeGradeOptions } from '#lib/logbookFilters';
 import type { Actions, PageServerLoad } from './$types';
 
+function parseSectorPath(raw: string | null): string[] {
+	if (!raw || raw.length > 8000) return [];
+	try {
+		const value: unknown = JSON.parse(raw);
+		return Array.isArray(value) &&
+			value.length <= 40 &&
+			value.every((part) => typeof part === 'string' && part.length > 0 && part.length <= 200)
+			? value
+			: [];
+	} catch {
+		return [];
+	}
+}
+
 const ISO_DAY = /^\d{4}-\d{2}-\d{2}$/;
 
 function parseFaParam(raw: string | null): string {
@@ -64,6 +78,7 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 	const qualities = multiParams(url, 'quality');
 	const crag = url.searchParams.get('crag') ?? '';
 	const sector = url.searchParams.get('sector') ?? '';
+	const sectorPath = sector ? [] : parseSectorPath(url.searchParams.get('sectorPath'));
 	const day = url.searchParams.get('day') ?? '';
 	const fromRaw = url.searchParams.get('from') ?? '';
 	const toRaw = url.searchParams.get('to') ?? '';
@@ -109,6 +124,7 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 		qualities: qualities.length ? qualities : undefined,
 		crag: crag || undefined,
 		sector: sector || undefined,
+		sectorPath: sectorPath.length ? sectorPath : undefined,
 		day: day || undefined,
 		from: from || undefined,
 		to: to || undefined,
@@ -143,6 +159,7 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 		qualities,
 		crag,
 		sector,
+		sectorPath,
 		day,
 		from,
 		to,
