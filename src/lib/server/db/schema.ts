@@ -58,6 +58,8 @@ export const routes = sqliteTable(
 		isProject: integer('is_project'),
 		qualityScore: real('quality_score'),
 		ascentCount: integer('ascent_count'),
+		/** Owner logbook rows at the fetch that supplied ascentCount; null for legacy totals. */
+		ascentCountOwn: integer('ascent_count_own'),
 		popularity: real('popularity'),
 		relativePopularity: real('relative_popularity'),
 		seasonalityJson: text('seasonality_json'),

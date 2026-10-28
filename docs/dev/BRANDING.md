@@ -4,6 +4,10 @@ Developer reference for the look and feel. **Keep it current:** if you change a 
 
 Visual direction: a clean, card-based analytics dashboard in the style of [Dreeve](https://dreeve.app/) (Stats for Strava). It uses neutral surfaces, one warm accent, and dense but readable data. Data colours (grade bands, disciplines) follow [theCrag](https://www.thecrag.com/) so climbers recognise them right away.
 
+The First ascents card labels community totals as cached estimates and displays cached/eligible route coverage. Known zero totals stay visible; missing data uses an unavailable message rather than a zero tile.
+
+The Karma card separates the approximate ascent total, the number of locally logged routes, and unavailable edit points. Its footer identifies whether the estimate came from the account counter or local logbook.
+
 ---
 
 ## Logo

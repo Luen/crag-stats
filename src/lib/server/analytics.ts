@@ -27,6 +27,7 @@ import {
 } from './logbookSort';
 import { buildCprTimeline } from './cpr';
 import { buildBadges } from './badges';
+import { buildRouteDeveloperImpact } from './routeDeveloperImpact';
 import { countOwnerSetRoutes, setterBadgeHits } from './routeSetters';
 import {
 	buildMilestones,
@@ -53,6 +54,7 @@ import { ascents, profiles, routeHistoryFetches, routes } from './db/schema';
 import { pickHardestSends } from './hardestSends';
 import { invalidateRouteHistoryRuns } from './routeHistoryEngine';
 import { buildTrainingLoadView, hasPersonalAscentGrade } from './trainingLoad';
+import { buildKarmaStats } from './karma';
 import { buildRoutePopularityStats } from './routePopularity';
 import { buildBestMonthsView } from './bestMonths';
 
@@ -715,6 +717,7 @@ export function getDashboardStats(
 	);
 	const rockAgg = buildRockTypeStats(extraRows);
 	const rockBlurb = rockTypeBlurb(rockAgg.dominant, rockAgg.dominantPct);
+	const karma = buildKarmaStats();
 	const bestMonths = buildBestMonthsView(
 		all.map((a) => ({
 			cragName: a.cragName,
@@ -736,6 +739,7 @@ export function getDashboardStats(
 		const raw = effectiveRaw(r);
 		return {
 			discipline,
+			id: r.id,
 			routeName: displayRouteName(r.routeName, r.pitchLabel, r.ascentLabel),
 			gradeRaw: raw,
 			gradeLabel: score != null ? formatGrade(score, isBoulder, preferredSystem, raw) : raw,
@@ -861,7 +865,14 @@ export function getDashboardStats(
 		})(),
 		firstAscents: (() => {
 			const routesSet = countOwnerSetRoutes();
-			if (!faMarks.size) return { ...buildFirstAscentStats([]), routesSet };
+			const impact = buildRouteDeveloperImpact();
+			const community = {
+				routesPutUp: impact.routesPutUp,
+				communityAscents: impact.communityAscents,
+				sportOrBoltedCommunityAscents: impact.sportOrBoltedAscents,
+				routesWithCommunityData: impact.routesWithCommunityData
+			};
+			if (!faMarks.size) return { ...buildFirstAscentStats([]), routesSet, ...community };
 			// One row per marked route: route grade (not a pitch), dated by the first send
 			// (same as the FA badges and milestones), else the earliest logged ascent.
 			const sendDay = new Map(
@@ -897,7 +908,7 @@ export function getDashboardStats(
 				});
 			}
 			for (const fa of byRoute.values()) fa.date = sendDay.get(fa.routeId) ?? fa.date;
-			return { ...buildFirstAscentStats([...byRoute.values()]), routesSet };
+			return { ...buildFirstAscentStats([...byRoute.values()]), routesSet, ...community };
 		})(),
 		solo: buildSoloStats(
 			all.map((r) => {
@@ -960,6 +971,7 @@ export function getDashboardStats(
 		},
 		pyramidMode,
 		routePopularity,
+		karma,
 		bestMonths
 	};
 }

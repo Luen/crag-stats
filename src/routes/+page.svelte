@@ -15,6 +15,7 @@
 	import NotableAscents from '#lib/components/NotableAscents.svelte';
 	import PartnerLeaderboard from '#lib/components/PartnerLeaderboard.svelte';
 	import QualityBreakdown from '#lib/components/QualityBreakdown.svelte';
+	import Karma from '#lib/components/Karma.svelte';
 	import RoutePopularity from '#lib/components/RoutePopularity.svelte';
 	import RockTypePanel from '#lib/components/RockTypePanel.svelte';
 	import StarsScatter from '#lib/components/StarsScatter.svelte';
@@ -47,6 +48,9 @@
 					return { ...i, enabled: false };
 				}
 				if (i.id === 'routePopularity' && s.routePopularity == null) {
+					return { ...i, enabled: false };
+				}
+				if (i.id === 'karma' && s.karma.ascentPoints === 0 && s.karma.routesLogged === 0) {
 					return { ...i, enabled: false };
 				}
 				if (i.id === 'bestMonths' && s.bestMonths.cragCount === 0) {
@@ -97,7 +101,11 @@
 	{:else if id === 'eddington'}
 		<Eddington data={s.eddington} />
 	{:else if id === 'firstAscents'}
-		<FirstAscents data={s.firstAscents} canEdit={data.showSettings} />
+		<FirstAscents
+			data={s.firstAscents}
+			canEdit={data.showSettings}
+			dateDisplay={data.dateDisplay}
+		/>
 	{:else if id === 'solo'}
 		<SoloClimbing data={s.solo} />
 	{:else if id === 'athleteProfile'}
@@ -183,6 +191,8 @@
 		<QualityBreakdown ratings={s.qualityBreakdown} />
 	{:else if id === 'routePopularity' && s.routePopularity}
 		<RoutePopularity data={s.routePopularity} dateDisplay={data.dateDisplay} />
+	{:else if id === 'karma'}
+		<Karma data={s.karma} dateDisplay={data.dateDisplay} />
 	{:else if id === 'pyramids'}
 		<header class="section-head">
 			<h2>Grade pyramids</h2>
@@ -221,7 +231,7 @@
 		<article class="panel">
 			<h2>Hardest sends</h2>
 			<ul class="list">
-				{#each s.hardestSends as climb, i (climb.discipline + climb.routeName + (climb.ascentDate ?? ''))}
+				{#each s.hardestSends as climb, i (climb.id)}
 					{#if mixed && climb.discipline !== s.hardestSends[i - 1]?.discipline}
 						<li class="group-label">{climb.discipline === 'boulder' ? 'Boulders' : 'Routes'}</li>
 					{/if}

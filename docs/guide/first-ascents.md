@@ -6,7 +6,7 @@ The **First ascents** card counts the routes and boulders where you did the firs
 
 - **Owner login** — If `APP_PASSWORD` is set, sign in so you can open Settings and use **Mark FA** / **FFA** in the logbook. Visitors see the card and badges once at least one route is marked, but cannot add marks themselves.
 - **Optional route-history import** — Set `ROUTE_HISTORY_IMPORT=true` on the server if you want Crag Stats to auto-mark FAs and FFAs from public theCrag route history (see below). Manual marks and import both write to the same `first_ascents` table; neither depends on private notes.
-- **Private notes are unrelated** — `SHOW_PRIVATE_NOTES` and **Settings → Show private notes** only control whether your **ascent comments** appear on `/logbook` (and in search). They do not gate the First ascents card, FA/FFA badges, milestones, or route-history import.
+- **Private notes are unrelated** — **Settings → Show private notes** only controls whether your **ascent comments** appear on `/logbook` (and in search). It does not gate the First ascents card, FA/FFA badges, milestones, or route-history import.
 
 ## Marking a first ascent
 
@@ -41,13 +41,16 @@ Only public route history is saved, never your private ascent notes. **Settings 
 
 - **Count:** how many routes you've marked. When you have FFAs, it also shows the FA / FFA split.
 - **Routes set:** distinct routes whose cached history lists you as route setter (`@yourlogin`). Same `@login` rule as FA import; free-text names don't count. Needs route-history import (`ROUTE_HISTORY_IMPORT=true`) so those rows are saved locally.
-- **Routes set:** distinct routes whose cached history lists you as route setter (`@yourlogin`). Same `@login` rule as FA import; free-text names don't count. Needs route-history import (`ROUTE_HISTORY_IMPORT=true`) so those rows are saved locally.
+- **Community ascents (estimate):** cached ticks on routes you put up (FA/FFA marks **or** setter credits), minus your own logbook ticks recorded at the same fetch. A second tile splits out **sport / bolted** routes (Sport gear style, or any route with bolts recorded). Later owner repeats or deletions do not change the old snapshot. These are estimates of ascent totals, not unique climbers or live counters; visibility differences and an incomplete owner logbook can affect them.
+- **Community coverage:** the card shows how many credited logbook routes have paired count snapshots, out of all eligible routes. Known zero totals are displayed as zero; unavailable counts are excluded rather than treated as zero. Partial coverage is labelled explicitly. An entirely missing cache shows an unavailable message.
 - **Years:** from the year of your first FA to your latest. Each FA is dated by your **first logged send** of the route (see below).
 - **Grade range:** your easiest and hardest FA, using the route's grade (not a single pitch). Routes and boulders are listed separately, because Ewbank and V-grades can't be compared. Grades show in your display grade system.
 - **Styles:** how your FAs split across sport, trad, boulder and so on, using the route's style on theCrag.
 - **Latest:** your five most recent FAs.
 
 The card only appears for visitors once at least one FA is marked. Until then, the owner sees a short how-to instead.
+
+Route-history import must be enabled (`ROUTE_HISTORY_IMPORT=true`) to fill count snapshots. Older cached totals do not contain the historical owner count and are unavailable until refreshed. Use **Settings → Import route history → Refresh all routes** to queue a refresh; the existing 20-route run limit, pacing and back-off still apply. Ordinary syncs do not automatically refresh fetch-once route totals.
 
 ## When an FA counts, and its date
 
