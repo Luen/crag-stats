@@ -42,7 +42,7 @@ import { ascents, profiles, routeHistoryFetches, routes } from './db/schema';
 import { pickHardestSends } from './hardestSends';
 import { invalidateRouteHistoryRuns } from './routeHistoryEngine';
 import { repairGradesFromRawJson } from './repairGrades';
-import { buildTrainingLoadView } from './trainingLoad';
+import { buildTrainingLoadView, hasPersonalAscentGrade } from './trainingLoad';
 
 export type PyramidMode = 'all' | 'sends' | 'onsight';
 const PYRAMID_MODES: PyramidMode[] = ['all', 'sends', 'onsight'];
@@ -330,6 +330,7 @@ export function getDashboardStats(
 			parentName: routes.parentName,
 			country: routes.country,
 			routeIsProject: routes.isProject,
+			gradeProvenanceJson: ascents.rawJson,
 			numberAttempts: ascents.numberAttempts,
 			cprDecayedGrade: ascents.cprDecayedGrade,
 			cprDecayedScore: ascents.cprDecayedScore,
@@ -673,7 +674,8 @@ export function getDashboardStats(
 		ascentUrl: a.ascentUrl,
 		tagsJson: a.tagsJson,
 		country: a.country,
-		routeIsProject: a.routeIsProject
+		routeIsProject: a.routeIsProject,
+		hasPersonalGrade: hasPersonalAscentGrade(a.gradeProvenanceJson)
 	}));
 	const monthly = buildMonthlyStats(extraRows);
 	const yearly = buildYearlyStats(extraRows);

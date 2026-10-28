@@ -33,11 +33,36 @@ function scoreOf(row: DashboardExtraRow): number | null {
  * Attempts that load like climbing at your 12-month max: ungraded lines, or routes theCrag
  * marks Project (#77). Your own grade on the tick always wins over the assumption.
  */
+/** Read personal-grade evidence without mistaking an effective route fallback for an override. */
+export function hasPersonalAscentGrade(rawJson: string | null | undefined): boolean {
+	if (!rawJson) return false;
+	try {
+		const raw = JSON.parse(rawJson);
+		if (!raw || typeof raw !== 'object') return false;
+		const grade = raw.route ? raw.grade : raw['Ascent Grade'];
+		if (typeof grade === 'string' && grade.trim()) return true;
+		return (
+			Array.isArray(raw.pitch) &&
+			raw.pitch.some(
+				(pitch: {
+					grade?: unknown;
+					gradeAtom?: { grade?: unknown };
+					tick?: { name?: string; label?: string };
+				}) =>
+					Boolean(pitch.tick?.name || pitch.tick?.label) &&
+					Boolean(pitch.grade || pitch.gradeAtom?.grade)
+			)
+		);
+	} catch {
+		return false;
+	}
+}
+
 export function isUngradedWork(row: DashboardExtraRow): boolean {
 	if (row.isSend) return false;
+	if (row.routeIsProject === 1) return !row.hasPersonalGrade;
 	const own = row.effectiveGradeScore;
 	if (own != null && Number.isFinite(own)) return false;
-	if (row.routeIsProject === 1) return true;
 	return scoreOf(row) == null;
 }
 

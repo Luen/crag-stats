@@ -58,3 +58,5 @@ These bands come from the acute:chronic workload ratio used in sports science an
 - **Only what you log counts.** Gym sessions, hangboarding and other training you don't log are invisible.
 - **Grades are noisy**, and a soft or sandbagged route skews intensity.
 - **The ratio needs history.** With fewer than a few weeks of logs, "fitness" is low and the ratio jumps around.
+
+For Project routes, a personal grade must come from the ascent or a climbed pitch (or the CSV Ascent Grade field). An effective grade copied from the route is only a fallback, so it does not disable the at-max Project assumption.
