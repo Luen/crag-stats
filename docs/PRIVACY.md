@@ -15,7 +15,7 @@ Crag Stats is designed for **personal self-hosting**. Your ascent history stays 
 Synced and imported ascents keep the note from each theCrag tick. theCrag doesn't mark notes as public or private, so Crag Stats treats them all as private:
 
 - **Hidden by default.** The logbook doesn't show them, and logbook search doesn't match them, so search can't be used to guess note contents. Dashboard cards, share/embed images and share previews never include them.
-- **Opt in** with **Settings → Show my private ascent notes**, or set `SHOW_PRIVATE_NOTES=true` in `.env` (the Settings toggle wins once saved).
+- **Opt in** with **Settings → Show my private ascent notes**.
 - **Even when on, only the owner sees them:** whoever can open Settings. With `APP_PASSWORD` set, that means logged in. Without a password, anyone who can reach the site can open Settings, so only turn notes on for offline or home-network installs.
 - The CSV export in Settings always includes notes, since it's your backup.
 
