@@ -23,6 +23,10 @@ ENV HOST=0.0.0.0
 ENV PORT=3000
 ENV DATABASE_PATH=/data/crag-stats.sqlite
 ENV MIGRATIONS_DIR=/app/migrations
+# Opt-in route-history import only (ROUTE_HISTORY_IMPORT=true): impers downloads its pinned
+# libcurl-impersonate once, on first use, into the persistent volume. Off: nothing is loaded.
+ENV IMPER_CACHE_DIR=/data/.cache/impers
+ENV IMPERSONATE_CONFIG_DIR=/data/.cache/impersonate
 
 RUN apt-get update \
   && apt-get install -y --no-install-recommends ca-certificates \

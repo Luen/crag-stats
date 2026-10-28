@@ -2,9 +2,8 @@
  * Pure dashboard aggregations for Phase 2–3 widgets.
  * Accept typed row arrays — no SQLite / better-sqlite3 imports.
  */
-import { formatVScaleLabel } from '#lib/grades';
+import { formatVScaleLabel, usesVScale } from '#lib/grades';
 import { tickKind } from '#lib/ticks';
-import { normalizeClimbStyle } from './cpr';
 
 /** Minimal row shape shared by extras builders. */
 export type DashboardExtraRow = {
@@ -20,6 +19,8 @@ export type DashboardExtraRow = {
 	quality?: string | null;
 	stars?: number | null;
 	gradeScore?: number | null;
+	/** Route grade system (ewbank, v_scale, …): decides whether scores are V-scale (#72) */
+	gradeSystem?: string | null;
 	effectiveGradeScore?: number | null;
 	gradeBand?: number | null;
 	routeName?: string | null;
@@ -148,8 +149,9 @@ function scoreOf(row: DashboardExtraRow): number | null {
 	return s != null && Number.isFinite(s) ? s : null;
 }
 
-function isBoulder(gearStyle: string | null | undefined): boolean {
-	return (gearStyle || '').toLowerCase().includes('boulder');
+/** V-scale score (boulders, V-graded DWS/highballs), from the grade system first (#72). */
+function isVScaleRow(row: DashboardExtraRow): boolean {
+	return usesVScale(row.gradeSystem, row.gearStyle);
 }
 
 function linkOf(row: DashboardExtraRow): string | null {
@@ -283,7 +285,7 @@ export function buildMilestones(rows: DashboardExtraRow[]): { items: MilestoneIt
 		const score = scoreOf(row);
 		if (score == null) continue;
 		const n = Math.round(score);
-		const boulder = isBoulder(row.gearStyle);
+		const boulder = isVScaleRow(row);
 		const key = `${boulder ? 'V' : 'E'}:${n}`;
 		if (seenInt.has(key)) continue;
 		// Only count as breakthrough if it's a new personal high for that system.
@@ -474,7 +476,7 @@ export function buildStarsScatter(rows: DashboardExtraRow[]): { points: StarsSca
 		points.push({
 			stars,
 			score,
-			kind: normalizeClimbStyle(row.gearStyle) === 'boulder' ? 'boulder' : 'route',
+			kind: isVScaleRow(row) ? 'boulder' : 'route',
 			routeName: (row.routeName || 'Unknown').trim() || 'Unknown',
 			url: linkOf(row)
 		});

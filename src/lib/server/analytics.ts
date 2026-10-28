@@ -8,14 +8,15 @@ import {
 	convertFromVScale,
 	formatVScaleLabel,
 	GRADE_BANDS,
-	type GradeSystem
+	type GradeSystem,
+	usesVScale
 } from '#lib/grades';
 import type { DashboardStats, NotableRow, StylePyramid } from '#lib/types/dashboard';
 import { rockTypeBlurb, rockTypeInfo } from '#lib/rockTypes';
 import { resolveTheCragAvatar } from '#lib/thecragAvatar';
 import { theCragAscentUrl } from '#lib/thecragUrls';
 import { styleBadgeColor, tickKind } from '#lib/ticks';
-import { buildCprTimeline, normalizeClimbStyle } from './cpr';
+import { buildCprTimeline } from './cpr';
 import { buildBadges } from './badges';
 import {
 	buildMilestones,
@@ -37,8 +38,9 @@ import {
 	getFirstAscentMarks,
 	type FirstAscentRow
 } from './firstAscents';
-import { ascents, profiles, routes } from './db/schema';
+import { ascents, profiles, routeHistoryFetches, routes } from './db/schema';
 import { pickHardestSends } from './hardestSends';
+import { invalidateRouteHistoryRuns } from './routeHistoryEngine';
 import { repairGradesFromRawJson } from './repairGrades';
 import { buildTrainingLoadView } from './trainingLoad';
 
@@ -152,6 +154,14 @@ function formatGrade(
 	}
 	const routeSystem: GradeSystem = system === 'v_scale' || system === 'font' ? 'ewbank' : system;
 	return convertFromEwbank(score, routeSystem);
+}
+
+/** Pyramid key suffix for V-graded routes that aren't boulders (DWS, highball), #72. */
+const V_SUFFIX = ' · V';
+
+/** Score is V-scale, from the route's stored grade system (gear style only as fallback). */
+function vScale(row: { gradeSystem?: string | null; gearStyle: string | null }): boolean {
+	return usesVScale(row.gradeSystem, row.gearStyle);
 }
 
 function effectiveScore(row: {
@@ -309,6 +319,7 @@ export function getDashboardStats(
 			gradeRaw: routes.gradeRaw,
 			gradeScore: routes.gradeScore,
 			gradeBand: routes.gradeBand,
+			gradeSystem: routes.gradeSystem,
 			gearStyle: routes.gearStyle,
 			cragName: routes.cragName,
 			cragUrl: routes.cragUrl,
@@ -417,7 +428,7 @@ export function getDashboardStats(
 			monthMap.set(month, m);
 		}
 
-		const isBoulder = normalizeClimbStyle(row.gearStyle) === 'boulder';
+		const isBoulder = vScale(row);
 		// Boulder bands always from V-score (theCrag table). Stored bands can be
 		// Ewbank-derived and paint V0 green.
 		const band =
@@ -436,7 +447,9 @@ export function getDashboardStats(
 						: row.isSend || row.isAttempt;
 			if (!includeInPyramid || rowScore == null) continue;
 			const pyramid = pyramids[mode];
-			const styleKey = style === 'Top rope' ? 'Top rope' : style;
+			const baseKey = style === 'Top rope' ? 'Top rope' : style;
+			// A V-graded DWS/highball gets its own pyramid ("DWS · V"), never mixed with Ewbank (#72).
+			const styleKey = isBoulder && baseKey !== 'Boulder' ? `${baseKey}${V_SUFFIX}` : baseKey;
 			if (!pyramid.has(styleKey)) pyramid.set(styleKey, new Map());
 			const byGrade = pyramid.get(styleKey)!;
 			// Boulder: keep VB+ out of V0; merge V0-/V0/V0+. Routes: integer score.
@@ -510,7 +523,8 @@ export function getDashboardStats(
 				return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
 			})
 			.map(([style, grades]) => {
-				const isBoulder = style === 'Boulder';
+				const isBoulder = style === 'Boulder' || style.endsWith(V_SUFFIX);
+				const baseStyle = style.endsWith(V_SUFFIX) ? style.slice(0, -V_SUFFIX.length) : style;
 				const system: GradeSystem = isBoulder
 					? preferredSystem === 'font'
 						? 'font'
@@ -525,7 +539,7 @@ export function getDashboardStats(
 						const bandId = isBoulder ? (bandFromVScale(score)?.id ?? v.band) : v.band;
 						const band = bandById(bandId ?? 0);
 						const params = new URLSearchParams({
-							style,
+							style: baseStyle,
 							score: String(score)
 						});
 						return {
@@ -562,7 +576,7 @@ export function getDashboardStats(
 		const rows = [...map.entries()].map(([key, agg]) => {
 			const [group, tickType] = key.split('||');
 			const hardest = agg.hardest;
-			const isBoulder = normalizeClimbStyle(hardest?.gearStyle) === 'boulder';
+			const isBoulder = hardest ? vScale(hardest) : false;
 			const hScore = hardest ? effectiveScore(hardest) : null;
 			const hRaw = hardest ? effectiveRaw(hardest) : null;
 			return {
@@ -650,6 +664,7 @@ export function getDashboardStats(
 		quality: a.quality,
 		stars: a.stars,
 		gradeScore: a.gradeScore,
+		gradeSystem: a.gradeSystem,
 		effectiveGradeScore: a.effectiveGradeScore,
 		gradeBand: a.gradeBand ?? a.effectiveGradeBand,
 		routeName: displayRouteName(a.routeName, a.pitchLabel, a.ascentLabel),
@@ -674,7 +689,7 @@ export function getDashboardStats(
 	const hardestSends = pickHardestSends(
 		all.filter((r) => r.isSend),
 		effectiveScore,
-		(r) => (normalizeClimbStyle(r.gearStyle) === 'boulder' ? 'boulder' : 'route')
+		(r) => (vScale(r) ? 'boulder' : 'route')
 	).map(({ row: r, discipline }) => {
 		const isBoulder = discipline === 'boulder';
 		const score = effectiveScore(r);
@@ -702,7 +717,7 @@ export function getDashboardStats(
 		.sort((a, b) => (b.ascentDate || '').localeCompare(a.ascentDate || ''))
 		.slice(0, 20)
 		.map((r) => {
-			const isBoulder = normalizeClimbStyle(r.gearStyle) === 'boulder';
+			const isBoulder = vScale(r);
 			const score = effectiveScore(r);
 			const raw = effectiveRaw(r);
 			return {
@@ -821,7 +836,7 @@ export function getDashboardStats(
 					if (day && (!prev.date || day < prev.date)) prev.date = day;
 					continue;
 				}
-				const isBoulder = normalizeClimbStyle(r.gearStyle) === 'boulder';
+				const isBoulder = vScale(r);
 				const score = r.gradeScore;
 				byRoute.set(r.routeId, {
 					routeId: r.routeId,
@@ -874,7 +889,7 @@ export function getDashboardStats(
 				isSend: Boolean(r.isSend),
 				heightM: r.heightM ?? r.routeHeightM ?? 0,
 				score: effectiveScore(r),
-				isBoulder: normalizeClimbStyle(r.gearStyle) === 'boulder'
+				isBoulder: vScale(r)
 			}))
 		),
 		streaks: buildStreaks(dayMap),
@@ -905,6 +920,25 @@ export function getDashboardStats(
 	};
 }
 
+const ISO_DAY = /^\d{4}-\d{2}-\d{2}$/;
+
+export type LogbookFaFilter = 'FA' | 'FFA' | 'any' | 'none';
+
+function parseLogbookFa(v: string | undefined): LogbookFaFilter | undefined {
+	if (v === 'FA' || v === 'FFA' || v === 'any' || v === 'none') return v;
+	return undefined;
+}
+
+/** provider:routeExternalId keys already answered by route-history import. */
+function getFetchedRouteKeys(): Set<string> {
+	ensureSchema();
+	const out = new Set<string>();
+	for (const r of db.select().from(routeHistoryFetches).all()) {
+		out.add(`${r.provider}:${r.routeExternalId}`);
+	}
+	return out;
+}
+
 export function listLogbook(filters?: {
 	q?: string;
 	style?: string;
@@ -914,6 +948,10 @@ export function listLogbook(filters?: {
 	year?: number;
 	/** Exact YYYY-MM-DD */
 	day?: string;
+	/** Inclusive YYYY-MM-DD lower bound on ascentDate */
+	from?: string;
+	/** Inclusive YYYY-MM-DD upper bound on ascentDate */
+	to?: string;
 	/** Exact effective/route grade score bucket (from pyramid links) */
 	score?: number;
 	/** Grade band id 1–5 */
@@ -922,6 +960,16 @@ export function listLogbook(filters?: {
 	multipitch?: boolean;
 	/** ytd | last_year | or leave empty */
 	season?: string;
+	/** FA | FFA | any | none — route-level first_ascents mark */
+	fa?: string;
+	/** pending — route has no route_history_fetches row */
+	history?: string;
+	/** Exact match on ascents.quality */
+	quality?: string;
+	/** routes.stars >= N (1–3) */
+	minStars?: number;
+	/** Substring on ascents.partners */
+	with?: string;
 	/** date | grade | quality | stars */
 	sort?: string;
 	/** asc | desc */
@@ -934,6 +982,11 @@ export function listLogbook(filters?: {
 	ensureSchema();
 	const limit = filters?.limit ?? 100;
 	const offset = filters?.offset ?? 0;
+	const faFilter = parseLogbookFa(filters?.fa);
+	const historyPending = filters?.history === 'pending';
+	// Marks load before filter/page so fa=* can filter and rows still show the chip.
+	const faMarks = getFirstAscentMarks();
+	const fetchedKeys = historyPending ? getFetchedRouteKeys() : null;
 
 	let rows = db
 		.select({
@@ -1005,9 +1058,26 @@ export function listLogbook(filters?: {
 		const y = String(filters.year);
 		rows = rows.filter((r) => (r.ascentDate || '').startsWith(y));
 	}
-	if (filters?.day && /^\d{4}-\d{2}-\d{2}$/.test(filters.day)) {
+	if (filters?.day && ISO_DAY.test(filters.day)) {
 		const day = filters.day;
 		rows = rows.filter((r) => (r.ascentDate || '').startsWith(day));
+	}
+	if (filters?.from && ISO_DAY.test(filters.from)) {
+		const from = filters.from;
+		// Undated rows have no evidence they fall after `from` — exclude them.
+		rows = rows.filter((r) => {
+			const d = (r.ascentDate || '').slice(0, 10);
+			return ISO_DAY.test(d) && d >= from;
+		});
+	}
+	if (filters?.to && ISO_DAY.test(filters.to)) {
+		const to = filters.to;
+		// Undated rows have no evidence they fall on/before `to` — exclude them
+		// (empty string would otherwise compare as <= any bound).
+		rows = rows.filter((r) => {
+			const d = (r.ascentDate || '').slice(0, 10);
+			return ISO_DAY.test(d) && d <= to;
+		});
 	}
 	if (filters?.score != null && Number.isFinite(filters.score)) {
 		const target = Math.round(filters.score);
@@ -1031,6 +1101,29 @@ export function listLogbook(filters?: {
 	} else if (filters?.season === 'last_year') {
 		const y = new Date().getUTCFullYear() - 1;
 		rows = rows.filter((r) => (r.ascentDate || '').startsWith(String(y)));
+	}
+	if (filters?.quality) {
+		const q = filters.quality;
+		rows = rows.filter((r) => (r.quality || '') === q);
+	}
+	if (filters?.minStars != null && Number.isFinite(filters.minStars) && filters.minStars >= 1) {
+		const min = filters.minStars;
+		rows = rows.filter((r) => r.stars != null && r.stars >= min);
+	}
+	if (filters?.with) {
+		const w = filters.with.toLowerCase();
+		rows = rows.filter((r) => (r.partners || '').toLowerCase().includes(w));
+	}
+	if (faFilter) {
+		rows = rows.filter((r) => {
+			const kind = firstAscentKindFor(faMarks, r.routeProvider, r.routeExternalId);
+			if (faFilter === 'none') return kind == null;
+			if (faFilter === 'any') return kind != null;
+			return kind === faFilter;
+		});
+	}
+	if (fetchedKeys) {
+		rows = rows.filter((r) => !fetchedKeys.has(`${r.routeProvider}:${r.routeExternalId}`));
 	}
 	if (filters?.q) {
 		const q = filters.q.toLowerCase();
@@ -1073,7 +1166,6 @@ export function listLogbook(filters?: {
 	});
 
 	const total = rows.length;
-	const faMarks = getFirstAscentMarks();
 	return {
 		total,
 		rows: rows.slice(offset, offset + limit).map((r) => ({
@@ -1090,9 +1182,15 @@ export function listLogbook(filters?: {
 
 export function wipeAllData() {
 	ensureSchema();
+	// Abandon any in-flight route-history import before clearing tables (#74).
+	invalidateRouteHistoryRuns();
 	db.run(sql`DELETE FROM projects`);
 	db.run(sql`DELETE FROM goals`);
 	db.run(sql`DELETE FROM first_ascents`);
+	db.run(sql`DELETE FROM first_ascent_import_skips`);
+	db.run(sql`DELETE FROM route_history`);
+	db.run(sql`DELETE FROM route_history_fetches`);
+	db.run(sql`DELETE FROM route_history_import_state`);
 	db.run(sql`DELETE FROM ascents`);
 	db.run(sql`DELETE FROM routes`);
 	db.run(sql`DELETE FROM profiles`);

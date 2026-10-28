@@ -4,7 +4,9 @@ The **First ascents** card counts the routes and boulders where you did the firs
 
 ## Marking a first ascent
 
-theCrag records first ascents in each route's **history** (the FA / FFA entries on the route page), not as a tick type. Its logbook API doesn't return route history, so Crag Stats can't detect them on its own. You mark them yourself:
+theCrag records first ascents in each route's **history** (the FA / FFA entries on the route page), not as a tick type. Its logbook API doesn't return route history, so a normal sync can't see them. You can mark them yourself, or turn on the optional import below.
+
+### Mark one yourself
 
 1. Open the **Logbook** and find any ascent of the route.
 2. Hover the row (or tab to it) and press **Mark FA** or **FFA**.
@@ -13,6 +15,21 @@ theCrag records first ascents in each route's **history** (the FA / FFA entries 
 Only someone who can open Settings can mark FAs: anyone if no `APP_PASSWORD` is set, otherwise only when logged in. Visitors see the FA badge and the card, but not the buttons.
 
 The mark is stored against theCrag's route ID, so it survives re-syncs. It disappears from the card if every ascent of the route is deleted on theCrag, and it comes back if you log the route again. **Settings → Wipe** removes all marks.
+
+### Filter the logbook
+
+On **Logbook**, use the **First ascent mark** control to show only your FAs, FFAs, either, or climbs with no mark yet (`?fa=FA|FFA|any|none`). If route-history import is enabled, **History not checked yet** (`?history=pending`) lists climbs the importer has not fetched.
+
+### Import them from route history (optional, off by default)
+
+If your server owner turns it on (`ROUTE_HISTORY_IMPORT=true`), Crag Stats reads each logbook route's public history from theCrag in the background and marks the FAs and FFAs that name you.
+
+- **Only entries naming your theCrag username** (`@yourlogin`) count. Plain-text names are ignored because they're too easy to mix up.
+- **Your choices win.** Marks you set stay as they are, and routes you unmarked stay unmarked. **Settings → Route history → Re-apply** can override either, using history already saved, without asking theCrag again.
+- **Gentle on theCrag.** Each route is checked **once** (first ascents don't change), at most **20 routes per run** and one request a second. A run happens after each logbook sync, or when you press **Check next 20 routes now**. If theCrag pushes back, the import pauses for at least a day.
+- Settings shows how many of your routes have been checked so far. With the daily sync, a few hundred routes take a few weeks; pressing the button speeds that up.
+
+Only public route history is saved, never your private ascent notes. **Settings → Wipe** removes it along with your marks.
 
 ## What the card shows
 

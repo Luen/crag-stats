@@ -5,6 +5,8 @@
 
 	let { data, form }: PageProps = $props();
 
+	const rh = $derived(data.routeHistory);
+
 	const systems = [
 		{ id: 'ewbank', label: 'Ewbanks (AU/NZ)' },
 		{ id: 'french', label: 'French' },
@@ -25,6 +27,8 @@
 	<p class="banner ok">Dashboard layout saved. <a href="/">View dashboard</a></p>
 {:else if form?.saved}
 	<p class="banner ok">Preferences saved.</p>
+{:else if form?.routeHistoryMessage}
+	<p class="banner ok">{form.routeHistoryMessage}</p>
 {:else if form?.ok}
 	<p class="banner ok">Done.</p>
 {/if}
@@ -154,6 +158,91 @@
 		</form>
 		{#if form?.imported != null}
 			<p class="ok">Parsed {form.imported} ascents.</p>
+		{/if}
+	</article>
+
+	<article class="panel">
+		<h2>Import route history</h2>
+		<p class="hint">
+			Reads the public FA / FFA history of routes in your logbook from theCrag and marks the ones
+			that name your <code>@login</code>. Each route is checked once (history doesn't change), 20
+			routes per run, at most one request a second, after each logbook sync.
+			<a href="/docs/first-ascents">How first ascents work</a>
+		</p>
+		{#if !rh.enabled}
+			<p class="hint">
+				Off. To turn it on, set <code>ROUTE_HISTORY_IMPORT=true</code> in <code>.env</code> and
+				restart. theCrag blocks plain server requests to its route API, so this uses browser
+				impersonation (<code>impers</code>). It's at your own risk under theCrag's terms; manual FA
+				marks always work.
+			</p>
+		{:else if !rh.hasApiKey}
+			<p class="hint">Needs <code>THECRAG_API_KEY</code> (the same key as API sync).</p>
+		{:else}
+			<p class="status">
+				<span
+					class={[
+						'pill',
+						{
+							ok: rh.status === 'idle' || rh.status === 'running',
+							err: rh.status === 'error' || rh.status === 'blocked'
+						}
+					]}>{rh.status}</span
+				>
+				<span>
+					{rh.fetchedRoutes} of {rh.totalRoutes} routes checked · {rh.importedMarks} FA/FFA imported
+					{#if rh.lastRunAt}
+						· last run {formatDateTime(rh.lastRunAt, data.dateDisplay)} ({rh.lastFetched} checked)
+					{/if}
+				</span>
+			</p>
+			{#if rh.nextAllowedAt && (rh.status === 'blocked' || rh.status === 'error')}
+				<p class="err">
+					{rh.lastError} Paused until {formatDateTime(rh.nextAllowedAt, data.dateDisplay)}.
+				</p>
+			{/if}
+			<div class="actions">
+				<form method="POST" action="?/fetchRouteHistory">
+					<button type="submit" disabled={rh.running || rh.pendingRoutes === 0}>
+						{rh.pendingRoutes === 0 ? 'All routes checked' : `Check next ${rh.perRun} routes now`}
+					</button>
+				</form>
+			</div>
+			<details>
+				<summary>Re-apply or refresh</summary>
+				<form method="POST" action="?/reapplyRouteHistory" class="stack">
+					<p class="hint">
+						Re-applies marks from history already saved here. No requests to theCrag.
+					</p>
+					<label class="check">
+						<input type="checkbox" name="replaceExisting" />
+						<span>
+							<strong>Replace existing FA / FFA marks</strong>
+							<small class="hint">Off by default: marks you set stay as they are.</small>
+						</span>
+					</label>
+					<label class="check">
+						<input type="checkbox" name="reapplyUnmarked" />
+						<span>
+							<strong>Re-apply routes I unmarked</strong>
+							<small class="hint">Off by default: routes you unmarked stay unmarked.</small>
+						</span>
+					</label>
+					<button type="submit" class="secondary">Re-apply from saved history</button>
+				</form>
+				<form method="POST" action="?/refreshRouteHistory" class="stack">
+					<p class="hint">
+						Check every route again, still 20 per run. Only useful if theCrag's history was
+						corrected. After re-fetching, use <strong>Re-apply from saved history</strong> (tick
+						<strong>Replace existing</strong> if you want corrected history to overwrite current marks).
+					</p>
+					<label class="field">
+						<span>Type <code>REFRESH</code> to confirm</span>
+						<input name="confirm" autocomplete="off" />
+					</label>
+					<button type="submit" class="secondary">Refresh all routes</button>
+				</form>
+			</details>
 		{/if}
 	</article>
 

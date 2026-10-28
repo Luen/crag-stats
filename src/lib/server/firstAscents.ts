@@ -7,9 +7,10 @@ import { and, eq } from 'drizzle-orm';
 import { STYLE_COLORS } from '#lib/ticks';
 import type { FirstAscentStats } from '#lib/types/dashboard';
 import { db, ensureSchema } from './db';
-import { firstAscents, routes } from './db/schema';
+import { firstAscentImportSkips, firstAscents, routes } from './db/schema';
 
 export type FirstAscentKind = 'FA' | 'FFA';
+export type FirstAscentSource = 'manual' | 'import';
 
 export function parseFirstAscentKind(v: unknown): FirstAscentKind | null {
 	return v === 'FA' || v === 'FFA' ? v : null;
@@ -48,11 +49,52 @@ export function routeExists(provider: string, routeExternalId: string): boolean 
 	);
 }
 
-/** Mark (kind) or unmark (null) a route as the owner's first ascent. */
+function addImportSkip(provider: string, routeExternalId: string) {
+	const createdAt = new Date().toISOString();
+	db.insert(firstAscentImportSkips)
+		.values({ provider, routeExternalId, createdAt })
+		.onConflictDoNothing()
+		.run();
+}
+
+function clearImportSkip(provider: string, routeExternalId: string) {
+	db.delete(firstAscentImportSkips)
+		.where(
+			and(
+				eq(firstAscentImportSkips.provider, provider),
+				eq(firstAscentImportSkips.routeExternalId, routeExternalId)
+			)
+		)
+		.run();
+}
+
+export function isFirstAscentImportSkipped(provider: string, routeExternalId: string): boolean {
+	ensureSchema();
+	return Boolean(
+		db
+			.select({ provider: firstAscentImportSkips.provider })
+			.from(firstAscentImportSkips)
+			.where(
+				and(
+					eq(firstAscentImportSkips.provider, provider),
+					eq(firstAscentImportSkips.routeExternalId, routeExternalId)
+				)
+			)
+			.get()
+	);
+}
+
+/**
+ * Mark (kind) or unmark (null) a route as the owner's first ascent.
+ * Unmark records an import skip by default so Settings → Import route history won't re-add it
+ * unless the owner ticks "re-apply previously unmarked". Pass `recordSkip: false` when clearing
+ * an imported mark because upstream history no longer credits the owner (not a manual unmark).
+ */
 export function setFirstAscent(
 	provider: string,
 	routeExternalId: string,
-	kind: FirstAscentKind | null
+	kind: FirstAscentKind | null,
+	opts?: { source?: FirstAscentSource; recordSkip?: boolean }
 ) {
 	ensureSchema();
 	const where = and(
@@ -61,13 +103,17 @@ export function setFirstAscent(
 	);
 	if (!kind) {
 		db.delete(firstAscents).where(where).run();
+		if (opts?.recordSkip !== false) addImportSkip(provider, routeExternalId);
 		return;
 	}
+	const source = opts?.source ?? 'manual';
+	const createdAt = new Date().toISOString();
+	clearImportSkip(provider, routeExternalId);
 	db.insert(firstAscents)
-		.values({ provider, routeExternalId, kind, createdAt: new Date().toISOString() })
+		.values({ provider, routeExternalId, kind, createdAt, source })
 		.onConflictDoUpdate({
 			target: [firstAscents.provider, firstAscents.routeExternalId],
-			set: { kind }
+			set: { kind, source }
 		})
 		.run();
 }
