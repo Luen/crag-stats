@@ -1,4 +1,5 @@
 import { defineConfig, devices } from '@playwright/test';
+import { randomBytes } from 'node:crypto';
 
 /**
  * E2E against the production build (`pnpm build` first). Three servers cover the auth modes:
@@ -6,7 +7,11 @@ import { defineConfig, devices } from '@playwright/test';
  * SQLite file under e2e/.tmp; the open server is seeded from samples/ by the `setup` project.
  */
 export const PORTS = { open: 4301, settings: 4302, all: 4303 } as const;
-export const TEST_PASSWORD = 'e2e-test-password';
+// Share one generated value with web servers and test workers, which reload this config.
+export const TEST_PASSWORD = (process.env.CRAG_STATS_E2E_PASSWORD ||=
+	randomBytes(24).toString('hex'));
+const sessionSecret = (process.env.CRAG_STATS_E2E_SESSION_SECRET ||=
+	randomBytes(32).toString('hex'));
 
 const server = (name: keyof typeof PORTS, env: Record<string, string>) => ({
 	// Same entry as Docker; plain HTTP like a LAN install (#47).
@@ -18,7 +23,7 @@ const server = (name: keyof typeof PORTS, env: Record<string, string>) => ({
 		PORT: String(PORTS[name]),
 		HOST: '127.0.0.1',
 		DATABASE_PATH: `e2e/.tmp/${name}.sqlite`,
-		SESSION_SECRET: 'e2e-session-secret',
+		SESSION_SECRET: sessionSecret,
 		THECRAG_API_KEY: '',
 		SYNC_CRON: '',
 		TZ: 'Australia/Brisbane',
