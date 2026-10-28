@@ -369,4 +369,6 @@ You'll often notice things outside the task at hand. **Don't silently fix them i
 
 | 2026-10 | #179: minimal glibc runtime removes mount/apt/shell utilities. CI builds and smoke-tests amd64 + arm64; local importer validation uses synthetic loopback data and GitHub TLS, never theCrag. Raw OS scan findings and source-based zlib triage remain in `docs/dev/DOCKER_SECURITY.md`. |
 
+| 2026-10 | #196: badges for Christmas Day (`12-25`), New Year (`12-31` or `01-01`, one badge), and 250 m summed height in one calendar day. Any logged ascent counts for holidays (attempts included). Keep existing `height_10km` / Ten K Vertical — no duplicate overall 10 km badge. |
+
 _Add a row when you change behaviour agents must know about._

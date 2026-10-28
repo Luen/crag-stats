@@ -230,6 +230,20 @@ export const BADGE_CATALOG: readonly BadgeDef[] = [
 		tone: 'green'
 	},
 	{
+		id: 'holiday_christmas',
+		title: 'Christmas Day',
+		hint: 'Climb on Christmas Day',
+		icon: 'calendar',
+		tone: 'warm'
+	},
+	{
+		id: 'holiday_new_year',
+		title: 'New Year',
+		hint: 'Climb on New Year’s Eve or Day',
+		icon: 'calendar',
+		tone: 'warm'
+	},
+	{
 		id: 'sessions_10',
 		title: 'Regular',
 		hint: 'Climb on 10 different days',
@@ -277,6 +291,13 @@ export const BADGE_CATALOG: readonly BadgeDef[] = [
 		hint: 'Climb a cumulative 20 km',
 		icon: 'mountain',
 		tone: 'purple'
+	},
+	{
+		id: 'day_height_250',
+		title: '250m Day',
+		hint: 'Climb 250 m in a single day',
+		icon: 'mountain',
+		tone: 'green'
 	},
 	{
 		id: 'country_1',
@@ -572,6 +593,7 @@ export function buildBadges(
 	let weekendSendCount = 0;
 	let cumHeight = 0;
 	const sessions = new Set<string>();
+	const dayHeights = new Map<string, number>();
 	const countries = new Set<string>();
 	let maxRoute = -Infinity;
 	let maxBoulder = -Infinity;
@@ -580,13 +602,17 @@ export function buildBadges(
 	for (const { row, day } of dated) {
 		ascentCount += 1;
 		sessions.add(day);
-		cumHeight += heightOf(row);
+		const climbHeight = heightOf(row);
+		cumHeight += climbHeight;
+		const dayHeight = (dayHeights.get(day) ?? 0) + climbHeight;
+		dayHeights.set(day, dayHeight);
 
 		const country = (row.country || '').trim();
 		if (country) countries.add(country.toLowerCase());
 
 		const kind = tickKind(row.tickType);
 		const send = Boolean(row.isSend);
+		const monthDay = day.slice(5); // MM-DD from calendar dayKey — no local TZ
 
 		if (ascentCount === 1) {
 			// Detail patched after the loop with total imported count.
@@ -602,6 +628,17 @@ export function buildBadges(
 			mark('first_session', hitAt(row, 'First session done'));
 		}
 
+		// Holiday badges: any logged ascent that calendar day (attempts count).
+		if (monthDay === '12-25') {
+			mark('holiday_christmas', hitAt(row, 'Climbed on Christmas Day'));
+		}
+		if (monthDay === '12-31' || monthDay === '01-01') {
+			mark(
+				'holiday_new_year',
+				hitAt(row, monthDay === '12-31' ? 'Climbed on New Year’s Eve' : 'Climbed on New Year’s Day')
+			);
+		}
+
 		for (const b of COUNT_BADGES) {
 			if (ascentCount === b.n) mark(b.id, hitAt(row, b.label(b.n)));
 		}
@@ -610,6 +647,9 @@ export function buildBadges(
 		}
 		for (const b of HEIGHT_BADGES) {
 			if (cumHeight >= b.m && !earned.has(b.id)) mark(b.id, hitAt(row, b.label));
+		}
+		if (dayHeight >= 250 && !earned.has('day_height_250')) {
+			mark('day_height_250', hitAt(row, '250 m in one day'));
 		}
 		for (const b of COUNTRY_BADGES) {
 			if (countries.size === b.n && country) {
