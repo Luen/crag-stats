@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { DOC_PAGES } from '../src/lib/docs';
 
 test.describe('app shell', () => {
 	test('sidebar collapses to the mini rail and persists across reloads', async ({ page }) => {
@@ -25,7 +26,7 @@ test.describe('app shell', () => {
 		await expect(toggle).toBeFocused();
 	});
 
-	test('theme cycles System → Light → Dark → System', async ({ page }) => {
+	test('theme cycles System ? Light ? Dark ? System', async ({ page }) => {
 		await page.goto('/');
 		const btn = page.getByRole('button', { name: /^Theme:/ });
 		await expect(btn).toHaveAccessibleName(/Theme: System/);
@@ -42,15 +43,8 @@ test.describe('app shell', () => {
 	test('docs: every page renders and the dashboard links into them', async ({ page }) => {
 		await page.goto('/docs');
 		const links = page.locator('.toc a');
-		await expect(links).toHaveCount(9);
-		for (const slug of [
-			'eddington',
-			'climber-type',
-			'grades',
-			'tick-types',
-			'cpr',
-			'training-load'
-		]) {
+		await expect(links).toHaveCount(DOC_PAGES.length + 1); // Overview + pages
+		for (const { slug } of DOC_PAGES) {
 			const r = await page.goto(`/docs/${slug}`);
 			expect(r?.status(), slug).toBe(200);
 			await expect(page.locator('.prose h1')).toBeVisible();
