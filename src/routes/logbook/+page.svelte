@@ -105,13 +105,13 @@
 			name="from"
 			value={data.from}
 			placeholder="From (YYYY-MM-DD)"
-			title="Overrides year/season when set"
+			aria-label="From date (overrides year/season when set)"
 		/>
 		<input
 			name="to"
 			value={data.to}
 			placeholder="To (YYYY-MM-DD)"
-			title="Overrides year/season when set"
+			aria-label="To date (overrides year/season when set)"
 		/>
 		<select name="season" aria-label="Season" value={data.season}>
 			<option value="">Any season</option>
