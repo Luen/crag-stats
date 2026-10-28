@@ -7,6 +7,7 @@ import { env, envFlag } from './env';
 import { openRouteHistoryClient } from './providers/thecrag/routeHistoryApi';
 import {
 	applyCachedHistoryMarks,
+	parseRouteDataRefreshDays,
 	resetRouteHistoryFetches,
 	routeHistoryStatus,
 	runRouteHistoryImportOnce,
@@ -20,7 +21,8 @@ import {
 function config(): RouteHistoryConfig {
 	return {
 		enabled: envFlag('ROUTE_HISTORY_IMPORT'),
-		apiKey: env('THECRAG_API_KEY').trim()
+		apiKey: env('THECRAG_API_KEY').trim(),
+		refreshDays: parseRouteDataRefreshDays(env('ROUTE_DATA_REFRESH_DAYS'))
 	};
 }
 

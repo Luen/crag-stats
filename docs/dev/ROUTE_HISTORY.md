@@ -6,6 +6,8 @@ User-facing explanation: [`docs/guide/first-ascents.md`](../guide/first-ascents.
 
 `ROUTE_HISTORY_IMPORT=true` in `.env` (default **off**). When it's off, nothing below runs, `impers` is never imported, and its native library is never downloaded.
 
+Set `ROUTE_DATA_REFRESH_DAYS=90` for rolling quarterly refreshes, or `30` for monthly refreshes (fixed days, not calendar months). Unset, `0`, or an unsupported value keeps the default fetch-once behavior. This still requires `ROUTE_HISTORY_IMPORT=true` and an API key. No separate timer runs: successful logbook syncs and manual runs process eligible routes within the same 100-route budget, so a large backlog may take several syncs to refresh.
+
 ## Why it needs `impers`
 
 theCrag's logbook API (`/api/logbook/ascents`) works with plain `fetch` and doesn't include route history. `/api/route/ids?show=info,ancestors` does include it (plus route-level fields used by #77–#82), but Cloudflare blocks non-browser clients there (a 403 "Sorry, you have been blocked" page, even with a valid key). [`impers`](https://github.com/lexiforest/impers) presents a browser-like TLS/HTTP2 fingerprint, so those requests get through.
@@ -16,22 +18,22 @@ That works around theCrag's bot protection. theCrag says broader API access is n
 
 ## Pacing and caching (`src/lib/server/routeHistoryEngine.ts`)
 
-| Rule                                            | Constant / table                                                                          |
-| ----------------------------------------------- | ----------------------------------------------------------------------------------------- |
-| Each route checked once, ever                   | `route_history_fetches` (`ok` or `missing`)                                               |
-| At most 100 routes per run                      | `ROUTES_PER_RUN`, sent as 10 requests of 10 (`BATCH_SIZE`)                                |
-| ≥ 1.1 s between any two requests, across runs   | `MIN_REQUEST_GAP_MS` (in-process `lastRequestAt`)                                         |
-| ≥ 1 minute between runs                         | `MIN_RUN_INTERVAL_MS`                                                                     |
-| One `impers` session per run                    | `openRouteHistoryClient()`, closed in `finally`                                           |
-| Stop at the first error, no retries             | the run ends; nothing is retried in a loop                                                |
-| Block: any 403, 429, 503, or HTML/CF error body | `RouteHistoryBlockedError`: back off 24 h, doubling to 7 days, and at least `Retry-After` |
-| Other errors / `impers` unavailable             | back off 1 h (unavailable: flat 24 h), doubling to 24 h                                   |
+| Rule                                              | Constant / table                                                                          |
+| ------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| Fetch once by default; optional 30/90-day refresh | `route_history_fetches` (`ok` or `missing`)                                               |
+| At most 100 routes per run                        | `ROUTES_PER_RUN`, sent as 10 requests of 10 (`BATCH_SIZE`)                                |
+| ≥ 1.1 s between any two requests, across runs     | `MIN_REQUEST_GAP_MS` (in-process `lastRequestAt`)                                         |
+| ≥ 1 minute between runs                           | `MIN_RUN_INTERVAL_MS`                                                                     |
+| One `impers` session per run                      | `openRouteHistoryClient()`, closed in `finally`                                           |
+| Stop at the first error, no retries               | the run ends; nothing is retried in a loop                                                |
+| Block: any 403, 429, 503, or HTML/CF error body   | `RouteHistoryBlockedError`: back off 24 h, doubling to 7 days, and at least `Retry-After` |
+| Other errors / `impers` unavailable               | back off 1 h (unavailable: flat 24 h), doubling to 24 h                                   |
 
 Pacing (`running`, `lastRequestAt`) is **process-local**. The usual Docker deploy is one `app` container; don't run multiple Node processes against the same DB without a DB-backed lease.
 
 - **When runs happen:** `triggerRouteHistoryImport()` runs in the background after each successful `runTheCragSync()` (daily cron, the worker, or Settings → Sync). Settings → _Check next 100 routes now_ **awaits** `runRouteHistoryImport()` and shows the real outcome (`ran` / `waiting` / `busy` / `done` / error), so it won't claim a check started when the engine refused.
-- **Order:** ungraded routes first (likeliest new lines), then most recently climbed.
-- **Missing routes:** a route the response leaves out is recorded as `missing` and not asked for again. Only _Refresh all_ (`resetRouteHistoryFetches()`) makes routes eligible again, and that's still 100 per run. Each successful fetch **replaces** that route's cached `route_history` rows (including clearing them when the API returns none), so upstream deletions are not sticky. Use _Re-apply from saved history_ (with _Replace existing_ if needed) to push corrections into `first_ascents`.
+- **Order:** never-fetched routes first (ungraded, then most recently climbed), followed by stale fetches oldest first. Eligibility uses `route_history_fetches.fetched_at`, including `missing` results. Settings pending counts include stale routes; checked counts still include all previously fetched routes.
+- **Missing routes:** a route the response leaves out is recorded as `missing` and not asked for again until its refresh age is reached (when enabled). _Refresh all_ (`resetRouteHistoryFetches()`) makes routes eligible again, and that's still 100 per run. Each successful fetch **replaces** that route's cached `route_history` rows (including clearing them when the API returns none), so upstream deletions are not sticky. Use _Re-apply from saved history_ (with _Replace existing_ if needed) to push corrections into `first_ascents`.
 - **Wipe vs in-flight run:** `wipeAllData()` calls `invalidateRouteHistoryRuns()` so a request that was already in flight abandons after its next await and does not write history/marks back into the empty DB.
 
 ## Marks
@@ -67,7 +69,7 @@ Each successful fetch also upserts nullable columns on the matching `routes` row
 
 Parsing lives in `parseRouteInfoFields()` / `parseRoutePayload()` (`routeHistoryApi.ts`); `storeBatch()` writes them in `routeHistoryEngine.ts`. No extra requests — same pacing as history. Omitted fields preserve cached values in partial payloads; explicit null clears them. Successful empty beta/arrays replace the old content.
 
-Routes that were already fetched before this migration have no cached info until the owner runs **Refresh all** in Settings (still 100 routes per run), which clears `route_history_fetches` and re-fetches.
+Routes fetched before this migration acquire cached info on the next eligible periodic refresh, or via **Refresh all** in Settings (still 100 routes per run), which clears `route_history_fetches` and re-fetches. Periodic refreshes reuse the normal payload/cache path: totals, owner-count snapshots and counter freshness update together only when `ascentCount` is present. Omitted fields preserve values, explicit null clears them, and manual FA/FFA marks and unmarks remain protected.
 
 **`quality_score` (#80):** when cached, the dashboard stars scatter uses a 0–100 quality axis (stars map to the same scale as fallback). Logbook **Quality** sort prefers `quality_score`, then ascent quality labels, then stars.
 

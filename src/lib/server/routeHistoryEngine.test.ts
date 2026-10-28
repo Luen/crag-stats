@@ -6,7 +6,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { wipeAllData } from './analytics';
 import { db } from './db';
 import { eq } from 'drizzle-orm';
-import { ascents, profiles, routeHistory, routes } from './db/schema';
+import { ascents, profiles, routeHistory, routeHistoryFetches, routes } from './db/schema';
 import { buildRouteDeveloperImpact } from './routeDeveloperImpact';
 import { getFirstAscentMarks, setFirstAscent } from './firstAscents';
 import { upsertAscents } from './ingest';
@@ -20,6 +20,8 @@ import {
 	MIN_REQUEST_GAP_MS,
 	MIN_RUN_INTERVAL_MS,
 	ROUTES_PER_RUN,
+	parseRouteDataRefreshDays,
+	pendingRouteIds,
 	applyCachedHistoryMarks,
 	resetRouteHistoryFetches,
 	resetRouteHistoryPacing,
@@ -114,6 +116,124 @@ beforeEach(() => {
 });
 
 describe('route history import', () => {
+	it.each([
+		['', 0],
+		['0', 0],
+		['30', 30],
+		[' 90 ', 90],
+		['7', 0],
+		['NaN', 0],
+		['-30', 0]
+	])('parses refresh days %j as %i', (value, expected) => {
+		expect(parseRouteDataRefreshDays(String(value))).toBe(expected);
+	});
+
+	it.each([30, 90] as const)('queues fetches at the %i-day boundary, oldest first', (days) => {
+		const now = Date.parse('2026-06-01T00:00:00Z');
+		const cutoff = now - days * 86_400_000;
+		db.insert(routeHistoryFetches)
+			.values(
+				Array.from({ length: ROUTES }, (_, i) => ({
+					provider: 'thecrag',
+					routeExternalId: routeId(i),
+					status: i === 1 ? 'missing' : 'ok',
+					historyCount: 0,
+					fetchedAt: new Date(i === 0 ? cutoff : i === 1 ? cutoff - 1 : cutoff + 1).toISOString()
+				}))
+			)
+			.run();
+		expect(pendingRouteIds(ROUTES_PER_RUN, days, now)).toEqual([routeId(1), routeId(0)]);
+		expect(routeHistoryStatus({ ...config, refreshDays: days }, now).pendingRoutes).toBe(2);
+		expect(pendingRouteIds(ROUTES_PER_RUN, 0, now)).toEqual([]);
+	});
+
+	it('prioritizes unfetched routes and rotates stale routes within the shared run limit', async () => {
+		const h = harness();
+		await runRouteHistoryImportOnce(config, h.deps);
+		const initial = h.calls.flatMap((c) => c.ids);
+		h.advance(91 * 86_400_000);
+		const start = h.calls.length;
+		const refreshing = { ...config, refreshDays: 90 as const };
+		expect(routeHistoryStatus(refreshing, h.deps.now()).pendingRoutes).toBe(ROUTES);
+		const result = await runRouteHistoryImportOnce(refreshing, h.deps);
+		const refreshed = h.calls.slice(start).flatMap((c) => c.ids);
+		expect(result.fetched).toBe(ROUTES_PER_RUN);
+		expect(refreshed.slice(0, ROUTES - ROUTES_PER_RUN).every((id) => !initial.includes(id))).toBe(
+			true
+		);
+		expect(new Set(refreshed).size).toBe(ROUTES_PER_RUN);
+		expect(routeHistoryStatus(refreshing, h.deps.now()).pendingRoutes).toBe(5);
+		h.advance(MIN_RUN_INTERVAL_MS);
+		expect((await runRouteHistoryImportOnce(refreshing, h.deps)).fetched).toBe(5);
+		h.advance(MIN_RUN_INTERVAL_MS);
+		expect((await runRouteHistoryImportOnce(refreshing, h.deps)).outcome).toBe('done');
+		for (let i = 1; i < h.calls.length; i++) {
+			expect(h.calls[i].at - h.calls[i - 1].at).toBeGreaterThanOrEqual(MIN_REQUEST_GAP_MS);
+		}
+	});
+
+	it('refreshes totals and matching owner snapshots, preserving manual marks and unmarks', async () => {
+		const id = routeId(0);
+		const h = harness({ [id]: fa(id, `@${LOGIN}`), [routeId(27)]: fa(routeId(27), `@${LOGIN}`) });
+		let total: number | null = 12;
+		const open = h.deps.openClient;
+		h.deps.openClient = async (key) => {
+			const client = await open(key);
+			return {
+				...client,
+				fetchRoutes: async (ids) =>
+					(await client.fetchRoutes(ids)).map((r) => ({
+						...r,
+						info: { ascentCount: total }
+					}))
+			};
+		};
+		setFirstAscent('thecrag', id, 'FFA');
+		setFirstAscent('thecrag', routeId(27), 'FA');
+		setFirstAscent('thecrag', routeId(27), null);
+		const refreshing = { ...config, refreshDays: 30 as const };
+		await runRouteHistoryImportOnce(refreshing, h.deps);
+		const before = db.select().from(routes).where(eq(routes.externalId, id)).get()!;
+		db.delete(ascents).where(eq(ascents.externalId, '9000')).run();
+		total = 18;
+		h.advance(31 * 86_400_000);
+		await runRouteHistoryImportOnce(refreshing, h.deps);
+		const after = db.select().from(routes).where(eq(routes.externalId, id)).get()!;
+		expect([after.ascentCount, after.ascentCountOwn]).toEqual([18, 0]);
+		expect(after.ascentCountFetchedAt).not.toBe(before.ascentCountFetchedAt);
+		expect(getFirstAscentMarks().get(`thecrag:${id}`)).toBe('FFA');
+		expect(getFirstAscentMarks().has(`thecrag:${routeId(27)}`)).toBe(false);
+		total = null;
+		h.advance(31 * 86_400_000);
+		await runRouteHistoryImportOnce(refreshing, h.deps);
+		const cleared = db.select().from(routes).where(eq(routes.externalId, id)).get()!;
+		expect([cleared.ascentCount, cleared.ascentCountOwn, cleared.ascentCountFetchedAt]).toEqual([
+			null,
+			null,
+			null
+		]);
+	});
+
+	it('retains disabled and block back-off guards when stale routes are eligible', async () => {
+		const h = harness();
+		await runRouteHistoryImportOnce(config, h.deps);
+		h.advance(MIN_RUN_INTERVAL_MS);
+		await runRouteHistoryImportOnce(config, h.deps);
+		h.advance(91 * 86_400_000);
+		const refreshing = { ...config, refreshDays: 90 as const };
+		const start = h.calls.length;
+		expect(
+			(await runRouteHistoryImportOnce({ ...refreshing, enabled: false }, h.deps)).outcome
+		).toBe('disabled');
+		expect(h.calls).toHaveLength(start);
+		h.failWith(new RouteHistoryBlockedError('blocked', 3 * 86_400));
+		expect((await runRouteHistoryImportOnce(refreshing, h.deps)).outcome).toBe('blocked');
+		h.advance(2 * 86_400_000);
+		expect((await runRouteHistoryImportOnce(refreshing, h.deps)).outcome).toBe('waiting');
+		expect(h.calls).toHaveLength(start + 1);
+		expect(routeHistoryStatus(refreshing, h.deps.now()).pendingRoutes).toBe(ROUTES);
+	});
+
 	it('does nothing at all when disabled', async () => {
 		const h = harness();
 		const r = await runRouteHistoryImportOnce({ ...config, enabled: false }, h.deps);
@@ -149,6 +269,7 @@ describe('route history import', () => {
 		expect(all).toHaveLength(ROUTES);
 
 		h.advance(MIN_RUN_INTERVAL_MS);
+		h.advance(91 * 86_400_000); // Unset refresh stays fetch-once even after three months.
 		const third = await runRouteHistoryImportOnce(config, h.deps);
 		expect(third.outcome).toBe('done');
 		// 100 routes in 10 requests, then the last 5 in 1: no new request on the third run.

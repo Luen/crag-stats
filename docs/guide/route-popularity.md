@@ -26,3 +26,5 @@ Sort by **Pop.** to order ticks by route popularity (highest first by default). 
 Numbers come from theCrag’s route API (`show=info`). They reflect the whole community, not just your logbook.
 
 Popularity uses relative popularity when available, then global popularity. Community ascent counts are shown separately and never compared numerically with popularity scores.
+
+To keep community ascent totals, popularity and ratings fresh, the server owner can set `ROUTE_DATA_REFRESH_DAYS=90` (recommended) or `30`, with `ROUTE_HISTORY_IMPORT=true`. These are rolling day intervals. After successful logbook syncs, new routes take priority, then the oldest stale fetches refresh within the same 100-route limit and pacing. A backlog can take several syncs. Unset or `0` keeps the default fetch-once cache; **Refresh all** remains available in Settings.
