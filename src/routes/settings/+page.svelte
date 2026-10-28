@@ -146,7 +146,7 @@
 			<em>Action → Export logbook as CSV</em>. CSV import upserts rows but does
 			<strong>not</strong> prune deletes (API sync does).
 		</p>
-		<form method="POST" action="?/importCsv" enctype="multipart/form-data" class="stack">
+		<form method="POST" action="?/importCsv" enctype="multipart/form-data" class="csv-import">
 			<input
 				type="file"
 				name="file"
@@ -389,6 +389,25 @@
 		flex-direction: column;
 		align-items: stretch;
 	}
+	/* File + compact primary control (not a full-width accent bar). */
+	.csv-import {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.65rem;
+		align-items: center;
+	}
+	.csv-import input[type='file'] {
+		flex: 1 1 14rem;
+		min-width: 0;
+		background: var(--paper);
+	}
+	.csv-import button {
+		flex: 0 0 auto;
+		align-self: center;
+		padding: 0.55rem 1.15rem;
+		border: 1px solid color-mix(in srgb, var(--accent) 55%, var(--ink));
+		box-shadow: var(--shadow);
+	}
 	button,
 	.btn,
 	input {
@@ -409,6 +428,10 @@
 	button:hover,
 	.btn:hover {
 		background: var(--accent-strong);
+	}
+	.csv-import button:hover {
+		border-color: var(--accent-strong);
+		box-shadow: var(--shadow);
 	}
 	.btn {
 		display: inline-flex;
