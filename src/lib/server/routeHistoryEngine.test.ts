@@ -399,3 +399,42 @@ describe('route history import', () => {
 		expect([s.totalRoutes, s.historyRows, s.importedMarks, s.fetchedRoutes]).toEqual([0, 0, 0, 0]);
 	});
 });
+
+it('refresh clears explicit nulls but preserves omitted route fields (#128)', async () => {
+	const h = harness();
+	let info: RouteWithHistory['info'] = {
+		betaJson: '{"description":"old public beta"}',
+		qualityScore: 88
+	};
+	const open = h.deps.openClient;
+	h.deps.openClient = async (key) => {
+		const client = await open(key);
+		return {
+			...client,
+			fetchRoutes: async (ids) => (await client.fetchRoutes(ids)).map((row) => ({ ...row, info }))
+		};
+	};
+	await runRouteHistoryImportOnce(config, h.deps);
+	info = undefined;
+	resetRouteHistoryFetches();
+	h.advance(MIN_RUN_INTERVAL_MS);
+	await runRouteHistoryImportOnce(config, h.deps);
+	expect(
+		db
+			.select()
+			.from(routes)
+			.where(eq(routes.externalId, routeId(0)))
+			.get()!.qualityScore
+	).toBe(88);
+	info = { betaJson: null, qualityScore: null };
+	resetRouteHistoryFetches();
+	h.advance(MIN_RUN_INTERVAL_MS);
+	await runRouteHistoryImportOnce(config, h.deps);
+	const row = db
+		.select()
+		.from(routes)
+		.where(eq(routes.externalId, routeId(0)))
+		.get()!;
+	expect(row.betaJson).toBeNull();
+	expect(row.qualityScore).toBeNull();
+});

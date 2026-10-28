@@ -278,4 +278,6 @@ You'll often notice things outside the task at hand. **Don't silently fix them i
 
 | 2026-10 | #131/#36: hidden gems retain routeId for stable list keys; popularity counts use the configured display locale. |
 
+| 2026-10 | #128: route-info fields distinguish absent (preserve) from explicit null (clear); refresh can remove stale beta, access warnings and ratings. |
+
 _Add a row when you change behaviour agents must know about._

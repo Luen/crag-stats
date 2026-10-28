@@ -128,3 +128,36 @@ describe('parseRetryAfter', () => {
 		expect(parseRetryAfter('soon')).toBeNull();
 	});
 });
+
+describe('explicitly cleared route info (#128)', () => {
+	it('distinguishes nulls from omitted fields', () => {
+		expect(parseRouteInfoFields({}, '1')).toBeUndefined();
+		expect(
+			parseRouteInfoFields(
+				{
+					beta: null,
+					qualityScore: null,
+					ascentCount: null,
+					popularity: null,
+					relativePopularity: null,
+					seasonality: null,
+					ancestors: null,
+					pitches: null,
+					flags: null
+				},
+				'1'
+			)
+		).toEqual({
+			betaJson: null,
+			qualityScore: null,
+			ascentCount: null,
+			popularity: null,
+			relativePopularity: null,
+			seasonalityJson: null,
+			ancestorsJson: null,
+			pitchesJson: null,
+			flagsJson: null,
+			isProject: null
+		});
+	});
+});

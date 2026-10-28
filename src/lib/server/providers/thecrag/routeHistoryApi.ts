@@ -14,16 +14,16 @@ const ROUTE_IDS = 'https://www.thecrag.com/api/route/ids';
 
 /** Route-level fields parsed from `/api/route` (cached on `routes`, #77–#82). */
 export type RouteInfoFields = {
-	isProject?: 0 | 1;
-	qualityScore?: number;
-	ascentCount?: number;
-	popularity?: number;
-	relativePopularity?: number;
-	seasonalityJson?: string;
-	betaJson?: string;
-	ancestorsJson?: string;
-	pitchesJson?: string;
-	flagsJson?: string;
+	isProject?: 0 | 1 | null;
+	qualityScore?: number | null;
+	ascentCount?: number | null;
+	popularity?: number | null;
+	relativePopularity?: number | null;
+	seasonalityJson?: string | null;
+	betaJson?: string | null;
+	ancestorsJson?: string | null;
+	pitchesJson?: string | null;
+	flagsJson?: string | null;
 };
 
 export type RouteWithHistory = {
@@ -134,8 +134,9 @@ export function parseRouteBeta(
 	beta: unknown,
 	routeId: string,
 	urlAncestorStub?: unknown
-): string | undefined {
-	if (beta == null) return undefined;
+): string | null | undefined {
+	if (beta === undefined) return undefined;
+	if (beta === null) return null;
 	const out: Record<string, string> = {};
 	if (typeof beta === 'object' && !Array.isArray(beta)) {
 		const b = beta as Record<string, unknown>;
@@ -182,37 +183,44 @@ export function parseRouteInfoFields(
 ): RouteInfoFields | undefined {
 	const info: RouteInfoFields = {};
 	const isProject = isProjectFromFlags(o.flags);
-	if (isProject !== undefined) info.isProject = isProject;
+	if (o.flags === null) info.isProject = null;
+	else if (isProject !== undefined) info.isProject = isProject;
 
 	const qualityScore = finiteNumber(o.qualityScore);
-	if (qualityScore !== undefined) info.qualityScore = qualityScore;
+	if (o.qualityScore === null) info.qualityScore = null;
+	else if (qualityScore !== undefined) info.qualityScore = qualityScore;
 
 	const ascentCount = finiteInt(o.ascentCount);
-	if (ascentCount !== undefined) info.ascentCount = ascentCount;
+	if (o.ascentCount === null) info.ascentCount = null;
+	else if (ascentCount !== undefined) info.ascentCount = ascentCount;
 
 	const popularity = finiteNumber(o.popularity);
-	if (popularity !== undefined) info.popularity = popularity;
+	if (o.popularity === null) info.popularity = null;
+	else if (popularity !== undefined) info.popularity = popularity;
 
 	const relativePopularity = finiteNumber(o.relativePopularity);
-	if (relativePopularity !== undefined) info.relativePopularity = relativePopularity;
+	if (o.relativePopularity === null) info.relativePopularity = null;
+	else if (relativePopularity !== undefined) info.relativePopularity = relativePopularity;
 
 	const seasonalityJson = parseSeasonalityJson(o.seasonality);
-	if (seasonalityJson !== undefined) info.seasonalityJson = seasonalityJson;
+	if (o.seasonality === null) info.seasonalityJson = null;
+	else if (seasonalityJson !== undefined) info.seasonalityJson = seasonalityJson;
 
 	const betaJson = parseRouteBeta(o.beta, routeId, o.urlAncestorStub);
 	if (betaJson !== undefined) info.betaJson = betaJson;
 
 	if (o.ancestors !== undefined) {
 		const ancestorsJson = jsonColumn(o.ancestors);
-		if (ancestorsJson !== undefined) info.ancestorsJson = ancestorsJson;
+		if (ancestorsJson !== undefined)
+			info.ancestorsJson = o.ancestors === null ? null : ancestorsJson;
 	}
 	if (o.pitches !== undefined) {
 		const pitchesJson = jsonColumn(o.pitches);
-		if (pitchesJson !== undefined) info.pitchesJson = pitchesJson;
+		if (pitchesJson !== undefined) info.pitchesJson = o.pitches === null ? null : pitchesJson;
 	}
 	if (o.flags !== undefined) {
 		const flagsJson = jsonColumn(o.flags);
-		if (flagsJson !== undefined) info.flagsJson = flagsJson;
+		if (flagsJson !== undefined) info.flagsJson = o.flags === null ? null : flagsJson;
 	}
 
 	return Object.keys(info).length ? info : undefined;

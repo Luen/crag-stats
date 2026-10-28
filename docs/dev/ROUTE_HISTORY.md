@@ -65,7 +65,7 @@ Each successful fetch also upserts nullable columns on the matching `routes` row
 | `ancestors_json`, `pitches_json`, `flags_json`      | same names                                                   | #82    |
 | `route_info_updated_at`                             | import timestamp                                             | —      |
 
-Parsing lives in `parseRouteInfoFields()` / `parseRoutePayload()` (`routeHistoryApi.ts`); `storeBatch()` writes them in `routeHistoryEngine.ts`. No extra requests — same pacing as history.
+Parsing lives in `parseRouteInfoFields()` / `parseRoutePayload()` (`routeHistoryApi.ts`); `storeBatch()` writes them in `routeHistoryEngine.ts`. No extra requests — same pacing as history. Omitted fields preserve cached values in partial payloads; explicit null clears them. Successful empty beta/arrays replace the old content.
 
 Routes that were already fetched before this migration have no cached info until the owner runs **Refresh all** in Settings (still 20 routes per run), which clears `route_history_fetches` and re-fetches.
 
