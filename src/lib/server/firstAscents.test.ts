@@ -1,6 +1,8 @@
 import { readFileSync } from 'node:fs';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { getDashboardStats, listLogbook, wipeAllData } from './analytics';
+import { db } from './db';
+import { routeHistoryFetches } from './db/schema';
 import {
 	buildFirstAscentStats,
 	getFirstAscentMarks,
@@ -110,5 +112,84 @@ describe('first ascent marks', () => {
 		expect(isFirstAscentImportSkipped('thecrag', route)).toBe(true);
 		setFirstAscent('thecrag', route, 'FA', { source: 'manual' });
 		expect(isFirstAscentImportSkipped('thecrag', route)).toBe(false);
+	});
+});
+
+describe('listLogbook FA and history filters', () => {
+	let markedRoute = '';
+	let otherRoute = '';
+
+	beforeAll(() => {
+		wipeAllData();
+		upsertAscents(parseTheCragCsv(readFileSync('samples/thecrag-logbook-sample.csv')));
+		markedRoute = listLogbook({ q: 'Hard Project' }).rows[0].routeExternalId;
+		otherRoute = listLogbook({ limit: 100 }).rows.find(
+			(r) => r.routeExternalId !== markedRoute
+		)!.routeExternalId;
+		setFirstAscent('thecrag', markedRoute, 'FA');
+	});
+
+	it('filters by fa=FA, fa=any, and fa=none', () => {
+		const faOnly = listLogbook({ fa: 'FA' });
+		expect(faOnly.total).toBeGreaterThan(0);
+		expect(faOnly.rows.every((r) => r.firstAscent === 'FA')).toBe(true);
+		expect(faOnly.rows.every((r) => r.routeExternalId === markedRoute)).toBe(true);
+
+		const any = listLogbook({ fa: 'any' });
+		expect(any.total).toBe(faOnly.total);
+		expect(any.rows.every((r) => r.firstAscent != null)).toBe(true);
+
+		const none = listLogbook({ fa: 'none' });
+		expect(none.total).toBeGreaterThan(0);
+		expect(none.rows.every((r) => r.firstAscent == null)).toBe(true);
+		expect(none.rows.some((r) => r.routeExternalId === markedRoute)).toBe(false);
+	});
+
+	it('filters history=pending to routes not yet in route_history_fetches', () => {
+		const before = listLogbook({ history: 'pending' });
+		expect(before.total).toBeGreaterThan(0);
+		expect(before.rows.some((r) => r.routeExternalId === markedRoute)).toBe(true);
+
+		db.insert(routeHistoryFetches)
+			.values({
+				provider: 'thecrag',
+				routeExternalId: markedRoute,
+				status: 'ok',
+				historyCount: 1,
+				fetchedAt: new Date().toISOString()
+			})
+			.run();
+
+		const after = listLogbook({ history: 'pending' });
+		expect(after.rows.some((r) => r.routeExternalId === markedRoute)).toBe(false);
+		expect(after.total).toBeLessThan(before.total);
+		// other climbed routes still pending
+		expect(after.rows.some((r) => r.routeExternalId === otherRoute)).toBe(true);
+	});
+
+	it('filters quality, minStars, with, and from/to', () => {
+		const withStars = listLogbook({ minStars: 1 });
+		expect(withStars.total).toBeGreaterThan(0);
+		expect(withStars.rows.every((r) => r.stars != null && r.stars >= 1)).toBe(true);
+
+		const good = listLogbook({ quality: 'Good' });
+		expect(good.total).toBeGreaterThan(0);
+		expect(good.rows.every((r) => r.quality === 'Good')).toBe(true);
+
+		const partner = listLogbook({ with: 'Partner A' });
+		expect(partner.total).toBeGreaterThan(0);
+		expect(partner.rows.every((r) => (r.partners || '').includes('Partner A'))).toBe(true);
+
+		const ranged = listLogbook({ from: '2099-01-01', to: '2099-12-31' });
+		expect(ranged.total).toBe(0);
+
+		const inRange = listLogbook({ from: '2026-01-01', to: '2026-01-31' });
+		expect(inRange.total).toBeGreaterThan(0);
+		expect(
+			inRange.rows.every((r) => {
+				const d = (r.ascentDate || '').slice(0, 10);
+				return d >= '2026-01-01' && d <= '2026-01-31';
+			})
+		).toBe(true);
 	});
 });

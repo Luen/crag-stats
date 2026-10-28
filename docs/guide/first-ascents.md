@@ -16,6 +16,10 @@ Only someone who can open Settings can mark FAs: anyone if no `APP_PASSWORD` is 
 
 The mark is stored against theCrag's route ID, so it survives re-syncs. It disappears from the card if every ascent of the route is deleted on theCrag, and it comes back if you log the route again. **Settings → Wipe** removes all marks.
 
+### Filter the logbook
+
+On **Logbook**, use the **First ascent mark** control to show only your FAs, FFAs, either, or climbs with no mark yet (`?fa=FA|FFA|any|none`). If route-history import is enabled, **History not checked yet** (`?history=pending`) lists climbs the importer has not fetched.
+
 ### Import them from route history (optional, off by default)
 
 If your server owner turns it on (`ROUTE_HISTORY_IMPORT=true`), Crag Stats reads each logbook route's public history from theCrag in the background and marks the FAs and FFAs that name you.

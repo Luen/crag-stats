@@ -8,7 +8,7 @@
 
 	let { data }: PageProps = $props();
 
-	function pageHref(page: number) {
+	function filterParams() {
 		// Throwaway query builder for an href, not reactive state.
 		// eslint-disable-next-line svelte/prefer-svelte-reactivity
 		const p = new URLSearchParams();
@@ -18,32 +18,31 @@
 		if (data.crag) p.set('crag', data.crag);
 		if (data.sector) p.set('sector', data.sector);
 		if (data.day) p.set('day', data.day);
+		if (data.from) p.set('from', data.from);
+		if (data.to) p.set('to', data.to);
 		if (data.season) p.set('season', data.season);
-		if (data.sort && data.sort !== 'date') p.set('sort', data.sort);
-		if (data.order && data.order !== 'desc') p.set('order', data.order);
 		if (data.multipitch) p.set('multipitch', '1');
+		if (data.fa) p.set('fa', data.fa);
+		if (data.history) p.set('history', data.history);
+		if (data.quality) p.set('quality', data.quality);
+		if (data.with) p.set('with', data.with);
+		if (data.minStars !== '') p.set('minStars', String(data.minStars));
 		if (data.year !== '') p.set('year', String(data.year));
 		if (data.score !== '') p.set('score', String(data.score));
 		if (data.band !== '') p.set('band', String(data.band));
+		return p;
+	}
+
+	function pageHref(page: number) {
+		const p = filterParams();
+		if (data.sort && data.sort !== 'date') p.set('sort', data.sort);
+		if (data.order && data.order !== 'desc') p.set('order', data.order);
 		p.set('page', String(page));
 		return `?${p.toString()}`;
 	}
 
 	function sortHref(col: string) {
-		// Throwaway query builder for an href, not reactive state.
-		// eslint-disable-next-line svelte/prefer-svelte-reactivity
-		const p = new URLSearchParams();
-		if (data.q) p.set('q', data.q);
-		if (data.style) p.set('style', data.style);
-		if (data.tick) p.set('tick', data.tick);
-		if (data.crag) p.set('crag', data.crag);
-		if (data.sector) p.set('sector', data.sector);
-		if (data.day) p.set('day', data.day);
-		if (data.season) p.set('season', data.season);
-		if (data.multipitch) p.set('multipitch', '1');
-		if (data.year !== '') p.set('year', String(data.year));
-		if (data.score !== '') p.set('score', String(data.score));
-		if (data.band !== '') p.set('band', String(data.band));
+		const p = filterParams();
 		p.set('sort', col);
 		const nextOrder = data.sort === col && data.order === 'desc' ? 'asc' : 'desc';
 		p.set('order', nextOrder);
@@ -69,6 +68,12 @@
 		{#if data.sector}
 			· sector {data.sector}
 		{/if}
+		{#if data.fa}
+			· FA {data.fa}
+		{/if}
+		{#if data.history === 'pending'}
+			· history pending
+		{/if}
 	</p>
 </section>
 
@@ -84,7 +89,10 @@
 	<input name="tick" value={data.tick} placeholder="Tick (Onsight…)" />
 	<input name="crag" value={data.crag} placeholder="Crag" />
 	<input name="sector" value={data.sector} placeholder="Sector / parent" />
+	<input name="with" value={data.with} placeholder="With (partner)" />
 	<input name="year" value={data.year} placeholder="Year" inputmode="numeric" />
+	<input name="from" value={data.from} placeholder="From (YYYY-MM-DD)" />
+	<input name="to" value={data.to} placeholder="To (YYYY-MM-DD)" />
 	<select name="band" aria-label="Grade band" value={String(data.band)}>
 		<option value="">Any band</option>
 		<option value="1">Beginner</option>
@@ -97,6 +105,33 @@
 		<option value="">Any time</option>
 		<option value="ytd">Year to date</option>
 		<option value="last_year">Last year</option>
+	</select>
+	<select name="fa" aria-label="First ascent mark" value={data.fa}>
+		<option value="">Any FA mark</option>
+		<option value="any">My FA or FFA</option>
+		<option value="FA">My FA</option>
+		<option value="FFA">My FFA</option>
+		<option value="none">No FA/FFA mark</option>
+	</select>
+	<select name="history" aria-label="Route history import" value={data.history}>
+		<option value="">Any history status</option>
+		<option value="pending">History not checked yet</option>
+	</select>
+	<select name="quality" aria-label="Climber quality rating" value={data.quality}>
+		<option value="">Any quality</option>
+		<option value="Mega Classic">Mega Classic</option>
+		<option value="Classic">Classic</option>
+		<option value="Very Good">Very Good</option>
+		<option value="Good">Good</option>
+		<option value="Average">Average</option>
+		<option value="Don't Bother">Don't Bother</option>
+		<option value="Crap">Crap</option>
+	</select>
+	<select name="minStars" aria-label="Minimum stars" value={String(data.minStars)}>
+		<option value="">Any stars</option>
+		<option value="1">★+</option>
+		<option value="2">★★+</option>
+		<option value="3">★★★</option>
 	</select>
 	<label class="check">
 		<input type="checkbox" name="multipitch" value="1" checked={data.multipitch} />
