@@ -150,3 +150,4 @@ chrome --headless=new --hide-scrollbars --user-data-dir=/tmp/cs-shots --window-s
 ```
 
 Seasonality strips provide an expandable monthly values table so touch, keyboard and screen-reader users can read both series without hover.
+Chart values must be readable without hover: the Eddington timeline exposes point titles and an expandable values table. Metric toggle buttons expose aria-pressed.
