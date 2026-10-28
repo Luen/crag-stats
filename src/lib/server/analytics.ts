@@ -14,11 +14,17 @@ import {
 	usesVScale
 } from '#lib/grades';
 import type { DashboardStats, NotableRow, StylePyramid } from '#lib/types/dashboard';
-import { routeQualitySortKey } from '#lib/qualityScore';
 import { rockTypeBlurb, rockTypeInfo } from '#lib/rockTypes';
 import { resolveTheCragAvatar } from '#lib/thecragAvatar';
 import { theCragAscentUrl } from '#lib/thecragUrls';
 import { styleBadgeColor, tickKind } from '#lib/ticks';
+import {
+	buildRouteAscentCounts,
+	parseLogbookSortKey,
+	routeKey,
+	routePopularity,
+	sortLogbookRows
+} from './logbookSort';
 import { buildCprTimeline } from './cpr';
 import { buildBadges } from './badges';
 import { countOwnerSetRoutes, setterBadgeHits } from './routeSetters';
@@ -47,7 +53,7 @@ import { pickHardestSends } from './hardestSends';
 import { invalidateRouteHistoryRuns } from './routeHistoryEngine';
 import { repairGradesFromRawJson } from './repairGrades';
 import { buildTrainingLoadView, hasPersonalAscentGrade } from './trainingLoad';
-import { buildRoutePopularityStats, routePopScore } from './routePopularity';
+import { buildRoutePopularityStats } from './routePopularity';
 import { buildBestMonthsView } from './bestMonths';
 
 export type PyramidMode = 'all' | 'sends' | 'onsight';
@@ -1049,7 +1055,7 @@ export function listLogbook(filters?: {
 	missing?: Array<'height' | 'bolts'>;
 	/** Case-insensitive substring match on route tag names in tags_json */
 	tag?: string;
-	/** date | grade | quality | stars | popularity */
+	/** date | grade | quality | stars | style | tick | ascents | popularity */
 	sort?: string;
 	/** asc | desc */
 	order?: string;
@@ -1122,6 +1128,8 @@ export function listLogbook(filters?: {
 		.innerJoin(routes, eq(ascents.routeId, routes.id))
 		.orderBy(desc(ascents.ascentDate))
 		.all();
+
+	const routeAscentCounts = buildRouteAscentCounts(rows);
 
 	// Drop notes up front so they can't reach the page or be probed through search.
 	if (!filters?.includeNotes) rows = rows.map((r) => ({ ...r, comment: null }));
@@ -1276,35 +1284,9 @@ export function listLogbook(filters?: {
 		);
 	}
 
-	const sortKey = (filters?.sort || 'date').toLowerCase();
+	const sortKey = parseLogbookSortKey(filters?.sort);
 	const asc = (filters?.order || 'desc').toLowerCase() === 'asc';
-	rows = [...rows].sort((a, b) => {
-		let cmp: number;
-		if (sortKey === 'grade') {
-			cmp =
-				(a.effectiveGradeScore ?? a.gradeScore ?? -1) -
-				(b.effectiveGradeScore ?? b.gradeScore ?? -1);
-		} else if (sortKey === 'quality') {
-			cmp =
-				routeQualitySortKey({
-					qualityScore: a.qualityScore,
-					quality: a.quality,
-					stars: a.stars
-				}) -
-				routeQualitySortKey({
-					qualityScore: b.qualityScore,
-					quality: b.quality,
-					stars: b.stars
-				});
-		} else if (sortKey === 'stars') {
-			cmp = (a.stars ?? -1) - (b.stars ?? -1);
-		} else if (sortKey === 'popularity') {
-			cmp = (routePopScore(a) ?? -1) - (routePopScore(b) ?? -1);
-		} else {
-			cmp = (a.ascentDate || '').localeCompare(b.ascentDate || '');
-		}
-		return asc ? cmp : -cmp;
-	});
+	rows = sortLogbookRows(rows, sortKey, asc, routeAscentCounts);
 
 	const total = rows.length;
 	return {
@@ -1316,7 +1298,9 @@ export function listLogbook(filters?: {
 			gradeBand: r.effectiveGradeBand ?? r.gradeBand,
 			gradeRaw: r.effectiveGradeRaw ?? r.gradeRaw,
 			tags: parseTagsJson(r.tagsJson),
-			url: r.ascentUrl || theCragAscentUrl(r.externalId) || r.routeUrl
+			url: r.ascentUrl || theCragAscentUrl(r.externalId) || r.routeUrl,
+			myAscentsOnRoute: routeAscentCounts.get(routeKey(r.routeProvider, r.routeExternalId)) ?? 1,
+			routePopularity: routePopularity(r)
 		}))
 	};
 }
