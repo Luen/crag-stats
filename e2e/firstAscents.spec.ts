@@ -9,8 +9,8 @@ test('mark a first ascent from the logbook and see it on the dashboard', async (
 	await expect(row.locator('.chip.fa')).toHaveText('FA');
 
 	await page.goto('/');
-	const card = page.locator('article', {
-		has: page.getByRole('heading', { name: 'First ascents' })
+	const card = page.locator('article.panel').filter({
+		has: page.getByRole('heading', { name: 'First ascents', exact: true })
 	});
 	await expect(card).toContainText('1');
 	await expect(card).toContainText('Hard Project');
