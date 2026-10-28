@@ -38,6 +38,7 @@ import {
 } from './firstAscents';
 import { ascents, profiles, routes } from './db/schema';
 import { pickHardestSends } from './hardestSends';
+import { invalidateRouteHistoryRuns } from './routeHistoryEngine';
 import { repairGradesFromRawJson } from './repairGrades';
 import { buildTrainingLoadView } from './trainingLoad';
 
@@ -1063,9 +1064,15 @@ export function listLogbook(filters?: {
 
 export function wipeAllData() {
 	ensureSchema();
+	// Abandon any in-flight route-history import before clearing tables (#74).
+	invalidateRouteHistoryRuns();
 	db.run(sql`DELETE FROM projects`);
 	db.run(sql`DELETE FROM goals`);
 	db.run(sql`DELETE FROM first_ascents`);
+	db.run(sql`DELETE FROM first_ascent_import_skips`);
+	db.run(sql`DELETE FROM route_history`);
+	db.run(sql`DELETE FROM route_history_fetches`);
+	db.run(sql`DELETE FROM route_history_import_state`);
 	db.run(sql`DELETE FROM ascents`);
 	db.run(sql`DELETE FROM routes`);
 	db.run(sql`DELETE FROM profiles`);

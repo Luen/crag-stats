@@ -172,7 +172,7 @@ export const appSettings = sqliteTable('app_settings', {
 	updatedAt: text('updated_at').notNull()
 });
 
-/** Owner-marked first ascents (migration 0009); theCrag's API doesn't expose route history. */
+/** Owner-marked first ascents (migration 0009); optional import from route history (#68). */
 export const firstAscents = sqliteTable(
 	'first_ascents',
 	{
@@ -180,7 +180,70 @@ export const firstAscents = sqliteTable(
 		routeExternalId: text('route_external_id').notNull(),
 		/** FA | FFA */
 		kind: text('kind').notNull().default('FA'),
+		createdAt: text('created_at').notNull(),
+		/** manual | import — migration 0010 */
+		source: text('source').notNull().default('manual')
+	},
+	(t) => [primaryKey({ columns: [t.provider, t.routeExternalId] })]
+);
+
+/** Cached public history rows from `/api/route/…?show=info` (migration 0010). */
+export const routeHistory = sqliteTable(
+	'route_history',
+	{
+		provider: text('provider').notNull(),
+		routeExternalId: text('route_external_id').notNull(),
+		historyExternalId: text('history_external_id').notNull(),
+		type: text('type').notNull(),
+		climbers: text('climbers'),
+		historyDate: text('history_date'),
+		rawJson: text('raw_json'),
+		updatedAt: text('updated_at').notNull()
+	},
+	(t) => [
+		primaryKey({ columns: [t.provider, t.routeExternalId, t.historyExternalId] }),
+		index('route_history_route_idx').on(t.provider, t.routeExternalId)
+	]
+);
+
+/** Routes the owner unmarked; import skips these unless reapply is set (migration 0010). */
+export const firstAscentImportSkips = sqliteTable(
+	'first_ascent_import_skips',
+	{
+		provider: text('provider').notNull(),
+		routeExternalId: text('route_external_id').notNull(),
 		createdAt: text('created_at').notNull()
 	},
 	(t) => [primaryKey({ columns: [t.provider, t.routeExternalId] })]
 );
+
+/**
+ * Routes theCrag already answered for (migration 0010). FA/FFA history never changes, so a
+ * route listed here is never fetched again unless the owner chooses "Refresh all".
+ */
+export const routeHistoryFetches = sqliteTable(
+	'route_history_fetches',
+	{
+		provider: text('provider').notNull(),
+		routeExternalId: text('route_external_id').notNull(),
+		/** ok (history stored, maybe empty) | missing (not in the response) */
+		status: text('status').notNull(),
+		historyCount: integer('history_count').notNull().default(0),
+		fetchedAt: text('fetched_at').notNull()
+	},
+	(t) => [primaryKey({ columns: [t.provider, t.routeExternalId] })]
+);
+
+/** Last background import run and back-off after errors or blocks (migration 0010). */
+export const routeHistoryImportState = sqliteTable('route_history_import_state', {
+	provider: text('provider').primaryKey(),
+	/** idle | running | blocked | error */
+	status: text('status').notNull().default('idle'),
+	lastRunAt: text('last_run_at'),
+	lastFetched: integer('last_fetched').notNull().default(0),
+	lastMarked: integer('last_marked').notNull().default(0),
+	lastError: text('last_error'),
+	consecutiveFailures: integer('consecutive_failures').notNull().default(0),
+	nextAllowedAt: text('next_allowed_at'),
+	updatedAt: text('updated_at').notNull()
+});

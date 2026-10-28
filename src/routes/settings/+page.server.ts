@@ -19,6 +19,13 @@ import { hasTheCragApiKey } from '#lib/server/env';
 import { upsertAscents } from '#lib/server/ingest';
 import { parseTheCragCsv } from '#lib/server/providers/thecrag';
 import { refreshProjects } from '#lib/server/projects';
+import {
+	getRouteHistoryStatus,
+	isRouteHistoryImportEnabled,
+	reapplyRouteHistoryMarks,
+	refreshAllRouteHistory,
+	runRouteHistoryImport
+} from '#lib/server/routeHistoryImport';
 import { getSyncStatus, runTheCragSync } from '#lib/server/sync';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -32,7 +39,8 @@ export const load: PageServerLoad = async ({ cookies }) => {
 		dashLayout: resolveDashLayout(
 			getAppSetting('dashboard_layout'),
 			cookies.get(DASH_LAYOUT_COOKIE)
-		)
+		),
+		routeHistory: getRouteHistoryStatus()
 	};
 };
 
@@ -111,5 +119,50 @@ export const actions: Actions = {
 		}
 		wipeAllData();
 		return { ok: true, wiped: true };
+	},
+	// Route history (#68), opt-in via ROUTE_HISTORY_IMPORT. /settings is already owner-gated.
+	/** Check the next 20 unchecked routes and report the real engine outcome (busy/waiting/done/ran). */
+	fetchRouteHistory: async ({ locals }) => {
+		if (!locals.authed) return fail(403);
+		if (!isRouteHistoryImportEnabled()) {
+			return fail(400, { ok: false, message: 'Set ROUTE_HISTORY_IMPORT=true to enable this.' });
+		}
+		const result = await runRouteHistoryImport();
+		if (!result.ok) {
+			return fail(400, { ok: false, message: result.message, routeHistoryMessage: result.message });
+		}
+		return { ok: true, routeHistoryMessage: result.message };
+	},
+	/** Re-apply FA/FFA marks from history already cached locally (no requests to theCrag). */
+	reapplyRouteHistory: async ({ request, locals }) => {
+		if (!locals.authed) return fail(403);
+		if (!isRouteHistoryImportEnabled()) {
+			return fail(400, { ok: false, message: 'Set ROUTE_HISTORY_IMPORT=true to enable this.' });
+		}
+		const form = await request.formData();
+		const { marked, routes } = reapplyRouteHistoryMarks({
+			replaceExisting: form.get('replaceExisting') === 'on',
+			reapplyUnmarked: form.get('reapplyUnmarked') === 'on'
+		});
+		return {
+			ok: true,
+			routeHistoryMessage: `Re-applied cached history for ${routes} routes: ${marked} marks changed.`
+		};
+	},
+	/** Forget which routes were checked, so they're fetched again gradually (20 per run). */
+	refreshRouteHistory: async ({ request, locals }) => {
+		if (!locals.authed) return fail(403);
+		if (!isRouteHistoryImportEnabled()) {
+			return fail(400, { ok: false, message: 'Set ROUTE_HISTORY_IMPORT=true to enable this.' });
+		}
+		const form = await request.formData();
+		if (String(form.get('confirm') || '') !== 'REFRESH') {
+			return fail(400, { ok: false, message: 'Type REFRESH to confirm' });
+		}
+		const n = refreshAllRouteHistory();
+		return {
+			ok: true,
+			routeHistoryMessage: `${n} routes will be checked again, 20 per run. After they re-fetch, use Re-apply from saved history (with Replace existing if needed) to update marks.`
+		};
 	}
 };

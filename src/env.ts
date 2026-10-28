@@ -37,6 +37,11 @@ export const variables = defineEnvVars({
 			'Show private ascent notes to the owner (true/false, default false; Settings overrides)',
 		schema: optionalString
 	},
+	ROUTE_HISTORY_IMPORT: {
+		description:
+			'Opt-in: fetch public FA/FFA route history from theCrag in the background, 20 routes per run (default false)',
+		schema: optionalString
+	},
 	DISPLAY_LOCALE: {
 		description: 'Locale for dates/numbers (BCP 47, default en-AU)',
 		schema: optionalString
