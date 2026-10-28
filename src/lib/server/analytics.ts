@@ -6,6 +6,7 @@ import {
 	boulderPyramidScoreKey,
 	convertFromEwbank,
 	convertFromVScale,
+	detectAndParseGrade,
 	formatVScaleLabel,
 	GRADE_BANDS,
 	type GradeSystem,
@@ -162,6 +163,33 @@ const V_SUFFIX = ' · V';
 /** Score is V-scale, from the route's stored grade system (gear style only as fallback). */
 function vScale(row: { gradeSystem?: string | null; gearStyle: string | null }): boolean {
 	return usesVScale(row.gradeSystem, row.gearStyle);
+}
+
+/**
+ * Bare AU boulder digits (e.g. "9") once stored as V9: score equals the digit and system is
+ * v_scale. Re-parse as Ewbank→V so FA chips show VB / preferred Ewbank 9, not V9 (#112).
+ * Skip non-AU countries so NZ Upendi-style "5"→V5 stays.
+ */
+function fixAuBoulderBareDigit(row: {
+	gradeRaw: string | null;
+	gradeScore: number | null;
+	gradeSystem: string | null;
+	gearStyle: string | null;
+	country: string | null;
+}): { score: number; ewbank: number } | null {
+	const raw = (row.gradeRaw ?? '').trim();
+	if (!/^\d{1,2}$/.test(raw)) return null;
+	const n = Number(raw);
+	if (row.gradeScore !== n) return null;
+	if (!usesVScale(row.gradeSystem, row.gearStyle)) return null;
+	const country = (row.country ?? '').toLowerCase();
+	if (!country.includes('australia') && country !== 'au') return null;
+	const parsed = detectAndParseGrade(raw, {
+		gearStyle: row.gearStyle,
+		gradeSystem: 'AU'
+	});
+	if (parsed.score == null || parsed.score === n) return null;
+	return { score: parsed.score, ewbank: n };
 }
 
 function effectiveScore(row: {
@@ -837,7 +865,24 @@ export function getDashboardStats(
 					continue;
 				}
 				const isBoulder = vScale(r);
-				const score = r.gradeScore;
+				// AU outdoor boulder "9" wrongly stored as V9 (score===9): re-parse as Ewbank→V (#112).
+				const auBare = fixAuBoulderBareDigit({
+					gradeRaw: r.gradeRaw,
+					gradeScore: r.gradeScore,
+					gradeSystem: r.gradeSystem,
+					gearStyle: r.gearStyle,
+					country: r.country
+				});
+				const score = auBare?.score ?? r.gradeScore;
+				const gradeLabel =
+					score == null
+						? r.gradeRaw
+						: auBare &&
+							  (preferredSystem === 'ewbank' ||
+									preferredSystem === 'french' ||
+									preferredSystem === 'yds')
+							? convertFromEwbank(auBare.ewbank, preferredSystem)
+							: formatGrade(score, isBoulder, preferredSystem, r.gradeRaw);
 				byRoute.set(r.routeId, {
 					routeId: r.routeId,
 					kind,
@@ -845,8 +890,7 @@ export function getDashboardStats(
 					style: displayStyle(r.gearStyle),
 					isBoulder,
 					score,
-					gradeLabel:
-						score != null ? formatGrade(score, isBoulder, preferredSystem, r.gradeRaw) : r.gradeRaw,
+					gradeLabel,
 					band:
 						isBoulder && score != null ? (bandFromVScale(score)?.id ?? r.gradeBand) : r.gradeBand,
 					cragName: r.cragName,

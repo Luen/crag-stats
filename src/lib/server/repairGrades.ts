@@ -108,9 +108,16 @@ export function repairGradesFromRawJson(): { routes: number; ascents: number } {
 		const allRoutes = txDb.select().from(routes).all();
 		for (const r of allRoutes) {
 			if (!r.gradeRaw) continue;
+			// Prefer AU when re-parsing bare Australian boulder digits so "9"→VB not V9 (#112).
+			const country = (r.country ?? '').toLowerCase();
+			const auBoulder =
+				(r.gearStyle ?? '').toLowerCase().includes('boulder') &&
+				/^\d{1,2}$/.test(r.gradeRaw.trim()) &&
+				(country.includes('australia') || country === 'au');
 			const parsed = detectAndParseGrade(r.gradeRaw, {
 				gearStyle: r.gearStyle,
-				gradeBand: r.gradeBand
+				gradeBand: r.gradeBand,
+				gradeSystem: auBoulder ? 'AU' : null
 			});
 			if (parsed.score === r.gradeScore && parsed.system === r.gradeSystem) continue;
 			txDb
