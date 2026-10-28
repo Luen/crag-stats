@@ -31,7 +31,9 @@ export function displayStyle(gearStyle: string | null | undefined): string {
 }
 
 /** Same rules as `#lib/server/solo`.soloKind */
-export function soloKind(row: Pick<LogbookStyleRow, 'tickType' | 'ascentGearStyle'>): SoloKind | null {
+export function soloKind(
+	row: Pick<LogbookStyleRow, 'tickType' | 'ascentGearStyle'>
+): SoloKind | null {
 	const tick = (row.tickType ?? '').trim().toLowerCase();
 	const gear = (row.ascentGearStyle ?? '')
 		.trim()
