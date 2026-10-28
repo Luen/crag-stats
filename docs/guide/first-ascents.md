@@ -53,3 +53,5 @@ A first ascent is the send, so each one is dated by your **first logged send** o
 - **5 First Ascents** and **Pioneer** (10): first ascents of that many different routes, FA and FFA combined.
 - **Route Setter**, **Route Developer** (5), **Wall Builder** (10), **Crag Architect** (25): route setter credits from cached route history, dated by the earliest setter entry that names your `@login` on each route (not by logbook sends).
 - Each FA also adds a milestone on the date of that first send.
+
+Setter credits with no valid history date still count toward setter badges, but their earned date is left unknown.

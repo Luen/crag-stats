@@ -120,3 +120,31 @@ describe('route setters from route_history', () => {
 		expect(countOwnerSetRoutes()).toBe(0);
 	});
 });
+
+it('preserves undated/invalid-date setter credits without inventing an epoch (#134)', () => {
+	db.insert(profiles)
+		.values({ provider: 'thecrag', login: 'setter', updatedAt: '2026-01-01' })
+		.run();
+	db.insert(routes)
+		.values({
+			provider: 'thecrag',
+			externalId: 'unknown',
+			name: 'Undated line',
+			updatedAt: '2026-01-01'
+		})
+		.run();
+	db.insert(routeHistory)
+		.values({
+			provider: 'thecrag',
+			routeExternalId: 'unknown',
+			historyExternalId: 'setter-row',
+			type: 'Route Setter',
+			climbers: '@setter',
+			historyDate: '2018-00-00',
+			updatedAt: '2026-01-01'
+		})
+		.run();
+	expect(countOwnerSetRoutes()).toBe(1);
+	expect(setterBadgeHits()[0].date).toBeNull();
+	expect(setterBadgeHits()[0].detail).not.toContain('1970');
+});

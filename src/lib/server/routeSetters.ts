@@ -21,7 +21,11 @@ function validDay(raw: string | null | undefined): string | null {
 	const s = String(raw ?? '').trim();
 	if (!s) return null;
 	const m = s.match(/^(\d{4}-\d{2}-\d{2})/);
-	return m ? m[1]! : null;
+	if (!m) return null;
+	const parsed = new Date(m[1] + 'T12:00:00Z');
+	return Number.isFinite(parsed.getTime()) && parsed.toISOString().slice(0, 10) === m[1]
+		? m[1]
+		: null;
 }
 
 export type OwnerSetRoute = {
@@ -99,7 +103,7 @@ export function countOwnerSetRoutes(provider = PROVIDER, login?: string | null):
 export function setterBadgeHits(provider = PROVIDER, login?: string | null): SetterBadgeHit[] {
 	return listOwnerSetRoutes(provider, login).map((r, i) => {
 		const n = i + 1;
-		const date = r.date || '1970-01-01';
+		const date = r.date;
 		const tail = r.routeName
 			? `${r.routeName}${r.date ? ` · ${formatBadgeDate(r.date)}` : ''}`
 			: r.date

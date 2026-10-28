@@ -45,7 +45,7 @@ export type BadgeCard = {
 };
 
 export type SetterBadgeHit = {
-	date: string;
+	date: string | null;
 	routeName: string | null;
 	href: string | null;
 	detail: string;
@@ -59,7 +59,7 @@ export type BadgesResult = {
 };
 
 type Hit = {
-	date: string;
+	date: string | null;
 	routeName: string | null;
 	href: string | null;
 	detail: string;
