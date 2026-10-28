@@ -45,6 +45,11 @@ export const DOC_PAGES: readonly DocPage[] = [
 		slug: 'first-ascents',
 		title: 'First ascents',
 		summary: 'Marking your FAs and FFAs, and how the First ascents card counts them.'
+	},
+	{
+		slug: 'solo',
+		title: 'Solo climbing',
+		summary: 'Top-rope, lead, free and deep water soloing, and ascents with no partner tagged.'
 	}
 ];
 

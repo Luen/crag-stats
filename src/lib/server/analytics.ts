@@ -31,6 +31,7 @@ import {
 } from './dashboardExtras';
 import { db, ensureSchema } from './db';
 import { buildEddington } from './eddington';
+import { buildSoloStats } from './solo';
 import {
 	buildFirstAscentStats,
 	firstAscentKindFor,
@@ -301,6 +302,7 @@ export function getDashboardStats(
 			isSend: ascents.isSend,
 			isAttempt: ascents.isAttempt,
 			heightM: ascents.heightM,
+			ascentGearStyle: ascents.ascentGearStyle,
 			effectiveGradeRaw: ascents.effectiveGradeRaw,
 			effectiveGradeScore: ascents.effectiveGradeScore,
 			effectiveGradeBand: ascents.effectiveGradeBand,
@@ -855,6 +857,31 @@ export function getDashboardStats(
 			for (const fa of byRoute.values()) fa.date = sendDay.get(fa.routeId) ?? fa.date;
 			return buildFirstAscentStats([...byRoute.values()]);
 		})(),
+		solo: buildSoloStats(
+			all.map((r) => {
+				const isBoulder = vScale(r);
+				const score = effectiveScore(r);
+				return {
+					tickType: r.tickType,
+					ascentGearStyle: r.ascentGearStyle,
+					isSend: Boolean(r.isSend),
+					partners: r.partners,
+					date: validDay(r.ascentDate),
+					routeName: displayRouteName(r.routeName, r.pitchLabel, r.ascentLabel),
+					score,
+					isBoulder,
+					gradeLabel:
+						score != null
+							? formatGrade(score, isBoulder, preferredSystem, effectiveRaw(r))
+							: effectiveRaw(r),
+					band:
+						isBoulder && score != null
+							? (bandFromVScale(score)?.id ?? effectiveBand(r))
+							: effectiveBand(r),
+					url: linkFor(r)
+				};
+			})
+		),
 		eddington: buildEddington(
 			all.map((r) => ({
 				day: validDay(r.ascentDate),

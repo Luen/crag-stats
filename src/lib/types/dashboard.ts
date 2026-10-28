@@ -104,6 +104,32 @@ export type FirstAscentStats = {
 	}[];
 };
 
+export type SoloKind = 'toprope' | 'lead' | 'free' | 'dws' | 'aid';
+
+/** Solo climbing by type, plus ascents with no partner tagged; see solo.ts. */
+export type SoloStats = {
+	/** Solo ascents of any kind */
+	total: number;
+	kinds: {
+		kind: SoloKind;
+		label: string;
+		count: number;
+		sends: number;
+		hardest: {
+			routeName: string;
+			gradeLabel: string | null;
+			band: number | null;
+			url: string | null;
+		} | null;
+		first: string | null;
+		latest: string | null;
+	}[];
+	/** Ascents (and sends) with nobody in theCrag's "with" field */
+	unpartnered: number;
+	unpartneredSends: number;
+	totalAscents: number;
+};
+
 export type HeatmapDay = { date: string; count: number; sends: number };
 
 export type DashboardStats = {
@@ -183,6 +209,7 @@ export type DashboardStats = {
 	};
 	eddington: EddingtonStats;
 	firstAscents: FirstAscentStats;
+	solo: SoloStats;
 	streaks: {
 		currentDays: number;
 		currentWeeks: number;
