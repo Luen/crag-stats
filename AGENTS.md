@@ -165,6 +165,7 @@ Every release, including the automated nightly one, gets pulled straight onto ru
 - **Additive and backwards-safe.** Prefer `ADD COLUMN` (nullable or with a `DEFAULT`), new tables and `CREATE INDEX IF NOT EXISTS`. SQLite can't alter or drop most columns in place. For those, rebuild the table inside the migration (create new → copy → drop → rename).
 - **Never lose local-only data.** A sync or `repairGradesFromRawJson()` can rebuild cached provider data. Nothing can rebuild settings, goals, dashboard layout or anything else entered locally.
 - **Keep `src/lib/server/db/schema.ts` (Drizzle) in step** with the SQL.
+- **Parser/data upgrades:** append a TypeScript migration in `src/lib/server/db/dataMigrations.ts` when a repair needs application logic. The server `init` hook runs these after SQL migrations, before the scheduler and requests, and skips them during builds. Their `data:` IDs share `schema_migrations`; each repair and completion marker commit atomically, and a failure is logged without stopping the server (only cache-rebuildable repairs belong here). Never edit an applied migration; add a new ID for a later fix.
 - **Test the upgrade path.** `src/lib/server/migrations.test.ts` (in `pnpm test`) starts from every older schema prefix (fresh, 0001…, current), inserts data, runs `scripts/migrate.mjs` to the latest, and checks the data survives, a second run is a no-op, and every Drizzle table/column exists. When a migration adds local-only data (like `app_settings` or `first_ascents`), extend `oldDatabase()` to seed it. For risky migrations (table rebuilds), also start the new build against a copy of a real DB from the previous tag.
 - Release notes should call out slow migrations, such as table rebuilds on big logbooks.
 
@@ -305,6 +306,7 @@ You'll often notice things outside the task at hand. **Don't silently fix them i
 | 2026-10 | `/eddington` detail page: yearly E timeline, milestone tables, sidebar link; dashboard card title links there (#110). |
 
 | 2026-10 | #28/#36: Eddington timeline has exact yearly values in a native details/table and pressed-state metric buttons; active-day count uses configured locale. |
+| 2026-10 | #117 / #123: cached grade repairs run as versioned TypeScript data migrations in `src/lib/server/db/dataMigrations.ts` at server startup, after SQL migrations and before the scheduler. IDs use `data:` in `schema_migrations`; append new migrations instead of editing applied ones. Repair + marker commit atomically; a failure rolls back, is logged, the server still starts, and it retries next boot. No Settings repair action or dashboard-triggered repair. Image builds skip data migrations. |
 | 2026-10 | #112: AU boulder route grade bare `9` with ascent `gradeSystem=AU` maps via Ewbank→V (VB), not fake V9. FA cards and repairs use provider grade-system evidence, never country alone. |
 | 2026-10 | #124: grade repair preserves API grade-system evidence and never infers AU from country; FA labels use repaired canonical scores. |
 

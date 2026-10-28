@@ -30,6 +30,14 @@ Conversions between systems are approximate: grades are cultural, and a "6c" at 
 
 <!-- component:boulder-conversions -->
 
+## Repairing grades after an upgrade
+
+Parser fixes update how new syncs store scores. Crag Stats automatically repairs cached grades from stored `raw_json` / `grade_raw` when the upgraded server starts, after schema migrations and before scheduled syncs or page requests. No Settings action or dashboard visit is needed.
+
+Each versioned data migration runs once per database, with completion saved alongside schema migrations. A failed repair rolls back, is logged, and is retried on the next startup; the app keeps running meanwhile. Container startup applies the repair to your mounted database; building an image does not repair your running instance.
+
+A normal **Sync now** also re-derives grades as part of the pull. Private ascent notes are unrelated to this repair.
+
 ## Sources
 
 - theCrag: [Grades and grade conversions](https://www.thecrag.com/en/article/grades)
