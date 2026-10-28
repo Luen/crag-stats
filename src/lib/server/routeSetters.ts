@@ -12,11 +12,8 @@ const PROVIDER = 'thecrag';
 function ownerLogin(provider = PROVIDER): string | null {
 	ensureSchema();
 	return (
-		db
-			.select({ login: profiles.login })
-			.from(profiles)
-			.where(eq(profiles.provider, provider))
-			.get()?.login ?? null
+		db.select({ login: profiles.login }).from(profiles).where(eq(profiles.provider, provider)).get()
+			?.login ?? null
 	);
 }
 
