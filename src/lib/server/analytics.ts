@@ -62,7 +62,7 @@ function linkFor(row: { ascentUrl: string | null; ascentExternalId: string; url:
 export type { DashboardStats, NotableRow, StylePyramid } from '#lib/types/dashboard';
 
 /** Bump when a new one-shot data repair must run after a schema/parser change. */
-const REPAIR_GEN = 7;
+const REPAIR_GEN = 8; // #112 / #117: AU boulder bare digits → Ewbank→V, not fake Vn
 
 const TICK_ORDER = [
 	'Onsight',

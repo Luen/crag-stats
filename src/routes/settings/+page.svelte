@@ -29,6 +29,10 @@
 	<p class="banner ok">Preferences saved.</p>
 {:else if form?.routeHistoryMessage}
 	<p class="banner ok">{form.routeHistoryMessage}</p>
+{:else if form?.repaired}
+	<p class="banner ok">
+		Grades repaired ({form.repaired.routes} routes, {form.repaired.ascents} ascents).
+	</p>
 {:else if form?.ok}
 	<p class="banner ok">Done.</p>
 {/if}
@@ -135,6 +139,22 @@
 		{:else}
 			<p class="hint">
 				No API key configured. Set <code>THECRAG_API_KEY</code> in <code>.env</code>.
+			</p>
+		{/if}
+		<p class="hint">
+			After a grade-parser fix (for example AU boulder <code>9</code> wrongly stored as V9), open
+			the dashboard once so Crag Stats re-derives scores from stored data, or run
+			<strong>Repair grades</strong> below. A full API sync also repairs grades.
+		</p>
+		<div class="actions">
+			<form method="POST" action="?/repairGrades">
+				<button type="submit" class="secondary">Repair grades</button>
+			</form>
+		</div>
+		{#if form?.repaired}
+			<p class="ok">
+				Repaired {form.repaired.routes} route{form.repaired.routes === 1 ? '' : 's'},
+				{form.repaired.ascents} ascent{form.repaired.ascents === 1 ? '' : 's'}.
 			</p>
 		{/if}
 	</article>

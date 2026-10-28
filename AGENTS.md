@@ -272,5 +272,6 @@ You'll often notice things outside the task at hand. **Don't silently fix them i
 | 2026-10 | #68 follow-up: migration `0011` upgrades DBs that applied the first draft of 0010 (offset/total cursor) to the fetch-once `last_run_at` shape. |
 | 2026-10 | Logbook filters: `fa=FA|FFA|any|none`, `history=pending` (owner + import on only), plus `quality`, `minStars`, `with`, `from`/`to`. Marks load before filter/page in `listLogbook`. |
 | 2026-10 | #112: AU boulder route grade bare `9` with ascent `gradeSystem=AU` maps via Ewbank→V (VB), not fake V9. FA card re-labels Australia mis-parses; `repairGradesFromRawJson` uses AU hint for Aussie boulders. |
+| 2026-10 | #117: Settings **Repair grades** + docs; bump `REPAIR_GEN` so the next dashboard load after upgrade re-derives scores (also runs on API sync). |
 
 _Add a row when you change behaviour agents must know about._

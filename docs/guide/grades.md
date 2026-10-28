@@ -29,6 +29,16 @@ Conversions between systems are approximate: grades are cultural, and a "6c" at 
 
 <!-- component:boulder-conversions -->
 
+## Repairing grades after an upgrade
+
+Parser fixes (for example treating an Australian boulder grade `9` as Ewbank→V rather than a fake **V9**) update how new syncs store scores. Rows already in your SQLite file keep the old numbers until they are repaired.
+
+- Opening the **dashboard** after an upgrade runs a one-shot repair from stored `raw_json` / `grade_raw`.
+- **Settings → theCrag API sync → Repair grades** does the same on demand.
+- A normal **Sync now** also re-derives grades as part of the pull.
+
+Private ascent notes are unrelated to this repair.
+
 ## Sources
 
 - theCrag: [Grades and grade conversions](https://www.thecrag.com/en/article/grades)
