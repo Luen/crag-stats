@@ -173,12 +173,7 @@ export function resolveEffectiveGrade(opts: {
 	const routeSysHint = gradeSystemFitsStyle(opts.ascentGradeSystem, routeStyle)
 		? opts.ascentGradeSystem
 		: null;
-	const routeParsed = parseWith(
-		opts.routeGrade,
-		routeStyle,
-		opts.routeGradeBand,
-		routeSysHint
-	);
+	const routeParsed = parseWith(opts.routeGrade, routeStyle, opts.routeGradeBand, routeSysHint);
 	const routeIsExplicitV = isBoulderStyle(routeStyle) && parseVish(opts.routeGrade);
 
 	// Prefer ascent grade when its system fits the route (e.g. bare "5" on boulder → V5).
