@@ -31,6 +31,7 @@ ENV IMPER_CACHE_DIR=/data/.cache/impers
 ENV IMPERSONATE_CONFIG_DIR=/data/.cache/impersonate
 
 COPY --from=build /usr/local/bin/node /usr/local/bin/node
+COPY --from=build /usr/local/LICENSE /usr/local/share/doc/node/LICENSE
 COPY --from=build /runtime-data /data
 
 COPY --from=build /app/build ./build
