@@ -24,3 +24,5 @@ Sort by **Pop.** to order ticks by route popularity (highest first by default). 
 ## Source
 
 Numbers come from theCrag’s route API (`show=info`). They reflect the whole community, not just your logbook.
+
+Popularity uses relative popularity when available, then global popularity. Community ascent counts are shown separately and never compared numerically with popularity scores.

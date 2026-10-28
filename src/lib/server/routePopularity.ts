@@ -1,3 +1,5 @@
+import { routePopularityScore } from '#lib/routePopularity';
+import { ascentQualityScore } from '#lib/qualityScore';
 import type { HiddenGemItem, RoutePopularityStats } from '#lib/types/routePopularity';
 
 export type { HiddenGemItem, RoutePopularityStats } from '#lib/types/routePopularity';
@@ -25,27 +27,13 @@ export function routePopScore(row: {
 	popularity?: number | null;
 	relativePopularity?: number | null;
 }): number | null {
-	if (row.relativePopularity != null && Number.isFinite(row.relativePopularity)) {
-		return row.relativePopularity;
-	}
-	if (row.popularity != null && Number.isFinite(row.popularity)) return row.popularity;
-	return null;
-}
-
-function qualityRankFromLabel(q: string | null | undefined): number {
-	const s = (q || '').toLowerCase();
-	if (s.includes('classic') || s.includes('*****') || s === '5') return 5;
-	if (s.includes('****') || s === '4') return 4;
-	if (s.includes('***') || s === '3') return 3;
-	if (s.includes('**') || s === '2') return 2;
-	if (s.includes('*') || s === '1') return 1;
-	return 0;
+	return routePopularityScore(row);
 }
 
 export function gemQualityScore(row: RoutePopularityRow): number {
 	if (row.qualityScore != null && Number.isFinite(row.qualityScore)) return row.qualityScore;
 	if (row.stars != null && row.stars >= 1) return row.stars * 25;
-	return qualityRankFromLabel(row.quality) * 20;
+	return ascentQualityScore(row.quality) ?? 0;
 }
 
 export function isHiddenGemRoute(row: RoutePopularityRow): boolean {
@@ -104,6 +92,7 @@ export function buildRoutePopularityStats(
 			)
 			.slice(0, MAX_GEMS)
 			.map((r): HiddenGemItem => ({
+				routeId: r.routeId,
 				routeName: r.routeName,
 				gradeLabel: r.gradeLabel ?? null,
 				cragName: r.cragName ?? null,

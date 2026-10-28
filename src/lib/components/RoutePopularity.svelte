@@ -1,8 +1,9 @@
 <script lang="ts">
+	import { formatNumber, DEFAULT_DATE_DISPLAY, type DateDisplay } from '#lib/dates';
 	import type { RoutePopularityStats } from '#lib/types/routePopularity';
 
-	type Props = { data: RoutePopularityStats };
-	let { data }: Props = $props();
+	type Props = { data: RoutePopularityStats; dateDisplay?: DateDisplay };
+	let { data, dateDisplay = DEFAULT_DATE_DISPLAY }: Props = $props();
 </script>
 
 <article class="panel">
@@ -12,15 +13,15 @@
 	</header>
 
 	<p class="lead">
-		Among {data.withData.toLocaleString()} ascents with community stats, how often you tick busy classics
-		vs quieter lines.
+		Among {formatNumber(data.withData, dateDisplay)} ascents with community stats, how often you tick
+		busy classics vs quieter lines.
 	</p>
 
 	<div class="split">
 		<div class="bucket busy">
 			<span class="k">Beaten track</span>
 			<strong>{data.busy.pct}%</strong>
-			<span class="n">{data.busy.count.toLocaleString()} ticks</span>
+			<span class="n">{formatNumber(data.busy.count, dateDisplay)} ticks</span>
 			<div class="track" aria-hidden="true">
 				<div class="fill" style:width="{data.busy.pct}%"></div>
 			</div>
@@ -29,7 +30,7 @@
 		<div class="bucket quiet">
 			<span class="k">Off the beaten track</span>
 			<strong>{data.quiet.pct}%</strong>
-			<span class="n">{data.quiet.count.toLocaleString()} ticks</span>
+			<span class="n">{formatNumber(data.quiet.count, dateDisplay)} ticks</span>
 			<div class="track" aria-hidden="true">
 				<div class="fill" style:width="{data.quiet.pct}%"></div>
 			</div>
@@ -41,7 +42,7 @@
 		<section class="gems">
 			<h3>Hidden gems you've sent</h3>
 			<ul>
-				{#each data.hiddenGems as gem (gem.routeName + (gem.gradeLabel ?? ''))}
+				{#each data.hiddenGems as gem (gem.routeId)}
 					<li>
 						<strong>
 							{#if gem.url}

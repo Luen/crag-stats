@@ -1,4 +1,5 @@
 export type HiddenGemItem = {
+	routeId: number;
 	routeName: string;
 	gradeLabel: string | null;
 	cragName: string | null;

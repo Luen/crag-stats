@@ -32,3 +32,20 @@ describe('gemQualityScore', () => {
 		expect(gemQualityScore({ routeId: 1, routeName: 'x', stars: 3 })).toBe(75);
 	});
 });
+
+it('keeps distinct route identities for gems sharing a name and grade (#131)', () => {
+	const gems = buildRoutePopularityStats(
+		[1, 2].map((routeId) => ({
+			routeId,
+			routeName: 'Unnamed',
+			gradeLabel: '20',
+			cragName: 'Crag ' + routeId,
+			isSend: true,
+			stars: 3,
+			popularity: 10,
+			ascentCount: 3
+		}))
+	)!.hiddenGems;
+	expect(gems.map((g) => g.routeId)).toEqual([1, 2]);
+	expect(new Set(gems.map((g) => g.routeId)).size).toBe(2);
+});

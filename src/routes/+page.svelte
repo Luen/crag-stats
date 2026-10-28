@@ -171,7 +171,7 @@
 	{:else if id === 'quality'}
 		<QualityBreakdown ratings={s.qualityBreakdown} />
 	{:else if id === 'routePopularity' && s.routePopularity}
-		<RoutePopularity data={s.routePopularity} />
+		<RoutePopularity data={s.routePopularity} dateDisplay={data.dateDisplay} />
 	{:else if id === 'pyramids'}
 		<header class="section-head">
 			<h2>Grade pyramids</h2>
