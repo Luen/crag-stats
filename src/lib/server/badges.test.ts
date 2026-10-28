@@ -187,7 +187,7 @@ describe('first ascent badges and milestones', () => {
 		expect(earned.some((b) => b.id === 'first_ffa')).toBe(false);
 
 		expect(buildMilestones(rows).items.filter((i) => i.kind === 'fa')).toEqual([
-			{ kind: 'fa', label: 'First ascent', date: '2021-03-05', detail: 'New Line' }
+			{ id: 'fa:1', kind: 'fa', label: 'First ascent', date: '2021-03-05', detail: 'New Line' }
 		]);
 		expect(firstAscentSends(rows).map((s) => s.day)).toEqual(['2021-03-05']);
 	});
@@ -214,6 +214,33 @@ describe('first ascent badges and milestones', () => {
 		expect(earned.find((b) => b.id === 'first_ffa')?.date).toBe('2023-03-10');
 		expect(earned.find((b) => b.id === 'fa_5')?.date).toBe('2023-05-10');
 		expect(earned.some((b) => b.id === 'fa_10')).toBe(false);
+	});
+
+	it('gives each FA milestone a unique id for same-named same-day routes (#151)', () => {
+		const rows = [
+			row({
+				ascentDate: '2026-10-27',
+				ascentId: 1,
+				routeId: 101,
+				routeName: 'Shared',
+				isSend: true,
+				tickType: 'Red point',
+				firstAscent: 'FA'
+			}),
+			row({
+				ascentDate: '2026-10-27',
+				ascentId: 2,
+				routeId: 102,
+				routeName: 'Shared',
+				isSend: true,
+				tickType: 'Red point',
+				firstAscent: 'FA'
+			})
+		];
+		const faItems = buildMilestones(rows).items.filter((i) => i.kind === 'fa');
+		expect(faItems).toHaveLength(2);
+		expect(new Set(faItems.map((i) => i.id)).size).toBe(2);
+		expect(faItems.map((i) => i.detail)).toEqual(['Shared', 'Shared']);
 	});
 });
 

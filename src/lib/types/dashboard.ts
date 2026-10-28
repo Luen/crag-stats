@@ -282,7 +282,13 @@ export type DashboardStats = {
 		}[];
 	};
 	milestones: {
-		items: { kind: string; label: string; date: string | null; detail: string }[];
+		items: {
+			id: string;
+			kind: string;
+			label: string;
+			date: string | null;
+			detail: string;
+		}[];
 	};
 	badges: {
 		earned: {
