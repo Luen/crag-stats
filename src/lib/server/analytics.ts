@@ -1122,8 +1122,7 @@ export function listLogbook(filters?: {
 			rows = rows.filter((r) =>
 				parseTagsJson(r.tagsJson).some(
 					(t) =>
-						t.category.trim().toLowerCase() === 'rock type' &&
-						t.name.trim().toLowerCase() === rock
+						t.category.trim().toLowerCase() === 'rock type' && t.name.trim().toLowerCase() === rock
 				)
 			);
 		}

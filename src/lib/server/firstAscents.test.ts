@@ -190,9 +190,7 @@ describe('listLogbook FA and history filters', () => {
 			.run();
 		const granite = listLogbook({ rock: 'granite' });
 		expect(granite.total).toBeGreaterThan(0);
-		expect(granite.rows.every((r) => r.routeExternalId === hardProject.routeExternalId)).toBe(
-			true
-		);
+		expect(granite.rows.every((r) => r.routeExternalId === hardProject.routeExternalId)).toBe(true);
 		const sandstone = listLogbook({ rock: 'Sandstone' });
 		expect(sandstone.rows.some((r) => r.routeExternalId === hardProject.routeExternalId)).toBe(
 			false
