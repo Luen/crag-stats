@@ -1,3 +1,4 @@
+import { climbStyleLabel } from './climbStyle';
 /**
  * Client-safe logbook style labels (discipline + solo variants).
  * Mirrors `#lib/server/solo` soloKind rules and dashboard displayStyle buckets.
@@ -50,10 +51,12 @@ export function soloKind(
 /** StyleBadge labels to show beside the tick icon in the logbook. */
 export function logbookStyleLabels(row: LogbookStyleRow): string[] {
 	const labels: string[] = [];
-	const discipline = displayStyle(row.gearStyle);
+	const discipline = climbStyleLabel(row.gearStyle);
 	if (discipline !== 'Other') labels.push(discipline);
 
 	const kind = soloKind(row);
+	const ascentStyle = climbStyleLabel(row.ascentGearStyle);
+	if (!kind && ascentStyle !== 'Other' && !labels.includes(ascentStyle)) labels.push(ascentStyle);
 	if (kind) {
 		const solo = SOLO_LABELS[kind];
 		if (!labels.includes(solo)) labels.push(solo);

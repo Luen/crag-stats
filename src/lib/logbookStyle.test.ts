@@ -40,3 +40,9 @@ describe('displayStyle', () => {
 		expect(displayStyle('unknown')).toBe('Other');
 	});
 });
+
+it.each(['sport', 'trad'])('retains a top-rope ascent on a %s route (#125)', (gearStyle) => {
+	expect(logbookStyleLabels({ tickType: 'Tick', gearStyle, ascentGearStyle: 'toprope' })).toContain(
+		'Top rope'
+	);
+});
