@@ -6,6 +6,8 @@ Visual direction: a clean, card-based analytics dashboard in the style of [Dreev
 
 The First ascents card labels community totals as cached estimates and displays cached/eligible route coverage. Known zero totals stay visible; missing data uses an unavailable message rather than a zero tile.
 
+The Karma card separates the approximate ascent total, the number of locally logged routes, and unavailable edit points. Its footer identifies whether the estimate came from the account counter or local logbook.
+
 ---
 
 ## Logo
