@@ -32,6 +32,7 @@ export type DashCardId =
 	| 'rockTypes'
 	| 'stars'
 	| 'quality'
+	| 'routePopularity'
 	| 'pyramids'
 	| 'notable'
 	| 'cpr'
@@ -75,6 +76,7 @@ export const DEFAULT_DASH_CARDS: readonly DashCardDef[] = [
 	{ id: 'rockTypes', label: 'Rock types', width: 'quarter' },
 	{ id: 'stars', label: 'Stars scatter', width: 'quarter' },
 	{ id: 'quality', label: 'Quality', width: 'quarter' },
+	{ id: 'routePopularity', label: 'Route popularity', width: 'half' },
 	{ id: 'pyramids', label: 'Grade pyramids', width: 'full' },
 	{ id: 'notable', label: 'Notable ascents', width: 'full' },
 	{ id: 'cpr', label: 'CPR timelines', width: 'full' },

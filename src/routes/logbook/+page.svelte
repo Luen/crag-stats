@@ -300,6 +300,10 @@
 				<th>Tick</th>
 				<th><a href={sortHref('quality')}>Quality{sortMark('quality')}</a></th>
 				<th><a href={sortHref('stars')}>★{sortMark('stars')}</a></th>
+				<th
+					><a href={sortHref('popularity')} title="Route popularity">Pop.{sortMark('popularity')}</a
+					></th
+				>
 				<th>With</th>
 				<th>Crag / sector</th>
 			</tr>
@@ -374,6 +378,15 @@
 					</td>
 					<td class="muted">{row.quality || '—'}</td>
 					<td class="muted">{row.stars != null ? row.stars : '—'}</td>
+					<td class="muted">
+						{#if row.relativePopularity != null}
+							{Math.round(row.relativePopularity)}
+						{:else if row.popularity != null}
+							{Math.round(row.popularity)}
+						{:else}
+							—
+						{/if}
+					</td>
 					<td class="muted">{row.partners || '—'}</td>
 					<td>
 						{#if row.cragName}
