@@ -44,6 +44,13 @@ export type BadgeCard = {
 	href: string | null;
 };
 
+export type SetterBadgeHit = {
+	date: string;
+	routeName: string | null;
+	href: string | null;
+	detail: string;
+};
+
 export type BadgesResult = {
 	earned: BadgeCard[];
 	locked: BadgeCard[];
@@ -372,7 +379,7 @@ export const BADGE_CATALOG: readonly BadgeDef[] = [
 	},
 	{
 		id: 'fa_5',
-		title: 'Route Developer',
+		title: '5 First Ascents',
 		hint: 'Log 5 first ascents (FA or FFA)',
 		icon: 'hanger',
 		tone: 'warm'
@@ -382,6 +389,34 @@ export const BADGE_CATALOG: readonly BadgeDef[] = [
 		title: 'Pioneer',
 		hint: 'Log 10 first ascents (FA or FFA)',
 		icon: 'hanger',
+		tone: 'purple'
+	},
+	{
+		id: 'first_setter',
+		title: 'Route Setter',
+		hint: 'Credited as route setter on a route you bolted or set',
+		icon: 'bolt',
+		tone: 'warm'
+	},
+	{
+		id: 'setter_5',
+		title: 'Route Developer',
+		hint: 'Credited as route setter on 5 different routes',
+		icon: 'bolt',
+		tone: 'green'
+	},
+	{
+		id: 'setter_10',
+		title: 'Wall Builder',
+		hint: 'Credited as route setter on 10 different routes',
+		icon: 'bolt',
+		tone: 'blue'
+	},
+	{
+		id: 'setter_25',
+		title: 'Crag Architect',
+		hint: 'Credited as route setter on 25 different routes',
+		icon: 'bolt',
 		tone: 'purple'
 	}
 ] as const;
@@ -455,7 +490,10 @@ function ascentOrder(row: DashboardExtraRow): number {
 	return id != null && Number.isFinite(id) ? Number(id) : Number.MAX_SAFE_INTEGER;
 }
 
-export function buildBadges(rows: DashboardExtraRow[]): BadgesResult {
+export function buildBadges(
+	rows: DashboardExtraRow[],
+	setterHits: readonly SetterBadgeHit[] = []
+): BadgesResult {
 	// Chronological by day, then stable ascent id — never alphabetise route names
 	// (that made “Nacho Libre” beat earlier same-day climbs like “Torched”).
 	const dated = [...rows]
@@ -615,6 +653,21 @@ export function buildBadges(rows: DashboardExtraRow[]): BadgesResult {
 				}
 			}
 		}
+	}
+
+	for (let i = 0; i < setterHits.length; i++) {
+		const n = i + 1;
+		const hit = setterHits[i]!;
+		const badgeHit: Hit = {
+			date: hit.date,
+			routeName: hit.routeName,
+			href: hit.href,
+			detail: hit.detail
+		};
+		if (n === 1) mark('first_setter', badgeHit);
+		if (n === 5) mark('setter_5', badgeHit);
+		if (n === 10) mark('setter_10', badgeHit);
+		if (n === 25) mark('setter_25', badgeHit);
 	}
 
 	// Patch first_moves with total imported count (RoxClimbs style).

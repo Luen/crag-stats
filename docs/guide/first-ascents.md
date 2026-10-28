@@ -1,6 +1,6 @@
 # First ascents
 
-The **First ascents** card counts the routes and boulders where you did the first ascent (**FA**) or the first free ascent (**FFA**).
+The **First ascents** card counts the routes and boulders where you did the first ascent (**FA**) or the first free ascent (**FFA**). When route history is cached, it also shows how many routes credit you as **route setter** (bolting / setting).
 
 ## Marking a first ascent
 
@@ -34,6 +34,8 @@ Only public route history is saved, never your private ascent notes. **Settings 
 ## What the card shows
 
 - **Count:** how many routes you've marked. When you have FFAs, it also shows the FA / FFA split.
+- **Routes set:** distinct routes whose cached history lists you as route setter (`@yourlogin`). Same `@login` rule as FA import; free-text names don't count. Needs route-history import (`ROUTE_HISTORY_IMPORT=true`) so those rows are saved locally.
+- **Routes set:** distinct routes whose cached history lists you as route setter (`@yourlogin`). Same `@login` rule as FA import; free-text names don't count. Needs route-history import (`ROUTE_HISTORY_IMPORT=true`) so those rows are saved locally.
 - **Years:** from the year of your first FA to your latest. Each FA is dated by your **first logged send** of the route (see below).
 - **Grade range:** your easiest and hardest FA, using the route's grade (not a single pitch). Routes and boulders are listed separately, because Ewbank and V-grades can't be compared. Grades show in your display grade system.
 - **Styles:** how your FAs split across sport, trad, boulder and so on, using the route's style on theCrag.
@@ -48,5 +50,6 @@ A first ascent is the send, so each one is dated by your **first logged send** o
 ## Badges and milestones
 
 - **First Ascent** and **First Free Ascent:** your first send of a route you marked FA, or FFA.
-- **Route Developer** (5) and **Pioneer** (10): first ascents of that many different routes, FA and FFA combined.
+- **5 First Ascents** and **Pioneer** (10): first ascents of that many different routes, FA and FFA combined.
+- **Route Setter**, **Route Developer** (5), **Wall Builder** (10), **Crag Architect** (25): route setter credits from cached route history, dated by the earliest setter entry that names your `@login` on each route (not by logbook sends).
 - Each FA also adds a milestone on the date of that first send.

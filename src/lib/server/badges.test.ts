@@ -198,7 +198,7 @@ describe('first ascent badges and milestones', () => {
 		expect(buildMilestones(rows).items.some((i) => i.kind === 'fa')).toBe(false);
 	});
 
-	it('counts distinct routes for Route Developer, mixing FA and FFA', () => {
+	it('counts distinct routes for 5 First Ascents, mixing FA and FFA', () => {
 		const rows = Array.from({ length: 5 }, (_, i) =>
 			row({
 				ascentDate: `2023-0${i + 1}-10`,
@@ -214,5 +214,46 @@ describe('first ascent badges and milestones', () => {
 		expect(earned.find((b) => b.id === 'first_ffa')?.date).toBe('2023-03-10');
 		expect(earned.find((b) => b.id === 'fa_5')?.date).toBe('2023-05-10');
 		expect(earned.some((b) => b.id === 'fa_10')).toBe(false);
+	});
+});
+
+describe('route setter badges', () => {
+	it('awards setter milestones from route history hits', () => {
+		const hits = [
+			{
+				date: '2019-01-01',
+				routeName: 'A',
+				href: null,
+				detail: 'First route set · A'
+			},
+			{
+				date: '2019-02-01',
+				routeName: 'B',
+				href: null,
+				detail: 'x'
+			},
+			{
+				date: '2019-03-01',
+				routeName: 'C',
+				href: null,
+				detail: 'x'
+			},
+			{
+				date: '2019-04-01',
+				routeName: 'D',
+				href: null,
+				detail: 'x'
+			},
+			{
+				date: '2019-05-01',
+				routeName: 'E',
+				href: null,
+				detail: 'Route set #5 · E'
+			}
+		];
+		const earned = buildBadges([], hits).earned;
+		expect(earned.find((b) => b.id === 'first_setter')?.date).toBe('2019-01-01');
+		expect(earned.find((b) => b.id === 'setter_5')?.date).toBe('2019-05-01');
+		expect(earned.some((b) => b.id === 'setter_10')).toBe(false);
 	});
 });

@@ -17,7 +17,7 @@
 
 <article class="panel">
 	<h2>First ascents</h2>
-	{#if data.total === 0}
+	{#if data.total === 0 && data.routesSet === 0}
 		<p class="empty">
 			No first ascents marked yet. theCrag keeps first ascents in route history, which its API
 			doesn't share, so mark yours from the <a href="/logbook">logbook</a> (hover a row, then
@@ -25,10 +25,18 @@
 		</p>
 	{:else}
 		<div class="tiles">
-			<div class="tile">
-				<strong>{data.total}</strong>
-				<span>first ascent{data.total === 1 ? '' : 's'}</span>
-			</div>
+			{#if data.total > 0}
+				<div class="tile">
+					<strong>{data.total}</strong>
+					<span>first ascent{data.total === 1 ? '' : 's'}</span>
+				</div>
+			{/if}
+			{#if data.routesSet > 0}
+				<div class="tile">
+					<strong>{data.routesSet}</strong>
+					<span>route{data.routesSet === 1 ? '' : 's'} set</span>
+				</div>
+			{/if}
 			{#if data.ffa > 0}
 				<div class="tile">
 					<strong>{data.fa} / {data.ffa}</strong>

@@ -18,6 +18,7 @@ import { theCragAscentUrl } from '#lib/thecragUrls';
 import { styleBadgeColor, tickKind } from '#lib/ticks';
 import { buildCprTimeline } from './cpr';
 import { buildBadges } from './badges';
+import { countOwnerSetRoutes, setterBadgeHits } from './routeSetters';
 import {
 	buildMilestones,
 	buildMonthlyStats,
@@ -676,7 +677,7 @@ export function getDashboardStats(
 	const monthly = buildMonthlyStats(extraRows);
 	const yearly = buildYearlyStats(extraRows);
 	const milestones = buildMilestones(extraRows);
-	const badges = buildBadges(extraRows);
+	const badges = buildBadges(extraRows, setterBadgeHits());
 	const trainingLoad = buildTrainingLoadView(extraRows);
 	const styleMix = buildStyleMixOverTime(extraRows);
 	const partners = buildPartnerLeaderboard(extraRows).partners;
@@ -820,7 +821,8 @@ export function getDashboardStats(
 			return base;
 		})(),
 		firstAscents: (() => {
-			if (!faMarks.size) return buildFirstAscentStats([]);
+			const routesSet = countOwnerSetRoutes();
+			if (!faMarks.size) return { ...buildFirstAscentStats([]), routesSet };
 			// One row per marked route: route grade (not a pitch), dated by the first send
 			// (same as the FA badges and milestones), else the earliest logged ascent.
 			const sendDay = new Map(
@@ -855,7 +857,7 @@ export function getDashboardStats(
 				});
 			}
 			for (const fa of byRoute.values()) fa.date = sendDay.get(fa.routeId) ?? fa.date;
-			return buildFirstAscentStats([...byRoute.values()]);
+			return { ...buildFirstAscentStats([...byRoute.values()]), routesSet };
 		})(),
 		solo: buildSoloStats(
 			all.map((r) => {
