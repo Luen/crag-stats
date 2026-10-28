@@ -859,7 +859,7 @@ export function getDashboardStats(
 		})(),
 		solo: buildSoloStats(
 			all.map((r) => {
-				const isBoulder = normalizeClimbStyle(r.gearStyle) === 'boulder';
+				const isBoulder = vScale(r);
 				const score = effectiveScore(r);
 				return {
 					tickType: r.tickType,
