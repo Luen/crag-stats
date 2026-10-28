@@ -67,7 +67,7 @@ export type MarkRules = {
 
 export type RouteHistoryRunResult = {
 	ok: boolean;
-	/** disabled | no-key | no-login | busy | waiting | done | ran | blocked | error */
+	/** disabled | no-key | no-login | busy | waiting | done | ran | blocked | error | cancelled */
 	outcome: string;
 	message: string;
 	fetched: number;
@@ -96,11 +96,22 @@ export type RouteHistoryStatus = {
 let running = false;
 /** Last request time, shared by every run in this process. */
 let lastRequestAt = 0;
+/**
+ * Bumped by Settings → Wipe (and tests) so an in-flight run abandons after its next await
+ * instead of writing history/marks back into an empty DB.
+ */
+let runGeneration = 0;
 
 /** Test hook: forget the in-process pacing state. */
 export function resetRouteHistoryPacing() {
 	running = false;
 	lastRequestAt = 0;
+}
+
+/** Cancel any in-flight import before wiping local data. */
+export function invalidateRouteHistoryRuns() {
+	runGeneration += 1;
+	running = false;
 }
 
 type State = typeof routeHistoryImportState.$inferSelect;
@@ -170,24 +181,27 @@ export function pendingRouteIds(limit: number): string[] {
 	return rows.map((r) => r.id);
 }
 
-function upsertHistoryRows(routeExternalId: string, entries: RouteHistoryEntry[], at: string) {
+/**
+ * Replace cached history for one route with the payload (including an empty list).
+ * Upstream deletions must disappear locally so Refresh → Re-apply can correct marks.
+ */
+function replaceHistoryRows(routeExternalId: string, entries: RouteHistoryEntry[], at: string) {
+	db.delete(routeHistory)
+		.where(
+			and(eq(routeHistory.provider, PROVIDER), eq(routeHistory.routeExternalId, routeExternalId))
+		)
+		.run();
 	for (const e of entries) {
-		const values = {
-			type: e.type,
-			climbers: e.climbers,
-			historyDate: e.date,
-			rawJson: JSON.stringify(e),
-			updatedAt: at
-		};
 		db.insert(routeHistory)
-			.values({ provider: PROVIDER, routeExternalId, historyExternalId: e.id, ...values })
-			.onConflictDoUpdate({
-				target: [
-					routeHistory.provider,
-					routeHistory.routeExternalId,
-					routeHistory.historyExternalId
-				],
-				set: values
+			.values({
+				provider: PROVIDER,
+				routeExternalId,
+				historyExternalId: e.id,
+				type: e.type,
+				climbers: e.climbers,
+				historyDate: e.date,
+				rawJson: JSON.stringify(e),
+				updatedAt: at
 			})
 			.run();
 	}
@@ -248,7 +262,7 @@ function storeBatch(
 				recordFetch(id, 'missing', 0, at);
 				continue;
 			}
-			upsertHistoryRows(id, route.history, at);
+			replaceHistoryRows(id, route.history, at);
 			recordFetch(id, 'ok', route.history.length, at);
 			if (applyMark(id, route.history, login, {})) marked += 1;
 		}
@@ -311,6 +325,8 @@ export async function runRouteHistoryImportOnce(
 	}
 
 	running = true;
+	const myGeneration = runGeneration;
+	const stillCurrent = () => myGeneration === runGeneration;
 	writeState(now, { status: 'running', lastRunAt: new Date(now).toISOString(), lastError: null });
 	let fetched = 0;
 	let marked = 0;
@@ -318,13 +334,34 @@ export async function runRouteHistoryImportOnce(
 	let client: RouteHistoryClient | null = null;
 	try {
 		client = await deps.openClient(config.apiKey);
+		if (!stillCurrent()) {
+			return result(false, 'cancelled', 'Import cancelled because local data was wiped.', {
+				fetched,
+				marked,
+				requests
+			});
+		}
 		for (let i = 0; i < pending.length; i += BATCH_SIZE) {
 			const batch = pending.slice(i, i + BATCH_SIZE);
 			const wait = lastRequestAt + MIN_REQUEST_GAP_MS - deps.now();
 			if (wait > 0) await deps.sleep(wait);
+			if (!stillCurrent()) {
+				return result(false, 'cancelled', 'Import cancelled because local data was wiped.', {
+					fetched,
+					marked,
+					requests
+				});
+			}
 			lastRequestAt = deps.now();
 			requests += 1;
 			const payload = await client.fetchRoutes(batch);
+			if (!stillCurrent()) {
+				return result(false, 'cancelled', 'Import cancelled because local data was wiped.', {
+					fetched,
+					marked,
+					requests
+				});
+			}
 			marked += storeBatch(batch, payload, login, new Date(deps.now()).toISOString());
 			fetched += batch.length;
 		}
@@ -342,6 +379,13 @@ export async function runRouteHistoryImportOnce(
 			requests
 		});
 	} catch (err) {
+		if (!stillCurrent()) {
+			return result(false, 'cancelled', 'Import cancelled because local data was wiped.', {
+				fetched,
+				marked,
+				requests
+			});
+		}
 		const failures = (state?.consecutiveFailures ?? 0) + 1;
 		const blocked = err instanceof RouteHistoryBlockedError;
 		const unavailable = err instanceof RouteHistoryUnavailableError;
@@ -363,7 +407,7 @@ export async function runRouteHistoryImportOnce(
 		});
 		return result(false, blocked ? 'blocked' : 'error', message, { fetched, marked, requests });
 	} finally {
-		running = false;
+		if (stillCurrent()) running = false;
 		await client?.close().catch(() => undefined);
 	}
 }

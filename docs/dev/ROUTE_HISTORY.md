@@ -31,7 +31,8 @@ Pacing (`running`, `lastRequestAt`) is **process-local**. The usual Docker deplo
 
 - **When runs happen:** `triggerRouteHistoryImport()` runs in the background after each successful `runTheCragSync()` (daily cron, the worker, or Settings → Sync). Settings → _Check next 20 routes now_ **awaits** `runRouteHistoryImport()` and shows the real outcome (`ran` / `waiting` / `busy` / `done` / error), so it won't claim a check started when the engine refused.
 - **Order:** ungraded routes first (likeliest new lines), then most recently climbed.
-- **Missing routes:** a route the response leaves out is recorded as `missing` and not asked for again. Only _Refresh all_ (`resetRouteHistoryFetches()`) makes routes eligible again, and that's still 20 per run. Refresh updates cached history on the next fetches; use _Re-apply from saved history_ (with _Replace existing_ if needed) to push corrections into `first_ascents`.
+- **Missing routes:** a route the response leaves out is recorded as `missing` and not asked for again. Only _Refresh all_ (`resetRouteHistoryFetches()`) makes routes eligible again, and that's still 20 per run. Each successful fetch **replaces** that route's cached `route_history` rows (including clearing them when the API returns none), so upstream deletions are not sticky. Use _Re-apply from saved history_ (with _Replace existing_ if needed) to push corrections into `first_ascents`.
+- **Wipe vs in-flight run:** `wipeAllData()` calls `invalidateRouteHistoryRuns()` so a request that was already in flight abandons after its next await and does not write history/marks back into the empty DB.
 
 ## Marks
 

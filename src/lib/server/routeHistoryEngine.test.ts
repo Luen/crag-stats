@@ -3,11 +3,12 @@
  * Nothing here talks to theCrag.
  */
 import { beforeEach, describe, expect, it } from 'vitest';
+import { wipeAllData } from './analytics';
 import { db } from './db';
-import { profiles } from './db/schema';
+import { profiles, routeHistory } from './db/schema';
 import { getFirstAscentMarks, setFirstAscent } from './firstAscents';
 import { upsertAscents } from './ingest';
-import { wipeAllData } from './analytics';
+import type { CanonicalAscent } from './providers/types';
 import {
 	RouteHistoryBlockedError,
 	type RouteWithHistory
@@ -24,7 +25,6 @@ import {
 	runRouteHistoryImportOnce,
 	type RouteHistoryDeps
 } from './routeHistoryEngine';
-import type { CanonicalAscent } from './providers/types';
 
 const ROUTES = 25;
 const LOGIN = 'tester';
@@ -239,11 +239,93 @@ describe('route history import', () => {
 		expect(r.fetched).toBe(ROUTES_PER_RUN);
 	});
 
+	it('refresh replaces cached history so upstream deletions disappear', async () => {
+		const history: Record<string, RouteWithHistory['history']> = {
+			[routeId(0)]: [
+				{ id: 'h-fa', type: 'First Ascent', climbers: `@${LOGIN}`, date: '2019-01-01' },
+				{ id: 'h-ffa', type: 'First Free Ascent', climbers: `@${LOGIN}`, date: '2020-01-01' }
+			]
+		};
+		const h = harness(history);
+		await runRouteHistoryImportOnce(config, h.deps);
+		expect(getFirstAscentMarks().get(`thecrag:${routeId(0)}`)).toBe('FFA');
+		expect(
+			db
+				.select()
+				.from(routeHistory)
+				.all()
+				.filter((r) => r.routeExternalId === routeId(0))
+		).toHaveLength(2);
+
+		// Upstream deletes the FFA entry; Refresh all then re-fetch.
+		history[routeId(0)] = [
+			{ id: 'h-fa', type: 'First Ascent', climbers: `@${LOGIN}`, date: '2019-01-01' }
+		];
+		resetRouteHistoryFetches();
+		h.advance(MIN_RUN_INTERVAL_MS);
+		await runRouteHistoryImportOnce(config, h.deps);
+
+		const cached = db
+			.select()
+			.from(routeHistory)
+			.all()
+			.filter((r) => r.routeExternalId === routeId(0));
+		expect(cached.map((r) => r.historyExternalId)).toEqual(['h-fa']);
+
+		// Without replace, the stale FFA mark would stick; with replace, FA wins.
+		expect(applyCachedHistoryMarks({ replaceExisting: true }).marked).toBe(1);
+		expect(getFirstAscentMarks().get(`thecrag:${routeId(0)}`)).toBe('FA');
+	});
+
 	it('is cleared by Settings → Wipe', async () => {
 		const h = harness({ [routeId(0)]: fa(routeId(0), `@${LOGIN}`) });
 		await runRouteHistoryImportOnce(config, h.deps);
 		wipeAllData();
 		const s = routeHistoryStatus(config);
 		expect([s.totalRoutes, s.fetchedRoutes, s.historyRows, s.importedMarks]).toEqual([0, 0, 0, 0]);
+	});
+
+	it('does not recreate history after Wipe mid-request', async () => {
+		let release!: (rows: RouteWithHistory[]) => void;
+		const gate = new Promise<RouteWithHistory[]>((resolve) => {
+			release = resolve;
+		});
+		let fetchStarted!: () => void;
+		const fetchStartedP = new Promise<void>((resolve) => {
+			fetchStarted = resolve;
+		});
+		let t = Date.parse('2026-01-01T00:00:00Z');
+		const deps: RouteHistoryDeps = {
+			now: () => t,
+			sleep: async (ms) => {
+				t += ms;
+			},
+			openClient: async () => ({
+				fetchRoutes: async (ids) => {
+					fetchStarted();
+					t += 200;
+					const rows = await gate;
+					return rows.filter((r) => ids.includes(r.id));
+				},
+				close: async () => undefined
+			})
+		};
+
+		const run = runRouteHistoryImportOnce(config, deps);
+		await fetchStartedP;
+
+		wipeAllData();
+		release([
+			{
+				id: routeId(0),
+				name: null,
+				history: fa(routeId(0), `@${LOGIN}`)
+			}
+		]);
+
+		const r = await run;
+		expect(r.outcome).toBe('cancelled');
+		const s = routeHistoryStatus(config);
+		expect([s.totalRoutes, s.historyRows, s.importedMarks, s.fetchedRoutes]).toEqual([0, 0, 0, 0]);
 	});
 });
