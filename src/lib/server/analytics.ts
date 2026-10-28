@@ -1022,11 +1022,20 @@ export function listLogbook(filters?: {
 	}
 	if (filters?.from && ISO_DAY.test(filters.from)) {
 		const from = filters.from;
-		rows = rows.filter((r) => (r.ascentDate || '').slice(0, 10) >= from);
+		// Undated rows have no evidence they fall after `from` — exclude them.
+		rows = rows.filter((r) => {
+			const d = (r.ascentDate || '').slice(0, 10);
+			return ISO_DAY.test(d) && d >= from;
+		});
 	}
 	if (filters?.to && ISO_DAY.test(filters.to)) {
 		const to = filters.to;
-		rows = rows.filter((r) => (r.ascentDate || '').slice(0, 10) <= to);
+		// Undated rows have no evidence they fall on/before `to` — exclude them
+		// (empty string would otherwise compare as <= any bound).
+		rows = rows.filter((r) => {
+			const d = (r.ascentDate || '').slice(0, 10);
+			return ISO_DAY.test(d) && d <= to;
+		});
 	}
 	if (filters?.score != null && Number.isFinite(filters.score)) {
 		const target = Math.round(filters.score);

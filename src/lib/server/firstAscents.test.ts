@@ -1,8 +1,9 @@
 import { readFileSync } from 'node:fs';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { getDashboardStats, listLogbook, wipeAllData } from './analytics';
+import { eq } from 'drizzle-orm';
 import { db } from './db';
-import { routeHistoryFetches } from './db/schema';
+import { ascents, routeHistoryFetches } from './db/schema';
 import {
 	buildFirstAscentStats,
 	getFirstAscentMarks,
@@ -191,5 +192,17 @@ describe('listLogbook FA and history filters', () => {
 				return d >= '2026-01-01' && d <= '2026-01-31';
 			})
 		).toBe(true);
+	});
+
+	it('excludes undated ascents from a To-only date bound', () => {
+		const row = listLogbook({ q: 'Hard Project' }).rows[0];
+		db.update(ascents).set({ ascentDate: null }).where(eq(ascents.id, row.id)).run();
+
+		const toOnly = listLogbook({ to: '2025-12-31' });
+		expect(toOnly.total).toBe(0);
+		expect(toOnly.rows.every((r) => Boolean((r.ascentDate || '').slice(0, 10)))).toBe(true);
+
+		const fromOnly = listLogbook({ from: '2020-01-01' });
+		expect(fromOnly.rows.some((r) => r.id === row.id)).toBe(false);
 	});
 });
