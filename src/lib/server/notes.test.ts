@@ -3,32 +3,28 @@ import { notesVisible, resolveShowNotes } from './notes';
 
 describe('resolveShowNotes', () => {
 	it('is off by default', () => {
-		expect(resolveShowNotes({ stored: null, envValue: '' })).toEqual({
+		expect(resolveShowNotes({ stored: null })).toEqual({
 			enabled: false,
 			source: 'default'
 		});
 	});
 
-	it('reads SHOW_PRIVATE_NOTES when Settings has no value', () => {
-		for (const v of ['1', 'true', 'YES', ' on ']) {
-			expect(resolveShowNotes({ stored: null, envValue: v }).enabled, v).toBe(true);
-		}
-		for (const v of ['0', 'false', 'no', 'nope']) {
-			expect(resolveShowNotes({ stored: null, envValue: v })).toEqual({
-				enabled: false,
-				source: 'env'
-			});
-		}
-	});
-
-	it('lets the Settings toggle override the env', () => {
-		expect(resolveShowNotes({ stored: 'off', envValue: 'true' })).toEqual({
+	it('reads the Settings toggle', () => {
+		expect(resolveShowNotes({ stored: 'on' })).toEqual({
+			enabled: true,
+			source: 'settings'
+		});
+		expect(resolveShowNotes({ stored: 'off' })).toEqual({
 			enabled: false,
 			source: 'settings'
 		});
-		expect(resolveShowNotes({ stored: 'on', envValue: '' }).enabled).toBe(true);
-		// Unknown stored values fall through to the env.
-		expect(resolveShowNotes({ stored: 'maybe', envValue: '' }).source).toBe('default');
+	});
+
+	it('treats unknown stored values as off', () => {
+		expect(resolveShowNotes({ stored: 'maybe' })).toEqual({
+			enabled: false,
+			source: 'default'
+		});
 	});
 });
 

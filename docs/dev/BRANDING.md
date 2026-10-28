@@ -119,7 +119,7 @@ Because the brand accent is orange, it sits close to _Trad_ and _Experienced_. T
 
 Stored in the `app_settings` key/value table (migration `0008`) through `src/lib/server/appSettings.ts`:
 
-- `grade_system`: the site-wide display grade system, used for every visitor. Resolution order: Settings value, then `PREFERRED_GRADE_SYSTEM` env, then Ewbank. `?system=` on `/` is a one-off override for a shared link. The old per-browser `cs_grade_system` cookie is no longer read.
+- `grade_system`: the site-wide display grade system, used for every visitor. Settings value, or Ewbank when unset. `?system=` on `/` is a one-off override for a shared link. The old per-browser `cs_grade_system` cookie is no longer read.
 - `search_indexing`: **Show in search engines** (default on). When off, `/robots.txt` disallows everything and every response carries `X-Robots-Tag: noindex, nofollow` plus a `<meta name="robots">` tag. It's forced off when `APP_PASSWORD` is set with `AUTH_SCOPE=all`. `/settings`, `/login`, `/logout` and `/api/` are always noindex. The pure rules live in `src/lib/server/seo.ts` (unit-tested). `robots.txt` is a dynamic route (`src/routes/robots.txt/+server.ts`) and is public even behind the password gate.
 
 ## README screenshots
