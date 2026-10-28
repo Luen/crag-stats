@@ -274,4 +274,6 @@ You'll often notice things outside the task at hand. **Don't silently fix them i
 
 | 2026-10 | `/eddington` detail page: yearly E timeline, milestone tables, sidebar link; dashboard card title links there (#110). |
 
+| 2026-10 | #28/#36: Eddington timeline has exact yearly values in a native details/table and pressed-state metric buttons; active-day count uses configured locale. |
+
 _Add a row when you change behaviour agents must know about._

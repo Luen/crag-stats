@@ -148,3 +148,5 @@ chrome --headless=new --hide-scrollbars --user-data-dir=/tmp/cs-shots --window-s
   --virtual-time-budget=5000 --allow-file-access-from-files \
   --screenshot=docs/social-preview.png "file://$PWD/docs/dev/social-preview.html"
 ```
+
+Chart values must be readable without hover: the Eddington timeline exposes point titles and an expandable values table. Metric toggle buttons expose aria-pressed.

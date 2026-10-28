@@ -52,8 +52,11 @@
 		<h2>Eddington over time</h2>
 		<div class="toggles" role="group" aria-label="Metric">
 			{#each SERIES as s (s.key)}
-				<button type="button" class={{ active: active === s.key }} onclick={() => (active = s.key)}
-					>{s.label}</button
+				<button
+					type="button"
+					class={{ active: active === s.key }}
+					aria-pressed={active === s.key}
+					onclick={() => (active = s.key)}>{s.label}</button
 				>
 			{/each}
 		</div>
@@ -81,7 +84,9 @@
 					/>
 				{/if}
 				{#each points as p (p.period)}
-					<circle class="dot" cx={xPct(p.i)} cy={yPct(p.value)} r="1.2" style:fill={series.color} />
+					<circle class="dot" cx={xPct(p.i)} cy={yPct(p.value)} r="1.2" style:fill={series.color}
+						><title>{p.period}: {p.value}</title></circle
+					>
 				{/each}
 			</svg>
 			<div class="axis">
@@ -93,9 +98,35 @@
 			</div>
 		</div>
 	{/if}
+	{#if points.length > 1}
+		<details class="values">
+			<summary>View yearly values</summary>
+			<table>
+				<caption>{series.label} Eddington number by year</caption><thead
+					><tr><th scope="col">Year</th><th scope="col">Eddington number</th></tr></thead
+				><tbody>
+					{#each points as p (p.period)}<tr><th scope="row">{p.period}</th><td>{p.value}</td></tr
+						>{/each}
+				</tbody>
+			</table>
+		</details>
+	{/if}
 </article>
 
 <style>
+	.values {
+		margin-top: 0.75rem;
+	}
+	table {
+		width: 100%;
+		border-collapse: collapse;
+	}
+	th,
+	td {
+		text-align: left;
+		padding: 0.35rem 0.5rem;
+		border-bottom: 1px solid var(--line);
+	}
 	.panel {
 		padding: 1.1rem 1.2rem;
 		border-radius: 1rem;

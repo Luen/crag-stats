@@ -24,7 +24,9 @@
 		grade indexes grew over time.
 		<a href="/docs/eddington">How it works</a>
 	</p>
-	<p class="meta">{formatNumber(data.stats.activeDays)} active logbook days in total.</p>
+	<p class="meta">
+		{formatNumber(data.stats.activeDays, data.dateDisplay)} active logbook days in total.
+	</p>
 </section>
 
 <section class="tiles">
