@@ -9,9 +9,7 @@ import {
 describe('parseStoredRouteBeta', () => {
 	it('ignores invalid JSON and private fields', () => {
 		expect(parseStoredRouteBeta(null)).toBeNull();
-		const beta = parseStoredRouteBeta(
-			JSON.stringify({ description: 'Line.', comment: 'secret' })
-		);
+		const beta = parseStoredRouteBeta(JSON.stringify({ description: 'Line.', comment: 'secret' }));
 		expect(beta?.description).toBe('Line.');
 		expect(beta && 'comment' in beta).toBe(false);
 	});
