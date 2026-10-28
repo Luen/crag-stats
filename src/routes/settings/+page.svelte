@@ -162,7 +162,7 @@
 		<h2>Import route history</h2>
 		<p class="hint">
 			Reads the public FA / FFA history of routes in your logbook from theCrag and marks the ones
-			that name your <code>@login</code>. Each route is checked once (history doesn't change), 20
+			that name your <code>@login</code>. Each route is checked once (history doesn't change), {rh.perRun}
 			routes per run, at most one request a second, after each logbook sync.
 			<a href="/docs/first-ascents">How first ascents work</a>
 		</p>
@@ -229,8 +229,10 @@
 				</form>
 				<form method="POST" action="?/refreshRouteHistory" class="stack">
 					<p class="hint">
-						Check every route again, still 20 per run. Only useful if theCrag's history was
-						corrected. After re-fetching, use <strong>Re-apply from saved history</strong> (tick
+						Check every route again, still {data.routeHistory.perRun} per run. Only useful if theCrag's
+						history was corrected. After re-fetching, use
+						<strong>Re-apply from saved history</strong>
+						(tick
 						<strong>Replace existing</strong> if you want corrected history to overwrite current marks).
 					</p>
 					<label class="field">

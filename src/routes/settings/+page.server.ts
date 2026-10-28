@@ -121,7 +121,7 @@ export const actions: Actions = {
 		return { ok: true, wiped: true };
 	},
 	// Route history (#68), opt-in via ROUTE_HISTORY_IMPORT. /settings is already owner-gated.
-	/** Check the next 20 unchecked routes and report the real engine outcome (busy/waiting/done/ran). */
+	/** Check the next 100 unchecked routes and report the real engine outcome (busy/waiting/done/ran). */
 	fetchRouteHistory: async ({ locals }) => {
 		if (!locals.authed) return fail(403);
 		if (!isRouteHistoryImportEnabled()) {
@@ -149,7 +149,7 @@ export const actions: Actions = {
 			routeHistoryMessage: `Re-applied cached history for ${routes} routes: ${marked} marks changed.`
 		};
 	},
-	/** Forget which routes were checked, so they're fetched again gradually (20 per run). */
+	/** Forget which routes were checked, so they're fetched again gradually (100 per run). */
 	refreshRouteHistory: async ({ request, locals }) => {
 		if (!locals.authed) return fail(403);
 		if (!isRouteHistoryImportEnabled()) {
@@ -162,7 +162,7 @@ export const actions: Actions = {
 		const n = refreshAllRouteHistory();
 		return {
 			ok: true,
-			routeHistoryMessage: `${n} routes will be checked again, 20 per run. After they re-fetch, use Re-apply from saved history (with Replace existing if needed) to update marks.`
+			routeHistoryMessage: `${n} routes will be checked again, ${getRouteHistoryStatus().perRun} per run. After they re-fetch, use Re-apply from saved history (with Replace existing if needed) to update marks.`
 		};
 	}
 };

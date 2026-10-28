@@ -28,7 +28,7 @@ import {
 	type RouteHistoryDeps
 } from './routeHistoryEngine';
 
-const ROUTES = 25;
+const ROUTES = 105;
 const LOGIN = 'tester';
 const config = { enabled: true, apiKey: 'test-key' };
 
@@ -36,7 +36,7 @@ function routeId(i: number) {
 	return String(5000 + i);
 }
 
-/** 25 routes, one ascent each, plus the owner's profile (synthetic data only). */
+/** 105 routes, one ascent each, plus the owner's profile (synthetic data only). */
 function seed() {
 	const ascents: CanonicalAscent[] = Array.from({ length: ROUTES }, (_, i) => ({
 		provider: 'thecrag',
@@ -122,7 +122,7 @@ describe('route history import', () => {
 		expect(h.calls).toHaveLength(0);
 	});
 
-	it('checks at most 20 routes per run, one session, ≥1 s between requests', async () => {
+	it('checks at most 100 routes per run, one session, ≥1 s between requests', async () => {
 		const h = harness();
 		const r = await runRouteHistoryImportOnce(config, h.deps);
 		expect(r.outcome).toBe('ran');
@@ -151,7 +151,7 @@ describe('route history import', () => {
 		h.advance(MIN_RUN_INTERVAL_MS);
 		const third = await runRouteHistoryImportOnce(config, h.deps);
 		expect(third.outcome).toBe('done');
-		// 20 routes in 2 requests, then the last 5 in 1: no new request on the third run.
+		// 100 routes in 10 requests, then the last 5 in 1: no new request on the third run.
 		expect(h.calls).toHaveLength(Math.ceil(ROUTES_PER_RUN / BATCH_SIZE) + 1);
 		expect(h.sessions().opened).toBe(2); // and no session opened for the no-op run
 
@@ -227,7 +227,7 @@ describe('route history import', () => {
 		setFirstAscent('thecrag', routeId(4), 'FA');
 		setFirstAscent('thecrag', routeId(4), null); // manually unmarked → skip
 
-		// Two runs cover all 25 routes (20, then 5).
+		// Two runs cover all 105 routes (100, then 5).
 		const first = await runRouteHistoryImportOnce(config, h.deps);
 		h.advance(MIN_RUN_INTERVAL_MS);
 		const second = await runRouteHistoryImportOnce(config, h.deps);
@@ -270,7 +270,7 @@ describe('route history import', () => {
 		expect((await runRouteHistoryImportOnce(config, h.deps)).outcome).toBe('ran');
 	});
 
-	it('refresh-all makes routes eligible again, still 20 per run', async () => {
+	it('refresh-all makes routes eligible again, still 100 per run', async () => {
 		const h = harness();
 		await runRouteHistoryImportOnce(config, h.deps);
 		expect(resetRouteHistoryFetches()).toBe(ROUTES_PER_RUN);
@@ -318,9 +318,9 @@ describe('route history import', () => {
 	});
 
 	it('re-apply with replace clears imported marks when history no longer credits the owner', async () => {
-		// route 0 (ungraded) + route 24 (most recent graded) are both in the first run of 20.
+		// route 0 (ungraded) + route 27 are both in the first run of 100.
 		const emptyId = routeId(0);
-		const correctedId = routeId(ROUTES - 1);
+		const correctedId = routeId(27);
 		const history: Record<string, RouteWithHistory['history']> = {
 			[emptyId]: fa(emptyId, `@${LOGIN}`),
 			[correctedId]: fa(correctedId, `@${LOGIN}`)
