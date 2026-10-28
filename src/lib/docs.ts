@@ -47,6 +47,12 @@ export const DOC_PAGES: readonly DocPage[] = [
 		summary: 'Marking your FAs and FFAs, and how the First ascents card counts them.'
 	},
 	{
+		slug: 'projects',
+		title: 'Projects',
+		summary:
+			'Auto-detected projects, public guidebook excerpts on cards, and how that differs from private notes.'
+	},
+	{
 		slug: 'solo',
 		title: 'Solo climbing',
 		summary: 'Top-rope, lead, free and deep water soloing, and ascents with no partner tagged.'
