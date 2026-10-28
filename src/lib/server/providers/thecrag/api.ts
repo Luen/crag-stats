@@ -70,7 +70,10 @@ type ApiAscent = {
 	numberAttempts?: number | null;
 	historical?: boolean | number | null;
 	tick?: ApiTick;
-	markdown?: string;
+	/** Public ascent comment */
+	markdown?: string | null;
+	/** Owner-only ascent comment (needs the supporter API key) */
+	privateMarkdown?: string | null;
 	pitch?: ApiPitch[];
 	tags?: unknown;
 	cpr?: {
@@ -107,6 +110,15 @@ type ApiResponse = {
 		perPage?: number;
 	};
 };
+
+/**
+ * theCrag keeps public (`markdown`) and private (`privateMarkdown`) comments apart.
+ * Both land in ascents.comment, which stays owner-only (see notes.ts).
+ */
+export function ascentNotes(a: Pick<ApiAscent, 'markdown' | 'privateMarkdown'>): string | null {
+	const parts = [a.markdown, a.privateMarkdown].map((s) => s?.trim()).filter(Boolean);
+	return parts.length ? parts.join('\n\n') : null;
+}
 
 /** Flatten theCrag route.tags nested map into chip-friendly pairs. */
 export function flattenRouteTags(
@@ -328,7 +340,7 @@ export function mapAscent(a: ApiAscent): CanonicalAscent | null {
 		heightM: effective.heightM ?? routeHeightM,
 		quality: a.quality?.trim() || a.qualityLabel?.trim() || null,
 		partners: partnersFromWith(a.with),
-		comment: a.markdown ?? null,
+		comment: ascentNotes(a),
 		isSend,
 		isAttempt,
 		epoch: a.epoch ?? null,

@@ -1,7 +1,7 @@
 /**
- * Private ascent notes (theCrag `markdown` → ascents.comment). theCrag has no public/private
- * flag on them, and a supporter API key returns private ones, so every note is private.
- * Hidden by default; the owner opts in in Settings.
+ * Ascent notes: theCrag's public `markdown` and private `privateMarkdown` comments, joined
+ * into ascents.comment. The private half comes only with a supporter API key, so the whole
+ * field is treated as private. Hidden by default; the owner opts in in Settings.
  */
 
 export type ShowNotes = { enabled: boolean; source: 'settings' | 'default' };
