@@ -60,6 +60,27 @@ describe('mapAscent — grade regressions', () => {
 		expect(mapped!.effectiveGradeRaw).toBe('VB+');
 	});
 
+	it('AU boulder route grade 9 → VB (not V9) when ascent gradeSystem is AU', () => {
+		const mapped = mapAscent({
+			id: 42,
+			gradeSystem: 'AU',
+			tick: { name: 'Tick' },
+			route: {
+				id: 42,
+				name: 'Easy Aussie Problem',
+				grade: '9',
+				style: 'Boulder',
+				urlAncestorStub: 'australia/magnetic-island'
+			}
+		});
+		expect(mapped).not.toBeNull();
+		// Ewbank 9 → VB on V-scale; must not store score 9 as fake V9 (#112).
+		expect(mapped!.route.gradeScore).toBe(-0.7);
+		expect(mapped!.route.gradeSystem).toBe('v_scale');
+		expect(mapped!.effectiveGradeScore).toBe(-0.7);
+		expect(mapped!.effectiveGradeRaw).not.toMatch(/^V9$/i);
+	});
+
 	it('Upendi: bare boulder grade 5 → V5', () => {
 		const mapped = mapAscent({
 			id: 2039606838,

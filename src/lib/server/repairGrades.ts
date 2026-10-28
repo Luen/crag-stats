@@ -14,6 +14,7 @@ export function repairGradesFromRawJson(): { routes: number; ascents: number } {
 	const updatedAt = new Date().toISOString();
 	let routeCount = 0;
 	let ascentCount = 0;
+	const repairedApiRoutes = new Set<number>();
 
 	const rows = db
 		.select({
@@ -102,15 +103,18 @@ export function repairGradesFromRawJson(): { routes: number; ascents: number } {
 				})
 				.where(eq(routes.id, row.routeId))
 				.run();
+			repairedApiRoutes.add(row.routeId);
 			routeCount += 1;
 		}
 
 		const allRoutes = txDb.select().from(routes).all();
 		for (const r of allRoutes) {
-			if (!r.gradeRaw) continue;
+			// API mapping already used the original grade-system evidence; do not re-guess it.
+			if (!r.gradeRaw || repairedApiRoutes.has(r.id)) continue;
 			const parsed = detectAndParseGrade(r.gradeRaw, {
 				gearStyle: r.gearStyle,
-				gradeBand: r.gradeBand
+				gradeBand: r.gradeBand,
+				gradeSystem: r.gradeSystem === 'v_scale' ? 'BLDV' : r.gradeSystem
 			});
 			if (parsed.score === r.gradeScore && parsed.system === r.gradeSystem) continue;
 			txDb
