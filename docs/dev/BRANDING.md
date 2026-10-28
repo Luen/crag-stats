@@ -8,6 +8,8 @@ The First ascents card labels community totals as cached estimates and displays 
 
 The Karma card separates the approximate ascent total, the number of locally logged routes, and unavailable edit points. Its footer identifies whether the estimate came from the account counter or local logbook.
 
+Logbook Project and Route setter selects use the standard filter controls. Project yes/no excludes unknown flags; label the setter complement "No setter credit found" and explain that it includes unimported history. Keep both filters in sort and pagination links.
+
 ---
 
 ## Logo
