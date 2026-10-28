@@ -83,6 +83,7 @@ export type YearlyStat = {
 };
 
 export type MilestoneItem = {
+	id: string;
 	kind: 'grade' | 'count' | 'height' | 'fa';
 	label: string;
 	date: string | null;
@@ -304,6 +305,7 @@ export function buildMilestones(rows: DashboardExtraRow[]): { items: MilestoneIt
 		const label = boulder ? formatVScaleLabel(n) : String(n);
 		const name = (row.routeName || 'Unknown').trim() || 'Unknown';
 		gradeItems.push({
+			id: `grade:${key}`,
 			kind: 'grade',
 			label: `First ${label}`,
 			date: dayKey(row.ascentDate),
@@ -321,6 +323,7 @@ export function buildMilestones(rows: DashboardExtraRow[]): { items: MilestoneIt
 			if (count === mark && !hitCounts.has(mark)) {
 				hitCounts.add(mark);
 				items.push({
+					id: `count:${mark}`,
 					kind: 'count',
 					label: `${mark.toLocaleString('en-US')} ascents`,
 					date: dayKey(row.ascentDate),
@@ -341,6 +344,7 @@ export function buildMilestones(rows: DashboardExtraRow[]): { items: MilestoneIt
 				const km = mark / 1000;
 				items.push({
 					kind: 'height',
+					id: `height:${mark}`,
 					label: `${km} km climbed`,
 					date: dayKey(row.ascentDate),
 					detail: `Cumulative height reached ${km} km`
@@ -353,6 +357,7 @@ export function buildMilestones(rows: DashboardExtraRow[]): { items: MilestoneIt
 	for (const fa of firstAscentSends(rows)) {
 		items.push({
 			kind: 'fa',
+			id: `fa:${fa.row.routeId}`,
 			label: fa.kind === 'FFA' ? 'First free ascent' : 'First ascent',
 			date: fa.day,
 			detail: (fa.row.routeName || 'Unknown').trim() || 'Unknown'
