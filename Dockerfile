@@ -31,6 +31,10 @@ ENV IMPERSONATE_CONFIG_DIR=/data/.cache/impersonate
 RUN apt-get update \
   && apt-get install -y --no-install-recommends ca-certificates \
   && rm -rf /var/lib/apt/lists/* \
+  # Runtime commands use node; package managers belong in the build stage only.
+  && rm -rf /usr/local/lib/node_modules /opt/yarn-* \
+  && rm -f /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack \
+    /usr/local/bin/yarn /usr/local/bin/yarnpkg /usr/local/bin/pnpm /usr/local/bin/pnpx \
   && mkdir -p /data
 
 COPY --from=build /app/build ./build

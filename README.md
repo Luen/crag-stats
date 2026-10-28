@@ -132,6 +132,8 @@ docker compose -f docker-compose.ghcr.yml up -d
 
 **Database migrations run automatically** on container start (`scripts/docker-entrypoint.mjs` + `/migrations/*.sql`). Your SQLite volume is preserved across upgrades, and you can skip releases: every pending migration is applied in order. That's covered by a test that upgrades every older schema to the latest.
 
+The runtime image starts the app and worker with `node`; package managers are available only in the build stage. Use `node scripts/migrate.mjs` for manual migration commands inside a container.
+
 ### Build locally instead
 
 ```bash
