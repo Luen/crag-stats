@@ -154,7 +154,7 @@ Components: `TickTypeIcon.svelte`, `StyleBadge.svelte`. Keep icons SVG-inline so
 - Compose: `docker-compose.yml` (build) and `docker-compose.ghcr.yml` (pull image).
 - `docker-release.yml` builds multi-arch and pushes on version tag pushes (`v0.1.0`, …), manual dispatch, or `workflow_call`. There is no `release` trigger: `gh release create` (or a UI release with a new tag) pushes the tag, and a second trigger built every release twice (#164). Publishing a release for an existing tag does not rebuild; use manual dispatch.
 - `nightly-minor-deps-release.yml` runs daily (~00:17 AEST). `npm-check-updates --target semver --cooldown 3` raises package.json ranges within each dependency's major; 0.x packages only get patches. pnpm then re-resolves only the changed specifiers in the lockfile, because frozen installs need the two in sync. After that: lint, check, test, build and e2e, a patch bump, a tag and GitHub release, and the image via `docker-release.yml`. It does nothing when no range moved. It pushes straight to `main`, so branch protection on `main` needs a bypass for Actions.
-- The Docker runner removes npm/npx, Corepack and Yarn. Runtime maintenance must use `node scripts/*.mjs`; package managers remain in the build stage. Container scan evidence and unresolved OS findings: `docs/dev/DOCKER_SECURITY.md`.
+- The Docker runner uses distroless Debian 13 plus the build stage's Node 24 binary, with no shell or package manager. Runtime maintenance must use `node scripts/*.mjs`; package managers remain in the build stage. Container scan evidence and unresolved OS findings: `docs/dev/DOCKER_SECURITY.md`.
 - `.dockerignore` keeps host dependencies, generated output, local env files and SQLite caches out of build contexts. Keep source, migrations, bundled docs and package-manager configuration included.
 - Entrypoint runs migrations before app/worker start; `ensureSchema()` (`src/lib/server/db/index.ts`) applies the same files under `pnpm dev` / `node build`. Persist SQLite via volume (`DATABASE_PATH`).
 
@@ -262,7 +262,7 @@ You'll often notice things outside the task at hand. **Don't silently fix them i
 | 2026-10 | Auth harden: login rate limit, safe redirects, HMAC password/worker-secret compares, security headers, `/logout`. CF Access for `crag.luenwarneke.com` settings/login. CPR SVG NaN guards.                              |
 | 2026-10 | Mobile: heatmap/charts scroll, yearly cards, notable stacked groups; pyramid active pill `--paper` + “All” label.                                                                                                       |
 | 2026-10 | pnpm 12.15.0 via `packageManager`; config in `pnpm-workspace.yaml` (`allowBuilds`, `minimumReleaseAge: 0`). Docker reads pin from package.json.                                                                         |
-| 2026-10 | Runtime pin Node 24 LTS (CI, Docker `node:24-bookworm-slim`, `engines.node`, `.nvmrc`).                                                                                                                                 |
+| 2026-10 | Runtime pin Node 24 LTS (CI, Docker build `node:24-bookworm-slim` plus a minimal Debian 13 runner, `engines.node`, `.nvmrc`).                                                                                           |
 | 2026-10 | Badges carousel on dashboard (RoxClimbs-style milestones from logbook: sends, onsights, countries, height, bands).                                                                                                      |
 | 2026-10 | Goals: Active/Achieved + progress bars; grade = send ≥ X this year; venue_scope outdoor/indoor/any (migration 0007); dashboard shows 3 active goals.                                                                    |
 | 2026-10 | `/projects` RoxClimbs-style auto-projecting cards: open = unsent attempts touched within 1 year; sent shelf = fought-then-sent within ~31 days; first-go sends never projects. No create form.                          |
@@ -366,5 +366,7 @@ You'll often notice things outside the task at hand. **Don't silently fix them i
 | 2026-10 | Snyk triage and the pnpm 12 multi-document scan limitation are recorded in `docs/dev/SECURITY_SCAN.md`. Playwright generates per-run credentials and shares them with workers through test-only environment variables. |
 
 | 2026-10 | `node scripts/snyk-projects.mjs` prepares separate temporary application and boot/config projects for pnpm 12 Snyk scans. Scan every emitted project and preserve any failure; never merge their shared importer maps. |
+
+| 2026-10 | #179: minimal glibc runtime removes mount/apt/shell utilities. CI builds and smoke-tests amd64 + arm64; local importer validation uses synthetic loopback data and GitHub TLS, never theCrag. Raw OS scan findings and source-based zlib triage remain in `docs/dev/DOCKER_SECURITY.md`. |
 
 _Add a row when you change behaviour agents must know about._

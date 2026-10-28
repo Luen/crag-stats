@@ -49,18 +49,32 @@ jobs:
           path: test-results/
           retention-days: 7
 
-  # Build the production image (amd64, no push) so Dockerfile / action changes are caught
-  # on PRs, not only when a release tag runs docker-release.yml.
+  # Exercise native dependencies and startup on both release architectures before publishing.
   docker:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        arch: [amd64, arm64]
     steps:
       - uses: actions/checkout@v7
+      - uses: docker/setup-qemu-action@v4
       - uses: docker/setup-buildx-action@v4
       - name: Build image (no push)
         uses: docker/build-push-action@v7
         with:
           context: .
           push: false
-          platforms: linux/amd64
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          load: true
+          tags: crag-stats:ci-${{ matrix.arch }}
+          platforms: linux/${{ matrix.arch }}
+          cache-from: |
+            type=gha,scope=docker-${{ matrix.arch }}
+            type=gha
+          cache-to: type=gha,mode=max,scope=docker-${{ matrix.arch }}
+      - name: Native SQLite, migrations and HTTP smoke test
+        run: |
+          docker run --rm --platform linux/${{ matrix.arch }} --entrypoint node \
+            --mount type=bind,src="$PWD/scripts/container-smoke.mjs",dst=/app/scripts/container-smoke.mjs,readonly \
+            --mount type=bind,src="$PWD/samples/thecrag-logbook-sample.csv",dst=/fixtures/logbook.csv,readonly \
+            -e CRAG_STATS_CONTAINER_SMOKE=1 \
+            crag-stats:ci-${{ matrix.arch }} scripts/container-smoke.mjs

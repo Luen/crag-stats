@@ -14,10 +14,12 @@ RUN corepack prepare "$(node -p "require('./package.json').packageManager")" --a
 
 COPY . .
 RUN pnpm run build \
-  && pnpm prune --prod
+  && pnpm prune --prod \
+  && mkdir /runtime-data
 
-FROM node:24-bookworm-slim AS runner
+FROM gcr.io/distroless/cc-debian13:latest AS runner
 WORKDIR /app
+ENV PATH=/usr/local/bin:/usr/bin:/bin
 ENV NODE_ENV=production
 ENV HOST=0.0.0.0
 ENV PORT=3000
@@ -28,14 +30,8 @@ ENV MIGRATIONS_DIR=/app/migrations
 ENV IMPER_CACHE_DIR=/data/.cache/impers
 ENV IMPERSONATE_CONFIG_DIR=/data/.cache/impersonate
 
-RUN apt-get update \
-  && apt-get install -y --no-install-recommends ca-certificates \
-  && rm -rf /var/lib/apt/lists/* \
-  # Runtime commands use node; package managers belong in the build stage only.
-  && rm -rf /usr/local/lib/node_modules /opt/yarn-* \
-  && rm -f /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack \
-    /usr/local/bin/yarn /usr/local/bin/yarnpkg /usr/local/bin/pnpm /usr/local/bin/pnpx \
-  && mkdir -p /data
+COPY --from=build /usr/local/bin/node /usr/local/bin/node
+COPY --from=build /runtime-data /data
 
 COPY --from=build /app/build ./build
 COPY --from=build /app/package.json ./package.json
