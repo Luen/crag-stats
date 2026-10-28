@@ -5,11 +5,21 @@ import {
 	isLikelyIndoorRoute,
 	isRecentlySent,
 	isTouchedWithin,
+	isTheCragProjectFlag,
 	isUngradedRoute,
 	rankDashboardProjects,
 	summarizeRouteAscents,
 	triesFromAscent
 } from './projects';
+
+describe('isTheCragProjectFlag', () => {
+	it('is true only when route info stored is_project = 1', () => {
+		expect(isTheCragProjectFlag(1)).toBe(true);
+		expect(isTheCragProjectFlag(0)).toBe(false);
+		expect(isTheCragProjectFlag(null)).toBe(false);
+		expect(isTheCragProjectFlag(undefined)).toBe(false);
+	});
+});
 
 describe('isUngradedRoute', () => {
 	it('flags routes theCrag has no grade for, and literal project grades', () => {
