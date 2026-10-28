@@ -101,7 +101,7 @@
 			· {data.project === 'yes' ? 'projects' : 'not projects'}
 		{/if}
 		{#if data.setter}
-			· {data.setter === 'me' ? 'routes I set' : 'not set by me'}
+			· {data.setter === 'me' ? 'routes I set' : 'no setter credit found'}
 		{/if}
 		{#if data.rock}
 			· rock {data.rock}
@@ -190,7 +190,7 @@
 		<select name="setter" aria-label="Route setter" value={data.setter}>
 			<option value="">Any setter</option>
 			<option value="me">Routes I set</option>
-			<option value="none">Not set by me</option>
+			<option value="none">No setter credit found</option>
 		</select>
 		<select name="project" aria-label="theCrag project flag" value={data.project}>
 			<option value="">Any project flag</option>
@@ -331,7 +331,8 @@
 	<p class="hint">
 		From/to dates override year and season. Route grade min/max use your display system and exclude
 		boulders (filter style for those). Missing route data finds routes without a recorded height or
-		bolt count; Tag contains searches the route tags imported from theCrag.
+		bolt count; Tag contains searches the route tags imported from theCrag. Project filters exclude
+		unknown flags. No setter credit found includes routes whose history has not been imported.
 	</p>
 </form>
 

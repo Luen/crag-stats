@@ -352,4 +352,6 @@ You'll often notice things outside the task at hand. **Don't silently fix them i
 
 | 2026-10 | #86: `/logbook` adds `project=yes\|no` (route-info Project flag; unknown matches neither) and `setter=me\|none` (cached setter history). Raw `flags_json` names beyond Project/isSport/isTrad/isBoulder are unverified, so no bolted/top-rope/artificial facets yet. See `docs/dev/LOGBOOK_FACETS.md`. |
 
+| 2026-10 | #166 review: setter facets resolve each route provider's owner profile and key credits by provider plus route ID. "No setter credit found" includes routes without imported history; do not describe that as a confirmed absence of setter credit. |
+
 _Add a row when you change behaviour agents must know about._

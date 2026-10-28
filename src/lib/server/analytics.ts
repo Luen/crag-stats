@@ -1097,9 +1097,6 @@ export function listLogbook(filters?: {
 	// Marks load before filter/page so fa=* can filter and rows still show the chip.
 	const faMarks = getFirstAscentMarks();
 	const fetchedKeys = historyPending ? getFetchedRouteKeys() : null;
-	const setterKeys = filters?.setter
-		? new Set(listOwnerSetRoutes().map((r) => routeKey('thecrag', r.routeExternalId)))
-		: null;
 	const styleList = normalizeList(filters?.style, filters?.styles);
 	const tickList = normalizeList(filters?.tick, filters?.ticks).map((t) => t.toLowerCase());
 	const qualityList = normalizeList(filters?.quality, filters?.qualities);
@@ -1321,7 +1318,12 @@ export function listLogbook(filters?: {
 		// Null means route info never said either way, so it isn't evidence of "not a project".
 		rows = rows.filter((r) => r.isProject === 0);
 	}
-	if (setterKeys) {
+	if (filters?.setter) {
+		const setterKeys = new Set(
+			[...new Set(rows.map((r) => r.routeProvider))].flatMap((provider) =>
+				listOwnerSetRoutes(provider).map((r) => routeKey(provider, r.routeExternalId))
+			)
+		);
 		const wantSet = filters?.setter === 'me';
 		rows = rows.filter(
 			(r) => setterKeys.has(routeKey(r.routeProvider, r.routeExternalId)) === wantSet

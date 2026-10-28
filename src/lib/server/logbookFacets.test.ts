@@ -64,3 +64,43 @@ it('filters on routes cached history credits the owner as setter', () => {
 	expect(names(listLogbook({ setter: 'me' }).rows)).toEqual(['Route r1']);
 	expect(names(listLogbook({ setter: 'none' }).rows)).toEqual(['Route r2', 'Route r3']);
 });
+
+it('uses each route provider owner and keeps equal external IDs separate', () => {
+	db.insert(profiles)
+		.values([
+			{ provider: 'thecrag', login: 'owner', updatedAt: '2026-01-01' },
+			{ provider: 'synthetic', login: 'beta', updatedAt: '2026-01-01' }
+		])
+		.run();
+	upsertAscents([
+		{
+			provider: 'synthetic',
+			externalId: 'a-r1',
+			isSend: true,
+			isAttempt: false,
+			route: { provider: 'synthetic', externalId: 'r1', name: 'Synthetic route' }
+		}
+	]);
+	db.insert(routeHistory)
+		.values([
+			{
+				provider: 'thecrag',
+				routeExternalId: 'r1',
+				historyExternalId: 'h1',
+				type: 'Route Setter',
+				climbers: '@someone-else',
+				updatedAt: '2026-01-01'
+			},
+			{
+				provider: 'synthetic',
+				routeExternalId: 'r1',
+				historyExternalId: 'h1',
+				type: 'Route Setter',
+				climbers: '@beta',
+				updatedAt: '2026-01-01'
+			}
+		])
+		.run();
+	expect(names(listLogbook({ setter: 'me' }).rows)).toEqual(['Synthetic route']);
+	expect(names(listLogbook({ setter: 'none' }).rows)).toEqual(['Route r1', 'Route r2', 'Route r3']);
+});
