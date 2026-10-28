@@ -38,6 +38,7 @@ export function routeQualitySortKey(input: {
 	}
 	const rank = ascentQualityRank(input.quality);
 	if (rank > 0) return rank * 20;
-	if (input.stars != null && Number.isFinite(input.stars)) return starsAsQualityFallback(input.stars);
+	if (input.stars != null && Number.isFinite(input.stars))
+		return starsAsQualityFallback(input.stars);
 	return -1;
 }

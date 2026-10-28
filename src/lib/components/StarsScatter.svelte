@@ -112,8 +112,7 @@
 	);
 	const meanStars = $derived(
 		shown.filter((p) => p.stars != null).length
-			? shown.reduce((s, p) => s + (p.stars ?? 0), 0) /
-				shown.filter((p) => p.stars != null).length
+			? shown.reduce((s, p) => s + (p.stars ?? 0), 0) / shown.filter((p) => p.stars != null).length
 			: 0
 	);
 
@@ -207,7 +206,9 @@
 					y2={yOf(tick)}
 					class={tick === 0 ? 'axis-line' : 'grid'}
 				/>
-				<text x={pad.l - 8} y={yOf(tick) + 4} text-anchor="end" class="axis">{yTickLabel(tick)}</text>
+				<text x={pad.l - 8} y={yOf(tick) + 4} text-anchor="end" class="axis"
+					>{yTickLabel(tick)}</text
+				>
 			{/each}
 			{#each xTicks as t (t)}
 				<text x={xOf(t)} y={h - pad.b + 16} text-anchor="middle" class="axis">{gradeLabel(t)}</text>
@@ -229,12 +230,13 @@
 						<title>{describe(b)}</title>
 					</circle>
 				{/if}
-		{/each}
+			{/each}
 		</svg>
 		<p class="legend">
 			<span class="swatch dot-swatch"></span> bubble size = sends
 			<span class="swatch trend-swatch"></span>
-			{useQualityAxis ? 'average quality per grade' : 'average stars per grade'} ({TREND_MIN_SENDS}+ sends)
+			{useQualityAxis ? 'average quality per grade' : 'average stars per grade'} ({TREND_MIN_SENDS}+
+			sends)
 		</p>
 	{/if}
 </article>
