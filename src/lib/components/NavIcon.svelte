@@ -4,6 +4,7 @@
 		| 'logbook'
 		| 'projects'
 		| 'sectors'
+		| 'partners'
 		| 'goals'
 		| 'rewind'
 		| 'settings'
@@ -58,6 +59,11 @@
 		{:else if name === 'sectors'}
 			<path d="m3 20 6-12 4 7 2-3 6 8Z" />
 			<circle cx="17" cy="6" r="2" />
+		{:else if name === 'partners'}
+			<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+			<circle cx="9" cy="7" r="4" />
+			<path d="M22 21v-2a4 4 0 0 0-3-3.87" />
+			<path d="M16 3.13a4 4 0 0 1 0 7.75" />
 		{:else if name === 'goals'}
 			<circle cx="12" cy="12" r="9" />
 			<circle cx="12" cy="12" r="5" />

@@ -99,6 +99,8 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 		(v): v is 'height' | 'bolts' => v === 'height' || v === 'bolts'
 	);
 	const tag = url.searchParams.get('tag') ?? '';
+	const partnerMatch = url.searchParams.get('partnerMatch') === 'exact' ? 'exact' : 'contains';
+	const rock = url.searchParams.get('rock') ?? '';
 	const yearRaw = url.searchParams.get('year');
 	const year = yearRaw != null && yearRaw !== '' ? Number(yearRaw) : undefined;
 	const scoreRaw = url.searchParams.get('score');
@@ -138,6 +140,8 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 		partners: partners || undefined,
 		missing: missing.length ? missing : undefined,
 		tag: tag || undefined,
+		partnerMatch,
+		rock: rock || undefined,
 		minStars,
 		minScore,
 		maxScore,
@@ -174,6 +178,8 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 		partners,
 		missing,
 		tag,
+		partnerMatch,
+		rock,
 		minStars: minStars ?? '',
 		minScore: minScore ?? '',
 		maxScore: maxScore ?? '',

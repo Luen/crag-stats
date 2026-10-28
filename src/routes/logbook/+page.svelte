@@ -37,6 +37,8 @@
 		if (data.partners) p.set('partners', data.partners);
 		for (const m of data.missing) p.append('missing', m);
 		if (data.tag) p.set('tag', data.tag);
+		if (data.partnerMatch === 'exact') p.set('partnerMatch', 'exact');
+		if (data.rock) p.set('rock', data.rock);
 		if (data.minStars !== '') p.set('minStars', String(data.minStars));
 		if (data.minScore !== '') p.set('minScore', String(data.minScore));
 		if (data.maxScore !== '') p.set('maxScore', String(data.maxScore));
@@ -93,6 +95,9 @@
 		{#if data.history === 'pending'}
 			· history pending
 		{/if}
+		{#if data.rock}
+			· rock {data.rock}
+		{/if}
 	</p>
 </section>
 
@@ -113,6 +118,11 @@
 			/>{/if}
 		<input name="sector" value={data.sector} placeholder="Sector / parent" />
 		<input name="with" value={data.with} placeholder="With (partner name)" />
+		<select name="partnerMatch" aria-label="Partner match" value={data.partnerMatch}>
+			<option value="contains">Partner name contains</option>
+			<option value="exact">Exact partner name</option>
+		</select>
+		<input name="rock" value={data.rock} placeholder="Rock type (Granite…)" aria-label="Rock type" />
 	</div>
 
 	<div class="filter-row">

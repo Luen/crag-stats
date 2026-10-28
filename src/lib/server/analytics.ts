@@ -32,6 +32,7 @@ import {
 	buildMilestones,
 	buildMonthlyStats,
 	buildPartnerLeaderboard,
+	splitPartners,
 	buildQualityBreakdown,
 	buildRockTypeStats,
 	buildStarsScatter,
@@ -702,7 +703,7 @@ export function getDashboardStats(
 	const badges = buildBadges(extraRows, setterBadgeHits());
 	const trainingLoad = buildTrainingLoadView(extraRows);
 	const styleMix = buildStyleMixOverTime(extraRows);
-	const partners = buildPartnerLeaderboard(extraRows).partners;
+	const partners = buildPartnerLeaderboard(extraRows, 7).partners;
 	const starsScatter = buildStarsScatter(extraRows).points;
 	const qualityBreakdown = buildQualityBreakdown(extraRows).ratings;
 	const routePopularity = buildRoutePopularityStats(
@@ -1055,6 +1056,9 @@ export function listLogbook(filters?: {
 	missing?: Array<'height' | 'bolts'>;
 	/** Case-insensitive substring match on route tag names in tags_json */
 	tag?: string;
+	partnerMatch?: 'exact' | 'contains';
+	/** Route tags_json Rock type name (case-insensitive exact match) */
+	rock?: string;
 	/** date | grade | quality | stars | style | tick | ascents | popularity */
 	sort?: string;
 	/** asc | desc */
@@ -1241,7 +1245,22 @@ export function listLogbook(filters?: {
 	}
 	if (filters?.with) {
 		const w = filters.with.toLowerCase();
-		rows = rows.filter((r) => (r.partners || '').toLowerCase().includes(w));
+		rows = rows.filter((r) =>
+			filters.partnerMatch === 'exact'
+				? splitPartners(r.partners).some((partner) => partner.toLowerCase() === w)
+				: (r.partners || '').toLowerCase().includes(w)
+		);
+	}
+	if (filters?.rock) {
+		const rock = filters.rock.trim().toLowerCase();
+		if (rock) {
+			rows = rows.filter((r) =>
+				parseTagsJson(r.tagsJson).some(
+					(t) =>
+						t.category.trim().toLowerCase() === 'rock type' && t.name.trim().toLowerCase() === rock
+				)
+			);
+		}
 	}
 	if (filters?.partners === 'has') {
 		rows = rows.filter((r) => Boolean((r.partners || '').trim()));

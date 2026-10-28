@@ -39,6 +39,7 @@ export const SITEMAP_PATHS = [
 	'/logbook',
 	'/projects',
 	'/sectors',
+	'/partners',
 	'/goals',
 	'/rewind',
 	'/docs',
