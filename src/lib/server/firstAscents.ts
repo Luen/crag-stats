@@ -166,6 +166,10 @@ export function buildFirstAscentStats(rows: readonly FirstAscentRow[]): FirstAsc
 		fa: rows.filter((r) => r.kind === 'FA').length,
 		ffa: rows.filter((r) => r.kind === 'FFA').length,
 		routesSet: 0,
+		routesPutUp: 0,
+		communityAscents: 0,
+		sportOrBoltedCommunityAscents: 0,
+		routesWithCommunityData: 0,
 		byStyle: [...byStyle.entries()]
 			.map(([style, count]) => ({
 				style,
@@ -182,6 +186,7 @@ export function buildFirstAscentStats(rows: readonly FirstAscentRow[]): FirstAsc
 			.sort((a, b) => (b.date || '').localeCompare(a.date || ''))
 			.slice(0, 5)
 			.map((r) => ({
+				routeId: r.routeId,
 				routeName: r.routeName,
 				kind: r.kind,
 				style: r.style,

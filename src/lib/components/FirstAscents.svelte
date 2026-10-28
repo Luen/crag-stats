@@ -2,9 +2,10 @@
 	import GradeChip from '#lib/components/GradeChip.svelte';
 	import StyleBadge from '#lib/components/StyleBadge.svelte';
 	import type { FirstAscentStats } from '#lib/types/dashboard';
+	import { formatNumber, DEFAULT_DATE_DISPLAY, type DateDisplay } from '#lib/dates';
 
-	type Props = { data: FirstAscentStats; canEdit: boolean };
-	let { data, canEdit }: Props = $props();
+	type Props = { data: FirstAscentStats; canEdit: boolean; dateDisplay?: DateDisplay };
+	let { data, canEdit, dateDisplay = DEFAULT_DATE_DISPLAY }: Props = $props();
 
 	const years = $derived(
 		data.firstYear == null
@@ -35,6 +36,16 @@
 				<div class="tile">
 					<strong>{data.routesSet}</strong>
 					<span>route{data.routesSet === 1 ? '' : 's'} set</span>
+				</div>
+			{/if}
+			{#if data.routesWithCommunityData > 0}
+				<div class="tile">
+					<strong>{formatNumber(data.communityAscents, dateDisplay)}</strong>
+					<span>community ascents (estimate)</span>
+				</div>
+				<div class="tile">
+					<strong>{formatNumber(data.sportOrBoltedCommunityAscents, dateDisplay)}</strong>
+					<span>on sport / bolted</span>
 				</div>
 			{/if}
 			{#if data.ffa > 0}
@@ -93,7 +104,7 @@
 
 		<h3>Latest</h3>
 		<ul class="list">
-			{#each data.recent as r (r.routeName + (r.date ?? ''))}
+			{#each data.recent as r (r.routeId)}
 				<li>
 					<div>
 						<strong>
@@ -114,7 +125,18 @@
 		</ul>
 	{/if}
 	<p class="foot">
-		Marked by you{canEdit ? ' in the logbook' : ''}. <a href="/docs/first-ascents">How it works</a>
+		Marked by you{canEdit ? ' in the logbook' : ''}.
+		{#if data.routesWithCommunityData > 0}
+			Cached community estimate covers {formatNumber(data.routesWithCommunityData, dateDisplay)} of
+			{formatNumber(data.routesPutUp, dateDisplay)} credited logbook routes and excludes your ticks at
+			each fetch.
+			{#if data.routesWithCommunityData < data.routesPutUp}Some route counts are unavailable.{/if}
+		{:else if data.routesPutUp > 0}
+			Community ascents unavailable: 0 of {formatNumber(data.routesPutUp, dateDisplay)} credited logbook
+			routes have a paired count snapshot.
+			{#if canEdit}<a href="/settings">Import or refresh route history in Settings</a>.{/if}
+		{/if}
+		<a href="/docs/first-ascents">How it works</a>
 	</p>
 </article>
 

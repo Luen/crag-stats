@@ -187,7 +187,7 @@ describe('first ascent badges and milestones', () => {
 		expect(earned.some((b) => b.id === 'first_ffa')).toBe(false);
 
 		expect(buildMilestones(rows).items.filter((i) => i.kind === 'fa')).toEqual([
-			{ kind: 'fa', label: 'First ascent', date: '2021-03-05', detail: 'New Line' }
+			{ id: 'fa:1', kind: 'fa', label: 'First ascent', date: '2021-03-05', detail: 'New Line' }
 		]);
 		expect(firstAscentSends(rows).map((s) => s.day)).toEqual(['2021-03-05']);
 	});

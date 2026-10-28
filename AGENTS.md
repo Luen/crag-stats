@@ -312,6 +312,12 @@ You'll often notice things outside the task at hand. **Don't silently fix them i
 | 2026-10 | #107: Document CodeQL default setup (PRs to `main` only) and stacked-PR check expectations; minimal PR template. |
 | 2026-10 | `data:0002_legacy_env_settings` copies the removed `PREFERRED_GRADE_SYSTEM` / `SHOW_PRIVATE_NOTES` env values into `app_settings` once, when Settings has no value yet. A failed data migration is logged and the server still starts. |
 
+| 2026-10 | #135: First ascents card shows community (non-owner) ticks on FA/setter routes from cached `routes.ascent_count`, with a sport/bolted split (`routeDeveloperImpact.ts`). |
+
+| 2026-10 | #140 / #141 / #144 / #148: `routes.ascent_count_own` is captured with each replaced `ascent_count` by route-history import (0013). Never subtract today's logbook from an older total. Legacy counts need an explicit refresh for a paired snapshot. Show cached/eligible coverage, known zeros and estimate labels. First-ascents keys use route IDs; hardest-send keys use ascent IDs, never names/dates. |
+
+| 2026-10 | #151: each milestone has a stable `id` (grade system/score, count or height threshold, or FA route ID). Svelte keys use that ID; matching route names and dates are valid distinct events. |
+
 | 2026-10 | #136: Karma dashboard card approximates ascent points (1× distinct routes / `routesTicked`); edit karma stays unavailable until theCrag exposes it on a syncable API. |
 
 | 2026-10 | #142 / #143: Karma's local tile counts distinct provider-matched routes with logged ascents; orphan metadata contributes no points. Account estimates and local route counts must retain distinct source labels. |

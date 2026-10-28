@@ -267,7 +267,16 @@ function cacheRouteInfo(routeExternalId: string, info: RouteInfoFields | undefin
 	const patch: Record<string, unknown> = { routeInfoUpdatedAt: at };
 	if (info.isProject !== undefined) patch.isProject = info.isProject;
 	if (info.qualityScore !== undefined) patch.qualityScore = info.qualityScore;
-	if (info.ascentCount !== undefined) patch.ascentCount = info.ascentCount;
+	if (info.ascentCount !== undefined) {
+		patch.ascentCount = info.ascentCount;
+		patch.ascentCountOwn =
+			info.ascentCount === null
+				? null
+				: db.get<{ n: number }>(sql`SELECT count(*) AS n FROM ascents a
+					INNER JOIN routes r ON r.id = a.route_id
+					WHERE r.provider = ${PROVIDER} AND a.provider = ${PROVIDER}
+					AND r.external_id = ${routeExternalId}`)!.n;
+	}
 	if (info.popularity !== undefined) patch.popularity = info.popularity;
 	if (info.relativePopularity !== undefined) patch.relativePopularity = info.relativePopularity;
 	if (info.seasonalityJson !== undefined) patch.seasonalityJson = info.seasonalityJson;
