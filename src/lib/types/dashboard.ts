@@ -137,6 +137,7 @@ export type FirstAscentStats = {
 		faKind: 'FA' | 'FFA' | null;
 		fromSetter: boolean;
 		sportOrBolted: boolean;
+		styleLabel: string | null;
 	}[];
 	byStyle: { style: string; count: number; color: string }[];
 	/** Routes on Ewbank-based scores, shown in the preferred system */

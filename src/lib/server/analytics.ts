@@ -887,7 +887,8 @@ export function getDashboardStats(
 					fromFa: r.fromFa,
 					faKind: r.faKind,
 					fromSetter: r.fromSetter,
-					sportOrBolted: r.sportOrBolted
+					sportOrBolted: r.sportOrBolted,
+					styleLabel: r.styleLabel
 				}))
 			};
 			if (!faMarks.size) return { ...buildFirstAscentStats([]), routesSet, ...community };
