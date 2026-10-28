@@ -1,0 +1,26 @@
+# Host dependencies and generated output must not overwrite the Linux build.
+node_modules
+.svelte-kit
+build
+.output
+.vercel
+.netlify
+.wrangler
+
+# Local configuration and cached/private data do not belong in builder caches.
+.env
+.env.*
+data
+**/*.sqlite
+**/*.sqlite-*
+
+# Repository metadata and local tool/browser artifacts.
+.git
+.github
+.claude
+.codex
+.agents
+e2e/.tmp
+test-results
+playwright-report
+*.log
