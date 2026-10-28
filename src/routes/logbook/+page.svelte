@@ -10,6 +10,7 @@
 		LOGBOOK_STYLES,
 		LOGBOOK_TICKS
 	} from '#lib/logbookFilters';
+	import { logbookStyleLabels } from '#lib/logbookStyle';
 	import { enhance } from '$app/forms';
 	import type { PageProps } from './$types';
 
@@ -293,7 +294,6 @@
 				<th><a href={sortHref('stars')}>★{sortMark('stars')}</a></th>
 				<th>With</th>
 				<th>Crag / sector</th>
-				<th>Style</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -354,7 +354,16 @@
 						{/if}
 					</td>
 					<td class="nowrap"><GradeChip grade={row.gradeRaw} band={row.gradeBand} /></td>
-					<td class="nowrap"><TickTypeIcon tick={row.tickType} /></td>
+					<td class="tick-cell">
+						<div class="tick-meta">
+							<TickTypeIcon tick={row.tickType} />
+							<div class="tick-styles">
+								{#each logbookStyleLabels(row) as label (label)}
+									<StyleBadge style={label} />
+								{/each}
+							</div>
+						</div>
+					</td>
 					<td class="muted">{row.quality || '—'}</td>
 					<td class="muted">{row.stars != null ? row.stars : '—'}</td>
 					<td class="muted">{row.partners || '—'}</td>
@@ -374,7 +383,6 @@
 							</div>
 						{/if}
 					</td>
-					<td class="nowrap"><StyleBadge style={row.ascentGearStyle || row.gearStyle} /></td>
 				</tr>
 			{/each}
 		</tbody>
@@ -499,6 +507,21 @@
 	}
 	td.nowrap {
 		white-space: nowrap;
+	}
+	.tick-cell {
+		min-width: 6.5rem;
+	}
+	.tick-meta {
+		display: flex;
+		align-items: center;
+		gap: 0.45rem;
+		flex-wrap: wrap;
+	}
+	.tick-styles {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.25rem;
+		align-items: center;
 	}
 	td.route {
 		min-width: 12rem;

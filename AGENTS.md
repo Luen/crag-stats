@@ -277,4 +277,6 @@ You'll often notice things outside the task at hand. **Don't silently fix them i
 
 | 2026-10 | #126/#127: tick facets include top-rope/solo types and preserve selected legacy values; style filters normalize dws and top-rope aliases. |
 
+| 2026-10 | #125: logbook labels retain ordinary ascent methods such as top-rope alongside route discipline, as well as solo variants. |
+
 _Add a row when you change behaviour agents must know about._
