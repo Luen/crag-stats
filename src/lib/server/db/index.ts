@@ -3,9 +3,10 @@ import { drizzle } from 'drizzle-orm/better-sqlite3';
 import { existsSync, mkdirSync, readdirSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { resolveMigrationsDir as resolveMigrationsDirFrom } from './migrationsPath';
 import * as schema from './schema';
 
-const rootDir = join(fileURLToPath(new URL('.', import.meta.url)), '../../../..');
+const moduleDir = dirname(fileURLToPath(import.meta.url));
 const dbPath = process.env.DATABASE_PATH || process.env.DATABASE_URL || './data/crag-stats.sqlite';
 
 mkdirSync(dirname(dbPath), { recursive: true });
@@ -28,18 +29,13 @@ export function ensureSchema() {
 	migrated = true;
 }
 
-/**
- * MIGRATIONS_DIR wins; otherwise the source-relative path (dev) or ./migrations from the
- * working directory. The bundled server (`node build`) lives at a different depth, so the
- * source-relative guess misses there and a fresh DB would get no tables.
- */
+/** MIGRATIONS_DIR, else nearest crag-stats package migrations, else cwd/migrations (#161). */
 function resolveMigrationsDir(): string {
-	const candidates = [
-		process.env.MIGRATIONS_DIR,
-		join(rootDir, 'migrations'),
-		join(process.cwd(), 'migrations')
-	].filter((d): d is string => Boolean(d));
-	return candidates.find((d) => existsSync(d)) ?? candidates[0];
+	return resolveMigrationsDirFrom({
+		envDir: process.env.MIGRATIONS_DIR,
+		cwd: process.cwd(),
+		fromDir: moduleDir
+	});
 }
 
 function runMigrations(database: Database.Database, migrationsDir: string) {
