@@ -94,42 +94,46 @@
 			</dl>
 		{/if}
 
-		<div
-			class="mix"
-			role="img"
-			aria-label={data.byStyle.map((s) => `${s.style} ${s.count}`).join(', ')}
-		>
-			{#each data.byStyle as s (s.style)}
-				<span style:flex-grow={s.count} style:background={s.color}></span>
-			{/each}
-		</div>
-		<ul class="legend">
-			{#each data.byStyle as s (s.style)}
-				<li><StyleBadge style={s.style} /> {s.count}</li>
-			{/each}
-		</ul>
+		{#if data.byStyle.length > 0}
+			<div
+				class="mix"
+				role="img"
+				aria-label={data.byStyle.map((s) => `${s.style} ${s.count}`).join(', ')}
+			>
+				{#each data.byStyle as s (s.style)}
+					<span style:flex-grow={s.count} style:background={s.color}></span>
+				{/each}
+			</div>
+			<ul class="legend">
+				{#each data.byStyle as s (s.style)}
+					<li><StyleBadge style={s.style} /> {s.count}</li>
+				{/each}
+			</ul>
+		{/if}
 
-		<h3>Latest</h3>
-		<ul class="list">
-			{#each data.recent as r (r.routeId)}
-				<li>
-					<div>
-						<strong>
-							{#if r.url}
-								<a href={r.url} target="_blank" rel="noreferrer">{r.routeName}</a>
-							{:else}
-								{r.routeName}
-							{/if}
-						</strong>
-						<span class="kind">{r.kind}</span>
-						<div class="sub">
-							{[r.cragName, r.date?.slice(0, 4)].filter(Boolean).join(' · ')}
+		{#if data.recent.length > 0}
+			<h3>Latest</h3>
+			<ul class="list">
+				{#each data.recent as r (r.routeId)}
+					<li>
+						<div>
+							<strong>
+								{#if r.url}
+									<a href={r.url} target="_blank" rel="noreferrer">{r.routeName}</a>
+								{:else}
+									{r.routeName}
+								{/if}
+							</strong>
+							<span class="kind">{r.kind}</span>
+							<div class="sub">
+								{[r.cragName, r.date?.slice(0, 4)].filter(Boolean).join(' · ')}
+							</div>
 						</div>
-					</div>
-					<GradeChip grade={r.gradeLabel} band={r.band} />
-				</li>
-			{/each}
-		</ul>
+						<GradeChip grade={r.gradeLabel} band={r.band} />
+					</li>
+				{/each}
+			</ul>
+		{/if}
 
 		{#if communityPreview.length > 0}
 			<h3>Community by route</h3>
