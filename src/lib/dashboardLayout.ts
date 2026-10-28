@@ -22,6 +22,7 @@ export type DashCardId =
 	| 'tickTypes'
 	| 'monthly'
 	| 'yearly'
+	| 'bestMonths'
 	| 'badges'
 	| 'goals'
 	| 'projects'
@@ -65,6 +66,7 @@ export const DEFAULT_DASH_CARDS: readonly DashCardDef[] = [
 	{ id: 'tickTypes', label: 'Tick types', width: 'quarter' },
 	{ id: 'monthly', label: 'Monthly stats', width: 'half' },
 	{ id: 'yearly', label: 'Yearly stats', width: 'half' },
+	{ id: 'bestMonths', label: 'Best months', width: 'full' },
 	{ id: 'badges', label: 'Badges', width: 'full' },
 	{ id: 'goals', label: 'Active goals', width: 'half' },
 	{ id: 'projects', label: 'Projects', width: 'half' },

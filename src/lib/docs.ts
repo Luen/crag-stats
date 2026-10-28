@@ -36,6 +36,12 @@ export const DOC_PAGES: readonly DocPage[] = [
 		summary: 'The intensity-weighted acute:chronic load model behind the Training load card.'
 	},
 	{
+		slug: 'best-months',
+		title: 'Best months',
+		summary:
+			'theCrag seasonality for your top crags, weighted by your ticks, compared with when you climb there.'
+	},
+	{
 		slug: 'eddington',
 		title: 'Eddington numbers',
 		summary:

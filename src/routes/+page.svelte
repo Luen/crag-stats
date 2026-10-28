@@ -7,6 +7,7 @@
 	import CprTimeline from '#lib/components/CprTimeline.svelte';
 	import GradeChip from '#lib/components/GradeChip.svelte';
 	import Badges from '#lib/components/Badges.svelte';
+	import BestMonths from '#lib/components/BestMonths.svelte';
 	import GoalsProgress from '#lib/components/GoalsProgress.svelte';
 	import Milestones from '#lib/components/Milestones.svelte';
 	import ProjectsHighlight from '#lib/components/ProjectsHighlight.svelte';
@@ -35,11 +36,15 @@
 	// Visitors don't get an empty First ascents card; the owner sees how to mark one.
 	const rows = $derived(
 		packLayoutRows(
-			data.dashLayout.map((i) =>
-				i.id === 'firstAscents' && !data.showSettings && s.firstAscents.total === 0
-					? { ...i, enabled: false }
-					: i
-			)
+			data.dashLayout.map((i) => {
+				if (i.id === 'firstAscents' && !data.showSettings && s.firstAscents.total === 0) {
+					return { ...i, enabled: false };
+				}
+				if (i.id === 'bestMonths' && s.bestMonths.cragCount === 0) {
+					return { ...i, enabled: false };
+				}
+				return i;
+			})
 		)
 	);
 
@@ -136,6 +141,8 @@
 		<MonthlyStats months={s.monthly.months} years={s.monthly.years} />
 	{:else if id === 'yearly'}
 		<YearlyStats years={s.yearly.years} />
+	{:else if id === 'bestMonths'}
+		<BestMonths data={s.bestMonths} />
 	{:else if id === 'badges'}
 		<Badges
 			earned={s.badges.earned}
