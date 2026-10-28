@@ -318,4 +318,6 @@ You'll often notice things outside the task at hand. **Don't silently fix them i
 
 | 2026-10 | #151: each milestone has a stable `id` (grade system/score, count or height threshold, or FA route ID). Svelte keys use that ID; matching route names and dates are valid distinct events. |
 
+| 2026-10 | #150: setter-only First ascents cards omit the empty style chart and Latest section; browser regression runs axe in light and dark. |
+
 _Add a row when you change behaviour agents must know about._
