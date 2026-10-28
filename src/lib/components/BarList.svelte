@@ -1,5 +1,13 @@
 <script lang="ts">
-	type Item = { label: string; value: number; color?: string; meta?: string; href?: string | null };
+	type Item = {
+		/** Stable list key when labels can collide (#158). */
+		id?: string;
+		label: string;
+		value: number;
+		color?: string;
+		meta?: string;
+		href?: string | null;
+	};
 
 	type Props = {
 		items: Item[];
@@ -10,10 +18,12 @@
 
 	const visible = $derived(items.slice(0, maxBars));
 	const max = $derived(Math.max(1, ...visible.map((i) => i.value)));
+	const itemKey = (item: Item, index: number) =>
+		item.id ?? item.href ?? `${item.label}\0${index}`;
 </script>
 
 <ul class="bars">
-	{#each visible as item (item.label)}
+	{#each visible as item, i (itemKey(item, i))}
 		<li>
 			<div class="row">
 				<span class="label">

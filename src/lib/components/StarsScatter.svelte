@@ -218,7 +218,7 @@
 				<path d={trendPath} class="trend" />
 			{/if}
 
-			{#each bubbles as b (`${b.score}|${b.y}|${b.names.length}`)}
+			{#each bubbles as b (`${b.score}|${b.y}`)}
 				{#if b.names.length === 1 && b.url}
 					<a href={b.url} target="_blank" rel="noreferrer">
 						<circle cx={xOf(b.score)} cy={yOf(b.y)} r={radius(1)} class="dot">
