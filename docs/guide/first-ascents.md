@@ -2,6 +2,12 @@
 
 The **First ascents** card counts the routes and boulders where you did the first ascent (**FA**) or the first free ascent (**FFA**). When route history is cached, it also shows how many routes credit you as **route setter** (bolting / setting).
 
+## What you need
+
+- **Owner login** — If `APP_PASSWORD` is set, sign in so you can open Settings and use **Mark FA** / **FFA** in the logbook. Visitors see the card and badges once at least one route is marked, but cannot add marks themselves.
+- **Optional route-history import** — Set `ROUTE_HISTORY_IMPORT=true` on the server if you want Crag Stats to auto-mark FAs and FFAs from public theCrag route history (see below). Manual marks and import both write to the same `first_ascents` table; neither depends on private notes.
+- **Private notes are unrelated** — `SHOW_PRIVATE_NOTES` and **Settings → Show private notes** only control whether your **ascent comments** appear on `/logbook` (and in search). They do not gate the First ascents card, FA/FFA badges, milestones, or route-history import.
+
 ## Marking a first ascent
 
 theCrag records first ascents in each route's **history** (the FA / FFA entries on the route page), not as a tick type. Its logbook API doesn't return route history, so a normal sync can't see them. You can mark them yourself, or turn on the optional import below.
@@ -48,6 +54,8 @@ The card only appears for visitors once at least one FA is marked. Until then, t
 A first ascent is the send, so each one is dated by your **first logged send** of the marked route. Earlier attempts and hang-dogs while you worked it don't count, and neither do later repeats. If you've only logged attempts so far, the route still appears on the card (dated by your earliest ascent), but it doesn't earn badges or a milestone until you log the send.
 
 ## Badges and milestones
+
+These unlock from owner-marked FAs/FFAs (and your first send of each marked route), not from turning on private notes.
 
 - **First Ascent** and **First Free Ascent:** your first send of a route you marked FA, or FFA.
 - **5 First Ascents** and **Pioneer** (10): first ascents of that many different routes, FA and FFA combined.
