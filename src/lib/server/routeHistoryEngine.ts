@@ -276,6 +276,8 @@ function cacheRouteInfo(routeExternalId: string, info: RouteInfoFields | undefin
 					INNER JOIN routes r ON r.id = a.route_id
 					WHERE r.provider = ${PROVIDER} AND a.provider = ${PROVIDER}
 					AND r.external_id = ${routeExternalId}`)!.n;
+		// Counter freshness only — unrelated route-info updates leave this alone (#147).
+		patch.ascentCountFetchedAt = info.ascentCount === null ? null : at;
 	}
 	if (info.popularity !== undefined) patch.popularity = info.popularity;
 	if (info.relativePopularity !== undefined) patch.relativePopularity = info.relativePopularity;

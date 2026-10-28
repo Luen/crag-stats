@@ -193,6 +193,7 @@ describe('route history import', () => {
 		expect(row?.qualityScore).toBe(90);
 		expect(row?.ascentCount).toBe(5);
 		expect(row?.ascentCountOwn).toBe(1);
+		expect(row?.ascentCountFetchedAt).toBeTruthy();
 		expect(row?.routeInfoUpdatedAt).toBeTruthy();
 	});
 
@@ -427,33 +428,30 @@ it('refresh clears explicit nulls but preserves omitted route fields (#128)', as
 	resetRouteHistoryFetches();
 	h.advance(MIN_RUN_INTERVAL_MS);
 	await runRouteHistoryImportOnce(config, h.deps);
-	expect(
-		db
-			.select()
-			.from(routes)
-			.where(eq(routes.externalId, routeId(0)))
-			.get()!.qualityScore
-	).toBe(88);
-	expect(
-		db
-			.select()
-			.from(routes)
-			.where(eq(routes.externalId, routeId(0)))
-			.get()!.ascentCountOwn
-	).toBe(1);
+	const afterUnrelated = db
+		.select()
+		.from(routes)
+		.where(eq(routes.externalId, routeId(0)))
+		.get()!;
+	expect(afterUnrelated.qualityScore).toBe(88);
+	expect(afterUnrelated.ascentCountOwn).toBe(1);
+	// Unrelated route-info refresh must not move counter freshness (#147).
+	expect(afterUnrelated.ascentCountFetchedAt).toBeTruthy();
+	const fetchedBefore = afterUnrelated.ascentCountFetchedAt;
 	// A replacement total captures the new owner count, even when it is zero.
 	info = { ascentCount: 13 };
 	resetRouteHistoryFetches();
 	h.advance(MIN_RUN_INTERVAL_MS);
 	await runRouteHistoryImportOnce(config, h.deps);
 	expect(buildRouteDeveloperImpact().communityAscents).toBe(13);
-	expect(
-		db
-			.select()
-			.from(routes)
-			.where(eq(routes.externalId, routeId(0)))
-			.get()!.ascentCountOwn
-	).toBe(0);
+	const afterCount = db
+		.select()
+		.from(routes)
+		.where(eq(routes.externalId, routeId(0)))
+		.get()!;
+	expect(afterCount.ascentCountOwn).toBe(0);
+	expect(afterCount.ascentCountFetchedAt).toBeTruthy();
+	expect(afterCount.ascentCountFetchedAt).not.toBe(fetchedBefore);
 	info = { betaJson: null, qualityScore: null, ascentCount: null };
 	resetRouteHistoryFetches();
 	h.advance(MIN_RUN_INTERVAL_MS);
@@ -467,4 +465,5 @@ it('refresh clears explicit nulls but preserves omitted route fields (#128)', as
 	expect(row.qualityScore).toBeNull();
 	expect(row.ascentCount).toBeNull();
 	expect(row.ascentCountOwn).toBeNull();
+	expect(row.ascentCountFetchedAt).toBeNull();
 });

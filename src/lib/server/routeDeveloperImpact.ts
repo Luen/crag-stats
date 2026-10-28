@@ -21,6 +21,8 @@ export type DeveloperImpactRoute = {
 	ownAscents: number | null;
 	/** max(0, ascentCount − ownAscents); null when either snapshot value is missing. */
 	othersAscents: number | null;
+	/** When ascentCount was written; not route_info_updated_at (#147). */
+	ascentCountFetchedAt: string | null;
 	fromFa: boolean;
 	fromSetter: boolean;
 	sportOrBolted: boolean;
@@ -78,7 +80,8 @@ export function buildRouteDeveloperImpact(provider = PROVIDER): RouteDeveloperIm
 			gearStyle: routes.gearStyle,
 			bolts: routes.bolts,
 			ascentCount: routes.ascentCount,
-			ascentCountOwn: routes.ascentCountOwn
+			ascentCountOwn: routes.ascentCountOwn,
+			ascentCountFetchedAt: routes.ascentCountFetchedAt
 		})
 		.from(routes)
 		.where(eq(routes.provider, provider))
@@ -109,6 +112,7 @@ export function buildRouteDeveloperImpact(provider = PROVIDER): RouteDeveloperIm
 			ascentCount,
 			ownAscents,
 			othersAscents,
+			ascentCountFetchedAt: m.ascentCountFetchedAt ?? null,
 			fromFa: faIds.has(id),
 			fromSetter: setterIds.has(id),
 			sportOrBolted
