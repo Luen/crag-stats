@@ -18,6 +18,30 @@ describe('flattenRouteTags', () => {
 	});
 });
 
+describe('mapAscent — comments', () => {
+	const base = {
+		id: 1,
+		tick: { name: 'Tick' },
+		route: { id: 2, name: 'R', grade: '18', urlAncestorStub: 'australia/x' }
+	};
+
+	it('keeps a private comment when the public one is empty', () => {
+		expect(mapAscent({ ...base, markdown: '', privateMarkdown: 'Private note' })!.comment).toBe(
+			'Private note'
+		);
+	});
+
+	it('joins public and private comments', () => {
+		expect(mapAscent({ ...base, markdown: 'Public', privateMarkdown: 'Private' })!.comment).toBe(
+			'Public\n\nPrivate'
+		);
+	});
+
+	it('stores blank comments as null', () => {
+		expect(mapAscent({ ...base, markdown: '  ' })!.comment).toBeNull();
+	});
+});
+
 describe('mapAscent — grade regressions', () => {
 	it('Splinder: AU ascent 12 on V0 boulder stays V0', () => {
 		const mapped = mapAscent({

@@ -349,5 +349,6 @@ You'll often notice things outside the task at hand. **Don't silently fix them i
 | 2026-10 | Agents must run `pnpm lint`, `pnpm check`, and `pnpm test` locally before push / opening or updating a PR / claiming done; fix Prettier with `pnpm format`. Do not treat CI as the first formatter. |
 
 | 2026-10 | #161: `resolveMigrationsDir` walks up from the module to the nearest `crag-stats` package `migrations/` (not a fixed `../../../../`). Nested checkouts / review worktrees no longer inherit a parent's older migrations. `MIGRATIONS_DIR` still wins. |
+| 2026-10 | theCrag returns private ascent comments in `privateMarkdown`, separate from public `markdown`. `ascentNotes()` (`thecrag/api.ts`) joins both into `ascents.comment`, which stays owner-only. Blank comments are stored as null. |
 
 _Add a row when you change behaviour agents must know about._
