@@ -25,6 +25,7 @@
 		for (const q of data.qualities) p.append('quality', q);
 		if (data.crag) p.set('crag', data.crag);
 		if (data.sector) p.set('sector', data.sector);
+		if (data.sectorPath.length) p.set('sectorPath', JSON.stringify(data.sectorPath));
 		if (data.day) p.set('day', data.day);
 		if (data.from) p.set('from', data.from);
 		if (data.to) p.set('to', data.to);
@@ -84,6 +85,8 @@
 		{#if data.sector}
 			· sector {data.sector}
 		{/if}
+		{#if data.sectorPath.length}
+			· sector {data.sectorPath.join(' → ')} · <a href="/logbook">Clear sector</a>{/if}
 		{#if data.fa}
 			· FA {data.fa}
 		{/if}
@@ -103,6 +106,11 @@
 				: 'Search route, crag, partners…'}
 		/>
 		<input name="crag" value={data.crag} placeholder="Crag" />
+		{#if data.sectorPath.length}<input
+				type="hidden"
+				name="sectorPath"
+				value={JSON.stringify(data.sectorPath)}
+			/>{/if}
 		<input name="sector" value={data.sector} placeholder="Sector / parent" />
 		<input name="with" value={data.with} placeholder="With (partner name)" />
 	</div>
