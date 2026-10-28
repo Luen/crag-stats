@@ -1,13 +1,54 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { wipeAllData } from './analytics';
 import { db } from './db';
-import { profiles } from './db/schema';
+import { ascents, profiles, routes } from './db/schema';
 import { upsertAscents } from './ingest';
-import { buildKarmaStats } from './karma';
+import { buildKarmaStats, countLocalRoutesLogged } from './karma';
 
 beforeEach(() => wipeAllData());
 
 describe('buildKarmaStats (#136)', () => {
+	it('does not award ascent points for orphan metadata or mismatched providers (#143)', () => {
+		db.insert(routes)
+			.values([
+				{ provider: 'thecrag', externalId: 'orphan', name: 'No ascent', updatedAt: '2026-01-01' },
+				{
+					provider: 'thecrag',
+					externalId: 'mismatch',
+					name: 'Wrong provider',
+					updatedAt: '2026-01-01'
+				}
+			])
+			.run();
+		const routeId = db
+			.select()
+			.from(routes)
+			.all()
+			.find((r) => r.externalId === 'mismatch')!.id;
+		db.insert(ascents)
+			.values({ provider: 'synthetic', externalId: 'other', routeId, updatedAt: '2026-01-01' })
+			.run();
+		expect(countLocalRoutesLogged()).toBe(0);
+		expect(buildKarmaStats()).toMatchObject({
+			ascentPoints: 0,
+			routesLogged: 0,
+			ascentSource: 'local'
+		});
+	});
+
+	it('keeps distinct logged routes isolated by provider', () => {
+		upsertAscents(
+			['thecrag', 'synthetic'].map((provider) => ({
+				provider,
+				externalId: 'a1',
+				isSend: true,
+				isAttempt: false,
+				route: { provider, externalId: 'r1', name: 'One' }
+			}))
+		);
+		expect(countLocalRoutesLogged()).toBe(1);
+		expect(countLocalRoutesLogged('synthetic')).toBe(1);
+	});
 	it('counts one ascent point per distinct local route', () => {
 		upsertAscents([
 			{

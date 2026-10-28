@@ -5,17 +5,22 @@
  * Guide edits use other one-per-node scores, but personal edit totals are not in the
  * supporter logbook account object, so we cannot reconstruct them honestly here.
  */
-import { count, eq } from 'drizzle-orm';
+import { and, countDistinct, eq } from 'drizzle-orm';
 import type { KarmaStats } from '#lib/types/karma';
 import { db, ensureSchema } from './db';
-import { profiles, routes } from './db/schema';
+import { ascents, profiles, routes } from './db/schema';
 
 const PROVIDER = 'thecrag';
 
 /** Distinct routes present in the local logbook cache. */
 export function countLocalRoutesLogged(provider = PROVIDER): number {
 	ensureSchema();
-	const row = db.select({ n: count() }).from(routes).where(eq(routes.provider, provider)).get();
+	const row = db
+		.select({ n: countDistinct(routes.id) })
+		.from(routes)
+		.innerJoin(ascents, eq(ascents.routeId, routes.id))
+		.where(and(eq(routes.provider, provider), eq(ascents.provider, provider)))
+		.get();
 	return Number(row?.n ?? 0);
 }
 

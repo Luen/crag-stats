@@ -15,6 +15,8 @@ Until theCrag exposes personal karma (or negotiated access), the dashboard card 
 
 When your synced account includes `routesTicked` and that figure is at least as large as the local route cache, the card uses it for the ascent total (it matches “routes you’ve logged” on theCrag). Otherwise it counts distinct routes in your local SQLite cache.
 
+The **local routes logged** tile always shows the number of distinct routes linked to your cached ascents, even when the ascent estimate uses the larger account counter. Repeat ticks count once; route metadata without an ascent does not count.
+
 ## What it is not
 
 - Not a byte-for-byte clone of the score on your theCrag profile.

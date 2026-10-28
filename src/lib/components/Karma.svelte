@@ -23,12 +23,8 @@
 			<span>ascent karma (approx)</span>
 		</div>
 		<div class="tile">
-			<strong>{formatNumber(data.ascentPoints, dateDisplay)}</strong>
-			<span
-				>from {formatNumber(data.routesLogged, dateDisplay)} local route{data.routesLogged === 1
-					? ''
-					: 's'}</span
-			>
+			<strong>{formatNumber(data.routesLogged, dateDisplay)}</strong>
+			<span>local route{data.routesLogged === 1 ? '' : 's'} logged</span>
 		</div>
 		<div class="tile muted">
 			<strong>—</strong>
@@ -40,6 +36,8 @@
 		1 point per distinct route logged (theCrag “Log Ascent”).
 		{#if data.ascentSource === 'account'}
 			Ascent total uses your theCrag <code>routesTicked</code> account figure.
+		{:else}
+			Ascent total uses distinct routes with locally logged ascents.
 		{/if}
 		Real karma also waits in a review queue (~1 week) and includes guide edits we cannot see yet.
 		<a href="https://www.thecrag.com/article/cragkarma" target="_blank" rel="noreferrer"
