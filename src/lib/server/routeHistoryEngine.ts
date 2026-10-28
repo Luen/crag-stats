@@ -24,6 +24,7 @@ import {
 	RouteHistoryBlockedError,
 	RouteHistoryUnavailableError,
 	type RouteHistoryClient,
+	type RouteInfoFields,
 	type RouteWithHistory
 } from './providers/thecrag/routeHistoryApi';
 import {
@@ -261,6 +262,25 @@ function applyMark(
 	return true;
 }
 
+function cacheRouteInfo(routeExternalId: string, info: RouteInfoFields | undefined, at: string) {
+	if (!info || !Object.keys(info).length) return;
+	const patch: Record<string, unknown> = { routeInfoUpdatedAt: at };
+	if (info.isProject !== undefined) patch.isProject = info.isProject;
+	if (info.qualityScore !== undefined) patch.qualityScore = info.qualityScore;
+	if (info.ascentCount !== undefined) patch.ascentCount = info.ascentCount;
+	if (info.popularity !== undefined) patch.popularity = info.popularity;
+	if (info.relativePopularity !== undefined) patch.relativePopularity = info.relativePopularity;
+	if (info.seasonalityJson !== undefined) patch.seasonalityJson = info.seasonalityJson;
+	if (info.betaJson !== undefined) patch.betaJson = info.betaJson;
+	if (info.ancestorsJson !== undefined) patch.ancestorsJson = info.ancestorsJson;
+	if (info.pitchesJson !== undefined) patch.pitchesJson = info.pitchesJson;
+	if (info.flagsJson !== undefined) patch.flagsJson = info.flagsJson;
+	db.update(routes)
+		.set(patch as Partial<typeof routes.$inferInsert>)
+		.where(and(eq(routes.provider, PROVIDER), eq(routes.externalId, routeExternalId)))
+		.run();
+}
+
 /** Store one batch's answers: every requested route gets a fetch row, found or not. */
 function storeBatch(
 	requested: readonly string[],
@@ -279,6 +299,7 @@ function storeBatch(
 			}
 			replaceHistoryRows(id, route.history, at);
 			recordFetch(id, 'ok', route.history.length, at);
+			cacheRouteInfo(id, route.info, at);
 			if (applyMark(id, route.history, login, {})) marked += 1;
 		}
 	});

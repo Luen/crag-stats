@@ -1,5 +1,5 @@
 /**
- * Fetch route history from theCrag's `/api/route/ids?show=info` (opt-in, ROUTE_HISTORY_IMPORT).
+ * Fetch route history from theCrag's `/api/route/ids?show=info,ancestors` (opt-in, ROUTE_HISTORY_IMPORT).
  *
  * Plain Node `fetch` is blocked by Cloudflare on these paths (the logbook API is not), so this
  * uses `impers`, which presents a browser-like TLS/HTTP2 fingerprint. It is loaded lazily, only
@@ -7,14 +7,30 @@
  * (`routeHistoryEngine.ts`) owns pacing (≥1 s between requests) and back-off; this client
  * never retries. Prefer negotiating proper route API access with theCrag.
  */
+import { theCragRouteUrl } from '#lib/thecragUrls';
 import { normalizeHistoryEntries, type RouteHistoryEntry } from './routeHistoryParse';
 
 const ROUTE_IDS = 'https://www.thecrag.com/api/route/ids';
+
+/** Route-level fields parsed from `/api/route` (cached on `routes`, #77–#82). */
+export type RouteInfoFields = {
+	isProject?: 0 | 1 | null;
+	qualityScore?: number | null;
+	ascentCount?: number | null;
+	popularity?: number | null;
+	relativePopularity?: number | null;
+	seasonalityJson?: string | null;
+	betaJson?: string | null;
+	ancestorsJson?: string | null;
+	pitchesJson?: string | null;
+	flagsJson?: string | null;
+};
 
 export type RouteWithHistory = {
 	id: string;
 	name: string | null;
 	history: RouteHistoryEntry[];
+	info?: RouteInfoFields;
 };
 
 /** One import run's connection to theCrag; `close()` it when the run ends. */
@@ -72,6 +88,144 @@ export function parseRetryAfter(value: string | null, now = Date.now()): number 
 	return Number.isFinite(t) ? Math.max(0, Math.ceil((t - now) / 1000)) : null;
 }
 
+function finiteNumber(v: unknown): number | undefined {
+	if (typeof v === 'number' && Number.isFinite(v)) return v;
+	if (typeof v === 'string' && v.trim() !== '') {
+		const n = Number(v);
+		if (Number.isFinite(n)) return n;
+	}
+	return undefined;
+}
+
+function finiteInt(v: unknown): number | undefined {
+	const n = finiteNumber(v);
+	if (n === undefined) return undefined;
+	return Math.trunc(n);
+}
+
+function jsonColumn(v: unknown): string | undefined {
+	if (v === undefined) return undefined;
+	try {
+		return JSON.stringify(v);
+	} catch {
+		return undefined;
+	}
+}
+
+const BETA_TEXT_KEYS = [
+	'description',
+	'accessIssues',
+	'access',
+	'ethic',
+	'ethics',
+	'approach'
+] as const;
+
+const BETA_EXCERPT_MAX = 4000;
+
+function betaExcerpt(text: string): string {
+	const t = text.trim();
+	if (t.length <= BETA_EXCERPT_MAX) return t;
+	return `${t.slice(0, BETA_EXCERPT_MAX)}…`;
+}
+
+/** Public guidebook beta only — never ascent notes or private fields. */
+export function parseRouteBeta(
+	beta: unknown,
+	routeId: string,
+	urlAncestorStub?: unknown
+): string | null | undefined {
+	if (beta === undefined) return undefined;
+	if (beta === null) return null;
+	const out: Record<string, string> = {};
+	if (typeof beta === 'object' && !Array.isArray(beta)) {
+		const b = beta as Record<string, unknown>;
+		for (const key of BETA_TEXT_KEYS) {
+			const v = b[key];
+			if (typeof v === 'string' && v.trim()) out[key] = betaExcerpt(v);
+		}
+	} else if (typeof beta === 'string' && beta.trim()) {
+		out.description = betaExcerpt(beta);
+	}
+	const stub = typeof urlAncestorStub === 'string' ? urlAncestorStub : null;
+	const attributionUrl = theCragRouteUrl(routeId, stub);
+	if (attributionUrl) out.attributionUrl = attributionUrl;
+	if (!Object.keys(out).length) return undefined;
+	return JSON.stringify(out);
+}
+
+function parseSeasonalityJson(v: unknown): string | undefined {
+	if (!Array.isArray(v) || v.length !== 12) return undefined;
+	const nums: number[] = [];
+	for (const item of v) {
+		const n = finiteNumber(item);
+		if (n === undefined) return undefined;
+		nums.push(n);
+	}
+	return JSON.stringify(nums);
+}
+
+function normalizeFlagList(flags: unknown): string[] | undefined {
+	if (!Array.isArray(flags)) return undefined;
+	return flags.map((f) => String(f));
+}
+
+function isProjectFromFlags(flags: unknown): 0 | 1 | undefined {
+	const list = normalizeFlagList(flags);
+	if (!list) return undefined;
+	return list.some((f) => /^project$/i.test(f.trim())) ? 1 : 0;
+}
+
+/** Extract cacheable route fields when the API includes them. */
+export function parseRouteInfoFields(
+	o: Record<string, unknown>,
+	routeId: string
+): RouteInfoFields | undefined {
+	const info: RouteInfoFields = {};
+	const isProject = isProjectFromFlags(o.flags);
+	if (o.flags === null) info.isProject = null;
+	else if (isProject !== undefined) info.isProject = isProject;
+
+	const qualityScore = finiteNumber(o.qualityScore);
+	if (o.qualityScore === null) info.qualityScore = null;
+	else if (qualityScore !== undefined) info.qualityScore = qualityScore;
+
+	const ascentCount = finiteInt(o.ascentCount);
+	if (o.ascentCount === null) info.ascentCount = null;
+	else if (ascentCount !== undefined) info.ascentCount = ascentCount;
+
+	const popularity = finiteNumber(o.popularity);
+	if (o.popularity === null) info.popularity = null;
+	else if (popularity !== undefined) info.popularity = popularity;
+
+	const relativePopularity = finiteNumber(o.relativePopularity);
+	if (o.relativePopularity === null) info.relativePopularity = null;
+	else if (relativePopularity !== undefined) info.relativePopularity = relativePopularity;
+
+	const seasonalityJson = parseSeasonalityJson(o.seasonality);
+	if (o.seasonality === null) info.seasonalityJson = null;
+	else if (seasonalityJson !== undefined) info.seasonalityJson = seasonalityJson;
+
+	const betaJson = parseRouteBeta(o.beta, routeId, o.urlAncestorStub);
+	if (betaJson !== undefined) info.betaJson = betaJson;
+
+	if (o.ancestors !== undefined) {
+		const ancestorsJson = jsonColumn(o.ancestors);
+		if (ancestorsJson !== undefined)
+			info.ancestorsJson = o.ancestors === null ? null : ancestorsJson;
+	}
+	if (o.pitches !== undefined) {
+		const pitchesJson = jsonColumn(o.pitches);
+		if (pitchesJson !== undefined) info.pitchesJson = o.pitches === null ? null : pitchesJson;
+	}
+	if (o.flags !== undefined) {
+		const flagsJson = jsonColumn(o.flags);
+		if (flagsJson !== undefined) info.flagsJson = o.flags === null ? null : flagsJson;
+	}
+
+	return Object.keys(info).length ? info : undefined;
+}
+
 export function parseRoutePayload(json: unknown): RouteWithHistory[] {
 	if (!json || typeof json !== 'object') return [];
 	const root = json as { data?: unknown; error?: unknown; errorLabel?: unknown };
@@ -91,10 +245,13 @@ export function parseRoutePayload(json: unknown): RouteWithHistory[] {
 		if (!item || typeof item !== 'object') continue;
 		const o = item as Record<string, unknown>;
 		if (o.id == null) continue;
+		const id = String(o.id);
+		const info = parseRouteInfoFields(o, id);
 		out.push({
-			id: String(o.id),
+			id,
 			name: o.name != null ? String(o.name) : null,
-			history: normalizeHistoryEntries(o.history)
+			history: normalizeHistoryEntries(o.history),
+			...(info ? { info } : {})
 		});
 	}
 	return out;
@@ -168,7 +325,7 @@ export async function openRouteHistoryClient(apiKey: string): Promise<RouteHisto
 			if (!ids.length) return [];
 			const url = new URL(ROUTE_IDS);
 			url.searchParams.set('id', ids.join(','));
-			url.searchParams.set('show', 'info');
+			url.searchParams.set('show', 'info,ancestors');
 			const res = await session.get(url.toString(), {
 				headers: { Accept: 'application/json', 'X-CData-Key': `key=${apiKey}` },
 				timeout: 45
