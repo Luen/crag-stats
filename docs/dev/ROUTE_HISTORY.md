@@ -64,8 +64,15 @@ Each successful fetch also upserts nullable columns on the matching `routes` row
 | `beta_json`                                         | public `beta` excerpts + route page URL (never ascent notes) | #81                                                 |
 | `ancestors_json`, `pitches_json`, `flags_json`      | same names                                                   | #82 — `/sectors` drill-down, multipitch/style hints |
 | `route_info_updated_at`                             | import timestamp                                             | —                                                   |
+| `route_api_json`                                    | **entire** route object from the response                    | #197 — future fields without a paced re-fetch       |
 
 Parsing lives in `parseRouteInfoFields()` / `parseRoutePayload()` (`routeHistoryApi.ts`); `storeBatch()` writes them in `routeHistoryEngine.ts`. No extra requests — same pacing as history. Omitted fields preserve cached values in partial payloads; explicit null clears them. Successful empty beta/arrays replace the old content.
+
+`route_api_json` (migration `0015`) is the last successful full route object. UI code should keep using the column cache / `beta_json` excerpts; dig into `route_api_json` only when adding a new analytic. `route_history.raw_json` stores each history item’s **original** API object (not only `{id,type,climbers,date}`).
+
+### Logbook API retention (private key)
+
+`/api/logbook/ascents` already persists every ascent as `ascents.raw_json` and the account summary as `profiles.raw_json`. Column mapping extracts what the app uses today; undocumented or newly documented fields (`historical`, `cprStyle`, ascent-level `tags`, `route.gradeAtom`, …) remain recoverable from those blobs without another full logbook sync.
 
 Routes that were already fetched before this migration have no cached info until the owner runs **Refresh all** in Settings (still 100 routes per run), which clears `route_history_fetches` and re-fetches.
 

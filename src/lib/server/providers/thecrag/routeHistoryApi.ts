@@ -31,6 +31,8 @@ export type RouteWithHistory = {
 	name: string | null;
 	history: RouteHistoryEntry[];
 	info?: RouteInfoFields;
+	/** Full route object from the API response (JSON string); null/omit when tests stub without it. */
+	rawJson?: string | null;
 };
 
 /** One import run's connection to theCrag; `close()` it when the run ends. */
@@ -251,6 +253,7 @@ export function parseRoutePayload(json: unknown): RouteWithHistory[] {
 			id,
 			name: o.name != null ? String(o.name) : null,
 			history: normalizeHistoryEntries(o.history),
+			rawJson: jsonColumn(o) ?? null,
 			...(info ? { info } : {})
 		});
 	}

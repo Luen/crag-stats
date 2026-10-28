@@ -84,7 +84,12 @@ function harness(history: Record<string, RouteWithHistory['history']> = {}) {
 					if (fail) throw fail;
 					return ids
 						.filter((id) => !omit.has(id))
-						.map((id) => ({ id, name: null, history: history[id] ?? [] }));
+						.map((id) => ({
+							id,
+							name: null,
+							history: history[id] ?? [],
+							rawJson: JSON.stringify({ id, history: history[id] ?? [] })
+						}));
 				},
 				close: async () => {
 					closed += 1;
@@ -161,7 +166,22 @@ describe('route history import', () => {
 
 	it('caches route info fields on successful fetch', async () => {
 		const id = routeId(0);
-		const hist = fa(id, `@${LOGIN}`);
+		const histSource = {
+			id: `h${id}`,
+			type: 'First Ascent',
+			climbers: `@${LOGIN}`,
+			date: '2019-01-01',
+			extraHistoryField: 'keep-me'
+		};
+		const hist = [
+			{
+				id: histSource.id,
+				type: histSource.type,
+				climbers: histSource.climbers,
+				date: histSource.date,
+				rawJson: JSON.stringify(histSource)
+			}
+		];
 		let t = Date.parse('2026-01-01T00:00:00Z');
 		const deps: RouteHistoryDeps = {
 			now: () => t,
@@ -174,6 +194,18 @@ describe('route history import', () => {
 						id: rid,
 						name: null,
 						history: rid === id ? hist : [],
+						rawJson:
+							rid === id
+								? JSON.stringify({
+										id: rid,
+										name: 'Cached Line',
+										undocumentedFutureField: 42,
+										flags: ['Project'],
+										qualityScore: 90,
+										ascentCount: 5,
+										history: [histSource]
+									})
+								: JSON.stringify({ id: rid, history: [] }),
 						info:
 							rid === id
 								? {
@@ -195,6 +227,17 @@ describe('route history import', () => {
 		expect(row?.ascentCountOwn).toBe(1);
 		expect(row?.ascentCountFetchedAt).toBeTruthy();
 		expect(row?.routeInfoUpdatedAt).toBeTruthy();
+		expect(JSON.parse(row?.routeApiJson ?? '{}')).toMatchObject({
+			id,
+			undocumentedFutureField: 42,
+			qualityScore: 90
+		});
+		const histRow = db
+			.select()
+			.from(routeHistory)
+			.where(eq(routeHistory.routeExternalId, id))
+			.get();
+		expect(JSON.parse(histRow?.rawJson ?? '{}')).toEqual(histSource);
 	});
 
 	it('records routes missing from the response so they are not retried every run', async () => {

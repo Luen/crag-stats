@@ -369,4 +369,6 @@ You'll often notice things outside the task at hand. **Don't silently fix them i
 
 | 2026-10 | #179: minimal glibc runtime removes mount/apt/shell utilities. CI builds and smoke-tests amd64 + arm64; local importer validation uses synthetic loopback data and GitHub TLS, never theCrag. Raw OS scan findings and source-based zlib triage remain in `docs/dev/DOCKER_SECURITY.md`. |
 
+| 2026-10 | #197: route-history import stores the full last `/api/route` object on `routes.route_api_json` (migration `0015`) and keeps each history item’s original JSON in `route_history.raw_json`. Logbook sync already retains full ascent/account payloads in `ascents.raw_json` / `profiles.raw_json`. Column caches stay for UI; dig into raw JSON for future fields without a paced re-fetch. |
+
 _Add a row when you change behaviour agents must know about._

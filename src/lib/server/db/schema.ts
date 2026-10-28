@@ -71,6 +71,11 @@ export const routes = sqliteTable(
 		pitchesJson: text('pitches_json'),
 		flagsJson: text('flags_json'),
 		routeInfoUpdatedAt: text('route_info_updated_at'),
+		/**
+		 * Full last-successful `/api/route` object (JSON). Column cache stays for UI;
+		 * this retains undocumented / future fields without another paced re-fetch (#197).
+		 */
+		routeApiJson: text('route_api_json'),
 		updatedAt: text('updated_at').notNull()
 	},
 	(t) => [uniqueIndex('routes_provider_ext').on(t.provider, t.externalId)]
