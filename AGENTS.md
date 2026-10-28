@@ -334,7 +334,7 @@ You'll often notice things outside the task at hand. **Don't silently fix them i
 
 | 2026-10 | #146: Community-ascent badges (10/50/100/500 + sport/bolted 10/50/100) from paired impact estimates; earned date stays null; detail discloses coverage. |
 
-| 2026-10 | #151: each milestone has a stable `id` (grade system/score, count or height threshold, or FA route ID). Svelte keys use that ID; matching route names and dates are valid distinct events. |
+| 2026-10 | #151: each milestone has a stable `id` (grade system/score, count or height threshold, or FA threshold id — not per-route). Svelte keys use that ID; matching route names and dates are valid distinct events. |
 
 | 2026-10 | #158: dashboard `{#each}` keys prefer stable ids (BarList `id`, sector path, stars bubble score\|y). Never key climb lists by name/date alone; aggregated name keys (partners, crags) are OK when the map is unique by construction. |
 
@@ -368,5 +368,7 @@ You'll often notice things outside the task at hand. **Don't silently fix them i
 | 2026-10 | `node scripts/snyk-projects.mjs` prepares separate temporary application and boot/config projects for pnpm 12 Snyk scans. Scan every emitted project and preserve any failure; never merge their shared importer maps. |
 
 | 2026-10 | #179: minimal glibc runtime removes mount/apt/shell utilities. CI builds and smoke-tests amd64 + arm64; local importer validation uses synthetic loopback data and GitHub TLS, never theCrag. Raw OS scan findings and source-based zlib triage remain in `docs/dev/DOCKER_SECURITY.md`. |
+
+| 2026-10 | #194: FA/FFA milestones condense to thresholds (first FA/FFA, FFA counts 5–100, combined FA+FFA 5–100, style FA 10/20/50 for Sport/Trad/Boulder). Badges align (`fa_20`/`fa_50`/`fa_100`, `ffa_*`, `fa_{sport,trad,boulder}_*`). Stable ids like `fa:first` / `ffa:5` / `fa:boulder:10` — no per-route `fa:{routeId}`. |
 
 _Add a row when you change behaviour agents must know about._
