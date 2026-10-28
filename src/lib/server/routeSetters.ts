@@ -9,11 +9,14 @@ import { formatBadgeDate, type SetterBadgeHit } from './badges';
 
 const PROVIDER = 'thecrag';
 
-function ownerLogin(): string | null {
+function ownerLogin(provider = PROVIDER): string | null {
 	ensureSchema();
 	return (
-		db.select({ login: profiles.login }).from(profiles).where(eq(profiles.provider, PROVIDER)).get()
-			?.login ?? null
+		db
+			.select({ login: profiles.login })
+			.from(profiles)
+			.where(eq(profiles.provider, provider))
+			.get()?.login ?? null
 	);
 }
 
@@ -39,7 +42,7 @@ export type OwnerSetRoute = {
 /** Distinct logbook routes where cached history credits the owner as route setter. */
 export function listOwnerSetRoutes(provider = PROVIDER, login?: string | null): OwnerSetRoute[] {
 	ensureSchema();
-	const needle = login ?? ownerLogin();
+	const needle = login ?? ownerLogin(provider);
 	if (!needle) return [];
 
 	const historyRows = db
