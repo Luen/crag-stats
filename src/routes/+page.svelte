@@ -7,6 +7,7 @@
 	import CprTimeline from '#lib/components/CprTimeline.svelte';
 	import GradeChip from '#lib/components/GradeChip.svelte';
 	import Badges from '#lib/components/Badges.svelte';
+	import BestMonths from '#lib/components/BestMonths.svelte';
 	import GoalsProgress from '#lib/components/GoalsProgress.svelte';
 	import Milestones from '#lib/components/Milestones.svelte';
 	import ProjectsHighlight from '#lib/components/ProjectsHighlight.svelte';
@@ -46,6 +47,9 @@
 					return { ...i, enabled: false };
 				}
 				if (i.id === 'routePopularity' && s.routePopularity == null) {
+					return { ...i, enabled: false };
+				}
+				if (i.id === 'bestMonths' && s.bestMonths.cragCount === 0) {
 					return { ...i, enabled: false };
 				}
 				return i;
@@ -146,6 +150,8 @@
 		<MonthlyStats months={s.monthly.months} years={s.monthly.years} />
 	{:else if id === 'yearly'}
 		<YearlyStats years={s.yearly.years} />
+	{:else if id === 'bestMonths'}
+		<BestMonths data={s.bestMonths} />
 	{:else if id === 'badges'}
 		<Badges
 			earned={s.badges.earned}

@@ -298,4 +298,20 @@ export type DashboardStats = {
 	};
 	pyramidMode: 'all' | 'sends' | 'onsight';
 	routePopularity: RoutePopularityStats | null;
+	/** cragCount 0 → hide Best months card. */
+	bestMonths: BestMonthsView;
+};
+
+export type BestMonthsCrag = {
+	crag: string;
+	url: string | null;
+	ascentCount: number;
+	seasonality: number[];
+	yourMonths: number[];
+	peakMonth: number;
+};
+
+export type BestMonthsView = {
+	cragCount: number;
+	crags: BestMonthsCrag[];
 };

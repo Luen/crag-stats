@@ -48,7 +48,7 @@ import { invalidateRouteHistoryRuns } from './routeHistoryEngine';
 import { repairGradesFromRawJson } from './repairGrades';
 import { buildTrainingLoadView, hasPersonalAscentGrade } from './trainingLoad';
 import { buildRoutePopularityStats, routePopScore } from './routePopularity';
-import { buildTrainingLoadView } from './trainingLoad';
+import { buildBestMonthsView } from './bestMonths';
 
 export type PyramidMode = 'all' | 'sends' | 'onsight';
 const PYRAMID_MODES: PyramidMode[] = ['all', 'sends', 'onsight'];
@@ -338,6 +338,7 @@ export function getDashboardStats(
 			country: routes.country,
 			routeIsProject: routes.isProject,
 			gradeProvenanceJson: ascents.rawJson,
+			seasonalityJson: routes.seasonalityJson,
 			numberAttempts: ascents.numberAttempts,
 			cprDecayedGrade: ascents.cprDecayedGrade,
 			cprDecayedScore: ascents.cprDecayedScore,
@@ -721,6 +722,15 @@ export function getDashboardStats(
 	);
 	const rockAgg = buildRockTypeStats(extraRows);
 	const rockBlurb = rockTypeBlurb(rockAgg.dominant, rockAgg.dominantPct);
+	const bestMonths = buildBestMonthsView(
+		all.map((a) => ({
+			cragName: a.cragName,
+			cragUrl: a.cragUrl,
+			ascentDate: a.ascentDate,
+			routeId: a.routeId,
+			seasonalityJson: a.seasonalityJson
+		}))
+	);
 
 	// Ewbank and V-scale scores aren't comparable, so rank each discipline separately (#58).
 	const hardestSends = pickHardestSends(
@@ -955,7 +965,8 @@ export function getDashboardStats(
 			info: rockTypeInfo(rockAgg.dominant)
 		},
 		pyramidMode,
-		routePopularity
+		routePopularity,
+		bestMonths
 	};
 }
 
