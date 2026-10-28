@@ -1,9 +1,10 @@
 import { fail } from '@sveltejs/kit';
 import { listLogbook } from '#lib/server/analytics';
-import { getShowNotes } from '#lib/server/appSettings';
+import { getPreferredGradeSystem, getShowNotes } from '#lib/server/appSettings';
 import { parseFirstAscentKind, routeExists, setFirstAscent } from '#lib/server/firstAscents';
 import { notesVisible } from '#lib/server/notes';
 import { isRouteHistoryImportEnabled } from '#lib/server/routeHistoryImport';
+import { routeGradeOptions } from '#lib/logbookFilters';
 import type { Actions, PageServerLoad } from './$types';
 
 const ISO_DAY = /^\d{4}-\d{2}-\d{2}$/;
@@ -15,6 +16,32 @@ function parseFaParam(raw: string | null): string {
 
 function parseHistoryParam(raw: string | null): string {
 	return raw === 'pending' ? 'pending' : '';
+}
+
+function parsePartnersParam(raw: string | null): '' | 'has' | 'missing' {
+	if (raw === 'has' || raw === 'missing') return raw;
+	return '';
+}
+
+/** Multi-value query params (`?tick=a&tick=b`) plus comma-separated legacy singles. */
+function multiParams(url: URL, key: string): string[] {
+	const all = url.searchParams.getAll(key).flatMap((v) => v.split(','));
+	const seen = new Set<string>();
+	const out: string[] = [];
+	for (const raw of all) {
+		const t = raw.trim();
+		if (!t || seen.has(t)) continue;
+		seen.add(t);
+		out.push(t);
+	}
+	return out;
+}
+
+function parseScoreBound(raw: string | null): number | undefined {
+	if (raw == null || raw === '') return undefined;
+	const n = Number(raw);
+	if (!Number.isFinite(n) || n < 1 || n > 39) return undefined;
+	return Math.floor(n);
 }
 
 export const actions: Actions = {
@@ -32,8 +59,9 @@ export const actions: Actions = {
 
 export const load: PageServerLoad = async ({ url, locals }) => {
 	const q = url.searchParams.get('q') ?? '';
-	const style = url.searchParams.get('style') ?? '';
-	const tick = url.searchParams.get('tick') ?? '';
+	const styles = multiParams(url, 'style');
+	const ticks = multiParams(url, 'tick');
+	const qualities = multiParams(url, 'quality');
 	const crag = url.searchParams.get('crag') ?? '';
 	const sector = url.searchParams.get('sector') ?? '';
 	const day = url.searchParams.get('day') ?? '';
@@ -49,14 +77,16 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 	// "Not checked yet" only means something to the owner while the import is on; otherwise it'd match every route.
 	const historyFilter = locals.authed && isRouteHistoryImportEnabled();
 	const history = historyFilter ? parseHistoryParam(url.searchParams.get('history')) : '';
-	const quality = url.searchParams.get('quality') ?? '';
 	const withPartner = url.searchParams.get('with') ?? '';
+	const partners = parsePartnersParam(url.searchParams.get('partners'));
 	const yearRaw = url.searchParams.get('year');
 	const year = yearRaw != null && yearRaw !== '' ? Number(yearRaw) : undefined;
 	const scoreRaw = url.searchParams.get('score');
 	const score = scoreRaw != null && scoreRaw !== '' ? Number(scoreRaw) : undefined;
 	const bandRaw = url.searchParams.get('band');
 	const band = bandRaw != null && bandRaw !== '' ? Number(bandRaw) : undefined;
+	const minScore = parseScoreBound(url.searchParams.get('minScore'));
+	const maxScore = parseScoreBound(url.searchParams.get('maxScore'));
 	const minStarsRaw = url.searchParams.get('minStars');
 	const minStarsNum = minStarsRaw != null && minStarsRaw !== '' ? Number(minStarsRaw) : undefined;
 	const minStars =
@@ -66,10 +96,12 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 	const page = Math.max(1, Number(url.searchParams.get('page') || '1'));
 	const limit = 50;
 	const notesShown = notesVisible(getShowNotes().enabled, locals.authed);
+	const gradeSystem = getPreferredGradeSystem();
 	const { total, rows } = listLogbook({
 		q: q || undefined,
-		style: style || undefined,
-		tick: tick || undefined,
+		styles: styles.length ? styles : undefined,
+		ticks: ticks.length ? ticks : undefined,
+		qualities: qualities.length ? qualities : undefined,
 		crag: crag || undefined,
 		sector: sector || undefined,
 		day: day || undefined,
@@ -81,9 +113,11 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 		multipitch: multipitch || undefined,
 		fa: fa || undefined,
 		history: history || undefined,
-		quality: quality || undefined,
 		with: withPartner || undefined,
+		partners: partners || undefined,
 		minStars,
+		minScore,
+		maxScore,
 		year: year != null && Number.isFinite(year) ? year : undefined,
 		score: score != null && Number.isFinite(score) ? score : undefined,
 		band: band != null && Number.isFinite(band) ? band : undefined,
@@ -97,8 +131,9 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 		notesShown,
 		canMarkFirstAscents: locals.authed,
 		q,
-		style,
-		tick,
+		styles,
+		ticks,
+		qualities,
 		crag,
 		sector,
 		day,
@@ -111,9 +146,12 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 		fa,
 		history,
 		historyFilter,
-		quality,
 		with: withPartner,
+		partners,
 		minStars: minStars ?? '',
+		minScore: minScore ?? '',
+		maxScore: maxScore ?? '',
+		gradeOptions: routeGradeOptions(gradeSystem),
 		year: year != null && Number.isFinite(year) ? year : '',
 		score: score != null && Number.isFinite(score) ? score : '',
 		band: band != null && Number.isFinite(band) ? band : '',

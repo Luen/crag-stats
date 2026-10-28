@@ -1,20 +1,27 @@
 <script lang="ts">
+	import { SvelteURLSearchParams } from 'svelte/reactivity';
 	import GradeChip from '#lib/components/GradeChip.svelte';
 	import StyleBadge from '#lib/components/StyleBadge.svelte';
 	import TagChips from '#lib/components/TagChips.svelte';
 	import TickTypeIcon from '#lib/components/TickTypeIcon.svelte';
+	import {
+		includeSelectedOptions,
+		LOGBOOK_QUALITIES,
+		LOGBOOK_STYLES,
+		LOGBOOK_TICKS
+	} from '#lib/logbookFilters';
 	import { enhance } from '$app/forms';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
 
 	function filterParams() {
-		// Throwaway query builder for an href, not reactive state.
-		// eslint-disable-next-line svelte/prefer-svelte-reactivity
-		const p = new URLSearchParams();
+		// Query builder for hrefs, rebuilt when called.
+		const p = new SvelteURLSearchParams();
 		if (data.q) p.set('q', data.q);
-		if (data.style) p.set('style', data.style);
-		if (data.tick) p.set('tick', data.tick);
+		for (const s of data.styles) p.append('style', s);
+		for (const t of data.ticks) p.append('tick', t);
+		for (const q of data.qualities) p.append('quality', q);
 		if (data.crag) p.set('crag', data.crag);
 		if (data.sector) p.set('sector', data.sector);
 		if (data.day) p.set('day', data.day);
@@ -24,9 +31,11 @@
 		if (data.multipitch) p.set('multipitch', '1');
 		if (data.fa) p.set('fa', data.fa);
 		if (data.history) p.set('history', data.history);
-		if (data.quality) p.set('quality', data.quality);
 		if (data.with) p.set('with', data.with);
+		if (data.partners) p.set('partners', data.partners);
 		if (data.minStars !== '') p.set('minStars', String(data.minStars));
+		if (data.minScore !== '') p.set('minScore', String(data.minScore));
+		if (data.maxScore !== '') p.set('maxScore', String(data.maxScore));
 		if (data.year !== '') p.set('year', String(data.year));
 		if (data.score !== '') p.set('score', String(data.score));
 		if (data.band !== '') p.set('band', String(data.band));
@@ -53,6 +62,10 @@
 		if (data.sort !== col) return '';
 		return data.order === 'asc' ? ' ↑' : ' ↓';
 	}
+
+	function checked(list: string[], value: string) {
+		return list.includes(value);
+	}
 </script>
 
 <section class="panel head">
@@ -78,76 +91,163 @@
 </section>
 
 <form class="panel filters" method="GET">
-	<input
-		name="q"
-		value={data.q}
-		placeholder={data.notesShown
-			? 'Search route, crag, partners, notes…'
-			: 'Search route, crag, partners…'}
-	/>
-	<input name="style" value={data.style} placeholder="Style (Sport, Trad…)" />
-	<input name="tick" value={data.tick} placeholder="Tick (Onsight…)" />
-	<input name="crag" value={data.crag} placeholder="Crag" />
-	<input name="sector" value={data.sector} placeholder="Sector / parent" />
-	<input name="with" value={data.with} placeholder="With (partner)" />
-	<input name="year" value={data.year} placeholder="Year" inputmode="numeric" />
-	<input name="from" value={data.from} placeholder="From (YYYY-MM-DD)" />
-	<input name="to" value={data.to} placeholder="To (YYYY-MM-DD)" />
-	<select name="band" aria-label="Grade band" value={String(data.band)}>
-		<option value="">Any band</option>
-		<option value="1">Beginner</option>
-		<option value="2">Intermediate</option>
-		<option value="3">Experienced</option>
-		<option value="4">Expert</option>
-		<option value="5">Elite</option>
-	</select>
-	<select name="season" aria-label="Season" value={data.season}>
-		<option value="">Any time</option>
-		<option value="ytd">Year to date</option>
-		<option value="last_year">Last year</option>
-	</select>
-	<select name="fa" aria-label="First ascent mark" value={data.fa}>
-		<option value="">Any FA mark</option>
-		<option value="any">My FA or FFA</option>
-		<option value="FA">My FA</option>
-		<option value="FFA">My FFA</option>
-		<option value="none">No FA/FFA mark</option>
-	</select>
-	{#if data.historyFilter}
-		<select name="history" aria-label="Route history import" value={data.history}>
-			<option value="">Any history status</option>
-			<option value="pending">History not checked yet</option>
+	<div class="filter-row">
+		<input
+			name="q"
+			value={data.q}
+			placeholder={data.notesShown
+				? 'Search route, crag, partners, notes…'
+				: 'Search route, crag, partners…'}
+		/>
+		<input name="crag" value={data.crag} placeholder="Crag" />
+		<input name="sector" value={data.sector} placeholder="Sector / parent" />
+		<input name="with" value={data.with} placeholder="With (partner name)" />
+	</div>
+
+	<div class="filter-row">
+		<input name="year" value={data.year} placeholder="Year" inputmode="numeric" />
+		<input
+			name="from"
+			value={data.from}
+			placeholder="From (YYYY-MM-DD)"
+			aria-label="From date (overrides year/season when set)"
+		/>
+		<input
+			name="to"
+			value={data.to}
+			placeholder="To (YYYY-MM-DD)"
+			aria-label="To date (overrides year/season when set)"
+		/>
+		<select name="season" aria-label="Season" value={data.season}>
+			<option value="">Any season</option>
+			<option value="ytd">Year to date</option>
+			<option value="last_year">Last year</option>
 		</select>
-	{/if}
-	<select name="quality" aria-label="Climber quality rating" value={data.quality}>
-		<option value="">Any quality</option>
-		<option value="Mega Classic">Mega Classic</option>
-		<option value="Classic">Classic</option>
-		<option value="Very Good">Very Good</option>
-		<option value="Good">Good</option>
-		<option value="Average">Average</option>
-		<option value="Don't Bother">Don't Bother</option>
-		<option value="Crap">Crap</option>
-	</select>
-	<select name="minStars" aria-label="Minimum stars" value={String(data.minStars)}>
-		<option value="">Any stars</option>
-		<option value="1">★+</option>
-		<option value="2">★★+</option>
-		<option value="3">★★★</option>
-	</select>
-	<label class="check">
-		<input type="checkbox" name="multipitch" value="1" checked={data.multipitch} />
-		Multipitch only
-	</label>
-	{#if data.score !== ''}
-		<input type="hidden" name="score" value={data.score} />
-	{/if}
-	{#if data.day}
-		<input type="hidden" name="day" value={data.day} />
-	{/if}
-	<input type="hidden" name="sort" value={data.sort} />
-	<input type="hidden" name="order" value={data.order} />
-	<button type="submit">Filter</button>
+		<select name="band" aria-label="Grade band" value={String(data.band)}>
+			<option value="">Any band</option>
+			<option value="1">Beginner</option>
+			<option value="2">Intermediate</option>
+			<option value="3">Experienced</option>
+			<option value="4">Expert</option>
+			<option value="5">Elite</option>
+		</select>
+	</div>
+
+	<div class="filter-row">
+		<select name="minScore" aria-label="Minimum route grade" value={String(data.minScore)}>
+			<option value="">Min route grade</option>
+			{#each data.gradeOptions as g (g.score)}
+				<option value={g.score}>{g.label}</option>
+			{/each}
+		</select>
+		<select name="maxScore" aria-label="Maximum route grade" value={String(data.maxScore)}>
+			<option value="">Max route grade</option>
+			{#each data.gradeOptions as g (g.score)}
+				<option value={g.score}>{g.label}</option>
+			{/each}
+		</select>
+		<select name="fa" aria-label="First ascent mark" value={data.fa}>
+			<option value="">Any FA mark</option>
+			<option value="any">My FA or FFA</option>
+			<option value="FA">My FA</option>
+			<option value="FFA">My FFA</option>
+			<option value="none">No FA/FFA mark</option>
+		</select>
+		{#if data.historyFilter}
+			<select name="history" aria-label="Route history import" value={data.history}>
+				<option value="">Any history status</option>
+				<option value="pending">History not checked yet</option>
+			</select>
+		{/if}
+		<select name="partners" aria-label="Partners" value={data.partners}>
+			<option value="">Any partners</option>
+			<option value="has">Has partners</option>
+			<option value="missing">Missing partners</option>
+		</select>
+	</div>
+
+	<fieldset class="facet">
+		<legend>Style</legend>
+		<div class="checks">
+			{#each includeSelectedOptions(LOGBOOK_STYLES, data.styles) as style (style)}
+				<label class="check">
+					<input type="checkbox" name="style" value={style} checked={checked(data.styles, style)} />
+					{style}
+				</label>
+			{/each}
+		</div>
+	</fieldset>
+
+	<fieldset class="facet">
+		<legend>Tick type</legend>
+		<div class="checks">
+			{#each includeSelectedOptions(LOGBOOK_TICKS, data.ticks) as tick (tick)}
+				<label class="check">
+					<input type="checkbox" name="tick" value={tick} checked={checked(data.ticks, tick)} />
+					{tick}
+				</label>
+			{/each}
+		</div>
+	</fieldset>
+
+	<fieldset class="facet">
+		<legend>Quality</legend>
+		<div class="checks">
+			{#each LOGBOOK_QUALITIES as quality (quality)}
+				<label class="check">
+					<input
+						type="checkbox"
+						name="quality"
+						value={quality}
+						checked={checked(data.qualities, quality)}
+					/>
+					{quality}
+				</label>
+			{/each}
+		</div>
+	</fieldset>
+
+	<fieldset class="facet">
+		<legend>Min stars</legend>
+		<div class="checks">
+			<label class="check">
+				<input type="radio" name="minStars" value="" checked={data.minStars === ''} />
+				Any
+			</label>
+			<label class="check">
+				<input type="radio" name="minStars" value="1" checked={data.minStars === 1} />
+				★+
+			</label>
+			<label class="check">
+				<input type="radio" name="minStars" value="2" checked={data.minStars === 2} />
+				★★+
+			</label>
+			<label class="check">
+				<input type="radio" name="minStars" value="3" checked={data.minStars === 3} />
+				★★★
+			</label>
+		</div>
+	</fieldset>
+
+	<div class="filter-row actions">
+		<label class="check">
+			<input type="checkbox" name="multipitch" value="1" checked={data.multipitch} />
+			Multipitch only
+		</label>
+		{#if data.score !== ''}
+			<input type="hidden" name="score" value={data.score} />
+		{/if}
+		{#if data.day}
+			<input type="hidden" name="day" value={data.day} />
+		{/if}
+		<input type="hidden" name="sort" value={data.sort} />
+		<input type="hidden" name="order" value={data.order} />
+		<button type="submit">Apply filters</button>
+	</div>
+	<p class="hint">
+		From/to dates override year and season. Route grade min/max use your display system and exclude
+		boulders (filter style for those).
+	</p>
 </form>
 
 <section class="panel table-wrap">
@@ -278,37 +378,64 @@
 		color: var(--ink-muted);
 	}
 	.filters {
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+	}
+	.filter-row {
 		display: grid;
-		grid-template-columns: minmax(0, 2fr) repeat(5, minmax(0, 1fr));
+		grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
 		gap: 0.5rem;
 		align-items: center;
 	}
-	.filters > :global(*) {
-		min-width: 0;
-		box-sizing: border-box;
+	.filter-row.actions {
+		grid-template-columns: auto 1fr;
+		justify-items: start;
 	}
 	.filters input,
 	.filters select {
 		width: 100%;
-	}
-	.filters input,
-	.filters select,
-	.filters button {
+		min-width: 0;
+		box-sizing: border-box;
 		font: inherit;
 		padding: 0.45rem 0.55rem;
 		border-radius: 0.45rem;
 		border: 1px solid var(--line);
 		background: var(--paper);
 	}
-	.filters button {
-		cursor: pointer;
+	.filters button[type='submit'] {
+		font: inherit;
+		padding: 0.45rem 1rem;
+		border-radius: 0.45rem;
+		border: 1px solid var(--accent);
 		background: var(--accent);
 		color: var(--on-accent);
-		border-color: var(--accent);
 		font-weight: 700;
+		cursor: pointer;
+		justify-self: end;
 	}
-	.filters button:hover {
+	.filters button[type='submit']:hover {
 		background: var(--accent-strong);
+	}
+	.facet {
+		margin: 0;
+		padding: 0.55rem 0.7rem;
+		border: 1px solid var(--line);
+		border-radius: 0.55rem;
+		background: var(--surface-2);
+	}
+	.facet legend {
+		padding: 0 0.25rem;
+		font-size: 0.72rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.04em;
+		color: var(--ink-muted);
+	}
+	.checks {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.35rem 0.85rem;
 	}
 	.check {
 		display: flex;
@@ -317,6 +444,11 @@
 		font-size: 0.85rem;
 		color: var(--ink-muted);
 		white-space: nowrap;
+	}
+	.hint {
+		margin: 0;
+		font-size: 0.8rem;
+		color: var(--ink-muted);
 	}
 	table {
 		width: 100%;
@@ -330,7 +462,6 @@
 		border-bottom: 1px solid var(--line);
 		vertical-align: top;
 	}
-	/* #42: keep short values on one line; Route / Crag take the flexible width. */
 	td.date {
 		white-space: nowrap;
 		font-variant-numeric: tabular-nums;
@@ -392,7 +523,6 @@
 		color: var(--accent);
 		font-weight: 700;
 	}
-	/* Owner-only FA controls: shown on row hover/focus, always on touch screens. */
 	.fa-edit {
 		display: flex;
 		gap: 0.3rem;
@@ -436,20 +566,12 @@
 		margin: 0.5rem 0 1.5rem;
 	}
 	@media (max-width: 900px) {
-		.filters {
-			grid-template-columns: 1fr 1fr;
-		}
 		.table-wrap {
 			overflow-x: auto;
 			-webkit-overflow-scrolling: touch;
 		}
 		table {
 			min-width: 42rem;
-		}
-	}
-	@media (max-width: 520px) {
-		.filters {
-			grid-template-columns: 1fr;
 		}
 	}
 </style>
