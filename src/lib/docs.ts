@@ -56,6 +56,12 @@ export const DOC_PAGES: readonly DocPage[] = [
 		slug: 'solo',
 		title: 'Solo climbing',
 		summary: 'Top-rope, lead, free and deep water soloing, and ascents with no partner tagged.'
+	},
+	{
+		slug: 'route-popularity',
+		title: 'Route popularity',
+		summary:
+			'Busy vs quiet ticks from theCrag popularity, plus hidden gems (high quality, low traffic).'
 	}
 ];
 

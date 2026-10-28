@@ -276,6 +276,11 @@ You'll often notice things outside the task at hand. **Don't silently fix them i
 | 2026-10 | Logbook filters: `fa=FA|FFA|any|none`, `history=pending` (owner + import on only), plus `quality`, `minStars`, `with`, `from`/`to`. Marks load before filter/page in `listLogbook`. |
 | 2026-10 | Logbook richer filters (#85): multi `style`/`tick`/`quality`, `minScore`/`maxScore` (routes only), `partners=has|missing`, from/to override year/season. |
 | 2026-10 | Logbook facet inventory (#86): `docs/dev/LOGBOOK_FACETS.md`; `missing=height|bolts`, `tag=` substring on `tags_json`. |
+| 2026-10 | Dashboard **Route popularity** card (#79): busy vs quiet tick share, hidden gems; `/docs/route-popularity`; logbook sort by Pop.; card hidden until any route has popularity cache. |
+
+| 2026-10 | #133: shared qualityScore helpers rank all theCrag labels distinctly; explicit low ratings win over star fallbacks. |
+
+| 2026-10 | #131/#36: hidden gems retain routeId for stable list keys; popularity counts use the configured display locale. |
 
 | 2026-10 | #126/#127: tick facets include top-rope/solo types and preserve selected legacy values; style filters normalize dws and top-rope aliases. |
 

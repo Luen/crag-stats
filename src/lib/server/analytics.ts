@@ -47,6 +47,8 @@ import { pickHardestSends } from './hardestSends';
 import { invalidateRouteHistoryRuns } from './routeHistoryEngine';
 import { repairGradesFromRawJson } from './repairGrades';
 import { buildTrainingLoadView, hasPersonalAscentGrade } from './trainingLoad';
+import { buildRoutePopularityStats, routePopScore } from './routePopularity';
+import { buildTrainingLoadView } from './trainingLoad';
 
 export type PyramidMode = 'all' | 'sends' | 'onsight';
 const PYRAMID_MODES: PyramidMode[] = ['all', 'sends', 'onsight'];
@@ -340,7 +342,11 @@ export function getDashboardStats(
 			cprDecayedGrade: ascents.cprDecayedGrade,
 			cprDecayedScore: ascents.cprDecayedScore,
 			cprBase: ascents.cprBase,
-			cprScore: ascents.cprScore
+			cprScore: ascents.cprScore,
+			ascentCount: routes.ascentCount,
+			popularity: routes.popularity,
+			relativePopularity: routes.relativePopularity,
+			qualityScore: routes.qualityScore
 		})
 		.from(ascents)
 		.innerJoin(routes, eq(ascents.routeId, routes.id))
@@ -692,6 +698,27 @@ export function getDashboardStats(
 	const partners = buildPartnerLeaderboard(extraRows).partners;
 	const starsScatter = buildStarsScatter(extraRows).points;
 	const qualityBreakdown = buildQualityBreakdown(extraRows).ratings;
+	const routePopularity = buildRoutePopularityStats(
+		all.map((a) => {
+			const isBoulder = vScale(a);
+			const score = effectiveScore(a);
+			const raw = effectiveRaw(a);
+			return {
+				routeId: a.routeId,
+				routeName: displayRouteName(a.routeName, a.pitchLabel, a.ascentLabel),
+				isSend: a.isSend,
+				url: linkFor(a),
+				cragName: a.cragName,
+				stars: a.stars,
+				quality: a.quality,
+				qualityScore: a.qualityScore,
+				ascentCount: a.ascentCount,
+				popularity: a.popularity,
+				relativePopularity: a.relativePopularity,
+				gradeLabel: score != null ? formatGrade(score, isBoulder, preferredSystem, raw) : raw
+			};
+		})
+	);
 	const rockAgg = buildRockTypeStats(extraRows);
 	const rockBlurb = rockTypeBlurb(rockAgg.dominant, rockAgg.dominantPct);
 
@@ -927,7 +954,8 @@ export function getDashboardStats(
 			dominantPct: rockAgg.dominantPct,
 			info: rockTypeInfo(rockAgg.dominant)
 		},
-		pyramidMode
+		pyramidMode,
+		routePopularity
 	};
 }
 
@@ -1010,7 +1038,7 @@ export function listLogbook(filters?: {
 	missing?: Array<'height' | 'bolts'>;
 	/** Case-insensitive substring match on route tag names in tags_json */
 	tag?: string;
-	/** date | grade | quality | stars */
+	/** date | grade | quality | stars | popularity */
 	sort?: string;
 	/** asc | desc */
 	order?: string;
@@ -1071,6 +1099,9 @@ export function listLogbook(filters?: {
 			routeUrl: routes.url,
 			stars: routes.stars,
 			qualityScore: routes.qualityScore,
+			ascentCount: routes.ascentCount,
+			popularity: routes.popularity,
+			relativePopularity: routes.relativePopularity,
 			parentName: routes.parentName,
 			bolts: routes.bolts,
 			tagsJson: routes.tagsJson,
@@ -1256,6 +1287,8 @@ export function listLogbook(filters?: {
 				});
 		} else if (sortKey === 'stars') {
 			cmp = (a.stars ?? -1) - (b.stars ?? -1);
+		} else if (sortKey === 'popularity') {
+			cmp = (routePopScore(a) ?? -1) - (routePopScore(b) ?? -1);
 		} else {
 			cmp = (a.ascentDate || '').localeCompare(b.ascentDate || '');
 		}
