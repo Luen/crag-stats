@@ -23,7 +23,10 @@
 			{#each types as t (t.name)}
 				<li>
 					<div class="row">
-						<span class={['label', { dom: dominant === t.name }]}>{t.name}</span>
+						<a
+							class={['label', 'link', { dom: dominant === t.name }]}
+							href={`/logbook?rock=${encodeURIComponent(t.name)}`}>{t.name}</a
+						>
 						<span class="value">{t.count} · {Math.round(t.pct)}%</span>
 					</div>
 					<div class="track">
@@ -72,7 +75,12 @@
 	.label {
 		font-weight: 600;
 	}
-	.label.dom {
+	.label.link {
+		color: var(--ink);
+		text-decoration: underline;
+		text-underline-offset: 2px;
+	}
+	.label.link.dom {
 		color: var(--accent);
 	}
 	.value {

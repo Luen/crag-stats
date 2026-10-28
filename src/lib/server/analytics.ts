@@ -679,7 +679,7 @@ export function getDashboardStats(
 	const badges = buildBadges(extraRows);
 	const trainingLoad = buildTrainingLoadView(extraRows);
 	const styleMix = buildStyleMixOverTime(extraRows);
-	const partners = buildPartnerLeaderboard(extraRows).partners;
+	const partners = buildPartnerLeaderboard(extraRows, 7).partners;
 	const starsScatter = buildStarsScatter(extraRows).points;
 	const qualityBreakdown = buildQualityBreakdown(extraRows).ratings;
 	const rockAgg = buildRockTypeStats(extraRows);
@@ -970,6 +970,8 @@ export function listLogbook(filters?: {
 	minStars?: number;
 	/** Substring on ascents.partners */
 	with?: string;
+	/** Route tags_json Rock type name (case-insensitive exact match) */
+	rock?: string;
 	/** date | grade | quality | stars */
 	sort?: string;
 	/** asc | desc */
@@ -1113,6 +1115,18 @@ export function listLogbook(filters?: {
 	if (filters?.with) {
 		const w = filters.with.toLowerCase();
 		rows = rows.filter((r) => (r.partners || '').toLowerCase().includes(w));
+	}
+	if (filters?.rock) {
+		const rock = filters.rock.trim().toLowerCase();
+		if (rock) {
+			rows = rows.filter((r) =>
+				parseTagsJson(r.tagsJson).some(
+					(t) =>
+						t.category.trim().toLowerCase() === 'rock type' &&
+						t.name.trim().toLowerCase() === rock
+				)
+			);
+		}
 	}
 	if (faFilter) {
 		rows = rows.filter((r) => {

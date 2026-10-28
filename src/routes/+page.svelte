@@ -154,7 +154,7 @@
 	{:else if id === 'styleMix'}
 		<StyleMixChart months={s.styleMix.months} />
 	{:else if id === 'partners'}
-		<PartnerLeaderboard partners={s.partners} />
+		<PartnerLeaderboard partners={s.partners} titleHref="/partners" />
 	{:else if id === 'rockTypes'}
 		<RockTypePanel
 			types={s.rockTypes.types}

@@ -26,6 +26,7 @@
 		if (data.history) p.set('history', data.history);
 		if (data.quality) p.set('quality', data.quality);
 		if (data.with) p.set('with', data.with);
+		if (data.rock) p.set('rock', data.rock);
 		if (data.minStars !== '') p.set('minStars', String(data.minStars));
 		if (data.year !== '') p.set('year', String(data.year));
 		if (data.score !== '') p.set('score', String(data.score));
@@ -74,6 +75,9 @@
 		{#if data.history === 'pending'}
 			· history pending
 		{/if}
+		{#if data.rock}
+			· rock {data.rock}
+		{/if}
 	</p>
 </section>
 
@@ -90,6 +94,7 @@
 	<input name="crag" value={data.crag} placeholder="Crag" />
 	<input name="sector" value={data.sector} placeholder="Sector / parent" />
 	<input name="with" value={data.with} placeholder="With (partner)" />
+	<input name="rock" value={data.rock} placeholder="Rock type (Granite…)" />
 	<input name="year" value={data.year} placeholder="Year" inputmode="numeric" />
 	<input name="from" value={data.from} placeholder="From (YYYY-MM-DD)" />
 	<input name="to" value={data.to} placeholder="To (YYYY-MM-DD)" />

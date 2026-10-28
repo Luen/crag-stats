@@ -51,6 +51,7 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 	const history = historyFilter ? parseHistoryParam(url.searchParams.get('history')) : '';
 	const quality = url.searchParams.get('quality') ?? '';
 	const withPartner = url.searchParams.get('with') ?? '';
+	const rock = url.searchParams.get('rock') ?? '';
 	const yearRaw = url.searchParams.get('year');
 	const year = yearRaw != null && yearRaw !== '' ? Number(yearRaw) : undefined;
 	const scoreRaw = url.searchParams.get('score');
@@ -83,6 +84,7 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 		history: history || undefined,
 		quality: quality || undefined,
 		with: withPartner || undefined,
+		rock: rock || undefined,
 		minStars,
 		year: year != null && Number.isFinite(year) ? year : undefined,
 		score: score != null && Number.isFinite(score) ? score : undefined,
@@ -113,6 +115,7 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 		historyFilter,
 		quality,
 		with: withPartner,
+		rock,
 		minStars: minStars ?? '',
 		year: year != null && Number.isFinite(year) ? year : '',
 		score: score != null && Number.isFinite(score) ? score : '',
