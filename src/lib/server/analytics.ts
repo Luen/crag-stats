@@ -52,7 +52,6 @@ import {
 import { ascents, profiles, routeHistoryFetches, routes } from './db/schema';
 import { pickHardestSends } from './hardestSends';
 import { invalidateRouteHistoryRuns } from './routeHistoryEngine';
-import { repairGradesFromRawJson } from './repairGrades';
 import { buildTrainingLoadView, hasPersonalAscentGrade } from './trainingLoad';
 import { buildRoutePopularityStats } from './routePopularity';
 import { buildBestMonthsView } from './bestMonths';
@@ -72,9 +71,6 @@ function linkFor(row: { ascentUrl: string | null; ascentExternalId: string; url:
 }
 
 export type { DashboardStats, NotableRow, StylePyramid } from '#lib/types/dashboard';
-
-/** Bump when a new one-shot data repair must run after a schema/parser change. */
-const REPAIR_GEN = 7;
 
 const TICK_ORDER = [
 	'Onsight',
@@ -97,7 +93,6 @@ function tickSortKey(tick: string): number {
 	const soft = TICK_ORDER.findIndex((t) => lower.includes(t.toLowerCase().split(' ')[0]));
 	return soft >= 0 ? soft : 50;
 }
-let repairedGen = 0;
 
 const TICK_COLORS: Record<string, string> = {
 	Onsight: '#54b41a',
@@ -257,14 +252,6 @@ export function getDashboardStats(
 		sql`UPDATE ascents SET ascent_url = 'https://www.thecrag.com/ascent/' || external_id
 			WHERE provider = 'thecrag' AND (ascent_url IS NULL OR ascent_url = '')`
 	);
-	if (repairedGen < REPAIR_GEN) {
-		try {
-			repairGradesFromRawJson();
-		} catch (err) {
-			console.warn('[analytics] grade repair skipped:', err instanceof Error ? err.message : err);
-		}
-		repairedGen = REPAIR_GEN;
-	}
 
 	const profile = db.select().from(profiles).limit(1).get();
 	// Backfill / repair profile fields from stored account JSON
