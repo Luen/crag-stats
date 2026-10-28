@@ -29,3 +29,10 @@ SELECT provider, status, last_error, updated_at FROM route_history_import_state;
 
 DROP TABLE route_history_import_state;
 ALTER TABLE route_history_import_state_new RENAME TO route_history_import_state;
+
+-- The copy can't carry a back-off (the draft shape had none). Rather than resuming requests to
+-- theCrag straight after an upgrade, pause a day if the last run errored or was blocked.
+UPDATE route_history_import_state
+SET next_allowed_at = strftime('%Y-%m-%dT%H:%M:%fZ', 'now', '+1 day'),
+	consecutive_failures = 1
+WHERE status IN ('blocked', 'error');
