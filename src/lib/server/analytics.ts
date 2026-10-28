@@ -27,6 +27,7 @@ import {
 } from './logbookSort';
 import { buildCprTimeline } from './cpr';
 import { buildBadges } from './badges';
+import { buildRouteDeveloperImpact } from './routeDeveloperImpact';
 import { countOwnerSetRoutes, setterBadgeHits } from './routeSetters';
 import {
 	buildMilestones,
@@ -861,7 +862,13 @@ export function getDashboardStats(
 		})(),
 		firstAscents: (() => {
 			const routesSet = countOwnerSetRoutes();
-			if (!faMarks.size) return { ...buildFirstAscentStats([]), routesSet };
+			const impact = buildRouteDeveloperImpact();
+			const community = {
+				communityAscents: impact.communityAscents,
+				sportOrBoltedCommunityAscents: impact.sportOrBoltedAscents,
+				routesWithCommunityData: impact.routesWithCommunityData
+			};
+			if (!faMarks.size) return { ...buildFirstAscentStats([]), routesSet, ...community };
 			// One row per marked route: route grade (not a pitch), dated by the first send
 			// (same as the FA badges and milestones), else the earliest logged ascent.
 			const sendDay = new Map(
@@ -897,7 +904,7 @@ export function getDashboardStats(
 				});
 			}
 			for (const fa of byRoute.values()) fa.date = sendDay.get(fa.routeId) ?? fa.date;
-			return { ...buildFirstAscentStats([...byRoute.values()]), routesSet };
+			return { ...buildFirstAscentStats([...byRoute.values()]), routesSet, ...community };
 		})(),
 		solo: buildSoloStats(
 			all.map((r) => {

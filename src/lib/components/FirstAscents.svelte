@@ -37,6 +37,18 @@
 					<span>route{data.routesSet === 1 ? '' : 's'} set</span>
 				</div>
 			{/if}
+			{#if data.communityAscents > 0}
+				<div class="tile">
+					<strong>{data.communityAscents}</strong>
+					<span>community ascent{data.communityAscents === 1 ? '' : 's'}</span>
+				</div>
+			{/if}
+			{#if data.sportOrBoltedCommunityAscents > 0}
+				<div class="tile">
+					<strong>{data.sportOrBoltedCommunityAscents}</strong>
+					<span>on sport / bolted</span>
+				</div>
+			{/if}
 			{#if data.ffa > 0}
 				<div class="tile">
 					<strong>{data.fa} / {data.ffa}</strong>
@@ -114,7 +126,17 @@
 		</ul>
 	{/if}
 	<p class="foot">
-		Marked by you{canEdit ? ' in the logbook' : ''}. <a href="/docs/first-ascents">How it works</a>
+		Marked by you{canEdit ? ' in the logbook' : ''}.
+		{#if data.routesWithCommunityData > 0}
+			Community ascents exclude your own ticks on {data.routesWithCommunityData} route{data.routesWithCommunityData ===
+			1
+				? ''
+				: 's'} with cached theCrag counts
+			{data.communityAscents === 0 ? ' (still warming up)' : ''}.
+		{:else if data.total > 0 || data.routesSet > 0}
+			Community ascent totals appear once route-history import caches each route's ascent count.
+		{/if}
+		<a href="/docs/first-ascents">How it works</a>
 	</p>
 </article>
 

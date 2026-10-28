@@ -41,7 +41,7 @@ Only public route history is saved, never your private ascent notes. **Settings 
 
 - **Count:** how many routes you've marked. When you have FFAs, it also shows the FA / FFA split.
 - **Routes set:** distinct routes whose cached history lists you as route setter (`@yourlogin`). Same `@login` rule as FA import; free-text names don't count. Needs route-history import (`ROUTE_HISTORY_IMPORT=true`) so those rows are saved locally.
-- **Routes set:** distinct routes whose cached history lists you as route setter (`@yourlogin`). Same `@login` rule as FA import; free-text names don't count. Needs route-history import (`ROUTE_HISTORY_IMPORT=true`) so those rows are saved locally.
+- **Community ascents:** how many ticks other climbers have logged on routes you put up (FA/FFA marks **or** setter credits), using each route's cached theCrag `ascentCount` minus your own ticks of that route. A second tile splits out **sport / bolted** routes (Sport gear style, or any route with bolts recorded) — useful when you've invested in hardware. Counts stay at zero until route-history import has fetched those routes (`ROUTE_HISTORY_IMPORT=true`); they are ascent totals, not unique climbers.
 - **Years:** from the year of your first FA to your latest. Each FA is dated by your **first logged send** of the route (see below).
 - **Grade range:** your easiest and hardest FA, using the route's grade (not a single pitch). Routes and boulders are listed separately, because Ewbank and V-grades can't be compared. Grades show in your display grade system.
 - **Styles:** how your FAs split across sport, trad, boulder and so on, using the route's style on theCrag.

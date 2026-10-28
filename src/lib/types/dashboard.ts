@@ -111,6 +111,15 @@ export type FirstAscentStats = {
 	ffa: number;
 	/** Routes where cached route history credits you as route setter (@login). */
 	routesSet: number;
+	/**
+	 * Community (non-owner) ticks on FA/FFA + setter routes from cached `ascent_count`.
+	 * Null fields stay 0 until route-history import fills counts (#135).
+	 */
+	communityAscents: number;
+	/** Community ticks on Sport gear style or bolted routes. */
+	sportOrBoltedCommunityAscents: number;
+	/** FA/setter routes that have a cached community ascentCount. */
+	routesWithCommunityData: number;
 	byStyle: { style: string; count: number; color: string }[];
 	/** Routes on Ewbank-based scores, shown in the preferred system */
 	routeRange: FirstAscentRange;

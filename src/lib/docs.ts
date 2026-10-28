@@ -50,7 +50,8 @@ export const DOC_PAGES: readonly DocPage[] = [
 	{
 		slug: 'first-ascents',
 		title: 'First ascents',
-		summary: 'Marking your FAs and FFAs, and how the First ascents card counts them.'
+		summary:
+			'Marking your FAs and FFAs, routes you set, and community ticks on lines you put up.'
 	},
 	{
 		slug: 'projects',

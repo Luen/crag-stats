@@ -166,6 +166,9 @@ export function buildFirstAscentStats(rows: readonly FirstAscentRow[]): FirstAsc
 		fa: rows.filter((r) => r.kind === 'FA').length,
 		ffa: rows.filter((r) => r.kind === 'FFA').length,
 		routesSet: 0,
+		communityAscents: 0,
+		sportOrBoltedCommunityAscents: 0,
+		routesWithCommunityData: 0,
 		byStyle: [...byStyle.entries()]
 			.map(([style, count]) => ({
 				style,
