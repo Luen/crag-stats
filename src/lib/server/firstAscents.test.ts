@@ -59,6 +59,9 @@ describe('buildFirstAscentStats', () => {
 		const stats = getDashboardStats();
 		expect(stats.firstAscents.recent).toHaveLength(2);
 		expect(new Set(stats.hardestSends.map((climb) => climb.id)).size).toBe(2);
+		const faMilestones = stats.milestones.items.filter((item) => item.kind === 'fa');
+		expect(faMilestones).toHaveLength(2);
+		expect(new Set(faMilestones.map((item) => item.id)).size).toBe(2);
 		wipeAllData();
 	});
 	it('retains distinct route IDs for equal names and dates (#144)', () => {
