@@ -104,3 +104,34 @@ it('uses each route provider owner and keeps equal external IDs separate', () =>
 	expect(names(listLogbook({ setter: 'me' }).rows)).toEqual(['Synthetic route']);
 	expect(names(listLogbook({ setter: 'none' }).rows)).toEqual(['Route r1', 'Route r2', 'Route r3']);
 });
+
+it('filters missing pitch data after route info fetch only', () => {
+	const fetchedAt = '2026-01-02T00:00:00Z';
+	db.update(routes)
+		.set({ routeInfoUpdatedAt: fetchedAt, pitchesJson: null })
+		.where(eq(routes.externalId, 'r1'))
+		.run();
+	db.update(routes)
+		.set({ routeInfoUpdatedAt: fetchedAt, pitchesJson: '[]' })
+		.where(eq(routes.externalId, 'r2'))
+		.run();
+	db.update(routes)
+		.set({
+			routeInfoUpdatedAt: fetchedAt,
+			pitchesJson: JSON.stringify([{ number: 1, grade: '20' }])
+		})
+		.where(eq(routes.externalId, 'r3'))
+		.run();
+
+	expect(names(listLogbook({ missing: ['pitch'] }).rows)).toEqual(['Route r1', 'Route r2']);
+	expect(listLogbook({ missing: ['pitch'] }).rows.every((r) => r.routeName !== 'Route r3')).toBe(
+		true
+	);
+	// Never fetched — not "missing pitch data"
+	expect(listLogbook().total).toBe(3);
+	db.update(routes)
+		.set({ routeInfoUpdatedAt: null, pitchesJson: null })
+		.where(eq(routes.externalId, 'r1'))
+		.run();
+	expect(names(listLogbook({ missing: ['pitch'] }).rows)).toEqual(['Route r2']);
+});

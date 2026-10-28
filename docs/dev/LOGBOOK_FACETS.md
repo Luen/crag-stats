@@ -21,7 +21,7 @@ Inventory for [#86](https://github.com/Luen/crag-stats/issues/86). Crag Stats is
 | Setting natural/artificial                 | raw `routes.flags_json` (#82)          | Blocked — no verified flag name yet; check a real route-info payload before adding a facet       |
 | Is project                                 | `routes.is_project` (#77)              | Done (`project=yes\|no`; routes without route info match neither)                                |
 | Is bolted / can top rope                   | raw `routes.flags_json` (#82)          | Blocked — no verified flag names yet; `missing=bolts` and the Sport style facet cover most of it |
-| Missing pitches                            | `routes.pitches_json` (#82)            | Partial via multipitch; pitch lists are cached but there is no `missing=pitches` facet yet       |
+| Missing pitches                            | `routes.pitches_json` (#82)            | Done (`missing=pitch`; alias `pitches`; null/empty after fetch only)                             |
 | Route setter                               | cached `route_history` setter rows     | Done (`setter=me\|none`, owner login on setter rows, #76)                                        |
 | Seasonality / popularity / qualityScore    | route info (#78–#80)                   | Not facets: `sort=popularity`, Best months and quality cards use them                            |
 | Beta / access                              | `routes.beta_json` (#81)               | Not a facet: shown on project cards                                                              |

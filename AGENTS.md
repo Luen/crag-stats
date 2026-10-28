@@ -356,6 +356,7 @@ You'll often notice things outside the task at hand. **Don't silently fix them i
 | 2026-10 | #168 review: API-note regressions cover mapping through upsert, hidden-note searches, opted-in owner access, dashboard exclusion and clearing notes on later sync. Public and private comment sources share the same owner-only display gate. |
 
 | 2026-10 | #86: `/logbook` adds `project=yes\|no` (route-info Project flag; unknown matches neither) and `setter=me\|none` (cached setter history). Raw `flags_json` names beyond Project/isSport/isTrad/isBoulder are unverified, so no bolted/top-rope/artificial facets yet. See `docs/dev/LOGBOOK_FACETS.md`. |
+| 2026-10 | #171: Logbook `missing=pitch` (alias `pitches`) matches routes whose route info was fetched but `pitches_json` is null or `[]`; unchecked routes use `history=pending`. Helper: `classifyRoutePitches()` in `routePitches.ts`. |
 
 | 2026-10 | #166 review: setter facets resolve each route provider's owner profile and key credits by provider plus route ID. "No setter credit found" includes routes without imported history; do not describe that as a confirmed absence of setter credit. |
 
