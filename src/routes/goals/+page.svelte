@@ -60,6 +60,7 @@
 		Progress fills from your theCrag logbook. Grade goals track a send ≥ target this year (outdoor
 		by default); the bar is approximate readiness from nearby distinct-route sends (~2 at one grade
 		under, ~4 at two under), not best÷target. Height and days stay linear. Custom goals stay manual.
+		<a href="/docs/goals">How it works</a>
 	</p>
 </section>
 
@@ -180,6 +181,15 @@
 	.head p {
 		margin: 0.35rem 0 0;
 		color: var(--ink-muted);
+	}
+	.head a {
+		font-weight: 600;
+		color: var(--accent);
+		text-decoration: none;
+	}
+	.head a:hover {
+		text-decoration: underline;
+		text-underline-offset: 2px;
 	}
 	.section-head {
 		display: flex;
