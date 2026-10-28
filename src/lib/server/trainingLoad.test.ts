@@ -122,4 +122,40 @@ describe('isUngradedWork', () => {
 			false
 		);
 	});
+
+	it('treats theCrag Project routes like ungraded work even with a route grade', () => {
+		expect(
+			isUngradedWork({
+				ascentDate: TODAY,
+				isSend: false,
+				gradeScore: 24,
+				routeIsProject: 1
+			})
+		).toBe(true);
+		expect(
+			isUngradedWork({
+				ascentDate: TODAY,
+				isSend: false,
+				gradeScore: 24,
+				routeIsProject: 0
+			})
+		).toBe(false);
+	});
+});
+
+describe('buildTrainingLoadView — theCrag Project flag', () => {
+	it('counts attempts on a flagged project at your max', () => {
+		const base = send(100, 24);
+		const flagged = {
+			ascentDate: day(0),
+			gearStyle: 'Sport',
+			isSend: false,
+			gradeScore: 20,
+			routeIsProject: 1
+		};
+		const atMax = { ...flagged, gradeScore: 24, routeIsProject: 0 };
+		expect(buildTrainingLoadView([base, flagged], TODAY).acute).toBe(
+			buildTrainingLoadView([base, atMax], TODAY).acute
+		);
+	});
 });

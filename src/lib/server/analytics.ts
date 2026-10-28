@@ -329,6 +329,7 @@ export function getDashboardStats(
 			tagsJson: routes.tagsJson,
 			parentName: routes.parentName,
 			country: routes.country,
+			routeIsProject: routes.isProject,
 			numberAttempts: ascents.numberAttempts,
 			cprDecayedGrade: ascents.cprDecayedGrade,
 			cprDecayedScore: ascents.cprDecayedScore,
@@ -671,7 +672,8 @@ export function getDashboardStats(
 		url: linkFor(a),
 		ascentUrl: a.ascentUrl,
 		tagsJson: a.tagsJson,
-		country: a.country
+		country: a.country,
+		routeIsProject: a.routeIsProject
 	}));
 	const monthly = buildMonthlyStats(extraRows);
 	const yearly = buildYearlyStats(extraRows);

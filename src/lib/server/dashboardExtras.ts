@@ -29,6 +29,8 @@ export type DashboardExtraRow = {
 	tagsJson?: string | null;
 	country?: string | null;
 	routeId?: number | null;
+	/** theCrag Project flag on the route (route info import, #77). */
+	routeIsProject?: number | null;
 	/** Owner-marked first ascent of this route (firstAscents.ts) */
 	firstAscent?: 'FA' | 'FFA' | null;
 };

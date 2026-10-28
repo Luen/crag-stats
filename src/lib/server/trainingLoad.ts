@@ -30,11 +30,15 @@ function scoreOf(row: DashboardExtraRow): number | null {
 }
 
 /**
- * Working an ungraded route (no route grade, no grade of your own on the tick) usually
- * means a new line or project at your limit, so it loads like an ascent at your max.
+ * Attempts that load like climbing at your 12-month max: ungraded lines, or routes theCrag
+ * marks Project (#77). Your own grade on the tick always wins over the assumption.
  */
 export function isUngradedWork(row: DashboardExtraRow): boolean {
-	return !row.isSend && scoreOf(row) == null;
+	if (row.isSend) return false;
+	const own = row.effectiveGradeScore;
+	if (own != null && Number.isFinite(own)) return false;
+	if (row.routeIsProject === 1) return true;
+	return scoreOf(row) == null;
 }
 
 function dayOf(iso: string | null | undefined): string | null {
@@ -98,8 +102,8 @@ export function buildTrainingLoadView(
 		const day = dayOf(row.ascentDate);
 		if (!day || day > today || day < start) continue;
 		const k = kindOf(row);
-		// Ungraded attempts count as at your max (isUngradedWork); ungraded sends stay light.
-		const score = scoreOf(row) ?? (isUngradedWork(row) ? ref[k] : null);
+		// At-max work (ungraded or theCrag Project flag) uses your year max; sends stay graded.
+		const score = isUngradedWork(row) ? ref[k] : scoreOf(row);
 		const load = 10 * ascentIntensity(score, ref[k], k) * styleFactor(row);
 		daily.set(day, (daily.get(day) ?? 0) + load);
 		if (day >= start28 && score != null && ref[k] != null) {

@@ -265,6 +265,8 @@ export type ProjectListItem = {
 	gradeScore: number | null;
 	/** No grade on theCrag: likely a new route the climber bolted or is working. */
 	ungraded: boolean;
+	/** theCrag Project flag from route info import (#77). */
+	isProject: boolean;
 	stars: number | null;
 	cragName: string | null;
 	parentName: string | null;
@@ -277,6 +279,10 @@ export type ProjectListItem = {
 	ascentUrl: string | null;
 	href: string | null;
 };
+
+export function isTheCragProjectFlag(isProject: number | null | undefined): boolean {
+	return isProject === 1;
+}
 
 /**
  * theCrag returns ungraded routes with no grade (and band 0) and has no separate project
@@ -329,6 +335,7 @@ export function listProjects(status?: 'open' | 'sent' | 'archived'): ProjectList
 			gradeRaw: routes.gradeRaw,
 			gradeBand: routes.gradeBand,
 			gradeScore: routes.gradeScore,
+			isProject: routes.isProject,
 			stars: routes.stars,
 			cragName: routes.cragName,
 			parentName: routes.parentName,
@@ -349,6 +356,7 @@ export function listProjects(status?: 'open' | 'sent' | 'archived'): ProjectList
 		tryCount: row.attemptCount,
 		sessionCount: Number(row.sessionCount) || 0,
 		ungraded: isUngradedRoute(row.gradeScore, row.gradeRaw),
+		isProject: isTheCragProjectFlag(row.isProject),
 		areaLabel: areaLabel(row.parentName, row.cragName),
 		href:
 			row.ascentUrl ||
