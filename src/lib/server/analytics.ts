@@ -1,3 +1,4 @@
+import { ancestorAreaNames, parseAncestorsJson, sectorPathUnderCrag } from './sectorsTree';
 import { desc, eq, sql } from 'drizzle-orm';
 import {
 	bandById,
@@ -945,6 +946,8 @@ export function listLogbook(filters?: {
 	tick?: string;
 	crag?: string;
 	sector?: string;
+	/** Exact path beneath the crag, including descendants. */
+	sectorPath?: string[];
 	year?: number;
 	/** Exact YYYY-MM-DD */
 	day?: string;
@@ -1024,7 +1027,8 @@ export function listLogbook(filters?: {
 			stars: routes.stars,
 			parentName: routes.parentName,
 			bolts: routes.bolts,
-			tagsJson: routes.tagsJson
+			tagsJson: routes.tagsJson,
+			ancestorsJson: routes.ancestorsJson
 		})
 		.from(ascents)
 		.innerJoin(routes, eq(ascents.routeId, routes.id))
@@ -1050,9 +1054,25 @@ export function listLogbook(filters?: {
 		const c = filters.crag.toLowerCase();
 		rows = rows.filter((r) => (r.cragName || '').toLowerCase().includes(c));
 	}
-	if (filters?.sector) {
-		const s = filters.sector.toLowerCase();
-		rows = rows.filter((r) => (r.parentName || '').toLowerCase().includes(s));
+	if (filters?.sectorPath?.length) {
+		const wanted = filters.sectorPath;
+		rows = rows.filter((r) => {
+			const { segments } = sectorPathUnderCrag({
+				ancestorsJson: r.ancestorsJson,
+				cragName: r.cragName ?? 'Unknown',
+				parentName: r.parentName
+			});
+			return wanted.every((part, i) => segments[i] === part);
+		});
+	} else if (filters?.sector) {
+		const needle = filters.sector.toLowerCase();
+		rows = rows.filter(
+			(r) =>
+				(r.parentName ?? '').toLowerCase().includes(needle) ||
+				ancestorAreaNames(parseAncestorsJson(r.ancestorsJson)).some((name) =>
+					name.toLowerCase().includes(needle)
+				)
+		);
 	}
 	if (filters?.year != null && Number.isFinite(filters.year)) {
 		const y = String(filters.year);

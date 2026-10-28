@@ -7,9 +7,10 @@
 		sectors: SectorNode[];
 		nested: boolean;
 		depth?: number;
+		parentPath?: string[];
 	};
 
-	let { cragName, sectors, nested, depth = 0 }: Props = $props();
+	let { cragName, sectors, nested, depth = 0, parentPath = [] }: Props = $props();
 </script>
 
 <ul class="sectors" class:nested={depth > 0} style:--depth={depth}>
@@ -18,8 +19,8 @@
 			<div class="row">
 				<a
 					class="name"
-					href="/logbook?crag={encodeURIComponent(cragName)}&sector={encodeURIComponent(
-						sector.name
+					href="/logbook?crag={encodeURIComponent(cragName)}&sectorPath={encodeURIComponent(
+						JSON.stringify([...parentPath, sector.name])
 					)}">{sector.name}</a
 				>
 				<span class="meta">
@@ -39,7 +40,13 @@
 				</span>
 			</div>
 			{#if nested && sector.children?.length}
-				<Self {cragName} sectors={sector.children} {nested} depth={depth + 1} />
+				<Self
+					{cragName}
+					sectors={sector.children}
+					{nested}
+					depth={depth + 1}
+					parentPath={[...parentPath, sector.name]}
+				/>
 			{/if}
 		</li>
 	{/each}

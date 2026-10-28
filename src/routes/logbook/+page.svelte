@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { SvelteURLSearchParams } from 'svelte/reactivity';
 	import GradeChip from '#lib/components/GradeChip.svelte';
 	import StyleBadge from '#lib/components/StyleBadge.svelte';
 	import TagChips from '#lib/components/TagChips.svelte';
@@ -9,14 +10,14 @@
 	let { data }: PageProps = $props();
 
 	function filterParams() {
-		// Throwaway query builder for an href, not reactive state.
-		// eslint-disable-next-line svelte/prefer-svelte-reactivity
-		const p = new URLSearchParams();
+		// Query builder for hrefs, rebuilt when called.
+		const p = new SvelteURLSearchParams();
 		if (data.q) p.set('q', data.q);
 		if (data.style) p.set('style', data.style);
 		if (data.tick) p.set('tick', data.tick);
 		if (data.crag) p.set('crag', data.crag);
 		if (data.sector) p.set('sector', data.sector);
+		if (data.sectorPath.length) p.set('sectorPath', JSON.stringify(data.sectorPath));
 		if (data.day) p.set('day', data.day);
 		if (data.from) p.set('from', data.from);
 		if (data.to) p.set('to', data.to);
@@ -68,6 +69,8 @@
 		{#if data.sector}
 			· sector {data.sector}
 		{/if}
+		{#if data.sectorPath.length}
+			· sector {data.sectorPath.join(' → ')} · <a href="/logbook">Clear sector</a>{/if}
 		{#if data.fa}
 			· FA {data.fa}
 		{/if}
@@ -88,6 +91,11 @@
 	<input name="style" value={data.style} placeholder="Style (Sport, Trad…)" />
 	<input name="tick" value={data.tick} placeholder="Tick (Onsight…)" />
 	<input name="crag" value={data.crag} placeholder="Crag" />
+	{#if data.sectorPath.length}<input
+			type="hidden"
+			name="sectorPath"
+			value={JSON.stringify(data.sectorPath)}
+		/>{/if}
 	<input name="sector" value={data.sector} placeholder="Sector / parent" />
 	<input name="with" value={data.with} placeholder="With (partner)" />
 	<input name="year" value={data.year} placeholder="Year" inputmode="numeric" />
