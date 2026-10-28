@@ -20,8 +20,14 @@ ensureSchema();
 // then starts daily cron + an immediate first sync when a key is configured.
 export const init: ServerInit = () => {
 	if (building) return;
-	const applied = runDataMigrations();
-	if (applied.length) console.log(`[db] applied data migrations: ${applied.join(', ')}`);
+	try {
+		const applied = runDataMigrations();
+		if (applied.length) console.log(`[db] applied data migrations: ${applied.join(', ')}`);
+	} catch (err) {
+		// Data migrations only repair cached provider data, which a sync can rebuild. A failed one
+		// has rolled back and retries on the next boot; don't take the instance down over it.
+		console.error('[db] data migration failed:', err instanceof Error ? err.message : err);
+	}
 	startScheduler();
 };
 
