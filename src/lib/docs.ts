@@ -15,6 +15,12 @@ export const DOC_PAGES: readonly DocPage[] = [
 		summary: 'How the dashboard decides whether you are a sport, trad, boulder or rock climber.'
 	},
 	{
+		slug: 'climbing-story',
+		title: 'Climbing story',
+		summary:
+			'First-person blurb from your logbook: tenure, put-up routes, home crag, partners and other strong signals.'
+	},
+	{
 		slug: 'grades',
 		title: 'Grades & grade bands',
 		summary: 'Beginner → Elite bands, how grade systems are compared, and conversion tables.'

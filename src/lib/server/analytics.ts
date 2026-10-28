@@ -29,8 +29,10 @@ import { buildCprTimeline } from './cpr';
 import { buildBadges } from './badges';
 import { communityAscentBadgeHits } from './communityBadges';
 import type { DateDisplay } from '#lib/dates';
+import { buildClimberBlurb } from './climberBlurb';
 import { buildRouteDeveloperImpact } from './routeDeveloperImpact';
 import { countOwnerSetRoutes, listOwnerSetRoutes, setterBadgeHits } from './routeSetters';
+import { countActiveProjects } from './projects';
 import {
 	buildMilestones,
 	buildMonthlyStats,
@@ -43,6 +45,8 @@ import {
 	buildYearlyStats,
 	firstAscentSends
 } from './dashboardExtras';
+
+export { describeSendPreference } from './climberBlurb';
 import { db, ensureSchema } from './db';
 import { buildEddington } from './eddington';
 import { buildSoloStats } from './solo';
@@ -805,6 +809,79 @@ export function getDashboardStats(
 		if (!earliest || d < earliest) earliest = d;
 	}
 
+	const solo = buildSoloStats(
+		all.map((r) => {
+			const isBoulder = vScale(r);
+			const score = effectiveScore(r);
+			return {
+				tickType: r.tickType,
+				ascentGearStyle: r.ascentGearStyle,
+				isSend: Boolean(r.isSend),
+				partners: r.partners,
+				date: validDay(r.ascentDate),
+				routeName: displayRouteName(r.routeName, r.pitchLabel, r.ascentLabel),
+				score,
+				isBoulder,
+				gradeLabel:
+					score != null
+						? formatGrade(score, isBoulder, preferredSystem, effectiveRaw(r))
+						: effectiveRaw(r),
+				band:
+					isBoulder && score != null
+						? (bandFromVScale(score)?.id ?? effectiveBand(r))
+						: effectiveBand(r),
+				url: linkFor(r)
+			};
+		})
+	);
+
+	const countries = new Set<string>();
+	for (const a of all) {
+		const c = (a.country || '').trim();
+		if (c) countries.add(c.toLowerCase());
+	}
+
+	const topCragsForBlurb = [...cragMap.entries()]
+		.map(([crag, v]) => ({ crag, count: v.count }))
+		.sort((a, b) => b.count - a.count)
+		.slice(0, 12);
+
+	const blurb = buildClimberBlurb({
+		firstDate: earliest,
+		activeDays: dayMap.size,
+		totalAscents: all.length,
+		totalSends: sends,
+		onsightCount,
+		flashCount,
+		redpointCount,
+		pinkpointCount,
+		climberType,
+		heightM: accountHeightM ?? heightM,
+		distinctRoutes: routeSet.size,
+		distinctCrags: cragMap.size,
+		outdoorAscents,
+		indoorAscents,
+		topCrags: topCragsForBlurb,
+		partners,
+		activeDayDates: [...dayMap.keys()],
+		soloByKind: solo.kinds.map((k) => ({ kind: k.kind, count: k.count })),
+		openProjects: countActiveProjects(),
+		hardestRouteLabel: hardestSends.find((h) => h.discipline === 'route')?.gradeLabel ?? null,
+		hardestBoulderLabel: hardestSends.find((h) => h.discipline === 'boulder')?.gradeLabel ?? null,
+		popularity: routePopularity
+			? {
+					busyPct: routePopularity.busy.pct,
+					quietPct: routePopularity.quiet.pct,
+					withData: routePopularity.withData
+				}
+			: null,
+		countries: countries.size,
+		rockBlurb,
+		putUpRoutes: developerImpact.routes,
+		firstAscentCount: faMarks.size,
+		dateDisplay: opts?.dateDisplay
+	});
+
 	return {
 		profileName: profile?.name ?? null,
 		climberType,
@@ -850,26 +927,7 @@ export function getDashboardStats(
 		})),
 		notableByStyle: toNotableRows(notableStyle, 'style').slice(0, 40),
 		notableByArea: toNotableRows(notableArea, 'area').slice(0, 40),
-		blurb: (() => {
-			const base = buildClimberBlurb({
-				firstDate: earliest,
-				activeDays: dayMap.size,
-				totalAscents: all.length,
-				totalSends: sends,
-				onsightCount,
-				flashCount,
-				redpointCount,
-				pinkpointCount,
-				climberType,
-				heightM: accountHeightM ?? heightM,
-				distinctRoutes: routeSet.size,
-				distinctCrags: cragMap.size,
-				outdoorAscents,
-				indoorAscents
-			});
-			if (rockBlurb) base.paragraphs.push(rockBlurb);
-			return base;
-		})(),
+		blurb,
 		firstAscents: (() => {
 			const routesSet = countOwnerSetRoutes();
 			const impact = developerImpact;
@@ -928,31 +986,7 @@ export function getDashboardStats(
 			for (const fa of byRoute.values()) fa.date = sendDay.get(fa.routeId) ?? fa.date;
 			return { ...buildFirstAscentStats([...byRoute.values()]), routesSet, ...community };
 		})(),
-		solo: buildSoloStats(
-			all.map((r) => {
-				const isBoulder = vScale(r);
-				const score = effectiveScore(r);
-				return {
-					tickType: r.tickType,
-					ascentGearStyle: r.ascentGearStyle,
-					isSend: Boolean(r.isSend),
-					partners: r.partners,
-					date: validDay(r.ascentDate),
-					routeName: displayRouteName(r.routeName, r.pitchLabel, r.ascentLabel),
-					score,
-					isBoulder,
-					gradeLabel:
-						score != null
-							? formatGrade(score, isBoulder, preferredSystem, effectiveRaw(r))
-							: effectiveRaw(r),
-					band:
-						isBoulder && score != null
-							? (bandFromVScale(score)?.id ?? effectiveBand(r))
-							: effectiveBand(r),
-					url: linkFor(r)
-				};
-			})
-		),
+		solo,
 		eddington: buildEddington(
 			all.map((r) => ({
 				day: validDay(r.ascentDate),
@@ -1378,114 +1412,6 @@ export function wipeAllData() {
 	db.run(sql`DELETE FROM routes`);
 	db.run(sql`DELETE FROM profiles`);
 	db.run(sql`DELETE FROM sync_state`);
-}
-
-function formatDurationHuman(fromIso: string, to = new Date()): string {
-	const from = new Date(`${fromIso}T12:00:00`);
-	if (Number.isNaN(from.getTime())) return 'a while';
-	let months = (to.getFullYear() - from.getFullYear()) * 12 + (to.getMonth() - from.getMonth());
-	if (to.getDate() < from.getDate()) months -= 1;
-	months = Math.max(0, months);
-	const years = Math.floor(months / 12);
-	const rem = months % 12;
-	if (years <= 0) return rem <= 1 ? `${Math.max(1, rem)} month` : `${rem} months`;
-	if (rem === 0) return years === 1 ? '1 year' : `${years} years`;
-	return `${years} year${years === 1 ? '' : 's'} and ${rem} month${rem === 1 ? '' : 's'}`;
-}
-
-/** First-go vs worked-route preference from tick mix (used in the climbing story). */
-export function describeSendPreference(input: {
-	onsightCount: number;
-	flashCount: number;
-	redpointCount: number;
-	pinkpointCount: number;
-	totalSends: number;
-}): string {
-	const firstGo = input.onsightCount + input.flashCount;
-	const worked = input.redpointCount + input.pinkpointCount;
-	const classified = firstGo + worked;
-	if (classified === 0) return 'I mix onsighting with redpointing and working routes';
-	const firstGoShare = firstGo / classified;
-	const workedShare = worked / classified;
-	// Need a clear majority; a near split reads as mixed style.
-	if (firstGoShare >= 0.55) return 'I like to onsight (and flash) when I can';
-	if (workedShare >= 0.55) return 'I tend to work routes and redpoint them';
-	return 'I mix onsighting with redpointing and working routes';
-}
-
-function climberTypeSentence(climberType: string, preference: string): string {
-	const type = (climberType || 'Rock climber').trim() || 'Rock climber';
-	const labeled = /climber$/i.test(type) ? type : `${type} climber`;
-	return `I'm a ${labeled} — ${preference}.`;
-}
-
-function buildClimberBlurb(input: {
-	firstDate: string | null;
-	activeDays: number;
-	totalAscents: number;
-	totalSends: number;
-	onsightCount: number;
-	flashCount: number;
-	redpointCount: number;
-	pinkpointCount: number;
-	climberType: string;
-	heightM: number;
-	distinctRoutes: number;
-	distinctCrags: number;
-	outdoorAscents: number | null;
-	indoorAscents: number | null;
-}): {
-	startedOn: string | null;
-	durationLabel: string | null;
-	paragraphs: string[];
-} {
-	const heightM = Math.round(input.heightM);
-	const heightKm = Math.round((heightM / 1000) * 10) / 10;
-	const everest = heightM > 0 ? Math.round((heightM / 8849) * 10) / 10 : 0;
-	const elCap = heightM > 0 ? Math.round((heightM / 900) * 10) / 10 : 0;
-	const worldLaps = heightKm > 0 ? Math.round((heightKm / 40075) * 100) / 100 : 0;
-	const perDay =
-		input.activeDays > 0 ? Math.round((input.totalAscents / input.activeDays) * 10) / 10 : 0;
-	const identity = climberTypeSentence(
-		input.climberType,
-		describeSendPreference({
-			onsightCount: input.onsightCount,
-			flashCount: input.flashCount,
-			redpointCount: input.redpointCount,
-			pinkpointCount: input.pinkpointCount,
-			totalSends: input.totalSends
-		})
-	);
-
-	if (!input.firstDate) {
-		return {
-			startedOn: null,
-			durationLabel: null,
-			paragraphs: [
-				`You've logged ${input.totalAscents} ascents across ${input.distinctCrags} crags so far.`,
-				identity
-			]
-		};
-	}
-
-	const duration = formatDurationHuman(input.firstDate);
-	const outdoorBit =
-		input.outdoorAscents != null
-			? ` ${input.outdoorAscents} outdoor` +
-				(input.indoorAscents != null ? ` / ${input.indoorAscents} indoor` : '')
-			: '';
-
-	const paragraphs = [
-		`Since I began climbing ${duration} ago on ${input.firstDate}, I've logged ${input.activeDays} active days at the crag.`,
-		`In that time I've racked up ${input.totalAscents} logged ascents (${input.totalSends} sends, ${input.onsightCount} onsights)${outdoorBit}, on ${input.distinctRoutes} routes across ${input.distinctCrags} areas.`,
-		heightM > 0
-			? `That's about ${heightKm} km of rock — roughly ${everest}× Everest or ${elCap}× El Capitan${worldLaps > 0 ? `, and ${worldLaps} trips around the world if you laid the rope end-to-end` : ''}.`
-			: null,
-		`On average that's ${perDay} ascents per active day.`,
-		identity
-	].filter((p): p is string => Boolean(p));
-
-	return { startedOn: input.firstDate, durationLabel: duration, paragraphs };
 }
 
 function buildStreaks(dayMap: Map<string, { count: number; sends: number }>): {

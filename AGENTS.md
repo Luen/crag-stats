@@ -368,5 +368,6 @@ You'll often notice things outside the task at hand. **Don't silently fix them i
 | 2026-10 | `node scripts/snyk-projects.mjs` prepares separate temporary application and boot/config projects for pnpm 12 Snyk scans. Scan every emitted project and preserve any failure; never merge their shared importer maps. |
 
 | 2026-10 | #179: minimal glibc runtime removes mount/apt/shell utilities. CI builds and smoke-tests amd64 + arm64; local importer validation uses synthetic loopback data and GitHub TLS, never theCrag. Raw OS scan findings and source-based zlib triage remain in `docs/dev/DOCKER_SECURITY.md`. |
+| 2026-10 | #186: Climbing story (`climberBlurb.ts`) adds gated optional lines — put-up Sport→Trad→Boulder with community-others impact, home crag, partners, season, solo, projects, hardest, popularity, travel, rock. Cap ~3 optional paragraphs; docs at `/docs/climbing-story`. |
 
 _Add a row when you change behaviour agents must know about._
