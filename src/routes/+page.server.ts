@@ -6,13 +6,14 @@ import { listDashboardProjects } from '#lib/server/projects';
 import { getSyncStatus } from '#lib/server/sync';
 import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ cookies, url }) => {
+export const load: PageServerLoad = async ({ cookies, url, parent }) => {
 	// Site default from Settings; `?system=` is a one-off override for shared links.
 	const fromQuery = url.searchParams.get('system');
 	const preferred = fromQuery ? parseGradeSystem(fromQuery) : getPreferredGradeSystem();
 	const pyramidMode = parsePyramidMode(url.searchParams.get('pyramid'));
 
-	const stats = getDashboardStats(preferred, { pyramidMode });
+	const { dateDisplay } = await parent();
+	const stats = getDashboardStats(preferred, { pyramidMode, dateDisplay });
 	return {
 		stats,
 		// Share-preview text (#44); the layout only emits it when indexing is allowed.

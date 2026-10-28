@@ -27,6 +27,8 @@ import {
 } from './logbookSort';
 import { buildCprTimeline } from './cpr';
 import { buildBadges } from './badges';
+import { communityAscentBadgeHits } from './communityBadges';
+import type { DateDisplay } from '#lib/dates';
 import { buildRouteDeveloperImpact } from './routeDeveloperImpact';
 import { countOwnerSetRoutes, setterBadgeHits } from './routeSetters';
 import {
@@ -54,6 +56,7 @@ import { ascents, profiles, routeHistoryFetches, routes } from './db/schema';
 import { pickHardestSends } from './hardestSends';
 import { invalidateRouteHistoryRuns } from './routeHistoryEngine';
 import { buildTrainingLoadView, hasPersonalAscentGrade } from './trainingLoad';
+import { buildKarmaStats } from './karma';
 import { buildRoutePopularityStats } from './routePopularity';
 import { buildBestMonthsView } from './bestMonths';
 
@@ -244,7 +247,7 @@ export function parseGradeSystem(raw: string | null | undefined): GradeSystem {
 
 export function getDashboardStats(
 	preferredSystem: GradeSystem = 'ewbank',
-	opts?: { pyramidMode?: PyramidMode }
+	opts?: { pyramidMode?: PyramidMode; dateDisplay?: DateDisplay }
 ): DashboardStats {
 	const pyramidMode = opts?.pyramidMode ?? 'all';
 	ensureSchema();
@@ -687,7 +690,12 @@ export function getDashboardStats(
 	const monthly = buildMonthlyStats(extraRows);
 	const yearly = buildYearlyStats(extraRows);
 	const milestones = buildMilestones(extraRows);
-	const badges = buildBadges(extraRows, setterBadgeHits());
+	const developerImpact = buildRouteDeveloperImpact();
+	const badges = buildBadges(
+		extraRows,
+		setterBadgeHits(),
+		communityAscentBadgeHits(developerImpact, opts?.dateDisplay)
+	);
 	const trainingLoad = buildTrainingLoadView(extraRows);
 	const styleMix = buildStyleMixOverTime(extraRows);
 	const partners = buildPartnerLeaderboard(extraRows, 7).partners;
@@ -716,6 +724,7 @@ export function getDashboardStats(
 	);
 	const rockAgg = buildRockTypeStats(extraRows);
 	const rockBlurb = rockTypeBlurb(rockAgg.dominant, rockAgg.dominantPct);
+	const karma = buildKarmaStats();
 	const bestMonths = buildBestMonthsView(
 		all.map((a) => ({
 			cragName: a.cragName,
@@ -863,12 +872,23 @@ export function getDashboardStats(
 		})(),
 		firstAscents: (() => {
 			const routesSet = countOwnerSetRoutes();
-			const impact = buildRouteDeveloperImpact();
+			const impact = developerImpact;
 			const community = {
 				routesPutUp: impact.routesPutUp,
 				communityAscents: impact.communityAscents,
 				sportOrBoltedCommunityAscents: impact.sportOrBoltedAscents,
-				routesWithCommunityData: impact.routesWithCommunityData
+				routesWithCommunityData: impact.routesWithCommunityData,
+				communityRoutes: impact.routes.map((r) => ({
+					routeExternalId: r.routeExternalId,
+					routeName: r.routeName,
+					url: r.url,
+					othersAscents: r.othersAscents,
+					ascentCountFetchedAt: r.ascentCountFetchedAt,
+					fromFa: r.fromFa,
+					faKind: r.faKind,
+					fromSetter: r.fromSetter,
+					sportOrBolted: r.sportOrBolted
+				}))
 			};
 			if (!faMarks.size) return { ...buildFirstAscentStats([]), routesSet, ...community };
 			// One row per marked route: route grade (not a pitch), dated by the first send
@@ -969,6 +989,7 @@ export function getDashboardStats(
 		},
 		pyramidMode,
 		routePopularity,
+		karma,
 		bestMonths
 	};
 }

@@ -1,4 +1,5 @@
 import type { GradeSystem } from '#lib/grades';
+import type { KarmaStats } from './karma';
 import type { RoutePopularityStats } from './routePopularity';
 import type { TrainingLoadView } from './trainingLoad';
 
@@ -122,6 +123,21 @@ export type FirstAscentStats = {
 	sportOrBoltedCommunityAscents: number;
 	/** FA/setter routes that have paired route/owner count snapshots. */
 	routesWithCommunityData: number;
+	/**
+	 * Per-route community impact (sorted by estimate desc). Compact card shows a prefix;
+	 * missing snapshots keep othersAscents null (#147).
+	 */
+	communityRoutes: {
+		routeExternalId: string;
+		routeName: string | null;
+		url: string | null;
+		othersAscents: number | null;
+		ascentCountFetchedAt: string | null;
+		fromFa: boolean;
+		faKind: 'FA' | 'FFA' | null;
+		fromSetter: boolean;
+		sportOrBolted: boolean;
+	}[];
 	byStyle: { style: string; count: number; color: string }[];
 	/** Routes on Ewbank-based scores, shown in the preferred system */
 	routeRange: FirstAscentRange;
@@ -334,6 +350,8 @@ export type DashboardStats = {
 	};
 	pyramidMode: 'all' | 'sends' | 'onsight';
 	routePopularity: RoutePopularityStats | null;
+	/** Approximate ascent karma; edit points unavailable without a karma API (#136). */
+	karma: KarmaStats;
 	/** cragCount 0 → hide Best months card. */
 	bestMonths: BestMonthsView;
 };

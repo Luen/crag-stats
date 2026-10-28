@@ -176,14 +176,26 @@ Every release, including the automated nightly one, gets pulled straight onto ru
 ```bash
 pnpm install
 pnpm dev
-pnpm test           # Vitest unit tests (grade fixes, URLs, mapAscent) — run before commit
-pnpm check          # svelte-check — run before claiming done
-pnpm lint           # Prettier --check + ESLint (CI enforces it; run `pnpm format` to fix)
+pnpm test           # Vitest unit tests (grade fixes, URLs, mapAscent)
+pnpm check          # svelte-check
+pnpm lint           # Prettier --check + ESLint (run `pnpm format` to fix)
 pnpm build
 pnpm test:e2e       # Playwright + axe against the production build (run `pnpm build` first)
 ```
 
-CI (`.github/workflows/ci.yml`) runs `pnpm lint`, `pnpm check`, `pnpm test`, `pnpm build` and `pnpm test:e2e` on push/PR. The same workflow’s `docker` job builds the production image on PRs (no push).
+### Before push / finishing a PR (required for agents)
+
+Do **not** push a branch, open/update a PR, or claim the task done until these have been run **locally** on the changed code and pass:
+
+1. `pnpm lint` — Prettier + ESLint. If it fails, run `pnpm format` (and fix any ESLint issues), then lint again.
+2. `pnpm check` — svelte-check / types.
+3. `pnpm test` — unit tests (or at least the suites that cover what you touched).
+
+Also run `pnpm build` when the change affects the production build or SvelteKit routes, and `pnpm test:e2e` when you touch UI, e2e fixtures, auth, or accessibility. Fix failures before pushing — do not rely on CI as the first formatter or typecheck.
+
+When editing `.svelte` files, use the Svelte MCP autofixer until clean (see Stack & tooling above) **in addition to** `pnpm lint` / `pnpm check`.
+
+CI (`.github/workflows/ci.yml`) runs `pnpm lint`, `pnpm check`, `pnpm test`, `pnpm build` and `pnpm test:e2e` on push/PR. The same workflow’s `docker` job builds the production image on PRs (no push). Local runs above are still mandatory so PRs do not burn a red check on Prettier-only or trivial type slips.
 
 - **CodeQL (default setup):** Security scanning uses GitHub’s [default code scanning setup](https://docs.github.com/en/code-security/code-scanning/enabling-code-scanning/configuring-default-setup-for-code-scanning) (`dynamic/github-code-scanning/codeql`), not a repo workflow. It runs on PRs **targeting `main` only**. Do not add a duplicate CodeQL workflow unless you explicitly dedupe against default setup.
 - **Stacked PRs:** PRs whose base is a feature branch (not `main`) still get CI `check` / `docker` (and third-party checks such as Socket). Missing CodeQL there is expected — not “incomplete” checks. CodeQL runs when the stack merges to `main`. Merge stacked PRs bottom-up into their stack base, then open or retarget the final PR to `main`.
@@ -316,7 +328,22 @@ You'll often notice things outside the task at hand. **Don't silently fix them i
 
 | 2026-10 | #140 / #141 / #144 / #148: `routes.ascent_count_own` is captured with each replaced `ascent_count` by route-history import (0013). Never subtract today's logbook from an older total. Legacy counts need an explicit refresh for a paired snapshot. Show cached/eligible coverage, known zeros and estimate labels. First-ascents keys use route IDs; hardest-send keys use ascent IDs, never names/dates. |
 
+| 2026-10 | #147: First ascents card lists per-route community impact; `routes.ascent_count_fetched_at` (0014) records counter freshness separately from `route_info_updated_at`. |
+
+| 2026-10 | #146: Community-ascent badges (10/50/100/500 + sport/bolted 10/50/100) from paired impact estimates; earned date stays null; detail discloses coverage. |
+
 | 2026-10 | #151: each milestone has a stable `id` (grade system/score, count or height threshold, or FA route ID). Svelte keys use that ID; matching route names and dates are valid distinct events. |
 | 2026-10 | #158: dashboard `{#each}` keys prefer stable ids (BarList `id`, sector path, stars bubble score\|y). Never key climb lists by name/date alone; aggregated name keys (partners, crags) are OK when the map is unique by construction. |
+
+| 2026-10 | #154 review: community route rows preserve FA versus FFA credit; unrelated route-info refreshes must retain the counter timestamp. Browser tests distinguish Latest rows from community rows. |
+
+| 2026-10 | #152 review: community badge estimates and coverage use the layout's dateDisplay locale, passed through getDashboardStats; never hard-code en-US for these details. |
+
+| 2026-10 | #150: setter-only First ascents cards omit the empty style chart and Latest section; browser regression runs axe in light and dark. |
+
+| 2026-10 | #136: Karma dashboard card approximates ascent points (1× distinct routes / `routesTicked`); edit karma stays unavailable until theCrag exposes it on a syncable API. |
+
+| 2026-10 | #142 / #143: Karma's local tile counts distinct provider-matched routes with logged ascents; orphan metadata contributes no points. Account estimates and local route counts must retain distinct source labels. |
+| 2026-10 | Agents must run `pnpm lint`, `pnpm check`, and `pnpm test` locally before push / opening or updating a PR / claiming done; fix Prettier with `pnpm format`. Do not treat CI as the first formatter. |
 
 _Add a row when you change behaviour agents must know about._

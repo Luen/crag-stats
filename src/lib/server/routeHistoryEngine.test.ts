@@ -193,6 +193,7 @@ describe('route history import', () => {
 		expect(row?.qualityScore).toBe(90);
 		expect(row?.ascentCount).toBe(5);
 		expect(row?.ascentCountOwn).toBe(1);
+		expect(row?.ascentCountFetchedAt).toBeTruthy();
 		expect(row?.routeInfoUpdatedAt).toBeTruthy();
 	});
 
@@ -418,42 +419,44 @@ it('refresh clears explicit nulls but preserves omitted route fields (#128)', as
 		};
 	};
 	await runRouteHistoryImportOnce(config, h.deps);
+	const initialCountFetch = db
+		.select()
+		.from(routes)
+		.where(eq(routes.externalId, routeId(0)))
+		.get()!.ascentCountFetchedAt;
 	setFirstAscent('thecrag', routeId(0), 'FA');
 	expect(buildRouteDeveloperImpact().communityAscents).toBe(11);
 	// Delete an owner tick after the fetch: the cached community estimate stays fixed.
 	db.delete(ascents).where(eq(ascents.externalId, '9000')).run();
 	expect(buildRouteDeveloperImpact().communityAscents).toBe(11);
-	info = undefined;
+	info = { qualityScore: 91 };
 	resetRouteHistoryFetches();
 	h.advance(MIN_RUN_INTERVAL_MS);
 	await runRouteHistoryImportOnce(config, h.deps);
-	expect(
-		db
-			.select()
-			.from(routes)
-			.where(eq(routes.externalId, routeId(0)))
-			.get()!.qualityScore
-	).toBe(88);
-	expect(
-		db
-			.select()
-			.from(routes)
-			.where(eq(routes.externalId, routeId(0)))
-			.get()!.ascentCountOwn
-	).toBe(1);
+	const afterUnrelated = db
+		.select()
+		.from(routes)
+		.where(eq(routes.externalId, routeId(0)))
+		.get()!;
+	expect(afterUnrelated.qualityScore).toBe(91);
+	expect(afterUnrelated.ascentCountOwn).toBe(1);
+	// Unrelated route-info refresh must not move counter freshness (#147).
+	expect(afterUnrelated.ascentCountFetchedAt).toBe(initialCountFetch);
+	const fetchedBefore = afterUnrelated.ascentCountFetchedAt;
 	// A replacement total captures the new owner count, even when it is zero.
 	info = { ascentCount: 13 };
 	resetRouteHistoryFetches();
 	h.advance(MIN_RUN_INTERVAL_MS);
 	await runRouteHistoryImportOnce(config, h.deps);
 	expect(buildRouteDeveloperImpact().communityAscents).toBe(13);
-	expect(
-		db
-			.select()
-			.from(routes)
-			.where(eq(routes.externalId, routeId(0)))
-			.get()!.ascentCountOwn
-	).toBe(0);
+	const afterCount = db
+		.select()
+		.from(routes)
+		.where(eq(routes.externalId, routeId(0)))
+		.get()!;
+	expect(afterCount.ascentCountOwn).toBe(0);
+	expect(afterCount.ascentCountFetchedAt).toBeTruthy();
+	expect(afterCount.ascentCountFetchedAt).not.toBe(fetchedBefore);
 	info = { betaJson: null, qualityScore: null, ascentCount: null };
 	resetRouteHistoryFetches();
 	h.advance(MIN_RUN_INTERVAL_MS);
@@ -467,4 +470,5 @@ it('refresh clears explicit nulls but preserves omitted route fields (#128)', as
 	expect(row.qualityScore).toBeNull();
 	expect(row.ascentCount).toBeNull();
 	expect(row.ascentCountOwn).toBeNull();
+	expect(row.ascentCountFetchedAt).toBeNull();
 });
