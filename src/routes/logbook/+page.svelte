@@ -4,7 +4,12 @@
 	import StyleBadge from '#lib/components/StyleBadge.svelte';
 	import TagChips from '#lib/components/TagChips.svelte';
 	import TickTypeIcon from '#lib/components/TickTypeIcon.svelte';
-	import { LOGBOOK_QUALITIES, LOGBOOK_STYLES, LOGBOOK_TICKS } from '#lib/logbookFilters';
+	import {
+		includeSelectedOptions,
+		LOGBOOK_QUALITIES,
+		LOGBOOK_STYLES,
+		LOGBOOK_TICKS
+	} from '#lib/logbookFilters';
 	import { enhance } from '$app/forms';
 	import type { PageProps } from './$types';
 
@@ -166,7 +171,7 @@
 	<fieldset class="facet">
 		<legend>Style</legend>
 		<div class="checks">
-			{#each LOGBOOK_STYLES as style (style)}
+			{#each includeSelectedOptions(LOGBOOK_STYLES, data.styles) as style (style)}
 				<label class="check">
 					<input type="checkbox" name="style" value={style} checked={checked(data.styles, style)} />
 					{style}
@@ -178,7 +183,7 @@
 	<fieldset class="facet">
 		<legend>Tick type</legend>
 		<div class="checks">
-			{#each LOGBOOK_TICKS as tick (tick)}
+			{#each includeSelectedOptions(LOGBOOK_TICKS, data.ticks) as tick (tick)}
 				<label class="check">
 					<input type="checkbox" name="tick" value={tick} checked={checked(data.ticks, tick)} />
 					{tick}

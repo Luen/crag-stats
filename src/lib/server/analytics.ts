@@ -1,3 +1,4 @@
+import { matchesClimbStyle } from '#lib/climbStyle';
 import { desc, eq, sql } from 'drizzle-orm';
 import {
 	bandById,
@@ -952,11 +953,6 @@ function normalizeList(single: string | undefined, many: string[] | undefined): 
 	return out;
 }
 
-function styleMatches(rowStyle: string, wanted: string): boolean {
-	const w = wanted.toLowerCase();
-	return rowStyle.toLowerCase().includes(w) || displayStyle(rowStyle).toLowerCase() === w;
-}
-
 export function listLogbook(filters?: {
 	q?: string;
 	/** Single style (legacy / deep links); prefer `styles` for multi-select */
@@ -1076,8 +1072,9 @@ export function listLogbook(filters?: {
 
 	if (styleList.length) {
 		rows = rows.filter((r) => {
-			const combined = `${r.ascentGearStyle || ''} ${r.gearStyle || ''}`;
-			return styleList.some((s) => styleMatches(combined, s) || styleMatches(r.gearStyle || '', s));
+			return styleList.some(
+				(s) => matchesClimbStyle(r.ascentGearStyle, s) || matchesClimbStyle(r.gearStyle, s)
+			);
 		});
 	}
 	if (tickList.length) {
