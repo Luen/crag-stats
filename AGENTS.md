@@ -272,5 +272,6 @@ You'll often notice things outside the task at hand. **Don't silently fix them i
 | 2026-10 | #68 follow-up: migration `0011` upgrades DBs that applied the first draft of 0010 (offset/total cursor) to the fetch-once `last_run_at` shape. |
 | 2026-10 | Route history import caches route API fields on `routes` (migration `0012`, #77–#82): project flag, seasonality, popularity, qualityScore, beta, ancestors, pitches, flags. Request `show=info,ancestors`. Already-fetched routes need Settings → Refresh all to backfill; no dashboard UI yet. |
 | 2026-10 | Logbook filters: `fa=FA|FFA|any|none`, `history=pending` (owner + import on only), plus `quality`, `minStars`, `with`, `from`/`to`. Marks load before filter/page in `listLogbook`. |
+| 2026-10 | Dashboard **Route popularity** card (#79): busy vs quiet tick share, hidden gems; `/docs/route-popularity`; logbook sort by Pop.; card hidden until any route has popularity cache. |
 
 _Add a row when you change behaviour agents must know about._

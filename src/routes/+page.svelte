@@ -14,6 +14,7 @@
 	import NotableAscents from '#lib/components/NotableAscents.svelte';
 	import PartnerLeaderboard from '#lib/components/PartnerLeaderboard.svelte';
 	import QualityBreakdown from '#lib/components/QualityBreakdown.svelte';
+	import RoutePopularity from '#lib/components/RoutePopularity.svelte';
 	import RockTypePanel from '#lib/components/RockTypePanel.svelte';
 	import StarsScatter from '#lib/components/StarsScatter.svelte';
 	import Streaks from '#lib/components/Streaks.svelte';
@@ -35,11 +36,15 @@
 	// Visitors don't get an empty First ascents card; the owner sees how to mark one.
 	const rows = $derived(
 		packLayoutRows(
-			data.dashLayout.map((i) =>
-				i.id === 'firstAscents' && !data.showSettings && s.firstAscents.total === 0
-					? { ...i, enabled: false }
-					: i
-			)
+			data.dashLayout.map((i) => {
+				if (i.id === 'firstAscents' && !data.showSettings && s.firstAscents.total === 0) {
+					return { ...i, enabled: false };
+				}
+				if (i.id === 'routePopularity' && s.routePopularity == null) {
+					return { ...i, enabled: false };
+				}
+				return i;
+			})
 		)
 	);
 
@@ -165,6 +170,8 @@
 		<StarsScatter points={s.starsScatter} />
 	{:else if id === 'quality'}
 		<QualityBreakdown ratings={s.qualityBreakdown} />
+	{:else if id === 'routePopularity' && s.routePopularity}
+		<RoutePopularity data={s.routePopularity} />
 	{:else if id === 'pyramids'}
 		<header class="section-head">
 			<h2>Grade pyramids</h2>

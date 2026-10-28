@@ -1,4 +1,5 @@
 import type { GradeSystem } from '#lib/grades';
+import type { RoutePopularityStats } from './routePopularity';
 import type { TrainingLoadView } from './trainingLoad';
 
 export type PyramidTickSegment = { tick: string; count: number; color: string };
@@ -293,4 +294,5 @@ export type DashboardStats = {
 		info: { name: string; summary: string; tips: string } | null;
 	};
 	pyramidMode: 'all' | 'sends' | 'onsight';
+	routePopularity: RoutePopularityStats | null;
 };
