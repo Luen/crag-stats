@@ -8,7 +8,7 @@ User-facing explanation: [`docs/guide/first-ascents.md`](../guide/first-ascents.
 
 ## Why it needs `impers`
 
-theCrag's logbook API (`/api/logbook/ascents`) works with plain `fetch` and doesn't include route history. `/api/route/ids?show=info` does include it, but Cloudflare blocks non-browser clients there (a 403 "Sorry, you have been blocked" page, even with a valid key). [`impers`](https://github.com/lexiforest/impers) presents a browser-like TLS/HTTP2 fingerprint, so those requests get through.
+theCrag's logbook API (`/api/logbook/ascents`) works with plain `fetch` and doesn't include route history. `/api/route/ids?show=info,ancestors` does include it (plus route-level fields used by #77–#82), but Cloudflare blocks non-browser clients there (a 403 "Sorry, you have been blocked" page, even with a valid key). [`impers`](https://github.com/lexiforest/impers) presents a browser-like TLS/HTTP2 fingerprint, so those requests get through.
 
 That works around theCrag's bot protection. theCrag says broader API access is negotiated with them, so this is opt-in and at the owner's own risk. Prefer asking theCrag for route API access, which would let us drop `impers` and use plain `fetch`. Never use impersonation for the logbook sync.
 
@@ -51,6 +51,26 @@ Pacing (`running`, `lastRequestAt`) is **process-local**. The usual Docker deplo
 
 Everything is tested offline with a fake client and clock: `routeHistoryEngine.test.ts`, `providers/thecrag/routeHistoryApi.test.ts` (response classification), `routeHistoryParse.test.ts`. No test talks to theCrag.
 
+## Route info cache on `routes` (migration `0012_route_info.sql`, #77–#82)
+
+Each successful fetch also upserts nullable columns on the matching `routes` row (when the API sends them):
+
+| Column | Source field | Issues |
+| ------ | ------------- | ------ |
+| `is_project` | `flags` contains Project | #77 |
+| `seasonality_json` | `seasonality` (12 months) | #78 |
+| `ascent_count`, `popularity`, `relative_popularity` | same names | #79 |
+| `quality_score` | `qualityScore` | #80 |
+| `beta_json` | public `beta` excerpts + route page URL (never ascent notes) | #81 |
+| `ancestors_json`, `pitches_json`, `flags_json` | same names | #82 |
+| `route_info_updated_at` | import timestamp | — |
+
+Parsing lives in `parseRouteInfoFields()` / `parseRoutePayload()` (`routeHistoryApi.ts`); `storeBatch()` writes them in `routeHistoryEngine.ts`. No extra requests — same pacing as history.
+
+Routes that were already fetched before this migration have no cached info until the owner runs **Refresh all** in Settings (still 20 routes per run), which clears `route_history_fetches` and re-fetches.
+
+Dashboard/UI for these fields is follow-up work; this pass only stores data.
+
 ## Follow-ups that reuse the same fetch
 
-Setter credits (#76), the Project flag (#77), seasonality (#78), popularity (#79), qualityScore (#80), beta and access warnings (#81), ancestors, pitches and flags (#82). Store those fields in the same pass rather than fetching again.
+Setter credits (#76) can join the same payload when we extend the parser. Project flag, seasonality, popularity, quality, beta, ancestors, pitches and flags are cached as above.

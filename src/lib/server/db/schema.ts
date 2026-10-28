@@ -54,6 +54,19 @@ export const routes = sqliteTable(
 		parentExternalId: text('parent_external_id'),
 		lat: real('lat'),
 		lon: real('lon'),
+		/** theCrag Project flag from route API `flags` (#77). */
+		isProject: integer('is_project'),
+		qualityScore: real('quality_score'),
+		ascentCount: integer('ascent_count'),
+		popularity: real('popularity'),
+		relativePopularity: real('relative_popularity'),
+		seasonalityJson: text('seasonality_json'),
+		/** Public guidebook excerpts + attribution URL; never private ascent notes (#81). */
+		betaJson: text('beta_json'),
+		ancestorsJson: text('ancestors_json'),
+		pitchesJson: text('pitches_json'),
+		flagsJson: text('flags_json'),
+		routeInfoUpdatedAt: text('route_info_updated_at'),
 		updatedAt: text('updated_at').notNull()
 	},
 	(t) => [uniqueIndex('routes_provider_ext').on(t.provider, t.externalId)]

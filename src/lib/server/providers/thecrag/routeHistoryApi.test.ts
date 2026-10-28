@@ -1,5 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { parseRetryAfter, readRouteResponse, RouteHistoryBlockedError } from './routeHistoryApi';
+import {
+	parseRouteBeta,
+	parseRouteInfoFields,
+	parseRoutePayload,
+	parseRetryAfter,
+	readRouteResponse,
+	RouteHistoryBlockedError
+} from './routeHistoryApi';
 
 const ok = (body: unknown) => ({ status: 200, text: JSON.stringify(body) });
 
@@ -46,6 +53,69 @@ describe('readRouteResponse', () => {
 		expect(() => readRouteResponse(ok({ error: 'insufficient access' }))).toThrow(
 			'insufficient access'
 		);
+	});
+});
+
+describe('parseRoutePayload route info', () => {
+	it('parses flags, quality, popularity, seasonality, beta, ancestors, and pitches', () => {
+		const routes = parseRoutePayload({
+			data: [
+				{
+					id: 42,
+					name: 'Test Line',
+					urlAncestorStub: 'australia/queensland',
+					flags: ['Project', 'IsSport'],
+					qualityScore: 87.5,
+					ascentCount: 120,
+					popularity: 65,
+					relativePopularity: 12.3,
+					seasonality: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
+					beta: {
+						description: 'A fine line.',
+						accessIssues: 'Closed when wet.',
+						comment: 'private note must not appear'
+					},
+					ancestors: [{ id: 1, name: 'World' }],
+					pitches: [{ number: 1, grade: '20' }],
+					history: []
+				}
+			]
+		});
+		expect(routes).toHaveLength(1);
+		const info = routes[0].info!;
+		expect(info.isProject).toBe(1);
+		expect(info.qualityScore).toBe(87.5);
+		expect(info.ascentCount).toBe(120);
+		expect(info.popularity).toBe(65);
+		expect(info.relativePopularity).toBe(12.3);
+		expect(JSON.parse(info.seasonalityJson!)).toHaveLength(12);
+		expect(JSON.parse(info.flagsJson!)).toEqual(['Project', 'IsSport']);
+		const beta = JSON.parse(info.betaJson!);
+		expect(beta.description).toBe('A fine line.');
+		expect(beta.accessIssues).toBe('Closed when wet.');
+		expect(beta.comment).toBeUndefined();
+		expect(beta.attributionUrl).toContain('/route/42');
+		expect(JSON.parse(info.ancestorsJson!)).toEqual([{ id: 1, name: 'World' }]);
+		expect(JSON.parse(info.pitchesJson!)).toEqual([{ number: 1, grade: '20' }]);
+	});
+
+	it('marks non-project when flags omit Project', () => {
+		const info = parseRouteInfoFields({ flags: ['IsTrad'], id: '9' }, '9');
+		expect(info?.isProject).toBe(0);
+	});
+
+	it('ignores invalid seasonality', () => {
+		const info = parseRouteInfoFields({ seasonality: [1, 2, 3], id: '1' }, '1');
+		expect(info?.seasonalityJson).toBeUndefined();
+	});
+});
+
+describe('parseRouteBeta', () => {
+	it('stores string beta with attribution only', () => {
+		const json = parseRouteBeta('Short public text.', '99', 'australia/test');
+		const o = JSON.parse(json!);
+		expect(o.description).toBe('Short public text.');
+		expect(o.attributionUrl).toMatch(/route\/99$/);
 	});
 });
 

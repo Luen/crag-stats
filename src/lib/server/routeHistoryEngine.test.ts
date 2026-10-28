@@ -5,7 +5,8 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { wipeAllData } from './analytics';
 import { db } from './db';
-import { profiles, routeHistory } from './db/schema';
+import { eq } from 'drizzle-orm';
+import { profiles, routeHistory, routes } from './db/schema';
 import { getFirstAscentMarks, setFirstAscent } from './firstAscents';
 import { upsertAscents } from './ingest';
 import type { CanonicalAscent } from './providers/types';
@@ -155,6 +156,42 @@ describe('route history import', () => {
 
 		const s = routeHistoryStatus(config);
 		expect([s.fetchedRoutes, s.pendingRoutes]).toEqual([ROUTES, 0]);
+	});
+
+	it('caches route info fields on successful fetch', async () => {
+		const id = routeId(0);
+		const hist = fa(id, `@${LOGIN}`);
+		let t = Date.parse('2026-01-01T00:00:00Z');
+		const deps: RouteHistoryDeps = {
+			now: () => t,
+			sleep: async (ms) => {
+				t += ms;
+			},
+			openClient: async () => ({
+				fetchRoutes: async (ids) =>
+					ids.map((rid) => ({
+						id: rid,
+						name: null,
+						history: rid === id ? hist : [],
+						info:
+							rid === id
+								? {
+										isProject: 1 as const,
+										qualityScore: 90,
+										ascentCount: 5,
+										flagsJson: '["Project"]'
+									}
+								: undefined
+					})),
+				close: async () => undefined
+			})
+		};
+		await runRouteHistoryImportOnce(config, deps);
+		const row = db.select().from(routes).where(eq(routes.externalId, id)).get();
+		expect(row?.isProject).toBe(1);
+		expect(row?.qualityScore).toBe(90);
+		expect(row?.ascentCount).toBe(5);
+		expect(row?.routeInfoUpdatedAt).toBeTruthy();
 	});
 
 	it('records routes missing from the response so they are not retried every run', async () => {
