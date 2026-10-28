@@ -31,7 +31,7 @@
 					{/if}
 					<span class="meta">{c.ascentCount} ascents · peak {MONTH_LABELS[c.peakMonth]}</span>
 				</div>
-				<div class="strip" aria-label="Seasonality and your volume by month">
+				<div class="strip" aria-hidden="true">
 					{#each MONTH_LABELS as label, i (label)}
 						<div
 							class="col"
@@ -46,17 +46,49 @@
 						</div>
 					{/each}
 				</div>
+				<details class="values">
+					<summary>View monthly values for {c.crag}</summary>
+					<table>
+						<caption>{c.crag}: seasonality and your ascents</caption><thead
+							><tr
+								><th scope="col">Month</th><th scope="col">Seasonality</th><th scope="col"
+									>Your ascents</th
+								></tr
+							></thead
+						><tbody>
+							{#each MONTH_LABELS as label, i (label)}<tr
+									><th scope="row">{label}</th><td>{c.seasonality[i].toFixed(1)}</td><td
+										>{c.yourMonths[i]}</td
+									></tr
+								>{/each}
+						</tbody>
+					</table>
+				</details>
 			</li>
 		{/each}
 	</ul>
 
-	<div class="legend" aria-hidden="true">
+	<div class="legend">
 		<span><i class="sw season"></i> theCrag seasonality</span>
 		<span><i class="sw yours"></i> Your ascents</span>
 	</div>
 </article>
 
 <style>
+	.values {
+		margin-top: 0.5rem;
+		font-size: 0.85rem;
+	}
+	table {
+		width: 100%;
+		border-collapse: collapse;
+	}
+	th,
+	td {
+		text-align: left;
+		padding: 0.35rem 0.5rem;
+		border-bottom: 1px solid var(--line);
+	}
 	.panel {
 		padding: 1.1rem 1.2rem;
 		border-radius: 1rem;
