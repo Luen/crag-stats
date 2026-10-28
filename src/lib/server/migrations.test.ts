@@ -134,9 +134,14 @@ describe('migrations survive skipped releases', () => {
 					expect(db.prepare('SELECT kind FROM first_ascents').get()).toEqual({ kind: 'FFA' });
 				}
 				if (k >= FILES.indexOf('0012_route_info.sql') + 1) {
-					expect(db.prepare('SELECT ascent_count, ascent_count_own FROM routes').get()).toEqual({
+					expect(
+						db
+							.prepare('SELECT ascent_count, ascent_count_own, ascent_count_fetched_at FROM routes')
+							.get()
+					).toEqual({
 						ascent_count: 7,
-						ascent_count_own: k >= FILES.indexOf('0013_route_ascent_snapshot.sql') + 1 ? 2 : null
+						ascent_count_own: k >= FILES.indexOf('0013_route_ascent_snapshot.sql') + 1 ? 2 : null,
+						ascent_count_fetched_at: null
 					});
 				}
 			} finally {

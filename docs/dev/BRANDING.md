@@ -156,4 +156,6 @@ chrome --headless=new --hide-scrollbars --user-data-dir=/tmp/cs-shots --window-s
 Seasonality strips provide an expandable monthly values table so touch, keyboard and screen-reader users can read both series without hover.
 Chart values must be readable without hover: the Eddington timeline exposes point titles and an expandable values table. Metric toggle buttons expose aria-pressed.
 
+The First ascents community list retains FA versus FFA credit, shows missing counts separately from known zero estimates, and displays count-specific freshness in the configured locale.
+
 Setter-only First ascents cards omit the empty style chart and Latest section; keep setter and community totals visible. Validate this state with axe in light and dark themes.

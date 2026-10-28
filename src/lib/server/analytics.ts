@@ -877,7 +877,18 @@ export function getDashboardStats(
 				routesPutUp: impact.routesPutUp,
 				communityAscents: impact.communityAscents,
 				sportOrBoltedCommunityAscents: impact.sportOrBoltedAscents,
-				routesWithCommunityData: impact.routesWithCommunityData
+				routesWithCommunityData: impact.routesWithCommunityData,
+				communityRoutes: impact.routes.map((r) => ({
+					routeExternalId: r.routeExternalId,
+					routeName: r.routeName,
+					url: r.url,
+					othersAscents: r.othersAscents,
+					ascentCountFetchedAt: r.ascentCountFetchedAt,
+					fromFa: r.fromFa,
+					faKind: r.faKind,
+					fromSetter: r.fromSetter,
+					sportOrBolted: r.sportOrBolted
+				}))
 			};
 			if (!faMarks.size) return { ...buildFirstAscentStats([]), routesSet, ...community };
 			// One row per marked route: route grade (not a pitch), dated by the first send

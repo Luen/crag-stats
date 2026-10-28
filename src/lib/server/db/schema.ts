@@ -60,6 +60,8 @@ export const routes = sqliteTable(
 		ascentCount: integer('ascent_count'),
 		/** Owner logbook rows at the fetch that supplied ascentCount; null for legacy totals. */
 		ascentCountOwn: integer('ascent_count_own'),
+		/** ISO time ascentCount was written; null when the counter was never set or was cleared (#147). */
+		ascentCountFetchedAt: text('ascent_count_fetched_at'),
 		popularity: real('popularity'),
 		relativePopularity: real('relative_popularity'),
 		seasonalityJson: text('seasonality_json'),
