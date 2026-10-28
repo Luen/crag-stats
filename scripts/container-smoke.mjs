@@ -33,8 +33,9 @@ try {
 	let ready = false;
 	for (let i = 0; i < 120; i++) {
 		assert.equal(child.exitCode, null, output);
+		assert.equal(child.signalCode, null, output);
 		try {
-			if ((await fetch(origin)).ok) {
+			if ((await fetch(origin, { signal: AbortSignal.timeout(2000) })).ok) {
 				ready = true;
 				break;
 			}
@@ -55,7 +56,7 @@ try {
 	assert.match(await response.text(), /imported/);
 	assert.match(await (await fetch(`${origin}/logbook?q=Hard%20Project`)).text(), /Hard Project/);
 } finally {
-	if (child.exitCode === null) {
+	if (child.exitCode === null && child.signalCode === null) {
 		const exited = once(child, 'exit');
 		child.kill('SIGTERM');
 		const force = setTimeout(() => child.kill('SIGKILL'), 5000);
