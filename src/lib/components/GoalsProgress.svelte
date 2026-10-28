@@ -22,7 +22,8 @@
 	{#if goals.length === 0}
 		<p class="empty">
 			{#if canEdit}
-				No active goals — <a href="/goals">set one</a> and progress fills from your logbook.
+				No active goals — <a href="/goals">set one</a>. Grade bars show readiness from nearby sends;
+				height and days stay linear.
 			{:else}
 				No active goals right now.
 			{/if}

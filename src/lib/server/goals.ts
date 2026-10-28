@@ -3,6 +3,7 @@ import { db, ensureSchema } from './db';
 import { ascents, goals, routes, type Goal } from './db/schema';
 import {
 	defaultVenueForKind,
+	gradeGoalReadiness,
 	kindLabel,
 	parseGoalGradeScore,
 	progressPct,
@@ -11,7 +12,13 @@ import {
 import { matchesVenueScope, normalizeVenueScope, type VenueScope } from './venue';
 
 export type { GoalKind } from './goalsShared';
-export { defaultVenueForKind, kindLabel, parseGoalGradeScore, progressPct } from './goalsShared';
+export {
+	defaultVenueForKind,
+	gradeGoalReadiness,
+	kindLabel,
+	parseGoalGradeScore,
+	progressPct
+} from './goalsShared';
 
 export type GoalView = Goal & {
 	venueScope: VenueScope;
@@ -43,7 +50,82 @@ function asVenue(g: Goal): VenueScope {
 	return normalizeVenueScope(g.venueScope);
 }
 
-function enrichGoal(g: Goal): GoalView {
+type AscentRouteRow = {
+	routeId: number | null;
+	ascentDate: string | null;
+	heightM: number | null;
+	isSend: boolean;
+	effectiveGradeScore: number | null;
+	gearStyle: string | null;
+	routeName: string | null;
+	cragName: string | null;
+	tagsJson: string | null;
+};
+
+function loadAscentRouteRows(): AscentRouteRow[] {
+	return db
+		.select({
+			routeId: ascents.routeId,
+			ascentDate: ascents.ascentDate,
+			heightM: ascents.heightM,
+			isSend: ascents.isSend,
+			effectiveGradeScore: ascents.effectiveGradeScore,
+			gearStyle: routes.gearStyle,
+			routeName: routes.name,
+			cragName: routes.cragName,
+			tagsJson: routes.tagsJson
+		})
+		.from(ascents)
+		.innerJoin(routes, eq(ascents.routeId, routes.id))
+		.all();
+}
+
+/** Qualifying year+venue sends for a grade goal; distinct routes per N−1 / N−2 bucket. */
+function gradeGoalSendEvidence(
+	g: Goal,
+	ascentRows: AscentRouteRow[],
+	currentYear: number
+): { best: number | null; routesAtNMinus1: number; routesAtNMinus2: number } {
+	const y = g.year ?? currentYear;
+	const venue = asVenue(g);
+	const target = g.targetGradeScore ?? Number(g.targetValue);
+	const n1Bucket = Math.round(target) - 1;
+	const n2Bucket = Math.round(target) - 2;
+	const n1Routes = new Set<number>();
+	const n2Routes = new Set<number>();
+	let best: number | null = null;
+
+	for (const a of ascentRows) {
+		if (!a.isSend) continue;
+		if (
+			!matchesVenueScope(venue, {
+				gearStyle: a.gearStyle,
+				name: a.routeName,
+				cragName: a.cragName,
+				tagsJson: a.tagsJson
+			})
+		) {
+			continue;
+		}
+		const day = validDay(a.ascentDate);
+		if (!day || Number(day.slice(0, 4)) !== y) continue;
+		const score = a.effectiveGradeScore;
+		if (score == null || !Number.isFinite(score)) continue;
+		best = best == null ? score : Math.max(best, score);
+		if (a.routeId == null) continue;
+		const bucket = Math.round(score);
+		if (bucket === n1Bucket) n1Routes.add(a.routeId);
+		else if (bucket === n2Bucket) n2Routes.add(a.routeId);
+	}
+
+	return {
+		best,
+		routesAtNMinus1: n1Routes.size,
+		routesAtNMinus2: n2Routes.size
+	};
+}
+
+function enrichGoal(g: Goal, ascentRows: AscentRouteRow[] = []): GoalView {
 	const venue = asVenue(g);
 	const targetNum = Number(g.targetValue);
 	const currentNum = Number(g.progressValue);
@@ -53,9 +135,19 @@ function enrichGoal(g: Goal): GoalView {
 
 	if (g.kind === 'grade') {
 		const target = g.targetGradeScore ?? targetNum;
-		const current = Number.isFinite(currentNum) ? currentNum : 0;
-		pct = g.completed ? 100 : progressPct(current, target);
-		progressLabel = current > 0 ? `Best send ${current}` : 'No qualifying send yet';
+		const evidence = gradeGoalSendEvidence(g, ascentRows, new Date().getFullYear());
+		const readiness = gradeGoalReadiness({
+			target,
+			bestSend: evidence.best,
+			routesAtNMinus1: evidence.routesAtNMinus1,
+			routesAtNMinus2: evidence.routesAtNMinus2
+		});
+		pct = g.completed ? 100 : readiness.pct;
+		progressLabel = g.completed
+			? evidence.best != null
+				? `Best send ${evidence.best} · done`
+				: 'Done'
+			: readiness.label;
 		targetLabel = Number.isFinite(target) ? `Send ≥ ${target}` : 'Grade goal';
 		if (g.year) targetLabel += ` · ${g.year}`;
 	} else if (g.kind === 'height_year') {
@@ -93,7 +185,13 @@ function enrichGoal(g: Goal): GoalView {
 export function listGoals(): GoalView[] {
 	ensureSchema();
 	updateGoalProgress();
-	return db.select().from(goals).orderBy(desc(goals.createdAt)).all().map(enrichGoal);
+	const ascentRows = loadAscentRouteRows();
+	return db
+		.select()
+		.from(goals)
+		.orderBy(desc(goals.createdAt))
+		.all()
+		.map((g) => enrichGoal(g, ascentRows));
 }
 
 export function listActiveGoals(limit = 3): GoalView[] {
@@ -151,7 +249,8 @@ export function createGoal(input: {
 		.get();
 
 	updateGoalProgress();
-	return enrichGoal(db.select().from(goals).where(eq(goals.id, inserted.id)).get()!);
+	const ascentRows = loadAscentRouteRows();
+	return enrichGoal(db.select().from(goals).where(eq(goals.id, inserted.id)).get()!, ascentRows);
 }
 
 export function deleteGoal(id: number) {
@@ -171,17 +270,6 @@ export function setGoalCompleted(id: number, completed: boolean) {
 		.run();
 }
 
-type AscentRouteRow = {
-	ascentDate: string | null;
-	heightM: number | null;
-	isSend: boolean;
-	effectiveGradeScore: number | null;
-	gearStyle: string | null;
-	routeName: string | null;
-	cragName: string | null;
-	tagsJson: string | null;
-};
-
 /**
  * Recompute auto progress for height_year / days_month / grade from ascents.
  * Grade = send ≥ target score within goal year + venue scope (default outdoor).
@@ -192,20 +280,7 @@ export function updateGoalProgress(): void {
 	const rows = db.select().from(goals).all();
 	if (rows.length === 0) return;
 
-	const ascentRows: AscentRouteRow[] = db
-		.select({
-			ascentDate: ascents.ascentDate,
-			heightM: ascents.heightM,
-			isSend: ascents.isSend,
-			effectiveGradeScore: ascents.effectiveGradeScore,
-			gearStyle: routes.gearStyle,
-			routeName: routes.name,
-			cragName: routes.cragName,
-			tagsJson: routes.tagsJson
-		})
-		.from(ascents)
-		.innerJoin(routes, eq(ascents.routeId, routes.id))
-		.all();
+	const ascentRows = loadAscentRouteRows();
 
 	const now = new Date();
 	const currentYear = now.getFullYear();

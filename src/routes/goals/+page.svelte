@@ -58,7 +58,8 @@
 	<h1>Goals</h1>
 	<p>
 		Progress fills from your theCrag logbook. Grade goals track a send ≥ target this year (outdoor
-		by default). Custom goals stay manual.
+		by default); the bar is approximate readiness from nearby distinct-route sends (~2 at one grade
+		under, ~4 at two under), not best÷target. Height and days stay linear. Custom goals stay manual.
 	</p>
 </section>
 
