@@ -85,6 +85,8 @@ export type FirstAscentStats = {
 	total: number;
 	fa: number;
 	ffa: number;
+	/** Routes where cached route history credits you as route setter (@login). */
+	routesSet: number;
 	byStyle: { style: string; count: number; color: string }[];
 	/** Routes on Ewbank-based scores, shown in the preferred system */
 	routeRange: FirstAscentRange;
