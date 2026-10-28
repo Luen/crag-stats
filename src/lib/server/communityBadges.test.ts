@@ -3,6 +3,20 @@ import { communityAscentBadgeHits } from './communityBadges';
 import { buildBadges } from './badges';
 
 describe('communityAscentBadgeHits (#146)', () => {
+	it('formats the estimates and coverage with the configured display locale', () => {
+		const hits = communityAscentBadgeHits(
+			{
+				communityAscents: 12345,
+				sportOrBoltedAscents: 1234,
+				routesPutUp: 2345,
+				routesWithCommunityData: 1234
+			},
+			{ locale: 'de-DE', timeZone: 'UTC' }
+		);
+		expect(hits[0]?.detail).toContain('~12.345');
+		expect(hits[0]?.detail).toContain('covers 1.234 of 2.345');
+		expect(hits.find((h) => h.id === 'community_sport_10')?.detail).toContain('~1.234');
+	});
 	it('returns nothing without paired coverage', () => {
 		expect(
 			communityAscentBadgeHits({

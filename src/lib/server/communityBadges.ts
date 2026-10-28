@@ -4,6 +4,7 @@
  * No earned date: aggregate counters are stale snapshots, not event timestamps.
  */
 import type { RouteDeveloperImpact } from './routeDeveloperImpact';
+import { DEFAULT_DATE_DISPLAY, formatNumber, type DateDisplay } from '#lib/dates';
 
 export type CommunityBadgeHit = {
 	id: string;
@@ -25,12 +26,15 @@ export const COMMUNITY_SPORT_THRESHOLDS = [
 	{ id: 'community_sport_100', n: 100, label: '100 sport/bolted community ascents' }
 ] as const;
 
-function coverageNote(impact: Pick<RouteDeveloperImpact, 'routesPutUp' | 'routesWithCommunityData'>): string {
+function coverageNote(
+	impact: Pick<RouteDeveloperImpact, 'routesPutUp' | 'routesWithCommunityData'>,
+	display: DateDisplay
+): string {
 	if (impact.routesPutUp <= 0) return '';
 	if (impact.routesWithCommunityData >= impact.routesPutUp) {
-		return ` · covers ${impact.routesWithCommunityData} routes`;
+		return ` · covers ${formatNumber(impact.routesWithCommunityData, display)} routes`;
 	}
-	return ` · covers ${impact.routesWithCommunityData} of ${impact.routesPutUp} routes`;
+	return ` · covers ${formatNumber(impact.routesWithCommunityData, display)} of ${formatNumber(impact.routesPutUp, display)} routes`;
 }
 
 /** Threshold hits from a developer-impact aggregate. Counts are ascents, not people. */
@@ -38,24 +42,25 @@ export function communityAscentBadgeHits(
 	impact: Pick<
 		RouteDeveloperImpact,
 		'communityAscents' | 'sportOrBoltedAscents' | 'routesPutUp' | 'routesWithCommunityData'
-	>
+	>,
+	display: DateDisplay = DEFAULT_DATE_DISPLAY
 ): CommunityBadgeHit[] {
 	if (impact.routesWithCommunityData <= 0) return [];
 
-	const note = coverageNote(impact);
+	const note = coverageNote(impact, display);
 	const hits: CommunityBadgeHit[] = [];
 	for (const t of COMMUNITY_TOTAL_THRESHOLDS) {
 		if (impact.communityAscents < t.n) continue;
 		hits.push({
 			id: t.id,
-			detail: `~${impact.communityAscents.toLocaleString('en-US')} community ascents (estimate)${note}`
+			detail: `~${formatNumber(impact.communityAscents, display)} community ascents (estimate)${note}`
 		});
 	}
 	for (const t of COMMUNITY_SPORT_THRESHOLDS) {
 		if (impact.sportOrBoltedAscents < t.n) continue;
 		hits.push({
 			id: t.id,
-			detail: `~${impact.sportOrBoltedAscents.toLocaleString('en-US')} on sport/bolted (estimate)${note}`
+			detail: `~${formatNumber(impact.sportOrBoltedAscents, display)} on sport/bolted (estimate)${note}`
 		});
 	}
 	return hits;

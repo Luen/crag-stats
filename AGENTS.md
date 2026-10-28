@@ -319,4 +319,6 @@ You'll often notice things outside the task at hand. **Don't silently fix them i
 
 | 2026-10 | #151: each milestone has a stable `id` (grade system/score, count or height threshold, or FA route ID). Svelte keys use that ID; matching route names and dates are valid distinct events. |
 
+| 2026-10 | #152 review: community badge estimates and coverage use the layout's dateDisplay locale, passed through getDashboardStats; never hard-code en-US for these details. |
+
 _Add a row when you change behaviour agents must know about._

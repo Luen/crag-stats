@@ -28,6 +28,7 @@ import {
 import { buildCprTimeline } from './cpr';
 import { buildBadges } from './badges';
 import { communityAscentBadgeHits } from './communityBadges';
+import type { DateDisplay } from '#lib/dates';
 import { buildRouteDeveloperImpact } from './routeDeveloperImpact';
 import { countOwnerSetRoutes, setterBadgeHits } from './routeSetters';
 import {
@@ -245,7 +246,7 @@ export function parseGradeSystem(raw: string | null | undefined): GradeSystem {
 
 export function getDashboardStats(
 	preferredSystem: GradeSystem = 'ewbank',
-	opts?: { pyramidMode?: PyramidMode }
+	opts?: { pyramidMode?: PyramidMode; dateDisplay?: DateDisplay }
 ): DashboardStats {
 	const pyramidMode = opts?.pyramidMode ?? 'all';
 	ensureSchema();
@@ -692,7 +693,7 @@ export function getDashboardStats(
 	const badges = buildBadges(
 		extraRows,
 		setterBadgeHits(),
-		communityAscentBadgeHits(developerImpact)
+		communityAscentBadgeHits(developerImpact, opts?.dateDisplay)
 	);
 	const trainingLoad = buildTrainingLoadView(extraRows);
 	const styleMix = buildStyleMixOverTime(extraRows);
