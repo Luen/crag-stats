@@ -235,4 +235,11 @@ describe('listLogbook FA and history filters', () => {
 		const dated = listLogbook({ from: '2026-01-01', to: '2026-01-31', year: 1999 });
 		expect(dated.total).toBeGreaterThan(0);
 	});
+
+	it('filters missing height/bolts', () => {
+		const noHeight = listLogbook({ missing: ['height'] });
+		expect(noHeight.rows.every((r) => r.heightM == null)).toBe(true);
+		const noBolts = listLogbook({ missing: ['bolts'] });
+		expect(noBolts.rows.every((r) => r.bolts == null)).toBe(true);
+	});
 });

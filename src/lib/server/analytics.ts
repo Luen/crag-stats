@@ -998,6 +998,10 @@ export function listLogbook(filters?: {
 	with?: string;
 	/** has = non-empty partners; missing = empty/null */
 	partners?: 'has' | 'missing';
+	/** Route fields that are null/absent: height, bolts */
+	missing?: Array<'height' | 'bolts'>;
+	/** Case-insensitive substring match on route tag names in tags_json */
+	tag?: string;
 	/** date | grade | quality | stars */
 	sort?: string;
 	/** asc | desc */
@@ -1166,6 +1170,18 @@ export function listLogbook(filters?: {
 		rows = rows.filter((r) => Boolean((r.partners || '').trim()));
 	} else if (filters?.partners === 'missing') {
 		rows = rows.filter((r) => !(r.partners || '').trim());
+	}
+	if (filters?.missing?.includes('height')) {
+		rows = rows.filter((r) => r.heightM == null);
+	}
+	if (filters?.missing?.includes('bolts')) {
+		rows = rows.filter((r) => r.bolts == null);
+	}
+	if (filters?.tag?.trim()) {
+		const needle = filters.tag.trim().toLowerCase();
+		rows = rows.filter((r) =>
+			parseTagsJson(r.tagsJson).some((t) => t.name.toLowerCase().includes(needle))
+		);
 	}
 	if (faFilter) {
 		rows = rows.filter((r) => {

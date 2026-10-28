@@ -28,6 +28,8 @@
 		if (data.history) p.set('history', data.history);
 		if (data.with) p.set('with', data.with);
 		if (data.partners) p.set('partners', data.partners);
+		for (const m of data.missing) p.append('missing', m);
+		if (data.tag) p.set('tag', data.tag);
 		if (data.minStars !== '') p.set('minStars', String(data.minStars));
 		if (data.minScore !== '') p.set('minScore', String(data.minScore));
 		if (data.maxScore !== '') p.set('maxScore', String(data.maxScore));
@@ -224,6 +226,34 @@
 		</div>
 	</fieldset>
 
+	<fieldset class="facet">
+		<legend>Missing route data</legend>
+		<div class="checks">
+			<label class="check">
+				<input
+					type="checkbox"
+					name="missing"
+					value="height"
+					checked={checked(data.missing, 'height')}
+				/>
+				Missing height
+			</label>
+			<label class="check">
+				<input
+					type="checkbox"
+					name="missing"
+					value="bolts"
+					checked={checked(data.missing, 'bolts')}
+				/>
+				Missing bolts
+			</label>
+		</div>
+	</fieldset>
+
+	<div class="filter-row">
+		<input name="tag" value={data.tag} placeholder="Tag contains…" aria-label="Route tag" />
+	</div>
+
 	<div class="filter-row actions">
 		<label class="check">
 			<input type="checkbox" name="multipitch" value="1" checked={data.multipitch} />
@@ -241,7 +271,8 @@
 	</div>
 	<p class="hint">
 		From/to dates override year and season. Route grade min/max use your display system and exclude
-		boulders (filter style for those).
+		boulders (filter style for those). Facet coverage vs theCrag is tracked for agents in
+		<code>docs/dev/LOGBOOK_FACETS.md</code>.
 	</p>
 </form>
 
