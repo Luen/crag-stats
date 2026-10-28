@@ -30,13 +30,13 @@
 		if (data.year !== '') p.set('year', String(data.year));
 		if (data.score !== '') p.set('score', String(data.score));
 		if (data.band !== '') p.set('band', String(data.band));
+		if (data.sort && data.sort !== 'date') p.set('sort', data.sort);
+		if (data.order && data.order !== 'desc') p.set('order', data.order);
 		return p;
 	}
 
 	function pageHref(page: number) {
 		const p = filterParams();
-		if (data.sort && data.sort !== 'date') p.set('sort', data.sort);
-		if (data.order && data.order !== 'desc') p.set('order', data.order);
 		p.set('page', String(page));
 		return `?${p.toString()}`;
 	}
@@ -139,14 +139,26 @@
 		<input type="checkbox" name="multipitch" value="1" checked={data.multipitch} />
 		Multipitch only
 	</label>
+	<select name="sort" aria-label="Sort by" value={data.sort}>
+		<option value="date">Sort: Date</option>
+		<option value="grade">Sort: Grade</option>
+		<option value="quality">Sort: Quality</option>
+		<option value="stars">Sort: Stars</option>
+		<option value="style">Sort: Style</option>
+		<option value="tick">Sort: Tick</option>
+		<option value="ascents">Sort: My ascents on route</option>
+		<option value="popularity">Sort: Popularity</option>
+	</select>
+	<select name="order" aria-label="Sort order" value={data.order}>
+		<option value="desc">Descending</option>
+		<option value="asc">Ascending</option>
+	</select>
 	{#if data.score !== ''}
 		<input type="hidden" name="score" value={data.score} />
 	{/if}
 	{#if data.day}
 		<input type="hidden" name="day" value={data.day} />
 	{/if}
-	<input type="hidden" name="sort" value={data.sort} />
-	<input type="hidden" name="order" value={data.order} />
 	<button type="submit">Filter</button>
 </form>
 
@@ -157,12 +169,14 @@
 				<th><a href={sortHref('date')}>Date{sortMark('date')}</a></th>
 				<th>Route</th>
 				<th><a href={sortHref('grade')}>Grade{sortMark('grade')}</a></th>
-				<th>Tick</th>
+				<th><a href={sortHref('tick')}>Tick{sortMark('tick')}</a></th>
 				<th><a href={sortHref('quality')}>Quality{sortMark('quality')}</a></th>
 				<th><a href={sortHref('stars')}>★{sortMark('stars')}</a></th>
+				<th><a href={sortHref('ascents')} title="Your ascents on this route">×{sortMark('ascents')}</a></th>
+				<th><a href={sortHref('popularity')} title="Community popularity">Pop.{sortMark('popularity')}</a></th>
 				<th>With</th>
 				<th>Crag / sector</th>
-				<th>Style</th>
+				<th><a href={sortHref('style')}>Style{sortMark('style')}</a></th>
 			</tr>
 		</thead>
 		<tbody>
@@ -226,6 +240,10 @@
 					<td class="nowrap"><TickTypeIcon tick={row.tickType} /></td>
 					<td class="muted">{row.quality || '—'}</td>
 					<td class="muted">{row.stars != null ? row.stars : '—'}</td>
+					<td class="muted num" title="Your ascents on this route">{row.myAscentsOnRoute}</td>
+					<td class="muted num" title="Community popularity">
+						{row.routePopularity != null ? Math.round(row.routePopularity) : '—'}
+					</td>
 					<td class="muted">{row.partners || '—'}</td>
 					<td>
 						{#if row.cragName}
@@ -334,6 +352,14 @@
 	td.date {
 		white-space: nowrap;
 		font-variant-numeric: tabular-nums;
+	}
+	td.num {
+		font-variant-numeric: tabular-nums;
+		text-align: center;
+	}
+	th:has(a[href*='sort=ascents']),
+	th:has(a[href*='sort=popularity']) {
+		text-align: center;
 	}
 	td.nowrap {
 		white-space: nowrap;

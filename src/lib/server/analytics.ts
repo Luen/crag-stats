@@ -16,6 +16,13 @@ import { rockTypeBlurb, rockTypeInfo } from '#lib/rockTypes';
 import { resolveTheCragAvatar } from '#lib/thecragAvatar';
 import { theCragAscentUrl } from '#lib/thecragUrls';
 import { styleBadgeColor, tickKind } from '#lib/ticks';
+import {
+	buildRouteAscentCounts,
+	parseLogbookSortKey,
+	routeKey,
+	routePopularity,
+	sortLogbookRows
+} from './logbookSort';
 import { buildCprTimeline } from './cpr';
 import { buildBadges } from './badges';
 import {
@@ -970,7 +977,7 @@ export function listLogbook(filters?: {
 	minStars?: number;
 	/** Substring on ascents.partners */
 	with?: string;
-	/** date | grade | quality | stars */
+	/** date | grade | quality | stars | style | tick | ascents | popularity */
 	sort?: string;
 	/** asc | desc */
 	order?: string;
@@ -1024,12 +1031,17 @@ export function listLogbook(filters?: {
 			stars: routes.stars,
 			parentName: routes.parentName,
 			bolts: routes.bolts,
-			tagsJson: routes.tagsJson
+			tagsJson: routes.tagsJson,
+			popularity: routes.popularity,
+			relativePopularity: routes.relativePopularity,
+			ascentCount: routes.ascentCount
 		})
 		.from(ascents)
 		.innerJoin(routes, eq(ascents.routeId, routes.id))
 		.orderBy(desc(ascents.ascentDate))
 		.all();
+
+	const routeAscentCounts = buildRouteAscentCounts(rows);
 
 	// Drop notes up front so they can't reach the page or be probed through search.
 	if (!filters?.includeNotes) rows = rows.map((r) => ({ ...r, comment: null }));
@@ -1138,32 +1150,9 @@ export function listLogbook(filters?: {
 		);
 	}
 
-	const sortKey = (filters?.sort || 'date').toLowerCase();
+	const sortKey = parseLogbookSortKey(filters?.sort);
 	const asc = (filters?.order || 'desc').toLowerCase() === 'asc';
-	const qualityRank = (q: string | null) => {
-		const s = (q || '').toLowerCase();
-		if (s.includes('classic') || s.includes('*****') || s === '5') return 5;
-		if (s.includes('****') || s === '4') return 4;
-		if (s.includes('***') || s === '3') return 3;
-		if (s.includes('**') || s === '2') return 2;
-		if (s.includes('*') || s === '1') return 1;
-		return 0;
-	};
-	rows = [...rows].sort((a, b) => {
-		let cmp: number;
-		if (sortKey === 'grade') {
-			cmp =
-				(a.effectiveGradeScore ?? a.gradeScore ?? -1) -
-				(b.effectiveGradeScore ?? b.gradeScore ?? -1);
-		} else if (sortKey === 'quality') {
-			cmp = qualityRank(a.quality) - qualityRank(b.quality);
-		} else if (sortKey === 'stars') {
-			cmp = (a.stars ?? -1) - (b.stars ?? -1);
-		} else {
-			cmp = (a.ascentDate || '').localeCompare(b.ascentDate || '');
-		}
-		return asc ? cmp : -cmp;
-	});
+	rows = sortLogbookRows(rows, sortKey, asc, routeAscentCounts);
 
 	const total = rows.length;
 	return {
@@ -1175,7 +1164,9 @@ export function listLogbook(filters?: {
 			gradeBand: r.effectiveGradeBand ?? r.gradeBand,
 			gradeRaw: r.effectiveGradeRaw ?? r.gradeRaw,
 			tags: parseTagsJson(r.tagsJson),
-			url: r.ascentUrl || theCragAscentUrl(r.externalId) || r.routeUrl
+			url: r.ascentUrl || theCragAscentUrl(r.externalId) || r.routeUrl,
+			myAscentsOnRoute: routeAscentCounts.get(routeKey(r.routeProvider, r.routeExternalId)) ?? 1,
+			routePopularity: routePopularity(r)
 		}))
 	};
 }
