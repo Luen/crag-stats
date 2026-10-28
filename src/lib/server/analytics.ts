@@ -893,6 +893,8 @@ export function getDashboardStats(
 				}
 				const isBoulder = vScale(r);
 				const score = r.gradeScore;
+				const gradeLabel =
+					score == null ? r.gradeRaw : formatGrade(score, isBoulder, preferredSystem, r.gradeRaw);
 				byRoute.set(r.routeId, {
 					routeId: r.routeId,
 					kind,
@@ -900,8 +902,7 @@ export function getDashboardStats(
 					style: displayStyle(r.gearStyle),
 					isBoulder,
 					score,
-					gradeLabel:
-						score != null ? formatGrade(score, isBoulder, preferredSystem, r.gradeRaw) : r.gradeRaw,
+					gradeLabel,
 					band:
 						isBoulder && score != null ? (bandFromVScale(score)?.id ?? r.gradeBand) : r.gradeBand,
 					cragName: r.cragName,

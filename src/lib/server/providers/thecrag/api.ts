@@ -244,9 +244,11 @@ export function mapAscent(a: ApiAscent): CanonicalAscent | null {
 	const tickName = a.tick?.name || a.tick?.label || '';
 	const { isSend, isAttempt } = classifyTick(tickName);
 	const gradeRaw = route.grade ?? a.cpr?.base?.grade ?? null;
+	// Pass ascent gradeSystem so AU boulder "9" maps via Ewbank→V (VB), not fake V9 (#112).
 	const routeParsed = detectAndParseGrade(gradeRaw, {
 		gearStyle: route.style ?? a.climbedGearStyle,
-		gradeBand: route.gradeBand ?? a.cpr?.base?.band
+		gradeBand: route.gradeBand ?? a.cpr?.base?.band,
+		gradeSystem: a.gradeSystem ?? null
 	});
 
 	const routeHeightM = heightFromRoute(route);
