@@ -111,14 +111,16 @@ export type FirstAscentStats = {
 	ffa: number;
 	/** Routes where cached route history credits you as route setter (@login). */
 	routesSet: number;
+	/** Distinct currently cached FA/FFA or setter-credited routes eligible for snapshots. */
+	routesPutUp: number;
 	/**
-	 * Community (non-owner) ticks on FA/FFA + setter routes from cached `ascent_count`.
-	 * Null fields stay 0 until route-history import fills counts (#135).
+	 * Estimated non-owner ticks on FA/FFA + setter routes from paired cached counts.
+	 * Zero also covers unavailable data; use routesWithCommunityData to distinguish it.
 	 */
 	communityAscents: number;
 	/** Community ticks on Sport gear style or bolted routes. */
 	sportOrBoltedCommunityAscents: number;
-	/** FA/setter routes that have a cached community ascentCount. */
+	/** FA/setter routes that have paired route/owner count snapshots. */
 	routesWithCommunityData: number;
 	byStyle: { style: string; count: number; color: string }[];
 	/** Routes on Ewbank-based scores, shown in the preferred system */
@@ -128,6 +130,7 @@ export type FirstAscentStats = {
 	firstYear: number | null;
 	latestYear: number | null;
 	recent: {
+		routeId: number;
 		routeName: string;
 		kind: 'FA' | 'FFA';
 		style: string;
@@ -207,6 +210,7 @@ export type DashboardStats = {
 	};
 	/** Routes (ranked on Ewbank) first, then boulders (ranked on V-scale). */
 	hardestSends: {
+		id: number;
 		discipline: 'route' | 'boulder';
 		routeName: string;
 		gradeRaw: string | null;
@@ -278,7 +282,7 @@ export type DashboardStats = {
 		}[];
 	};
 	milestones: {
-		items: { kind: string; label: string; date: string | null; detail: string }[];
+		items: { id: string; kind: string; label: string; date: string | null; detail: string }[];
 	};
 	badges: {
 		earned: {

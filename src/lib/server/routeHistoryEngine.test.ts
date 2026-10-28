@@ -6,7 +6,8 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { wipeAllData } from './analytics';
 import { db } from './db';
 import { eq } from 'drizzle-orm';
-import { profiles, routeHistory, routes } from './db/schema';
+import { ascents, profiles, routeHistory, routes } from './db/schema';
+import { buildRouteDeveloperImpact } from './routeDeveloperImpact';
 import { getFirstAscentMarks, setFirstAscent } from './firstAscents';
 import { upsertAscents } from './ingest';
 import type { CanonicalAscent } from './providers/types';
@@ -191,6 +192,7 @@ describe('route history import', () => {
 		expect(row?.isProject).toBe(1);
 		expect(row?.qualityScore).toBe(90);
 		expect(row?.ascentCount).toBe(5);
+		expect(row?.ascentCountOwn).toBe(1);
 		expect(row?.routeInfoUpdatedAt).toBeTruthy();
 	});
 
@@ -404,7 +406,8 @@ it('refresh clears explicit nulls but preserves omitted route fields (#128)', as
 	const h = harness();
 	let info: RouteWithHistory['info'] = {
 		betaJson: '{"description":"old public beta"}',
-		qualityScore: 88
+		qualityScore: 88,
+		ascentCount: 12
 	};
 	const open = h.deps.openClient;
 	h.deps.openClient = async (key) => {
@@ -415,6 +418,11 @@ it('refresh clears explicit nulls but preserves omitted route fields (#128)', as
 		};
 	};
 	await runRouteHistoryImportOnce(config, h.deps);
+	setFirstAscent('thecrag', routeId(0), 'FA');
+	expect(buildRouteDeveloperImpact().communityAscents).toBe(11);
+	// Delete an owner tick after the fetch: the cached community estimate stays fixed.
+	db.delete(ascents).where(eq(ascents.externalId, '9000')).run();
+	expect(buildRouteDeveloperImpact().communityAscents).toBe(11);
 	info = undefined;
 	resetRouteHistoryFetches();
 	h.advance(MIN_RUN_INTERVAL_MS);
@@ -426,7 +434,27 @@ it('refresh clears explicit nulls but preserves omitted route fields (#128)', as
 			.where(eq(routes.externalId, routeId(0)))
 			.get()!.qualityScore
 	).toBe(88);
-	info = { betaJson: null, qualityScore: null };
+	expect(
+		db
+			.select()
+			.from(routes)
+			.where(eq(routes.externalId, routeId(0)))
+			.get()!.ascentCountOwn
+	).toBe(1);
+	// A replacement total captures the new owner count, even when it is zero.
+	info = { ascentCount: 13 };
+	resetRouteHistoryFetches();
+	h.advance(MIN_RUN_INTERVAL_MS);
+	await runRouteHistoryImportOnce(config, h.deps);
+	expect(buildRouteDeveloperImpact().communityAscents).toBe(13);
+	expect(
+		db
+			.select()
+			.from(routes)
+			.where(eq(routes.externalId, routeId(0)))
+			.get()!.ascentCountOwn
+	).toBe(0);
+	info = { betaJson: null, qualityScore: null, ascentCount: null };
 	resetRouteHistoryFetches();
 	h.advance(MIN_RUN_INTERVAL_MS);
 	await runRouteHistoryImportOnce(config, h.deps);
@@ -437,4 +465,6 @@ it('refresh clears explicit nulls but preserves omitted route fields (#128)', as
 		.get()!;
 	expect(row.betaJson).toBeNull();
 	expect(row.qualityScore).toBeNull();
+	expect(row.ascentCount).toBeNull();
+	expect(row.ascentCountOwn).toBeNull();
 });

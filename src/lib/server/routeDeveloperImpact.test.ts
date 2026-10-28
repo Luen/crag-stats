@@ -73,11 +73,11 @@ describe('buildRouteDeveloperImpact (#135)', () => {
 		]);
 
 		db.update(routes)
-			.set({ ascentCount: 12, bolts: 8, gearStyle: 'Sport' })
+			.set({ ascentCount: 12, ascentCountOwn: 2, bolts: 8, gearStyle: 'Sport' })
 			.where(eq(routes.externalId, 'fa-sport'))
 			.run();
 		db.update(routes)
-			.set({ ascentCount: 5, gearStyle: 'Trad', bolts: null })
+			.set({ ascentCount: 5, ascentCountOwn: 1, gearStyle: 'Trad', bolts: null })
 			.where(eq(routes.externalId, 'set-trad'))
 			.run();
 		db.update(routes).set({ ascentCount: null }).where(eq(routes.externalId, 'pending')).run();
@@ -103,5 +103,58 @@ describe('buildRouteDeveloperImpact (#135)', () => {
 		// fa-sport: 12-2=10; set-trad: 5-1=4
 		expect(impact.communityAscents).toBe(14);
 		expect(impact.sportOrBoltedAscents).toBe(10);
+
+		// A later logbook change must not change an older community snapshot (#140).
+		upsertAscents([
+			{
+				provider: 'thecrag',
+				externalId: 'repeat-later',
+				isSend: true,
+				isAttempt: false,
+				route: { provider: 'thecrag', externalId: 'fa-sport', name: 'Bolty' }
+			}
+		]);
+		expect(buildRouteDeveloperImpact().communityAscents).toBe(14);
+	});
+
+	it('treats legacy totals without an owner snapshot as unavailable', () => {
+		upsertAscents([
+			{
+				provider: 'thecrag',
+				externalId: 'old',
+				isSend: true,
+				isAttempt: false,
+				route: { provider: 'thecrag', externalId: 'legacy', name: 'Legacy' }
+			}
+		]);
+		setFirstAscent('thecrag', 'legacy', 'FA');
+		db.update(routes).set({ ascentCount: 12 }).where(eq(routes.externalId, 'legacy')).run();
+		expect(buildRouteDeveloperImpact()).toMatchObject({
+			routesPutUp: 1,
+			routesWithCommunityData: 0,
+			communityAscents: 0
+		});
+	});
+
+	it('keeps a complete known zero distinct from missing data', () => {
+		upsertAscents([
+			{
+				provider: 'thecrag',
+				externalId: 'zero',
+				isSend: true,
+				isAttempt: false,
+				route: { provider: 'thecrag', externalId: 'zero', name: 'Only the owner' }
+			}
+		]);
+		setFirstAscent('thecrag', 'zero', 'FA');
+		db.update(routes)
+			.set({ ascentCount: 1, ascentCountOwn: 1 })
+			.where(eq(routes.externalId, 'zero'))
+			.run();
+		expect(buildRouteDeveloperImpact()).toMatchObject({
+			routesPutUp: 1,
+			routesWithCommunityData: 1,
+			communityAscents: 0
+		});
 	});
 });

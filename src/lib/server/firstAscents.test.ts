@@ -32,6 +32,42 @@ const row = (p: Partial<FirstAscentRow>): FirstAscentRow => ({
 });
 
 describe('buildFirstAscentStats', () => {
+	it('renders dashboard stats for same-named marked routes', () => {
+		wipeAllData();
+		for (const id of ['review-community-1', 'review-community-2']) {
+			upsertAscents([
+				{
+					provider: 'thecrag',
+					externalId: id,
+					ascentDate: '2026-10-27',
+					isSend: true,
+					isAttempt: false,
+					tickType: 'Red point',
+					route: {
+						provider: 'thecrag',
+						externalId: id,
+						name: 'Review shared route',
+						gearStyle: 'Sport',
+						gradeRaw: '20',
+						gradeScore: 20,
+						gradeSystem: 'ewbank'
+					}
+				}
+			]);
+			setFirstAscent('thecrag', id, 'FA');
+		}
+		const stats = getDashboardStats();
+		expect(stats.firstAscents.recent).toHaveLength(2);
+		expect(new Set(stats.hardestSends.map((climb) => climb.id)).size).toBe(2);
+		const faMilestones = stats.milestones.items.filter((item) => item.kind === 'fa');
+		expect(faMilestones).toHaveLength(2);
+		expect(new Set(faMilestones.map((item) => item.id)).size).toBe(2);
+		wipeAllData();
+	});
+	it('retains distinct route IDs for equal names and dates (#144)', () => {
+		const stats = buildFirstAscentStats([row({ routeId: 1 }), row({ routeId: 2 })]);
+		expect(stats.recent.map((r) => r.routeId)).toEqual([1, 2]);
+	});
 	it('is empty with no marks', () => {
 		const s = buildFirstAscentStats([]);
 		expect(s.total).toBe(0);

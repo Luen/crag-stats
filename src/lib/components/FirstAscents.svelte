@@ -2,9 +2,10 @@
 	import GradeChip from '#lib/components/GradeChip.svelte';
 	import StyleBadge from '#lib/components/StyleBadge.svelte';
 	import type { FirstAscentStats } from '#lib/types/dashboard';
+	import { formatNumber, DEFAULT_DATE_DISPLAY, type DateDisplay } from '#lib/dates';
 
-	type Props = { data: FirstAscentStats; canEdit: boolean };
-	let { data, canEdit }: Props = $props();
+	type Props = { data: FirstAscentStats; canEdit: boolean; dateDisplay?: DateDisplay };
+	let { data, canEdit, dateDisplay = DEFAULT_DATE_DISPLAY }: Props = $props();
 
 	const years = $derived(
 		data.firstYear == null
@@ -37,15 +38,13 @@
 					<span>route{data.routesSet === 1 ? '' : 's'} set</span>
 				</div>
 			{/if}
-			{#if data.communityAscents > 0}
+			{#if data.routesWithCommunityData > 0}
 				<div class="tile">
-					<strong>{data.communityAscents}</strong>
-					<span>community ascent{data.communityAscents === 1 ? '' : 's'}</span>
+					<strong>{formatNumber(data.communityAscents, dateDisplay)}</strong>
+					<span>community ascents (estimate)</span>
 				</div>
-			{/if}
-			{#if data.sportOrBoltedCommunityAscents > 0}
 				<div class="tile">
-					<strong>{data.sportOrBoltedCommunityAscents}</strong>
+					<strong>{formatNumber(data.sportOrBoltedCommunityAscents, dateDisplay)}</strong>
 					<span>on sport / bolted</span>
 				</div>
 			{/if}
@@ -105,7 +104,7 @@
 
 		<h3>Latest</h3>
 		<ul class="list">
-			{#each data.recent as r (r.routeName + (r.date ?? ''))}
+			{#each data.recent as r (r.routeId)}
 				<li>
 					<div>
 						<strong>
@@ -128,13 +127,14 @@
 	<p class="foot">
 		Marked by you{canEdit ? ' in the logbook' : ''}.
 		{#if data.routesWithCommunityData > 0}
-			Community ascents exclude your own ticks on {data.routesWithCommunityData} route{data.routesWithCommunityData ===
-			1
-				? ''
-				: 's'} with cached theCrag counts
-			{data.communityAscents === 0 ? ' (still warming up)' : ''}.
-		{:else if data.total > 0 || data.routesSet > 0}
-			Community ascent totals appear once route-history import caches each route's ascent count.
+			Cached community estimate covers {formatNumber(data.routesWithCommunityData, dateDisplay)} of
+			{formatNumber(data.routesPutUp, dateDisplay)} credited logbook routes and excludes your ticks at
+			each fetch.
+			{#if data.routesWithCommunityData < data.routesPutUp}Some route counts are unavailable.{/if}
+		{:else if data.routesPutUp > 0}
+			Community ascents unavailable: 0 of {formatNumber(data.routesPutUp, dateDisplay)} credited logbook
+			routes have a paired count snapshot.
+			{#if canEdit}<a href="/settings">Import or refresh route history in Settings</a>.{/if}
 		{/if}
 		<a href="/docs/first-ascents">How it works</a>
 	</p>

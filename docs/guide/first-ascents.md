@@ -41,13 +41,16 @@ Only public route history is saved, never your private ascent notes. **Settings 
 
 - **Count:** how many routes you've marked. When you have FFAs, it also shows the FA / FFA split.
 - **Routes set:** distinct routes whose cached history lists you as route setter (`@yourlogin`). Same `@login` rule as FA import; free-text names don't count. Needs route-history import (`ROUTE_HISTORY_IMPORT=true`) so those rows are saved locally.
-- **Community ascents:** how many ticks other climbers have logged on routes you put up (FA/FFA marks **or** setter credits), using each route's cached theCrag `ascentCount` minus your own ticks of that route. A second tile splits out **sport / bolted** routes (Sport gear style, or any route with bolts recorded) — useful when you've invested in hardware. Counts stay at zero until route-history import has fetched those routes (`ROUTE_HISTORY_IMPORT=true`); they are ascent totals, not unique climbers.
+- **Community ascents (estimate):** cached ticks on routes you put up (FA/FFA marks **or** setter credits), minus your own logbook ticks recorded at the same fetch. A second tile splits out **sport / bolted** routes (Sport gear style, or any route with bolts recorded). Later owner repeats or deletions do not change the old snapshot. These are estimates of ascent totals, not unique climbers or live counters; visibility differences and an incomplete owner logbook can affect them.
+- **Community coverage:** the card shows how many credited logbook routes have paired count snapshots, out of all eligible routes. Known zero totals are displayed as zero; unavailable counts are excluded rather than treated as zero. Partial coverage is labelled explicitly. An entirely missing cache shows an unavailable message.
 - **Years:** from the year of your first FA to your latest. Each FA is dated by your **first logged send** of the route (see below).
 - **Grade range:** your easiest and hardest FA, using the route's grade (not a single pitch). Routes and boulders are listed separately, because Ewbank and V-grades can't be compared. Grades show in your display grade system.
 - **Styles:** how your FAs split across sport, trad, boulder and so on, using the route's style on theCrag.
 - **Latest:** your five most recent FAs.
 
 The card only appears for visitors once at least one FA is marked. Until then, the owner sees a short how-to instead.
+
+Route-history import must be enabled (`ROUTE_HISTORY_IMPORT=true`) to fill count snapshots. Older cached totals do not contain the historical owner count and are unavailable until refreshed. Use **Settings → Import route history → Refresh all routes** to queue a refresh; the existing 20-route run limit, pacing and back-off still apply. Ordinary syncs do not automatically refresh fetch-once route totals.
 
 ## When an FA counts, and its date
 

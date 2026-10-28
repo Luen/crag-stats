@@ -97,7 +97,11 @@
 	{:else if id === 'eddington'}
 		<Eddington data={s.eddington} />
 	{:else if id === 'firstAscents'}
-		<FirstAscents data={s.firstAscents} canEdit={data.showSettings} />
+		<FirstAscents
+			data={s.firstAscents}
+			canEdit={data.showSettings}
+			dateDisplay={data.dateDisplay}
+		/>
 	{:else if id === 'solo'}
 		<SoloClimbing data={s.solo} />
 	{:else if id === 'athleteProfile'}
@@ -221,7 +225,7 @@
 		<article class="panel">
 			<h2>Hardest sends</h2>
 			<ul class="list">
-				{#each s.hardestSends as climb, i (climb.discipline + climb.routeName + (climb.ascentDate ?? ''))}
+				{#each s.hardestSends as climb, i (climb.id)}
 					{#if mixed && climb.discipline !== s.hardestSends[i - 1]?.discipline}
 						<li class="group-label">{climb.discipline === 'boulder' ? 'Boulders' : 'Routes'}</li>
 					{/if}
