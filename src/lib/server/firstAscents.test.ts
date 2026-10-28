@@ -205,4 +205,41 @@ describe('listLogbook FA and history filters', () => {
 		const fromOnly = listLogbook({ from: '2020-01-01' });
 		expect(fromOnly.rows.some((r) => r.id === row.id)).toBe(false);
 	});
+
+	it('supports multi tick/style/quality, partners mode, and route score range', () => {
+		const ticks = listLogbook({ ticks: ['Onsight', 'Flash'] });
+		expect(ticks.total).toBeGreaterThan(0);
+		expect(
+			ticks.rows.every((r) => ['onsight', 'flash'].includes((r.tickType || '').toLowerCase()))
+		).toBe(true);
+
+		const styles = listLogbook({ styles: ['Sport'] });
+		expect(styles.total).toBeGreaterThan(0);
+
+		const quals = listLogbook({ qualities: ['Good', 'Average'] });
+		expect(quals.total).toBeGreaterThan(0);
+		expect(quals.rows.every((r) => r.quality === 'Good' || r.quality === 'Average')).toBe(true);
+
+		const hasPartners = listLogbook({ partners: 'has' });
+		expect(hasPartners.rows.every((r) => Boolean((r.partners || '').trim()))).toBe(true);
+		const missing = listLogbook({ partners: 'missing' });
+		expect(missing.rows.every((r) => !(r.partners || '').trim())).toBe(true);
+
+		const ranged = listLogbook({ minScore: 18, maxScore: 18 });
+		expect(ranged.total).toBeGreaterThan(0);
+		expect(
+			ranged.rows.every((r) => Math.round(r.effectiveGradeScore ?? r.gradeScore ?? -1) === 18)
+		).toBe(true);
+
+		// from/to overrides year so a conflicting year does not empty the result incorrectly
+		const dated = listLogbook({ from: '2026-01-01', to: '2026-01-31', year: 1999 });
+		expect(dated.total).toBeGreaterThan(0);
+	});
+
+	it('filters missing height/bolts', () => {
+		const noHeight = listLogbook({ missing: ['height'] });
+		expect(noHeight.rows.every((r) => r.heightM == null)).toBe(true);
+		const noBolts = listLogbook({ missing: ['bolts'] });
+		expect(noBolts.rows.every((r) => r.bolts == null)).toBe(true);
+	});
 });

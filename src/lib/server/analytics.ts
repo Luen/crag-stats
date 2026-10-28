@@ -1,3 +1,4 @@
+import { matchesClimbStyle } from '#lib/climbStyle';
 import { desc, eq, sql } from 'drizzle-orm';
 import {
 	bandById,
@@ -939,10 +940,26 @@ function getFetchedRouteKeys(): Set<string> {
 	return out;
 }
 
+function normalizeList(single: string | undefined, many: string[] | undefined): string[] {
+	const out: string[] = [];
+	if (many?.length) {
+		for (const v of many) {
+			const t = v.trim();
+			if (t) out.push(t);
+		}
+	} else if (single?.trim()) {
+		out.push(single.trim());
+	}
+	return out;
+}
+
 export function listLogbook(filters?: {
 	q?: string;
+	/** Single style (legacy / deep links); prefer `styles` for multi-select */
 	style?: string;
+	styles?: string[];
 	tick?: string;
+	ticks?: string[];
 	crag?: string;
 	sector?: string;
 	year?: number;
@@ -954,6 +971,10 @@ export function listLogbook(filters?: {
 	to?: string;
 	/** Exact effective/route grade score bucket (from pyramid links) */
 	score?: number;
+	/** Inclusive route (non-boulder) score floor — Ewbank-canonical */
+	minScore?: number;
+	/** Inclusive route (non-boulder) score ceiling — Ewbank-canonical */
+	maxScore?: number;
 	/** Grade band id 1–5 */
 	band?: number;
 	/** Only multipitch ascents (pitch label or pitchesTotal > 1) */
@@ -964,12 +985,19 @@ export function listLogbook(filters?: {
 	fa?: string;
 	/** pending — route has no route_history_fetches row */
 	history?: string;
-	/** Exact match on ascents.quality */
+	/** Exact match on ascents.quality (legacy single) */
 	quality?: string;
+	qualities?: string[];
 	/** routes.stars >= N (1–3) */
 	minStars?: number;
 	/** Substring on ascents.partners */
 	with?: string;
+	/** has = non-empty partners; missing = empty/null */
+	partners?: 'has' | 'missing';
+	/** Route fields that are null/absent: height, bolts */
+	missing?: Array<'height' | 'bolts'>;
+	/** Case-insensitive substring match on route tag names in tags_json */
+	tag?: string;
 	/** date | grade | quality | stars */
 	sort?: string;
 	/** asc | desc */
@@ -987,6 +1015,13 @@ export function listLogbook(filters?: {
 	// Marks load before filter/page so fa=* can filter and rows still show the chip.
 	const faMarks = getFirstAscentMarks();
 	const fetchedKeys = historyPending ? getFetchedRouteKeys() : null;
+	const styleList = normalizeList(filters?.style, filters?.styles);
+	const tickList = normalizeList(filters?.tick, filters?.ticks).map((t) => t.toLowerCase());
+	const qualityList = normalizeList(filters?.quality, filters?.qualities);
+	const fromBound = filters?.from && ISO_DAY.test(filters.from) ? filters.from : '';
+	const toBound = filters?.to && ISO_DAY.test(filters.to) ? filters.to : '';
+	// from/to win over year/season so mixed URL params stay predictable (#85).
+	const useYearSeason = !fromBound && !toBound;
 
 	let rows = db
 		.select({
@@ -1014,6 +1049,7 @@ export function listLogbook(filters?: {
 			gradeRaw: routes.gradeRaw,
 			gradeBand: routes.gradeBand,
 			gradeScore: routes.gradeScore,
+			gradeSystem: routes.gradeSystem,
 			gearStyle: routes.gearStyle,
 			cragName: routes.cragName,
 			cragPath: routes.cragPath,
@@ -1034,17 +1070,15 @@ export function listLogbook(filters?: {
 	// Drop notes up front so they can't reach the page or be probed through search.
 	if (!filters?.includeNotes) rows = rows.map((r) => ({ ...r, comment: null }));
 
-	if (filters?.style) {
-		const s = filters.style.toLowerCase();
-		rows = rows.filter(
-			(r) =>
-				(r.ascentGearStyle || r.gearStyle || '').toLowerCase().includes(s) ||
-				displayStyle(r.gearStyle).toLowerCase() === s
-		);
+	if (styleList.length) {
+		rows = rows.filter((r) => {
+			return styleList.some(
+				(s) => matchesClimbStyle(r.ascentGearStyle, s) || matchesClimbStyle(r.gearStyle, s)
+			);
+		});
 	}
-	if (filters?.tick) {
-		const t = filters.tick.toLowerCase();
-		rows = rows.filter((r) => (r.tickType || '').toLowerCase() === t);
+	if (tickList.length) {
+		rows = rows.filter((r) => tickList.includes((r.tickType || '').toLowerCase()));
 	}
 	if (filters?.crag) {
 		const c = filters.crag.toLowerCase();
@@ -1054,7 +1088,7 @@ export function listLogbook(filters?: {
 		const s = filters.sector.toLowerCase();
 		rows = rows.filter((r) => (r.parentName || '').toLowerCase().includes(s));
 	}
-	if (filters?.year != null && Number.isFinite(filters.year)) {
+	if (useYearSeason && filters?.year != null && Number.isFinite(filters.year)) {
 		const y = String(filters.year);
 		rows = rows.filter((r) => (r.ascentDate || '').startsWith(y));
 	}
@@ -1062,16 +1096,16 @@ export function listLogbook(filters?: {
 		const day = filters.day;
 		rows = rows.filter((r) => (r.ascentDate || '').startsWith(day));
 	}
-	if (filters?.from && ISO_DAY.test(filters.from)) {
-		const from = filters.from;
+	if (fromBound) {
+		const from = fromBound;
 		// Undated rows have no evidence they fall after `from` — exclude them.
 		rows = rows.filter((r) => {
 			const d = (r.ascentDate || '').slice(0, 10);
 			return ISO_DAY.test(d) && d >= from;
 		});
 	}
-	if (filters?.to && ISO_DAY.test(filters.to)) {
-		const to = filters.to;
+	if (toBound) {
+		const to = toBound;
 		// Undated rows have no evidence they fall on/before `to` — exclude them
 		// (empty string would otherwise compare as <= any bound).
 		rows = rows.filter((r) => {
@@ -1086,6 +1120,22 @@ export function listLogbook(filters?: {
 			return score != null && Math.round(score) === target;
 		});
 	}
+	const minScore =
+		filters?.minScore != null && Number.isFinite(filters.minScore) ? filters.minScore : null;
+	const maxScore =
+		filters?.maxScore != null && Number.isFinite(filters.maxScore) ? filters.maxScore : null;
+	if (minScore != null || maxScore != null) {
+		rows = rows.filter((r) => {
+			// Route grade range only — never mix V-scale boulder scores into Ewbank buckets.
+			if (usesVScale(r.gradeSystem, r.gearStyle)) return false;
+			const score = r.effectiveGradeScore ?? r.gradeScore;
+			if (score == null) return false;
+			const n = Math.round(score);
+			if (minScore != null && n < minScore) return false;
+			if (maxScore != null && n > maxScore) return false;
+			return true;
+		});
+	}
 	if (filters?.band != null && Number.isFinite(filters.band)) {
 		const b = filters.band;
 		rows = rows.filter((r) => (r.effectiveGradeBand ?? r.gradeBand) === b);
@@ -1095,16 +1145,15 @@ export function listLogbook(filters?: {
 			(r) => Boolean(r.pitchLabel) || (r.pitchesTotal != null && r.pitchesTotal > 1)
 		);
 	}
-	if (filters?.season === 'ytd') {
+	if (useYearSeason && filters?.season === 'ytd') {
 		const y = new Date().getUTCFullYear();
 		rows = rows.filter((r) => (r.ascentDate || '').startsWith(String(y)));
-	} else if (filters?.season === 'last_year') {
+	} else if (useYearSeason && filters?.season === 'last_year') {
 		const y = new Date().getUTCFullYear() - 1;
 		rows = rows.filter((r) => (r.ascentDate || '').startsWith(String(y)));
 	}
-	if (filters?.quality) {
-		const q = filters.quality;
-		rows = rows.filter((r) => (r.quality || '') === q);
+	if (qualityList.length) {
+		rows = rows.filter((r) => qualityList.includes(r.quality || ''));
 	}
 	if (filters?.minStars != null && Number.isFinite(filters.minStars) && filters.minStars >= 1) {
 		const min = filters.minStars;
@@ -1113,6 +1162,23 @@ export function listLogbook(filters?: {
 	if (filters?.with) {
 		const w = filters.with.toLowerCase();
 		rows = rows.filter((r) => (r.partners || '').toLowerCase().includes(w));
+	}
+	if (filters?.partners === 'has') {
+		rows = rows.filter((r) => Boolean((r.partners || '').trim()));
+	} else if (filters?.partners === 'missing') {
+		rows = rows.filter((r) => !(r.partners || '').trim());
+	}
+	if (filters?.missing?.includes('height')) {
+		rows = rows.filter((r) => r.heightM == null);
+	}
+	if (filters?.missing?.includes('bolts')) {
+		rows = rows.filter((r) => r.bolts == null);
+	}
+	if (filters?.tag?.trim()) {
+		const needle = filters.tag.trim().toLowerCase();
+		rows = rows.filter((r) =>
+			parseTagsJson(r.tagsJson).some((t) => t.name.toLowerCase().includes(needle))
+		);
 	}
 	if (faFilter) {
 		rows = rows.filter((r) => {
