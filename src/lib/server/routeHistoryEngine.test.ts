@@ -277,6 +277,39 @@ describe('route history import', () => {
 		expect(getFirstAscentMarks().get(`thecrag:${routeId(0)}`)).toBe('FA');
 	});
 
+	it('re-apply with replace clears imported marks when history no longer credits the owner', async () => {
+		// route 0 (ungraded) + route 24 (most recent graded) are both in the first run of 20.
+		const emptyId = routeId(0);
+		const correctedId = routeId(ROUTES - 1);
+		const history: Record<string, RouteWithHistory['history']> = {
+			[emptyId]: fa(emptyId, `@${LOGIN}`),
+			[correctedId]: fa(correctedId, `@${LOGIN}`)
+		};
+		const h = harness(history);
+		await runRouteHistoryImportOnce(config, h.deps);
+		expect(getFirstAscentMarks().get(`thecrag:${emptyId}`)).toBe('FA');
+		expect(getFirstAscentMarks().get(`thecrag:${correctedId}`)).toBe('FA');
+
+		// Upstream: emptyId loses its only history entry; correctedId credits someone else.
+		history[emptyId] = [];
+		history[correctedId] = fa(correctedId, '@someoneelse');
+		resetRouteHistoryFetches();
+		h.advance(MIN_RUN_INTERVAL_MS);
+		await runRouteHistoryImportOnce(config, h.deps);
+
+		// Without replace, imported marks stick; with replace, both imported credits are removed.
+		expect(applyCachedHistoryMarks({}).marked).toBe(0);
+		expect(getFirstAscentMarks().has(`thecrag:${emptyId}`)).toBe(true);
+		expect(applyCachedHistoryMarks({ replaceExisting: true }).marked).toBe(2);
+		expect(getFirstAscentMarks().has(`thecrag:${emptyId}`)).toBe(false);
+		expect(getFirstAscentMarks().has(`thecrag:${correctedId}`)).toBe(false);
+
+		// Manual marks are preserved even when history no longer credits the owner.
+		setFirstAscent('thecrag', emptyId, 'FA', { source: 'manual' });
+		expect(applyCachedHistoryMarks({ replaceExisting: true }).marked).toBe(0);
+		expect(getFirstAscentMarks().get(`thecrag:${emptyId}`)).toBe('FA');
+	});
+
 	it('is cleared by Settings → Wipe', async () => {
 		const h = harness({ [routeId(0)]: fa(routeId(0), `@${LOGIN}`) });
 		await runRouteHistoryImportOnce(config, h.deps);

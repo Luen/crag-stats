@@ -218,29 +218,44 @@ function recordFetch(routeExternalId: string, status: 'ok' | 'missing', count: n
 		.run();
 }
 
-function existingMark(routeExternalId: string): FirstAscentKind | null {
+function existingMark(routeExternalId: string): {
+	kind: FirstAscentKind;
+	source: string;
+} | null {
 	const row = db
-		.select({ kind: firstAscents.kind })
+		.select({ kind: firstAscents.kind, source: firstAscents.source })
 		.from(firstAscents)
 		.where(
 			and(eq(firstAscents.provider, PROVIDER), eq(firstAscents.routeExternalId, routeExternalId))
 		)
 		.get();
-	return row?.kind === 'FA' || row?.kind === 'FFA' ? row.kind : null;
+	const kind = row?.kind === 'FA' || row?.kind === 'FFA' ? row.kind : null;
+	if (!kind || !row) return null;
+	return { kind, source: row.source || 'manual' };
 }
 
-/** Apply one route's history to its FA/FFA mark. Manual marks and unmarks win by default. */
+/**
+ * Apply one route's history to its FA/FFA mark. Manual marks and unmarks win by default.
+ * With `replaceExisting`, imported marks are removed when successfully fetched history no
+ * longer credits the owner (empty history or a different climber). Manual marks stay.
+ */
 function applyMark(
 	routeExternalId: string,
 	history: readonly RouteHistoryEntry[],
 	login: string,
 	rules: MarkRules
 ): boolean {
-	const kind = ownerKindsFromHistory(history, login);
-	if (!kind) return false;
 	if (!rules.reapplyUnmarked && isFirstAscentImportSkipped(PROVIDER, routeExternalId)) return false;
+	const kind = ownerKindsFromHistory(history, login);
 	const existing = existingMark(routeExternalId);
-	if (existing === kind) return false;
+
+	if (!kind) {
+		if (!rules.replaceExisting || !existing || existing.source !== 'import') return false;
+		setFirstAscent(PROVIDER, routeExternalId, null, { recordSkip: false });
+		return true;
+	}
+
+	if (existing?.kind === kind) return false;
 	if (existing && !rules.replaceExisting) return false;
 	setFirstAscent(PROVIDER, routeExternalId, kind, { source: 'import' });
 	return true;
@@ -412,11 +427,23 @@ export async function runRouteHistoryImportOnce(
 	}
 }
 
-/** Re-apply FA/FFA marks from history already cached locally. No network. */
+/**
+ * Re-apply FA/FFA marks from history already cached locally. No network.
+ * Only routes with a successful fetch (`status='ok'`) are reconciled — including those with
+ * zero history rows — so Refresh → Re-apply can clear imported credits removed upstream.
+ * Unfetched / `missing` routes are left alone.
+ */
 export function applyCachedHistoryMarks(rules: MarkRules): { marked: number; routes: number } {
 	ensureSchema();
 	const login = ownerLogin();
 	if (!login) return { marked: 0, routes: 0 };
+
+	const fetches = db
+		.select({ routeExternalId: routeHistoryFetches.routeExternalId })
+		.from(routeHistoryFetches)
+		.where(and(eq(routeHistoryFetches.provider, PROVIDER), eq(routeHistoryFetches.status, 'ok')))
+		.all();
+
 	const rows = db.select().from(routeHistory).where(eq(routeHistory.provider, PROVIDER)).all();
 	const byRoute = new Map<string, RouteHistoryEntry[]>();
 	for (const r of rows) {
@@ -424,11 +451,13 @@ export function applyCachedHistoryMarks(rules: MarkRules): { marked: number; rou
 		list.push({ id: r.historyExternalId, type: r.type, climbers: r.climbers, date: r.historyDate });
 		byRoute.set(r.routeExternalId, list);
 	}
+
 	let marked = 0;
-	for (const [routeId, history] of byRoute) {
-		if (applyMark(routeId, history, login, rules)) marked += 1;
+	for (const { routeExternalId } of fetches) {
+		const history = byRoute.get(routeExternalId) ?? [];
+		if (applyMark(routeExternalId, history, login, rules)) marked += 1;
 	}
-	return { marked, routes: byRoute.size };
+	return { marked, routes: fetches.length };
 }
 
 /** Forget which routes were checked so they're fetched again, 20 per run. Keeps history rows. */

@@ -86,14 +86,15 @@ export function isFirstAscentImportSkipped(provider: string, routeExternalId: st
 
 /**
  * Mark (kind) or unmark (null) a route as the owner's first ascent.
- * Unmark records an import skip so Settings → Import route history won't re-add it
- * unless the owner ticks "re-apply previously unmarked".
+ * Unmark records an import skip by default so Settings → Import route history won't re-add it
+ * unless the owner ticks "re-apply previously unmarked". Pass `recordSkip: false` when clearing
+ * an imported mark because upstream history no longer credits the owner (not a manual unmark).
  */
 export function setFirstAscent(
 	provider: string,
 	routeExternalId: string,
 	kind: FirstAscentKind | null,
-	opts?: { source?: FirstAscentSource }
+	opts?: { source?: FirstAscentSource; recordSkip?: boolean }
 ) {
 	ensureSchema();
 	const where = and(
@@ -102,7 +103,7 @@ export function setFirstAscent(
 	);
 	if (!kind) {
 		db.delete(firstAscents).where(where).run();
-		addImportSkip(provider, routeExternalId);
+		if (opts?.recordSkip !== false) addImportSkip(provider, routeExternalId);
 		return;
 	}
 	const source = opts?.source ?? 'manual';

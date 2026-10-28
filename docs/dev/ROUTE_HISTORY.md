@@ -39,7 +39,7 @@ Pacing (`running`, `lastRequestAt`) is **process-local**. The usual Docker deplo
 `ownerKindsFromHistory()` (`providers/thecrag/routeHistoryParse.ts`) only matches an `@login` mention equal to `profiles.login`. FFA wins over FA on the same route. Imported marks get `first_ascents.source = 'import'`.
 
 - An existing mark is never overwritten, and a route in `first_ascent_import_skips` (the owner unmarked it) is never re-marked.
-- `applyCachedHistoryMarks({ replaceExisting, reapplyUnmarked })` re-applies from `route_history` without any network. That's Settings → _Re-apply from saved history_.
+- `applyCachedHistoryMarks({ replaceExisting, reapplyUnmarked })` re-applies from successfully fetched routes (`route_history_fetches.status='ok'`) without any network — including empty history. With `replaceExisting`, imported marks are cleared when history no longer credits `@login`; manual marks stay. That's Settings → _Re-apply from saved history_.
 
 ## Tables (migration `0010_route_history.sql`, upgrade `0011_route_history_fetch_once.sql`)
 
