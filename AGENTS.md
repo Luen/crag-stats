@@ -165,7 +165,7 @@ Every release, including the automated nightly one, gets pulled straight onto ru
 - **Additive and backwards-safe.** Prefer `ADD COLUMN` (nullable or with a `DEFAULT`), new tables and `CREATE INDEX IF NOT EXISTS`. SQLite can't alter or drop most columns in place. For those, rebuild the table inside the migration (create new → copy → drop → rename).
 - **Never lose local-only data.** A sync or `repairGradesFromRawJson()` can rebuild cached provider data. Nothing can rebuild settings, goals, dashboard layout or anything else entered locally.
 - **Keep `src/lib/server/db/schema.ts` (Drizzle) in step** with the SQL.
-- **Test the upgrade path** before releasing: build the previous tag, put data in its DB, then start the new build against that DB. Also start it on an empty DB. E2E only covers the fresh path.
+- **Test the upgrade path.** `src/lib/server/migrations.test.ts` (in `pnpm test`) starts from every older schema prefix (fresh, 0001…, current), inserts data, runs `scripts/migrate.mjs` to the latest, and checks the data survives, a second run is a no-op, and every Drizzle table/column exists. When a migration adds local-only data (like `app_settings` or `first_ascents`), extend `oldDatabase()` to seed it. For risky migrations (table rebuilds), also start the new build against a copy of a real DB from the previous tag.
 - Release notes should call out slow migrations, such as table rebuilds on big logbooks.
 
 ---
