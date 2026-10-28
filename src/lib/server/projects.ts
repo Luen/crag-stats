@@ -1,5 +1,6 @@
 import { asc, eq, sql } from 'drizzle-orm';
-import { theCragBestLink } from '#lib/thecragUrls';
+import { projectPublicBetaFromJson, type ProjectPublicBeta } from '#lib/routeBeta';
+import { theCragBestLink, theCragRouteUrl } from '#lib/thecragUrls';
 import { db, ensureSchema } from './db';
 import { ascents, projects, routes } from './db/schema';
 import { isLikelyIndoorRoute } from './venue';
@@ -276,6 +277,7 @@ export type ProjectListItem = {
 	ascentExternalId: string | null;
 	ascentUrl: string | null;
 	href: string | null;
+	publicBeta: ProjectPublicBeta | null;
 };
 
 /**
@@ -336,6 +338,7 @@ export function listProjects(status?: 'open' | 'sent' | 'archived'): ProjectList
 			cragUrl: routes.cragUrl,
 			gearStyle: routes.gearStyle,
 			url: routes.url,
+			betaJson: routes.betaJson,
 			ascentExternalId: preferredAscentExternalId,
 			ascentUrl: preferredAscentUrl,
 			sessionCount: sessionCountSql
@@ -357,7 +360,11 @@ export function listProjects(status?: 'open' | 'sent' | 'archived'): ProjectList
 				routeId: row.routeExternalId,
 				ancestorStub: row.cragPath,
 				fallbackUrl: row.url
-			})
+			}),
+		publicBeta: projectPublicBetaFromJson(
+			row.betaJson,
+			theCragRouteUrl(row.routeExternalId, row.cragPath)
+		)
 	}));
 }
 
