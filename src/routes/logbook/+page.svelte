@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { SvelteURLSearchParams } from 'svelte/reactivity';
 	import GradeChip from '#lib/components/GradeChip.svelte';
 	import StyleBadge from '#lib/components/StyleBadge.svelte';
 	import TagChips from '#lib/components/TagChips.svelte';
@@ -9,9 +10,8 @@
 	let { data }: PageProps = $props();
 
 	function filterParams() {
-		// Throwaway query builder for an href, not reactive state.
-		// eslint-disable-next-line svelte/prefer-svelte-reactivity
-		const p = new URLSearchParams();
+		// Query builder for hrefs, rebuilt when called.
+		const p = new SvelteURLSearchParams();
 		if (data.q) p.set('q', data.q);
 		if (data.style) p.set('style', data.style);
 		if (data.tick) p.set('tick', data.tick);
@@ -172,8 +172,16 @@
 				<th><a href={sortHref('tick')}>Tick{sortMark('tick')}</a></th>
 				<th><a href={sortHref('quality')}>Quality{sortMark('quality')}</a></th>
 				<th><a href={sortHref('stars')}>★{sortMark('stars')}</a></th>
-				<th><a href={sortHref('ascents')} title="Your ascents on this route">×{sortMark('ascents')}</a></th>
-				<th><a href={sortHref('popularity')} title="Community popularity">Pop.{sortMark('popularity')}</a></th>
+				<th
+					><a href={sortHref('ascents')} title="Your ascents on this route"
+						>×{sortMark('ascents')}</a
+					></th
+				>
+				<th
+					><a href={sortHref('popularity')} title="Community popularity"
+						>Pop.{sortMark('popularity')}</a
+					></th
+				>
 				<th>With</th>
 				<th>Crag / sector</th>
 				<th><a href={sortHref('style')}>Style{sortMark('style')}</a></th>

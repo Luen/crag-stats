@@ -1,3 +1,5 @@
+import { routePopularityScore } from '#lib/routePopularity';
+import { routeQualitySortKey } from '#lib/qualityScore';
 import { tickKind, type TickKind } from '#lib/ticks';
 import { displayStyle } from './dashboardExtras';
 
@@ -24,6 +26,7 @@ export type LogbookSortRow = {
 	effectiveGradeScore: number | null;
 	gradeScore: number | null;
 	quality: string | null;
+	qualityScore?: number | null;
 	stars: number | null;
 	ascentGearStyle: string | null;
 	gearStyle: string | null;
@@ -51,14 +54,11 @@ export function buildRouteAscentCounts(
 	return m;
 }
 
-/** Prefer popularity, then relativePopularity, then cached ascentCount. */
+/** Prefer relative popularity, then global popularity; never compare raw counts to scores. */
 export function routePopularity(
 	r: Pick<LogbookSortRow, 'popularity' | 'relativePopularity' | 'ascentCount'>
 ): number | null {
-	if (r.popularity != null && Number.isFinite(r.popularity)) return r.popularity;
-	if (r.relativePopularity != null && Number.isFinite(r.relativePopularity)) return r.relativePopularity;
-	if (r.ascentCount != null && Number.isFinite(r.ascentCount)) return r.ascentCount;
-	return null;
+	return routePopularityScore(r);
 }
 
 const TICK_KIND_ORDER: TickKind[] = [
@@ -78,16 +78,6 @@ function tickSortIndex(tick: string | null | undefined): number {
 	return idx >= 0 ? idx : TICK_KIND_ORDER.length;
 }
 
-export function qualityRank(q: string | null): number {
-	const s = (q || '').toLowerCase();
-	if (s.includes('classic') || s.includes('*****') || s === '5') return 5;
-	if (s.includes('****') || s === '4') return 4;
-	if (s.includes('***') || s === '3') return 3;
-	if (s.includes('**') || s === '2') return 2;
-	if (s.includes('*') || s === '1') return 1;
-	return 0;
-}
-
 export function compareLogbookRows(
 	a: LogbookSortRow,
 	b: LogbookSortRow,
@@ -97,10 +87,11 @@ export function compareLogbookRows(
 	switch (sortKey) {
 		case 'grade':
 			return (
-				(a.effectiveGradeScore ?? a.gradeScore ?? -1) - (b.effectiveGradeScore ?? b.gradeScore ?? -1)
+				(a.effectiveGradeScore ?? a.gradeScore ?? -1) -
+				(b.effectiveGradeScore ?? b.gradeScore ?? -1)
 			);
 		case 'quality':
-			return qualityRank(a.quality) - qualityRank(b.quality);
+			return routeQualitySortKey(a) - routeQualitySortKey(b);
 		case 'stars':
 			return (a.stars ?? -1) - (b.stars ?? -1);
 		case 'style':

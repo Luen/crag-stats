@@ -34,10 +34,12 @@ describe('parseLogbookSortKey', () => {
 });
 
 describe('routePopularity', () => {
-	it('prefers popularity, then relative, then ascent count', () => {
-		expect(routePopularity(base({ popularity: 10, relativePopularity: 5, ascentCount: 100 }))).toBe(10);
+	it('prefers comparable relative/global scores and keeps count-only rows missing', () => {
+		expect(routePopularity(base({ popularity: 10, relativePopularity: 5, ascentCount: 100 }))).toBe(
+			5
+		);
 		expect(routePopularity(base({ relativePopularity: 5, ascentCount: 100 }))).toBe(5);
-		expect(routePopularity(base({ ascentCount: 100 }))).toBe(100);
+		expect(routePopularity(base({ ascentCount: 100 }))).toBeNull();
 		expect(routePopularity(base({}))).toBeNull();
 	});
 });
@@ -87,4 +89,16 @@ describe('sortLogbookRows', () => {
 		const asc = sortLogbookRows(rows, 'popularity', true);
 		expect(asc.map((r) => r.routeExternalId)).toEqual(['x', 'y', 'z']);
 	});
+});
+
+it('count-only routes remain last beside real popularity scores (#132)', () => {
+	const rows = [
+		base({ routeExternalId: 'count', ascentCount: 5000 }),
+		base({ routeExternalId: 'score', popularity: 90 })
+	];
+	for (const asc of [true, false])
+		expect(sortLogbookRows(rows, 'popularity', asc).map((r) => r.routeExternalId)).toEqual([
+			'score',
+			'count'
+		]);
 });

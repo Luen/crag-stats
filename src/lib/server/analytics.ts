@@ -1029,6 +1029,7 @@ export function listLogbook(filters?: {
 			heightM: routes.heightM,
 			routeUrl: routes.url,
 			stars: routes.stars,
+			qualityScore: routes.qualityScore,
 			parentName: routes.parentName,
 			bolts: routes.bolts,
 			tagsJson: routes.tagsJson,
