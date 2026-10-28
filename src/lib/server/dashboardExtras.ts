@@ -29,6 +29,8 @@ export type DashboardExtraRow = {
 	tagsJson?: string | null;
 	country?: string | null;
 	routeId?: number | null;
+	/** theCrag route qualityScore (0–100), from route info import (#80) */
+	qualityScore?: number | null;
 	/** Owner-marked first ascent of this route (firstAscents.ts) */
 	firstAscent?: 'FA' | 'FFA' | null;
 };
@@ -458,7 +460,8 @@ export function buildPartnerLeaderboard(rows: DashboardExtraRow[]): {
 }
 
 export type StarsScatterPoint = {
-	stars: number;
+	stars: number | null;
+	qualityScore: number | null;
 	score: number;
 	/** Boulder scores are V-grades and route scores Ewbanks, so they never share an axis. */
 	kind: 'route' | 'boulder';
@@ -470,11 +473,15 @@ export function buildStarsScatter(rows: DashboardExtraRow[]): { points: StarsSca
 	const points: StarsScatterPoint[] = [];
 	for (const row of rows) {
 		if (!row.isSend) continue;
-		const stars = row.stars;
+		const stars = row.stars != null && Number.isFinite(row.stars) ? row.stars : null;
+		const qualityScore =
+			row.qualityScore != null && Number.isFinite(row.qualityScore) ? row.qualityScore : null;
 		const score = scoreOf(row);
-		if (stars == null || !Number.isFinite(stars) || score == null) continue;
+		if (score == null) continue;
+		if (stars == null && qualityScore == null) continue;
 		points.push({
 			stars,
+			qualityScore,
 			score,
 			kind: isVScaleRow(row) ? 'boulder' : 'route',
 			routeName: (row.routeName || 'Unknown').trim() || 'Unknown',
