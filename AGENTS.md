@@ -317,4 +317,6 @@ You'll often notice things outside the task at hand. **Don't silently fix them i
 | 2026-10 | #140 / #141 / #144 / #148: `routes.ascent_count_own` is captured with each replaced `ascent_count` by route-history import (0013). Never subtract today's logbook from an older total. Legacy counts need an explicit refresh for a paired snapshot. Show cached/eligible coverage, known zeros and estimate labels. First-ascents keys use route IDs; hardest-send keys use ascent IDs, never names/dates. |
 | 2026-10 | #146: Community-ascent badges (10/50/100/500 + sport/bolted 10/50/100) from paired impact estimates; earned date stays null; detail discloses coverage. |
 
+| 2026-10 | #151: each milestone has a stable `id` (grade system/score, count or height threshold, or FA route ID). Svelte keys use that ID; matching route names and dates are valid distinct events. |
+
 _Add a row when you change behaviour agents must know about._

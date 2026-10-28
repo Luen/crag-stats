@@ -36,9 +36,11 @@ test('community snapshots distinguish missing, partial, zero and positive counts
 		// Same name + same day must not collide on FA list (#144) or hardest sends (#148).
 		await expect(page.getByRole('heading', { name: 'Hardest sends' })).toBeVisible();
 		await expect(page.locator('body')).not.toContainText('Internal Error');
-		// h2 wraps a link; match the card by its unique community footnote.
-		const card = page.locator('article').filter({ hasText: 'Community ascents unavailable: 0 of 2' });
-		await expect(card).toBeVisible();
+		// Keep the locator stable while snapshot coverage changes after reloads.
+		const card = page
+			.locator('article')
+			.filter({ has: page.getByRole('heading', { name: 'First ascents', exact: true }) });
+		await expect(card).toContainText('Community ascents unavailable: 0 of 2');
 		await expect(card.locator('.list li')).toHaveCount(2);
 		expect(errors).toEqual([]);
 

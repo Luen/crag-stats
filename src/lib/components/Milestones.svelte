@@ -1,5 +1,6 @@
 <script lang="ts">
 	type Item = {
+		id: string;
 		kind: string;
 		label: string;
 		date: string | null;
@@ -17,7 +18,7 @@
 		<p class="empty">No milestones yet — keep ticking.</p>
 	{:else}
 		<ul>
-			{#each items as item, i (`${item.kind}-${item.label}-${item.detail}-${item.date ?? i}`)}
+			{#each items as item (item.id)}
 				<li>
 					<span class="kind">{item.kind}</span>
 					<div class="body">
