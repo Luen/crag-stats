@@ -105,7 +105,7 @@ Open http://localhost:5173 — then **Settings** → sync API or upload CSV.
 
 ## Homeserver deploy (recommended)
 
-Public images are published to GitHub Container Registry on each version tag / release:
+Public images are published to GitHub Container Registry on each version tag (`gh release create` pushes one):
 
 `ghcr.io/luen/crag-stats:latest`, plus version tags like `0.5.1`, `0.5` and `0` (no `v` prefix).
 
