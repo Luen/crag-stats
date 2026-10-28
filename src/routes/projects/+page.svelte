@@ -1,6 +1,7 @@
 <script lang="ts">
 	import NewRouteBadge from '#lib/components/NewRouteBadge.svelte';
 	import ProjectRouteBeta from '#lib/components/ProjectRouteBeta.svelte';
+	import ProjectRouteBadge from '#lib/components/ProjectRouteBadge.svelte';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -37,7 +38,11 @@
 				</svg>
 			</span>
 			<div class="badges">
-				{#if p.ungraded}<NewRouteBadge />{/if}
+				{#if p.isProject}
+					<ProjectRouteBadge />
+				{:else if p.ungraded}
+					<NewRouteBadge />
+				{/if}
 				<span class="badge" class:open={p.status === 'open'} class:muted={p.status === 'sent'}>
 					{p.status === 'sent' ? 'sent' : 'open'}
 				</span>

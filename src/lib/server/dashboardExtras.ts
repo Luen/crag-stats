@@ -31,6 +31,10 @@ export type DashboardExtraRow = {
 	routeId?: number | null;
 	/** theCrag route qualityScore (0–100), from route info import (#80) */
 	qualityScore?: number | null;
+	/** theCrag Project flag on the route (route info import, #77). */
+	routeIsProject?: number | null;
+	/** Explicit personal grade in provider/CSV data, not the effective route fallback. */
+	hasPersonalGrade?: boolean;
 	/** Owner-marked first ascent of this route (firstAscents.ts) */
 	firstAscent?: 'FA' | 'FFA' | null;
 };

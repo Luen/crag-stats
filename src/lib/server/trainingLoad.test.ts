@@ -122,4 +122,74 @@ describe('isUngradedWork', () => {
 			false
 		);
 	});
+
+	it('treats theCrag Project routes like ungraded work even with a route grade', () => {
+		expect(
+			isUngradedWork({
+				ascentDate: TODAY,
+				isSend: false,
+				gradeScore: 24,
+				routeIsProject: 1
+			})
+		).toBe(true);
+		expect(
+			isUngradedWork({
+				ascentDate: TODAY,
+				isSend: false,
+				gradeScore: 24,
+				routeIsProject: 0
+			})
+		).toBe(false);
+	});
+});
+
+describe('buildTrainingLoadView — theCrag Project flag', () => {
+	it('counts attempts on a flagged project at your max', () => {
+		const base = send(100, 24);
+		const flagged = {
+			ascentDate: day(0),
+			gearStyle: 'Sport',
+			isSend: false,
+			gradeScore: 20,
+			routeIsProject: 1
+		};
+		const atMax = { ...flagged, gradeScore: 24, routeIsProject: 0 };
+		expect(buildTrainingLoadView([base, flagged], TODAY).acute).toBe(
+			buildTrainingLoadView([base, atMax], TODAY).acute
+		);
+	});
+});
+
+import { mapAscent } from './providers/thecrag/api';
+import { hasPersonalAscentGrade } from './trainingLoad';
+it.each([undefined, '18'])(
+	'Project attempts distinguish route fallback from personal grade %s (#130)',
+	(grade) => {
+		const mapped = mapAscent({
+			id: 99001,
+			date: '2026-01-01',
+			grade,
+			gradeSystem: 'AU',
+			tick: { name: 'Attempt' },
+			route: { id: 99001, name: 'Synthetic project', style: 'Sport', grade: '20' }
+		})!;
+		expect(
+			isUngradedWork({
+				ascentDate: mapped.ascentDate ?? null,
+				isSend: false,
+				gradeScore: mapped.route.gradeScore,
+				effectiveGradeScore: mapped.effectiveGradeScore,
+				routeIsProject: 1,
+				hasPersonalGrade: hasPersonalAscentGrade(mapped.rawJson)
+			})
+		).toBe(grade === undefined);
+	}
+);
+it('CSV personal grades count, but absent/invalid data and CPR route fallbacks do not', () => {
+	expect(hasPersonalAscentGrade(JSON.stringify({ 'Ascent Grade': '20' }))).toBe(true);
+	expect(hasPersonalAscentGrade(JSON.stringify({ 'Ascent Grade': '' }))).toBe(false);
+	expect(
+		hasPersonalAscentGrade(JSON.stringify({ route: {}, cpr: { base: { grade: '20' } } }))
+	).toBe(false);
+	expect(hasPersonalAscentGrade('invalid')).toBe(false);
 });

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import NewRouteBadge from '#lib/components/NewRouteBadge.svelte';
+	import ProjectRouteBadge from '#lib/components/ProjectRouteBadge.svelte';
 
 	type ProjectCard = {
 		id: number;
@@ -7,6 +8,7 @@
 		routeName: string;
 		gradeRaw: string | null;
 		ungraded: boolean;
+		isProject: boolean;
 		areaLabel: string;
 		sessionCount: number;
 		tryCount: number;
@@ -65,7 +67,11 @@
 								{p.routeName}{#if p.gradeRaw}<span class="grade"> · {p.gradeRaw}</span>{/if}
 							</strong>
 						{/if}
-						{#if p.ungraded}<NewRouteBadge />{/if}
+						{#if p.isProject}
+							<ProjectRouteBadge />
+						{:else if p.ungraded}
+							<NewRouteBadge />
+						{/if}
 						<span class="badge" class:sent={p.status === 'sent'}>{p.status}</span>
 					</div>
 					{#if p.areaLabel}
