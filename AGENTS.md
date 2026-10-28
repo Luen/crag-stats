@@ -369,4 +369,6 @@ You'll often notice things outside the task at hand. **Don't silently fix them i
 
 | 2026-10 | #179: minimal glibc runtime removes mount/apt/shell utilities. CI builds and smoke-tests amd64 + arm64; local importer validation uses synthetic loopback data and GitHub TLS, never theCrag. Raw OS scan findings and source-based zlib triage remain in `docs/dev/DOCKER_SECURITY.md`. |
 
+| 2026-10 | #172: logbook `tagExact=Category:Name` (repeat for AND) exact-matches structured tags in `tags_json`; `tag=` substring and `rock=` unchanged. Shared helpers in `#lib/routeTags`. |
+
 _Add a row when you change behaviour agents must know about._

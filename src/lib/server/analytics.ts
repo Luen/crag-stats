@@ -14,6 +14,7 @@ import {
 	usesVScale
 } from '#lib/grades';
 import type { DashboardStats, NotableRow, StylePyramid } from '#lib/types/dashboard';
+import { parseTagsJson, routeHasExactTag } from '#lib/routeTags';
 import { rockTypeBlurb, rockTypeInfo } from '#lib/rockTypes';
 import { resolveTheCragAvatar } from '#lib/thecragAvatar';
 import { theCragAscentUrl } from '#lib/thecragUrls';
@@ -207,25 +208,6 @@ function displayRouteName(
 	if (!pitchLabel) return base;
 	if (base.toLowerCase().includes(pitchLabel.toLowerCase())) return base;
 	return `${base} (${pitchLabel})`;
-}
-
-function parseTagsJson(raw: string | null | undefined): { category: string; name: string }[] {
-	if (!raw) return [];
-	try {
-		const parsed = JSON.parse(raw) as unknown;
-		if (!Array.isArray(parsed)) return [];
-		return parsed
-			.filter(
-				(t): t is { category: string; name: string } =>
-					!!t &&
-					typeof t === 'object' &&
-					typeof (t as { category?: unknown }).category === 'string' &&
-					typeof (t as { name?: unknown }).name === 'string'
-			)
-			.map((t) => ({ category: t.category, name: t.name }));
-	} catch {
-		return [];
-	}
 }
 
 function relativeTime(iso: string | null): string | null {
@@ -1077,6 +1059,8 @@ export function listLogbook(filters?: {
 	missing?: Array<'height' | 'bolts'>;
 	/** Case-insensitive substring match on route tag names in tags_json */
 	tag?: string;
+	/** Case-insensitive exact match on category+name; all entries must match (AND) */
+	tagExact?: Array<{ category: string; name: string }>;
 	partnerMatch?: 'exact' | 'contains';
 	/** Route tags_json Rock type name (case-insensitive exact match) */
 	rock?: string;
@@ -1299,6 +1283,12 @@ export function listLogbook(filters?: {
 		const needle = filters.tag.trim().toLowerCase();
 		rows = rows.filter((r) =>
 			parseTagsJson(r.tagsJson).some((t) => t.name.toLowerCase().includes(needle))
+		);
+	}
+	if (filters?.tagExact?.length) {
+		const required = filters.tagExact;
+		rows = rows.filter((r) =>
+			required.every((req) => routeHasExactTag(r.tagsJson, req.category, req.name))
 		);
 	}
 	if (faFilter) {
