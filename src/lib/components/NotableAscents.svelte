@@ -73,7 +73,7 @@
 					<StyleBadge style={g.group} />
 				</header>
 				<ul class="ticks">
-					{#each g.rows as row (row.group + row.tickType)}
+					{#each g.rows as row (`${row.group}\0${row.tickType}`)}
 						<li class="tick-row">
 							<div class="tick-meta">
 								<TickTypeIcon tick={row.tickType} />
@@ -100,7 +100,7 @@
 					{/if}
 				</header>
 				<ul class="ticks">
-					{#each g.rows as row (row.group + row.tickType)}
+					{#each g.rows as row (`${row.group}\0${row.tickType}`)}
 						<li class="tick-row">
 							<div class="tick-meta">
 								<TickTypeIcon tick={row.tickType} />

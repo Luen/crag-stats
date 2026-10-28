@@ -2,7 +2,7 @@
 	import GradeChip from '#lib/components/GradeChip.svelte';
 	import StyleBadge from '#lib/components/StyleBadge.svelte';
 	import type { FirstAscentStats } from '#lib/types/dashboard';
-	import { formatNumber, DEFAULT_DATE_DISPLAY, type DateDisplay } from '#lib/dates';
+	import { formatDateTime, formatNumber, DEFAULT_DATE_DISPLAY, type DateDisplay } from '#lib/dates';
 
 	type Props = { data: FirstAscentStats; canEdit: boolean; dateDisplay?: DateDisplay };
 	let { data, canEdit, dateDisplay = DEFAULT_DATE_DISPLAY }: Props = $props();
@@ -13,6 +13,10 @@
 			: data.firstYear === data.latestYear
 				? String(data.firstYear)
 				: `${data.firstYear}–${data.latestYear}`
+	);
+	const communityPreview = $derived(data.communityRoutes.slice(0, 8));
+	const communityMore = $derived(
+		Math.max(0, data.communityRoutes.length - communityPreview.length)
 	);
 </script>
 
@@ -87,42 +91,91 @@
 			</dl>
 		{/if}
 
-		<div
-			class="mix"
-			role="img"
-			aria-label={data.byStyle.map((s) => `${s.style} ${s.count}`).join(', ')}
-		>
-			{#each data.byStyle as s (s.style)}
-				<span style:flex-grow={s.count} style:background={s.color}></span>
-			{/each}
-		</div>
-		<ul class="legend">
-			{#each data.byStyle as s (s.style)}
-				<li><StyleBadge style={s.style} /> {s.count}</li>
-			{/each}
-		</ul>
+		{#if data.byStyle.length > 0}
+			<div
+				class="mix"
+				role="img"
+				aria-label={data.byStyle.map((s) => `${s.style} ${s.count}`).join(', ')}
+			>
+				{#each data.byStyle as s (s.style)}
+					<span style:flex-grow={s.count} style:background={s.color}></span>
+				{/each}
+			</div>
+			<ul class="legend">
+				{#each data.byStyle as s (s.style)}
+					<li><StyleBadge style={s.style} /> {s.count}</li>
+				{/each}
+			</ul>
+		{/if}
 
-		<h3>Latest</h3>
-		<ul class="list">
-			{#each data.recent as r (r.routeId)}
-				<li>
-					<div>
-						<strong>
-							{#if r.url}
-								<a href={r.url} target="_blank" rel="noreferrer">{r.routeName}</a>
-							{:else}
-								{r.routeName}
-							{/if}
-						</strong>
-						<span class="kind">{r.kind}</span>
-						<div class="sub">
-							{[r.cragName, r.date?.slice(0, 4)].filter(Boolean).join(' · ')}
+		{#if data.recent.length > 0}
+			<h3>Latest</h3>
+			<ul class="list">
+				{#each data.recent as r (r.routeId)}
+					<li>
+						<div>
+							<strong>
+								{#if r.url}
+									<a href={r.url} target="_blank" rel="noreferrer">{r.routeName}</a>
+								{:else}
+									{r.routeName}
+								{/if}
+							</strong>
+							<span class="kind">{r.kind}</span>
+							<div class="sub">
+								{[r.cragName, r.date?.slice(0, 4)].filter(Boolean).join(' · ')}
+							</div>
 						</div>
-					</div>
-					<GradeChip grade={r.gradeLabel} band={r.band} />
-				</li>
-			{/each}
-		</ul>
+						<GradeChip grade={r.gradeLabel} band={r.band} />
+					</li>
+				{/each}
+			</ul>
+		{/if}
+
+		{#if communityPreview.length > 0}
+			<h3>Community by route</h3>
+			<ul class="list community">
+				{#each communityPreview as r (r.routeExternalId)}
+					<li>
+						<div>
+							<strong>
+								{#if r.url}
+									<a href={r.url} target="_blank" rel="noreferrer"
+										>{r.routeName ?? r.routeExternalId}</a
+									>
+								{:else}
+									{r.routeName ?? r.routeExternalId}
+								{/if}
+							</strong>
+							<span class="credits">
+								{#if r.faKind}<span class="kind">{r.faKind}</span>{/if}
+								{#if r.fromSetter}<span class="kind setter">Set</span>{/if}
+								{#if r.sportOrBolted}<span class="tag">Sport/bolted</span>{/if}
+							</span>
+							<div class="sub">
+								{#if r.ascentCountFetchedAt}
+									Count fetched {formatDateTime(r.ascentCountFetchedAt, dateDisplay, {
+										dateStyle: 'medium'
+									})}
+								{:else if r.othersAscents == null}
+									No paired count yet
+								{:else}
+									Fetch time unknown
+								{/if}
+							</div>
+						</div>
+						{#if r.othersAscents == null}
+							<span class="missing">Unavailable</span>
+						{:else}
+							<strong class="est">{formatNumber(r.othersAscents, dateDisplay)}</strong>
+						{/if}
+					</li>
+				{/each}
+			</ul>
+			{#if communityMore > 0}
+				<p class="more">+{formatNumber(communityMore, dateDisplay)} more credited routes</p>
+			{/if}
+		{/if}
 	{/if}
 	<p class="foot">
 		Marked by you{canEdit ? ' in the logbook' : ''}.
@@ -250,6 +303,34 @@
 		font-size: 0.7rem;
 		font-weight: 700;
 		color: var(--accent);
+	}
+	.kind.setter {
+		color: var(--accent-2, var(--accent));
+	}
+	.credits {
+		display: inline-flex;
+		flex-wrap: wrap;
+		gap: 0.25rem;
+		align-items: baseline;
+	}
+	.tag {
+		margin-left: 0.35rem;
+		font-size: 0.7rem;
+		font-weight: 600;
+		color: var(--ink-muted);
+	}
+	.community .missing {
+		color: var(--ink-muted);
+		font-size: 0.85rem;
+	}
+	.community .est {
+		font-family: var(--font-display);
+		font-size: 1.05rem;
+	}
+	.more {
+		margin: 0.35rem 0 0;
+		color: var(--ink-muted);
+		font-size: 0.82rem;
 	}
 	.sub {
 		color: var(--ink-muted);

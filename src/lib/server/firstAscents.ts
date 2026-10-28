@@ -170,6 +170,7 @@ export function buildFirstAscentStats(rows: readonly FirstAscentRow[]): FirstAsc
 		communityAscents: 0,
 		sportOrBoltedCommunityAscents: 0,
 		routesWithCommunityData: 0,
+		communityRoutes: [],
 		byStyle: [...byStyle.entries()]
 			.map(([style, count]) => ({
 				style,

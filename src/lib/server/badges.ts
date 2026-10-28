@@ -4,6 +4,7 @@
  */
 import { formatVScaleLabel, usesVScale } from '#lib/grades';
 import { tickKind } from '#lib/ticks';
+import type { CommunityBadgeHit } from './communityBadges';
 import type { DashboardExtraRow } from './dashboardExtras';
 
 export type BadgeIcon =
@@ -418,6 +419,56 @@ export const BADGE_CATALOG: readonly BadgeDef[] = [
 		hint: 'Credited as route setter on 25 different routes',
 		icon: 'bolt',
 		tone: 'purple'
+	},
+	// Community ticks on routes you put up — cached paired estimates (#146); no earned date.
+	{
+		id: 'community_10',
+		title: 'Shared Crag',
+		hint: '~10 community ascents on routes you put up (estimate)',
+		icon: 'globe',
+		tone: 'warm'
+	},
+	{
+		id: 'community_50',
+		title: 'Crowd Pleaser',
+		hint: '~50 community ascents on routes you put up (estimate)',
+		icon: 'globe',
+		tone: 'green'
+	},
+	{
+		id: 'community_100',
+		title: 'Hundred Hands',
+		hint: '~100 community ascents on routes you put up (estimate)',
+		icon: 'globe',
+		tone: 'blue'
+	},
+	{
+		id: 'community_500',
+		title: 'Local Classic',
+		hint: '~500 community ascents on routes you put up (estimate)',
+		icon: 'globe',
+		tone: 'purple'
+	},
+	{
+		id: 'community_sport_10',
+		title: 'Bolted Buzz',
+		hint: '~10 community ascents on your sport/bolted routes (estimate)',
+		icon: 'carabiner',
+		tone: 'warm'
+	},
+	{
+		id: 'community_sport_50',
+		title: 'Sport Magnet',
+		hint: '~50 community ascents on your sport/bolted routes (estimate)',
+		icon: 'carabiner',
+		tone: 'green'
+	},
+	{
+		id: 'community_sport_100',
+		title: 'Clip Classic',
+		hint: '~100 community ascents on your sport/bolted routes (estimate)',
+		icon: 'carabiner',
+		tone: 'blue'
 	}
 ] as const;
 
@@ -492,7 +543,8 @@ function ascentOrder(row: DashboardExtraRow): number {
 
 export function buildBadges(
 	rows: DashboardExtraRow[],
-	setterHits: readonly SetterBadgeHit[] = []
+	setterHits: readonly SetterBadgeHit[] = [],
+	communityHits: readonly CommunityBadgeHit[] = []
 ): BadgesResult {
 	// Chronological by day, then stable ascent id — never alphabetise route names
 	// (that made “Nacho Libre” beat earlier same-day climbs like “Torched”).
@@ -668,6 +720,16 @@ export function buildBadges(
 		if (n === 5) mark('setter_5', badgeHit);
 		if (n === 10) mark('setter_10', badgeHit);
 		if (n === 25) mark('setter_25', badgeHit);
+	}
+
+	for (const hit of communityHits) {
+		// Aggregate cache — never invent an earned day from a stale counter (#146).
+		mark(hit.id, {
+			date: null,
+			routeName: null,
+			href: null,
+			detail: hit.detail
+		});
 	}
 
 	// Patch first_moves with total imported count (RoxClimbs style).
