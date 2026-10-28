@@ -1,18 +1,18 @@
 <script lang="ts">
+	import { SvelteURLSearchParams } from 'svelte/reactivity';
 	import GradeChip from '#lib/components/GradeChip.svelte';
 	import StyleBadge from '#lib/components/StyleBadge.svelte';
 	import TagChips from '#lib/components/TagChips.svelte';
 	import TickTypeIcon from '#lib/components/TickTypeIcon.svelte';
-	import { LOGBOOK_STYLES, LOGBOOK_TICKS } from '#lib/logbookFilters';
+	import { includeSelectedOptions, LOGBOOK_STYLES, LOGBOOK_TICKS } from '#lib/logbookFilters';
 	import { enhance } from '$app/forms';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
 
 	function filterParams() {
-		// Throwaway query builder for an href, not reactive state.
-		// eslint-disable-next-line svelte/prefer-svelte-reactivity
-		const p = new URLSearchParams();
+		// Query builder for hrefs, rebuilt when called.
+		const p = new SvelteURLSearchParams();
 		if (data.q) p.set('q', data.q);
 		if (data.style) p.set('style', data.style);
 		if (data.tick) p.set('tick', data.tick);
@@ -88,13 +88,13 @@
 	/>
 	<select name="style" aria-label="Climb style" value={data.style}>
 		<option value="">Any style</option>
-		{#each LOGBOOK_STYLES as style (style)}
+		{#each includeSelectedOptions(LOGBOOK_STYLES, data.style ? [data.style] : []) as style (style)}
 			<option value={style}>{style}</option>
 		{/each}
 	</select>
 	<select name="tick" aria-label="Tick type" value={data.tick}>
 		<option value="">Any tick</option>
-		{#each LOGBOOK_TICKS as tick (tick)}
+		{#each includeSelectedOptions(LOGBOOK_TICKS, data.tick ? [data.tick] : []) as tick (tick)}
 			<option value={tick}>{tick}</option>
 		{/each}
 	</select>

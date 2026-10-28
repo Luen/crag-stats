@@ -1,3 +1,4 @@
+import { matchesClimbStyle } from '#lib/climbStyle';
 import { desc, eq, sql } from 'drizzle-orm';
 import {
 	bandById,
@@ -1037,9 +1038,7 @@ export function listLogbook(filters?: {
 	if (filters?.style) {
 		const s = filters.style.toLowerCase();
 		rows = rows.filter(
-			(r) =>
-				(r.ascentGearStyle || r.gearStyle || '').toLowerCase().includes(s) ||
-				displayStyle(r.gearStyle).toLowerCase() === s
+			(r) => matchesClimbStyle(r.ascentGearStyle, s) || matchesClimbStyle(r.gearStyle, s)
 		);
 	}
 	if (filters?.tick) {

@@ -12,7 +12,19 @@ export const LOGBOOK_TICKS = [
 	'Hang dog',
 	'Working',
 	'Retreat',
-	'Repeat'
+	'Repeat',
+	'Top rope',
+	'Lead',
+	'Free solo',
+	'Solo',
+	'Roped solo',
+	'Lead solo',
+	'Aid solo',
+	'All free with rest',
+	'Dab',
+	'Hit',
+	'Target',
+	'Mark'
 ] as const;
 
 export const LOGBOOK_STYLES = [
@@ -25,3 +37,11 @@ export const LOGBOOK_STYLES = [
 	'Alpine',
 	'Solo'
 ] as const;
+
+/** Keep custom/legacy URL values visible when changing another facet. */
+export function includeSelectedOptions(
+	options: readonly string[],
+	selected: readonly string[]
+): string[] {
+	return [...new Set([...options, ...selected])];
+}
