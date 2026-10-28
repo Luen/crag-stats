@@ -10,14 +10,14 @@ Each ascent gets a load score:
 
 **Intensity** compares the ascent's grade with your **hardest send of the last 12 months** in the same discipline. Routes are compared on Ewbank and boulders on the V-scale.
 
-| Grade compared with your 12-month max   | Intensity |
-| --------------------------------------- | --------- |
-| At your max                             | 1.0       |
-| 2 Ewbank grades (1 V-grade) below       | 0.5       |
-| 4 Ewbank grades (2 V-grades) below      | 0.25      |
-| Above your max (a new high)             | up to 1.5 |
-| Working an ungraded route or a theCrag Project (see below) | 1.0 |
-| Ungraded send, or no sends in 12 months | 0.3       |
+| Grade compared with your 12-month max                      | Intensity |
+| ---------------------------------------------------------- | --------- |
+| At your max                                                | 1.0       |
+| 2 Ewbank grades (1 V-grade) below                          | 0.5       |
+| 4 Ewbank grades (2 V-grades) below                         | 0.25      |
+| Above your max (a new high)                                | up to 1.5 |
+| Working an ungraded route or a theCrag Project (see below) | 1.0       |
+| Ungraded send, or no sends in 12 months                    | 0.3       |
 
 Climbing near your limit counts much more than mileage well below it. A day of ten easy routes and a day spent on one project can come out similar.
 
