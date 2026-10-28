@@ -36,7 +36,7 @@ import {
 	getFirstAscentMarks,
 	type FirstAscentRow
 } from './firstAscents';
-import { ascents, profiles, routes } from './db/schema';
+import { ascents, profiles, routeHistoryFetches, routes } from './db/schema';
 import { pickHardestSends } from './hardestSends';
 import { invalidateRouteHistoryRuns } from './routeHistoryEngine';
 import { repairGradesFromRawJson } from './repairGrades';
@@ -879,6 +879,25 @@ export function getDashboardStats(
 	};
 }
 
+const ISO_DAY = /^\d{4}-\d{2}-\d{2}$/;
+
+export type LogbookFaFilter = 'FA' | 'FFA' | 'any' | 'none';
+
+function parseLogbookFa(v: string | undefined): LogbookFaFilter | undefined {
+	if (v === 'FA' || v === 'FFA' || v === 'any' || v === 'none') return v;
+	return undefined;
+}
+
+/** provider:routeExternalId keys already answered by route-history import. */
+function getFetchedRouteKeys(): Set<string> {
+	ensureSchema();
+	const out = new Set<string>();
+	for (const r of db.select().from(routeHistoryFetches).all()) {
+		out.add(`${r.provider}:${r.routeExternalId}`);
+	}
+	return out;
+}
+
 export function listLogbook(filters?: {
 	q?: string;
 	style?: string;
@@ -888,6 +907,10 @@ export function listLogbook(filters?: {
 	year?: number;
 	/** Exact YYYY-MM-DD */
 	day?: string;
+	/** Inclusive YYYY-MM-DD lower bound on ascentDate */
+	from?: string;
+	/** Inclusive YYYY-MM-DD upper bound on ascentDate */
+	to?: string;
 	/** Exact effective/route grade score bucket (from pyramid links) */
 	score?: number;
 	/** Grade band id 1–5 */
@@ -896,6 +919,16 @@ export function listLogbook(filters?: {
 	multipitch?: boolean;
 	/** ytd | last_year | or leave empty */
 	season?: string;
+	/** FA | FFA | any | none — route-level first_ascents mark */
+	fa?: string;
+	/** pending — route has no route_history_fetches row */
+	history?: string;
+	/** Exact match on ascents.quality */
+	quality?: string;
+	/** routes.stars >= N (1–3) */
+	minStars?: number;
+	/** Substring on ascents.partners */
+	with?: string;
 	/** date | grade | quality | stars */
 	sort?: string;
 	/** asc | desc */
@@ -908,6 +941,11 @@ export function listLogbook(filters?: {
 	ensureSchema();
 	const limit = filters?.limit ?? 100;
 	const offset = filters?.offset ?? 0;
+	const faFilter = parseLogbookFa(filters?.fa);
+	const historyPending = filters?.history === 'pending';
+	// Marks load before filter/page so fa=* can filter and rows still show the chip.
+	const faMarks = getFirstAscentMarks();
+	const fetchedKeys = historyPending ? getFetchedRouteKeys() : null;
 
 	let rows = db
 		.select({
@@ -979,9 +1017,26 @@ export function listLogbook(filters?: {
 		const y = String(filters.year);
 		rows = rows.filter((r) => (r.ascentDate || '').startsWith(y));
 	}
-	if (filters?.day && /^\d{4}-\d{2}-\d{2}$/.test(filters.day)) {
+	if (filters?.day && ISO_DAY.test(filters.day)) {
 		const day = filters.day;
 		rows = rows.filter((r) => (r.ascentDate || '').startsWith(day));
+	}
+	if (filters?.from && ISO_DAY.test(filters.from)) {
+		const from = filters.from;
+		// Undated rows have no evidence they fall after `from` — exclude them.
+		rows = rows.filter((r) => {
+			const d = (r.ascentDate || '').slice(0, 10);
+			return ISO_DAY.test(d) && d >= from;
+		});
+	}
+	if (filters?.to && ISO_DAY.test(filters.to)) {
+		const to = filters.to;
+		// Undated rows have no evidence they fall on/before `to` — exclude them
+		// (empty string would otherwise compare as <= any bound).
+		rows = rows.filter((r) => {
+			const d = (r.ascentDate || '').slice(0, 10);
+			return ISO_DAY.test(d) && d <= to;
+		});
 	}
 	if (filters?.score != null && Number.isFinite(filters.score)) {
 		const target = Math.round(filters.score);
@@ -1005,6 +1060,29 @@ export function listLogbook(filters?: {
 	} else if (filters?.season === 'last_year') {
 		const y = new Date().getUTCFullYear() - 1;
 		rows = rows.filter((r) => (r.ascentDate || '').startsWith(String(y)));
+	}
+	if (filters?.quality) {
+		const q = filters.quality;
+		rows = rows.filter((r) => (r.quality || '') === q);
+	}
+	if (filters?.minStars != null && Number.isFinite(filters.minStars) && filters.minStars >= 1) {
+		const min = filters.minStars;
+		rows = rows.filter((r) => r.stars != null && r.stars >= min);
+	}
+	if (filters?.with) {
+		const w = filters.with.toLowerCase();
+		rows = rows.filter((r) => (r.partners || '').toLowerCase().includes(w));
+	}
+	if (faFilter) {
+		rows = rows.filter((r) => {
+			const kind = firstAscentKindFor(faMarks, r.routeProvider, r.routeExternalId);
+			if (faFilter === 'none') return kind == null;
+			if (faFilter === 'any') return kind != null;
+			return kind === faFilter;
+		});
+	}
+	if (fetchedKeys) {
+		rows = rows.filter((r) => !fetchedKeys.has(`${r.routeProvider}:${r.routeExternalId}`));
 	}
 	if (filters?.q) {
 		const q = filters.q.toLowerCase();
@@ -1047,7 +1125,6 @@ export function listLogbook(filters?: {
 	});
 
 	const total = rows.length;
-	const faMarks = getFirstAscentMarks();
 	return {
 		total,
 		rows: rows.slice(offset, offset + limit).map((r) => ({
