@@ -68,6 +68,11 @@ export const DOC_PAGES: readonly DocPage[] = [
 		title: 'Route popularity',
 		summary:
 			'Busy vs quiet ticks from theCrag popularity, plus hidden gems (high quality, low traffic).'
+	},
+	{
+		slug: 'karma',
+		title: 'Karma',
+		summary: 'Approximate ascent karma from routes logged; guide-edit points wait on a theCrag API.'
 	}
 ];
 
