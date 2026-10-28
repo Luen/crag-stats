@@ -152,7 +152,7 @@ docker compose up --build -d
 | `DISPLAY_LOCALE` / `TZ` | Locale (default `en-AU`) and IANA time zone used to display dates and times                                                                                                                                               |
 | `ROUTE_HISTORY_IMPORT`  | `true` to import FA/FFA from theCrag route history in the background (default `false`): once per route, 20 per run, ≤1 request/s. Uses browser impersonation; see [docs/dev/ROUTE_HISTORY.md](docs/dev/ROUTE_HISTORY.md). |
 
-Grade system and private ascent notes are configured in **Settings** (stored in SQLite), not via environment variables.
+Grade system and private ascent notes are configured in **Settings** (stored in SQLite), not via environment variables. If an older install set `PREFERRED_GRADE_SYSTEM` or `SHOW_PRIVATE_NOTES`, the first start after upgrading copies them into Settings (unless Settings already has a value).
 
 ## Privacy
 

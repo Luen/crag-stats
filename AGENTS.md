@@ -165,7 +165,7 @@ Every release, including the automated nightly one, gets pulled straight onto ru
 - **Additive and backwards-safe.** Prefer `ADD COLUMN` (nullable or with a `DEFAULT`), new tables and `CREATE INDEX IF NOT EXISTS`. SQLite can't alter or drop most columns in place. For those, rebuild the table inside the migration (create new → copy → drop → rename).
 - **Never lose local-only data.** A sync or `repairGradesFromRawJson()` can rebuild cached provider data. Nothing can rebuild settings, goals, dashboard layout or anything else entered locally.
 - **Keep `src/lib/server/db/schema.ts` (Drizzle) in step** with the SQL.
-- **Parser/data upgrades:** append a TypeScript migration in `src/lib/server/db/dataMigrations.ts` when a repair needs application logic. The server `init` hook runs these after SQL migrations, before the scheduler and requests, and skips them during builds. Their `data:` IDs share `schema_migrations`; each repair and completion marker commit atomically, and a failure is logged without stopping the server (only cache-rebuildable repairs belong here). Never edit an applied migration; add a new ID for a later fix.
+- **Parser/data upgrades:** append a TypeScript migration in `src/lib/server/db/dataMigrations.ts` when a repair needs application logic. The server `init` hook runs these after SQL migrations, before the scheduler and requests, and skips them during builds. Their `data:` IDs share `schema_migrations`; each repair and completion marker commit atomically, and a failure is logged without stopping the server, so each must leave the app usable if it never runs (cache repairs, or carrying over settings like `data:0002` does for the env vars #84 removed). Never edit an applied migration; add a new ID for a later fix.
 - **Test the upgrade path.** `src/lib/server/migrations.test.ts` (in `pnpm test`) starts from every older schema prefix (fresh, 0001…, current), inserts data, runs `scripts/migrate.mjs` to the latest, and checks the data survives, a second run is a no-op, and every Drizzle table/column exists. When a migration adds local-only data (like `app_settings` or `first_ascents`), extend `oldDatabase()` to seed it. For risky migrations (table rebuilds), also start the new build against a copy of a real DB from the previous tag.
 - Release notes should call out slow migrations, such as table rebuilds on big logbooks.
 
@@ -275,8 +275,7 @@ You'll often notice things outside the task at hand. **Don't silently fix them i
 
 | 2026-10 | #68: opt-in route-history import (`ROUTE_HISTORY_IMPORT`, off by default). Runs in the background after sync: each route once, 20 per run, ≥1 s between requests, back-off on blocks. Migration 0010: `route_history`, `route_history_fetches`, import state, FA import skips. Dev notes in `docs/dev/ROUTE_HISTORY.md`. |
 | 2026-10 | #68 follow-up: migration `0011` upgrades DBs that applied the first draft of 0010 (offset/total cursor) to the fetch-once `last_run_at` shape. |
-| 2026-10 | Route history import caches route API fields on `routes` (migration `0012`, #77–#82): project flag, seasonality, popularity, qualityScore, beta, ancestors, pitches, flags. Request `show=info,ancestors`. Already-fetched routes need Settings → Refresh all to backfill. `#80`: scatter + logbook quality sort use `routes.quality_score` when present (`#lib/qualityScore.ts`). |
-| 2026-10 | Route history import caches route API fields on `routes` (migration `0012`, #77–#82): project flag, seasonality, popularity, qualityScore, beta, ancestors, pitches, flags. Request `show=info,ancestors`. Already-fetched routes need Settings → Refresh all to backfill. `/sectors` nests areas when `ancestors_json` has depth (#82); pitch/flag hints when import filled `pitches_json` / `flags_json`. |
+| 2026-10 | Route history import caches route API fields on `routes` (migration `0012`, #77–#82): project flag, seasonality, popularity, qualityScore, beta, ancestors, pitches, flags. Request `show=info,ancestors`. Already-fetched routes need Settings → Refresh all to backfill. `#80`: scatter + logbook quality sort use `routes.quality_score` when present (`#lib/qualityScore.ts`). `/sectors` nests areas when `ancestors_json` has depth (#82); pitch/flag hints when import filled `pitches_json` / `flags_json`. |
 | 2026-10 | Logbook filters: `fa=FA|FFA|any|none`, `history=pending` (owner + import on only), plus `quality`, `minStars`, `with`, `from`/`to`. Marks load before filter/page in `listLogbook`. |
 | 2026-10 | Logbook richer filters (#85): multi `style`/`tick`/`quality`, `minScore`/`maxScore` (routes only), `partners=has|missing`, from/to override year/season. |
 | 2026-10 | Logbook facet inventory (#86): `docs/dev/LOGBOOK_FACETS.md`; `missing=height|bolts`, `tag=` substring on `tags_json`. |
@@ -287,8 +286,6 @@ You'll often notice things outside the task at hand. **Don't silently fix them i
 
 | 2026-10 | #132: logbook popularity uses shared relative/global score precedence, with count-only routes null-last; quality sort shares the rating helper. |
 
-| 2026-10 | #133: shared qualityScore helpers rank all theCrag labels distinctly; explicit low ratings win over star fallbacks. |
-
 | 2026-10 | #131/#36: hidden gems retain routeId for stable list keys; popularity counts use the configured display locale. |
 
 | 2026-10 | #126/#127: tick facets include top-rope/solo types and preserve selected legacy values; style filters normalize dws and top-rope aliases. |
@@ -297,7 +294,6 @@ You'll often notice things outside the task at hand. **Don't silently fix them i
 | 2026-10 | #76: route setter credits from cached `route_history` — badges (1/5/10/25), `routesSet` on First ascents card; FA milestone badge `fa_5` renamed **5 First Ascents**; **Route Developer** reserved for 5 routes set. |
 | 2026-10 | #134: setter credits with missing or invalid dates keep a null date through badge generation; never fabricate 1970. |
 
-| 2026-10 | #133: shared qualityScore helpers rank all theCrag labels distinctly; explicit low ratings win over star fallbacks. |
 | 2026-10 | #129: sector links use an exact sectorPath beneath the crag (including descendants); legacy sector names also match cached ancestors. |
 | 2026-10 | #130: Project training load uses explicit ascent/CSV/pitch grade evidence; effective route fallback grades are not personal overrides. |
 | 2026-10 | #28: Best months exposes monthly seasonality and ascent counts in a keyboard/screen-reader accessible values table. |
@@ -314,5 +310,6 @@ You'll often notice things outside the task at hand. **Don't silently fix them i
 | 2026-10 | #124: grade repair preserves API grade-system evidence and never infers AU from country; FA labels use repaired canonical scores. |
 | 2026-10 | #104: `/docs/first-ascents` “What you need” — FA card/badges need owner marks or `ROUTE_HISTORY_IMPORT`, not `SHOW_PRIVATE_NOTES`. |
 | 2026-10 | #107: Document CodeQL default setup (PRs to `main` only) and stacked-PR check expectations; minimal PR template. |
+| 2026-10 | `data:0002_legacy_env_settings` copies the removed `PREFERRED_GRADE_SYSTEM` / `SHOW_PRIVATE_NOTES` env values into `app_settings` once, when Settings has no value yet. A failed data migration is logged and the server still starts. |
 
 _Add a row when you change behaviour agents must know about._

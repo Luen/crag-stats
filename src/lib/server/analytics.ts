@@ -340,8 +340,7 @@ export function getDashboardStats(
 			cprScore: ascents.cprScore,
 			ascentCount: routes.ascentCount,
 			popularity: routes.popularity,
-			relativePopularity: routes.relativePopularity,
-			qualityScore: routes.qualityScore
+			relativePopularity: routes.relativePopularity
 		})
 		.from(ascents)
 		.innerJoin(routes, eq(ascents.routeId, routes.id))

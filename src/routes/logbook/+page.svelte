@@ -122,7 +122,12 @@
 			<option value="contains">Partner name contains</option>
 			<option value="exact">Exact partner name</option>
 		</select>
-		<input name="rock" value={data.rock} placeholder="Rock type (Granite…)" aria-label="Rock type" />
+		<input
+			name="rock"
+			value={data.rock}
+			placeholder="Rock type (Granite…)"
+			aria-label="Rock type"
+		/>
 	</div>
 
 	<div class="filter-row">
