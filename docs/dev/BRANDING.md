@@ -148,3 +148,5 @@ chrome --headless=new --hide-scrollbars --user-data-dir=/tmp/cs-shots --window-s
   --virtual-time-budget=5000 --allow-file-access-from-files \
   --screenshot=docs/social-preview.png "file://$PWD/docs/dev/social-preview.html"
 ```
+
+Seasonality strips provide an expandable monthly values table so touch, keyboard and screen-reader users can read both series without hover.
