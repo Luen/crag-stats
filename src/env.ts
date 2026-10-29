@@ -47,7 +47,7 @@ export const variables = defineEnvVars({
 	},
 	ROUTE_DATA_REFRESH_DAYS: {
 		description:
-			'Opt-in route data refresh: whole days ≥ 30 (e.g. 90, 180); unset/0/<30 disables (requires ROUTE_HISTORY_IMPORT)',
+			'Opt-in route data refresh: whole days 30–3650 (e.g. 90, 180); unset/0/<30/>3650 disables (requires ROUTE_HISTORY_IMPORT)',
 		schema: optionalString
 	},
 	DISPLAY_LOCALE: {

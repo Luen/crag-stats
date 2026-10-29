@@ -58,13 +58,19 @@ export type RouteHistoryConfig = {
 	refreshDays?: number;
 };
 
+/** Soft ceiling so `now - days * 86400000` stays inside Date's safe range (Settings / SQL). */
+export const MAX_ROUTE_DATA_REFRESH_DAYS = 3650; // ~10 years
+
 /**
- * Periodic refresh age in whole days. Unset, `0`, non-integers, and values under 30
- * keep fetch-once behaviour (return 0). Any integer ≥ 30 is accepted (e.g. 180 ≈ half a year).
+ * Periodic refresh age in whole days. Unset, `0`, non-digits, values under 30, and values
+ * above {@link MAX_ROUTE_DATA_REFRESH_DAYS} keep fetch-once behaviour (return 0). Digits-only
+ * (no `1e2` / `0x1e`); e.g. `180` ≈ half a year.
  */
 export function parseRouteDataRefreshDays(value: string): number {
-	const days = Number(value.trim());
-	if (!Number.isInteger(days) || days < 30) return 0;
+	const s = value.trim();
+	if (!/^\d+$/.test(s)) return 0;
+	const days = Number(s);
+	if (!Number.isInteger(days) || days < 30 || days > MAX_ROUTE_DATA_REFRESH_DAYS) return 0;
 	return days;
 }
 

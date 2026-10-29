@@ -400,7 +400,7 @@ You'll often notice things outside the task at hand. **Don't silently fix them i
 | 2026-10 | CSV logbook download (#204/#205): opt-in `THECRAG_SYNC_MODE=csv` with `THECRAG_USERNAME`/`THECRAG_PASSWORD`; cookies encrypted with `SESSION_SECRET` in `thecrag_web_sessions` (migration **0016**; 0015 belongs to route API JSON). A placeholder or short `SESSION_SECRET` disables CSV mode. Upsert-only, no prune. The `impers` rule in "What not to do" now covers this opt-in. |
 
 | 2026-10 | #201: opt-in `ROUTE_DATA_REFRESH_DAYS=30` or `90` reuses post-sync imports; new routes first, then oldest stale fetches (including missing). Unset/0 keeps fetch-once. The shared 100-route cap, pacing, back-off and manual mark protections remain. |
-| 2026-10 | `ROUTE_DATA_REFRESH_DAYS` accepts any whole number ≥ 30 (e.g. 180 ≈ half a year); values under 30 still mean fetch-once. |
+| 2026-10 | `ROUTE_DATA_REFRESH_DAYS` accepts whole digits 30–3650 (e.g. 180 ≈ half a year); under 30, over 3650, or non-digits still mean fetch-once. |
 
 | 2026-10 | #195: Grade goal progress uses pyramid readiness (`gradeGoalReadiness`: ~2 distinct-route sends at N−1, ~4 at N−2; capped below 100% until a send at N), not linear best/target. Height/days stay linear. `/docs/goals` explains the model; dashboard + Goals page link “How it works”. |
 
