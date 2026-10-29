@@ -10,6 +10,11 @@ export type RenderedDoc = { slug: string; title: string; segments: DocSegment[] 
 
 export const DOC_PAGES: readonly DocPage[] = [
 	{
+		slug: 'logbook-sync',
+		title: 'Logbook sync',
+		summary: 'API sync or automatic CSV downloads with a saved theCrag login.'
+	},
+	{
 		slug: 'badges',
 		title: 'Badges',
 		summary: 'Logbook milestones and the First Moves import date.'

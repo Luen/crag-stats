@@ -1,5 +1,5 @@
 import cron from 'node-cron';
-import { env, hasTheCragApiKey } from './env';
+import { env, getTheCragSyncConfiguration } from './env';
 import { getSyncStatus, runTheCragSync } from './sync';
 
 let started = false;
@@ -7,7 +7,7 @@ let started = false;
 export function startScheduler() {
 	if (started) return;
 	if (typeof process === 'undefined') return;
-	if (!hasTheCragApiKey()) return;
+	if (!getTheCragSyncConfiguration().configured) return;
 
 	const expr = env('SYNC_CRON', '0 6 * * *');
 	if (!cron.validate(expr)) {

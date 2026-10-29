@@ -5,7 +5,6 @@
 import cron from 'node-cron';
 import { runMigrations } from './migrate.mjs';
 
-const apiKey = process.env.THECRAG_API_KEY?.trim();
 const expr = process.env.SYNC_CRON || '0 6 * * *';
 
 runMigrations();
@@ -31,9 +30,6 @@ async function pingAppSync() {
 			'[worker] could not reach app sync endpoint:',
 			err instanceof Error ? err.message : err
 		);
-		if (!apiKey) {
-			console.error('[worker] THECRAG_API_KEY missing; nothing to sync');
-		}
 	}
 }
 

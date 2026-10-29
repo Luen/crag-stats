@@ -8,6 +8,13 @@ import {
 	primaryKey
 } from 'drizzle-orm/sqlite-core';
 
+export const theCragWebSessions = sqliteTable('thecrag_web_sessions', {
+	accountKey: text('account_key').primaryKey().notNull(),
+	encryptedCookies: text('encrypted_cookies').notNull(),
+	nextAllowedAt: integer('next_allowed_at').notNull().default(0),
+	failures: integer('failures').notNull().default(0)
+});
+
 export const profiles = sqliteTable('profiles', {
 	id: integer('id').primaryKey({ autoIncrement: true }),
 	provider: text('provider').notNull().default('thecrag'),

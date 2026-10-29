@@ -4,6 +4,18 @@ import { defineEnvVars } from '@sveltejs/kit/env';
 const optionalString = (value: string | undefined) => value ?? '';
 
 export const variables = defineEnvVars({
+	THECRAG_SYNC_MODE: {
+		description: 'Logbook sync source: api (default) or csv (saved login session)',
+		schema: optionalString
+	},
+	THECRAG_USERNAME: {
+		description: 'theCrag username for opt-in CSV downloads (not email)',
+		schema: optionalString
+	},
+	THECRAG_PASSWORD: {
+		description: 'theCrag password for opt-in CSV downloads',
+		schema: optionalString
+	},
 	THECRAG_API_KEY: {
 		description: 'Personal theCrag Logbook Read API key (Supporters)',
 		schema: optionalString
