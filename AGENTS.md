@@ -357,7 +357,7 @@ You'll often notice things outside the task at hand. **Don't silently fix them i
 
 | 2026-10 | #86: `/logbook` adds `project=yes\|no` (route-info Project flag; unknown matches neither) and `setter=me\|none` (cached setter history). Raw `flags_json` names beyond Project/isSport/isTrad/isBoulder are unverified, so no bolted/top-rope/artificial facets yet. See `docs/dev/LOGBOOK_FACETS.md`. |
 
-| 2026-10 | #173: Documented verified route API flag strings (`Project` → `is_project` / `project=`; `IsSport`/`IsTrad`/`IsBoulder` → sector style hints only) with parser/test evidence in `docs/dev/LOGBOOK_FACETS.md`. Natural/artificial and bolted/top-rope logbook facets stay blocked until a sanitized `/api/route` fixture shows real flag names — no HTML scraping. |
+| 2026-10 | #173: Documented the route API flag strings our parsers recognise (only `Project` → `is_project` / `project=` is confirmed from the provider; `IsSport`/`IsTrad`/`IsBoulder` are code-recognised only, unverified against the live API, and drive sector style hints only) with parser/test evidence in `docs/dev/LOGBOOK_FACETS.md`. Natural/artificial and bolted/top-rope logbook facets stay blocked until a sanitized `/api/route` fixture shows real flag names — no HTML scraping. |
 
 | 2026-10 | #166 review: setter facets resolve each route provider's owner profile and key credits by provider plus route ID. "No setter credit found" includes routes without imported history; do not describe that as a confirmed absence of setter credit. |
 
