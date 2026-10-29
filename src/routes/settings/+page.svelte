@@ -191,21 +191,6 @@
 		{/if}
 	</article>
 
-	<article class="panel" id="first-import">
-		<h2>First Moves badge</h2>
-		<p class="hint">
-			This badge dates your first successful logbook import into Crag Stats. Older installs did not
-			save that date; enter it here if you know it. <a href="/docs/badges">How badges work</a>
-		</p>
-		<form method="POST" action="?/saveFirstImportDate" class="prefs">
-			<label class="field">
-				<span>First import date</span>
-				<input type="date" name="date" value={data.firstImportDate} required />
-			</label>
-			<button type="submit">Save first import date</button>
-		</form>
-	</article>
-
 	<article class="panel">
 		<h2>Import route history</h2>
 		<p class="hint">
@@ -296,6 +281,21 @@
 				</form>
 			</details>
 		{/if}
+	</article>
+
+	<article class="panel" id="first-import">
+		<h2>First Moves badge</h2>
+		<p class="hint">
+			This badge dates your first successful logbook import into Crag Stats. Older installs did not
+			save that date; enter it here if you know it. <a href="/docs/badges">How badges work</a>
+		</p>
+		<form method="POST" action="?/saveFirstImportDate" class="prefs">
+			<label class="field">
+				<span>First import date</span>
+				<input type="date" name="date" value={data.firstImportDate} required />
+			</label>
+			<button type="submit">Save first import date</button>
+		</form>
 	</article>
 
 	<article class="panel">
