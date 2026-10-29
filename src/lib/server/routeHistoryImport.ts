@@ -22,7 +22,7 @@ import {
 function configuredOwnerLogin(): string | null {
 	if (getTheCragSyncConfiguration().mode !== 'csv') return null;
 	const username = env('THECRAG_USERNAME').trim();
-	return username || null;
+	return username;
 }
 
 function config(): RouteHistoryConfig {

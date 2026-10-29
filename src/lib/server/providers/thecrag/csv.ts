@@ -58,10 +58,15 @@ export function mapTheCragCsvRow(row: CsvRow): CanonicalAscent | null {
 	const routeSys = csvGradeSystemHint(row, gradeRaw, gearStyle);
 	const ascentSys = csvGradeSystemHint(row, ascentGradeRaw || gradeRaw, ascentGearStyle);
 	const parsed = detectAndParseGrade(gradeRaw, { gearStyle, gradeSystem: routeSys });
-	const ascentParsed = detectAndParseGrade(ascentGradeRaw || gradeRaw, {
-		gearStyle: ascentGearStyle,
-		gradeSystem: ascentSys
-	});
+	// Match API grade precedence: an inferred AU overlay must not replace
+	// explicit V-scale evidence on the route (#112 / #124).
+	const ascentParsed =
+		ascentSys === 'AU' && /^V/i.test(gradeRaw ?? '')
+			? parsed
+			: detectAndParseGrade(ascentGradeRaw || gradeRaw, {
+					gearStyle: ascentGearStyle,
+					gradeSystem: ascentSys
+				});
 	const heightM = parseHeightMeters(row['Ascent Height']) ?? parseHeightMeters(row['Route Height']);
 
 	return {

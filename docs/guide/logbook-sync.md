@@ -33,4 +33,6 @@ The CSV has fewer fields than the API, including less profile, route metadata an
 
 Private ascent comments follow the same existing visibility controls as manual CSV imports: hidden by default, and available only to the owner when enabled in Settings. Passwords, session cookies and login responses are never displayed or included in sync errors.
 
+The cached CSV grade repair updates grades only, preserving metadata from earlier API imports. Route-history import and cached FA/FFA reapplication require `THECRAG_USERNAME` to match the saved logbook login in CSV mode. A mismatch blocks those actions too; wipe local data before switching accounts.
+
 Route-history enrichment is separate and still needs its existing opt-in configuration and a **supporter** API key. Free accounts do not expose a personal route API key in the browser, so an unpaid climber’s CSV instance can reuse a household supporter’s `THECRAG_API_KEY` for route history only — see [`docs/dev/ROUTE_HISTORY.md`](../dev/ROUTE_HISTORY.md#household--shared-supporter-key-with-csv-mode). CSV mode does not silently switch to API mode, and API failures do not trigger password login.

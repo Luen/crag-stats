@@ -15,7 +15,7 @@ These colours appear in every pyramid, grade chip, CPR chart and band breakdown.
 - **Your display system** is chosen in **Settings → Display & visibility** (Ewbanks, French, YDS, V-scale or Fontainebleau). Routes convert to the chosen route system. Boulders show in V-scale, or Font if you pick Fontainebleau.
 - **Assigned vs your grade.** theCrag stores both the route's consensus grade and the grade you gave it. Crag Stats prefers the grade on the ascent when it's in the right system, and falls back to the route's grade.
 - **Multi-pitch:** the effective grade of an ascent is the hardest pitch _you_ climbed, not the hardest pitch on the route.
-- **Ambiguous boulder numbers:** provider grade-system context decides whether a bare number means V-scale or Ewbank. Country alone never changes a grade on API rows. Repairs preserve the original API evidence. CSV exports have no grade-system column, so Australian boulder rows with bare digits (`9`, `1`) get an AU hint from Country / Crag Path / australia URL stubs; explicit `V5` / `VB` stay V-scale.
+- **Ambiguous boulder numbers:** provider grade-system context decides whether a bare number means V-scale or Ewbank. Country alone never changes a grade on API rows. Repairs preserve the original API evidence. CSV exports have no grade-system column, so Australian boulder rows with bare digits (`9`, `1`) get an AU hint from Country / Crag Path / australia URL stubs; explicit `V5` / `VB` stay V-scale. As with API imports, an inferred AU ascent grade does not override an explicit V-scale route grade.
 - **Ranges** such as `V1/2` count as the midpoint (V1.5).
 
 ## Conversion tables

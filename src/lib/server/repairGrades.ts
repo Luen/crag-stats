@@ -60,6 +60,37 @@ export function repairGradesFromRawJson(): { routes: number; ascents: number } {
 						: null;
 			if (!mapped) continue;
 
+			if (isTheCragCsvRawJson(parsed)) {
+				// A cached CSV row has no evidence for API-only metadata. Repair its
+				// grades without erasing fields retained from richer imports.
+				txDb
+					.update(ascents)
+					.set({
+						ascentGradeRaw: mapped.ascentGradeRaw ?? null,
+						effectiveGradeRaw: mapped.effectiveGradeRaw ?? null,
+						effectiveGradeScore: mapped.effectiveGradeScore ?? null,
+						effectiveGradeBand: mapped.effectiveGradeBand ?? null,
+						updatedAt
+					})
+					.where(eq(ascents.id, row.id))
+					.run();
+				txDb
+					.update(routes)
+					.set({
+						gradeRaw: mapped.route.gradeRaw ?? null,
+						gradeScore: mapped.route.gradeScore ?? null,
+						gradeBand: mapped.route.gradeBand ?? null,
+						gradeSystem: mapped.route.gradeSystem ?? null,
+						updatedAt
+					})
+					.where(eq(routes.id, row.routeId))
+					.run();
+				repairedFromRaw.add(row.routeId);
+				routeCount += 1;
+				ascentCount += 1;
+				continue;
+			}
+
 			txDb
 				.update(ascents)
 				.set({

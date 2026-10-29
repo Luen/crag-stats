@@ -79,6 +79,12 @@ describe('mapTheCragCsvRow — AU boulder bare digits (#112)', () => {
 		expect(mapped!.effectiveGradeRaw).toMatch(/V5/i);
 	});
 
+	it('keeps an explicit V route grade over an inferred AU ascent overlay', () => {
+		const mapped = mapTheCragCsvRow(row({ 'Route Grade': 'V5', 'Ascent Grade': '12' }))!;
+		expect(mapped.route.gradeScore).toBe(5);
+		expect(mapped.effectiveGradeScore).toBe(5);
+	});
+
 	it('maps non-Australia bare boulder 5 to V5', () => {
 		const mapped = mapTheCragCsvRow(
 			row({
