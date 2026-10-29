@@ -178,7 +178,6 @@
 		{/if}
 	{/if}
 	<p class="foot">
-		Marked by you{canEdit ? ' in the logbook' : ''}.
 		{#if data.routesWithCommunityData > 0}
 			Cached community estimate covers {formatNumber(data.routesWithCommunityData, dateDisplay)} of
 			{formatNumber(data.routesPutUp, dateDisplay)} credited logbook routes and excludes your ticks at
