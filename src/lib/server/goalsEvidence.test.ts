@@ -47,9 +47,11 @@ it('keeps fractional supporting sends in the target-relative bucket with scoped 
 		venueScope: 'outdoor'
 	});
 	expect(goal.completed).toBe(false);
-	expect(goal.progressPct).toBe(45);
+	// Pyramid 1/2 at 22 (35+10) plus one outdoor attempt at ≥22 (short-term soft need 15 → +~1.3).
+	expect(goal.progressPct).toBe(46.3);
 	expect(goal.progressLabel).toContain('1/2 at 22');
 	expect(goal.progressLabel).toContain('0/4 at 21');
+	expect(goal.progressLabel).toContain('1 attempt on ≥22');
 	upsertAscents([tick('a1', 'r1', 22), tick('a2', 'r1', 22)]);
 	expect(listGoals()[0].progressPct).toBeLessThanOrEqual(goal.progressPct);
 });
@@ -65,4 +67,57 @@ it('uses the same support ranges for fractional targets', () => {
 	expect(goal.completed).toBe(false);
 	expect(goal.progressPct).toBe(45);
 	expect(goal.progressLabel).toContain('1/2 at 22.5');
+});
+
+it('raises readiness on each near-target attempt and steps faster for short-term goals', () => {
+	upsertAscents([
+		tick('send22', 'r1', 22),
+		tick('try1', 'r2', 23, { send: false, date: '2026-02-01' }),
+		tick('try2', 'r2', 23, { send: false, date: '2026-02-02' })
+	]);
+	const short = createGoal({
+		kind: 'grade',
+		title: 'Short 23',
+		targetGradeScore: 23,
+		year: 2026
+	});
+	expect(short.progressPct).toBeGreaterThan(45);
+	expect(short.progressLabel).toContain('2 attempts on ≥22');
+
+	wipeAllData();
+	upsertAscents([
+		tick('send22', 'r1', 22),
+		tick('try1', 'r2', 28, { send: false, date: '2026-02-01' }),
+		tick('try2', 'r2', 28, { send: false, date: '2026-02-02' })
+	]);
+	const long = createGoal({
+		kind: 'grade',
+		title: 'Long 28',
+		targetGradeScore: 28,
+		year: 2026
+	});
+	// Same two attempts: long-haul soft need is larger, so the nudge is smaller than short-term.
+	expect(long.progressPct).toBeLessThan(short.progressPct - 30);
+	expect(long.progressLabel).toContain('Long-haul');
+	expect(long.progressLabel).toContain('2 attempts on ≥27');
+});
+
+it('counts only classified attempts in the goal year and venue', () => {
+	upsertAscents([
+		tick('send', 'send-route', 22),
+		{ ...tick('unknown', 'unknown-route', 25, { send: false }), isAttempt: false },
+		tick('old-attempt', 'old-route', 25, { send: false, date: '2025-01-01' }),
+		tick('indoor-attempt', 'gym-route', 25, { send: false, indoor: true }),
+		tick('below-band', 'easy-route', 21, { send: false }),
+		tick('working', 'project-route', 23, { send: false })
+	]);
+	const goal = createGoal({
+		kind: 'grade',
+		title: 'Scoped attempts',
+		targetGradeScore: 23,
+		year: 2026,
+		venueScope: 'outdoor'
+	});
+	expect(goal.progressLabel).toContain('1 attempt on ≥22');
+	expect(goal.progressPct).toBe(46.3);
 });
