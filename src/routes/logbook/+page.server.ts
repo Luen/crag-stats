@@ -5,6 +5,7 @@ import { parseFirstAscentKind, routeExists, setFirstAscent } from '#lib/server/f
 import { notesVisible } from '#lib/server/notes';
 import { isRouteHistoryImportEnabled } from '#lib/server/routeHistoryImport';
 import { routeGradeOptions } from '#lib/logbookFilters';
+import { parseTagExactParams } from '#lib/routeTags';
 import type { Actions, PageServerLoad } from './$types';
 
 function parseSectorPath(raw: string | null): string[] {
@@ -113,6 +114,7 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 			(v): v is 'height' | 'bolts' | 'pitch' => v === 'height' || v === 'bolts' || v === 'pitch'
 		);
 	const tag = url.searchParams.get('tag') ?? '';
+	const tagExact = parseTagExactParams(url.searchParams.getAll('tagExact'));
 	const partnerMatch = url.searchParams.get('partnerMatch') === 'exact' ? 'exact' : 'contains';
 	const rock = url.searchParams.get('rock') ?? '';
 	const yearRaw = url.searchParams.get('year');
@@ -156,6 +158,7 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 		partners: partners || undefined,
 		missing: missing.length ? missing : undefined,
 		tag: tag || undefined,
+		tagExact: tagExact.length ? tagExact : undefined,
 		partnerMatch,
 		rock: rock || undefined,
 		minStars,
@@ -196,6 +199,7 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 		partners,
 		missing,
 		tag,
+		tagExact: tagExact.map((t) => `${t.category}:${t.name}`),
 		partnerMatch,
 		rock,
 		minStars: minStars ?? '',

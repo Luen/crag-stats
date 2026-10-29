@@ -65,6 +65,58 @@ it('filters on routes cached history credits the owner as setter', () => {
 	expect(names(listLogbook({ setter: 'none' }).rows)).toEqual(['Route r2', 'Route r3']);
 });
 
+function setRouteTags(routeId: string, tags: { category: string; name: string }[]) {
+	db.update(routes)
+		.set({ tagsJson: JSON.stringify(tags) })
+		.where(eq(routes.externalId, routeId))
+		.run();
+}
+
+it('filters tagExact on category and name with AND semantics', () => {
+	setRouteTags('r1', [
+		{ category: 'Steepness', name: 'Vertical' },
+		{ category: 'Rock type', name: 'Granite' }
+	]);
+	setRouteTags('r2', [{ category: 'Steepness', name: 'Vertical' }]);
+	setRouteTags('r3', [{ category: 'Aspect', name: 'Vertical' }]);
+
+	expect(
+		names(listLogbook({ tagExact: [{ category: 'Steepness', name: 'Vertical' }] }).rows)
+	).toEqual(['Route r1', 'Route r2']);
+	expect(
+		names(
+			listLogbook({
+				tagExact: [
+					{ category: 'Steepness', name: 'Vertical' },
+					{ category: 'Rock type', name: 'Granite' }
+				]
+			}).rows
+		)
+	).toEqual(['Route r1']);
+	expect(names(listLogbook({ tagExact: [{ category: 'Aspect', name: 'Vertical' }] }).rows)).toEqual(
+		['Route r3']
+	);
+});
+
+it('keeps rock= and tag= working alongside structured tags', () => {
+	setRouteTags('r1', [
+		{ category: 'Rock type', name: 'Granite' },
+		{ category: 'Style', name: 'Crack' }
+	]);
+	setRouteTags('r2', [{ category: 'Rock type', name: 'Sandstone' }]);
+
+	expect(names(listLogbook({ rock: 'granite' }).rows)).toEqual(['Route r1']);
+	expect(names(listLogbook({ tag: 'crac' }).rows)).toEqual(['Route r1']);
+	expect(
+		names(
+			listLogbook({
+				rock: 'Granite',
+				tagExact: [{ category: 'Style', name: 'Crack' }]
+			}).rows
+		)
+	).toEqual(['Route r1']);
+});
+
 it('uses each route provider owner and keeps equal external IDs separate', () => {
 	db.insert(profiles)
 		.values([

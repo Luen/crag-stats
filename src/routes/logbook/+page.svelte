@@ -39,6 +39,7 @@
 		if (data.partners) p.set('partners', data.partners);
 		for (const m of data.missing) p.append('missing', m);
 		if (data.tag) p.set('tag', data.tag);
+		for (const t of data.tagExact) p.append('tagExact', t);
 		if (data.partnerMatch === 'exact') p.set('partnerMatch', 'exact');
 		if (data.rock) p.set('rock', data.rock);
 		if (data.minStars !== '') p.set('minStars', String(data.minStars));
@@ -105,6 +106,9 @@
 		{/if}
 		{#if data.rock}
 			· rock {data.rock}
+		{/if}
+		{#if data.tagExact.length}
+			· tag {data.tagExact.join(', ')}
 		{/if}
 	</p>
 </section>
@@ -308,6 +312,17 @@
 
 	<div class="filter-row">
 		<input name="tag" value={data.tag} placeholder="Tag contains…" aria-label="Route tag" />
+		{#each data.tagExact as exact, i (exact)}
+			{#if i > 0}
+				<input type="hidden" name="tagExact" value={exact} />
+			{/if}
+		{/each}
+		<input
+			name="tagExact"
+			value={data.tagExact[0] ?? ''}
+			placeholder="Exact tag (Steepness:Vertical)"
+			aria-label="Exact route tag Category:Name"
+		/>
 	</div>
 
 	<div class="filter-row actions">
@@ -343,9 +358,11 @@
 		bolt count, or cached pitch list after route info was fetched. No pitch list cached also matches
 		single-pitch and boulder routes when theCrag omits pitches, so it is not a list of multipitch
 		routes missing data. The pitch-list filter excludes routes whose route info was never fetched
-		(History not checked is a separate, route-history filter); Tag contains searches the route tags
-		imported from theCrag. Project filters exclude unknown flags. No setter credit found includes
-		routes whose history has not been imported.
+		(History not checked is a separate, route-history filter); Tag contains searches tag names;
+		Exact tag matches Category:Name (case-insensitive, repeat <code>tagExact</code> in the URL for AND).
+		Categories include Rock type, Steepness, Aspect, Style, Weather, Walk in time, Legality, and Condition
+		when shown on chips. Project filters exclude unknown flags. No setter credit found includes routes
+		whose history has not been imported.
 	</p>
 </form>
 
