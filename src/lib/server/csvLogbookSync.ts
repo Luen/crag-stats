@@ -34,19 +34,23 @@ export async function syncTheCragCsv(stillCurrent: () => boolean) {
 		);
 	db.transaction(() => {
 		upsertAscents(ascents);
-		if (profile) {
-			db.update(profiles)
-				.set({ login: username, ascentCount: ascents.length, updatedAt: new Date().toISOString() })
-				.where(eq(profiles.id, profile.id))
-				.run();
-		} else {
-			upsertProfile({
-				provider: 'thecrag',
-				login: username,
-				name: username,
-				ascentCount: ascents.length
-			});
-		}
+		// CSV identity only — clear API account fields so a shared THECRAG_API_KEY
+		// (route history) cannot leave key-owner stats on the profile. Null rawJson
+		// also stops analytics from backfilling account JSON into the columns.
+		upsertProfile({
+			provider: 'thecrag',
+			login: username,
+			name: username,
+			ascentCount: ascents.length,
+			externalId: null,
+			avatar: null,
+			typeOfClimber: null,
+			outdoorAscentCount: null,
+			indoorAscentCount: null,
+			heightClimbed: null,
+			routesTicked: null,
+			rawJson: null
+		});
 	});
-	return { count: ascents.length, profileName: profile?.name ?? username };
+	return { count: ascents.length, profileName: username };
 }

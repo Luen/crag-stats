@@ -403,4 +403,8 @@ You'll often notice things outside the task at hand. **Don't silently fix them i
 
 | 2026-10 | #195: Grade goal progress uses pyramid readiness (`gradeGoalReadiness`: ~2 distinct-route sends at N−1, ~4 at N−2; capped below 100% until a send at N), not linear best/target. Height/days stay linear. `/docs/goals` explains the model; dashboard + Goals page link “How it works”. |
 
+| 2026-10 | CSV AU boulder grades: bare digits + Australia (Country / Crag Path / australia URL) pass `gradeSystem: 'AU'` in `csv.ts` so Upendi `9` → VB (not fake V9); explicit `V…` stays V-scale (#124). `repairGradesFromRawJson` remaps flat CSV `raw_json`; `data:0003_csv_au_boulder_grades` repairs existing DBs. CSV sync sets profile login/name from `THECRAG_USERNAME` and nulls API-only account fields; route-history `ownerLogin` prefers that username in CSV mode when a shared API key is used. |
+
+| 2026-10 | #214 review: cached CSV grade repair changes grade columns only, preserving API-only metadata. Inferred AU ascent overlays cannot override explicit V route grades. CSV route-history imports and cached reapplication require the configured username to match the saved profile login (case-insensitive); empty/mismatched overrides never fall back to another identity. |
+
 _Add a row when you change behaviour agents must know about._

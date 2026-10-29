@@ -56,6 +56,11 @@ export type RouteHistoryConfig = {
 	apiKey: string;
 	/** Opt-in rolling refresh age. Unset/0 keeps fetch-once behavior. */
 	refreshDays?: 0 | 30 | 90;
+	/**
+	 * CSV mode passes THECRAG_USERNAME. It must match the saved logbook login;
+	 * an empty or mismatched value blocks import until the owner syncs or wipes.
+	 */
+	ownerLogin?: string | null;
 };
 
 /** Invalid or unset values retain fetch-once behavior. */
@@ -159,12 +164,17 @@ function writeState(now: number, patch: Partial<Omit<State, 'provider' | 'update
 		.run();
 }
 
-function ownerLogin(): string | null {
+function ownerLogin(config?: Pick<RouteHistoryConfig, 'ownerLogin'>): string | null {
 	ensureSchema();
-	return (
+	const saved =
 		db.select({ login: profiles.login }).from(profiles).where(eq(profiles.provider, PROVIDER)).get()
-			?.login ?? null
-	);
+			?.login ?? null;
+	if (config?.ownerLogin == null) return saved;
+	const override = config.ownerLogin.trim();
+	// Keep the CSV sync account-switch guard effective for manual imports and
+	// cached reapplication too. Environment changes cannot retarget a logbook.
+	if (!override || !saved || override.toLowerCase() !== saved.trim().toLowerCase()) return null;
+	return override;
 }
 
 /**
@@ -397,9 +407,13 @@ export async function runRouteHistoryImportOnce(
 		return result(false, 'waiting', 'The last run was under a minute ago; try again shortly.');
 	}
 
-	const login = ownerLogin();
+	const login = ownerLogin(config);
 	if (!login) {
-		return result(false, 'no-login', 'Sync the logbook first so Crag Stats knows your @login.');
+		return result(
+			false,
+			'no-login',
+			'Sync the logbook first with the configured @login. Wipe local data before switching accounts.'
+		);
 	}
 	const pending = pendingRouteIds(ROUTES_PER_RUN, config.refreshDays, now);
 	if (!pending.length) {
@@ -500,9 +514,12 @@ export async function runRouteHistoryImportOnce(
  * zero history rows — so Refresh → Re-apply can clear imported credits removed upstream.
  * Unfetched / `missing` routes are left alone.
  */
-export function applyCachedHistoryMarks(rules: MarkRules): { marked: number; routes: number } {
+export function applyCachedHistoryMarks(
+	rules: MarkRules,
+	loginOverride?: string | null
+): { marked: number; routes: number } {
 	ensureSchema();
-	const login = ownerLogin();
+	const login = ownerLogin({ ownerLogin: loginOverride });
 	if (!login) return { marked: 0, routes: 0 };
 
 	const fetches = db

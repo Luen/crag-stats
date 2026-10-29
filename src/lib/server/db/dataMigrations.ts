@@ -49,6 +49,14 @@ const MIGRATIONS = [
 				db.insert(appSettings).values({ key, value, updatedAt }).run();
 			}
 		}
+	},
+	{
+		// CSV ingest lacked AU gradeSystem hints; bare AU boulder digits became fake Vn (#112).
+		id: 'data:0003_csv_au_boulder_grades',
+		apply: () => {
+			repairGradesFromRawJson();
+			refreshProjects();
+		}
 	}
 ];
 
