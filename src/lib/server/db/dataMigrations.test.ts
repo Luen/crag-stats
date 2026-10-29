@@ -12,9 +12,15 @@ import { getFirstAscentMarks, setFirstAscent } from '../firstAscents';
 import { upsertAscents } from '../ingest';
 import * as projects from '../projects';
 import { mapAscent } from '../providers/thecrag/api';
+import { mapTheCragCsvRow } from '../providers/thecrag/csv';
 
 const ID = 'data:0001_repair_cached_grades';
-const ALL = [ID, 'data:0002_legacy_env_settings', 'data:0004_invalidate_incomplete_route_cache'];
+const ALL = [
+	ID,
+	'data:0002_legacy_env_settings',
+	'data:0003_csv_au_boulder_grades',
+	'data:0004_invalidate_incomplete_route_cache'
+];
 
 beforeEach(() => {
 	wipeAllData();
@@ -48,6 +54,33 @@ function seedOldGrades() {
 }
 
 describe('startup data migrations', () => {
+	it('repairs CSV grades after earlier data migrations have already run', () => {
+		runDataMigrations();
+		db.run(sql`DELETE FROM schema_migrations WHERE id = 'data:0003_csv_au_boulder_grades'`);
+		const old = mapTheCragCsvRow({
+			'Ascent ID': 'csv-upgrade',
+			'Route ID': 'csv-route',
+			'Route Name': 'Synthetic Australian boulder',
+			'Route Grade': '9',
+			'Route Gear Style': 'Boulder',
+			Country: 'Australia'
+		})!;
+		old.route.gradeScore = 9;
+		old.effectiveGradeScore = 9;
+		upsertAscents([old]);
+		setFirstAscent('thecrag', 'csv-route', 'FA');
+		const marks = getFirstAscentMarks();
+		db.update(routes).set({ tagsJson: '["Rock:Granite"]' }).run();
+		expect(runDataMigrations()).toEqual(['data:0003_csv_au_boulder_grades']);
+		expect(db.select().from(routes).get()).toMatchObject({
+			gradeScore: -0.7,
+			tagsJson: '["Rock:Granite"]'
+		});
+		expect(db.select().from(ascents).get()!.effectiveGradeScore).toBe(-0.7);
+		expect(getFirstAscentMarks()).toEqual(marks);
+		expect(runDataMigrations()).toEqual([]);
+	});
+
 	it('upgrades cached grades while preserving explicit scales and local-only data', () => {
 		seedOldGrades();
 		setFirstAscent('thecrag', '81001', 'FA');

@@ -51,7 +51,14 @@ const MIGRATIONS = [
 		}
 	},
 	{
-		// After data:0003_csv_au_boulder_grades (#212 / PR #214).
+		// CSV ingest lacked AU gradeSystem hints; bare AU boulder digits became fake Vn (#112).
+		id: 'data:0003_csv_au_boulder_grades',
+		apply: () => {
+			repairGradesFromRawJson();
+			refreshProjects();
+		}
+	},
+	{
 		id: 'data:0004_invalidate_incomplete_route_cache',
 		apply: () => {
 			invalidateIncompleteRouteCache();
