@@ -76,7 +76,7 @@ Parsing lives in `parseRouteInfoFields()` / `parseRoutePayload()` (`routeHistory
 
 `/api/logbook/ascents` already persists every ascent as `ascents.raw_json` and the account summary as `profiles.raw_json`. Column mapping extracts what the app uses today; undocumented or newly documented fields (`historical`, `cprStyle`, ascent-level `tags`, `route.gradeAtom`, …) remain recoverable from those blobs without another full logbook sync.
 
-Upgrades that add or extend route-info cache columns must **invalidate** affected routes in the same release so fetch-once DBs do not stick with incomplete caches until someone runs Refresh all. Prefer deleting matching `route_history_fetches` rows (routes become `history=pending` again) while leaving `route_history`, marks, and import pacing untouched. Example one-shot repair (`data:0003_invalidate_incomplete_route_cache` in `dataMigrations.ts`):
+Upgrades that add or extend route-info cache columns must **invalidate** affected routes in the same release so fetch-once DBs do not stick with incomplete caches until someone runs Refresh all. Prefer deleting matching `route_history_fetches` rows with `status='ok'` (routes become `history=pending` again) while leaving `missing` ledger rows, `route_history`, marks, and import pacing untouched. Example one-shot repair (`data:0004_invalidate_incomplete_route_cache` in `dataMigrations.ts`; after `data:0003_csv_au_boulder_grades`):
 
 ```sql
 DELETE FROM route_history_fetches
@@ -84,9 +84,12 @@ WHERE rowid IN (
   SELECT f.rowid
   FROM route_history_fetches f
   INNER JOIN routes r ON r.provider = f.provider AND r.external_id = f.route_external_id
-  WHERE r.route_info_updated_at IS NULL OR r.route_api_json IS NULL
+  WHERE f.status = 'ok'
+    AND (r.route_info_updated_at IS NULL OR r.route_api_json IS NULL)
 );
 ```
+
+Installs that imported routes before migration `0015` may re-queue nearly every successful fetch (still 100 routes per run).
 
 New SQL migrations can inline the same pattern (scoped to the new columns) or call an appended `data:` migration when the invalidation needs joins or app logic. Settings **Refresh all** stays a manual escape hatch; user guides must not tell owners to run it after every schema upgrade.
 

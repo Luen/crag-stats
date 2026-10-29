@@ -14,7 +14,7 @@ import * as projects from '../projects';
 import { mapAscent } from '../providers/thecrag/api';
 
 const ID = 'data:0001_repair_cached_grades';
-const ALL = [ID, 'data:0002_legacy_env_settings', 'data:0003_invalidate_incomplete_route_cache'];
+const ALL = [ID, 'data:0002_legacy_env_settings', 'data:0004_invalidate_incomplete_route_cache'];
 
 beforeEach(() => {
 	wipeAllData();
@@ -151,13 +151,18 @@ describe('invalidate incomplete route cache (#209)', () => {
 		`);
 	}
 
-	it('drops fetch rows when route info or route_api_json is missing', () => {
+	it('drops ok fetch rows when route info or route_api_json is missing', () => {
 		seedRoute('stale-a');
 		seedRoute('stale-b');
 		seedRoute('complete');
+		seedRoute('gone');
 		seedFetch('stale-a');
 		seedFetch('stale-b');
 		seedFetch('complete');
+		db.run(sql`
+			INSERT INTO route_history_fetches (provider, route_external_id, status, history_count, fetched_at)
+			VALUES ('thecrag', 'gone', 'missing', 0, ${NOW})
+		`);
 		db.run(sql`UPDATE routes SET route_info_updated_at = ${NOW} WHERE external_id = 'stale-b'`);
 		db.run(sql`
 			UPDATE routes
@@ -168,7 +173,7 @@ describe('invalidate incomplete route cache (#209)', () => {
 		expect(invalidateIncompleteRouteCache()).toBe(2);
 		expect(
 			db.all(sql`SELECT route_external_id FROM route_history_fetches ORDER BY route_external_id`)
-		).toEqual([{ route_external_id: 'complete' }]);
+		).toEqual([{ route_external_id: 'complete' }, { route_external_id: 'gone' }]);
 	});
 
 	it('is a no-op once caches are complete', () => {
