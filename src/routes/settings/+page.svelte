@@ -6,6 +6,7 @@
 	let { data, form }: PageProps = $props();
 
 	const rh = $derived(data.routeHistory);
+	const notesCsvOnly = $derived(data.syncConfiguration.mode === 'csv');
 
 	const systems = [
 		{ id: 'ewbank', label: 'Ewbanks (AU/NZ)' },
@@ -72,19 +73,31 @@
 					</small>
 				</span>
 			</label>
-			<label class="check">
-				<input type="checkbox" name="notes" checked={data.showNotes.enabled} />
+			<label class="check" class:muted={notesCsvOnly}>
+				<input
+					type="checkbox"
+					name="notes"
+					checked={notesCsvOnly ? false : data.showNotes.enabled}
+					disabled={notesCsvOnly}
+					aria-disabled={notesCsvOnly}
+					aria-describedby={notesCsvOnly ? 'notes-csv-hint' : undefined}
+				/>
 				<span>
 					<strong>Show my private ascent notes</strong>
-					<small class="hint">
-						Shows the notes from your theCrag ticks in the logbook, and lets logbook search match
-						them.
-						{#if data.authEnabled}
-							Only shown while you're logged in. Visitors never see them.
+					<small class="hint" id={notesCsvOnly ? 'notes-csv-hint' : undefined}>
+						{#if notesCsvOnly}
+							Unavailable — automatic CSV sync does not include private ascent comments. Use
+							<code>THECRAG_SYNC_MODE=api</code> with a supporter API key to sync and show notes.
 						{:else}
-							<strong
-								>No <code>APP_PASSWORD</code> is set, so anyone who can open this site will see them.</strong
-							> Best for offline or home-network installs.
+							Shows the notes from your theCrag ticks in the logbook, and lets logbook search match
+							them.
+							{#if data.authEnabled}
+								Only shown while you're logged in. Visitors never see them.
+							{:else}
+								<strong
+									>No <code>APP_PASSWORD</code> is set, so anyone who can open this site will see them.</strong
+								> Best for offline or home-network installs.
+							{/if}
 						{/if}
 					</small>
 				</span>
@@ -407,6 +420,13 @@
 	.check span {
 		display: grid;
 		gap: 0.15rem;
+	}
+	.check.muted {
+		color: var(--ink-muted);
+		cursor: not-allowed;
+	}
+	.check.muted strong {
+		color: var(--ink-muted);
 	}
 	.status {
 		display: flex;

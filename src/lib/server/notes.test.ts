@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { notesVisible, resolveShowNotes } from './notes';
+import { notesVisible, privateNotesSyncAvailable, resolveShowNotes } from './notes';
 
 describe('resolveShowNotes', () => {
 	it('is off by default', () => {
@@ -28,10 +28,22 @@ describe('resolveShowNotes', () => {
 	});
 });
 
+describe('privateNotesSyncAvailable', () => {
+	it('is false for CSV-only sync', () => {
+		expect(privateNotesSyncAvailable('csv')).toBe(false);
+		expect(privateNotesSyncAvailable('api')).toBe(true);
+	});
+});
+
 describe('notesVisible', () => {
 	it('needs both the setting and an admin viewer', () => {
 		expect(notesVisible(true, true)).toBe(true);
 		expect(notesVisible(true, false)).toBe(false);
 		expect(notesVisible(false, true)).toBe(false);
+	});
+
+	it('is always off when sync mode is csv', () => {
+		expect(notesVisible(true, true, 'csv')).toBe(false);
+		expect(notesVisible(true, false, 'csv')).toBe(false);
 	});
 });

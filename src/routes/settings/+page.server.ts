@@ -98,7 +98,9 @@ export const actions: Actions = {
 		if (!getSearchIndexing().forcedOff) {
 			setAppSetting('search_indexing', form.get('indexing') === 'on' ? 'on' : 'off');
 		}
-		setAppSetting('show_notes', form.get('notes') === 'on' ? 'on' : 'off');
+		if (getTheCragSyncConfiguration().mode !== 'csv') {
+			setAppSetting('show_notes', form.get('notes') === 'on' ? 'on' : 'off');
+		}
 		return { ok: true, saved: true };
 	},
 	sync: async ({ locals }) => {

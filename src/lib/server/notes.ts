@@ -14,10 +14,23 @@ export function resolveShowNotes(input: { stored: string | null }): ShowNotes {
 	return { enabled: false, source: 'default' };
 }
 
+export type TheCragSyncMode = 'api' | 'csv' | 'invalid';
+
+/** CSV logbook export does not include private ascent comments. */
+export function privateNotesSyncAvailable(syncMode: TheCragSyncMode): boolean {
+	return syncMode !== 'csv';
+}
+
 /**
  * Notes reach a viewer only when enabled and the viewer could open Settings
  * (`locals.authed`: no APP_PASSWORD, or signed in). Visitors never see them.
+ * CSV-only sync never exposes notes (export has no private comments).
  */
-export function notesVisible(enabled: boolean, viewerIsAdmin: boolean): boolean {
+export function notesVisible(
+	enabled: boolean,
+	viewerIsAdmin: boolean,
+	syncMode: TheCragSyncMode = 'api'
+): boolean {
+	if (!privateNotesSyncAvailable(syncMode)) return false;
 	return enabled && viewerIsAdmin;
 }
