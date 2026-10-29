@@ -25,8 +25,8 @@
 	{#if goals.length === 0}
 		<p class="empty">
 			{#if canEdit}
-				No active goals — <a href="/goals">set one</a>. Grade bars show readiness from nearby sends;
-				height and days stay linear.
+				No active goals — <a href="/goals">set one</a>. Grade bars show readiness from nearby sends
+				and attempts; height and days stay linear.
 			{:else}
 				No active goals right now.
 			{/if}

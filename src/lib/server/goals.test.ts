@@ -71,6 +71,51 @@ describe('gradeGoalReadiness', () => {
 		expect(r.label).toContain('4/4 at 21');
 	});
 
+	it('keeps rising with attempts after the pyramid is full, faster for short-term', () => {
+		const shortBase = gradeGoalReadiness({
+			target: 23,
+			bestSend: 22,
+			routesAtNMinus1: 2,
+			routesAtNMinus2: 4,
+			attemptsNearTarget: 0
+		});
+		const short = gradeGoalReadiness({
+			target: 23,
+			bestSend: 22,
+			routesAtNMinus1: 2,
+			routesAtNMinus2: 4,
+			attemptsNearTarget: 5
+		});
+		const shortMore = gradeGoalReadiness({
+			target: 23,
+			bestSend: 22,
+			routesAtNMinus1: 2,
+			routesAtNMinus2: 4,
+			attemptsNearTarget: 6
+		});
+		expect(short.pct).toBeGreaterThan(shortBase.pct);
+		expect(shortMore.pct).toBeGreaterThan(short.pct);
+		expect(shortMore.pct).toBeLessThanOrEqual(90);
+		expect(short.label).toContain('5 attempts on ≥22');
+
+		const longBase = gradeGoalReadiness({
+			target: 28,
+			bestSend: 22,
+			routesAtNMinus1: 2,
+			routesAtNMinus2: 4,
+			attemptsNearTarget: 0
+		});
+		const long = gradeGoalReadiness({
+			target: 28,
+			bestSend: 22,
+			routesAtNMinus1: 2,
+			routesAtNMinus2: 4,
+			attemptsNearTarget: 5
+		});
+		expect(long.horizon).toBe('long-haul');
+		expect(long.pct - longBase.pct).toBeLessThan(short.pct - shortBase.pct);
+	});
+
 	it('caps overfilled lower buckets', () => {
 		const thin = gradeGoalReadiness({
 			target: 25,

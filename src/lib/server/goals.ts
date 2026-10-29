@@ -80,12 +80,17 @@ function loadAscentRouteRows(): AscentRouteRow[] {
 		.all();
 }
 
-/** Qualifying year+venue sends for a grade goal; distinct routes per N−1 / N−2 bucket. */
+/** Qualifying year+venue evidence for a grade goal: sends for pyramid, non-sends near N. */
 function gradeGoalSendEvidence(
 	g: Goal,
 	ascentRows: AscentRouteRow[],
 	currentYear: number
-): { best: number | null; routesAtNMinus1: number; routesAtNMinus2: number } {
+): {
+	best: number | null;
+	routesAtNMinus1: number;
+	routesAtNMinus2: number;
+	attemptsNearTarget: number;
+} {
 	const y = g.year ?? currentYear;
 	const venue = asVenue(g);
 	const target = g.targetGradeScore ?? Number(g.targetValue);
@@ -94,9 +99,9 @@ function gradeGoalSendEvidence(
 	const n1Routes = new Set<number>();
 	const n2Routes = new Set<number>();
 	let best: number | null = null;
+	let attemptsNearTarget = 0;
 
 	for (const a of ascentRows) {
-		if (!a.isSend) continue;
 		if (
 			!matchesVenueScope(venue, {
 				gearStyle: a.gearStyle,
@@ -111,6 +116,13 @@ function gradeGoalSendEvidence(
 		if (!day || Number(day.slice(0, 4)) !== y) continue;
 		const score = a.effectiveGradeScore;
 		if (score == null || !Number.isFinite(score)) continue;
+
+		if (!a.isSend) {
+			// Working / attempt ticks at or above N−1 (projecting the goal band).
+			if (score >= n1Bucket) attemptsNearTarget += 1;
+			continue;
+		}
+
 		best = best == null ? score : Math.max(best, score);
 		if (a.routeId == null) continue;
 		if (score >= n1Bucket && score < target) n1Routes.add(a.routeId);
@@ -120,7 +132,8 @@ function gradeGoalSendEvidence(
 	return {
 		best,
 		routesAtNMinus1: n1Routes.size,
-		routesAtNMinus2: n2Routes.size
+		routesAtNMinus2: n2Routes.size,
+		attemptsNearTarget
 	};
 }
 
@@ -139,7 +152,8 @@ function enrichGoal(g: Goal, ascentRows: AscentRouteRow[] = []): GoalView {
 			target,
 			bestSend: evidence.best,
 			routesAtNMinus1: evidence.routesAtNMinus1,
-			routesAtNMinus2: evidence.routesAtNMinus2
+			routesAtNMinus2: evidence.routesAtNMinus2,
+			attemptsNearTarget: evidence.attemptsNearTarget
 		});
 		pct = g.completed ? 100 : readiness.pct;
 		progressLabel = g.completed
