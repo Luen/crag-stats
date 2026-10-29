@@ -15,7 +15,8 @@ import {
 	getShowNotes,
 	setAppSetting
 } from '#lib/server/appSettings';
-import { hasTheCragApiKey } from '#lib/server/env';
+import { hasTheCragApiKey, getTheCragSyncConfiguration } from '#lib/server/env';
+import { forgetTheCragSession } from '#lib/server/theCragWebSession';
 import {
 	beginFirstImport,
 	completeFirstImport,
@@ -43,6 +44,7 @@ export const load: PageServerLoad = async ({ cookies, parent }) => {
 		firstImportDate: firstImportDateInput(getFirstImport(), dateDisplay),
 		sync: getSyncStatus(),
 		hasApiKey: hasTheCragApiKey(),
+		syncConfiguration: getTheCragSyncConfiguration(),
 		gradeSystem: getPreferredGradeSystem(),
 		searchIndexing: getSearchIndexing(),
 		showNotes: getShowNotes(),
@@ -55,6 +57,11 @@ export const load: PageServerLoad = async ({ cookies, parent }) => {
 };
 
 export const actions: Actions = {
+	forgetTheCragSession: async ({ locals }) => {
+		if (!locals.authed) return fail(403);
+		forgetTheCragSession();
+		return { ok: true, sessionForgotten: true };
+	},
 	saveFirstImportDate: async ({ request, locals }) => {
 		if (!locals.authed) return fail(403);
 		const form = await request.formData();
@@ -94,7 +101,8 @@ export const actions: Actions = {
 		setAppSetting('show_notes', form.get('notes') === 'on' ? 'on' : 'off');
 		return { ok: true, saved: true };
 	},
-	sync: async () => {
+	sync: async ({ locals }) => {
+		if (!locals.authed) return fail(403);
 		try {
 			const result = await runTheCragSync();
 			return { ok: true, result };
@@ -105,7 +113,8 @@ export const actions: Actions = {
 			});
 		}
 	},
-	fullSync: async () => {
+	fullSync: async ({ locals }) => {
+		if (!locals.authed) return fail(403);
 		try {
 			const result = await runTheCragSync({ full: true });
 			return { ok: true, result };

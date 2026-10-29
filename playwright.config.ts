@@ -25,6 +25,9 @@ const server = (name: keyof typeof PORTS, env: Record<string, string>) => ({
 		DATABASE_PATH: `e2e/.tmp/${name}.sqlite`,
 		SESSION_SECRET: sessionSecret,
 		THECRAG_API_KEY: '',
+		THECRAG_SYNC_MODE: 'api',
+		THECRAG_USERNAME: '',
+		THECRAG_PASSWORD: '',
 		SYNC_CRON: '',
 		TZ: 'Australia/Brisbane',
 		APP_PASSWORD: '',
@@ -45,7 +48,12 @@ export default defineConfig({
 	},
 	webServer: [
 		server('open', {}),
-		server('settings', { APP_PASSWORD: TEST_PASSWORD, AUTH_SCOPE: 'settings' }),
+		server('settings', {
+			APP_PASSWORD: TEST_PASSWORD,
+			AUTH_SCOPE: 'settings',
+			THECRAG_SYNC_MODE: 'csv',
+			THECRAG_USERNAME: 'synthetic-account'
+		}),
 		// Also covers the explicit ORIGIN override path.
 		server('all', {
 			APP_PASSWORD: TEST_PASSWORD,

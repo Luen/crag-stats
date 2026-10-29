@@ -56,12 +56,15 @@ src/lib/server/
   analytics.ts           # dashboard aggregations
   cpr.ts                 # approximate CPR (not a proprietary theCrag clone)
   ingest.ts              # upsert + reconcileProviderAscents
-  sync.ts                # runTheCragSync (full pull + prune)
+  sync.ts                # runTheCragSync (API full pull + prune, or opt-in CSV mode)
+  csvLogbookSync.ts      # opt-in CSV logbook download + upsert (no prune)
+  theCragWebSession.ts   # AES-GCM encrypted cookie store (thecrag_web_sessions, 0016)
+  sessionSecret.ts       # rejects placeholder SESSION_SECRET for CSV mode
   routeHistoryEngine.ts  # opt-in FA/FFA route-history import: cache, pacing, marks (#68)
   routeHistoryImport.ts  # env + impers wiring, background trigger after sync
-  providers/thecrag/     # API + CSV + routeHistoryApi/Parse
+  providers/thecrag/     # API + CSV + logbookSession (CSV download) + routeHistoryApi/Parse
   db/schema.ts
-migrations/              # 0001_init.sql, … 0010_route_history.sql
+migrations/              # 0001_init.sql, … 0016_thecrag_web_session.sql
 scripts/                 # migrate, docker-entrypoint, worker
 .github/workflows/       # ci, docker-release (version tag → GHCR)
 ```
@@ -83,6 +86,16 @@ Entry: `runTheCragSync()` in `src/lib/server/sync.ts`.
 7. **Fresh install:** if no sync has ever succeeded (`sync_state.last_success_at` is null), the scheduler runs one sync straight away at boot. A failed first sync is retried on the next boot or cron tick.
 
 Cursor/`maxEpoch` is still stored for diagnostics; it is **not** used to skip a full pull.
+
+### Opt-in CSV mode (`THECRAG_SYNC_MODE=csv`)
+
+For owners without a supporter API key. The default is `api`; any value other than `api`/`csv` is invalid and sync refuses to run.
+
+- **Env:** `THECRAG_USERNAME` (username, not email), `THECRAG_PASSWORD` and `SESSION_SECRET`. `getTheCragSyncConfiguration()` reports CSV mode as unconfigured unless all three are set **and** `SESSION_SECRET` passes `isUsableSessionSecret()` (16+ characters, not a placeholder such as the `.env.example` value or the `dev-insecure-session-secret` fallback). Credentials stay in the environment; never store the password in the DB.
+- **Flow** (`providers/thecrag/logbookSession.ts`, `csvLogbookSync.ts`): try the CSV export with saved cookies; if the session expired, fetch the login page, read the hidden CSRF fields, sign in once, download the export and retry once. Uses `impers` (browser impersonation) at the owner's own risk.
+- **Cookie store:** `thecrag_web_sessions` (migration 0016) holds AES-256-GCM encrypted cookies keyed by a hash of the username, with the key derived from `SESSION_SECRET` (AAD = account key). Rotating `SESSION_SECRET` only forces a new login. `next_allowed_at` / `failures` persist so pacing and back-off survive restarts. Wiping data must clear it and invalidate in-flight syncs (`syncGeneration`).
+- **Semantics:** CSV is **upsert-only** (no prune, no `reconcileProviderAscents`), and API-only fields (pitches, partners, quality, route info) are absent. A configured username that differs from the saved profile login aborts before any request, so accounts never mix.
+- User docs: `docs/guide/logbook-sync.md`.
 
 Height quirk: theCrag may return height as `[value, unit]` arrays — parse in the API mapper (`parseHeightMeters` / array handler).
 
@@ -221,7 +234,7 @@ Prefer fixing type errors over `@ts-ignore`. Do not switch the package manager.
 - Don’t commit secrets, sample private notes, or real API keys.
 - Don’t expand scope into wearables / Mountain Project until the matching epic is in play — keep PRs focused.
 - Don’t claim CPR is identical to theCrag’s proprietary score.
-- Don’t HTML-scrape theCrag route pages, and don’t loosen the route-history limits (fetch once unless `ROUTE_DATA_REFRESH_DAYS=30|90` is explicitly enabled, 100 per run, ≥1 s gap, stop on block). `impers` is only for the opt-in `/api/route` import, never the logbook sync. Prefer negotiated theCrag API access.
+- Don’t HTML-scrape theCrag route pages, and don’t loosen the route-history limits (fetch once unless `ROUTE_DATA_REFRESH_DAYS=30|90` is explicitly enabled, 100 per run, ≥1 s gap, stop on block). `impers` is allowed only for two explicit opt-ins: the `/api/route` history import (`ROUTE_HISTORY_IMPORT=true`) and the CSV logbook download (`THECRAG_SYNC_MODE=csv`, with its saved-session pacing and back-off). Never use it for the default API logbook sync. The one documented HTML parse is the login form's hidden CSRF fields in CSV mode; nothing else on theCrag pages may be scraped. Prefer negotiated theCrag API access.
 
 ---
 
@@ -383,6 +396,8 @@ You'll often notice things outside the task at hand. **Don't silently fix them i
 | 2026-10 | #196: badges for Christmas Day (`12-25`), New Year (`12-31` or `01-01`, one badge), and 250 m summed height in one calendar day. Any logged ascent counts for holidays (attempts included). Keep existing `height_10km` / Ten K Vertical — no duplicate overall 10 km badge. |
 
 | 2026-10 | #194: FA/FFA milestones condense to thresholds (first FA/FFA, FFA counts 5–100, combined FA+FFA 5–100, style FA 10/20/50 for Sport/Trad/Boulder). Badges align (`fa_20`/`fa_50`/`fa_100`, `ffa_*`, `fa_{sport,trad,boulder}_*`). Stable ids like `fa:first` / `ffa:5` / `fa:boulder:10` — no per-route `fa:{routeId}`. |
+
+| 2026-10 | CSV logbook download (#204/#205): opt-in `THECRAG_SYNC_MODE=csv` with `THECRAG_USERNAME`/`THECRAG_PASSWORD`; cookies encrypted with `SESSION_SECRET` in `thecrag_web_sessions` (migration **0016**; 0015 belongs to route API JSON). A placeholder or short `SESSION_SECRET` disables CSV mode. Upsert-only, no prune. The `impers` rule in "What not to do" now covers this opt-in. |
 
 | 2026-10 | #201: opt-in `ROUTE_DATA_REFRESH_DAYS=30` or `90` reuses post-sync imports; new routes first, then oldest stale fetches (including missing). Unset/0 keeps fetch-once. The shared 100-route cap, pacing, back-off and manual mark protections remain. |
 

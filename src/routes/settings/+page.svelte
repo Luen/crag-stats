@@ -23,6 +23,8 @@
 
 {#if form?.message}
 	<p class="banner err">{form.message}</p>
+{:else if form?.sessionForgotten}
+	<p class="banner ok">Saved theCrag login cleared. The next CSV sync will log in again.</p>
 {:else if form?.firstImportSaved}
 	<p class="banner ok">First import date saved. <a href="/">View badges</a></p>
 {:else if form?.layoutSaved}
@@ -119,18 +121,31 @@
 	</article>
 
 	<article class="panel">
-		<h2>theCrag API sync</h2>
-		<p class="hint">
-			Uses <code>THECRAG_API_KEY</code> from your environment. Keys grant read access to private
-			notes — treat them like passwords.
-			<a href="https://www.thecrag.com/en/article/logbookreadapi" target="_blank" rel="noreferrer"
-				>API docs</a
-			>
-		</p>
-		<p class="hint">
-			<strong>Upstream is source of truth.</strong> Each sync pulls the full logbook, updates changed
-			ascents (comments, grades, ticks), and deletes local rows that were removed on theCrag.
-		</p>
+		<h2>theCrag logbook sync</h2>
+		{#if data.syncConfiguration.mode === 'csv'}
+			<p class="hint">
+				Downloads your CSV export using a saved theCrag login. Your password stays on the server;
+				cookies are encrypted locally and reused until theCrag requires a new login.
+			</p>
+			<p class="hint">
+				CSV sync updates and adds ascents. It does not remove local ascents deleted on theCrag.
+				Exports have fewer fields than API sync. <a href="/docs/logbook-sync"
+					>Setup and limitations</a
+				>
+			</p>
+		{:else}
+			<p class="hint">
+				Uses <code>THECRAG_API_KEY</code> from your environment. Keys grant read access to private
+				notes — treat them like passwords.
+				<a href="https://www.thecrag.com/en/article/logbookreadapi" target="_blank" rel="noreferrer"
+					>API docs</a
+				>
+			</p>
+			<p class="hint">
+				<strong>Upstream is source of truth.</strong> Each sync pulls the full logbook, updates changed
+				ascents (comments, grades, ticks), and deletes local rows that were removed on theCrag.
+			</p>
+		{/if}
 		<p class="status">
 			<span class={['pill', { ok: data.sync.status === 'idle', err: data.sync.status === 'error' }]}
 				>{data.sync.status}</span
@@ -138,13 +153,13 @@
 			{#if data.sync.lastSuccessAt}
 				<span>Last sync {formatDateTime(data.sync.lastSuccessAt, data.dateDisplay)}</span>
 			{:else}
-				<span>No API sync yet</span>
+				<span>No logbook sync yet</span>
 			{/if}
 		</p>
 		{#if data.sync.lastError}
 			<p class="err">{data.sync.lastError}</p>
 		{/if}
-		{#if data.hasApiKey}
+		{#if data.syncConfiguration.configured}
 			<div class="actions">
 				<form method="POST" action="?/sync">
 					<button type="submit">Sync now</button>
@@ -154,8 +169,24 @@
 				</form>
 			</div>
 		{:else}
+			{#if data.syncConfiguration.mode === 'api'}
+				<p class="hint">
+					No API key configured. Set <code>THECRAG_API_KEY</code> in <code>.env</code>.
+				</p>
+			{:else}
+				<p class="hint">
+					Check <code>THECRAG_SYNC_MODE</code> and your server configuration.
+					<a href="/docs/logbook-sync">Setup guide</a>
+				</p>
+			{/if}
+		{/if}
+		{#if data.syncConfiguration.mode === 'csv'}
+			<form method="POST" action="?/forgetTheCragSession">
+				<button type="submit" class="secondary">Forget saved theCrag login</button>
+			</form>
+		{:else}
 			<p class="hint">
-				No API key configured. Set <code>THECRAG_API_KEY</code> in <code>.env</code>.
+				No supporter API key? <a href="/docs/logbook-sync">Set up automatic CSV downloads</a>.
 			</p>
 		{/if}
 	</article>

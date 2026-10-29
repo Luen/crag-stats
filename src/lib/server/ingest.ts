@@ -288,7 +288,8 @@ export function updateSyncState(
 				.get()!.n;
 			completeFirstImport(count, token, patch.lastSuccessAt);
 			firstImportTokens.delete(provider);
-		} else if (patch.status === 'error') {
+		} else if (patch.status === 'error' || (patch.status === 'idle' && !patch.lastSuccessAt)) {
+			// Error or cancelled sync (idle without success) — abandon the first-import token.
 			firstImportTokens.delete(provider);
 		}
 	});

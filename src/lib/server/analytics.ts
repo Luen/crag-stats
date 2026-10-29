@@ -1,4 +1,6 @@
 import { matchesClimbStyle } from '#lib/climbStyle';
+import { forgetTheCragSession } from './theCragWebSession';
+
 import { classifyRoutePitches, hasRouteInfoFetched, isMissingPitchData } from './routePitches';
 import { ancestorAreaNames, parseAncestorsJson, sectorPathUnderCrag } from './sectorsTree';
 import { desc, eq, sql } from 'drizzle-orm';
@@ -1402,6 +1404,7 @@ export function listLogbook(filters?: {
 
 export function wipeAllData() {
 	ensureSchema();
+	forgetTheCragSession();
 	resetFirstImport();
 	// Abandon any in-flight route-history import before clearing tables (#74).
 	invalidateRouteHistoryRuns();

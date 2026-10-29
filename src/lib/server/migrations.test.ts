@@ -71,6 +71,11 @@ function oldDatabase(path: string, applied: string[]) {
 	if (applied.includes('0013_route_ascent_snapshot.sql')) {
 		db.prepare('UPDATE routes SET ascent_count_own = 2').run();
 	}
+	if (applied.includes('0016_thecrag_web_session.sql')) {
+		db.prepare(
+			`INSERT INTO thecrag_web_sessions (account_key, encrypted_cookies, next_allowed_at, failures) VALUES ('synthetic-account-key', 'synthetic-encrypted-payload', 42, 2)`
+		).run();
+	}
 	db.close();
 }
 
@@ -142,6 +147,19 @@ describe('migrations survive skipped releases', () => {
 						ascent_count: 7,
 						ascent_count_own: k >= FILES.indexOf('0013_route_ascent_snapshot.sql') + 1 ? 2 : null,
 						ascent_count_fetched_at: null
+					});
+				}
+				if (k >= FILES.indexOf('0016_thecrag_web_session.sql') + 1) {
+					expect(
+						db
+							.prepare(
+								'SELECT encrypted_cookies, next_allowed_at, failures FROM thecrag_web_sessions'
+							)
+							.get()
+					).toEqual({
+						encrypted_cookies: 'synthetic-encrypted-payload',
+						next_allowed_at: 42,
+						failures: 2
 					});
 				}
 			} finally {
