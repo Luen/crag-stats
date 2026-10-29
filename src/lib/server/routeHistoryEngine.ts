@@ -89,6 +89,7 @@ export type RouteHistoryRunResult = {
 
 export type RouteHistoryStatus = {
 	enabled: boolean;
+	refreshDays: 0 | 30 | 90;
 	hasApiKey: boolean;
 	status: string;
 	running: boolean;
@@ -548,6 +549,7 @@ export function routeHistoryStatus(
 		.get()!.n;
 	return {
 		enabled: config.enabled,
+		refreshDays: config.refreshDays ?? 0,
 		hasApiKey: Boolean(config.apiKey),
 		// A stored 'running' with no live run means the process died mid-run.
 		status: running ? 'running' : state?.status === 'running' ? 'idle' : (state?.status ?? 'idle'),

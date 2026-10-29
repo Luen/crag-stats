@@ -144,6 +144,7 @@ describe('route history import', () => {
 			.run();
 		expect(pendingRouteIds(ROUTES_PER_RUN, days, now)).toEqual([routeId(1), routeId(0)]);
 		expect(routeHistoryStatus({ ...config, refreshDays: days }, now).pendingRoutes).toBe(2);
+		expect(routeHistoryStatus({ ...config, refreshDays: days }, now).refreshDays).toBe(days);
 		expect(pendingRouteIds(ROUTES_PER_RUN, 0, now)).toEqual([]);
 	});
 

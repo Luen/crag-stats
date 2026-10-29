@@ -162,8 +162,13 @@
 		<h2>Import route history</h2>
 		<p class="hint">
 			Reads the public FA / FFA history of routes in your logbook from theCrag and marks the ones
-			that name your <code>@login</code>. Each route is checked once (history doesn't change), {rh.perRun}
-			routes per run, at most one request a second, after each logbook sync.
+			that name your <code>@login</code>.
+			{#if rh.refreshDays}
+				Route data is queued for refresh after {rh.refreshDays} days.
+			{:else}
+				Each route is checked once unless you request a refresh.
+			{/if}
+			Up to {rh.perRun} routes per run, at most one request a second, after each logbook sync.
 			<a href="/docs/first-ascents">How first ascents work</a>
 		</p>
 		{#if !rh.enabled}
