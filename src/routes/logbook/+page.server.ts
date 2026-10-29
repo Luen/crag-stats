@@ -107,9 +107,11 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 	const withPartner = url.searchParams.get('with') ?? '';
 	const partners = parsePartnersParam(url.searchParams.get('partners'));
 	const missingRaw = multiParams(url, 'missing');
-	const missing = missingRaw.filter(
-		(v): v is 'height' | 'bolts' => v === 'height' || v === 'bolts'
-	);
+	const missing = missingRaw
+		.map((v) => (v === 'pitches' ? 'pitch' : v))
+		.filter(
+			(v): v is 'height' | 'bolts' | 'pitch' => v === 'height' || v === 'bolts' || v === 'pitch'
+		);
 	const tag = url.searchParams.get('tag') ?? '';
 	const partnerMatch = url.searchParams.get('partnerMatch') === 'exact' ? 'exact' : 'contains';
 	const rock = url.searchParams.get('rock') ?? '';

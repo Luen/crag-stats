@@ -1,4 +1,5 @@
 import { matchesClimbStyle } from '#lib/climbStyle';
+import { classifyRoutePitches, hasRouteInfoFetched, isMissingPitchData } from './routePitches';
 import { ancestorAreaNames, parseAncestorsJson, sectorPathUnderCrag } from './sectorsTree';
 import { desc, eq, sql } from 'drizzle-orm';
 import {
@@ -1110,8 +1111,8 @@ export function listLogbook(filters?: {
 	with?: string;
 	/** has = non-empty partners; missing = empty/null */
 	partners?: 'has' | 'missing';
-	/** Route fields that are null/absent: height, bolts */
-	missing?: Array<'height' | 'bolts'>;
+	/** Route fields that are null/absent: height, bolts, cached pitch list (after route-info fetch) */
+	missing?: Array<'height' | 'bolts' | 'pitch'>;
 	/** Case-insensitive substring match on route tag names in tags_json */
 	tag?: string;
 	partnerMatch?: 'exact' | 'contains';
@@ -1183,6 +1184,8 @@ export function listLogbook(filters?: {
 			relativePopularity: routes.relativePopularity,
 			parentName: routes.parentName,
 			bolts: routes.bolts,
+			pitchesJson: routes.pitchesJson,
+			routeInfoUpdatedAt: routes.routeInfoUpdatedAt,
 			isProject: routes.isProject,
 			tagsJson: routes.tagsJson,
 			ancestorsJson: routes.ancestorsJson
@@ -1331,6 +1334,13 @@ export function listLogbook(filters?: {
 	}
 	if (filters?.missing?.includes('bolts')) {
 		rows = rows.filter((r) => r.bolts == null);
+	}
+	if (filters?.missing?.includes('pitch')) {
+		rows = rows.filter((r) =>
+			isMissingPitchData(
+				classifyRoutePitches(r.pitchesJson, hasRouteInfoFetched(r.routeInfoUpdatedAt))
+			)
+		);
 	}
 	if (filters?.tag?.trim()) {
 		const needle = filters.tag.trim().toLowerCase();
