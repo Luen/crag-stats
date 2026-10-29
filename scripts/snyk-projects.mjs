@@ -1,12 +1,13 @@
 #!/usr/bin/env node
 import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
+import { join } from 'node:path';
 import { parseAllDocuments, stringify } from 'yaml';
 
 // Snyk currently accepts one pnpm YAML document per project. Keep both graphs
 // separate: their shared importer key would overwrite dependencies if merged.
-const root = resolve(process.argv[2] || process.cwd());
+// Scan the caller's working directory; do not accept a second arbitrary-path input.
+const root = process.cwd();
 const manifest = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
 const documents = parseAllDocuments(readFileSync(join(root, 'pnpm-lock.yaml'), 'utf8'));
 if (documents.length < 1 || documents.length > 2 || documents.some((d) => d.errors.length)) {

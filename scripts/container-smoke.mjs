@@ -5,9 +5,25 @@ import { randomUUID } from 'node:crypto';
 import { once } from 'node:events';
 import { readFileSync } from 'node:fs';
 import { createServer } from 'node:http';
+import { createRequire } from 'node:module';
 import { gzipSync } from 'node:zlib';
 
 assert.equal(process.env.CRAG_STATS_CONTAINER_SMOKE, '1', 'Use a disposable smoke-test container');
+const runtimeRequire = createRequire(import.meta.url);
+for (const dependency of [
+	'@sveltejs/adapter-node',
+	'vite',
+	'eslint',
+	'deepmerge',
+	'picomatch',
+	'uri-js'
+]) {
+	assert.throws(
+		() => runtimeRequire.resolve(dependency),
+		{ code: 'MODULE_NOT_FOUND' },
+		`${dependency} must not ship in the pruned runtime`
+	);
+}
 process.env.DATABASE_PATH = `/tmp/crag-stats-smoke-${randomUUID()}.sqlite`;
 process.env.THECRAG_API_KEY = '';
 process.env.SYNC_CRON = '';

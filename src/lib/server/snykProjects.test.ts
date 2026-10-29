@@ -19,7 +19,7 @@ function run(lockfile: string) {
 	temporary.push(root);
 	writeFileSync(join(root, 'package.json'), JSON.stringify({ name: 'synthetic', private: true }));
 	writeFileSync(join(root, 'pnpm-lock.yaml'), lockfile);
-	const result = spawnSync(process.execPath, [script, root], { encoding: 'utf8' });
+	const result = spawnSync(process.execPath, [script], { cwd: root, encoding: 'utf8' });
 	if (result.status !== 0) return { result, projects: [] };
 	const output = JSON.parse(result.stdout) as {
 		outputRoot: string;
