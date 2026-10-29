@@ -2,7 +2,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { eq, sql } from 'drizzle-orm';
 import { db } from './index';
 import { appSettings, ascents, goals, routes } from './schema';
-import { legacyEnvSettings, runDataMigrations } from './dataMigrations';
+import {
+	invalidateIncompleteRouteCache,
+	legacyEnvSettings,
+	runDataMigrations
+} from './dataMigrations';
 import { getDashboardStats, wipeAllData } from '../analytics';
 import { getFirstAscentMarks, setFirstAscent } from '../firstAscents';
 import { upsertAscents } from '../ingest';
@@ -10,7 +14,7 @@ import * as projects from '../projects';
 import { mapAscent } from '../providers/thecrag/api';
 
 const ID = 'data:0001_repair_cached_grades';
-const ALL = [ID, 'data:0002_legacy_env_settings'];
+const ALL = [ID, 'data:0002_legacy_env_settings', 'data:0003_invalidate_incomplete_route_cache'];
 
 beforeEach(() => {
 	wipeAllData();
@@ -127,6 +131,65 @@ describe('startup data migrations', () => {
 			9
 		);
 		expect(db.get(sql`SELECT id FROM schema_migrations WHERE id = ${ID}`)).toBeUndefined();
+	});
+});
+
+describe('invalidate incomplete route cache (#209)', () => {
+	const NOW = '2026-01-01T00:00:00.000Z';
+
+	function seedRoute(externalId: string) {
+		db.run(sql`
+			INSERT INTO routes (provider, external_id, name, grade_raw, grade_score, updated_at)
+			VALUES ('thecrag', ${externalId}, ${`Route ${externalId}`}, '20', 20, ${NOW})
+		`);
+	}
+
+	function seedFetch(externalId: string) {
+		db.run(sql`
+			INSERT INTO route_history_fetches (provider, route_external_id, status, history_count, fetched_at)
+			VALUES ('thecrag', ${externalId}, 'ok', 1, ${NOW})
+		`);
+	}
+
+	it('drops fetch rows when route info or route_api_json is missing', () => {
+		seedRoute('stale-a');
+		seedRoute('stale-b');
+		seedRoute('complete');
+		seedFetch('stale-a');
+		seedFetch('stale-b');
+		seedFetch('complete');
+		db.run(sql`UPDATE routes SET route_info_updated_at = ${NOW} WHERE external_id = 'stale-b'`);
+		db.run(sql`
+			UPDATE routes
+			SET route_info_updated_at = ${NOW}, route_api_json = '{"id":1}'
+			WHERE external_id = 'complete'
+		`);
+
+		expect(invalidateIncompleteRouteCache()).toBe(2);
+		expect(
+			db.all(sql`SELECT route_external_id FROM route_history_fetches ORDER BY route_external_id`)
+		).toEqual([{ route_external_id: 'complete' }]);
+	});
+
+	it('is a no-op once caches are complete', () => {
+		seedRoute('complete');
+		seedFetch('complete');
+		db.run(sql`
+			UPDATE routes
+			SET route_info_updated_at = ${NOW}, route_api_json = '{"id":1}'
+			WHERE external_id = 'complete'
+		`);
+
+		expect(invalidateIncompleteRouteCache()).toBe(0);
+		expect(db.get(sql`SELECT count(*) AS n FROM route_history_fetches`)).toEqual({ n: 1 });
+	});
+
+	it('runs once via runDataMigrations', () => {
+		seedRoute('stale');
+		seedFetch('stale');
+		expect(runDataMigrations()).toEqual(ALL);
+		expect(db.get(sql`SELECT count(*) AS n FROM route_history_fetches`)).toEqual({ n: 0 });
+		expect(runDataMigrations()).toEqual([]);
 	});
 });
 

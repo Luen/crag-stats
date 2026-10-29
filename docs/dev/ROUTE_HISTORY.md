@@ -76,7 +76,21 @@ Parsing lives in `parseRouteInfoFields()` / `parseRoutePayload()` (`routeHistory
 
 `/api/logbook/ascents` already persists every ascent as `ascents.raw_json` and the account summary as `profiles.raw_json`. Column mapping extracts what the app uses today; undocumented or newly documented fields (`historical`, `cprStyle`, ascent-level `tags`, `route.gradeAtom`, …) remain recoverable from those blobs without another full logbook sync.
 
-Routes fetched before this migration acquire cached info on the next eligible periodic refresh, or via **Refresh all** in Settings (still 100 routes per run), which clears `route_history_fetches` and re-fetches. Periodic refreshes reuse the normal payload/cache path: totals, owner-count snapshots and counter freshness update together only when `ascentCount` is present. Omitted fields preserve values, explicit null clears them, and manual FA/FFA marks and unmarks remain protected.
+Upgrades that add or extend route-info cache columns must **invalidate** affected routes in the same release so fetch-once DBs do not stick with incomplete caches until someone runs Refresh all. Prefer deleting matching `route_history_fetches` rows (routes become `history=pending` again) while leaving `route_history`, marks, and import pacing untouched. Example one-shot repair (`data:0003_invalidate_incomplete_route_cache` in `dataMigrations.ts`):
+
+```sql
+DELETE FROM route_history_fetches
+WHERE rowid IN (
+  SELECT f.rowid
+  FROM route_history_fetches f
+  INNER JOIN routes r ON r.provider = f.provider AND r.external_id = f.route_external_id
+  WHERE r.route_info_updated_at IS NULL OR r.route_api_json IS NULL
+);
+```
+
+New SQL migrations can inline the same pattern (scoped to the new columns) or call an appended `data:` migration when the invalidation needs joins or app logic. Settings **Refresh all** stays a manual escape hatch; user guides must not tell owners to run it after every schema upgrade.
+
+Periodic refreshes reuse the normal payload/cache path: totals, owner-count snapshots and counter freshness update together only when `ascentCount` is present. Omitted fields preserve values, explicit null clears them, and manual FA/FFA marks and unmarks remain protected.
 
 **`quality_score` (#80):** when cached, the dashboard stars scatter uses a 0–100 quality axis (stars map to the same scale as fallback). Logbook **Quality** sort prefers `quality_score`, then ascent quality labels, then stars.
 

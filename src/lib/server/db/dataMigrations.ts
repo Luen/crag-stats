@@ -49,8 +49,33 @@ const MIGRATIONS = [
 				db.insert(appSettings).values({ key, value, updatedAt }).run();
 			}
 		}
+	},
+	{
+		id: 'data:0003_invalidate_incomplete_route_cache',
+		apply: () => {
+			invalidateIncompleteRouteCache();
+		}
 	}
 ];
+
+/**
+ * Routes recorded in `route_history_fetches` but missing post-0012/0015 cache evidence were
+ * stuck fetch-once until manual Refresh all (#209). Clearing their ledger rows re-queues them
+ * under the normal 100-per-run import without touching marks or pacing state.
+ */
+export function invalidateIncompleteRouteCache(): number {
+	const result = db.run(sql`
+		DELETE FROM route_history_fetches
+		WHERE rowid IN (
+			SELECT f.rowid
+			FROM route_history_fetches f
+			INNER JOIN routes r
+				ON r.provider = f.provider AND r.external_id = f.route_external_id
+			WHERE r.route_info_updated_at IS NULL OR r.route_api_json IS NULL
+		)
+	`);
+	return result.changes;
+}
 
 /** Run after schema migrations, before serving requests or starting scheduled work. */
 export function runDataMigrations(): string[] {
