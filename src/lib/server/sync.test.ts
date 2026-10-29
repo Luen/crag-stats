@@ -30,11 +30,20 @@ beforeEach(() => {
 	vi.mocked(syncTheCragAll).mockResolvedValue({ count: 0, maxEpoch: null, profile: null });
 });
 
-it('uses CSV only when selected, never prunes, and triggers normal post-sync work', async () => {
+it('uses CSV when selected, returns CSV prune stats, and triggers normal post-sync work', async () => {
 	vi.mocked(getTheCragSyncConfiguration).mockReturnValue({ mode: 'csv', configured: true });
-	vi.mocked(syncTheCragCsv).mockResolvedValue({ count: 2, profileName: 'Synthetic climber' });
-	expect(await runTheCragSync()).toMatchObject({ count: 2, pruned: 0, maxEpoch: null });
+	vi.mocked(syncTheCragCsv).mockResolvedValue({
+		count: 2,
+		profileName: 'Synthetic climber',
+		pruned: { deletedAscents: 1, deletedRoutes: 0, deletedProjects: 0 }
+	});
+	expect(await runTheCragSync()).toMatchObject({
+		count: 2,
+		pruned: { deletedAscents: 1, deletedRoutes: 0, deletedProjects: 0 },
+		maxEpoch: null
+	});
 	expect(syncTheCragAll).not.toHaveBeenCalled();
+	// Prune runs inside syncTheCragCsv, not via a second reconcile from runTheCragSync.
 	expect(reconcileProviderAscents).not.toHaveBeenCalled();
 	expect(triggerRouteHistoryImport).toHaveBeenCalledOnce();
 });
@@ -49,7 +58,11 @@ it('does not record a successful sync or recreate state after a wipe', async () 
 	vi.mocked(getTheCragSyncConfiguration).mockReturnValue({ mode: 'csv', configured: true });
 	vi.mocked(syncTheCragCsv).mockImplementationOnce(async () => {
 		invalidateLogbookSync();
-		return { count: 2, profileName: 'Synthetic climber' };
+		return {
+			count: 2,
+			profileName: 'Synthetic climber',
+			pruned: { deletedAscents: 0, deletedRoutes: 0, deletedProjects: 0 }
+		};
 	});
 	await expect(runTheCragSync()).rejects.toThrow('cancelled');
 	expect(updateSyncState).toHaveBeenCalledTimes(2); // running, then idle after cancel

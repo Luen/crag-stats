@@ -19,7 +19,8 @@ let syncing = false;
  * Sync theCrag → local SQLite.
  *
  * API mode pulls the full logbook, upserts creates/updates, then reconciles deletions.
- * Opt-in CSV mode uses the website export and remains upsert-only.
+ * Opt-in CSV mode uses the website export, upserts, then prunes missing IDs (with
+ * empty-export and massive-drop guards — see `csvPruneGuard.ts`).
  *
  * `opts.full` is retained for Settings UI compatibility; API mode always reconciles.
  */
@@ -66,7 +67,7 @@ export async function runTheCragSync(opts?: { full?: boolean }) {
 				lastError: null
 			});
 			triggerRouteHistoryImport('after sync');
-			return { skipped: false as const, ...result, maxEpoch: null, pruned: 0 };
+			return { skipped: false as const, ...result, maxEpoch: null };
 		}
 		const seen = new Set<string>();
 

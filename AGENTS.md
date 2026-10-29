@@ -12,7 +12,7 @@ Self-hosted climbing analytics for [theCrag](https://www.thecrag.com/), inspired
    - API sync **upserts** creates/updates (comments, grades, ticks, heights, etc.).
    - API sync **deletes** local ascents that no longer exist upstream, then orphans routes/projects.
    - Do **not** invent a second editable logbook that drifts from theCrag.
-   - CSV import is upsert-only (no prune). Prefer API sync when the user has a supporter key.
+   - CSV sync upserts then prunes missing IDs (export as source of truth), but refuses the run on an empty export vs a non-empty cache or a >50% drop when local ≥ 100 ascents (`csvPruneGuard.ts`). Prefer API sync when the user has a supporter key.
 2. **Privacy.** API keys expose private notes. Never commit `.env`. Wipe must remain available in Settings.
    - Ascent notes (`ascents.comment`) are private and hidden by default. They reach a page only via `listLogbook({ includeNotes })` when `notesVisible(getShowNotes().enabled, locals.authed)` (`src/lib/server/notes.ts`; Settings toggle only, off when unset). When hidden they're nulled before filtering, so search can't probe them. Never put notes in dashboard stats, embeds, OG text or anything else visitors can load.
    - `APP_PASSWORD` + `AUTH_SCOPE=settings|all` gate admin (or whole UI). Login is rate-limited in-process (5 fails / 15 min + min gap).
@@ -57,7 +57,8 @@ src/lib/server/
   cpr.ts                 # approximate CPR (not a proprietary theCrag clone)
   ingest.ts              # upsert + reconcileProviderAscents
   sync.ts                # runTheCragSync (API full pull + prune, or opt-in CSV mode)
-  csvLogbookSync.ts      # opt-in CSV logbook download + upsert (no prune)
+  csvLogbookSync.ts      # opt-in CSV logbook download + upsert + guarded prune (#217)
+  csvPruneGuard.ts       # empty-export / massive-drop refusal before CSV writes
   theCragWebSession.ts   # AES-GCM encrypted cookie store (thecrag_web_sessions, 0016)
   sessionSecret.ts       # rejects placeholder SESSION_SECRET for CSV mode
   routeHistoryEngine.ts  # opt-in FA/FFA route-history import: cache, pacing, marks (#68)
@@ -94,7 +95,7 @@ For owners without a supporter API key. The default is `api`; any value other th
 - **Env:** `THECRAG_USERNAME` (username, not email), `THECRAG_PASSWORD` and `SESSION_SECRET`. `getTheCragSyncConfiguration()` reports CSV mode as unconfigured unless all three are set **and** `SESSION_SECRET` passes `isUsableSessionSecret()` (16+ characters, not a placeholder such as the `.env.example` value or the `dev-insecure-session-secret` fallback). Credentials stay in the environment; never store the password in the DB.
 - **Flow** (`providers/thecrag/logbookSession.ts`, `csvLogbookSync.ts`): try the CSV export with saved cookies; if the session expired, fetch the login page, read the hidden CSRF fields, sign in once, download the export and retry once. Uses `impers` (browser impersonation) at the owner's own risk.
 - **Cookie store:** `thecrag_web_sessions` (migration 0016) holds AES-256-GCM encrypted cookies keyed by a hash of the username, with the key derived from `SESSION_SECRET` (AAD = account key). Rotating `SESSION_SECRET` only forces a new login. `next_allowed_at` / `failures` persist so pacing and back-off survive restarts. Wiping data must clear it and invalidate in-flight syncs (`syncGeneration`).
-- **Semantics:** CSV is **upsert-only** (no prune, no `reconcileProviderAscents`), and API-only fields (pitches, partners, quality, route info) are absent. A configured username that differs from the saved profile login aborts before any request, so accounts never mix.
+- **Semantics:** CSV upserts then calls `reconcileProviderAscents` so missing export IDs are deleted (orphans cleaned like API). Guards in `csvPruneGuard.ts` refuse the whole sync (no writes) on an empty export vs local data, or when local ≥ 100 and the export keeps under 50% of that count. API-only fields (pitches, partners, quality, route info) are still absent. A configured username that differs from the saved profile login aborts before any request, so accounts never mix.
 - User docs: `docs/guide/logbook-sync.md`.
 
 Height quirk: theCrag may return height as `[value, unit]` arrays — parse in the API mapper (`parseHeightMeters` / array handler).
@@ -398,7 +399,9 @@ You'll often notice things outside the task at hand. **Don't silently fix them i
 
 | 2026-10 | #194: FA/FFA milestones condense to thresholds (first FA/FFA, FFA counts 5–100, combined FA+FFA 5–100, style FA 10/20/50 for Sport/Trad/Boulder). Badges align (`fa_20`/`fa_50`/`fa_100`, `ffa_*`, `fa_{sport,trad,boulder}_*`). Stable ids like `fa:first` / `ffa:5` / `fa:boulder:10` — no per-route `fa:{routeId}`. |
 
-| 2026-10 | CSV logbook download (#204/#205): opt-in `THECRAG_SYNC_MODE=csv` with `THECRAG_USERNAME`/`THECRAG_PASSWORD`; cookies encrypted with `SESSION_SECRET` in `thecrag_web_sessions` (migration **0016**; 0015 belongs to route API JSON). A placeholder or short `SESSION_SECRET` disables CSV mode. Upsert-only, no prune. The `impers` rule in "What not to do" now covers this opt-in. |
+| 2026-10 | CSV logbook download (#204/#205): opt-in `THECRAG_SYNC_MODE=csv` with `THECRAG_USERNAME`/`THECRAG_PASSWORD`; cookies encrypted with `SESSION_SECRET` in `thecrag_web_sessions` (migration **0016**; 0015 belongs to route API JSON). A placeholder or short `SESSION_SECRET` disables CSV mode. The `impers` rule in "What not to do" now covers this opt-in. |
+
+| 2026-10 | #217: CSV sync prunes ascents missing from the export (source of truth) via `reconcileProviderAscents`. `csvPruneGuard` refuses the run before writes if the export is empty against a non-empty cache, or drops below 50% remaining when local ≥ 100 (e.g. 1000 → 230). Wipe remains the escape hatch for a genuinely smaller export. |
 
 | 2026-10 | #201: opt-in `ROUTE_DATA_REFRESH_DAYS=30` or `90` reuses post-sync imports; new routes first, then oldest stale fetches (including missing). Unset/0 keeps fetch-once. The shared 100-route cap, pacing, back-off and manual mark protections remain. |
 

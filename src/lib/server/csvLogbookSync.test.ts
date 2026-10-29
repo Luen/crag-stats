@@ -29,11 +29,14 @@ beforeEach(() => {
 	vi.clearAllMocks();
 });
 
-it('imports a validated export atomically, preserves absent ascents, and creates a CSV profile', async () => {
+it('imports a validated export, prunes absent ascents, and creates a CSV profile', async () => {
 	upsertAscents(sample);
+	expect(sample.length).toBeGreaterThan(1);
 	vi.mocked(downloadLogbook).mockResolvedValue([sample[0]]);
-	await syncTheCragCsv(() => true);
-	expect(db.select().from(ascents).all()).toHaveLength(sample.length);
+	const result = await syncTheCragCsv(() => true);
+	expect(db.select().from(ascents).all()).toHaveLength(1);
+	expect(db.select().from(ascents).get()?.externalId).toBe(sample[0].externalId);
+	expect(result.pruned.deletedAscents).toBe(sample.length - 1);
 	expect(db.select().from(profiles).get()).toMatchObject({ login: 'sample', ascentCount: 1 });
 });
 
@@ -72,6 +75,32 @@ it('clears API-only profile fields so a shared API key cannot leave key-owner ac
 		routesTicked: null,
 		rawJson: null
 	});
+});
+
+it('refuses a massive drop without writing (1000 local vs tiny export)', async () => {
+	const many = Array.from({ length: 100 }, (_, i) => ({
+		...sample[0],
+		externalId: `local-${i}`,
+		route: { ...sample[0].route, externalId: `route-${i}`, name: `Route ${i}` }
+	}));
+	upsertAscents(many);
+	vi.mocked(downloadLogbook).mockResolvedValue(
+		Array.from({ length: 20 }, (_, i) => ({
+			...sample[0],
+			externalId: `export-${i}`,
+			route: { ...sample[0].route, externalId: `eroute-${i}`, name: `E ${i}` }
+		}))
+	);
+	await expect(syncTheCragCsv(() => true)).rejects.toThrow(/Refusing CSV sync/);
+	expect(db.select().from(ascents).all()).toHaveLength(100);
+	expect(db.select().from(ascents).get()?.externalId).toMatch(/^local-/);
+});
+
+it('refuses an empty export when the local logbook is non-empty', async () => {
+	upsertAscents(sample);
+	vi.mocked(downloadLogbook).mockResolvedValue([]);
+	await expect(syncTheCragCsv(() => true)).rejects.toThrow(/0 ascents/);
+	expect(db.select().from(ascents).all()).toHaveLength(sample.length);
 });
 
 it('does not ingest an export returned after a wipe', async () => {
