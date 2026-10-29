@@ -97,6 +97,10 @@ describe('parseRoutePayload route info', () => {
 		expect(beta.attributionUrl).toContain('/route/42');
 		expect(JSON.parse(info.ancestorsJson!)).toEqual([{ id: 1, name: 'World' }]);
 		expect(JSON.parse(info.pitchesJson!)).toEqual([{ number: 1, grade: '20' }]);
+		const raw = JSON.parse(routes[0].rawJson!);
+		expect(raw.id).toBe(42);
+		expect(raw.beta.comment).toBe('private note must not appear');
+		expect(raw.history).toEqual([]);
 	});
 
 	it('marks non-project when flags omit Project', () => {

@@ -32,13 +32,13 @@ describe('ownerIsRouteSetter', () => {
 	it('requires @login on setter rows', () => {
 		expect(
 			ownerIsRouteSetter(
-				[{ id: '1', type: 'Route Setter', climbers: '@luenwarneke', date: null }],
+				[{ id: '1', type: 'Route Setter', climbers: '@luenwarneke', date: null, rawJson: '{}' }],
 				'luenwarneke'
 			)
 		).toBe(true);
 		expect(
 			ownerIsRouteSetter(
-				[{ id: '1', type: 'rs', climbers: 'Luke Middleton', date: null }],
+				[{ id: '1', type: 'rs', climbers: 'Luke Middleton', date: null, rawJson: '{}' }],
 				'luenwarneke'
 			)
 		).toBe(false);
@@ -81,20 +81,22 @@ describe('ownerKindsFromHistory', () => {
 });
 
 describe('normalizeHistoryEntries', () => {
-	it('keeps only rows with id and type', () => {
-		expect(
-			normalizeHistoryEntries([
-				{ id: 1, type: 'First Ascent', climbers: '@a', date: '2019-11-00T00:00:00Z' },
-				{ type: 'First Ascent' },
-				null
-			])
-		).toEqual([
-			{
-				id: '1',
-				type: 'First Ascent',
-				climbers: '@a',
-				date: '2019-11-00T00:00:00Z'
-			}
-		]);
+	it('keeps only rows with id and type, and preserves the original object as rawJson', () => {
+		const source = {
+			id: 1,
+			type: 'First Ascent',
+			climbers: '@a',
+			date: '2019-11-00T00:00:00Z',
+			extra: 'keep-me'
+		};
+		const out = normalizeHistoryEntries([source, { type: 'First Ascent' }, null]);
+		expect(out).toHaveLength(1);
+		expect(out[0]).toMatchObject({
+			id: '1',
+			type: 'First Ascent',
+			climbers: '@a',
+			date: '2019-11-00T00:00:00Z'
+		});
+		expect(JSON.parse(out[0]!.rawJson!)).toEqual(source);
 	});
 });

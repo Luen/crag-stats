@@ -9,6 +9,8 @@ export type RouteHistoryEntry = {
 	type: string;
 	climbers: string | null;
 	date: string | null;
+	/** Original history object from the route API (full JSON), for future fields (#197). */
+	rawJson?: string;
 };
 
 function normalizeHistoryType(type: unknown): string {
@@ -94,11 +96,18 @@ export function normalizeHistoryEntries(raw: unknown): RouteHistoryEntry[] {
 		const id = o.id != null ? String(o.id) : '';
 		const type = o.type != null ? String(o.type) : '';
 		if (!id || !type) continue;
+		let rawJson: string;
+		try {
+			rawJson = JSON.stringify(o);
+		} catch {
+			rawJson = JSON.stringify({ id, type, climbers: o.climbers ?? null, date: o.date ?? null });
+		}
 		out.push({
 			id,
 			type,
 			climbers: o.climbers != null ? String(o.climbers) : null,
-			date: o.date != null ? String(o.date) : null
+			date: o.date != null ? String(o.date) : null,
+			rawJson
 		});
 	}
 	return out;

@@ -22,7 +22,7 @@ Inventory for [#86](https://github.com/Luen/crag-stats/issues/86). Crag Stats is
 | Setting natural/artificial                 | raw `routes.flags_json` (#82)           | Blocked — see [route flags](#route-flags-routesflags_json--recognised-strings-and-their-evidence-173) below |
 | Is project                                 | `routes.is_project` (#77)               | Done (`project=yes\|no`; routes without route info match neither)                                           |
 | Is bolted / can top rope                   | raw `routes.flags_json` (#82)           | Blocked — see route flags below; use `missing=bolts` and ascent `style=Sport` meanwhile                     |
-| Missing pitches                            | `routes.pitches_json` (#82)             | Partial via multipitch; pitch lists are cached but there is no `missing=pitches` facet yet                  |
+| No pitch list cached                       | `routes.pitches_json` (#82)             | Done (`missing=pitch`; alias `pitches`; see [pitch list facet](#no-pitch-list-cached-missingpitch))         |
 | Route setter                               | cached `route_history` setter rows      | Done (`setter=me\|none`, owner login on setter rows, #76)                                                   |
 | Seasonality / popularity / qualityScore    | route info (#78–#80)                    | Not facets: `sort=popularity`, Best months and quality cards use them                                       |
 | Beta / access                              | `routes.beta_json` (#81)                | Not a facet: shown on project cards                                                                         |
@@ -67,3 +67,12 @@ Do **not** ship logbook query params for these until flag names are confirmed fr
 3. Keep using the existing opt-in route-history import path; never widen scraping or `impers` beyond current limits.
 
 Exact tag facets only support category/name pairs actually present in imported `tags_json`. Categories absent from that payload remain unsupported; this filter does not infer or scrape additional theCrag facets.
+
+## No pitch list cached (`missing=pitch`)
+
+Label: **No pitch list cached** (URL value `missing=pitch`, alias `pitches`, unchanged). It matches routes where route info **has been fetched** (`routes.route_info_updated_at` is set) but `routes.pitches_json` is `null`, `[]` or not a JSON array.
+
+- **Not "missing data" in a strict sense.** We have no live `/api/route` fixture showing whether theCrag omits `pitches` for single-pitch or boulder routes. If it does, those routes land here after a successful fetch, so this facet is **not** a list of multipitch routes with missing pitch data, and single-pitch routes are not inferred to be missing anything.
+- **Unchecked routes match nothing.** `route_info_updated_at` null (never fetched, or fetched before route info was cached) is excluded. This is **not** the same as `history=pending`, which tracks the route-history fetch ledger (`route_history_fetches`); a route can be history-fetched but route-info-unchecked, or the reverse.
+- **Unparseable values.** `classifyRoutePitches()` (`routePitches.ts`) reports non-array or unparseable JSON as `invalid`, distinct from `empty`; the facet still counts it, since there is no usable list.
+- Revisit once a sanitized fixture shows what the API returns for single-pitch routes.

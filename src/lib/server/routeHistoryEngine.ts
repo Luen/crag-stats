@@ -201,7 +201,10 @@ function replaceHistoryRows(routeExternalId: string, entries: RouteHistoryEntry[
 				type: e.type,
 				climbers: e.climbers,
 				historyDate: e.date,
-				rawJson: JSON.stringify(e),
+				// Prefer the original API object; fall back to normalized fields (#197).
+				rawJson:
+					e.rawJson ||
+					JSON.stringify({ id: e.id, type: e.type, climbers: e.climbers, date: e.date }),
 				updatedAt: at
 			})
 			.run();
@@ -262,12 +265,20 @@ function applyMark(
 	return true;
 }
 
-function cacheRouteInfo(routeExternalId: string, info: RouteInfoFields | undefined, at: string) {
-	if (!info || !Object.keys(info).length) return;
+function cacheRouteInfo(
+	routeExternalId: string,
+	info: RouteInfoFields | undefined,
+	rawJson: string | null | undefined,
+	at: string
+) {
+	const hasInfo = Boolean(info && Object.keys(info).length);
+	const hasRaw = rawJson != null && rawJson !== '';
+	if (!hasInfo && !hasRaw) return;
 	const patch: Record<string, unknown> = { routeInfoUpdatedAt: at };
-	if (info.isProject !== undefined) patch.isProject = info.isProject;
-	if (info.qualityScore !== undefined) patch.qualityScore = info.qualityScore;
-	if (info.ascentCount !== undefined) {
+	if (hasRaw) patch.routeApiJson = rawJson;
+	if (info?.isProject !== undefined) patch.isProject = info.isProject;
+	if (info?.qualityScore !== undefined) patch.qualityScore = info.qualityScore;
+	if (info?.ascentCount !== undefined) {
 		patch.ascentCount = info.ascentCount;
 		patch.ascentCountOwn =
 			info.ascentCount === null
@@ -279,13 +290,13 @@ function cacheRouteInfo(routeExternalId: string, info: RouteInfoFields | undefin
 		// Counter freshness only — unrelated route-info updates leave this alone (#147).
 		patch.ascentCountFetchedAt = info.ascentCount === null ? null : at;
 	}
-	if (info.popularity !== undefined) patch.popularity = info.popularity;
-	if (info.relativePopularity !== undefined) patch.relativePopularity = info.relativePopularity;
-	if (info.seasonalityJson !== undefined) patch.seasonalityJson = info.seasonalityJson;
-	if (info.betaJson !== undefined) patch.betaJson = info.betaJson;
-	if (info.ancestorsJson !== undefined) patch.ancestorsJson = info.ancestorsJson;
-	if (info.pitchesJson !== undefined) patch.pitchesJson = info.pitchesJson;
-	if (info.flagsJson !== undefined) patch.flagsJson = info.flagsJson;
+	if (info?.popularity !== undefined) patch.popularity = info.popularity;
+	if (info?.relativePopularity !== undefined) patch.relativePopularity = info.relativePopularity;
+	if (info?.seasonalityJson !== undefined) patch.seasonalityJson = info.seasonalityJson;
+	if (info?.betaJson !== undefined) patch.betaJson = info.betaJson;
+	if (info?.ancestorsJson !== undefined) patch.ancestorsJson = info.ancestorsJson;
+	if (info?.pitchesJson !== undefined) patch.pitchesJson = info.pitchesJson;
+	if (info?.flagsJson !== undefined) patch.flagsJson = info.flagsJson;
 	db.update(routes)
 		.set(patch as Partial<typeof routes.$inferInsert>)
 		.where(and(eq(routes.provider, PROVIDER), eq(routes.externalId, routeExternalId)))
@@ -310,7 +321,7 @@ function storeBatch(
 			}
 			replaceHistoryRows(id, route.history, at);
 			recordFetch(id, 'ok', route.history.length, at);
-			cacheRouteInfo(id, route.info, at);
+			cacheRouteInfo(id, route.info, route.rawJson, at);
 			if (applyMark(id, route.history, login, {})) marked += 1;
 		}
 	});
