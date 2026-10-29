@@ -36,5 +36,8 @@ vite.config.ts.timestamp-*
 /test-results
 /playwright-report
 
+# Local agent / review worktrees
+.worktrees/
+
 # Claude Code worktrees (local only)
 /.claude/worktrees/

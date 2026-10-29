@@ -163,3 +163,5 @@ The First ascents community list retains FA versus FFA credit, shows missing cou
 Setter-only First ascents cards omit the empty style chart and Latest section; keep setter and community totals visible. Validate this state with axe in light and dark themes.
 
 Settings mutes the notes checkbox when CSV sync prevents enabling it. An existing opt-in stays editable so the owner can turn it off; keep the password warning visible in either sync mode.
+
+Settings places First Moves directly after Import route history and immediately before Privacy & data control. Keep the `#first-import` anchor on that panel.
