@@ -24,4 +24,4 @@ When the grey bars peak in different months than the orange strip, you may be cl
 
 ## Refreshing seasonality
 
-Run **Sync** from Settings. With route-history import enabled, seasonality backfills in the background (rate-limited). Use **Refresh all route history** to re-fetch routes that were imported before seasonality was cached.
+Run **Sync** from Settings. With route-history import enabled, seasonality backfills in the background (rate-limited, up to 100 routes per run).

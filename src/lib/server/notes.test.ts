@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { notesVisible, resolveShowNotes } from './notes';
+import { notesVisible, privateNotesSyncAvailable, resolveShowNotes } from './notes';
 
 describe('resolveShowNotes', () => {
 	it('is off by default', () => {
@@ -25,6 +25,14 @@ describe('resolveShowNotes', () => {
 			enabled: false,
 			source: 'default'
 		});
+	});
+});
+
+describe('privateNotesSyncAvailable', () => {
+	it('is false for CSV-only sync', () => {
+		expect(privateNotesSyncAvailable('csv')).toBe(false);
+		expect(privateNotesSyncAvailable('api')).toBe(true);
+		expect(privateNotesSyncAvailable('invalid')).toBe(true);
 	});
 });
 

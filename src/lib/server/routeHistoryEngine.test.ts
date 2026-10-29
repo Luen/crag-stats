@@ -121,19 +121,66 @@ beforeEach(() => {
 });
 
 describe('route history import', () => {
+	it('refuses a configured owner that differs from the saved logbook account', async () => {
+		const h = harness({ [routeId(0)]: fa(routeId(0), '@different-owner') });
+		const result = await runRouteHistoryImportOnce(
+			{ ...config, ownerLogin: 'different-owner' },
+			h.deps
+		);
+		expect(result.outcome).toBe('no-login');
+		expect(h.sessions().opened).toBe(0);
+		expect(getFirstAscentMarks().size).toBe(0);
+	});
+
+	it('refuses cached mark reapplication for another configured account', async () => {
+		const h = harness({ [routeId(0)]: fa(routeId(0), '@different-owner') });
+		await runRouteHistoryImportOnce(config, h.deps);
+		expect(applyCachedHistoryMarks({}, 'different-owner').marked).toBe(0);
+		expect(getFirstAscentMarks().size).toBe(0);
+	});
+
+	it('matches a configured login case-insensitively for imports and cached marks', async () => {
+		const h = harness({ [routeId(0)]: fa(routeId(0), `@${LOGIN}`) });
+		const result = await runRouteHistoryImportOnce(
+			{ ...config, ownerLogin: ` ${LOGIN.toUpperCase()} ` },
+			h.deps
+		);
+		expect(result.marked).toBe(1);
+		setFirstAscent('thecrag', routeId(0), null, { recordSkip: false });
+		expect(applyCachedHistoryMarks({}, LOGIN.toUpperCase()).marked).toBe(1);
+	});
+
+	it('does not fall back to the saved account when a CSV login is empty', async () => {
+		const h = harness();
+		expect((await runRouteHistoryImportOnce({ ...config, ownerLogin: '' }, h.deps)).outcome).toBe(
+			'no-login'
+		);
+		expect(h.sessions().opened).toBe(0);
+		expect(applyCachedHistoryMarks({}, '').routes).toBe(0);
+	});
+
 	it.each([
 		['', 0],
 		['0', 0],
 		['30', 30],
 		[' 90 ', 90],
+		['180', 180],
+		['365', 365],
+		['3650', 3650],
+		['3651', 0],
+		['999999999', 0],
+		['29', 0],
 		['7', 0],
+		['30.5', 0],
+		['1e2', 0],
+		['0x1e', 0],
 		['NaN', 0],
 		['-30', 0]
 	])('parses refresh days %j as %i', (value, expected) => {
 		expect(parseRouteDataRefreshDays(String(value))).toBe(expected);
 	});
 
-	it.each([30, 90] as const)('queues fetches at the %i-day boundary, oldest first', (days) => {
+	it.each([30, 90, 180])('queues fetches at the %i-day boundary, oldest first', (days) => {
 		const now = Date.parse('2026-06-01T00:00:00Z');
 		const cutoff = now - days * 86_400_000;
 		db.insert(routeHistoryFetches)
