@@ -342,10 +342,10 @@
 		boulders (filter style for those). Missing route data finds routes without a recorded height,
 		bolt count, or cached pitch list after route info was fetched. No pitch list cached also matches
 		single-pitch and boulder routes when theCrag omits pitches, so it is not a list of multipitch
-		routes missing data. Routes whose route info was never fetched match none of these (History not
-		checked is a separate, route-history filter); Tag contains searches the route tags imported from
-		theCrag. Project filters exclude unknown flags. No setter credit found includes routes whose
-		history has not been imported.
+		routes missing data. The pitch-list filter excludes routes whose route info was never fetched
+		(History not checked is a separate, route-history filter); Tag contains searches the route tags
+		imported from theCrag. Project filters exclude unknown flags. No setter credit found includes
+		routes whose history has not been imported.
 	</p>
 </form>
 
