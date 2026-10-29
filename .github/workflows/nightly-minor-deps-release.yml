@@ -49,12 +49,11 @@ jobs:
 
       - uses: actions/setup-node@v7
         with:
-          node-version: 24
+          node-version: 26
 
-      - name: Enable pnpm via corepack
+      - name: Install pinned pnpm
         run: |
-          corepack enable
-          corepack prepare "$(node -p "require('./package.json').packageManager")" --activate
+          npm install --global "$(node -p "require('./package.json').packageManager")"
           pnpm --version
 
       - name: Install build deps for better-sqlite3
