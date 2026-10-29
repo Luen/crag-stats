@@ -66,8 +66,15 @@ Each successful fetch also upserts nullable columns on the matching `routes` row
 | `beta_json`                                         | public `beta` excerpts + route page URL (never ascent notes) | #81                                                                                                                                                                                                                                                                |
 | `ancestors_json`, `pitches_json`, `flags_json`      | same names                                                   | #82 — `/sectors` drill-down, multipitch/style hints; parser-recognised flag strings (only `Project` confirmed) and blocked logbook facets: [`LOGBOOK_FACETS.md`](LOGBOOK_FACETS.md#route-flags-routesflags_json--recognised-strings-and-their-evidence-173) (#173) |
 | `route_info_updated_at`                             | import timestamp                                             | —                                                                                                                                                                                                                                                                  |
+| `route_api_json`                                    | **entire** route object from the response                    | #197 — future fields without a paced re-fetch                                                                                                                                                                                                                      |
 
 Parsing lives in `parseRouteInfoFields()` / `parseRoutePayload()` (`routeHistoryApi.ts`); `storeBatch()` writes them in `routeHistoryEngine.ts`. No extra requests — same pacing as history. Omitted fields preserve cached values in partial payloads; explicit null clears them. Successful empty beta/arrays replace the old content.
+
+`route_api_json` (migration `0015`) is the last successful full route object. UI code should keep using the column cache / `beta_json` excerpts; dig into `route_api_json` only when adding a new analytic. `route_history.raw_json` stores each history item’s **original** API object (not only `{id,type,climbers,date}`).
+
+### Logbook API retention (private key)
+
+`/api/logbook/ascents` already persists every ascent as `ascents.raw_json` and the account summary as `profiles.raw_json`. Column mapping extracts what the app uses today; undocumented or newly documented fields (`historical`, `cprStyle`, ascent-level `tags`, `route.gradeAtom`, …) remain recoverable from those blobs without another full logbook sync.
 
 Routes fetched before this migration acquire cached info on the next eligible periodic refresh, or via **Refresh all** in Settings (still 100 routes per run), which clears `route_history_fetches` and re-fetches. Periodic refreshes reuse the normal payload/cache path: totals, owner-count snapshots and counter freshness update together only when `ascentCount` is present. Omitted fields preserve values, explicit null clears them, and manual FA/FFA marks and unmarks remain protected.
 
@@ -80,3 +87,5 @@ Routes fetched before this migration acquire cached info on the next eligible pe
 Setter credits (#76) can join the same payload when we extend the parser. Project flag, seasonality, popularity, quality, beta, ancestors, pitches and flags are cached as above.
 
 Logbook popularity sorting uses relative popularity, falling back to global popularity; routes with only an ascent count remain last in either order. Counts are not popularity scores. Quality sorting shares the label/score fallback helper with the dashboard.
+
+The full `route_api_json` and history `raw_json` payloads are server-only caches. They may contain fields excluded from the public column cache; never return them from page loads, embeds, OG text, or visitor APIs. Public views use explicit column whitelists and sanitized beta excerpts.
