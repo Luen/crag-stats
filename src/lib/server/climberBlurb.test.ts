@@ -31,6 +31,7 @@ const route = (p: Partial<DeveloperImpactRoute>): DeveloperImpactRoute => ({
 	faKind: 'FA',
 	fromSetter: false,
 	sportOrBolted: true,
+	styleLabel: 'Sport/bolted',
 	...p
 });
 

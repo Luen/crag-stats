@@ -167,6 +167,115 @@ describe('buildBadges', () => {
 		expect(earned.some((b) => b.id === 'band_intermediate')).toBe(true);
 		expect(earned.some((b) => b.id === 'new_high')).toBe(true);
 	});
+
+	it('earns Christmas Day from any logged ascent on 25 Dec', () => {
+		const rows = [
+			row({
+				ascentDate: '2022-12-25',
+				tickType: 'Attempt',
+				isSend: false,
+				routeName: 'Holiday Attempt',
+				ascentId: 1
+			})
+		];
+		const badge = buildBadges(rows).earned.find((b) => b.id === 'holiday_christmas');
+		expect(badge?.date).toBe('2022-12-25');
+		expect(badge?.detail).toMatch(/Christmas Day/);
+		expect(buildBadges(rows).earned.some((b) => b.id === 'holiday_new_year')).toBe(false);
+	});
+
+	it('earns New Year from Eve or Day, as one badge', () => {
+		const eve = buildBadges([
+			row({
+				ascentDate: '2023-12-31',
+				tickType: 'Attempt',
+				isSend: false,
+				routeName: 'Eve Attempt',
+				ascentId: 1
+			})
+		]).earned.find((b) => b.id === 'holiday_new_year');
+		expect(eve?.date).toBe('2023-12-31');
+		expect(eve?.detail).toMatch(/New Year’s Eve/);
+
+		const day = buildBadges([
+			row({
+				ascentDate: '2024-01-01',
+				tickType: 'Tick',
+				isSend: true,
+				routeName: 'Day Send',
+				ascentId: 2
+			})
+		]).earned.find((b) => b.id === 'holiday_new_year');
+		expect(day?.date).toBe('2024-01-01');
+		expect(day?.detail).toMatch(/New Year’s Day/);
+
+		const both = buildBadges([
+			row({
+				ascentDate: '2023-12-31',
+				tickType: 'Attempt',
+				isSend: false,
+				routeName: 'Eve',
+				ascentId: 1
+			}),
+			row({
+				ascentDate: '2024-01-01',
+				tickType: 'Tick',
+				isSend: true,
+				routeName: 'Day',
+				ascentId: 2
+			})
+		]).earned.filter((b) => b.id === 'holiday_new_year');
+		expect(both).toHaveLength(1);
+		expect(both[0]?.date).toBe('2023-12-31');
+	});
+
+	it('earns 250m Day from summed heights on one calendar day', () => {
+		const rows = [
+			row({
+				ascentDate: '2021-07-04',
+				tickType: 'Attempt',
+				isSend: false,
+				routeName: 'Pitch A',
+				heightM: 120,
+				ascentId: 1
+			}),
+			row({
+				ascentDate: '2021-07-04',
+				tickType: 'Tick',
+				isSend: true,
+				routeName: 'Pitch B',
+				routeHeightM: 140,
+				ascentId: 2
+			}),
+			row({
+				ascentDate: '2021-07-05',
+				tickType: 'Tick',
+				isSend: true,
+				routeName: 'Next Day',
+				heightM: 200,
+				ascentId: 3
+			})
+		];
+		const badge = buildBadges(rows).earned.find((b) => b.id === 'day_height_250');
+		expect(badge?.date).toBe('2021-07-04');
+		expect(badge?.detail).toMatch(/250 m in one day/);
+		expect(badge?.routeName).toBe('Pitch B');
+	});
+
+	it('keeps a single Ten K Vertical badge id (no duplicate 10 km)', () => {
+		const tenK = BADGE_CATALOG.filter((b) => b.id === 'height_10km');
+		expect(tenK).toHaveLength(1);
+		expect(tenK[0]?.title).toBe('Ten K Vertical');
+		expect(
+			BADGE_CATALOG.some((b) => /10.?000|10km|ten.?k/i.test(b.id) && b.id !== 'height_10km')
+		).toBe(false);
+		expect(BADGE_CATALOG.filter((b) => b.id.startsWith('height_')).map((b) => b.id)).toEqual([
+			'height_1km',
+			'height_5km',
+			'height_10km',
+			'height_20km'
+		]);
+	});
 });
 
 describe('first ascent badges and milestones', () => {
