@@ -35,6 +35,7 @@ test('community snapshots distinguish missing, partial, zero and positive counts
 		db.prepare(
 			"UPDATE first_ascents SET kind = 'FFA' WHERE route_external_id = 'review-community-2'"
 		).run();
+		db.prepare("UPDATE routes SET gear_style = 'Trad' WHERE id = ?").run(ids[1]);
 		await page.goto('/');
 		// Same name + same day must not collide across FA list (#144), hardest sends (#148),
 		// milestones (#151), or other dashboard keyed lists (#158).
@@ -52,6 +53,8 @@ test('community snapshots distinguish missing, partial, zero and positive counts
 		const communityRows = card.locator('.community li');
 		await expect(communityRows).toHaveCount(2);
 		await expect(communityRows.locator('.kind')).toHaveText(['FA', 'FFA']);
+		await expect(communityRows.first().locator('.badge')).toHaveText('Sport/bolted');
+		await expect(communityRows.last().locator('.badge')).toHaveText('Trad');
 		await expect(communityRows.locator('.missing')).toHaveText(['Unavailable', 'Unavailable']);
 		const sharedBadge = page
 			.locator('article.card')

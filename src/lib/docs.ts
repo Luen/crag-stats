@@ -10,6 +10,11 @@ export type RenderedDoc = { slug: string; title: string; segments: DocSegment[] 
 
 export const DOC_PAGES: readonly DocPage[] = [
 	{
+		slug: 'badges',
+		title: 'Badges',
+		summary: 'Logbook milestones and the First Moves import date.'
+	},
+	{
 		slug: 'climber-type',
 		title: 'Climber type',
 		summary: 'How the dashboard decides whether you are a sport, trad, boulder or rock climber.'
