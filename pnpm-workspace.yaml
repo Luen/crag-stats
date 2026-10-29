@@ -17,3 +17,7 @@ minimumReleaseAge: 0
 
 # Avoid re-running install before every script when modules are briefly locked (dev server).
 verifyDepsBeforeRun: false
+patchedDependencies:
+  deepmerge@4.3.1: patches/deepmerge@4.3.1.patch
+  picomatch@4.0.7: patches/picomatch@4.0.7.patch
+  uri-js@4.4.1: patches/uri-js@4.4.1.patch

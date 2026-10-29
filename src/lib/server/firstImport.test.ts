@@ -67,6 +67,20 @@ it('ignores empty imports', () => {
 	expect(getFirstImport()?.at).toBeNull();
 });
 
+it('completes a saved legacy unknown date once, preserving known dates', () => {
+	db.insert(appSettings)
+		.values({
+			key: 'first_import',
+			value: JSON.stringify({ at: null, count: 10, legacy: true }),
+			updatedAt: '2026-10-01T00:00:00.000Z'
+		})
+		.run();
+	completeFirstImport(12, beginFirstImport(), '2026-10-29T01:00:00.000Z');
+	expect(getFirstImport()).toEqual({ at: '2026-10-29T01:00:00.000Z', count: 12, legacy: false });
+	completeFirstImport(15, beginFirstImport(), '2026-10-30T01:00:00.000Z');
+	expect(getFirstImport()?.at).toBe('2026-10-29T01:00:00.000Z');
+});
+
 it('wipe resets the milestone, preserves preferences, and ignores an outstanding completion', () => {
 	const token = beginFirstImport();
 	db.insert(appSettings)

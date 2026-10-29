@@ -12,7 +12,7 @@ The global tooling includes npm's bundled undici, picomatch, ip-address and othe
 
 ## Minimal runtime mitigation (#179 / #185)
 
-The runner uses the supported `gcr.io/distroless/cc-debian13:latest` base, containing glibc, C++ runtime libraries and CA certificates. The Node 24 executable is copied from the existing `node:24-bookworm-slim` build stage, together with production dependencies and migrations. This removes unnecessary OS utilities such as mount tools, apt and shells, rather than suppressing their findings. The runtime user remains unchanged so existing data volumes retain access.
+The runner uses the supported `gcr.io/distroless/cc-debian13:latest` base, containing glibc, C++ runtime libraries and CA certificates. The Node 26 executable is copied from the existing `node:26-bookworm-slim` build stage, together with its `libatomic.so.1` dependency, production dependencies and migrations. Node 26 no longer bundles Corepack, so build and CI install the exact `packageManager` from package.json using npm. This removes unnecessary OS utilities such as mount tools, apt and shells, rather than suppressing their findings. The runtime user remains unchanged so existing data volumes retain access.
 
 As of 29 October 2026, published `ghcr.io/luen/crag-stats:0.6.3` (and `latest` at that time; it moves with later releases) share multi-arch manifest digest `sha256:938c58ea9dfcf20c513c29bbe85e59693897adae4156fb84359eb6e4cbe550f0`. Snyk rescans of both amd64 and arm64 on 29 October 2026, and a repeat amd64 scan on 29 October 2026 after release, report the same residual inventory:
 
@@ -66,7 +66,7 @@ docker run --rm --entrypoint node \
 
 ## Rescan after base / package updates
 
-Run this whenever `gcr.io/distroless/cc-debian13`, the Node 24 build image, or a release tag that ships a new runner digest changes. Goal: compare unique OS advisory IDs and severities to the residual table above — not to force a green scan.
+Run this whenever `gcr.io/distroless/cc-debian13`, the Node 26 build image, or a release tag that ships a new runner digest changes. Goal: compare unique OS advisory IDs and severities to the residual table above — not to force a green scan.
 
 ```bash
 # Published multi-arch (repeat with --platform=linux/arm64 as needed)
