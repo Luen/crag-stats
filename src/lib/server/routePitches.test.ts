@@ -16,7 +16,13 @@ describe('classifyRoutePitches', () => {
 		);
 	});
 
-	it('treats single-pitch routes as known, not missing', () => {
+	it('keeps unparseable or non-array values distinct from empty', () => {
+		expect(classifyRoutePitches('{not json', true)).toBe('invalid');
+		expect(classifyRoutePitches('{"a":1}', true)).toBe('invalid');
+		expect(classifyRoutePitches('{not json', false)).toBe('unchecked');
+	});
+
+	it('treats a cached single-pitch list as known, not missing', () => {
 		const single = classifyRoutePitches(JSON.stringify([{ number: 1, grade: '20' }]), true);
 		expect(single).toBe('known');
 		expect(isMissingPitchData(single)).toBe(false);
@@ -24,9 +30,10 @@ describe('classifyRoutePitches', () => {
 });
 
 describe('isMissingPitchData', () => {
-	it('matches only null and empty after fetch', () => {
+	it('matches null, empty and invalid (no usable list) after fetch', () => {
 		expect(isMissingPitchData('null')).toBe(true);
 		expect(isMissingPitchData('empty')).toBe(true);
+		expect(isMissingPitchData('invalid')).toBe(true);
 		expect(isMissingPitchData('unchecked')).toBe(false);
 		expect(isMissingPitchData('known')).toBe(false);
 	});

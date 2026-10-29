@@ -1074,7 +1074,7 @@ export function listLogbook(filters?: {
 	with?: string;
 	/** has = non-empty partners; missing = empty/null */
 	partners?: 'has' | 'missing';
-	/** Route fields that are null/absent: height, bolts, pitch data after route-info fetch */
+	/** Route fields that are null/absent: height, bolts, cached pitch list (after route-info fetch) */
 	missing?: Array<'height' | 'bolts' | 'pitch'>;
 	/** Case-insensitive substring match on route tag names in tags_json */
 	tag?: string;

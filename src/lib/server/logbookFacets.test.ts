@@ -105,7 +105,7 @@ it('uses each route provider owner and keeps equal external IDs separate', () =>
 	expect(names(listLogbook({ setter: 'none' }).rows)).toEqual(['Route r1', 'Route r2', 'Route r3']);
 });
 
-it('filters missing pitch data after route info fetch only', () => {
+it('filters "no pitch list cached" after route info fetch only', () => {
 	const fetchedAt = '2026-01-02T00:00:00Z';
 	db.update(routes)
 		.set({ routeInfoUpdatedAt: fetchedAt, pitchesJson: null })
@@ -127,7 +127,7 @@ it('filters missing pitch data after route info fetch only', () => {
 	expect(listLogbook({ missing: ['pitch'] }).rows.every((r) => r.routeName !== 'Route r3')).toBe(
 		true
 	);
-	// Never fetched — not "missing pitch data"
+	// Route info never fetched (route_info_updated_at null) — excluded, regardless of pitches_json
 	expect(listLogbook().total).toBe(3);
 	db.update(routes)
 		.set({ routeInfoUpdatedAt: null, pitchesJson: null })
