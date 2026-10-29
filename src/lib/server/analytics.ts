@@ -943,6 +943,7 @@ export function getDashboardStats(
 				firstAscentSends(extraRows).map((s) => [s.row.routeId as number, s.day])
 			);
 			const byRoute = new Map<number, FirstAscentRow>();
+			const importedMarks = getFirstAscentMarks('import');
 			for (const r of all) {
 				const kind = firstAscentKindFor(faMarks, r.routeProvider, r.routeExternalId);
 				if (!kind) continue;
@@ -958,6 +959,9 @@ export function getDashboardStats(
 					score == null ? r.gradeRaw : formatGrade(score, isBoulder, preferredSystem, r.gradeRaw);
 				byRoute.set(r.routeId, {
 					routeId: r.routeId,
+					source: firstAscentKindFor(importedMarks, r.routeProvider, r.routeExternalId)
+						? 'import'
+						: 'manual',
 					kind,
 					routeName: r.routeName,
 					style: displayStyle(r.gearStyle),

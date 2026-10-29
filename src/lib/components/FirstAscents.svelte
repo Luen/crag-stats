@@ -24,9 +24,8 @@
 	<h2><a href="/logbook?fa=any">First ascents</a></h2>
 	{#if data.total === 0 && data.routesSet === 0}
 		<p class="empty">
-			No first ascents marked yet. theCrag keeps first ascents in route history, which its API
-			doesn't share, so mark yours from the <a href="/logbook">logbook</a> (hover a row, then
-			<strong>Mark FA</strong>).
+			No first ascents recorded yet. Import them from public theCrag route history, or mark yours
+			from the <a href="/logbook">logbook</a> (hover a row, then <strong>Mark FA</strong>).
 		</p>
 	{:else}
 		<div class="tiles">
@@ -178,6 +177,9 @@
 		{/if}
 	{/if}
 	<p class="foot">
+		{#if data.imported > 0 || data.routesSet > 0}
+			Includes credits imported from theCrag route history.
+		{/if}
 		{#if data.routesWithCommunityData > 0}
 			Cached community estimate covers {formatNumber(data.routesWithCommunityData, dateDisplay)} of
 			{formatNumber(data.routesPutUp, dateDisplay)} credited logbook routes and excludes your ticks at

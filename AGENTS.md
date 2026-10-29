@@ -420,3 +420,7 @@ You'll often notice things outside the task at hand. **Don't silently fix them i
 | 2026-10 | #219: Logbook sync stays in user `/docs` (`docs/guide/logbook-sync.md`); README/DEPLOY cross-link it; household-key detail stays in `docs/dev/ROUTE_HISTORY.md` via GitHub URL from the guide. |
 
 _Add a row when you change behaviour agents must know about._
+
+| 2026-10 | Security remediation pins pnpm patches for deepmerge 4.3.1, picomatch 4.0.7 and uri-js 4.4.1, with installed-package exploit regressions in `dependencySecurity.test.ts`. Keep `patches/` available before Docker's frozen install. Adapter-node is build-only. Read `patches/README.md` and `docs/dev/SECURITY_SCAN.md`; version-based alerts can persist despite local fixes and must remain disclosed. |
+
+- First ascents attribution follows saved mark source (plus cached setter credits), not `ROUTE_HISTORY_IMPORT`: manual/imported credits coexist and imported marks survive disabling import.

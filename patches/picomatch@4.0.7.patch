@@ -1,0 +1,27 @@
+diff --git a/lib/parse.js b/lib/parse.js
+index 29207512c60183b4bb9bf5112be3b9b5f4a9a9fd..39e96807ef4569e77c61a92b0fb1acd1ae060e6e 100644
+--- a/lib/parse.js
++++ b/lib/parse.js
+@@ -284,7 +284,22 @@ const repeatedExtglobRecursion = pattern => {
+   return depth;
+ };
+ 
++// Unbounded wildcards inside repeated extglobs nest unbounded quantifiers.
++// Include single branches and nested bodies; preserve escapes and character classes.
++const hasUnboundedWildcard = body => {
++  let bracket = false;
++  for (let i = 0; i < body.length; i++) {
++    const ch = body[i];
++    if (ch === '\\') { i++; continue; }
++    if (ch === '[') { bracket = true; continue; }
++    if (ch === ']' && bracket) { bracket = false; continue; }
++    if (!bracket && ch === '*' && body[i + 1] !== '(') return true;
++  }
++  return false;
++};
++
+ const analyzeRepeatedExtglob = (body, options) => {
++  if (hasUnboundedWildcard(body)) return { risky: true };
+   if (options.maxExtglobRecursion === false) {
+     return { risky: false };
+   }

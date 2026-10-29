@@ -3,6 +3,7 @@
  * Nothing here talks to theCrag.
  */
 import { beforeEach, describe, expect, it } from 'vitest';
+import { randomBytes } from 'node:crypto';
 import { wipeAllData } from './analytics';
 import { db } from './db';
 import { eq } from 'drizzle-orm';
@@ -32,7 +33,7 @@ import {
 
 const ROUTES = 105;
 const LOGIN = 'tester';
-const config = { enabled: true, apiKey: 'test-key' };
+const config = { enabled: true, apiKey: randomBytes(24).toString('hex') };
 
 function routeId(i: number) {
 	return String(5000 + i);
