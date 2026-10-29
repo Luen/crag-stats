@@ -95,7 +95,7 @@ describe('gradeGoalReadiness', () => {
 		});
 		expect(short.pct).toBeGreaterThan(shortBase.pct);
 		expect(shortMore.pct).toBeGreaterThan(short.pct);
-		expect(shortMore.pct).toBeLessThanOrEqual(90);
+		expect(shortMore.pct).toBeLessThanOrEqual(95);
 		expect(short.label).toContain('5 attempts on ≥22');
 
 		const longBase = gradeGoalReadiness({

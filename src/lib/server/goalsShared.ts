@@ -17,7 +17,7 @@ export const GRADE_GOAL_ATTEMPT_NEED: Record<GradeGoalHorizon, number> = {
 };
 
 /** Max readiness without a send at N. */
-const GRADE_READY_CAP_WITHOUT_SEND = 90;
+const GRADE_READY_CAP_WITHOUT_SEND = 95;
 /** Base when best send is already at N−1 (lands mid-band with a single supporting route). */
 const GRADE_READY_BASE_AT_N1 = 35;
 /** Small base when best is only at N−2. */
