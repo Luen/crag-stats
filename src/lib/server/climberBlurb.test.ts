@@ -122,7 +122,7 @@ describe('describeDeveloperPreference (#186)', () => {
 			firstAscentCount: 2
 		});
 		expect(text).toBe(
-			"I like to put up trad routes that other people have climbed about 55 times. I've put up 2 first ascents."
+			"I like to put up trad routes that other people have climbed over 55 times. I've put up 2 first ascents."
 		);
 	});
 
@@ -130,7 +130,7 @@ describe('describeDeveloperPreference (#186)', () => {
 		const text = describeDeveloperPreference({
 			routes: [route({ othersAscents: 80 }), route({ routeExternalId: 's2', othersAscents: 40 })]
 		});
-		expect(text).toMatch(/climbed about 120 times/i);
+		expect(text).toMatch(/climbed over 120 times/i);
 		expect(text).not.toMatch(/more than|people climbing/i);
 	});
 
