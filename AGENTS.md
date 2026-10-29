@@ -96,7 +96,7 @@ For owners without a supporter API key. The default is `api`; any value other th
 - **Flow** (`providers/thecrag/logbookSession.ts`, `csvLogbookSync.ts`): try the CSV export with saved cookies; if the session expired, fetch the login page, read the hidden CSRF fields, sign in once, download the export and retry once. Uses `impers` (browser impersonation) at the owner's own risk.
 - **Cookie store:** `thecrag_web_sessions` (migration 0016) holds AES-256-GCM encrypted cookies keyed by a hash of the username, with the key derived from `SESSION_SECRET` (AAD = account key). Rotating `SESSION_SECRET` only forces a new login. `next_allowed_at` / `failures` persist so pacing and back-off survive restarts. Wiping data must clear it and invalidate in-flight syncs (`syncGeneration`).
 - **Semantics:** CSV upserts then calls `reconcileProviderAscents` so missing export IDs are deleted (orphans cleaned like API). Guards in `csvPruneGuard.ts` refuse the whole sync (no writes) on an empty export vs local data, or when local ≥ 100 and the export keeps under 50% of that count. API-only fields (pitches, partners, quality, route info) are still absent. A configured username that differs from the saved profile login aborts before any request, so accounts never mix.
-- User docs: `docs/guide/logbook-sync.md`.
+- User docs: `docs/guide/logbook-sync.md` (also `/docs/logbook-sync` in the app; keep it in `DOC_PAGES` — Settings links here). Deep `impers` / household-key notes stay in `docs/dev/ROUTE_HISTORY.md` with a GitHub URL from the guide.
 
 Height quirk: theCrag may return height as `[value, unit]` arrays — parse in the API mapper (`parseHeightMeters` / array handler).
 
@@ -416,5 +416,7 @@ You'll often notice things outside the task at hand. **Don't silently fix them i
 | 2026-10 | #218 review: automatic CSV sync counts the current logbook after downloading, then guards/upserts/prunes/updates the profile in one immediate SQLite transaction. Guard refusals and later write failures leave the logbook unchanged. Manual CSV uploads remain upsert-only. |
 
 | 2026-10 | #215 review: CSV mode prevents newly enabling notes, but an existing opt-in must remain switchable off. The server accepts disabling in every mode, refuses CSV enablement, and retains the no-password visibility warning. Browser regression covers API notes retained in a CSV-mode DB and crafted preference POSTs. |
+
+| 2026-10 | #219: Logbook sync stays in user `/docs` (`docs/guide/logbook-sync.md`); README/DEPLOY cross-link it; household-key detail stays in `docs/dev/ROUTE_HISTORY.md` via GitHub URL from the guide. |
 
 _Add a row when you change behaviour agents must know about._
