@@ -37,6 +37,43 @@ it('imports a validated export atomically, preserves absent ascents, and creates
 	expect(db.select().from(profiles).get()).toMatchObject({ login: 'sample', ascentCount: 1 });
 });
 
+it('clears API-only profile fields so a shared API key cannot leave key-owner account stats', async () => {
+	const updatedAt = new Date().toISOString();
+	db.insert(profiles)
+		.values({
+			provider: 'thecrag',
+			login: 'sample',
+			name: 'Key Owner',
+			externalId: '999',
+			avatar: 'https://example.com/a.png',
+			typeOfClimber: 'Sport climber',
+			outdoorAscentCount: 800,
+			indoorAscentCount: 10,
+			heightClimbed: 50000,
+			routesTicked: 500,
+			rawJson: '{"routesTicked":500}',
+			ascentCount: 1,
+			updatedAt
+		})
+		.run();
+	vi.mocked(downloadLogbook).mockResolvedValue([sample[0]]);
+	const result = await syncTheCragCsv(() => true);
+	expect(result.profileName).toBe('sample');
+	expect(db.select().from(profiles).get()).toMatchObject({
+		login: 'sample',
+		name: 'sample',
+		ascentCount: 1,
+		externalId: null,
+		avatar: null,
+		typeOfClimber: null,
+		outdoorAscentCount: null,
+		indoorAscentCount: null,
+		heightClimbed: null,
+		routesTicked: null,
+		rawJson: null
+	});
+});
+
 it('does not ingest an export returned after a wipe', async () => {
 	const current = syncIsCurrent();
 	vi.mocked(downloadLogbook).mockImplementationOnce(async () => {

@@ -3,7 +3,7 @@ import { detectAndParseGrade, parseHeightMeters } from '#lib/grades';
 import { theCragAscentUrl } from '#lib/thecragUrls';
 import { classifyTick, type CanonicalAscent } from '../types';
 
-type CsvRow = Record<string, string>;
+export type CsvRow = Record<string, string>;
 
 function starsFromCsv(raw: string | undefined): number | null {
 	if (!raw) return null;
@@ -11,7 +11,38 @@ function starsFromCsv(raw: string | undefined): number | null {
 	return count > 0 ? count : null;
 }
 
-function mapRow(row: CsvRow): CanonicalAscent | null {
+/** True when CSV location fields place the climb in Australia. */
+export function csvRowLooksAustralian(row: Pick<CsvRow, string>): boolean {
+	const country = (row['Country'] ?? '').trim().toLowerCase();
+	if (country === 'australia' || country === 'au') return true;
+	const path = (row['Crag Path'] ?? '').trim().toLowerCase().replace(/^\/+/, '');
+	if (path === 'australia' || path.startsWith('australia/') || path.startsWith('australia '))
+		return true;
+	const link = (row['Route Link'] ?? row['Crag Link'] ?? '').trim().toLowerCase();
+	return /(?:^|\/)(?:en\/)?climbing\/australia(?:\/|$)/i.test(link);
+}
+
+/**
+ * CSV has no grade-system column. AU boulder exports often use bare Ewbank digits (`9`, `1`);
+ * without an AU hint those become fake V9/V1 (#112). Explicit `V5` / `VB` stay V-scale (#124).
+ */
+export function csvGradeSystemHint(
+	row: Pick<CsvRow, string>,
+	gradeRaw: string | null | undefined,
+	gearStyle: string | null | undefined
+): string | null {
+	const text = (gradeRaw ?? '').trim();
+	if (!text) return null;
+	if (/^V/i.test(text) || /^VB/i.test(text)) return null;
+	if (!/^\d{1,2}$/.test(text)) return null;
+	const style = (gearStyle ?? '').toLowerCase();
+	if (!style.includes('boulder')) return null;
+	if (!csvRowLooksAustralian(row)) return null;
+	return 'AU';
+}
+
+/** Map one theCrag CSV export row (also used to repair stored CSV `raw_json`). */
+export function mapTheCragCsvRow(row: CsvRow): CanonicalAscent | null {
 	const externalId = row['Ascent ID']?.trim();
 	const routeId = row['Route ID']?.trim();
 	const routeName = row['Route Name']?.trim();
@@ -23,9 +54,13 @@ function mapRow(row: CsvRow): CanonicalAscent | null {
 	const ascentGradeRaw = row['Ascent Grade']?.trim() || null;
 	const gradeRaw = routeGradeRaw || ascentGradeRaw;
 	const gearStyle = row['Route Gear Style']?.trim() || null;
-	const parsed = detectAndParseGrade(gradeRaw, { gearStyle });
+	const ascentGearStyle = row['Ascent Gear Style']?.trim() || gearStyle;
+	const routeSys = csvGradeSystemHint(row, gradeRaw, gearStyle);
+	const ascentSys = csvGradeSystemHint(row, ascentGradeRaw || gradeRaw, ascentGearStyle);
+	const parsed = detectAndParseGrade(gradeRaw, { gearStyle, gradeSystem: routeSys });
 	const ascentParsed = detectAndParseGrade(ascentGradeRaw || gradeRaw, {
-		gearStyle: row['Ascent Gear Style']?.trim() || gearStyle
+		gearStyle: ascentGearStyle,
+		gradeSystem: ascentSys
 	});
 	const heightM = parseHeightMeters(row['Ascent Height']) ?? parseHeightMeters(row['Route Height']);
 
@@ -76,6 +111,14 @@ function mapRow(row: CsvRow): CanonicalAscent | null {
 	};
 }
 
+/** True when `raw_json` looks like a flat theCrag CSV export row (not an API ascent). */
+export function isTheCragCsvRawJson(parsed: unknown): parsed is CsvRow {
+	if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return false;
+	const o = parsed as Record<string, unknown>;
+	if ('route' in o) return false;
+	return typeof o['Ascent ID'] === 'string' || typeof o['Route Grade'] === 'string';
+}
+
 export function parseTheCragCsv(file: Buffer): CanonicalAscent[] {
 	const text = file.toString('utf8');
 	const rows = parse(text, {
@@ -85,5 +128,5 @@ export function parseTheCragCsv(file: Buffer): CanonicalAscent[] {
 		bom: true
 	}) as CsvRow[];
 
-	return rows.map(mapRow).filter((a): a is CanonicalAscent => a != null);
+	return rows.map(mapTheCragCsvRow).filter((a): a is CanonicalAscent => a != null);
 }

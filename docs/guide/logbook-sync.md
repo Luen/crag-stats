@@ -29,7 +29,7 @@ Failed logins, blocks and download errors pause further attempts for at least 24
 
 CSV sync adds and updates ascents. It never removes local ascents missing from the download. API mode remains the choice for full deletion reconciliation. Invalid exports, login pages and partial HTTP responses are refused before ingestion.
 
-The CSV has fewer fields than the API, including less profile, route metadata and multipitch information. Switching from API to CSV can replace richer ascent fields with the CSV values. Grade calculations use the existing CSV parser. Account-level CPR and other API-only profile information are not fetched by this mode. Switching accounts requires wiping local data first.
+The CSV has fewer fields than the API, including less profile, route metadata and multipitch information. Switching from API to CSV can replace richer ascent fields with the CSV values. Grade calculations use the CSV parser; Australian bare boulder digits use Country / path as an AU hint so they do not become fake V-grades. Profile identity comes from `THECRAG_USERNAME` only — CSV sync clears API-only account fields (`routesTicked`, outdoor/indoor counts, avatar, raw account JSON) so a shared supporter API key used for route history cannot leave the key owner's stats on the profile. Account-level CPR and other API-only profile information are not fetched by this mode. Switching accounts requires wiping local data first.
 
 Private ascent comments follow the same existing visibility controls as manual CSV imports: hidden by default, and available only to the owner when enabled in Settings. Passwords, session cookies and login responses are never displayed or included in sync errors.
 

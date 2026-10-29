@@ -10,7 +10,7 @@ import * as projects from '../projects';
 import { mapAscent } from '../providers/thecrag/api';
 
 const ID = 'data:0001_repair_cached_grades';
-const ALL = [ID, 'data:0002_legacy_env_settings'];
+const ALL = [ID, 'data:0002_legacy_env_settings', 'data:0003_csv_au_boulder_grades'];
 
 beforeEach(() => {
 	wipeAllData();
