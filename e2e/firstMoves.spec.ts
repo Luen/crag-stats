@@ -29,5 +29,7 @@ test('visitors cannot change the first import date', async ({ request }) => {
 		form: { date: '2026-10-27' },
 		maxRedirects: 0
 	});
+	// AUTH_SCOPE=settings sends unauthenticated /settings requests to the login page.
 	expect(response.status()).toBe(303);
+	expect(response.headers()['location']).toContain('/login');
 });

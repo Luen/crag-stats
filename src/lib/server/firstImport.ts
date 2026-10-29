@@ -73,6 +73,10 @@ export function correctFirstImportDate(date: string) {
 	) {
 		throw new Error('Enter a valid first import date.');
 	}
+	// Allow one day of slack so a timezone ahead of UTC can enter "today".
+	if (Date.parse(`${date}T00:00:00Z`) > Date.now() + 24 * 3600_000) {
+		throw new Error('The first import date cannot be in the future.');
+	}
 	ensureSchema();
 	const first = getFirstImport();
 	const count = first?.count || countAscents();

@@ -70,6 +70,8 @@ it('ignores empty imports and rejects invalid correction dates', () => {
 	expect(getFirstImport()?.at).toBeNull();
 	expect(() => correctFirstImportDate('2026-10-27')).toThrow('Import a logbook');
 	expect(() => correctFirstImportDate('2026-02-30')).toThrow('valid first import date');
+	upsertAscents(sample);
+	expect(() => correctFirstImportDate('2999-01-01')).toThrow('cannot be in the future');
 });
 
 it('wipe resets the milestone, preserves preferences, and ignores an outstanding completion', () => {
