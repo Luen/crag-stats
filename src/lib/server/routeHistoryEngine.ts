@@ -54,8 +54,8 @@ const ERROR_BACKOFF_MAX_MS = 24 * HOUR;
 export type RouteHistoryConfig = {
 	enabled: boolean;
 	apiKey: string;
-	/** Opt-in rolling refresh age. Unset/0 keeps fetch-once behavior. */
-	refreshDays?: 0 | 30 | 90;
+	/** 0 = fetch once; otherwise a whole number of days from 30 through 3650. */
+	refreshDays?: number;
 	/**
 	 * CSV mode passes THECRAG_USERNAME. It must match the saved logbook login;
 	 * an empty or mismatched value blocks import until the owner syncs or wipes.
@@ -63,10 +63,20 @@ export type RouteHistoryConfig = {
 	ownerLogin?: string | null;
 };
 
-/** Invalid or unset values retain fetch-once behavior. */
-export function parseRouteDataRefreshDays(value: string): 0 | 30 | 90 {
-	const days = value.trim();
-	return days === '30' ? 30 : days === '90' ? 90 : 0;
+/** Soft ceiling so `now - days * 86400000` stays inside Date's safe range (Settings / SQL). */
+export const MAX_ROUTE_DATA_REFRESH_DAYS = 3650; // ~10 years
+
+/**
+ * Periodic refresh age in whole days. Unset, `0`, non-digits, values under 30, and values
+ * above {@link MAX_ROUTE_DATA_REFRESH_DAYS} keep fetch-once behaviour (return 0). Digits-only
+ * (no `1e2` / `0x1e`); e.g. `180` ≈ half a year.
+ */
+export function parseRouteDataRefreshDays(value: string): number {
+	const s = value.trim();
+	if (!/^\d+$/.test(s)) return 0;
+	const days = Number(s);
+	if (!Number.isInteger(days) || days < 30 || days > MAX_ROUTE_DATA_REFRESH_DAYS) return 0;
+	return days;
 }
 
 export type RouteHistoryDeps = {
@@ -94,7 +104,7 @@ export type RouteHistoryRunResult = {
 
 export type RouteHistoryStatus = {
 	enabled: boolean;
-	refreshDays: 0 | 30 | 90;
+	refreshDays: number;
 	hasApiKey: boolean;
 	status: string;
 	running: boolean;
@@ -180,11 +190,7 @@ function ownerLogin(config?: Pick<RouteHistoryConfig, 'ownerLogin'>): string | n
 /**
  * Unfetched routes first (ungraded, then recently climbed), followed by oldest stale fetches.
  */
-export function pendingRouteIds(
-	limit: number,
-	refreshDays: 0 | 30 | 90 = 0,
-	now = Date.now()
-): string[] {
+export function pendingRouteIds(limit: number, refreshDays = 0, now = Date.now()): string[] {
 	ensureSchema();
 	const rows = db
 		.select({ id: routes.externalId })
@@ -209,7 +215,7 @@ export function pendingRouteIds(
 	return rows.map((r) => r.id);
 }
 
-function pendingFetchCondition(refreshDays: 0 | 30 | 90, now: number) {
+function pendingFetchCondition(refreshDays: number, now: number) {
 	const unfetched = sql`${routeHistoryFetches.routeExternalId} IS NULL`;
 	if (!refreshDays) return unfetched;
 	const cutoff = new Date(now - refreshDays * 86_400_000).toISOString();
