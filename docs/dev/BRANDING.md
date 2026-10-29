@@ -165,3 +165,5 @@ Setter-only First ascents cards omit the empty style chart and Latest section; k
 Settings mutes the notes checkbox when CSV sync prevents enabling it. An existing opt-in stays editable so the owner can turn it off; keep the password warning visible in either sync mode.
 
 Settings explains that automatic CSV sync removes missing entries with drop guards; distinguish it from manual CSV upload, which never prunes.
+
+Settings places First Moves directly after Import route history and immediately before Privacy & data control. Keep the `#first-import` anchor on that panel.

@@ -413,8 +413,8 @@ You'll often notice things outside the task at hand. **Don't silently fix them i
 
 | 2026-10 | #214 review: cached CSV grade repair changes grade columns only, preserving API-only metadata. Inferred AU ascent overlays cannot override explicit V route grades. CSV route-history imports and cached reapplication require the configured username to match the saved profile login (case-insensitive); empty/mismatched overrides never fall back to another identity. |
 
-_Add a row when you change behaviour agents must know about._
-
 | 2026-10 | #218 review: automatic CSV sync counts the current logbook after downloading, then guards/upserts/prunes/updates the profile in one immediate SQLite transaction. Guard refusals and later write failures leave the logbook unchanged. Manual CSV uploads remain upsert-only. |
 
 | 2026-10 | #215 review: CSV mode prevents newly enabling notes, but an existing opt-in must remain switchable off. The server accepts disabling in every mode, refuses CSV enablement, and retains the no-password visibility warning. Browser regression covers API notes retained in a CSV-mode DB and crafted preference POSTs. |
+
+_Add a row when you change behaviour agents must know about._
