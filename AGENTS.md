@@ -369,7 +369,6 @@ You'll often notice things outside the task at hand. **Don't silently fix them i
 
 | 2026-10 | `node scripts/snyk-projects.mjs` prepares separate temporary application and boot/config projects for pnpm 12 Snyk scans. Scan every emitted project and preserve any failure; never merge their shared importer maps. |
 
-| 2026-10 | #179: minimal glibc runtime removes mount/apt/shell utilities. CI builds and smoke-tests amd64 + arm64; local importer validation uses synthetic loopback data and GitHub TLS, never theCrag. Raw OS scan findings and source-based zlib triage remain in `docs/dev/DOCKER_SECURITY.md`. |
 | 2026-10 | #186: Climbing story (`climberBlurb.ts`) adds gated optional lines — put-up Sport→Trad→Boulder with community-others impact, home crag, partners, season, solo, projects, hardest, popularity, travel, rock. Cap ~3 optional paragraphs; docs at `/docs/climbing-story`. |
 | 2026-10 | #179 / #185: minimal glibc runtime removes mount/apt/shell utilities. CI builds and smoke-tests amd64 + arm64; local importer validation uses synthetic loopback data and GitHub TLS, never theCrag. Residual OS inventory (14 deps / 25 IDs on v0.6.3), CVE-2026-85091 zlib triage (literal range excludes Debian 1.3.1, but trixie is still tracked vulnerable; we cite runtime non-reachability, not "not affected"), and base-update rescan steps live in `docs/dev/DOCKER_SECURITY.md` — no scanner ignores. |
 
