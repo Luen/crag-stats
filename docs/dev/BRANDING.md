@@ -161,3 +161,7 @@ Chart values must be readable without hover: the Eddington timeline exposes poin
 The First ascents community list retains FA versus FFA credit, shows missing counts separately from known zero estimates, and displays count-specific freshness in the configured locale.
 
 Setter-only First ascents cards omit the empty style chart and Latest section; keep setter and community totals visible. Validate this state with axe in light and dark themes.
+
+Settings mutes the notes checkbox when CSV sync prevents enabling it. An existing opt-in stays editable so the owner can turn it off; keep the password warning visible in either sync mode.
+
+Settings explains that automatic CSV sync removes missing entries with drop guards; distinguish it from manual CSV upload, which never prunes.

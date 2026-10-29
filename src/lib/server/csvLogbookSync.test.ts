@@ -1,8 +1,9 @@
 import { readFileSync } from 'node:fs';
 import { beforeEach, expect, it, vi } from 'vitest';
+import { sql } from 'drizzle-orm';
 import { wipeAllData } from './analytics';
 import { db } from './db';
-import { ascents, profiles, theCragWebSessions } from './db/schema';
+import { ascents, profiles, routes, theCragWebSessions } from './db/schema';
 import { upsertAscents } from './ingest';
 import { parseTheCragCsv } from './providers/thecrag/csv';
 import { downloadLogbook } from './providers/thecrag/logbookSession';
@@ -77,7 +78,7 @@ it('clears API-only profile fields so a shared API key cannot leave key-owner ac
 	});
 });
 
-it('refuses a massive drop without writing (1000 local vs tiny export)', async () => {
+it('refuses a massive drop without writing (100 local vs tiny export)', async () => {
 	const many = Array.from({ length: 100 }, (_, i) => ({
 		...sample[0],
 		externalId: `local-${i}`,
@@ -94,6 +95,45 @@ it('refuses a massive drop without writing (1000 local vs tiny export)', async (
 	await expect(syncTheCragCsv(() => true)).rejects.toThrow(/Refusing CSV sync/);
 	expect(db.select().from(ascents).all()).toHaveLength(100);
 	expect(db.select().from(ascents).get()?.externalId).toMatch(/^local-/);
+});
+
+it('uses the current cache count when another import finishes during the download', async () => {
+	const many = Array.from({ length: 100 }, (_, i) => ({
+		...sample[0],
+		externalId: `concurrent-${i}`
+	}));
+	vi.mocked(downloadLogbook).mockImplementationOnce(async () => {
+		upsertAscents(many);
+		return [sample[0]];
+	});
+	await expect(syncTheCragCsv(() => true)).rejects.toThrow(/Refusing CSV sync/);
+	const stored = db.select().from(ascents).all();
+	expect(stored).toHaveLength(100);
+	expect(stored.every((a) => a.externalId.startsWith('concurrent-'))).toBe(true);
+});
+
+it('rolls back upserts and pruning if saving the profile fails', async () => {
+	upsertAscents(sample);
+	db.insert(profiles)
+		.values({ provider: 'thecrag', login: 'sample', name: 'Saved name', updatedAt: '2026-01-01' })
+		.run();
+	const snapshot = () => ({
+		ascents: db.select().from(ascents).all(),
+		routes: db.select().from(routes).all(),
+		profiles: db.select().from(profiles).all()
+	});
+	const before = snapshot();
+	db.run(sql`CREATE TRIGGER fail_csv_profile BEFORE UPDATE ON profiles
+		BEGIN SELECT RAISE(ABORT, 'Synthetic profile write failure'); END`);
+	try {
+		vi.mocked(downloadLogbook).mockResolvedValueOnce([
+			{ ...sample[0], comment: 'Updated comment' }
+		]);
+		await expect(syncTheCragCsv(() => true)).rejects.toThrow('Synthetic profile write failure');
+		expect(snapshot()).toEqual(before);
+	} finally {
+		db.run(sql`DROP TRIGGER fail_csv_profile`);
+	}
 });
 
 it('refuses an empty export when the local logbook is non-empty', async () => {

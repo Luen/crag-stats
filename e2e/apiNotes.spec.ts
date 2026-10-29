@@ -50,6 +50,27 @@ test('API-style combined notes stay private even when display is enabled', async
 		await expect(page.locator('tbody')).toContainText('API note route');
 		await page.goto(`${origin}/`);
 		for (const note of [publicText, privateText]) expect(await page.content()).not.toContain(note);
+
+		// CSV mode must still let an owner revoke a previous API-mode opt-in.
+		await page.goto(`${origin}/settings`);
+		const toggle = page.getByRole('checkbox', { name: /Show my private ascent notes/ });
+		await expect(toggle).toBeChecked();
+		await expect(toggle).toBeEnabled();
+		await toggle.uncheck();
+		await page.getByRole('button', { name: 'Save preferences', exact: true }).click();
+		await expect(toggle).not.toBeChecked();
+		await expect(toggle).toBeDisabled();
+		await page.goto(`${origin}/logbook?q=${privateText}`);
+		await expect(page.locator('tbody tr')).toHaveCount(0);
+		// A crafted form POST cannot enable notes while CSV is configured.
+		const response = await page.request.post(`${origin}/settings?/savePreferences`, {
+			headers: { origin, accept: 'application/json' },
+			form: { notes: 'on', system: 'ewbank' }
+		});
+		expect(response.ok()).toBe(true);
+		await page.goto(`${origin}/settings`);
+		await expect(toggle).not.toBeChecked();
+		await expect(toggle).toBeDisabled();
 		await page.locator('header').getByRole('button', { name: 'Log out' }).click();
 		await page.goto(`${origin}/logbook?q=${privateText}`);
 		await expect(page.locator('tbody tr')).toHaveCount(0);

@@ -26,9 +26,6 @@ export async function syncTheCragCsv(stillCurrent: () => boolean) {
 			'The configured theCrag username differs from the saved profile. Wipe local data before switching accounts.'
 		);
 	}
-	const localCount =
-		db.select({ n: count() }).from(ascents).where(eq(ascents.provider, PROVIDER)).get()?.n ?? 0;
-
 	const rows = await downloadLogbook(
 		{ username, password: env('THECRAG_PASSWORD') },
 		theCragSessionStore(username, env('SESSION_SECRET')),
@@ -44,31 +41,36 @@ export async function syncTheCragCsv(stillCurrent: () => boolean) {
 			'Logbook download cancelled because local data or the saved login was cleared.'
 		);
 
-	// Guard before any write so a truncated export cannot update then leave orphans.
-	assertCsvExportPlausibleForPrune(localCount, rows.length);
-
-	upsertAscents(rows);
-	const pruned = reconcileProviderAscents(
-		PROVIDER,
-		rows.map((a) => a.externalId),
-		{ expectedCount: rows.length }
+	return db.transaction(
+		() => {
+			// Count after the download, under the same write lock as the import. A
+			// manual import may have completed while the network request was pending.
+			const localCount =
+				db.select({ n: count() }).from(ascents).where(eq(ascents.provider, PROVIDER)).get()?.n ?? 0;
+			assertCsvExportPlausibleForPrune(localCount, rows.length);
+			upsertAscents(rows);
+			const pruned = reconcileProviderAscents(
+				PROVIDER,
+				rows.map((a) => a.externalId),
+				{ expectedCount: rows.length }
+			);
+			// CSV identity only — never retain the shared API key owner's account stats.
+			upsertProfile({
+				provider: PROVIDER,
+				login: username,
+				name: username,
+				ascentCount: rows.length,
+				externalId: null,
+				avatar: null,
+				typeOfClimber: null,
+				outdoorAscentCount: null,
+				indoorAscentCount: null,
+				heightClimbed: null,
+				routesTicked: null,
+				rawJson: null
+			});
+			return { count: rows.length, profileName: username, pruned };
+		},
+		{ behavior: 'immediate' }
 	);
-	// CSV identity only — clear API account fields so a shared THECRAG_API_KEY
-	// (route history) cannot leave key-owner stats on the profile. Null rawJson
-	// also stops analytics from backfilling account JSON into the columns.
-	upsertProfile({
-		provider: PROVIDER,
-		login: username,
-		name: username,
-		ascentCount: rows.length,
-		externalId: null,
-		avatar: null,
-		typeOfClimber: null,
-		outdoorAscentCount: null,
-		indoorAscentCount: null,
-		heightClimbed: null,
-		routesTicked: null,
-		rawJson: null
-	});
-	return { count: rows.length, profileName: username, pruned };
 }
