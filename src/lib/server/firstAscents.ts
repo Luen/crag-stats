@@ -19,10 +19,11 @@ export function parseFirstAscentKind(v: unknown): FirstAscentKind | null {
 const markKey = (provider: string, routeExternalId: string) => `${provider}:${routeExternalId}`;
 
 /** provider:routeExternalId → kind */
-export function getFirstAscentMarks(): Map<string, FirstAscentKind> {
+export function getFirstAscentMarks(source?: FirstAscentSource): Map<string, FirstAscentKind> {
 	ensureSchema();
 	const out = new Map<string, FirstAscentKind>();
 	for (const r of db.select().from(firstAscents).all()) {
+		if (source && r.source !== source) continue;
 		const kind = parseFirstAscentKind(r.kind);
 		if (kind) out.set(markKey(r.provider, r.routeExternalId), kind);
 	}
@@ -120,6 +121,7 @@ export function setFirstAscent(
 
 export type FirstAscentRow = {
 	routeId: number;
+	source: FirstAscentSource;
 	kind: FirstAscentKind;
 	routeName: string;
 	/** Display style (Sport, Trad, Boulder, …) */
@@ -163,6 +165,7 @@ export function buildFirstAscentStats(rows: readonly FirstAscentRow[]): FirstAsc
 
 	return {
 		total: rows.length,
+		imported: rows.filter((r) => r.source === 'import').length,
 		fa: rows.filter((r) => r.kind === 'FA').length,
 		ffa: rows.filter((r) => r.kind === 'FFA').length,
 		routesSet: 0,

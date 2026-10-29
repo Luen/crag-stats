@@ -39,7 +39,9 @@ Only public route history is saved, never your private ascent notes. **Settings 
 
 ## What the card shows
 
-- **Count:** how many routes you've marked. When you have FFAs, it also shows the FA / FFA split.
+When the card includes imported FA/FFA or setter credits, its footer credits theCrag route history. This follows the saved credits, even if import is later disabled. Manual marks need no attribution label; mixed collections retain the route-history credit.
+
+- **Count:** how many routes are credited as FA or FFA, from manual marks or public route-history import. When you have FFAs, it also shows the FA / FFA split.
 - **Routes set:** distinct routes whose cached history lists you as route setter (`@yourlogin`). Same `@login` rule as FA import; free-text names don't count. Needs route-history import (`ROUTE_HISTORY_IMPORT=true`) so those rows are saved locally.
 - **Community ascents (estimate):** cached ticks on routes you put up (FA/FFA marks **or** setter credits), minus your own logbook ticks recorded at the same fetch. A second tile splits out **sport / bolted** routes (Sport gear style, or any route with bolts recorded). Later owner repeats or deletions do not change the old snapshot. These are estimates of ascent totals, not unique climbers or live counters; visibility differences and an incomplete owner logbook can affect them.
 - **Community coverage:** the card shows how many credited logbook routes have paired count snapshots, out of all eligible routes. Known zero totals are displayed as zero; unavailable counts are excluded rather than treated as zero. Partial coverage is labelled explicitly. An entirely missing cache shows an unavailable message.

@@ -10,7 +10,7 @@ updates:
       minor-and-patch:
         update-types: ['minor', 'patch']
     ignore:
-      # Types must track the Node runtime (24 LTS: CI, Docker, .nvmrc), not the latest Node.
+      # Types must track the Node runtime (26 LTS: CI, Docker, .nvmrc), not the latest Node.
       - dependency-name: '@types/node'
         update-types: ['version-update:semver-major']
       # TypeScript 7 (native port) isn't supported by typescript-eslint / svelte-check yet.

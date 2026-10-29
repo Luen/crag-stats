@@ -89,7 +89,7 @@ Contributor / agent notes: see [AGENTS.md](./AGENTS.md) (living document).
 
 ## Quick start (local)
 
-Requires [pnpm](https://pnpm.io/) (Node 24 LTS+).
+Requires [pnpm](https://pnpm.io/) (Node 26 LTS+).
 
 ```bash
 cp .env.example .env

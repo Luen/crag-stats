@@ -16,15 +16,15 @@ jobs:
 
       - uses: actions/setup-node@v7
         with:
-          node-version: 24
+          node-version: 26
 
-      # Prefer corepack over pnpm/action-setup: the action self-installer
+      # Install packageManager directly: Node 26 does not bundle Corepack.
+      # The pnpm/action-setup self-installer
       # crashes when onlyBuiltDependencies is present as a non-array
       # (e.g. from .npmrc `only-built-dependencies=…`).
-      - name: Enable pnpm via corepack
+      - name: Install pinned pnpm
         run: |
-          corepack enable
-          corepack prepare "$(node -p "require('./package.json').packageManager")" --activate
+          npm install --global "$(node -p "require('./package.json').packageManager")"
           pnpm --version
 
       - name: Install build deps for better-sqlite3
@@ -71,10 +71,10 @@ jobs:
             type=gha,scope=docker-${{ matrix.arch }}
             type=gha
           cache-to: type=gha,mode=max,scope=docker-${{ matrix.arch }}
-      - name: Native SQLite, migrations and HTTP smoke test
+      - name: Native SQLite, migrations, HTTP and importer smoke test
         run: |
           docker run --rm --platform linux/${{ matrix.arch }} --entrypoint node \
             --mount type=bind,src="$PWD/scripts/container-smoke.mjs",dst=/app/scripts/container-smoke.mjs,readonly \
             --mount type=bind,src="$PWD/samples/thecrag-logbook-sample.csv",dst=/fixtures/logbook.csv,readonly \
             -e CRAG_STATS_CONTAINER_SMOKE=1 \
-            crag-stats:ci-${{ matrix.arch }} scripts/container-smoke.mjs
+            crag-stats:ci-${{ matrix.arch }} scripts/container-smoke.mjs --importer
