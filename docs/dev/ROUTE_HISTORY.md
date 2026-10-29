@@ -1,6 +1,6 @@
 # Route history import (developer notes)
 
-User-facing explanation: [`docs/guide/first-ascents.md`](../guide/first-ascents.md). This page covers how it works and why. Tracking issue: #68.
+User-facing explanations: [`docs/guide/first-ascents.md`](../guide/first-ascents.md) (FA/FFA) and [`docs/guide/logbook-sync.md`](../guide/logbook-sync.md) (API vs CSV logbook sync, also `/docs/logbook-sync` in the app). This page covers route-history import mechanics and why. Tracking issue: #68.
 
 ## Turning it on
 

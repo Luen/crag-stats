@@ -111,11 +111,14 @@ Public images are published to GitHub Container Registry on each version tag (`g
 
 ```bash
 cp .env.example .env
-# set THECRAG_API_KEY / SESSION_SECRET / optional APP_PASSWORD
+# API: THECRAG_API_KEY — or CSV: THECRAG_SYNC_MODE=csv + username/password + SESSION_SECRET
+# optional APP_PASSWORD; see docs/guide/logbook-sync.md (also /docs/logbook-sync in the app)
 
 docker compose -f docker-compose.ghcr.yml pull
 docker compose -f docker-compose.ghcr.yml up -d
 ```
+
+More deploy detail (proxies, upgrades, release): [docs/DEPLOY.md](docs/DEPLOY.md).
 
 Pin a release:
 
