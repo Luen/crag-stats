@@ -13,7 +13,7 @@ beforeEach(() => {
 	vi.mocked(runTheCragSync).mockResolvedValue({
 		skipped: false,
 		count: 0,
-		pruned: 0,
+		pruned: { deletedAscents: 0, deletedRoutes: 0, deletedProjects: 0 },
 		maxEpoch: null,
 		profileName: 'Synthetic climber'
 	});

@@ -1,8 +1,9 @@
 import { readFileSync } from 'node:fs';
 import { beforeEach, expect, it, vi } from 'vitest';
+import { sql } from 'drizzle-orm';
 import { wipeAllData } from './analytics';
 import { db } from './db';
-import { ascents, profiles, theCragWebSessions } from './db/schema';
+import { ascents, profiles, routes, theCragWebSessions } from './db/schema';
 import { upsertAscents } from './ingest';
 import { parseTheCragCsv } from './providers/thecrag/csv';
 import { downloadLogbook } from './providers/thecrag/logbookSession';
@@ -29,11 +30,14 @@ beforeEach(() => {
 	vi.clearAllMocks();
 });
 
-it('imports a validated export atomically, preserves absent ascents, and creates a CSV profile', async () => {
+it('imports a validated export, prunes absent ascents, and creates a CSV profile', async () => {
 	upsertAscents(sample);
+	expect(sample.length).toBeGreaterThan(1);
 	vi.mocked(downloadLogbook).mockResolvedValue([sample[0]]);
-	await syncTheCragCsv(() => true);
-	expect(db.select().from(ascents).all()).toHaveLength(sample.length);
+	const result = await syncTheCragCsv(() => true);
+	expect(db.select().from(ascents).all()).toHaveLength(1);
+	expect(db.select().from(ascents).get()?.externalId).toBe(sample[0].externalId);
+	expect(result.pruned.deletedAscents).toBe(sample.length - 1);
 	expect(db.select().from(profiles).get()).toMatchObject({ login: 'sample', ascentCount: 1 });
 });
 
@@ -72,6 +76,71 @@ it('clears API-only profile fields so a shared API key cannot leave key-owner ac
 		routesTicked: null,
 		rawJson: null
 	});
+});
+
+it('refuses a massive drop without writing (100 local vs tiny export)', async () => {
+	const many = Array.from({ length: 100 }, (_, i) => ({
+		...sample[0],
+		externalId: `local-${i}`,
+		route: { ...sample[0].route, externalId: `route-${i}`, name: `Route ${i}` }
+	}));
+	upsertAscents(many);
+	vi.mocked(downloadLogbook).mockResolvedValue(
+		Array.from({ length: 20 }, (_, i) => ({
+			...sample[0],
+			externalId: `export-${i}`,
+			route: { ...sample[0].route, externalId: `eroute-${i}`, name: `E ${i}` }
+		}))
+	);
+	await expect(syncTheCragCsv(() => true)).rejects.toThrow(/Refusing CSV sync/);
+	expect(db.select().from(ascents).all()).toHaveLength(100);
+	expect(db.select().from(ascents).get()?.externalId).toMatch(/^local-/);
+});
+
+it('uses the current cache count when another import finishes during the download', async () => {
+	const many = Array.from({ length: 100 }, (_, i) => ({
+		...sample[0],
+		externalId: `concurrent-${i}`
+	}));
+	vi.mocked(downloadLogbook).mockImplementationOnce(async () => {
+		upsertAscents(many);
+		return [sample[0]];
+	});
+	await expect(syncTheCragCsv(() => true)).rejects.toThrow(/Refusing CSV sync/);
+	const stored = db.select().from(ascents).all();
+	expect(stored).toHaveLength(100);
+	expect(stored.every((a) => a.externalId.startsWith('concurrent-'))).toBe(true);
+});
+
+it('rolls back upserts and pruning if saving the profile fails', async () => {
+	upsertAscents(sample);
+	db.insert(profiles)
+		.values({ provider: 'thecrag', login: 'sample', name: 'Saved name', updatedAt: '2026-01-01' })
+		.run();
+	const snapshot = () => ({
+		ascents: db.select().from(ascents).all(),
+		routes: db.select().from(routes).all(),
+		profiles: db.select().from(profiles).all()
+	});
+	const before = snapshot();
+	db.run(sql`CREATE TRIGGER fail_csv_profile BEFORE UPDATE ON profiles
+		BEGIN SELECT RAISE(ABORT, 'Synthetic profile write failure'); END`);
+	try {
+		vi.mocked(downloadLogbook).mockResolvedValueOnce([
+			{ ...sample[0], comment: 'Updated comment' }
+		]);
+		await expect(syncTheCragCsv(() => true)).rejects.toThrow('Synthetic profile write failure');
+		expect(snapshot()).toEqual(before);
+	} finally {
+		db.run(sql`DROP TRIGGER fail_csv_profile`);
+	}
+});
+
+it('refuses an empty export when the local logbook is non-empty', async () => {
+	upsertAscents(sample);
+	vi.mocked(downloadLogbook).mockResolvedValue([]);
+	await expect(syncTheCragCsv(() => true)).rejects.toThrow(/0 ascents/);
+	expect(db.select().from(ascents).all()).toHaveLength(sample.length);
 });
 
 it('does not ingest an export returned after a wipe', async () => {

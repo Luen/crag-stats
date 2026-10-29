@@ -117,7 +117,7 @@
 		<p class="hint">
 			For everyone without supporter API access. Export from theCrag:
 			<em>Action → Export logbook as CSV</em>. CSV import upserts rows but does
-			<strong>not</strong> prune deletes (API sync does).
+			<strong>not</strong> remove missing entries. Automatic sync reconciles deletions.
 		</p>
 		<form method="POST" action="?/importCsv" enctype="multipart/form-data" class="csv-import">
 			<input
@@ -142,10 +142,11 @@
 				cookies are encrypted locally and reused until theCrag requires a new login.
 			</p>
 			<p class="hint">
-				CSV sync updates and adds ascents. It does not remove local ascents deleted on theCrag.
-				Exports have fewer fields than API sync. <a href="/docs/logbook-sync"
-					>Setup and limitations</a
-				>
+				CSV sync updates and adds ascents, then removes entries missing from the export. Empty
+				exports against saved data and unusually large drops are refused before updating your
+				logbook. <a href="/docs/logbook-sync">How sync guards work</a>
+				Exports have fewer fields than API sync.
+				<a href="/docs/logbook-sync">Setup and limitations</a>
 			</p>
 		{:else}
 			<p class="hint">

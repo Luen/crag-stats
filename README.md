@@ -54,7 +54,7 @@ Inspired by [Dreeve](https://dreeve.app/) (Stats for Strava) and [RoxClimbs](htt
 ### Your logbook, kept in sync
 
 - **theCrag API sync:** uses your personal Logbook Read API key. Every sync is a full reconcile (new and edited ticks are updated, deleted ones removed), on a daily schedule. A fresh install syncs as soon as it starts. theCrag stays the source of truth.
-- **CSV import and automatic downloads** for climbers without supporter API access. Optional password login reuses encrypted session cookies across runs (adds and updates, never deletes). See [setup](docs/guide/logbook-sync.md).
+- **CSV import and automatic downloads** for climbers without supporter API access. Optional password login reuses encrypted session cookies across runs. Automatic downloads reconcile deletions with empty-export and large-drop guards; manual uploads only add and update. See [setup](docs/guide/logbook-sync.md).
 - **Logbook:** search and filter by style, tick, crag, sector, grade, year and season, with theCrag-style tick icons.
 
 ### Dashboard
