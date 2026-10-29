@@ -18,6 +18,7 @@ import { parseTheCragCsv } from './providers/thecrag';
 
 const row = (p: Partial<FirstAscentRow>): FirstAscentRow => ({
 	routeId: 1,
+	source: 'manual',
 	kind: 'FA',
 	routeName: 'Route',
 	style: 'Sport',
@@ -54,10 +55,13 @@ describe('buildFirstAscentStats', () => {
 					}
 				}
 			]);
-			setFirstAscent('thecrag', id, 'FA');
+			setFirstAscent('thecrag', id, 'FA', {
+				source: id === 'review-community-1' ? 'import' : 'manual'
+			});
 		}
 		const stats = getDashboardStats();
 		expect(stats.firstAscents.recent).toHaveLength(2);
+		expect(stats.firstAscents.imported).toBe(1);
 		expect(new Set(stats.hardestSends.map((climb) => climb.id)).size).toBe(2);
 		// Two FA routes condense to the first-FA threshold only (#194) — not one row per route.
 		const faMilestones = stats.milestones.items.filter((item) => item.kind === 'fa');
@@ -133,6 +137,15 @@ describe('first ascent marks', () => {
 
 		const fa = getDashboardStats().firstAscents;
 		expect(fa).toMatchObject({ total: 1, ffa: 1 });
+		expect(fa.imported).toBe(0);
+		setFirstAscent('thecrag', route, 'FFA', { source: 'import' });
+		expect(getDashboardStats().firstAscents).toMatchObject({ total: 1, ffa: 1, imported: 1 });
+		// Marks without a logged route must not add attribution to the displayed credits.
+		setFirstAscent('thecrag', 'not-in-logbook', 'FA', { source: 'import' });
+		expect(getDashboardStats().firstAscents.imported).toBe(1);
+		setFirstAscent('thecrag', 'not-in-logbook', null, { recordSkip: false });
+		setFirstAscent('thecrag', route, 'FFA');
+		expect(getDashboardStats().firstAscents.imported).toBe(0);
 		expect(fa.recent[0].routeName).toBe('Hard Project');
 
 		setFirstAscent('thecrag', route, null);

@@ -55,6 +55,7 @@ type AscentRouteRow = {
 	ascentDate: string | null;
 	heightM: number | null;
 	isSend: boolean;
+	isAttempt: boolean;
 	effectiveGradeScore: number | null;
 	gearStyle: string | null;
 	routeName: string | null;
@@ -69,6 +70,7 @@ function loadAscentRouteRows(): AscentRouteRow[] {
 			ascentDate: ascents.ascentDate,
 			heightM: ascents.heightM,
 			isSend: ascents.isSend,
+			isAttempt: ascents.isAttempt,
 			effectiveGradeScore: ascents.effectiveGradeScore,
 			gearStyle: routes.gearStyle,
 			routeName: routes.name,
@@ -119,7 +121,7 @@ function gradeGoalSendEvidence(
 
 		if (!a.isSend) {
 			// Working / attempt ticks at or above N−1 (projecting the goal band).
-			if (score >= n1Bucket) attemptsNearTarget += 1;
+			if (a.isAttempt && score >= n1Bucket) attemptsNearTarget += 1;
 			continue;
 		}
 

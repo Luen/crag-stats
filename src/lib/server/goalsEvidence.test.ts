@@ -101,3 +101,23 @@ it('raises readiness on each near-target attempt and steps faster for short-term
 	expect(long.progressLabel).toContain('Long-haul');
 	expect(long.progressLabel).toContain('2 attempts on ≥27');
 });
+
+it('counts only classified attempts in the goal year and venue', () => {
+	upsertAscents([
+		tick('send', 'send-route', 22),
+		{ ...tick('unknown', 'unknown-route', 25, { send: false }), isAttempt: false },
+		tick('old-attempt', 'old-route', 25, { send: false, date: '2025-01-01' }),
+		tick('indoor-attempt', 'gym-route', 25, { send: false, indoor: true }),
+		tick('below-band', 'easy-route', 21, { send: false }),
+		tick('working', 'project-route', 23, { send: false })
+	]);
+	const goal = createGoal({
+		kind: 'grade',
+		title: 'Scoped attempts',
+		targetGradeScore: 23,
+		year: 2026,
+		venueScope: 'outdoor'
+	});
+	expect(goal.progressLabel).toContain('1 attempt on ≥22');
+	expect(goal.progressPct).toBe(46.3);
+});

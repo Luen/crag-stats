@@ -32,7 +32,7 @@ Self-hosted climbing analytics for [theCrag](https://www.thecrag.com/), inspired
 | Font            | Plus Jakarta Sans (bundled via `@fontsource-variable/plus-jakarta-sans`, no CDN)          |
 | DB              | SQLite via `better-sqlite3` + Drizzle ORM                                                 |
 | Package manager | **pnpm** (pin via `package.json#packageManager`; config in `pnpm-workspace.yaml`)         |
-| Node            | 24 LTS+                                                                                   |
+| Node            | 26 LTS+                                                                                   |
 | Deploy          | Docker multi-arch → GHCR (`ghcr.io/luen/crag-stats`)                                      |
 | Migrations      | Versioned SQL in `/migrations`, run on container boot via `scripts/docker-entrypoint.mjs` |
 | i18n            | Planned (Crowdin epic/issue) — not implemented yet                                        |
@@ -168,7 +168,7 @@ Components: `TickTypeIcon.svelte`, `StyleBadge.svelte`. Keep icons SVG-inline so
 - Compose: `docker-compose.yml` (build) and `docker-compose.ghcr.yml` (pull image).
 - `docker-release.yml` builds multi-arch and pushes on version tag pushes (`v0.1.0`, …), manual dispatch, or `workflow_call`. There is no `release` trigger: `gh release create` (or a UI release with a new tag) pushes the tag, and a second trigger built every release twice (#164). Publishing a release for an existing tag does not rebuild; use manual dispatch.
 - `nightly-minor-deps-release.yml` runs daily (~00:17 AEST). `npm-check-updates --target semver --cooldown 3` raises package.json ranges within each dependency's major; 0.x packages only get patches. pnpm then re-resolves only the changed specifiers in the lockfile, because frozen installs need the two in sync. After that: lint, check, test, build and e2e, a patch bump, a tag and GitHub release, and the image via `docker-release.yml`. It does nothing when no range moved. It pushes straight to `main`, so branch protection on `main` needs a bypass for Actions.
-- The Docker runner uses distroless Debian 13 plus the build stage's Node 24 binary, with no shell or package manager. Runtime maintenance must use `node scripts/*.mjs`; package managers remain in the build stage. Container scan evidence and unresolved OS findings: `docs/dev/DOCKER_SECURITY.md`.
+- The Docker runner uses distroless Debian 13 plus the build stage's Node 26 binary, with no shell or package manager. Runtime maintenance must use `node scripts/*.mjs`; package managers remain in the build stage. Container scan evidence and unresolved OS findings: `docs/dev/DOCKER_SECURITY.md`.
 - `.dockerignore` keeps host dependencies, generated output, local env files and SQLite caches out of build contexts. Keep source, migrations, bundled docs and package-manager configuration included.
 - Entrypoint runs migrations before app/worker start; `ensureSchema()` (`src/lib/server/db/index.ts`) applies the same files under `pnpm dev` / `node build`. Persist SQLite via volume (`DATABASE_PATH`).
 
@@ -277,7 +277,7 @@ You'll often notice things outside the task at hand. **Don't silently fix them i
 | 2026-10 | Auth harden: login rate limit, safe redirects, HMAC password/worker-secret compares, security headers, `/logout`. CF Access for `crag.luenwarneke.com` settings/login. CPR SVG NaN guards.                              |
 | 2026-10 | Mobile: heatmap/charts scroll, yearly cards, notable stacked groups; pyramid active pill `--paper` + “All” label.                                                                                                       |
 | 2026-10 | pnpm 12.15.0 via `packageManager`; config in `pnpm-workspace.yaml` (`allowBuilds`, `minimumReleaseAge: 0`). Docker reads pin from package.json.                                                                         |
-| 2026-10 | Runtime pin Node 24 LTS (CI, Docker build `node:24-bookworm-slim` plus a minimal Debian 13 runner, `engines.node`, `.nvmrc`).                                                                                           |
+| 2026-10 | Runtime pin Node 26 LTS (CI, Docker build `node:26-bookworm-slim` plus a minimal Debian 13 runner, `engines.node`, `.nvmrc`).                                                                                           |
 | 2026-10 | Badges carousel on dashboard (RoxClimbs-style milestones from logbook: sends, onsights, countries, height, bands).                                                                                                      |
 | 2026-10 | Goals: Active/Achieved + progress bars; grade = send ≥ X this year; venue_scope outdoor/indoor/any (migration 0007); dashboard shows 3 active goals.                                                                    |
 | 2026-10 | `/projects` RoxClimbs-style auto-projecting cards: open = unsent attempts touched within 1 year; sent shelf = fought-then-sent within ~31 days; first-go sends never projects. No create form.                          |
@@ -423,3 +423,7 @@ You'll often notice things outside the task at hand. **Don't silently fix them i
 _Add a row when you change behaviour agents must know about._
 
 | 2026-10 | Security remediation pins pnpm patches for deepmerge 4.3.1, picomatch 4.0.7 and uri-js 4.4.1, with installed-package exploit regressions in `dependencySecurity.test.ts`. Keep `patches/` available before Docker's frozen install. Adapter-node is build-only. Read `patches/README.md` and `docs/dev/SECURITY_SCAN.md`; version-based alerts can persist despite local fixes and must remain disclosed. |
+
+- First ascents attribution follows saved mark source (plus cached setter credits), not `ROUTE_HISTORY_IMPORT`: manual/imported credits coexist and imported marks survive disabling import.
+
+- Node 26 LTS is the runtime baseline. Install the exact `packageManager` with npm (Corepack is not bundled); the distroless image also needs the build-stage libatomic shared library. Validate native SQLite and importer on amd64 and arm64 after runtime updates.

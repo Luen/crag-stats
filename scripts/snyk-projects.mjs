@@ -2,7 +2,8 @@
 import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { parseAllDocuments, stringify } from 'yaml';
+import yaml from 'yaml';
+const { parseAllDocuments, stringify } = yaml;
 
 // Snyk currently accepts one pnpm YAML document per project. Keep both graphs
 // separate: their shared importer key would overwrite dependencies if merged.

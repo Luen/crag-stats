@@ -16,6 +16,18 @@ test('mark a first ascent from the logbook and see it on the dashboard', async (
 	});
 	await expect(card).toContainText('1');
 	await expect(card).toContainText('Hard Project');
+	await expect(card).not.toContainText('Marked by you');
+	await expect(card).not.toContainText('Includes credits imported');
+	const db = new Database('e2e/.tmp/open.sqlite');
+	try {
+		db.prepare("UPDATE first_ascents SET source = 'import', kind = 'FFA'").run();
+		await page.reload();
+		await expect(card).toContainText('Includes credits imported from theCrag route history.');
+		await expect(card.getByRole('link', { name: 'How it works' })).toBeVisible();
+	} finally {
+		db.prepare("UPDATE first_ascents SET source = 'manual', kind = 'FA'").run();
+		db.close();
+	}
 
 	// Leave shared e2e state as it was.
 	await page.goto('/logbook?q=Hard%20Project');
@@ -65,6 +77,7 @@ test('setter-only First ascents card omits empty style chart (#150)', async ({ p
 			has: page.getByRole('heading', { name: 'First ascents', exact: true })
 		});
 		await expect(card).toContainText('route set');
+		await expect(card).toContainText('Includes credits imported from theCrag route history.');
 		await expect(card.locator('[role="img"]')).toHaveCount(0);
 		await expect(card.getByRole('heading', { name: 'Latest' })).toHaveCount(0);
 		for (const colorScheme of ['light', 'dark'] as const) {

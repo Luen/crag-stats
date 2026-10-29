@@ -167,3 +167,5 @@ Settings mutes the notes checkbox when CSV sync prevents enabling it. An existin
 Settings explains that automatic CSV sync removes missing entries with drop guards; distinguish it from manual CSV upload, which never prunes.
 
 Settings places First Moves directly after Import route history and immediately before Privacy & data control. Keep the `#first-import` anchor on that panel.
+
+The First ascents footer credits theCrag route history when displayed FA/FFA or setter credits were imported. Manual marks have no attribution label. Keep community coverage and the How it works link.
