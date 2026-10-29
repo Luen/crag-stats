@@ -6,13 +6,7 @@ import { db } from './db';
 import { appSettings } from './db/schema';
 import { updateSyncState, upsertAscents } from './ingest';
 import { parseTheCragCsv } from './providers/thecrag/csv';
-import {
-	beginFirstImport,
-	completeFirstImport,
-	correctFirstImportDate,
-	firstImportDateInput,
-	getFirstImport
-} from './firstImport';
+import { beginFirstImport, completeFirstImport, getFirstImport } from './firstImport';
 
 const sample = parseTheCragCsv(readFileSync('samples/thecrag-logbook-sample.csv'));
 beforeEach(() => wipeAllData());
@@ -48,7 +42,7 @@ it('records the first successful non-empty import and preserves it across subseq
 	expect(getFirstImport()).toEqual({ at: '2026-10-27T01:00:00.000Z', count: 902, legacy: false });
 });
 
-it('does not mistake a retry after a failed partial sync for an older installation', () => {
+it('does not mistake a retry after a failed partial sync for a skipped milestone', () => {
 	beginFirstImport();
 	upsertAscents(sample); // A failed API pull wrote a batch, but never completed.
 	expect(getFirstImport()).toEqual({ at: null, count: 0, legacy: false });
@@ -56,22 +50,35 @@ it('does not mistake a retry after a failed partial sync for an older installati
 	expect(getFirstImport()?.at).toBe('2026-10-27T01:00:00.000Z');
 });
 
-it('leaves legacy dates unknown after later syncs, until the owner supplies the original date', () => {
+it('stamps the first successful sync even when the logbook already had ascents', () => {
 	upsertAscents(sample);
 	completeFirstImport(sample.length, beginFirstImport(), '2026-10-29T01:00:00.000Z');
-	expect(getFirstImport()).toEqual({ at: null, count: sample.length, legacy: true });
-	correctFirstImportDate('2026-10-27');
-	completeFirstImport(1000, beginFirstImport());
-	expect(getFirstImport()).toEqual({ at: '2026-10-27', count: sample.length, legacy: false });
+	expect(getFirstImport()).toEqual({
+		at: '2026-10-29T01:00:00.000Z',
+		count: sample.length,
+		legacy: false
+	});
+	completeFirstImport(1000, beginFirstImport(), '2026-10-30T01:00:00.000Z');
+	expect(getFirstImport()?.at).toBe('2026-10-29T01:00:00.000Z');
 });
 
-it('ignores empty imports and rejects invalid correction dates', () => {
+it('ignores empty imports', () => {
 	completeFirstImport(0, beginFirstImport());
 	expect(getFirstImport()?.at).toBeNull();
-	expect(() => correctFirstImportDate('2026-10-27')).toThrow('Import a logbook');
-	expect(() => correctFirstImportDate('2026-02-30')).toThrow('valid first import date');
-	upsertAscents(sample);
-	expect(() => correctFirstImportDate('2999-01-01')).toThrow('cannot be in the future');
+});
+
+it('completes a saved legacy unknown date once, preserving known dates', () => {
+	db.insert(appSettings)
+		.values({
+			key: 'first_import',
+			value: JSON.stringify({ at: null, count: 10, legacy: true }),
+			updatedAt: '2026-10-01T00:00:00.000Z'
+		})
+		.run();
+	completeFirstImport(12, beginFirstImport(), '2026-10-29T01:00:00.000Z');
+	expect(getFirstImport()).toEqual({ at: '2026-10-29T01:00:00.000Z', count: 12, legacy: false });
+	completeFirstImport(15, beginFirstImport(), '2026-10-30T01:00:00.000Z');
+	expect(getFirstImport()?.at).toBe('2026-10-29T01:00:00.000Z');
 });
 
 it('wipe resets the milestone, preserves preferences, and ignores an outstanding completion', () => {
@@ -87,17 +94,4 @@ it('wipe resets the milestone, preserves preferences, and ignores an outstanding
 	).toBe('french');
 	completeFirstImport(1, beginFirstImport(), '2026-10-29T01:00:00.000Z');
 	expect(getFirstImport()?.count).toBe(1);
-});
-
-it('uses the site time zone for timestamps and preserves manually entered calendar dates', () => {
-	const display = { locale: 'en-AU', timeZone: 'Australia/Brisbane' };
-	expect(
-		firstImportDateInput({ at: '2026-10-26T14:30:00.000Z', count: 1, legacy: false }, display)
-	).toBe('2026-10-27');
-	expect(
-		firstImportDateInput(
-			{ at: '2026-10-27', count: 1, legacy: false },
-			{ ...display, timeZone: 'Pacific/Honolulu' }
-		)
-	).toBe('2026-10-27');
 });

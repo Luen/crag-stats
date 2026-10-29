@@ -939,23 +939,21 @@ export function buildBadges(
 	}
 
 	const first = context.firstImport;
-	if (first?.at || first?.legacy || (!first && rows.length > 0)) {
+	if (first?.at) {
 		const display = context.dateDisplay ?? DEFAULT_DATE_DISPLAY;
-		const at = first?.at ?? null;
-		// A manually supplied date is a calendar day; timestamps use the owner's time zone.
-		const dateOnly = at && /^\d{4}-\d{2}-\d{2}$/.test(at);
-		const when = at
-			? formatDateTime(
-					dateOnly ? `${at}T12:00:00Z` : at,
-					dateOnly ? { ...display, timeZone: 'UTC' } : display,
-					{ month: 'short', day: 'numeric', year: 'numeric' }
-				)
-			: 'Import date unknown';
+		const at = first.at;
+		// Calendar-day strings (legacy manual corrections) stay UTC noon; timestamps use display TZ.
+		const dateOnly = /^\d{4}-\d{2}-\d{2}$/.test(at);
+		const when = formatDateTime(
+			dateOnly ? `${at}T12:00:00Z` : at,
+			dateOnly ? { ...display, timeZone: 'UTC' } : display,
+			{ month: 'short', day: 'numeric', year: 'numeric' }
+		);
 		mark('first_moves', {
 			date: at,
 			routeName: null,
 			href: null,
-			detail: `Imported ${formatNumber(first?.count ?? rows.length, display)} climbs · ${when}`
+			detail: `Imported ${formatNumber(first.count, display)} climbs · ${when}`
 		});
 	}
 
