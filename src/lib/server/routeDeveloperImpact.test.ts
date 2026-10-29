@@ -173,6 +173,13 @@ describe('buildRouteDeveloperImpact (#135)', () => {
 		expect(communityRouteStyleLabel('', null)).toBeNull();
 	});
 
+	it('prefers explicit gear style over bolts for the label', () => {
+		expect(communityRouteStyleLabel('Trad', 3)).toBe('Trad');
+		expect(communityRouteStyleLabel('Top rope', 6)).toBe('Top rope');
+		expect(communityRouteStyleLabel('Boulder', 2)).toBe('Boulder');
+		expect(communityRouteStyleLabel('', 0)).toBeNull();
+	});
+
 	it('keeps a complete known zero distinct from missing data', () => {
 		upsertAscents([
 			{

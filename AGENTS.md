@@ -369,4 +369,6 @@ You'll often notice things outside the task at hand. **Don't silently fix them i
 
 | 2026-10 | #179: minimal glibc runtime removes mount/apt/shell utilities. CI builds and smoke-tests amd64 + arm64; local importer validation uses synthetic loopback data and GitHub TLS, never theCrag. Raw OS scan findings and source-based zlib triage remain in `docs/dev/DOCKER_SECURITY.md`. |
 
+| 2026-10 | #189: community-row `styleLabel` is display-only (explicit gear style beats bolts); `sportOrBolted` still drives the sport/bolted tile and community badges. |
+
 _Add a row when you change behaviour agents must know about._

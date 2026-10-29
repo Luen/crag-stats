@@ -57,10 +57,11 @@ export function communityRouteStyleLabel(
 	gearStyle: string | null | undefined,
 	bolts: number | null | undefined
 ): string | null {
-	if (isSportOrBolted(gearStyle, bolts)) return 'Sport/bolted';
 	const s = (gearStyle ?? '').trim();
-	if (!s) return null;
+	// Explicit gear style wins; bolts only classify routes whose style is unknown.
+	if (!s) return bolts != null && Number.isFinite(bolts) && bolts > 0 ? 'Sport/bolted' : null;
 	const lower = s.toLowerCase();
+	if (lower.includes('sport')) return 'Sport/bolted';
 	if (lower.includes('boulder')) return 'Boulder';
 	if (lower.includes('trad')) return 'Trad';
 	if (lower.includes('top')) return 'Top rope';
