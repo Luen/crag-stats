@@ -3,7 +3,7 @@
  * offline. `routeHistoryImport.ts` wires in the real config and impers client.
  *
  * Being gentle with theCrag is the point of the design:
- * - FA/FFA history never changes, so each route is fetched **once** (`route_history_fetches`).
+ * - Routes are fetched once unless periodic refresh is explicitly enabled.
  * - At most `ROUTES_PER_RUN` routes per run, in batches, with ≥`MIN_REQUEST_GAP_MS` between
  *   any two requests (also across runs), and ≥`MIN_RUN_INTERVAL_MS` between runs.
  * - One client session per run. Any block, throttle or error stops the run immediately (no
@@ -51,7 +51,18 @@ const BLOCK_BACKOFF_MAX_MS = 7 * 24 * HOUR;
 const ERROR_BACKOFF_MS = HOUR;
 const ERROR_BACKOFF_MAX_MS = 24 * HOUR;
 
-export type RouteHistoryConfig = { enabled: boolean; apiKey: string };
+export type RouteHistoryConfig = {
+	enabled: boolean;
+	apiKey: string;
+	/** Opt-in rolling refresh age. Unset/0 keeps fetch-once behavior. */
+	refreshDays?: 0 | 30 | 90;
+};
+
+/** Invalid or unset values retain fetch-once behavior. */
+export function parseRouteDataRefreshDays(value: string): 0 | 30 | 90 {
+	const days = value.trim();
+	return days === '30' ? 30 : days === '90' ? 90 : 0;
+}
 
 export type RouteHistoryDeps = {
 	openClient: (apiKey: string) => Promise<RouteHistoryClient>;
@@ -78,6 +89,7 @@ export type RouteHistoryRunResult = {
 
 export type RouteHistoryStatus = {
 	enabled: boolean;
+	refreshDays: 0 | 30 | 90;
 	hasApiKey: boolean;
 	status: string;
 	running: boolean;
@@ -156,10 +168,13 @@ function ownerLogin(): string | null {
 }
 
 /**
- * Routes theCrag hasn't answered for yet. Ungraded routes first (likeliest to be your new
- * lines), then most recently climbed.
+ * Unfetched routes first (ungraded, then recently climbed), followed by oldest stale fetches.
  */
-export function pendingRouteIds(limit: number): string[] {
+export function pendingRouteIds(
+	limit: number,
+	refreshDays: 0 | 30 | 90 = 0,
+	now = Date.now()
+): string[] {
 	ensureSchema();
 	const rows = db
 		.select({ id: routes.externalId })
@@ -171,8 +186,10 @@ export function pendingRouteIds(limit: number): string[] {
 				eq(routeHistoryFetches.routeExternalId, routes.externalId)
 			)
 		)
-		.where(and(eq(routes.provider, PROVIDER), sql`${routeHistoryFetches.routeExternalId} IS NULL`))
+		.where(and(eq(routes.provider, PROVIDER), pendingFetchCondition(refreshDays, now)))
 		.orderBy(
+			sql`CASE WHEN ${routeHistoryFetches.routeExternalId} IS NULL THEN 0 ELSE 1 END`,
+			routeHistoryFetches.fetchedAt,
 			sql`CASE WHEN ${routes.gradeScore} IS NULL THEN 0 ELSE 1 END`,
 			sql`(SELECT max(a.ascent_date) FROM ascents a WHERE a.route_id = ${routes.id}) DESC`,
 			routes.externalId
@@ -180,6 +197,13 @@ export function pendingRouteIds(limit: number): string[] {
 		.limit(limit)
 		.all();
 	return rows.map((r) => r.id);
+}
+
+function pendingFetchCondition(refreshDays: 0 | 30 | 90, now: number) {
+	const unfetched = sql`${routeHistoryFetches.routeExternalId} IS NULL`;
+	if (!refreshDays) return unfetched;
+	const cutoff = new Date(now - refreshDays * 86_400_000).toISOString();
+	return sql`(${unfetched} OR ${routeHistoryFetches.fetchedAt} <= ${cutoff})`;
 }
 
 /**
@@ -332,7 +356,7 @@ function backoffMs(failures: number, base: number, max: number): number {
 	return Math.min(max, base * 2 ** Math.max(0, failures - 1));
 }
 
-/** One rate-limited run: up to ROUTES_PER_RUN unfetched routes, then stop. */
+/** One rate-limited run: up to ROUTES_PER_RUN unfetched or stale routes, then stop. */
 export async function runRouteHistoryImportOnce(
 	config: RouteHistoryConfig,
 	deps: RouteHistoryDeps
@@ -377,7 +401,7 @@ export async function runRouteHistoryImportOnce(
 	if (!login) {
 		return result(false, 'no-login', 'Sync the logbook first so Crag Stats knows your @login.');
 	}
-	const pending = pendingRouteIds(ROUTES_PER_RUN);
+	const pending = pendingRouteIds(ROUTES_PER_RUN, config.refreshDays, now);
 	if (!pending.length) {
 		return result(true, 'done', 'Every route in your logbook has been checked.');
 	}
@@ -510,7 +534,10 @@ export function resetRouteHistoryFetches(): number {
 		.changes;
 }
 
-export function routeHistoryStatus(config: RouteHistoryConfig): RouteHistoryStatus {
+export function routeHistoryStatus(
+	config: RouteHistoryConfig,
+	now = Date.now()
+): RouteHistoryStatus {
 	ensureSchema();
 	const state = readState();
 	const count = (q: ReturnType<typeof sql<number>>) => Number(db.get<{ n: number }>(q)?.n ?? 0);
@@ -519,8 +546,21 @@ export function routeHistoryStatus(config: RouteHistoryConfig): RouteHistoryStat
 		sql`SELECT count(*) AS n FROM route_history_fetches f JOIN routes r
 			ON r.provider = f.provider AND r.external_id = f.route_external_id WHERE f.provider = ${PROVIDER}`
 	);
+	const pendingRoutes = db
+		.select({ n: sql<number>`count(*)` })
+		.from(routes)
+		.leftJoin(
+			routeHistoryFetches,
+			and(
+				eq(routeHistoryFetches.provider, routes.provider),
+				eq(routeHistoryFetches.routeExternalId, routes.externalId)
+			)
+		)
+		.where(and(eq(routes.provider, PROVIDER), pendingFetchCondition(config.refreshDays ?? 0, now)))
+		.get()!.n;
 	return {
 		enabled: config.enabled,
+		refreshDays: config.refreshDays ?? 0,
 		hasApiKey: Boolean(config.apiKey),
 		// A stored 'running' with no live run means the process died mid-run.
 		status: running ? 'running' : state?.status === 'running' ? 'idle' : (state?.status ?? 'idle'),
@@ -532,7 +572,7 @@ export function routeHistoryStatus(config: RouteHistoryConfig): RouteHistoryStat
 		nextAllowedAt: state?.nextAllowedAt ?? null,
 		totalRoutes,
 		fetchedRoutes,
-		pendingRoutes: Math.max(0, totalRoutes - fetchedRoutes),
+		pendingRoutes,
 		historyRows: count(sql`SELECT count(*) AS n FROM route_history WHERE provider = ${PROVIDER}`),
 		importedMarks: count(
 			sql`SELECT count(*) AS n FROM first_ascents WHERE provider = ${PROVIDER} AND source = 'import'`

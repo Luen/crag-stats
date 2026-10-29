@@ -33,6 +33,11 @@ export const variables = defineEnvVars({
 			'Opt-in: fetch public FA/FFA route history from theCrag in the background, 100 routes per run (default false)',
 		schema: optionalString
 	},
+	ROUTE_DATA_REFRESH_DAYS: {
+		description:
+			'Opt-in route data refresh: 30 or 90 days; unset/0 disables (requires ROUTE_HISTORY_IMPORT)',
+		schema: optionalString
+	},
 	DISPLAY_LOCALE: {
 		description: 'Locale for dates/numbers (BCP 47, default en-AU)',
 		schema: optionalString
