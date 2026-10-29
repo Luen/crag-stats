@@ -86,3 +86,7 @@ Checklist:
 4. Re-read the zlib tracker + upstream issue if the high ID remains; update the disposition paragraph if Debian reclassifies trixie.
 5. Update the residual table and digest in this file in the same PR as the image bump.
 6. Keep full reports outside Git; leave findings visible (no ignores for “still tracking”).
+
+## Node 26 release validation (29 October 2026)
+
+The Node 26.13.0 candidate passed SQLite, migrations, sample CSV/HTTP, native importer compression and HTTPS checks. CI verifies both amd64 and arm64. A Snyk Container CLI rescan of the Node 26 candidate reported the same 14 OS dependencies and 25 unique advisory IDs (one high, 24 low); no ignores were added. This scan covers the OS inventory, not proof of runtime reachability or the absence of embedded-code issues. The Snyk PR integration remains blocked by its account private-test quota.
