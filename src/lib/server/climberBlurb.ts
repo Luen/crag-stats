@@ -149,7 +149,7 @@ export function describeDeveloperPreference(input: {
 	// Counts are cached route ascents (estimates), not distinct people.
 	let impact = '';
 	if (others >= DEVELOPER_IMPACT_MIN) {
-		impact = ` that other people have climbed about ${fmt(others)} times`;
+		impact = ` that other people have climbed over ${fmt(others)} times`;
 	}
 
 	const styleSentence = `${lead}${impact}.`;
