@@ -105,9 +105,11 @@ type FirstAscentRange = {
 	count: number;
 } | null;
 
-/** Owner-marked first ascents (FA / FFA); see firstAscents.ts. */
+/** Manual or imported first ascents (FA / FFA); see firstAscents.ts. */
 export type FirstAscentStats = {
 	total: number;
+	/** Displayed FA/FFA routes whose saved mark came from public route history. */
+	imported: number;
 	fa: number;
 	ffa: number;
 	/** Routes where cached route history credits you as route setter (@login). */
