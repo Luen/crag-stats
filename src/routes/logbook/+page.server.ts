@@ -2,7 +2,6 @@ import { fail } from '@sveltejs/kit';
 import { listLogbook } from '#lib/server/analytics';
 import { getPreferredGradeSystem, getShowNotes } from '#lib/server/appSettings';
 import { parseFirstAscentKind, routeExists, setFirstAscent } from '#lib/server/firstAscents';
-import { getTheCragSyncConfiguration } from '#lib/server/env';
 import { notesVisible } from '#lib/server/notes';
 import { isRouteHistoryImportEnabled } from '#lib/server/routeHistoryImport';
 import { routeGradeOptions } from '#lib/logbookFilters';
@@ -134,11 +133,7 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 			: undefined;
 	const page = Math.max(1, Number(url.searchParams.get('page') || '1'));
 	const limit = 50;
-	const notesShown = notesVisible(
-		getShowNotes().enabled,
-		locals.authed,
-		getTheCragSyncConfiguration().mode
-	);
+	const notesShown = notesVisible(getShowNotes().enabled, locals.authed);
 	const gradeSystem = getPreferredGradeSystem();
 	const { total, rows } = listLogbook({
 		q: q || undefined,

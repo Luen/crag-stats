@@ -32,6 +32,7 @@ describe('privateNotesSyncAvailable', () => {
 	it('is false for CSV-only sync', () => {
 		expect(privateNotesSyncAvailable('csv')).toBe(false);
 		expect(privateNotesSyncAvailable('api')).toBe(true);
+		expect(privateNotesSyncAvailable('invalid')).toBe(true);
 	});
 });
 
@@ -40,10 +41,5 @@ describe('notesVisible', () => {
 		expect(notesVisible(true, true)).toBe(true);
 		expect(notesVisible(true, false)).toBe(false);
 		expect(notesVisible(false, true)).toBe(false);
-	});
-
-	it('is always off when sync mode is csv', () => {
-		expect(notesVisible(true, true, 'csv')).toBe(false);
-		expect(notesVisible(true, false, 'csv')).toBe(false);
 	});
 });

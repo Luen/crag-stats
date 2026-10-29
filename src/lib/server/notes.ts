@@ -14,23 +14,23 @@ export function resolveShowNotes(input: { stored: string | null }): ShowNotes {
 	return { enabled: false, source: 'default' };
 }
 
-export type TheCragSyncMode = 'api' | 'csv' | 'invalid';
+/** Sync modes that can carry theCrag privateMarkdown into the notes field. */
+export type NotesSyncMode = 'api' | 'csv' | 'invalid';
 
-/** CSV logbook export does not include private ascent comments. */
-export function privateNotesSyncAvailable(syncMode: TheCragSyncMode): boolean {
+/**
+ * CSV logbook export does not include privateMarkdown. Settings disables turning the
+ * notes toggle on in CSV mode so it is not mistaken for private-note access. Public
+ * Comment-column text may still be stored and shown under the usual owner gate.
+ */
+export function privateNotesSyncAvailable(syncMode: NotesSyncMode): boolean {
 	return syncMode !== 'csv';
 }
 
 /**
  * Notes reach a viewer only when enabled and the viewer could open Settings
  * (`locals.authed`: no APP_PASSWORD, or signed in). Visitors never see them.
- * CSV-only sync never exposes notes (export has no private comments).
+ * Sync mode does not hard-hide notes — CSV Comment rows remain showable when opted in.
  */
-export function notesVisible(
-	enabled: boolean,
-	viewerIsAdmin: boolean,
-	syncMode: TheCragSyncMode = 'api'
-): boolean {
-	if (!privateNotesSyncAvailable(syncMode)) return false;
+export function notesVisible(enabled: boolean, viewerIsAdmin: boolean): boolean {
 	return enabled && viewerIsAdmin;
 }

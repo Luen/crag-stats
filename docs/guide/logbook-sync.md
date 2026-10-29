@@ -31,6 +31,6 @@ CSV sync adds and updates ascents. It never removes local ascents missing from t
 
 The CSV has fewer fields than the API, including less profile, route metadata and multipitch information. Switching from API to CSV can replace richer ascent fields with the CSV values. Grade calculations use the existing CSV parser. Account-level CPR and other API-only profile information are not fetched by this mode. Switching accounts requires wiping local data first.
 
-Private ascent comments are not in the CSV export, so the Settings toggle to show them is disabled while `THECRAG_SYNC_MODE=csv`. Manual CSV uploads behave the same way. Use API sync to import and optionally display private notes (same owner-only visibility rules as API mode). Passwords, session cookies and login responses are never displayed or included in sync errors.
+CSV sync does not download theCrag's private ascent notes (`privateMarkdown`); only the public Comment column is imported. Settings disables turning **Show my private ascent notes** on while `THECRAG_SYNC_MODE=csv`, so the toggle is not mistaken for private-note access. Comment-column text already stored (or from a manual CSV upload in API mode) still follows the usual owner-only visibility rules. Use API sync for privateMarkdown. Passwords, session cookies and login responses are never displayed or included in sync errors.
 
 Route-history enrichment is separate and still needs its existing opt-in configuration and API key. CSV mode does not silently switch to API mode, and API failures do not trigger password login.

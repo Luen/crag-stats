@@ -77,17 +77,19 @@
 				<input
 					type="checkbox"
 					name="notes"
-					checked={notesCsvOnly ? false : data.showNotes.enabled}
+					checked={data.showNotes.enabled}
 					disabled={notesCsvOnly}
-					aria-disabled={notesCsvOnly}
 					aria-describedby={notesCsvOnly ? 'notes-csv-hint' : undefined}
 				/>
 				<span>
 					<strong>Show my private ascent notes</strong>
 					<small class="hint" id={notesCsvOnly ? 'notes-csv-hint' : undefined}>
 						{#if notesCsvOnly}
-							Unavailable — automatic CSV sync does not include private ascent comments. Use
-							<code>THECRAG_SYNC_MODE=api</code> with a supporter API key to sync and show notes.
+							CSV sync does not download theCrag's private ascent notes (<code>privateMarkdown</code
+							>); only the public Comment column is imported. This toggle stays disabled so it is
+							not mistaken for private-note access. Use
+							<code>THECRAG_SYNC_MODE=api</code> with a supporter key for private notes. If you already
+							opted in, Comment-column text can still show under the usual owner gate.
 						{:else}
 							Shows the notes from your theCrag ticks in the logbook, and lets logbook search match
 							them.
