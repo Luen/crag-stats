@@ -121,15 +121,16 @@ describe('describeDeveloperPreference (#186)', () => {
 			firstAscentCount: 2
 		});
 		expect(text).toBe(
-			"I like to put up trad routes that other people have climbed 55 times. I've put up 2 first ascents."
+			"I like to put up trad routes that other people have climbed about 55 times. I've put up 2 first ascents."
 		);
 	});
 
-	it('uses people wording for large community totals', () => {
+	it('describes large community totals as hedged ascent counts, not people', () => {
 		const text = describeDeveloperPreference({
 			routes: [route({ othersAscents: 80 }), route({ routeExternalId: 's2', othersAscents: 40 })]
 		});
-		expect(text).toMatch(/more than 120 people climbing them/i);
+		expect(text).toMatch(/climbed about 120 times/i);
+		expect(text).not.toMatch(/more than|people climbing/i);
 	});
 
 	it('falls back to FA-only copy without a style majority', () => {
@@ -151,6 +152,13 @@ describe('classifyPutUpStyle', () => {
 		expect(classifyPutUpStyle('Trad', null)).toBe('Trad');
 		expect(classifyPutUpStyle('Boulder', null)).toBe('Boulder');
 		expect(classifyPutUpStyle('Alpine', null)).toBeNull();
+	});
+
+	it('lets explicit gear style win over bolts and the sportOrBolted flag', () => {
+		expect(classifyPutUpStyle('Trad', 5)).toBe('Trad');
+		expect(classifyPutUpStyle('Top rope', 6)).toBeNull();
+		expect(classifyPutUpStyle('Trad', 5, true)).toBe('Trad');
+		expect(classifyPutUpStyle('Boulder', 2)).toBe('Boulder');
 	});
 });
 
@@ -221,5 +229,29 @@ describe('buildClimberBlurb', () => {
 				/Alex|Arapiles|spring|solo|project|quiet|countries|Sandstone|Hardest/i.test(p)
 			).length
 		).toBeLessThanOrEqual(3);
+	});
+
+	it('uses the default en-AU (southern) seasons when dateDisplay is omitted', () => {
+		const blurb = buildClimberBlurb({
+			firstDate: '2010-01-01',
+			activeDays: 100,
+			totalAscents: 200,
+			totalSends: 150,
+			onsightCount: 40,
+			flashCount: 10,
+			redpointCount: 80,
+			pinkpointCount: 5,
+			climberType: 'Trad climber',
+			heightM: 5000,
+			distinctRoutes: 80,
+			distinctCrags: 2,
+			outdoorAscents: 180,
+			indoorAscents: 20,
+			activeDayDates: Array.from(
+				{ length: 30 },
+				(_, i) => `2024-10-${String(i + 1).padStart(2, '0')}`
+			)
+		});
+		expect(blurb.paragraphs.some((p) => /spring climber/i.test(p))).toBe(true);
 	});
 });

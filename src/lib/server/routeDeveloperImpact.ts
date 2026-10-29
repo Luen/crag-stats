@@ -42,7 +42,7 @@ export type RouteDeveloperImpact = {
 	routes: DeveloperImpactRoute[];
 };
 
-function isSportOrBolted(
+export function isSportOrBolted(
 	gearStyle: string | null | undefined,
 	bolts: number | null | undefined
 ): boolean {

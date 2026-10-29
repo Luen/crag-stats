@@ -3,8 +3,8 @@
  * optional personality lines when the signal is strong — never a second dashboard dump.
  */
 import { MONTH_LABELS } from '#lib/bestMonths';
-import { formatNumber, type DateDisplay } from '#lib/dates';
-import type { DeveloperImpactRoute } from './routeDeveloperImpact';
+import { DEFAULT_DATE_DISPLAY, formatNumber, type DateDisplay } from '#lib/dates';
+import { isSportOrBolted, type DeveloperImpactRoute } from './routeDeveloperImpact';
 
 const MAJORITY = 0.55;
 const HOME_CRAG_SHARE = 0.4;
@@ -17,7 +17,6 @@ const POP_SHARE = 0.55;
 const POP_MIN_WITH_DATA = 20;
 const DEVELOPER_ROUTES_MIN = 2;
 const DEVELOPER_IMPACT_MIN = 10;
-const DEVELOPER_PEOPLE_MIN = 100;
 const MAX_OPTIONAL = 3;
 
 /** Sport → Trad → Boulder (boulders are easy to put up, so deprioritise). */
@@ -92,20 +91,15 @@ export function classifyPutUpStyle(
 	bolts: number | null | undefined,
 	sportOrBolted?: boolean
 ): PutUpStyle | null {
-	if (sportOrBolted || isSportOrBolted(gearStyle, bolts)) return 'Sport';
-	const s = (gearStyle ?? '').toLowerCase();
-	if (s.includes('trad')) return 'Trad';
-	if (s.includes('boulder')) return 'Boulder';
-	return null;
-}
-
-function isSportOrBolted(
-	gearStyle: string | null | undefined,
-	bolts: number | null | undefined
-): boolean {
-	const style = (gearStyle ?? '').toLowerCase();
-	if (style.includes('sport')) return true;
-	return bolts != null && Number.isFinite(bolts) && bolts > 0;
+	// Explicit gear style wins; bolts / the sportOrBolted flag only classify routes with no style.
+	const s = (gearStyle ?? '').trim().toLowerCase();
+	if (s) {
+		if (s.includes('sport')) return 'Sport';
+		if (s.includes('trad')) return 'Trad';
+		if (s.includes('boulder')) return 'Boulder';
+		return null;
+	}
+	return sportOrBolted || isSportOrBolted(gearStyle, bolts) ? 'Sport' : null;
 }
 
 export function describeDeveloperPreference(input: {
@@ -152,11 +146,10 @@ export function describeDeveloperPreference(input: {
 				? 'I like to put up trad routes'
 				: 'I like to put up boulders';
 
+	// Counts are cached route ascents (estimates), not distinct people.
 	let impact = '';
-	if (others >= DEVELOPER_PEOPLE_MIN) {
-		impact = ` with more than ${fmt(others)} people climbing them`;
-	} else if (others >= DEVELOPER_IMPACT_MIN) {
-		impact = ` that other people have climbed ${fmt(others)} times`;
+	if (others >= DEVELOPER_IMPACT_MIN) {
+		impact = ` that other people have climbed about ${fmt(others)} times`;
 	}
 
 	const styleSentence = `${lead}${impact}.`;
@@ -352,7 +345,9 @@ export function buildClimberBlurb(input: ClimberBlurbInput): ClimberBlurb {
 	if (!home) push(describeWanderer(input.distinctCrags, topShare));
 
 	push(describePartners(input.partners ?? []));
-	push(describeSeason(input.activeDayDates ?? [], input.dateDisplay?.locale));
+	push(
+		describeSeason(input.activeDayDates ?? [], (input.dateDisplay ?? DEFAULT_DATE_DISPLAY).locale)
+	);
 	push(describeSolo(input.soloByKind ?? []));
 	push(describeProjects(input.openProjects ?? 0, fmt));
 	push(describeHardest(input.hardestRouteLabel, input.hardestBoulderLabel));
