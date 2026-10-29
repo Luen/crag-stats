@@ -20,6 +20,12 @@ export const DOC_PAGES: readonly DocPage[] = [
 		summary: 'How the dashboard decides whether you are a sport, trad, boulder or rock climber.'
 	},
 	{
+		slug: 'climbing-story',
+		title: 'Climbing story',
+		summary:
+			'First-person blurb from your logbook: tenure, put-up routes, home crag, partners and other strong signals.'
+	},
+	{
 		slug: 'grades',
 		title: 'Grades & grade bands',
 		summary: 'Beginner → Elite bands, how grade systems are compared, and conversion tables.'
@@ -56,6 +62,12 @@ export const DOC_PAGES: readonly DocPage[] = [
 		slug: 'first-ascents',
 		title: 'First ascents',
 		summary: 'Marking your FAs and FFAs, routes you set, and community ticks on lines you put up.'
+	},
+	{
+		slug: 'goals',
+		title: 'Goals',
+		summary:
+			'Yearly grade, height and day targets; grade bars use pyramid readiness instead of best÷target.'
 	},
 	{
 		slug: 'projects',

@@ -8,6 +8,7 @@
 	{#each paragraphs as p, i (i)}
 		<p class="blurb">{p}</p>
 	{/each}
+	<p class="foot"><a href="/docs/climbing-story">How it works</a></p>
 </article>
 
 <style>
@@ -26,6 +27,14 @@
 		font-size: 0.98rem;
 	}
 	.blurb:last-child {
-		margin-bottom: 0;
+		margin-bottom: 0.65rem;
+	}
+	.foot {
+		margin: 0.35rem 0 0;
+		color: var(--ink-muted);
+		font-size: 0.82rem;
+	}
+	.foot a {
+		text-decoration: underline;
 	}
 </style>
