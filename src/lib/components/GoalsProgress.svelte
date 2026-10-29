@@ -16,13 +16,17 @@
 <article class="panel">
 	<header>
 		<h2>Active goals</h2>
-		<a href="/goals">All goals</a>
+		<span class="links">
+			<a class="how" href="/docs/goals">How it works</a>
+			<a href="/goals">All goals</a>
+		</span>
 	</header>
 
 	{#if goals.length === 0}
 		<p class="empty">
 			{#if canEdit}
-				No active goals — <a href="/goals">set one</a> and progress fills from your logbook.
+				No active goals — <a href="/goals">set one</a>. Grade bars show readiness from nearby sends;
+				height and days stay linear.
 			{:else}
 				No active goals right now.
 			{/if}
@@ -68,6 +72,13 @@
 	h2 {
 		margin: 0;
 		font-size: 1.05rem;
+	}
+	.links {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.65rem 0.85rem;
+		align-items: baseline;
+		justify-content: flex-end;
 	}
 	header a {
 		font-size: 0.85rem;

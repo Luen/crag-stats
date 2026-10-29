@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { defaultVenueForKind, parseGoalGradeScore, progressPct } from './goalsShared';
+import {
+	defaultVenueForKind,
+	gradeGoalReadiness,
+	parseGoalGradeScore,
+	progressPct
+} from './goalsShared';
 import { matchesVenueScope, normalizeVenueScope } from './venue';
 
 describe('parseGoalGradeScore', () => {
@@ -15,11 +20,104 @@ describe('parseGoalGradeScore', () => {
 });
 
 describe('progressPct', () => {
-	it('clamps and scales', () => {
+	it('clamps and scales for height/days goals', () => {
 		expect(progressPct(0, 25)).toBe(0);
 		expect(progressPct(12.5, 25)).toBe(50);
 		expect(progressPct(30, 25)).toBe(100);
 		expect(progressPct(10, 0)).toBe(0);
+	});
+});
+
+describe('gradeGoalReadiness', () => {
+	it('is 100% when best send meets the target', () => {
+		const r = gradeGoalReadiness({
+			target: 23,
+			bestSend: 23,
+			routesAtNMinus1: 0,
+			routesAtNMinus2: 0
+		});
+		expect(r.pct).toBe(100);
+		expect(r.label).toMatch(/Best send 23/);
+		expect(r.label).toMatch(/done/i);
+	});
+
+	it('does not use linear best/target (22/23 ≠ ~96%)', () => {
+		const r = gradeGoalReadiness({
+			target: 23,
+			bestSend: 22,
+			routesAtNMinus1: 1,
+			routesAtNMinus2: 0
+		});
+		expect(r.pct).toBeLessThan(80);
+		expect(r.pct).toBeGreaterThanOrEqual(40);
+		expect(r.pct).toBeLessThanOrEqual(70);
+		expect(r.pct).not.toBe(progressPct(22, 23));
+		expect(r.label).toContain('Best send 22');
+		expect(r.label).toContain('1/2 at 22');
+		expect(r.label).toContain('0/4 at 21');
+		expect(r.horizon).toBe('short-term');
+	});
+
+	it('caps below 100% without a send at N even with a full soft pyramid', () => {
+		const r = gradeGoalReadiness({
+			target: 23,
+			bestSend: 22,
+			routesAtNMinus1: 2,
+			routesAtNMinus2: 4
+		});
+		expect(r.pct).toBeGreaterThan(70);
+		expect(r.pct).toBeLessThan(100);
+		expect(r.label).toContain('2/2 at 22');
+		expect(r.label).toContain('4/4 at 21');
+	});
+
+	it('caps overfilled lower buckets', () => {
+		const thin = gradeGoalReadiness({
+			target: 25,
+			bestSend: 23,
+			routesAtNMinus1: 0,
+			routesAtNMinus2: 20
+		});
+		const capped = gradeGoalReadiness({
+			target: 25,
+			bestSend: 23,
+			routesAtNMinus1: 0,
+			routesAtNMinus2: 4
+		});
+		expect(thin.pct).toBe(capped.pct);
+		expect(thin.pct).toBeLessThan(50);
+	});
+
+	it('stays low with no supporting sends', () => {
+		const r = gradeGoalReadiness({
+			target: 23,
+			bestSend: null,
+			routesAtNMinus1: 0,
+			routesAtNMinus2: 0
+		});
+		expect(r.pct).toBe(0);
+		expect(r.label).toMatch(/No qualifying send yet/i);
+		expect(r.horizon).toBe('long-haul');
+	});
+
+	it('hints medium / long-haul from the grade gap', () => {
+		const medium = gradeGoalReadiness({
+			target: 25,
+			bestSend: 23,
+			routesAtNMinus1: 1,
+			routesAtNMinus2: 2
+		});
+		expect(medium.horizon).toBe('medium');
+		expect(medium.label).toContain('Medium');
+
+		const longHaul = gradeGoalReadiness({
+			target: 28,
+			bestSend: 22,
+			routesAtNMinus1: 0,
+			routesAtNMinus2: 1
+		});
+		expect(longHaul.horizon).toBe('long-haul');
+		expect(longHaul.label).toContain('Long-haul');
 	});
 });
 

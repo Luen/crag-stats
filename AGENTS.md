@@ -379,4 +379,6 @@ You'll often notice things outside the task at hand. **Don't silently fix them i
 
 | 2026-10 | #194: FA/FFA milestones condense to thresholds (first FA/FFA, FFA counts 5–100, combined FA+FFA 5–100, style FA 10/20/50 for Sport/Trad/Boulder). Badges align (`fa_20`/`fa_50`/`fa_100`, `ffa_*`, `fa_{sport,trad,boulder}_*`). Stable ids like `fa:first` / `ffa:5` / `fa:boulder:10` — no per-route `fa:{routeId}`. |
 
+| 2026-10 | #195: Grade goal progress uses pyramid readiness (`gradeGoalReadiness`: ~2 distinct-route sends at N−1, ~4 at N−2; capped below 100% until a send at N), not linear best/target. Height/days stay linear. `/docs/goals` explains the model; dashboard + Goals page link “How it works”. |
+
 _Add a row when you change behaviour agents must know about._

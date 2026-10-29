@@ -64,6 +64,12 @@ export const DOC_PAGES: readonly DocPage[] = [
 		summary: 'Marking your FAs and FFAs, routes you set, and community ticks on lines you put up.'
 	},
 	{
+		slug: 'goals',
+		title: 'Goals',
+		summary:
+			'Yearly grade, height and day targets; grade bars use pyramid readiness instead of best÷target.'
+	},
+	{
 		slug: 'projects',
 		title: 'Projects',
 		summary:
