@@ -1,6 +1,6 @@
 # Route popularity
 
-The **Route popularity** card uses community stats theCrag caches on each route: **ascent count**, **popularity**, and **relative popularity** (0–100). Crag Stats stores these when route history import runs (Settings → enable import, then sync or refresh). Routes fetched before migration `0012` need **Refresh all** once to backfill.
+The **Route popularity** card uses community stats theCrag caches on each route: **ascent count**, **popularity**, and **relative popularity** (0–100). Crag Stats stores these when route history import runs (Settings → enable import, then sync).
 
 ## Beaten track vs off the beaten track
 
@@ -27,4 +27,4 @@ Numbers come from theCrag’s route API (`show=info`). They reflect the whole co
 
 Popularity uses relative popularity when available, then global popularity. Community ascent counts are shown separately and never compared numerically with popularity scores.
 
-To keep community ascent totals, popularity and ratings fresh, the server owner can set `ROUTE_DATA_REFRESH_DAYS=90` (recommended) or `30`, with `ROUTE_HISTORY_IMPORT=true`. These are rolling day intervals. After successful logbook syncs, new routes take priority, then the oldest stale fetches refresh within the same 100-route limit and pacing. A backlog can take several syncs. Unset or `0` keeps the default fetch-once cache; **Refresh all** remains available in Settings.
+To keep community ascent totals, popularity and ratings fresh, the server owner can set `ROUTE_DATA_REFRESH_DAYS` to a whole number of days from 30 through 3650 (e.g. `90` recommended, or `180` for about half a year), with `ROUTE_HISTORY_IMPORT=true`. These are rolling day intervals. After successful logbook syncs, new routes take priority, then the oldest stale fetches refresh within the same 100-route limit and pacing. A backlog can take several syncs. Unset, `0`, under 30, or over 3650 keeps the default fetch-once cache; **Refresh all** remains available in Settings.

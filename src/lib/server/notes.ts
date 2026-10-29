@@ -19,8 +19,8 @@ export type NotesSyncMode = 'api' | 'csv' | 'invalid';
 
 /**
  * CSV logbook export does not include privateMarkdown. Settings disables turning the
- * notes toggle on in CSV mode so it is not mistaken for private-note access. Public
- * Comment-column text may still be stored and shown under the usual owner gate.
+ * notes toggle on in CSV mode so it is not mistaken for private-note access. Owners
+ * can always turn it off to hide comments and previously imported private notes.
  */
 export function privateNotesSyncAvailable(syncMode: NotesSyncMode): boolean {
 	return syncMode !== 'csv';

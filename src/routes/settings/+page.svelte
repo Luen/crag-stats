@@ -7,6 +7,7 @@
 
 	const rh = $derived(data.routeHistory);
 	const notesCsvOnly = $derived(data.syncConfiguration.mode === 'csv');
+	const notesDisabled = $derived(notesCsvOnly && !data.showNotes.enabled);
 
 	const systems = [
 		{ id: 'ewbank', label: 'Ewbanks (AU/NZ)' },
@@ -73,33 +74,31 @@
 					</small>
 				</span>
 			</label>
-			<label class="check" class:muted={notesCsvOnly}>
+			<label class={['check', { muted: notesDisabled }]}>
 				<input
 					type="checkbox"
 					name="notes"
 					checked={data.showNotes.enabled}
-					disabled={notesCsvOnly}
+					disabled={notesDisabled}
 					aria-describedby={notesCsvOnly ? 'notes-csv-hint' : undefined}
 				/>
 				<span>
 					<strong>Show my private ascent notes</strong>
 					<small class="hint" id={notesCsvOnly ? 'notes-csv-hint' : undefined}>
 						{#if notesCsvOnly}
-							CSV sync does not download theCrag's private ascent notes (<code>privateMarkdown</code
-							>); only the public Comment column is imported. This toggle stays disabled so it is
-							not mistaken for private-note access. Use
-							<code>THECRAG_SYNC_MODE=api</code> with a supporter key for private notes. If you already
-							opted in, Comment-column text can still show under the usual owner gate.
+							CSV sync imports public comments, but does not download private ascent notes. Use API
+							sync with a supporter key to enable this setting. If already enabled, untick it to
+							hide stored comments and notes.
 						{:else}
 							Shows the notes from your theCrag ticks in the logbook, and lets logbook search match
 							them.
-							{#if data.authEnabled}
-								Only shown while you're logged in. Visitors never see them.
-							{:else}
-								<strong
-									>No <code>APP_PASSWORD</code> is set, so anyone who can open this site will see them.</strong
-								> Best for offline or home-network installs.
-							{/if}
+						{/if}
+						{#if data.authEnabled}
+							Only shown while you're logged in. Visitors never see them.
+						{:else}
+							<strong
+								>No <code>APP_PASSWORD</code> is set, so anyone who can open this site will see them.</strong
+							> Best for offline or home-network installs.
 						{/if}
 					</small>
 				</span>
