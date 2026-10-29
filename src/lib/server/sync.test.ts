@@ -52,7 +52,8 @@ it('does not record a successful sync or recreate state after a wipe', async () 
 		return { count: 2, profileName: 'Synthetic climber' };
 	});
 	await expect(runTheCragSync()).rejects.toThrow('cancelled');
-	expect(updateSyncState).toHaveBeenCalledTimes(1); // initial running state only
+	expect(updateSyncState).toHaveBeenCalledTimes(2); // running, then idle after cancel
+	expect(updateSyncState).toHaveBeenLastCalledWith('thecrag', { status: 'idle', lastError: null });
 	expect(triggerRouteHistoryImport).not.toHaveBeenCalled();
 });
 

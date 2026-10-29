@@ -88,10 +88,9 @@ export function loginForm(html: string): { action: string; fields: URLSearchPara
 		if (!inputs.some((i) => i.name === 'D:Password')) continue;
 		const form = attributes(match[0].slice(0, match[0].indexOf('>') + 1));
 		const action = trustedUrl(form.action || '');
-		if (
-			form.method?.toLowerCase() !== 'post' ||
-			new URL(action).pathname !== '//CIDS/cgi-bin/cids.cgi'
-		) {
+		// theCrag historically used a double-slash path; accept the normalized single-slash form too.
+		const loginPath = new URL(action).pathname.replace(/\/{2,}/g, '/');
+		if (form.method?.toLowerCase() !== 'post' || loginPath !== '/CIDS/cgi-bin/cids.cgi') {
 			throw new LogbookDownloadError('theCrag login form changed; automatic login stopped.');
 		}
 		const fields = new URLSearchParams();

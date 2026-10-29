@@ -4,7 +4,7 @@ import { profiles } from './db/schema';
 import { env } from './env';
 import { upsertAscents, upsertProfile } from './ingest';
 import { downloadLogbook, openLogbookSession } from './providers/thecrag/logbookSession';
-import { theCragSessionStore } from './theCragWebSession';
+import { forgetTheCragSession, theCragSessionStore } from './theCragWebSession';
 
 /** CSV exports are upsert-only. Never prune local ascents on this path. */
 export async function syncTheCragCsv(stillCurrent: () => boolean) {
@@ -12,6 +12,8 @@ export async function syncTheCragCsv(stillCurrent: () => boolean) {
 	ensureSchema();
 	const profile = db.select().from(profiles).where(eq(profiles.provider, 'thecrag')).get();
 	if (profile?.login && profile.login.toLowerCase() !== username.toLowerCase()) {
+		// Drop the previous account's encrypted jar so a DB backup cannot keep old cookies.
+		forgetTheCragSession();
 		throw new Error(
 			'The configured theCrag username differs from the saved profile. Wipe local data before switching accounts.'
 		);

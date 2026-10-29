@@ -58,7 +58,7 @@ export function getTheCragSyncConfiguration(): {
 			mode,
 			configured: Boolean(
 				/^(?!\.{1,2}$)[\w.-]+$/.test(env('THECRAG_USERNAME').trim()) &&
-				env('THECRAG_PASSWORD') &&
+				env('THECRAG_PASSWORD').trim() &&
 				isUsableSessionSecret(env('SESSION_SECRET'))
 			)
 		};

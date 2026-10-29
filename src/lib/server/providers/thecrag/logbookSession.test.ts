@@ -228,6 +228,11 @@ describe('saved-session CSV downloads', () => {
 		);
 	});
 
+	it('accepts a single-slash CIDS login action path', () => {
+		const single = form.replace('//CIDS/cgi-bin/cids.cgi', '/CIDS/cgi-bin/cids.cgi');
+		expect(loginForm(single).action).toBe('https://www.thecrag.com/CIDS/cgi-bin/cids.cgi');
+	});
+
 	it.each([
 		response(200, '<html>login page</html>', { 'content-type': 'text/html' }),
 		response(206),

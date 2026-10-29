@@ -32,8 +32,8 @@ export function theCragSessionStore(username: string, secret: string): LogbookSe
 						Buffer.concat([decipher.update(payload), decipher.final()]).toString('utf8')
 					);
 				} catch {
-					// Rotating SESSION_SECRET requires a new login; preserve any active back-off.
-					cookies = [];
+					// Rotating SESSION_SECRET requires a new login; drop unusable cookies and stale pause.
+					return { cookies: [], nextAllowedAt: 0, failures: 0 };
 				}
 			}
 			return { cookies, nextAllowedAt: row?.nextAllowedAt ?? 0, failures: row?.failures ?? 0 };

@@ -28,7 +28,11 @@ it('encrypts cookies and preserves flags/expiry across store instances and key r
 	expect(JSON.stringify(row)).not.toContain('synthetic-cookie-value');
 	expect(JSON.stringify(row)).not.toContain('synthetic-secret');
 	expect(theCragSessionStore('sample', 'synthetic-secret').load()).toEqual(saved);
-	expect(theCragSessionStore('sample', 'rotated-secret').load()).toEqual({ ...saved, cookies: [] });
+	expect(theCragSessionStore('sample', 'rotated-secret').load()).toEqual({
+		cookies: [],
+		nextAllowedAt: 0,
+		failures: 0
+	});
 	expect(theCragSessionStore('another-account', 'synthetic-secret').load().cookies).toEqual([]);
 });
 

@@ -2,12 +2,13 @@ import { readFileSync } from 'node:fs';
 import { beforeEach, expect, it, vi } from 'vitest';
 import { wipeAllData } from './analytics';
 import { db } from './db';
-import { ascents, profiles } from './db/schema';
+import { ascents, profiles, theCragWebSessions } from './db/schema';
 import { upsertAscents } from './ingest';
 import { parseTheCragCsv } from './providers/thecrag/csv';
 import { downloadLogbook } from './providers/thecrag/logbookSession';
 import { syncTheCragCsv } from './csvLogbookSync';
 import { syncIsCurrent } from './syncGeneration';
+import { theCragSessionStore } from './theCragWebSession';
 
 vi.mock('./env', () => ({
 	env: (name: string) =>
@@ -51,6 +52,12 @@ it('refuses to mix another account into an existing logbook', async () => {
 	db.insert(profiles)
 		.values({ provider: 'thecrag', login: 'another-account', updatedAt: new Date().toISOString() })
 		.run();
+	theCragSessionStore('another-account', 'synthetic-secret').save({
+		cookies: [{ name: 'session', value: 'stale-other-account' }],
+		nextAllowedAt: 0,
+		failures: 0
+	});
 	await expect(syncTheCragCsv(() => true)).rejects.toThrow('differs from the saved profile');
 	expect(downloadLogbook).not.toHaveBeenCalled();
+	expect(db.select().from(theCragWebSessions).all()).toEqual([]);
 });

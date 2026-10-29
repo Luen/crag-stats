@@ -101,7 +101,8 @@ export const actions: Actions = {
 		setAppSetting('show_notes', form.get('notes') === 'on' ? 'on' : 'off');
 		return { ok: true, saved: true };
 	},
-	sync: async () => {
+	sync: async ({ locals }) => {
+		if (!locals.authed) return fail(403);
 		try {
 			const result = await runTheCragSync();
 			return { ok: true, result };
@@ -112,7 +113,8 @@ export const actions: Actions = {
 			});
 		}
 	},
-	fullSync: async () => {
+	fullSync: async ({ locals }) => {
+		if (!locals.authed) return fail(403);
 		try {
 			const result = await runTheCragSync({ full: true });
 			return { ok: true, result };

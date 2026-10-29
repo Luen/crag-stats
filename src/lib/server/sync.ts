@@ -107,7 +107,12 @@ export async function runTheCragSync(opts?: { full?: boolean }) {
 		};
 	} catch (err) {
 		const message = err instanceof Error ? err.message : String(err);
-		if (stillCurrent()) updateSyncState(provider, { status: 'error', lastError: message });
+		if (stillCurrent()) {
+			updateSyncState(provider, { status: 'error', lastError: message });
+		} else {
+			// Forget/Wipe cancelled this run — clear the running pill without recording success.
+			updateSyncState(provider, { status: 'idle', lastError: null });
+		}
 		throw err;
 	} finally {
 		syncing = false;
