@@ -59,9 +59,11 @@ describe('buildFirstAscentStats', () => {
 		const stats = getDashboardStats();
 		expect(stats.firstAscents.recent).toHaveLength(2);
 		expect(new Set(stats.hardestSends.map((climb) => climb.id)).size).toBe(2);
+		// Two FA routes condense to the first-FA threshold only (#194) — not one row per route.
 		const faMilestones = stats.milestones.items.filter((item) => item.kind === 'fa');
-		expect(faMilestones).toHaveLength(2);
-		expect(new Set(faMilestones.map((item) => item.id)).size).toBe(2);
+		expect(faMilestones).toEqual([
+			expect.objectContaining({ id: 'fa:first', kind: 'fa', label: 'First ascent' })
+		]);
 		wipeAllData();
 	});
 	it('retains distinct route IDs for equal names and dates (#144)', () => {

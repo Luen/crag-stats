@@ -58,7 +58,10 @@
 			<h2>Badges</h2>
 			<p class="blurb">Real milestones from your logbook. Breaks do not erase them.</p>
 		</div>
-		<span class="progress">{earnedCount} of {totalCount} earned</span>
+		<div class="meta">
+			<span class="progress">{earnedCount} of {totalCount} earned</span>
+			<a class="how" href="/docs/badges">How it works</a>
+		</div>
 	</header>
 
 	{#if cards.length === 0}
@@ -140,6 +143,19 @@
 		margin: 0.25rem 0 0;
 		color: var(--ink-muted);
 		font-size: 0.9rem;
+	}
+	.meta {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-end;
+		gap: 0.2rem;
+	}
+	.how {
+		font-size: 0.82rem;
+		color: var(--ink-muted);
+		text-decoration: underline;
+		text-underline-offset: 0.15em;
+		white-space: nowrap;
 	}
 	.progress {
 		font-size: 0.9rem;

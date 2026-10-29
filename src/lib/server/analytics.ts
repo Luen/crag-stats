@@ -27,6 +27,7 @@ import {
 } from './logbookSort';
 import { buildCprTimeline } from './cpr';
 import { buildBadges } from './badges';
+import { getFirstImport, resetFirstImport } from './firstImport';
 import { communityAscentBadgeHits } from './communityBadges';
 import type { DateDisplay } from '#lib/dates';
 import { buildRouteDeveloperImpact } from './routeDeveloperImpact';
@@ -694,7 +695,8 @@ export function getDashboardStats(
 	const badges = buildBadges(
 		extraRows,
 		setterBadgeHits(),
-		communityAscentBadgeHits(developerImpact, opts?.dateDisplay)
+		communityAscentBadgeHits(developerImpact, opts?.dateDisplay),
+		{ firstImport: getFirstImport(), dateDisplay: opts?.dateDisplay }
 	);
 	const trainingLoad = buildTrainingLoadView(extraRows);
 	const styleMix = buildStyleMixOverTime(extraRows);
@@ -887,7 +889,8 @@ export function getDashboardStats(
 					fromFa: r.fromFa,
 					faKind: r.faKind,
 					fromSetter: r.fromSetter,
-					sportOrBolted: r.sportOrBolted
+					sportOrBolted: r.sportOrBolted,
+					styleLabel: r.styleLabel
 				}))
 			};
 			if (!faMarks.size) return { ...buildFirstAscentStats([]), routesSet, ...community };
@@ -1365,6 +1368,7 @@ export function listLogbook(filters?: {
 
 export function wipeAllData() {
 	ensureSchema();
+	resetFirstImport();
 	// Abandon any in-flight route-history import before clearing tables (#74).
 	invalidateRouteHistoryRuns();
 	db.run(sql`DELETE FROM projects`);

@@ -23,6 +23,8 @@
 
 {#if form?.message}
 	<p class="banner err">{form.message}</p>
+{:else if form?.firstImportSaved}
+	<p class="banner ok">First import date saved. <a href="/">View badges</a></p>
 {:else if form?.layoutSaved}
 	<p class="banner ok">Dashboard layout saved. <a href="/">View dashboard</a></p>
 {:else if form?.saved}
@@ -156,6 +158,21 @@
 				No API key configured. Set <code>THECRAG_API_KEY</code> in <code>.env</code>.
 			</p>
 		{/if}
+	</article>
+
+	<article class="panel" id="first-import">
+		<h2>First Moves badge</h2>
+		<p class="hint">
+			This badge dates your first successful logbook import into Crag Stats. Older installs did not
+			save that date; enter it here if you know it. <a href="/docs/badges">How badges work</a>
+		</p>
+		<form method="POST" action="?/saveFirstImportDate" class="prefs">
+			<label class="field">
+				<span>First import date</span>
+				<input type="date" name="date" value={data.firstImportDate} required />
+			</label>
+			<button type="submit">Save first import date</button>
+		</form>
 	</article>
 
 	<article class="panel">

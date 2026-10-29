@@ -47,7 +47,7 @@ Only public route history is saved, never your private ascent notes. **Settings 
 - **Grade range:** your easiest and hardest FA, using the route's grade (not a single pitch). Routes and boulders are listed separately, because Ewbank and V-grades can't be compared. Grades show in your display grade system.
 - **Styles:** how your FAs split across sport, trad, boulder and so on, using the route's style on theCrag.
 - **Latest:** your five most recent FAs.
-- **Community by route:** up to eight credited routes, ranked by the community estimate. Each row shows FA, FFA and/or setter credit, a Sport/bolted flag when it applies, the estimate (or Unavailable), and when that count was fetched. Count freshness is stored separately from other route-info fields, so refreshing beta or quality alone does not pretend the counter is new.
+- **Community by route:** up to eight credited routes, ranked by the community estimate. Each row shows FA, FFA and/or setter credit, a style badge (Sport/bolted, Trad, Boulder, or other known gear style from cached route info), the estimate (or Unavailable), and when that count was fetched. Count freshness is stored separately from other route-info fields, so refreshing beta or quality alone does not pretend the counter is new.
 
 The card only appears for visitors once at least one FA is marked. Until then, the owner sees a short how-to instead.
 
@@ -59,13 +59,16 @@ A first ascent is the send, so each one is dated by your **first logged send** o
 
 ## Badges and milestones
 
-These unlock from owner-marked FAs/FFAs (and your first send of each marked route), not from turning on private notes.
+These unlock from owner-marked FAs/FFAs (and your first send of each marked route), not from turning on private notes. The Milestones card and badge catalog use the same thresholds — not one row per route.
 
 - **First Ascent** and **First Free Ascent:** your first send of a route you marked FA, or FFA.
-- **5 First Ascents** and **Pioneer** (10): first ascents of that many different routes, FA and FFA combined.
+- **Combined first-ascent counts** (5, 10 / Pioneer, 20, 50, 100): that many different routes marked FA or FFA.
+- **First free ascent counts** (5, 10, 20, 50, 100): FFA marks only.
+- **Style first-ascent counts** (10, 20, 50 for Sport, Trad, and Boulder): FA or FFA marks on that gear style.
 - **Route Setter**, **Route Developer** (5), **Wall Builder** (10), **Crag Architect** (25): route setter credits from cached route history, dated by the earliest setter entry that names your `@login` on each route (not by logbook sends).
 - **Shared Crag** (10), **Crowd Pleaser** (50), **Hundred Hands** (100), **Local Classic** (500): approximate community ascents on routes you put up (FA/FFA or setter), from paired count snapshots. Counts are ascents, not distinct climbers. Incomplete coverage is noted on the badge detail.
 - **Bolted Buzz** (10), **Sport Magnet** (50), **Clip Classic** (100): the same estimate restricted to Sport gear style or bolted routes.
-- Each FA also adds a milestone on the date of that first send.
+
+Each threshold is dated by the first send of the route that crossed it; the detail names that unlocking route.
 
 Setter credits with no valid history date still count toward setter badges, but their earned date is left unknown. Community-ascent badges likewise leave the earned date unknown — the totals are cached aggregates, not an event day.
