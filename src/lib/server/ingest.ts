@@ -10,6 +10,9 @@ import {
 	syncState
 } from './db/schema';
 import type { CanonicalAscent, ProviderProfile } from './providers/types';
+import { beginFirstImport, completeFirstImport } from './firstImport';
+
+const firstImportTokens = new Map<string, number>();
 
 function nowIso() {
 	return new Date().toISOString();
@@ -270,6 +273,23 @@ export function updateSyncState(
 	}>
 ) {
 	ensureSchema();
+	if (provider === 'thecrag' && patch.status === 'running') {
+		firstImportTokens.set(provider, beginFirstImport());
+	}
 	getOrCreateSyncState(provider);
-	db.update(syncState).set(patch).where(eq(syncState.provider, provider)).run();
+	db.transaction(() => {
+		db.update(syncState).set(patch).where(eq(syncState.provider, provider)).run();
+		const token = firstImportTokens.get(provider);
+		if (token !== undefined && patch.status === 'idle' && patch.lastSuccessAt) {
+			const count = db
+				.select({ n: sql<number>`count(*)` })
+				.from(ascents)
+				.where(eq(ascents.provider, provider))
+				.get()!.n;
+			completeFirstImport(count, token, patch.lastSuccessAt);
+			firstImportTokens.delete(provider);
+		} else if (patch.status === 'error') {
+			firstImportTokens.delete(provider);
+		}
+	});
 }
