@@ -19,6 +19,50 @@ describe('formatBadgeDate', () => {
 });
 
 describe('buildBadges', () => {
+	it('dates First Moves by import while other badges retain their climb dates', () => {
+		const rows = [
+			row({
+				ascentDate: '2018-04-22',
+				isSend: true,
+				ascentUrl: 'https://www.thecrag.com/ascent/123',
+				routeName: 'Synthetic climb'
+			})
+		];
+		const context = {
+			firstImport: { at: '2026-10-26T14:30:00.000Z', count: 902, legacy: false },
+			dateDisplay: { locale: 'en-AU', timeZone: 'Australia/Brisbane' }
+		};
+		const { earned } = buildBadges(rows, [], [], context);
+		const first = earned.find((b) => b.id === 'first_moves')!;
+		expect(first.detail).toBe('Imported 902 climbs · 27 Oct 2026');
+		expect(first.href).toBeNull();
+		expect(first.routeName).toBeNull();
+		expect(earned.find((b) => b.id === 'first_session')?.date).toBe('2018-04-22');
+		expect(earned.find((b) => b.id === 'first_send')?.href).toBe(
+			'https://www.thecrag.com/ascent/123'
+		);
+		const older = row({ ascentDate: '2000-01-01' });
+		expect(
+			buildBadges([...rows, older], [], [], context).earned.find((b) => b.id === 'first_moves')
+		).toEqual(first);
+	});
+
+	it('shows unknown legacy dates, counts undated rows, and does not award incomplete imports', () => {
+		const rows = [
+			row({ ascentDate: '2018-04-22' }),
+			{ ...row({ ascentDate: '2018-04-23' }), ascentDate: null }
+		];
+		const first = buildBadges(rows).earned.find((b) => b.id === 'first_moves')!;
+		expect(first.detail).toBe('Imported 2 climbs · Import date unknown');
+		expect(first.date).toBeNull();
+		expect(first.href).toBeNull();
+		expect(
+			buildBadges(rows, [], [], { firstImport: { at: null, count: 0, legacy: false } }).earned.some(
+				(b) => b.id === 'first_moves'
+			)
+		).toBe(false);
+	});
+
 	it('exposes a fixed catalog size', () => {
 		expect(BADGE_CATALOG.length).toBeGreaterThanOrEqual(30);
 		const empty = buildBadges([]);

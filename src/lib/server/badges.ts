@@ -4,6 +4,8 @@
  */
 import { formatVScaleLabel, usesVScale } from '#lib/grades';
 import { tickKind } from '#lib/ticks';
+import { DEFAULT_DATE_DISPLAY, formatDateTime, formatNumber, type DateDisplay } from '#lib/dates';
+import type { FirstImport } from './firstImport';
 import type { CommunityBadgeHit } from './communityBadges';
 import { displayStyle, type DashboardExtraRow } from './dashboardExtras';
 
@@ -126,7 +128,7 @@ export const BADGE_CATALOG: readonly BadgeDef[] = [
 	{
 		id: 'first_moves',
 		title: 'First Moves',
-		hint: 'Log your first climb',
+		hint: 'Import your logbook into Crag Stats',
 		icon: 'carabiner',
 		tone: 'warm'
 	},
@@ -715,7 +717,8 @@ function ascentOrder(row: DashboardExtraRow): number {
 export function buildBadges(
 	rows: DashboardExtraRow[],
 	setterHits: readonly SetterBadgeHit[] = [],
-	communityHits: readonly CommunityBadgeHit[] = []
+	communityHits: readonly CommunityBadgeHit[] = [],
+	context: { firstImport?: FirstImport | null; dateDisplay?: DateDisplay } = {}
 ): BadgesResult {
 	// Chronological by day, then stable ascent id — never alphabetise route names
 	// (that made “Nacho Libre” beat earlier same-day climbs like “Torched”).
@@ -769,16 +772,6 @@ export function buildBadges(
 		const kind = tickKind(row.tickType);
 		const send = Boolean(row.isSend);
 		const monthDay = day.slice(5); // MM-DD from calendar dayKey — no local TZ
-
-		if (ascentCount === 1) {
-			// Detail patched after the loop with total imported count.
-			mark('first_moves', {
-				date: day,
-				routeName: (row.routeName || '').trim() || null,
-				href: row.ascentUrl || row.url || null,
-				detail: ''
-			});
-		}
 
 		if (sessions.size === 1 && !earned.has('first_session')) {
 			mark('first_session', hitAt(row, 'First session done'));
@@ -945,13 +938,24 @@ export function buildBadges(
 		});
 	}
 
-	// Patch first_moves with total imported count (RoxClimbs style).
-	if (earned.has('first_moves') && dated.length > 0) {
-		const first = dated[0]!;
-		const hit = earned.get('first_moves')!;
-		earned.set('first_moves', {
-			...hit,
-			detail: `Imported ${dated.length.toLocaleString('en-US')} climbs · ${formatBadgeDate(first.day)}`
+	const first = context.firstImport;
+	if (first?.at || first?.legacy || (!first && rows.length > 0)) {
+		const display = context.dateDisplay ?? DEFAULT_DATE_DISPLAY;
+		const at = first?.at ?? null;
+		// A manually supplied date is a calendar day; timestamps use the owner's time zone.
+		const dateOnly = at && /^\d{4}-\d{2}-\d{2}$/.test(at);
+		const when = at
+			? formatDateTime(
+					dateOnly ? `${at}T12:00:00Z` : at,
+					dateOnly ? { ...display, timeZone: 'UTC' } : display,
+					{ month: 'short', day: 'numeric', year: 'numeric' }
+				)
+			: 'Import date unknown';
+		mark('first_moves', {
+			date: at,
+			routeName: null,
+			href: null,
+			detail: `Imported ${formatNumber(first?.count ?? rows.length, display)} climbs · ${when}`
 		});
 	}
 

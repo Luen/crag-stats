@@ -16,6 +16,14 @@ import {
 	setAppSetting
 } from '#lib/server/appSettings';
 import { hasTheCragApiKey } from '#lib/server/env';
+import {
+	beginFirstImport,
+	completeFirstImport,
+	correctFirstImportDate,
+	firstImportDateInput,
+	getFirstImport
+} from '#lib/server/firstImport';
+import { db } from '#lib/server/db';
 import { upsertAscents } from '#lib/server/ingest';
 import { parseTheCragCsv } from '#lib/server/providers/thecrag';
 import { refreshProjects } from '#lib/server/projects';
@@ -29,8 +37,10 @@ import {
 import { getSyncStatus, runTheCragSync } from '#lib/server/sync';
 import type { Actions, PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ cookies }) => {
+export const load: PageServerLoad = async ({ cookies, parent }) => {
+	const { dateDisplay } = await parent();
 	return {
+		firstImportDate: firstImportDateInput(getFirstImport(), dateDisplay),
 		sync: getSyncStatus(),
 		hasApiKey: hasTheCragApiKey(),
 		gradeSystem: getPreferredGradeSystem(),
@@ -45,6 +55,19 @@ export const load: PageServerLoad = async ({ cookies }) => {
 };
 
 export const actions: Actions = {
+	saveFirstImportDate: async ({ request, locals }) => {
+		if (!locals.authed) return fail(403);
+		const form = await request.formData();
+		try {
+			correctFirstImportDate(String(form.get('date') ?? ''));
+			return { ok: true, firstImportSaved: true };
+		} catch (err) {
+			return fail(400, {
+				ok: false,
+				message: err instanceof Error ? err.message : 'Invalid import date.'
+			});
+		}
+	},
 	// Site-wide dashboard layout (#37). /settings is already gated; check again anyway.
 	saveDashboardLayout: async ({ request, cookies, locals }) => {
 		if (!locals.authed) return fail(403);
@@ -102,8 +125,13 @@ export const actions: Actions = {
 		const buf = Buffer.from(await file.arrayBuffer());
 		try {
 			const ascents = parseTheCragCsv(buf);
-			const result = upsertAscents(ascents);
-			refreshProjects();
+			const result = db.transaction(() => {
+				const token = beginFirstImport();
+				const created = upsertAscents(ascents);
+				refreshProjects();
+				completeFirstImport(ascents.length, token);
+				return created;
+			});
 			return { ok: true, imported: ascents.length, created: result };
 		} catch (err) {
 			return fail(400, {
