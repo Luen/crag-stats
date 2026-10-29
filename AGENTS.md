@@ -371,4 +371,6 @@ You'll often notice things outside the task at hand. **Don't silently fix them i
 
 | 2026-10 | #179 / #185: minimal glibc runtime removes mount/apt/shell utilities. CI builds and smoke-tests amd64 + arm64; local importer validation uses synthetic loopback data and GitHub TLS, never theCrag. Residual OS inventory (14 deps / 25 IDs on v0.6.3), CVE-2026-85091 zlib triage (literal range excludes Debian 1.3.1, but trixie is still tracked vulnerable; we cite runtime non-reachability, not "not affected"), and base-update rescan steps live in `docs/dev/DOCKER_SECURITY.md` — no scanner ignores. |
 
+| 2026-10 | #189: community-row `styleLabel` is display-only (explicit gear style beats bolts); `sportOrBolted` still drives the sport/bolted tile and community badges. |
+
 _Add a row when you change behaviour agents must know about._

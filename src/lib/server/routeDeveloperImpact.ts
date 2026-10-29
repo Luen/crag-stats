@@ -28,6 +28,7 @@ export type DeveloperImpactRoute = {
 	faKind: 'FA' | 'FFA' | null;
 	fromSetter: boolean;
 	sportOrBolted: boolean;
+	styleLabel: string | null;
 };
 
 export type RouteDeveloperImpact = {
@@ -49,6 +50,25 @@ function isSportOrBolted(
 	const style = (gearStyle ?? '').toLowerCase();
 	if (style.includes('sport')) return true;
 	return bolts != null && Number.isFinite(bolts) && bolts > 0;
+}
+
+/** Short style label for community-by-route rows (StyleBadge); null when unknown. */
+export function communityRouteStyleLabel(
+	gearStyle: string | null | undefined,
+	bolts: number | null | undefined
+): string | null {
+	const s = (gearStyle ?? '').trim();
+	// Explicit gear style wins; bolts only classify routes whose style is unknown.
+	if (!s) return bolts != null && Number.isFinite(bolts) && bolts > 0 ? 'Sport/bolted' : null;
+	const lower = s.toLowerCase();
+	if (lower.includes('sport')) return 'Sport/bolted';
+	if (lower.includes('boulder')) return 'Boulder';
+	if (lower.includes('trad')) return 'Trad';
+	if (lower.includes('top')) return 'Top rope';
+	if (lower.includes('alpine')) return 'Alpine';
+	if (lower.includes('aid')) return 'Aid';
+	if (lower.includes('dws')) return 'DWS';
+	return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
 /** Aggregate non-owner community ticks on routes the owner FA'd and/or set. */
@@ -106,6 +126,7 @@ export function buildRouteDeveloperImpact(provider = PROVIDER): RouteDeveloperIm
 				? null
 				: Math.max(0, Math.floor(ascentCount) - ownAscents);
 		const sportOrBolted = isSportOrBolted(m?.gearStyle, m?.bolts ?? null);
+		const styleLabel = communityRouteStyleLabel(m?.gearStyle, m?.bolts ?? null);
 		out.push({
 			routeExternalId: id,
 			routeName: m?.name?.trim() || null,
@@ -119,7 +140,8 @@ export function buildRouteDeveloperImpact(provider = PROVIDER): RouteDeveloperIm
 			fromFa: faIds.has(id),
 			faKind: parseFirstAscentKind(faKinds.get(id)),
 			fromSetter: setterIds.has(id),
-			sportOrBolted
+			sportOrBolted,
+			styleLabel
 		});
 	}
 

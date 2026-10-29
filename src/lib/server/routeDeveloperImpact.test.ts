@@ -5,7 +5,7 @@ import { db } from './db';
 import { profiles, routeHistory, routes } from './db/schema';
 import { setFirstAscent } from './firstAscents';
 import { upsertAscents } from './ingest';
-import { buildRouteDeveloperImpact } from './routeDeveloperImpact';
+import { buildRouteDeveloperImpact, communityRouteStyleLabel } from './routeDeveloperImpact';
 
 beforeEach(() => wipeAllData());
 
@@ -121,7 +121,13 @@ describe('buildRouteDeveloperImpact (#135)', () => {
 			ascentCountFetchedAt: '2026-01-01T00:00:00.000Z',
 			fromFa: true,
 			faKind: 'FA',
-			sportOrBolted: true
+			sportOrBolted: true,
+			styleLabel: 'Sport/bolted'
+		});
+		expect(impact.routes.find((r) => r.routeExternalId === 'set-trad')).toMatchObject({
+			fromSetter: true,
+			sportOrBolted: false,
+			styleLabel: 'Trad'
 		});
 		expect(impact.routes.find((r) => r.routeExternalId === 'pending')?.othersAscents).toBeNull();
 		expect(impact.routes.find((r) => r.routeExternalId === 'pending')?.faKind).toBe('FFA');
@@ -157,6 +163,21 @@ describe('buildRouteDeveloperImpact (#135)', () => {
 			routesWithCommunityData: 0,
 			communityAscents: 0
 		});
+	});
+
+	it('maps community route style labels from cached gear style', () => {
+		expect(communityRouteStyleLabel('Sport', 8)).toBe('Sport/bolted');
+		expect(communityRouteStyleLabel('Trad', null)).toBe('Trad');
+		expect(communityRouteStyleLabel('Boulder', null)).toBe('Boulder');
+		expect(communityRouteStyleLabel(null, 6)).toBe('Sport/bolted');
+		expect(communityRouteStyleLabel('', null)).toBeNull();
+	});
+
+	it('prefers explicit gear style over bolts for the label', () => {
+		expect(communityRouteStyleLabel('Trad', 3)).toBe('Trad');
+		expect(communityRouteStyleLabel('Top rope', 6)).toBe('Top rope');
+		expect(communityRouteStyleLabel('Boulder', 2)).toBe('Boulder');
+		expect(communityRouteStyleLabel('', 0)).toBeNull();
 	});
 
 	it('keeps a complete known zero distinct from missing data', () => {
