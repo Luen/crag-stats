@@ -334,7 +334,7 @@ You'll often notice things outside the task at hand. **Don't silently fix them i
 
 | 2026-10 | #146: Community-ascent badges (10/50/100/500 + sport/bolted 10/50/100) from paired impact estimates; earned date stays null; detail discloses coverage. |
 
-| 2026-10 | #151: each milestone has a stable `id` (grade system/score, count or height threshold, or FA route ID). Svelte keys use that ID; matching route names and dates are valid distinct events. |
+| 2026-10 | #151: each milestone has a stable `id` (grade system/score, count or height threshold, or FA threshold id — not per-route). Svelte keys use that ID; matching route names and dates are valid distinct events. |
 
 | 2026-10 | #158: dashboard `{#each}` keys prefer stable ids (BarList `id`, sector path, stars bubble score\|y). Never key climb lists by name/date alone; aggregated name keys (partners, crags) are OK when the map is unique by construction. |
 
@@ -365,12 +365,20 @@ You'll often notice things outside the task at hand. **Don't silently fix them i
 
 | 2026-10 | #169: enabled route imports enrich up to 100 pending routes after each successful sync, in 10-route requests. Pacing, back-off and fetch-once rules still apply. |
 
+| 2026-10 | #206 / #207: **First Moves** badge is dated by the first successful non-empty import (`app_settings.first_import`, `src/lib/server/firstImport.ts`), not the earliest climb. `updateSyncState` (running → idle with `lastSuccessAt`) and manual CSV import call `beginFirstImport`/`completeFirstImport`. Pre-existing logbooks show "Import date unknown" until the owner sets it in Settings → First Moves badge (`saveFirstImportDate`, owner only, no future dates); later syncs never backfill it. `wipeAllData()` clears the key and bumps a generation so in-flight imports can't recreate it. `/docs/badges`; the dashboard Badges card links there. |
+
 | 2026-10 | Snyk triage and the pnpm 12 multi-document scan limitation are recorded in `docs/dev/SECURITY_SCAN.md`. Playwright generates per-run credentials and shares them with workers through test-only environment variables. |
 
 | 2026-10 | `node scripts/snyk-projects.mjs` prepares separate temporary application and boot/config projects for pnpm 12 Snyk scans. Scan every emitted project and preserve any failure; never merge their shared importer maps. |
 
+| 2026-10 | #186: Climbing story (`climberBlurb.ts`) adds gated optional lines — put-up Sport→Trad→Boulder with community-others impact, home crag, partners, season, solo, projects, hardest, popularity, travel, rock. Cap ~3 optional paragraphs; docs at `/docs/climbing-story`. |
 | 2026-10 | #179 / #185: minimal glibc runtime removes mount/apt/shell utilities. CI builds and smoke-tests amd64 + arm64; local importer validation uses synthetic loopback data and GitHub TLS, never theCrag. Residual OS inventory (14 deps / 25 IDs on v0.6.3), CVE-2026-85091 zlib triage (literal range excludes Debian 1.3.1, but trixie is still tracked vulnerable; we cite runtime non-reachability, not "not affected"), and base-update rescan steps live in `docs/dev/DOCKER_SECURITY.md` — no scanner ignores. |
 
 | 2026-10 | #197: route-history import stores the full last `/api/route` object on `routes.route_api_json` (migration `0015`) and keeps each history item’s original JSON in `route_history.raw_json`. Logbook sync already retains full ascent/account payloads in `ascents.raw_json` / `profiles.raw_json`. Column caches stay for UI; dig into raw JSON for future fields without a paced re-fetch. |
+
+| 2026-10 | #189: community-row `styleLabel` is display-only (explicit gear style beats bolts); `sportOrBolted` still drives the sport/bolted tile and community badges. |
+| 2026-10 | #196: badges for Christmas Day (`12-25`), New Year (`12-31` or `01-01`, one badge), and 250 m summed height in one calendar day. Any logged ascent counts for holidays (attempts included). Keep existing `height_10km` / Ten K Vertical — no duplicate overall 10 km badge. |
+
+| 2026-10 | #194: FA/FFA milestones condense to thresholds (first FA/FFA, FFA counts 5–100, combined FA+FFA 5–100, style FA 10/20/50 for Sport/Trad/Boulder). Badges align (`fa_20`/`fa_50`/`fa_100`, `ffa_*`, `fa_{sport,trad,boulder}_*`). Stable ids like `fa:first` / `ffa:5` / `fa:boulder:10` — no per-route `fa:{routeId}`. |
 
 _Add a row when you change behaviour agents must know about._

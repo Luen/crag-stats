@@ -19,6 +19,50 @@ describe('formatBadgeDate', () => {
 });
 
 describe('buildBadges', () => {
+	it('dates First Moves by import while other badges retain their climb dates', () => {
+		const rows = [
+			row({
+				ascentDate: '2018-04-22',
+				isSend: true,
+				ascentUrl: 'https://www.thecrag.com/ascent/123',
+				routeName: 'Synthetic climb'
+			})
+		];
+		const context = {
+			firstImport: { at: '2026-10-26T14:30:00.000Z', count: 902, legacy: false },
+			dateDisplay: { locale: 'en-AU', timeZone: 'Australia/Brisbane' }
+		};
+		const { earned } = buildBadges(rows, [], [], context);
+		const first = earned.find((b) => b.id === 'first_moves')!;
+		expect(first.detail).toBe('Imported 902 climbs · 27 Oct 2026');
+		expect(first.href).toBeNull();
+		expect(first.routeName).toBeNull();
+		expect(earned.find((b) => b.id === 'first_session')?.date).toBe('2018-04-22');
+		expect(earned.find((b) => b.id === 'first_send')?.href).toBe(
+			'https://www.thecrag.com/ascent/123'
+		);
+		const older = row({ ascentDate: '2000-01-01' });
+		expect(
+			buildBadges([...rows, older], [], [], context).earned.find((b) => b.id === 'first_moves')
+		).toEqual(first);
+	});
+
+	it('shows unknown legacy dates, counts undated rows, and does not award incomplete imports', () => {
+		const rows = [
+			row({ ascentDate: '2018-04-22' }),
+			{ ...row({ ascentDate: '2018-04-23' }), ascentDate: null }
+		];
+		const first = buildBadges(rows).earned.find((b) => b.id === 'first_moves')!;
+		expect(first.detail).toBe('Imported 2 climbs · Import date unknown');
+		expect(first.date).toBeNull();
+		expect(first.href).toBeNull();
+		expect(
+			buildBadges(rows, [], [], { firstImport: { at: null, count: 0, legacy: false } }).earned.some(
+				(b) => b.id === 'first_moves'
+			)
+		).toBe(false);
+	});
+
 	it('exposes a fixed catalog size', () => {
 		expect(BADGE_CATALOG.length).toBeGreaterThanOrEqual(30);
 		const empty = buildBadges([]);
@@ -167,12 +211,121 @@ describe('buildBadges', () => {
 		expect(earned.some((b) => b.id === 'band_intermediate')).toBe(true);
 		expect(earned.some((b) => b.id === 'new_high')).toBe(true);
 	});
+
+	it('earns Christmas Day from any logged ascent on 25 Dec', () => {
+		const rows = [
+			row({
+				ascentDate: '2022-12-25',
+				tickType: 'Attempt',
+				isSend: false,
+				routeName: 'Holiday Attempt',
+				ascentId: 1
+			})
+		];
+		const badge = buildBadges(rows).earned.find((b) => b.id === 'holiday_christmas');
+		expect(badge?.date).toBe('2022-12-25');
+		expect(badge?.detail).toMatch(/Christmas Day/);
+		expect(buildBadges(rows).earned.some((b) => b.id === 'holiday_new_year')).toBe(false);
+	});
+
+	it('earns New Year from Eve or Day, as one badge', () => {
+		const eve = buildBadges([
+			row({
+				ascentDate: '2023-12-31',
+				tickType: 'Attempt',
+				isSend: false,
+				routeName: 'Eve Attempt',
+				ascentId: 1
+			})
+		]).earned.find((b) => b.id === 'holiday_new_year');
+		expect(eve?.date).toBe('2023-12-31');
+		expect(eve?.detail).toMatch(/New Year’s Eve/);
+
+		const day = buildBadges([
+			row({
+				ascentDate: '2024-01-01',
+				tickType: 'Tick',
+				isSend: true,
+				routeName: 'Day Send',
+				ascentId: 2
+			})
+		]).earned.find((b) => b.id === 'holiday_new_year');
+		expect(day?.date).toBe('2024-01-01');
+		expect(day?.detail).toMatch(/New Year’s Day/);
+
+		const both = buildBadges([
+			row({
+				ascentDate: '2023-12-31',
+				tickType: 'Attempt',
+				isSend: false,
+				routeName: 'Eve',
+				ascentId: 1
+			}),
+			row({
+				ascentDate: '2024-01-01',
+				tickType: 'Tick',
+				isSend: true,
+				routeName: 'Day',
+				ascentId: 2
+			})
+		]).earned.filter((b) => b.id === 'holiday_new_year');
+		expect(both).toHaveLength(1);
+		expect(both[0]?.date).toBe('2023-12-31');
+	});
+
+	it('earns 250m Day from summed heights on one calendar day', () => {
+		const rows = [
+			row({
+				ascentDate: '2021-07-04',
+				tickType: 'Attempt',
+				isSend: false,
+				routeName: 'Pitch A',
+				heightM: 120,
+				ascentId: 1
+			}),
+			row({
+				ascentDate: '2021-07-04',
+				tickType: 'Tick',
+				isSend: true,
+				routeName: 'Pitch B',
+				routeHeightM: 140,
+				ascentId: 2
+			}),
+			row({
+				ascentDate: '2021-07-05',
+				tickType: 'Tick',
+				isSend: true,
+				routeName: 'Next Day',
+				heightM: 200,
+				ascentId: 3
+			})
+		];
+		const badge = buildBadges(rows).earned.find((b) => b.id === 'day_height_250');
+		expect(badge?.date).toBe('2021-07-04');
+		expect(badge?.detail).toMatch(/250 m in one day/);
+		expect(badge?.routeName).toBe('Pitch B');
+	});
+
+	it('keeps a single Ten K Vertical badge id (no duplicate 10 km)', () => {
+		const tenK = BADGE_CATALOG.filter((b) => b.id === 'height_10km');
+		expect(tenK).toHaveLength(1);
+		expect(tenK[0]?.title).toBe('Ten K Vertical');
+		expect(
+			BADGE_CATALOG.some((b) => /10.?000|10km|ten.?k/i.test(b.id) && b.id !== 'height_10km')
+		).toBe(false);
+		expect(BADGE_CATALOG.filter((b) => b.id.startsWith('height_')).map((b) => b.id)).toEqual([
+			'height_1km',
+			'height_5km',
+			'height_10km',
+			'height_20km'
+		]);
+	});
 });
 
 describe('first ascent badges and milestones', () => {
 	// Route 1: an attempt, then the first send (2021-03-05), then a repeat. Marked FA.
 	const fa = (p: Partial<DashboardExtraRow> & { ascentDate: string }) =>
-		row({ routeId: 1, routeName: 'New Line', firstAscent: 'FA', ...p });
+		row({ routeId: 1, routeName: 'New Line', firstAscent: 'FA', gearStyle: 'Sport', ...p });
 
 	it('dates the FA by the first send of the marked route', () => {
 		const rows = [
@@ -187,7 +340,13 @@ describe('first ascent badges and milestones', () => {
 		expect(earned.some((b) => b.id === 'first_ffa')).toBe(false);
 
 		expect(buildMilestones(rows).items.filter((i) => i.kind === 'fa')).toEqual([
-			{ id: 'fa:1', kind: 'fa', label: 'First ascent', date: '2021-03-05', detail: 'New Line' }
+			{
+				id: 'fa:first',
+				kind: 'fa',
+				label: 'First ascent',
+				date: '2021-03-05',
+				detail: 'New Line'
+			}
 		]);
 		expect(firstAscentSends(rows).map((s) => s.day)).toEqual(['2021-03-05']);
 	});
@@ -205,6 +364,7 @@ describe('first ascent badges and milestones', () => {
 				ascentId: i + 1,
 				routeId: 10 + i,
 				routeName: `Line ${i}`,
+				gearStyle: 'Sport',
 				isSend: true,
 				tickType: 'Red point',
 				firstAscent: i === 2 ? 'FFA' : 'FA'
@@ -214,6 +374,53 @@ describe('first ascent badges and milestones', () => {
 		expect(earned.find((b) => b.id === 'first_ffa')?.date).toBe('2023-03-10');
 		expect(earned.find((b) => b.id === 'fa_5')?.date).toBe('2023-05-10');
 		expect(earned.some((b) => b.id === 'fa_10')).toBe(false);
+
+		const faMilestones = buildMilestones(rows).items.filter((i) => i.kind === 'fa');
+		expect(faMilestones.map((i) => i.id).sort()).toEqual(['fa:5', 'fa:first', 'ffa:first']);
+		expect(faMilestones.find((i) => i.id === 'fa:5')).toMatchObject({
+			date: '2023-05-10',
+			detail: 'Line 4'
+		});
+	});
+
+	it('adds FFA count and style FA threshold milestones and badges (#194)', () => {
+		const rows = Array.from({ length: 10 }, (_, i) =>
+			row({
+				ascentDate: `2024-${String(i + 1).padStart(2, '0')}-15`,
+				ascentId: i + 1,
+				routeId: 100 + i,
+				routeName: `Boulder FA ${i}`,
+				gearStyle: 'Boulder',
+				isSend: true,
+				tickType: 'Send',
+				firstAscent: i < 5 ? 'FFA' : 'FA'
+			})
+		);
+		const earned = buildBadges(rows).earned;
+		expect(earned.find((b) => b.id === 'ffa_5')?.date).toBe('2024-05-15');
+		expect(earned.find((b) => b.id === 'fa_10')?.date).toBe('2024-10-15');
+		expect(earned.find((b) => b.id === 'fa_boulder_10')?.date).toBe('2024-10-15');
+		expect(earned.some((b) => b.id === 'ffa_10')).toBe(false);
+
+		const faMilestones = buildMilestones(rows).items.filter((i) => i.kind === 'fa');
+		expect(faMilestones.map((i) => i.id).sort()).toEqual([
+			'fa:10',
+			'fa:5',
+			'fa:boulder:10',
+			'fa:first',
+			'ffa:5',
+			'ffa:first'
+		]);
+		expect(faMilestones.find((i) => i.id === 'ffa:5')).toMatchObject({
+			label: '5 first free ascents',
+			date: '2024-05-15',
+			detail: 'Boulder FA 4'
+		});
+		expect(faMilestones.find((i) => i.id === 'fa:boulder:10')).toMatchObject({
+			label: '10 boulder first ascents',
+			date: '2024-10-15',
+			detail: 'Boulder FA 9'
+		});
 	});
 });
 

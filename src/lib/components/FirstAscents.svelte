@@ -150,7 +150,7 @@
 							<span class="credits">
 								{#if r.faKind}<span class="kind">{r.faKind}</span>{/if}
 								{#if r.fromSetter}<span class="kind setter">Set</span>{/if}
-								{#if r.sportOrBolted}<span class="tag">Sport/bolted</span>{/if}
+								{#if r.styleLabel}<StyleBadge style={r.styleLabel} />{/if}
 							</span>
 							<div class="sub">
 								{#if r.ascentCountFetchedAt}
@@ -312,12 +312,6 @@
 		flex-wrap: wrap;
 		gap: 0.25rem;
 		align-items: baseline;
-	}
-	.tag {
-		margin-left: 0.35rem;
-		font-size: 0.7rem;
-		font-weight: 600;
-		color: var(--ink-muted);
 	}
 	.community .missing {
 		color: var(--ink-muted);

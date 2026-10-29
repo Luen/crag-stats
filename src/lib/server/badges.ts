@@ -4,8 +4,10 @@
  */
 import { formatVScaleLabel, usesVScale } from '#lib/grades';
 import { tickKind } from '#lib/ticks';
+import { DEFAULT_DATE_DISPLAY, formatDateTime, formatNumber, type DateDisplay } from '#lib/dates';
+import type { FirstImport } from './firstImport';
 import type { CommunityBadgeHit } from './communityBadges';
-import type { DashboardExtraRow } from './dashboardExtras';
+import { displayStyle, type DashboardExtraRow } from './dashboardExtras';
 
 export type BadgeIcon =
 	| 'carabiner'
@@ -126,7 +128,7 @@ export const BADGE_CATALOG: readonly BadgeDef[] = [
 	{
 		id: 'first_moves',
 		title: 'First Moves',
-		hint: 'Log your first climb',
+		hint: 'Import your logbook into Crag Stats',
 		icon: 'carabiner',
 		tone: 'warm'
 	},
@@ -230,6 +232,20 @@ export const BADGE_CATALOG: readonly BadgeDef[] = [
 		tone: 'green'
 	},
 	{
+		id: 'holiday_christmas',
+		title: 'Christmas Day',
+		hint: 'Climb on Christmas Day',
+		icon: 'calendar',
+		tone: 'warm'
+	},
+	{
+		id: 'holiday_new_year',
+		title: 'New Year',
+		hint: 'Climb on New Year’s Eve or Day',
+		icon: 'calendar',
+		tone: 'warm'
+	},
+	{
 		id: 'sessions_10',
 		title: 'Regular',
 		hint: 'Climb on 10 different days',
@@ -277,6 +293,13 @@ export const BADGE_CATALOG: readonly BadgeDef[] = [
 		hint: 'Climb a cumulative 20 km',
 		icon: 'mountain',
 		tone: 'purple'
+	},
+	{
+		id: 'day_height_250',
+		title: '250m Day',
+		hint: 'Climb 250 m in a single day',
+		icon: 'mountain',
+		tone: 'green'
 	},
 	{
 		id: 'country_1',
@@ -363,7 +386,7 @@ export const BADGE_CATALOG: readonly BadgeDef[] = [
 		tone: 'green'
 	},
 	// First ascents rely on the owner marking FA/FFA in the logbook (theCrag's API has no
-	// route history); each is dated by the first send of the marked route.
+	// route history); each is dated by the first send of the marked route (#194 thresholds).
 	{
 		id: 'first_fa',
 		title: 'First Ascent',
@@ -389,6 +412,125 @@ export const BADGE_CATALOG: readonly BadgeDef[] = [
 		id: 'fa_10',
 		title: 'Pioneer',
 		hint: 'Log 10 first ascents (FA or FFA)',
+		icon: 'hanger',
+		tone: 'purple'
+	},
+	{
+		id: 'fa_20',
+		title: '20 First Ascents',
+		hint: 'Log 20 first ascents (FA or FFA)',
+		icon: 'hanger',
+		tone: 'green'
+	},
+	{
+		id: 'fa_50',
+		title: '50 First Ascents',
+		hint: 'Log 50 first ascents (FA or FFA)',
+		icon: 'hanger',
+		tone: 'blue'
+	},
+	{
+		id: 'fa_100',
+		title: '100 First Ascents',
+		hint: 'Log 100 first ascents (FA or FFA)',
+		icon: 'hanger',
+		tone: 'purple'
+	},
+	{
+		id: 'ffa_5',
+		title: '5 First Free Ascents',
+		hint: 'Log 5 first free ascents',
+		icon: 'hanger',
+		tone: 'warm'
+	},
+	{
+		id: 'ffa_10',
+		title: '10 First Free Ascents',
+		hint: 'Log 10 first free ascents',
+		icon: 'hanger',
+		tone: 'blue'
+	},
+	{
+		id: 'ffa_20',
+		title: '20 First Free Ascents',
+		hint: 'Log 20 first free ascents',
+		icon: 'hanger',
+		tone: 'green'
+	},
+	{
+		id: 'ffa_50',
+		title: '50 First Free Ascents',
+		hint: 'Log 50 first free ascents',
+		icon: 'hanger',
+		tone: 'purple'
+	},
+	{
+		id: 'ffa_100',
+		title: '100 First Free Ascents',
+		hint: 'Log 100 first free ascents',
+		icon: 'hanger',
+		tone: 'purple'
+	},
+	{
+		id: 'fa_sport_10',
+		title: '10 Sport First Ascents',
+		hint: 'Log 10 sport first ascents (FA or FFA)',
+		icon: 'hanger',
+		tone: 'blue'
+	},
+	{
+		id: 'fa_sport_20',
+		title: '20 Sport First Ascents',
+		hint: 'Log 20 sport first ascents (FA or FFA)',
+		icon: 'hanger',
+		tone: 'blue'
+	},
+	{
+		id: 'fa_sport_50',
+		title: '50 Sport First Ascents',
+		hint: 'Log 50 sport first ascents (FA or FFA)',
+		icon: 'hanger',
+		tone: 'blue'
+	},
+	{
+		id: 'fa_trad_10',
+		title: '10 Trad First Ascents',
+		hint: 'Log 10 trad first ascents (FA or FFA)',
+		icon: 'hanger',
+		tone: 'warm'
+	},
+	{
+		id: 'fa_trad_20',
+		title: '20 Trad First Ascents',
+		hint: 'Log 20 trad first ascents (FA or FFA)',
+		icon: 'hanger',
+		tone: 'warm'
+	},
+	{
+		id: 'fa_trad_50',
+		title: '50 Trad First Ascents',
+		hint: 'Log 50 trad first ascents (FA or FFA)',
+		icon: 'hanger',
+		tone: 'warm'
+	},
+	{
+		id: 'fa_boulder_10',
+		title: '10 Boulder First Ascents',
+		hint: 'Log 10 boulder first ascents (FA or FFA)',
+		icon: 'hanger',
+		tone: 'purple'
+	},
+	{
+		id: 'fa_boulder_20',
+		title: '20 Boulder First Ascents',
+		hint: 'Log 20 boulder first ascents (FA or FFA)',
+		icon: 'hanger',
+		tone: 'purple'
+	},
+	{
+		id: 'fa_boulder_50',
+		title: '50 Boulder First Ascents',
+		hint: 'Log 50 boulder first ascents (FA or FFA)',
 		icon: 'hanger',
 		tone: 'purple'
 	},
@@ -519,6 +661,37 @@ const COUNTRY_BADGES = [
 	{ id: 'country_10', n: 10 }
 ];
 
+/** Combined FA+FFA distinct-route thresholds (#194). */
+const FA_COUNT_BADGES = [
+	{ id: 'fa_5', n: 5 },
+	{ id: 'fa_10', n: 10 },
+	{ id: 'fa_20', n: 20 },
+	{ id: 'fa_50', n: 50 },
+	{ id: 'fa_100', n: 100 }
+] as const;
+
+/** FFA-only distinct-route thresholds (#194). */
+const FFA_COUNT_BADGES = [
+	{ id: 'ffa_5', n: 5 },
+	{ id: 'ffa_10', n: 10 },
+	{ id: 'ffa_20', n: 20 },
+	{ id: 'ffa_50', n: 50 },
+	{ id: 'ffa_100', n: 100 }
+] as const;
+
+/** Per-style first-ascent (FA+FFA) thresholds (#194). */
+const STYLE_FA_BADGES = [
+	{ id: 'fa_sport_10', style: 'Sport', n: 10 },
+	{ id: 'fa_sport_20', style: 'Sport', n: 20 },
+	{ id: 'fa_sport_50', style: 'Sport', n: 50 },
+	{ id: 'fa_trad_10', style: 'Trad', n: 10 },
+	{ id: 'fa_trad_20', style: 'Trad', n: 20 },
+	{ id: 'fa_trad_50', style: 'Trad', n: 50 },
+	{ id: 'fa_boulder_10', style: 'Boulder', n: 10 },
+	{ id: 'fa_boulder_20', style: 'Boulder', n: 20 },
+	{ id: 'fa_boulder_50', style: 'Boulder', n: 50 }
+] as const;
+
 function hitAt(row: DashboardExtraRow, prefix: string): Hit {
 	const date = dayKey(row.ascentDate)!;
 	const routeName = (row.routeName || '').trim() || null;
@@ -544,7 +717,8 @@ function ascentOrder(row: DashboardExtraRow): number {
 export function buildBadges(
 	rows: DashboardExtraRow[],
 	setterHits: readonly SetterBadgeHit[] = [],
-	communityHits: readonly CommunityBadgeHit[] = []
+	communityHits: readonly CommunityBadgeHit[] = [],
+	context: { firstImport?: FirstImport | null; dateDisplay?: DateDisplay } = {}
 ): BadgesResult {
 	// Chronological by day, then stable ascent id — never alphabetise route names
 	// (that made “Nacho Libre” beat earlier same-day climbs like “Torched”).
@@ -572,34 +746,46 @@ export function buildBadges(
 	let weekendSendCount = 0;
 	let cumHeight = 0;
 	const sessions = new Set<string>();
+	const dayHeights = new Map<string, number>();
 	const countries = new Set<string>();
 	let maxRoute = -Infinity;
 	let maxBoulder = -Infinity;
 	const faRoutes = new Set<number>();
+	let ffaCount = 0;
+	const styleFaCounts: Record<'Sport' | 'Trad' | 'Boulder', number> = {
+		Sport: 0,
+		Trad: 0,
+		Boulder: 0
+	};
 
 	for (const { row, day } of dated) {
 		ascentCount += 1;
 		sessions.add(day);
-		cumHeight += heightOf(row);
+		const climbHeight = heightOf(row);
+		cumHeight += climbHeight;
+		const dayHeight = (dayHeights.get(day) ?? 0) + climbHeight;
+		dayHeights.set(day, dayHeight);
 
 		const country = (row.country || '').trim();
 		if (country) countries.add(country.toLowerCase());
 
 		const kind = tickKind(row.tickType);
 		const send = Boolean(row.isSend);
-
-		if (ascentCount === 1) {
-			// Detail patched after the loop with total imported count.
-			mark('first_moves', {
-				date: day,
-				routeName: (row.routeName || '').trim() || null,
-				href: row.ascentUrl || row.url || null,
-				detail: ''
-			});
-		}
+		const monthDay = day.slice(5); // MM-DD from calendar dayKey — no local TZ
 
 		if (sessions.size === 1 && !earned.has('first_session')) {
 			mark('first_session', hitAt(row, 'First session done'));
+		}
+
+		// Holiday badges: any logged ascent that calendar day (attempts count).
+		if (monthDay === '12-25') {
+			mark('holiday_christmas', hitAt(row, 'Climbed on Christmas Day'));
+		}
+		if (monthDay === '12-31' || monthDay === '01-01') {
+			mark(
+				'holiday_new_year',
+				hitAt(row, monthDay === '12-31' ? 'Climbed on New Year’s Eve' : 'Climbed on New Year’s Day')
+			);
 		}
 
 		for (const b of COUNT_BADGES) {
@@ -610,6 +796,9 @@ export function buildBadges(
 		}
 		for (const b of HEIGHT_BADGES) {
 			if (cumHeight >= b.m && !earned.has(b.id)) mark(b.id, hitAt(row, b.label));
+		}
+		if (dayHeight >= 250 && !earned.has('day_height_250')) {
+			mark('day_height_250', hitAt(row, '250 m in one day'));
 		}
 		for (const b of COUNTRY_BADGES) {
 			if (countries.size === b.n && country) {
@@ -678,13 +867,30 @@ export function buildBadges(
 		if (band === 4) mark('band_expert', hitAt(row, 'First Expert-band send'));
 		if (band === 5) mark('band_elite', hitAt(row, 'First Elite-band send'));
 
-		// First send of a route the owner marked FA/FFA dates that first ascent.
+		// First send of a route the owner marked FA/FFA dates that first ascent (#194).
 		if (row.firstAscent && row.routeId != null && !faRoutes.has(row.routeId)) {
 			faRoutes.add(row.routeId);
 			const what = row.firstAscent === 'FFA' ? 'First free ascent' : 'First ascent';
 			mark(row.firstAscent === 'FFA' ? 'first_ffa' : 'first_fa', hitAt(row, what));
-			if (faRoutes.size === 5) mark('fa_5', hitAt(row, `${what} #5`));
-			if (faRoutes.size === 10) mark('fa_10', hitAt(row, `${what} #10`));
+			for (const b of FA_COUNT_BADGES) {
+				if (faRoutes.size === b.n) mark(b.id, hitAt(row, `${what} #${b.n}`));
+			}
+			if (row.firstAscent === 'FFA') {
+				ffaCount += 1;
+				for (const b of FFA_COUNT_BADGES) {
+					if (ffaCount === b.n) mark(b.id, hitAt(row, `First free ascent #${b.n}`));
+				}
+			}
+			const faStyle = displayStyle(row.gearStyle);
+			if (faStyle === 'Sport' || faStyle === 'Trad' || faStyle === 'Boulder') {
+				styleFaCounts[faStyle] += 1;
+				const n = styleFaCounts[faStyle];
+				for (const b of STYLE_FA_BADGES) {
+					if (b.style === faStyle && n === b.n) {
+						mark(b.id, hitAt(row, `${b.n} ${faStyle.toLowerCase()} first ascents · ${what}`));
+					}
+				}
+			}
 		}
 
 		const score = scoreOf(row);
@@ -732,13 +938,24 @@ export function buildBadges(
 		});
 	}
 
-	// Patch first_moves with total imported count (RoxClimbs style).
-	if (earned.has('first_moves') && dated.length > 0) {
-		const first = dated[0]!;
-		const hit = earned.get('first_moves')!;
-		earned.set('first_moves', {
-			...hit,
-			detail: `Imported ${dated.length.toLocaleString('en-US')} climbs · ${formatBadgeDate(first.day)}`
+	const first = context.firstImport;
+	if (first?.at || first?.legacy || (!first && rows.length > 0)) {
+		const display = context.dateDisplay ?? DEFAULT_DATE_DISPLAY;
+		const at = first?.at ?? null;
+		// A manually supplied date is a calendar day; timestamps use the owner's time zone.
+		const dateOnly = at && /^\d{4}-\d{2}-\d{2}$/.test(at);
+		const when = at
+			? formatDateTime(
+					dateOnly ? `${at}T12:00:00Z` : at,
+					dateOnly ? { ...display, timeZone: 'UTC' } : display,
+					{ month: 'short', day: 'numeric', year: 'numeric' }
+				)
+			: 'Import date unknown';
+		mark('first_moves', {
+			date: at,
+			routeName: null,
+			href: null,
+			detail: `Imported ${formatNumber(first?.count ?? rows.length, display)} climbs · ${when}`
 		});
 	}
 
