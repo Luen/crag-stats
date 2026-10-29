@@ -381,7 +381,7 @@ You'll often notice things outside the task at hand. **Don't silently fix them i
 
 | 2026-10 | #169: enabled route imports enrich up to 100 pending routes after each successful sync, in 10-route requests. Pacing, back-off and fetch-once rules still apply. |
 
-| 2026-10 | #206 / #207: **First Moves** badge is dated by the first successful non-empty import (`app_settings.first_import`, `src/lib/server/firstImport.ts`), not the earliest climb. `updateSyncState` (running → idle with `lastSuccessAt`) and manual CSV import call `beginFirstImport`/`completeFirstImport`. Pre-existing logbooks show "Import date unknown" until the owner sets it in Settings → First Moves badge (`saveFirstImportDate`, owner only, no future dates); later syncs never backfill it. `wipeAllData()` clears the key and bumps a generation so in-flight imports can't recreate it. `/docs/badges`; the dashboard Badges card links there. |
+| 2026-10 | #206 / #207: **First Moves** badge is dated by the first successful non-empty import (`app_settings.first_import`, `src/lib/server/firstImport.ts`), not the earliest climb. `updateSyncState` (running → idle with `lastSuccessAt`) and manual CSV import call `beginFirstImport`/`completeFirstImport`. `wipeAllData()` clears the key and bumps a generation so in-flight imports can't recreate it. `/docs/badges`; the dashboard Badges card links there. |
 
 | 2026-10 | Snyk triage and the pnpm 12 multi-document scan limitation are recorded in `docs/dev/SECURITY_SCAN.md`. Playwright generates per-run credentials and shares them with workers through test-only environment variables. |
 
@@ -419,6 +419,8 @@ You'll often notice things outside the task at hand. **Don't silently fix them i
 | 2026-10 | #215 review: CSV mode prevents newly enabling notes, but an existing opt-in must remain switchable off. The server accepts disabling in every mode, refuses CSV enablement, and retains the no-password visibility warning. Browser regression covers API notes retained in a CSV-mode DB and crafted preference POSTs. |
 
 | 2026-10 | #219: Logbook sync stays in user `/docs` (`docs/guide/logbook-sync.md`); README/DEPLOY cross-link it; household-key detail stays in `docs/dev/ROUTE_HISTORY.md` via GitHub URL from the guide. |
+
+| 2026-10 | #224: Settings no longer offers a First Moves date control. The first successful non-empty sync/import always stamps `first_import` when `at` is still null (legacy “unknown until owner corrects” path removed). |
 
 _Add a row when you change behaviour agents must know about._
 

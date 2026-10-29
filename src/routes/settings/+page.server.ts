@@ -18,13 +18,7 @@ import {
 import { hasTheCragApiKey, getTheCragSyncConfiguration } from '#lib/server/env';
 import { privateNotesSyncAvailable } from '#lib/server/notes';
 import { forgetTheCragSession } from '#lib/server/theCragWebSession';
-import {
-	beginFirstImport,
-	completeFirstImport,
-	correctFirstImportDate,
-	firstImportDateInput,
-	getFirstImport
-} from '#lib/server/firstImport';
+import { beginFirstImport, completeFirstImport } from '#lib/server/firstImport';
 import { db } from '#lib/server/db';
 import { upsertAscents } from '#lib/server/ingest';
 import { parseTheCragCsv } from '#lib/server/providers/thecrag';
@@ -39,10 +33,8 @@ import {
 import { getSyncStatus, runTheCragSync } from '#lib/server/sync';
 import type { Actions, PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ cookies, parent }) => {
-	const { dateDisplay } = await parent();
+export const load: PageServerLoad = async ({ cookies }) => {
 	return {
-		firstImportDate: firstImportDateInput(getFirstImport(), dateDisplay),
 		sync: getSyncStatus(),
 		hasApiKey: hasTheCragApiKey(),
 		syncConfiguration: getTheCragSyncConfiguration(),
@@ -62,19 +54,6 @@ export const actions: Actions = {
 		if (!locals.authed) return fail(403);
 		forgetTheCragSession();
 		return { ok: true, sessionForgotten: true };
-	},
-	saveFirstImportDate: async ({ request, locals }) => {
-		if (!locals.authed) return fail(403);
-		const form = await request.formData();
-		try {
-			correctFirstImportDate(String(form.get('date') ?? ''));
-			return { ok: true, firstImportSaved: true };
-		} catch (err) {
-			return fail(400, {
-				ok: false,
-				message: err instanceof Error ? err.message : 'Invalid import date.'
-			});
-		}
 	},
 	// Site-wide dashboard layout (#37). /settings is already gated; check again anyway.
 	saveDashboardLayout: async ({ request, cookies, locals }) => {
