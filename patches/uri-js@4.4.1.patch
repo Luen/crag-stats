@@ -145,6 +145,3 @@ index 659ce2651cea1d928546bbc296f5f0cb97c07b85..7b8e63d503da91a9cd62d845d96d2a45
  export function removeDotSegments(input) {
      const output = [];
      while (input.length) {
-diff --git a/yarn.lock b/yarn.lock
-deleted file mode 100644
-index 3c42ded1259efe646a53372a76f8671fd8757fc5..0000000000000000000000000000000000000000

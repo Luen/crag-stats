@@ -422,10 +422,10 @@ You'll often notice things outside the task at hand. **Don't silently fix them i
 
 | 2026-10 | #224: Settings no longer offers a First Moves date control. The first successful non-empty sync/import always stamps `first_import` when `at` is still null (legacy “unknown until owner corrects” path removed). |
 
-_Add a row when you change behaviour agents must know about._
-
 | 2026-10 | Security remediation pins pnpm patches for deepmerge 4.3.1, picomatch 4.0.7 and uri-js 4.4.1, with installed-package exploit regressions in `dependencySecurity.test.ts`. Keep `patches/` available before Docker's frozen install. Adapter-node is build-only. Read `patches/README.md` and `docs/dev/SECURITY_SCAN.md`; version-based alerts can persist despite local fixes and must remain disclosed. |
 
 - First ascents attribution follows saved mark source (plus cached setter credits), not `ROUTE_HISTORY_IMPORT`: manual/imported credits coexist and imported marks survive disabling import.
 
 - Node 26 LTS is the runtime baseline. Install the exact `packageManager` with npm (Corepack is not bundled); the distroless image also needs the build-stage libatomic shared library. Validate native SQLite and importer on amd64 and arm64 after runtime updates.
+
+_Add a row when you change behaviour agents must know about._
