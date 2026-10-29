@@ -121,6 +121,44 @@ beforeEach(() => {
 });
 
 describe('route history import', () => {
+	it('refuses a configured owner that differs from the saved logbook account', async () => {
+		const h = harness({ [routeId(0)]: fa(routeId(0), '@different-owner') });
+		const result = await runRouteHistoryImportOnce(
+			{ ...config, ownerLogin: 'different-owner' },
+			h.deps
+		);
+		expect(result.outcome).toBe('no-login');
+		expect(h.sessions().opened).toBe(0);
+		expect(getFirstAscentMarks().size).toBe(0);
+	});
+
+	it('refuses cached mark reapplication for another configured account', async () => {
+		const h = harness({ [routeId(0)]: fa(routeId(0), '@different-owner') });
+		await runRouteHistoryImportOnce(config, h.deps);
+		expect(applyCachedHistoryMarks({}, 'different-owner').marked).toBe(0);
+		expect(getFirstAscentMarks().size).toBe(0);
+	});
+
+	it('matches a configured login case-insensitively for imports and cached marks', async () => {
+		const h = harness({ [routeId(0)]: fa(routeId(0), `@${LOGIN}`) });
+		const result = await runRouteHistoryImportOnce(
+			{ ...config, ownerLogin: ` ${LOGIN.toUpperCase()} ` },
+			h.deps
+		);
+		expect(result.marked).toBe(1);
+		setFirstAscent('thecrag', routeId(0), null, { recordSkip: false });
+		expect(applyCachedHistoryMarks({}, LOGIN.toUpperCase()).marked).toBe(1);
+	});
+
+	it('does not fall back to the saved account when a CSV login is empty', async () => {
+		const h = harness();
+		expect((await runRouteHistoryImportOnce({ ...config, ownerLogin: '' }, h.deps)).outcome).toBe(
+			'no-login'
+		);
+		expect(h.sessions().opened).toBe(0);
+		expect(applyCachedHistoryMarks({}, '').routes).toBe(0);
+	});
+
 	it.each([
 		['', 0],
 		['0', 0],

@@ -1,6 +1,6 @@
 # Route popularity
 
-The **Route popularity** card uses community stats theCrag caches on each route: **ascent count**, **popularity**, and **relative popularity** (0–100). Crag Stats stores these when route history import runs (Settings → enable import, then sync or refresh). Routes fetched before migration `0012` need **Refresh all** once to backfill.
+The **Route popularity** card uses community stats theCrag caches on each route: **ascent count**, **popularity**, and **relative popularity** (0–100). Crag Stats stores these when route history import runs (Settings → enable import, then sync).
 
 ## Beaten track vs off the beaten track
 

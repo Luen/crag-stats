@@ -3,7 +3,7 @@
  * starts runs in the background (after each logbook sync, or from Settings). Off unless
  * ROUTE_HISTORY_IMPORT=true. All pacing and caching rules live in `routeHistoryEngine.ts`.
  */
-import { env, envFlag } from './env';
+import { env, envFlag, getTheCragSyncConfiguration } from './env';
 import { openRouteHistoryClient } from './providers/thecrag/routeHistoryApi';
 import {
 	applyCachedHistoryMarks,
@@ -18,11 +18,19 @@ import {
 	type RouteHistoryStatus
 } from './routeHistoryEngine';
 
+/** CSV mode must match FA/setter credits to THECRAG_USERNAME, not a stale API profile login. */
+function configuredOwnerLogin(): string | null {
+	if (getTheCragSyncConfiguration().mode !== 'csv') return null;
+	const username = env('THECRAG_USERNAME').trim();
+	return username;
+}
+
 function config(): RouteHistoryConfig {
 	return {
 		enabled: envFlag('ROUTE_HISTORY_IMPORT'),
 		apiKey: env('THECRAG_API_KEY').trim(),
-		refreshDays: parseRouteDataRefreshDays(env('ROUTE_DATA_REFRESH_DAYS'))
+		refreshDays: parseRouteDataRefreshDays(env('ROUTE_DATA_REFRESH_DAYS')),
+		ownerLogin: configuredOwnerLogin()
 	};
 }
 
@@ -68,7 +76,7 @@ export function triggerRouteHistoryImport(reason: string): boolean {
 }
 
 export function reapplyRouteHistoryMarks(rules: MarkRules) {
-	return applyCachedHistoryMarks(rules);
+	return applyCachedHistoryMarks(rules, configuredOwnerLogin());
 }
 
 export function refreshAllRouteHistory(): number {

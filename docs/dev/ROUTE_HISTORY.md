@@ -8,6 +8,17 @@ User-facing explanation: [`docs/guide/first-ascents.md`](../guide/first-ascents.
 
 Set `ROUTE_DATA_REFRESH_DAYS` to a whole number of days from 30 through 3650 (~10 years) for rolling refreshes (fixed days, not calendar months) — e.g. `90` (recommended), `30`, or `180` (~half a year). Unset, `0`, under 30, over 3650, or non-digit values keep the default fetch-once behavior. This still requires `ROUTE_HISTORY_IMPORT=true` and an API key. No separate timer runs: successful logbook syncs and manual runs process eligible routes within the same 100-route budget, so a large backlog may take several syncs to refresh.
 
+## Household / shared supporter key with CSV mode
+
+Route history uses `THECRAG_API_KEY` against `/api/route/ids`. That key is a **supporter** credential. Free accounts do not get a personal logbook/route API key in the browser: a HAR of a logged-in free climber browsing route pages shows no `key=` / supporter API token on `/api/route/ids` (only unrelated map-tile `apiServer.key` scaffolding and cookie-auth HTML/API lookups). So the unpaid partner cannot “use their own route key” for this import.
+
+When one person in a household has a supporter account and the other does not, a workable homeserver layout is:
+
+1. **Paid partner** — `THECRAG_SYNC_MODE=api` with their own `THECRAG_API_KEY` (full logbook sync + optional route history on their instance).
+2. **Unpaid partner** — `THECRAG_SYNC_MODE=csv` with _their_ `THECRAG_USERNAME` / `THECRAG_PASSWORD` / `SESSION_SECRET` for the logbook, plus the **paid partner’s** `THECRAG_API_KEY` only for `ROUTE_HISTORY_IMPORT` (and optional `ROUTE_DATA_REFRESH_DAYS`).
+
+Crag Stats treats CSV identity as the configured username: sync sets `profiles.login` / `name` from `THECRAG_USERNAME`, clears API-only profile fields (`routesTicked`, outdoor/indoor counts, avatar, `raw_json`, …), and FA/setter matching prefers that username in CSV mode. That keeps the key owner’s account stats and FA credits from bleeding onto the CSV instance. Still: the shared key can read the key owner’s private logbook notes if misused — keep `.env` private, one key per trusted household, and prefer the unpaid partner getting their own supporter key when they can.
+
 ## Why it needs `impers`
 
 theCrag's logbook API (`/api/logbook/ascents`) works with plain `fetch` and doesn't include route history. `/api/route/ids?show=info,ancestors` does include it (plus route-level fields used by #77–#82), but Cloudflare blocks non-browser clients there (a 403 "Sorry, you have been blocked" page, even with a valid key). [`impers`](https://github.com/lexiforest/impers) presents a browser-like TLS/HTTP2 fingerprint, so those requests get through.
@@ -76,7 +87,24 @@ Parsing lives in `parseRouteInfoFields()` / `parseRoutePayload()` (`routeHistory
 
 `/api/logbook/ascents` already persists every ascent as `ascents.raw_json` and the account summary as `profiles.raw_json`. Column mapping extracts what the app uses today; undocumented or newly documented fields (`historical`, `cprStyle`, ascent-level `tags`, `route.gradeAtom`, …) remain recoverable from those blobs without another full logbook sync.
 
-Routes fetched before this migration acquire cached info on the next eligible periodic refresh, or via **Refresh all** in Settings (still 100 routes per run), which clears `route_history_fetches` and re-fetches. Periodic refreshes reuse the normal payload/cache path: totals, owner-count snapshots and counter freshness update together only when `ascentCount` is present. Omitted fields preserve values, explicit null clears them, and manual FA/FFA marks and unmarks remain protected.
+Upgrades that add or extend route-info cache columns must **invalidate** affected routes in the same release so fetch-once DBs do not stick with incomplete caches until someone runs Refresh all. Prefer deleting matching `route_history_fetches` rows with `status='ok'` (routes become `history=pending` again) while leaving `missing` ledger rows, `route_history`, marks, and import pacing untouched. Example one-shot repair (`data:0004_invalidate_incomplete_route_cache` in `dataMigrations.ts`; after `data:0003_csv_au_boulder_grades`):
+
+```sql
+DELETE FROM route_history_fetches
+WHERE rowid IN (
+  SELECT f.rowid
+  FROM route_history_fetches f
+  INNER JOIN routes r ON r.provider = f.provider AND r.external_id = f.route_external_id
+  WHERE f.status = 'ok'
+    AND (r.route_info_updated_at IS NULL OR r.route_api_json IS NULL)
+);
+```
+
+Installs that imported routes before migration `0015` may re-queue nearly every successful fetch (still 100 routes per run).
+
+New SQL migrations can inline the same pattern (scoped to the new columns) or call an appended `data:` migration when the invalidation needs joins or app logic. Settings **Refresh all** stays a manual escape hatch; user guides must not tell owners to run it after every schema upgrade.
+
+Periodic refreshes reuse the normal payload/cache path: totals, owner-count snapshots and counter freshness update together only when `ascentCount` is present. Omitted fields preserve values, explicit null clears them, and manual FA/FFA marks and unmarks remain protected.
 
 **`quality_score` (#80):** when cached, the dashboard stars scatter uses a 0–100 quality axis (stars map to the same scale as fallback). Logbook **Quality** sort prefers `quality_score`, then ascent quality labels, then stars.
 
