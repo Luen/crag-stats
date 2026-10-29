@@ -3,7 +3,7 @@ import { db, ensureSchema } from './db';
 import { appSettings, ascents } from './db/schema';
 import type { DateDisplay } from '#lib/dates';
 
-const KEY = 'first_import';
+const FIRST_IMPORT_SETTING = 'first_import';
 let generation = 0;
 
 export type FirstImport = {
@@ -15,7 +15,11 @@ export type FirstImport = {
 
 export function getFirstImport(): FirstImport | null {
 	ensureSchema();
-	const raw = db.select().from(appSettings).where(eq(appSettings.key, KEY)).get()?.value;
+	const raw = db
+		.select()
+		.from(appSettings)
+		.where(eq(appSettings.key, FIRST_IMPORT_SETTING))
+		.get()?.value;
 	if (!raw) return null;
 	try {
 		const value = JSON.parse(raw) as FirstImport;
@@ -40,7 +44,11 @@ function countAscents(): number {
 }
 
 function save(value: FirstImport) {
-	const record = { key: KEY, value: JSON.stringify(value), updatedAt: new Date().toISOString() };
+	const record = {
+		key: FIRST_IMPORT_SETTING,
+		value: JSON.stringify(value),
+		updatedAt: new Date().toISOString()
+	};
 	db.insert(appSettings)
 		.values(record)
 		.onConflictDoUpdate({ target: appSettings.key, set: record })
@@ -106,5 +114,5 @@ export function firstImportDateInput(first: FirstImport | null, display: DateDis
 export function resetFirstImport() {
 	generation += 1;
 	ensureSchema();
-	db.delete(appSettings).where(eq(appSettings.key, KEY)).run();
+	db.delete(appSettings).where(eq(appSettings.key, FIRST_IMPORT_SETTING)).run();
 }

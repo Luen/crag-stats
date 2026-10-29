@@ -20,7 +20,8 @@ if (args.length === 0) {
 	process.exit(1);
 }
 
-const child = spawn(args[0], args.slice(1), { stdio: 'inherit', env: process.env });
+// Operator-supplied argument array, never a shell command string.
+const child = spawn(args[0], args.slice(1), { shell: false, stdio: 'inherit', env: process.env });
 child.on('exit', (code, signal) => {
 	if (signal) process.kill(process.pid, signal);
 	process.exit(code ?? 1);

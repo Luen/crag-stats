@@ -9,6 +9,7 @@ RUN apt-get update \
   && corepack enable
 
 COPY package.json pnpm-lock.yaml .npmrc pnpm-workspace.yaml ./
+COPY patches ./patches
 RUN corepack prepare "$(node -p "require('./package.json').packageManager")" --activate \
   && pnpm install --frozen-lockfile
 

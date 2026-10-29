@@ -27,6 +27,7 @@
 		"@axe-core/playwright": "^4.14.0",
 		"@eslint/js": "^10.0.1",
 		"@playwright/test": "^1.64.1",
+		"@sveltejs/adapter-node": "^6.0.0",
 		"@sveltejs/kit": "^3.1.0",
 		"@sveltejs/vite-plugin-svelte": "^7.3.1",
 		"@tailwindcss/vite": "^4.3.3",
@@ -54,7 +55,6 @@
 	},
 	"dependencies": {
 		"@fontsource-variable/plus-jakarta-sans": "^5.3.0",
-		"@sveltejs/adapter-node": "^6.0.0",
 		"better-sqlite3": "^13.0.3",
 		"csv-parse": "^7.0.3",
 		"drizzle-orm": "^0.45.4",

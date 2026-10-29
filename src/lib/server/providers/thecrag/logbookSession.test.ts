@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { randomBytes } from 'node:crypto';
 import {
 	downloadLogbook,
 	loginForm,
@@ -9,7 +10,7 @@ import {
 } from './logbookSession';
 
 const DAY = 86_400_000;
-const credentials = { username: 'sample', password: 'synthetic-password' };
+const credentials = { username: 'sample', password: randomBytes(24).toString('hex') };
 const form = `<form action="https://www.thecrag.com//CIDS/cgi-bin/cids.cgi" method="post">
 <input name="D:Login"><input name="D:Password" type="password">
 <input type="hidden" name="D:CSRF" value="fresh&amp;token">
