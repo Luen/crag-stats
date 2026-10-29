@@ -54,14 +54,18 @@ const ERROR_BACKOFF_MAX_MS = 24 * HOUR;
 export type RouteHistoryConfig = {
 	enabled: boolean;
 	apiKey: string;
-	/** Opt-in rolling refresh age. Unset/0 keeps fetch-once behavior. */
-	refreshDays?: 0 | 30 | 90;
+	/** 0 = fetch once; otherwise a whole number of days ≥ 30. */
+	refreshDays?: number;
 };
 
-/** Invalid or unset values retain fetch-once behavior. */
-export function parseRouteDataRefreshDays(value: string): 0 | 30 | 90 {
-	const days = value.trim();
-	return days === '30' ? 30 : days === '90' ? 90 : 0;
+/**
+ * Periodic refresh age in whole days. Unset, `0`, non-integers, and values under 30
+ * keep fetch-once behaviour (return 0). Any integer ≥ 30 is accepted (e.g. 180 ≈ half a year).
+ */
+export function parseRouteDataRefreshDays(value: string): number {
+	const days = Number(value.trim());
+	if (!Number.isInteger(days) || days < 30) return 0;
+	return days;
 }
 
 export type RouteHistoryDeps = {
@@ -89,7 +93,7 @@ export type RouteHistoryRunResult = {
 
 export type RouteHistoryStatus = {
 	enabled: boolean;
-	refreshDays: 0 | 30 | 90;
+	refreshDays: number;
 	hasApiKey: boolean;
 	status: string;
 	running: boolean;
@@ -170,11 +174,7 @@ function ownerLogin(): string | null {
 /**
  * Unfetched routes first (ungraded, then recently climbed), followed by oldest stale fetches.
  */
-export function pendingRouteIds(
-	limit: number,
-	refreshDays: 0 | 30 | 90 = 0,
-	now = Date.now()
-): string[] {
+export function pendingRouteIds(limit: number, refreshDays = 0, now = Date.now()): string[] {
 	ensureSchema();
 	const rows = db
 		.select({ id: routes.externalId })
@@ -199,7 +199,7 @@ export function pendingRouteIds(
 	return rows.map((r) => r.id);
 }
 
-function pendingFetchCondition(refreshDays: 0 | 30 | 90, now: number) {
+function pendingFetchCondition(refreshDays: number, now: number) {
 	const unfetched = sql`${routeHistoryFetches.routeExternalId} IS NULL`;
 	if (!refreshDays) return unfetched;
 	const cutoff = new Date(now - refreshDays * 86_400_000).toISOString();

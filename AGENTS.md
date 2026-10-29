@@ -125,7 +125,7 @@ Height quirk: theCrag may return height as `[value, unit]` arrays — parse in t
 - **Climber type:** if one of Sport / Trad / Boulder is ≥ **40%** of ascents → “Sport climber” (etc.); else “Rock climber”.
 - **CPR timelines:** approximate model in `cpr.ts` (power factor P=5, tick shifts, ~0.7 grade/year decay). Link/docs: theCrag CPR articles. Label UI as approximate — not a byte-for-byte clone.
 - **Notable ascents:** by style + by area; use `StyleBadge` + `TickTypeIcon` (theCrag-like SVGs).
-- **First ascents:** theCrag has no FA tick type; FAs live in route history, which the logbook API doesn't return. The owner marks FA/FFA in the logbook (`first_ascents`, 0009). Optionally (`ROUTE_HISTORY_IMPORT=true`, **off by default**) `routeHistoryEngine.ts` imports public history in the background after each sync: each route **once** by default (`route_history_fetches`), or opt-in rolling refresh via `ROUTE_DATA_REFRESH_DAYS=30|90`, **100 routes per run**, ≥1.1 s between requests, one `impers` session per run, stop + back off (≥24 h, honours Retry-After) on any block. Auto-marks only on an exact `@login` match and never overrides manual marks/unmarks. Details: `docs/dev/ROUTE_HISTORY.md`. Mark/unmark and import actions require `locals.authed`.
+- **First ascents:** theCrag has no FA tick type; FAs live in route history, which the logbook API doesn't return. The owner marks FA/FFA in the logbook (`first_ascents`, 0009). Optionally (`ROUTE_HISTORY_IMPORT=true`, **off by default**) `routeHistoryEngine.ts` imports public history in the background after each sync: each route **once** by default (`route_history_fetches`), or opt-in rolling refresh via `ROUTE_DATA_REFRESH_DAYS` (whole days ≥ 30, e.g. 90 or 180), **100 routes per run**, ≥1.1 s between requests, one `impers` session per run, stop + back off (≥24 h, honours Retry-After) on any block. Auto-marks only on an exact `@login` match and never overrides manual marks/unmarks. Details: `docs/dev/ROUTE_HISTORY.md`. Mark/unmark and import actions require `locals.authed`.
 - Summary metrics: onsights, successful ascents, distance climbed (km).
 
 ---
@@ -234,7 +234,7 @@ Prefer fixing type errors over `@ts-ignore`. Do not switch the package manager.
 - Don’t commit secrets, sample private notes, or real API keys.
 - Don’t expand scope into wearables / Mountain Project until the matching epic is in play — keep PRs focused.
 - Don’t claim CPR is identical to theCrag’s proprietary score.
-- Don’t HTML-scrape theCrag route pages, and don’t loosen the route-history limits (fetch once unless `ROUTE_DATA_REFRESH_DAYS=30|90` is explicitly enabled, 100 per run, ≥1 s gap, stop on block). `impers` is allowed only for two explicit opt-ins: the `/api/route` history import (`ROUTE_HISTORY_IMPORT=true`) and the CSV logbook download (`THECRAG_SYNC_MODE=csv`, with its saved-session pacing and back-off). Never use it for the default API logbook sync. The one documented HTML parse is the login form's hidden CSRF fields in CSV mode; nothing else on theCrag pages may be scraped. Prefer negotiated theCrag API access.
+- Don’t HTML-scrape theCrag route pages, and don’t loosen the route-history limits (fetch once unless `ROUTE_DATA_REFRESH_DAYS` ≥ 30 is explicitly enabled, 100 per run, ≥1 s gap, stop on block). `impers` is allowed only for two explicit opt-ins: the `/api/route` history import (`ROUTE_HISTORY_IMPORT=true`) and the CSV logbook download (`THECRAG_SYNC_MODE=csv`, with its saved-session pacing and back-off). Never use it for the default API logbook sync. The one documented HTML parse is the login form's hidden CSRF fields in CSV mode; nothing else on theCrag pages may be scraped. Prefer negotiated theCrag API access.
 
 ---
 
@@ -400,6 +400,7 @@ You'll often notice things outside the task at hand. **Don't silently fix them i
 | 2026-10 | CSV logbook download (#204/#205): opt-in `THECRAG_SYNC_MODE=csv` with `THECRAG_USERNAME`/`THECRAG_PASSWORD`; cookies encrypted with `SESSION_SECRET` in `thecrag_web_sessions` (migration **0016**; 0015 belongs to route API JSON). A placeholder or short `SESSION_SECRET` disables CSV mode. Upsert-only, no prune. The `impers` rule in "What not to do" now covers this opt-in. |
 
 | 2026-10 | #201: opt-in `ROUTE_DATA_REFRESH_DAYS=30` or `90` reuses post-sync imports; new routes first, then oldest stale fetches (including missing). Unset/0 keeps fetch-once. The shared 100-route cap, pacing, back-off and manual mark protections remain. |
+| 2026-10 | `ROUTE_DATA_REFRESH_DAYS` accepts any whole number ≥ 30 (e.g. 180 ≈ half a year); values under 30 still mean fetch-once. |
 
 | 2026-10 | #195: Grade goal progress uses pyramid readiness (`gradeGoalReadiness`: ~2 distinct-route sends at N−1, ~4 at N−2; capped below 100% until a send at N), not linear best/target. Height/days stay linear. `/docs/goals` explains the model; dashboard + Goals page link “How it works”. |
 

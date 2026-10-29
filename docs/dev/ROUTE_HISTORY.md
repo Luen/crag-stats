@@ -6,7 +6,7 @@ User-facing explanation: [`docs/guide/first-ascents.md`](../guide/first-ascents.
 
 `ROUTE_HISTORY_IMPORT=true` in `.env` (default **off**). When it's off, nothing below runs, `impers` is never imported, and its native library is never downloaded.
 
-Set `ROUTE_DATA_REFRESH_DAYS=90` for rolling quarterly refreshes, or `30` for monthly refreshes (fixed days, not calendar months). Unset, `0`, or an unsupported value keeps the default fetch-once behavior. This still requires `ROUTE_HISTORY_IMPORT=true` and an API key. No separate timer runs: successful logbook syncs and manual runs process eligible routes within the same 100-route budget, so a large backlog may take several syncs to refresh.
+Set `ROUTE_DATA_REFRESH_DAYS` to a whole number of days ≥ 30 for rolling refreshes (fixed days, not calendar months) — e.g. `90` (recommended), `30`, or `180` (~half a year). Unset, `0`, or any value under 30 keeps the default fetch-once behavior. This still requires `ROUTE_HISTORY_IMPORT=true` and an API key. No separate timer runs: successful logbook syncs and manual runs process eligible routes within the same 100-route budget, so a large backlog may take several syncs to refresh.
 
 ## Why it needs `impers`
 
