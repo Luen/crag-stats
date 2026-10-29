@@ -47,15 +47,12 @@ describe('buildBadges', () => {
 		).toEqual(first);
 	});
 
-	it('shows unknown legacy dates, counts undated rows, and does not award incomplete imports', () => {
+	it('does not award First Moves until a dated first import exists', () => {
 		const rows = [
 			row({ ascentDate: '2018-04-22' }),
 			{ ...row({ ascentDate: '2018-04-23' }), ascentDate: null }
 		];
-		const first = buildBadges(rows).earned.find((b) => b.id === 'first_moves')!;
-		expect(first.detail).toBe('Imported 2 climbs · Import date unknown');
-		expect(first.date).toBeNull();
-		expect(first.href).toBeNull();
+		expect(buildBadges(rows).earned.some((b) => b.id === 'first_moves')).toBe(false);
 		expect(
 			buildBadges(rows, [], [], { firstImport: { at: null, count: 0, legacy: false } }).earned.some(
 				(b) => b.id === 'first_moves'
@@ -89,7 +86,9 @@ describe('buildBadges', () => {
 				ascentId: 2
 			})
 		];
-		const { earned } = buildBadges(rows);
+		const { earned } = buildBadges(rows, [], [], {
+			firstImport: { at: '2020-01-01T00:00:00.000Z', count: 2, legacy: false }
+		});
 		const ids = new Set(earned.map((b) => b.id));
 		expect(ids.has('first_moves')).toBe(true);
 		expect(ids.has('first_session')).toBe(true);

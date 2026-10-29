@@ -17,7 +17,7 @@ export const DOC_PAGES: readonly DocPage[] = [
 	{
 		slug: 'badges',
 		title: 'Badges',
-		summary: 'Logbook milestones and the First Moves import date.'
+		summary: 'Logbook milestones and the automatic First Moves import date.'
 	},
 	{
 		slug: 'climber-type',
