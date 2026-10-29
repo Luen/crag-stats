@@ -8,6 +8,17 @@ User-facing explanation: [`docs/guide/first-ascents.md`](../guide/first-ascents.
 
 Set `ROUTE_DATA_REFRESH_DAYS=90` for rolling quarterly refreshes, or `30` for monthly refreshes (fixed days, not calendar months). Unset, `0`, or an unsupported value keeps the default fetch-once behavior. This still requires `ROUTE_HISTORY_IMPORT=true` and an API key. No separate timer runs: successful logbook syncs and manual runs process eligible routes within the same 100-route budget, so a large backlog may take several syncs to refresh.
 
+## Household / shared supporter key with CSV mode
+
+Route history uses `THECRAG_API_KEY` against `/api/route/ids`. That key is a **supporter** credential. Free accounts do not get a personal logbook/route API key in the browser: a HAR of a logged-in free climber browsing route pages shows no `key=` / supporter API token on `/api/route/ids` (only unrelated map-tile `apiServer.key` scaffolding and cookie-auth HTML/API lookups). So the unpaid partner cannot “use their own route key” for this import.
+
+When one person in a household has a supporter account and the other does not, a workable homeserver layout is:
+
+1. **Paid partner** — `THECRAG_SYNC_MODE=api` with their own `THECRAG_API_KEY` (full logbook sync + optional route history on their instance).
+2. **Unpaid partner** — `THECRAG_SYNC_MODE=csv` with *their* `THECRAG_USERNAME` / `THECRAG_PASSWORD` / `SESSION_SECRET` for the logbook, plus the **paid partner’s** `THECRAG_API_KEY` only for `ROUTE_HISTORY_IMPORT` (and optional `ROUTE_DATA_REFRESH_DAYS`).
+
+Crag Stats treats CSV identity as the configured username: sync sets `profiles.login` / `name` from `THECRAG_USERNAME`, clears API-only profile fields (`routesTicked`, outdoor/indoor counts, avatar, `raw_json`, …), and FA/setter matching prefers that username in CSV mode. That keeps the key owner’s account stats and FA credits from bleeding onto the CSV instance. Still: the shared key can read the key owner’s private logbook notes if misused — keep `.env` private, one key per trusted household, and prefer the unpaid partner getting their own supporter key when they can.
+
 ## Why it needs `impers`
 
 theCrag's logbook API (`/api/logbook/ascents`) works with plain `fetch` and doesn't include route history. `/api/route/ids?show=info,ancestors` does include it (plus route-level fields used by #77–#82), but Cloudflare blocks non-browser clients there (a 403 "Sorry, you have been blocked" page, even with a valid key). [`impers`](https://github.com/lexiforest/impers) presents a browser-like TLS/HTTP2 fingerprint, so those requests get through.
