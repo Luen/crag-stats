@@ -166,7 +166,7 @@ describe('optional personality lines', () => {
 	it('describes home crag, partners, projects, hardest, travel', () => {
 		expect(
 			describeHomeCrag({ topCrags: [{ crag: 'Arapiles', count: 50 }], totalAscents: 100 })
-		).toBe('Most of my days are at Arapiles.');
+		).toBe('I often climb at Arapiles.');
 		expect(describeWanderer(12, 0.1)).toMatch(/hop around/i);
 		expect(describePartners([{ name: 'Alex', count: 12 }])).toBe('I climb a lot with Alex.');
 		expect(describeProjects(3)).toBe("I'm sitting on 3 open projects.");

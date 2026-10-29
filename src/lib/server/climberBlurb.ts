@@ -164,7 +164,7 @@ export function describeHomeCrag(input: {
 	const top = input.topCrags[0];
 	if (!top?.crag) return null;
 	const share = top.count / input.totalAscents;
-	if (share >= HOME_CRAG_SHARE) return `Most of my days are at ${top.crag}.`;
+	if (share >= HOME_CRAG_SHARE) return `I often climb at ${top.crag}.`;
 	return null;
 }
 
