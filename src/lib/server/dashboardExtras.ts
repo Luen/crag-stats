@@ -108,6 +108,13 @@ export type StyleMixMonth = {
 const COUNT_LANDMARKS = [100, 250, 500, 750, 1000] as const;
 const HEIGHT_LANDMARKS_M = [5000, 10000, 20000] as const;
 const MAX_GRADE_BREAKTHROUGHS = 8;
+/** Combined FA+FFA distinct-route count landmarks (#194). */
+const FA_COUNT_LANDMARKS = [5, 10, 20, 50, 100] as const;
+/** FFA-only distinct-route count landmarks (#194). */
+const FFA_COUNT_LANDMARKS = [5, 10, 20, 50, 100] as const;
+/** Per-style first-ascent (FA+FFA) count landmarks (#194). */
+const STYLE_FA_LANDMARKS = [10, 20, 50] as const;
+const STYLE_FA_STYLES = ['Sport', 'Trad', 'Boulder'] as const;
 
 /** Boulder / Sport / Trad / Top rope / Other — for monthly by-style bars. */
 export function displayStyle(gearStyle: string | null | undefined): string {
@@ -353,15 +360,80 @@ export function buildMilestones(rows: DashboardExtraRow[]): { items: MilestoneIt
 		}
 	}
 
-	// Owner-marked first ascents, dated by the first send of the route.
+	// Owner-marked FA/FFA thresholds (#194): firsts, FFA counts, combined counts, style counts.
+	// Dated by the unlocking route's first send; detail names that route. No per-route rows.
+	let faOnly = 0;
+	let ffaOnly = 0;
+	let faCombined = 0;
+	const styleFa: Record<(typeof STYLE_FA_STYLES)[number], number> = {
+		Sport: 0,
+		Trad: 0,
+		Boulder: 0
+	};
 	for (const fa of firstAscentSends(rows)) {
-		items.push({
-			kind: 'fa',
-			id: `fa:${fa.row.routeId}`,
-			label: fa.kind === 'FFA' ? 'First free ascent' : 'First ascent',
-			date: fa.day,
-			detail: (fa.row.routeName || 'Unknown').trim() || 'Unknown'
-		});
+		const name = (fa.row.routeName || 'Unknown').trim() || 'Unknown';
+		faCombined += 1;
+		if (fa.kind === 'FA') {
+			faOnly += 1;
+			if (faOnly === 1) {
+				items.push({
+					kind: 'fa',
+					id: 'fa:first',
+					label: 'First ascent',
+					date: fa.day,
+					detail: name
+				});
+			}
+		} else {
+			ffaOnly += 1;
+			if (ffaOnly === 1) {
+				items.push({
+					kind: 'fa',
+					id: 'ffa:first',
+					label: 'First free ascent',
+					date: fa.day,
+					detail: name
+				});
+			}
+			for (const mark of FFA_COUNT_LANDMARKS) {
+				if (ffaOnly === mark) {
+					items.push({
+						kind: 'fa',
+						id: `ffa:${mark}`,
+						label: `${mark} first free ascents`,
+						date: fa.day,
+						detail: name
+					});
+				}
+			}
+		}
+		for (const mark of FA_COUNT_LANDMARKS) {
+			if (faCombined === mark) {
+				items.push({
+					kind: 'fa',
+					id: `fa:${mark}`,
+					label: `${mark} first ascents`,
+					date: fa.day,
+					detail: name
+				});
+			}
+		}
+		const style = displayStyle(fa.row.gearStyle);
+		if ((STYLE_FA_STYLES as readonly string[]).includes(style)) {
+			const key = style as (typeof STYLE_FA_STYLES)[number];
+			styleFa[key] += 1;
+			for (const mark of STYLE_FA_LANDMARKS) {
+				if (styleFa[key] === mark) {
+					items.push({
+						kind: 'fa',
+						id: `fa:${key.toLowerCase()}:${mark}`,
+						label: `${mark} ${key.toLowerCase()} first ascents`,
+						date: fa.day,
+						detail: name
+					});
+				}
+			}
+		}
 	}
 
 	items.sort((a, b) => {

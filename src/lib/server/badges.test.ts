@@ -281,7 +281,7 @@ describe('buildBadges', () => {
 describe('first ascent badges and milestones', () => {
 	// Route 1: an attempt, then the first send (2021-03-05), then a repeat. Marked FA.
 	const fa = (p: Partial<DashboardExtraRow> & { ascentDate: string }) =>
-		row({ routeId: 1, routeName: 'New Line', firstAscent: 'FA', ...p });
+		row({ routeId: 1, routeName: 'New Line', firstAscent: 'FA', gearStyle: 'Sport', ...p });
 
 	it('dates the FA by the first send of the marked route', () => {
 		const rows = [
@@ -296,7 +296,13 @@ describe('first ascent badges and milestones', () => {
 		expect(earned.some((b) => b.id === 'first_ffa')).toBe(false);
 
 		expect(buildMilestones(rows).items.filter((i) => i.kind === 'fa')).toEqual([
-			{ id: 'fa:1', kind: 'fa', label: 'First ascent', date: '2021-03-05', detail: 'New Line' }
+			{
+				id: 'fa:first',
+				kind: 'fa',
+				label: 'First ascent',
+				date: '2021-03-05',
+				detail: 'New Line'
+			}
 		]);
 		expect(firstAscentSends(rows).map((s) => s.day)).toEqual(['2021-03-05']);
 	});
@@ -314,6 +320,7 @@ describe('first ascent badges and milestones', () => {
 				ascentId: i + 1,
 				routeId: 10 + i,
 				routeName: `Line ${i}`,
+				gearStyle: 'Sport',
 				isSend: true,
 				tickType: 'Red point',
 				firstAscent: i === 2 ? 'FFA' : 'FA'
@@ -323,6 +330,53 @@ describe('first ascent badges and milestones', () => {
 		expect(earned.find((b) => b.id === 'first_ffa')?.date).toBe('2023-03-10');
 		expect(earned.find((b) => b.id === 'fa_5')?.date).toBe('2023-05-10');
 		expect(earned.some((b) => b.id === 'fa_10')).toBe(false);
+
+		const faMilestones = buildMilestones(rows).items.filter((i) => i.kind === 'fa');
+		expect(faMilestones.map((i) => i.id).sort()).toEqual(['fa:5', 'fa:first', 'ffa:first']);
+		expect(faMilestones.find((i) => i.id === 'fa:5')).toMatchObject({
+			date: '2023-05-10',
+			detail: 'Line 4'
+		});
+	});
+
+	it('adds FFA count and style FA threshold milestones and badges (#194)', () => {
+		const rows = Array.from({ length: 10 }, (_, i) =>
+			row({
+				ascentDate: `2024-${String(i + 1).padStart(2, '0')}-15`,
+				ascentId: i + 1,
+				routeId: 100 + i,
+				routeName: `Boulder FA ${i}`,
+				gearStyle: 'Boulder',
+				isSend: true,
+				tickType: 'Send',
+				firstAscent: i < 5 ? 'FFA' : 'FA'
+			})
+		);
+		const earned = buildBadges(rows).earned;
+		expect(earned.find((b) => b.id === 'ffa_5')?.date).toBe('2024-05-15');
+		expect(earned.find((b) => b.id === 'fa_10')?.date).toBe('2024-10-15');
+		expect(earned.find((b) => b.id === 'fa_boulder_10')?.date).toBe('2024-10-15');
+		expect(earned.some((b) => b.id === 'ffa_10')).toBe(false);
+
+		const faMilestones = buildMilestones(rows).items.filter((i) => i.kind === 'fa');
+		expect(faMilestones.map((i) => i.id).sort()).toEqual([
+			'fa:10',
+			'fa:5',
+			'fa:boulder:10',
+			'fa:first',
+			'ffa:5',
+			'ffa:first'
+		]);
+		expect(faMilestones.find((i) => i.id === 'ffa:5')).toMatchObject({
+			label: '5 first free ascents',
+			date: '2024-05-15',
+			detail: 'Boulder FA 4'
+		});
+		expect(faMilestones.find((i) => i.id === 'fa:boulder:10')).toMatchObject({
+			label: '10 boulder first ascents',
+			date: '2024-10-15',
+			detail: 'Boulder FA 9'
+		});
 	});
 });
 
