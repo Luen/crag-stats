@@ -42,7 +42,7 @@ The progress line shows your best send, the N−1 / N−2 route counts, and a sh
 ## Caveats
 
 - **Approximate.** Soft pyramid numbers are a coaching rule of thumb, not a prediction that you will send N.
-- **Same-system scores.** Buckets are integer score steps on the goal’s canonical score; mixed grading systems are not converted inside the bar.
+- **Same-system scores.** Supporting buckets are the score ranges [N−1, N) and [N−2, N−1), so fractional sends below a target still support it. Scores use the goal’s canonical score; mixed grading systems are not converted inside the bar.
 - **Year + venue only.** Older sends outside the goal year, or the wrong venue, do not help readiness.
 - **Attempts and sessions** are not in the bar yet (reserved for a later overlay).
 - **Custom goals** never auto-fill from the logbook.

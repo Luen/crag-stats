@@ -89,8 +89,8 @@ function gradeGoalSendEvidence(
 	const y = g.year ?? currentYear;
 	const venue = asVenue(g);
 	const target = g.targetGradeScore ?? Number(g.targetValue);
-	const n1Bucket = Math.round(target) - 1;
-	const n2Bucket = Math.round(target) - 2;
+	const n1Bucket = target - 1;
+	const n2Bucket = target - 2;
 	const n1Routes = new Set<number>();
 	const n2Routes = new Set<number>();
 	let best: number | null = null;
@@ -113,9 +113,8 @@ function gradeGoalSendEvidence(
 		if (score == null || !Number.isFinite(score)) continue;
 		best = best == null ? score : Math.max(best, score);
 		if (a.routeId == null) continue;
-		const bucket = Math.round(score);
-		if (bucket === n1Bucket) n1Routes.add(a.routeId);
-		else if (bucket === n2Bucket) n2Routes.add(a.routeId);
+		if (score >= n1Bucket && score < target) n1Routes.add(a.routeId);
+		else if (score >= n2Bucket && score < n1Bucket) n2Routes.add(a.routeId);
 	}
 
 	return {

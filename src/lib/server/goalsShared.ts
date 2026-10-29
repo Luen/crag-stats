@@ -111,8 +111,8 @@ function horizonLabel(horizon: GradeGoalHorizon): string {
  */
 export function gradeGoalReadiness(input: GradeGoalReadinessInput): GradeGoalReadiness {
 	const target = input.target;
-	const n1Bucket = Math.round(target) - 1;
-	const n2Bucket = Math.round(target) - 2;
+	const n1Bucket = target - 1;
+	const n2Bucket = target - 2;
 	const n1Count = Math.max(0, Math.floor(input.routesAtNMinus1));
 	const n2Count = Math.max(0, Math.floor(input.routesAtNMinus2));
 	const best = input.bestSend != null && Number.isFinite(input.bestSend) ? input.bestSend : null;
