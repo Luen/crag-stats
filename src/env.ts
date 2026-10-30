@@ -50,6 +50,11 @@ export const variables = defineEnvVars({
 			'Opt-in route data refresh: whole days 30–3650 (e.g. 90, 180); unset/0/<30/>3650 disables (requires ROUTE_HISTORY_IMPORT)',
 		schema: optionalString
 	},
+	WEATHER_IMPORT: {
+		description:
+			'Opt-in: fetch daily outdoor weather from Open-Meteo for badge enrichment (default false; non-commercial self-host OK)',
+		schema: optionalString
+	},
 	DISPLAY_LOCALE: {
 		description: 'Locale for dates/numbers (BCP 47, default en-AU)',
 		schema: optionalString

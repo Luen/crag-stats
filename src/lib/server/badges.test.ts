@@ -227,6 +227,52 @@ describe('buildBadges', () => {
 		expect(buildBadges(rows).earned.some((b) => b.id === 'holiday_new_year')).toBe(false);
 	});
 
+	it('earns outdoor weather badges from cached Open-Meteo days', () => {
+		const weatherByKey = new Map([
+			['-33.9|151.2|2024-01-10', { tempMaxC: 36, tempMinC: 22, precipMm: 0, weatherCode: 0 }],
+			['-33.9|151.2|2024-01-11', { tempMaxC: 4, tempMinC: -2, precipMm: 0, weatherCode: 0 }],
+			['-33.9|151.2|2024-01-12', { tempMaxC: 12, tempMinC: 8, precipMm: 2.5, weatherCode: 61 }],
+			['-33.9|151.2|2024-01-13', { tempMaxC: 0.5, tempMinC: -3, precipMm: 1.5, weatherCode: 73 }]
+		]);
+		const rows = [
+			row({
+				ascentDate: '2024-01-10',
+				lat: -33.87,
+				lon: 151.21,
+				routeName: 'Hot Route',
+				ascentId: 1
+			}),
+			row({
+				ascentDate: '2024-01-11',
+				lat: -33.87,
+				lon: 151.21,
+				routeName: 'Cold Route',
+				ascentId: 2
+			}),
+			row({
+				ascentDate: '2024-01-12',
+				lat: -33.87,
+				lon: 151.21,
+				routeName: 'Wet Route',
+				ascentId: 3
+			}),
+			row({
+				ascentDate: '2024-01-13',
+				lat: -33.87,
+				lon: 151.21,
+				routeName: 'Snow Route',
+				ascentId: 4
+			})
+		];
+		const earned = buildBadges(rows, [], [], { weatherByKey }).earned;
+		expect(earned.find((b) => b.id === 'weather_heat')?.detail).toMatch(/36°C/);
+		expect(earned.find((b) => b.id === 'weather_freeze')?.detail).toMatch(/-2°C/);
+		expect(earned.find((b) => b.id === 'weather_rain')?.detail).toMatch(/2\.5 mm/);
+		expect(earned.find((b) => b.id === 'weather_snow')?.detail).toMatch(/snow/i);
+		// Without cache, weather badges stay locked.
+		expect(buildBadges(rows).earned.some((b) => b.id.startsWith('weather_'))).toBe(false);
+	});
+
 	it('earns New Year from Eve or Day, as one badge', () => {
 		const eve = buildBadges([
 			row({

@@ -37,6 +37,9 @@ export type DashboardExtraRow = {
 	hasPersonalGrade?: boolean;
 	/** Owner-marked first ascent of this route (firstAscents.ts) */
 	firstAscent?: 'FA' | 'FFA' | null;
+	/** Route coordinates for outdoor weather badge lookup (#268). */
+	lat?: number | null;
+	lon?: number | null;
 };
 
 /**

@@ -12,6 +12,7 @@ import {
 import { refreshProjects } from './projects';
 import { repairGradesFromRawJson } from './repairGrades';
 import { triggerRouteHistoryImport } from './routeHistoryImport';
+import { triggerWeatherImport } from './weatherImport';
 
 let syncing = false;
 
@@ -67,6 +68,7 @@ export async function runTheCragSync(opts?: { full?: boolean }) {
 				lastError: null
 			});
 			triggerRouteHistoryImport('after sync');
+			triggerWeatherImport('after sync');
 			return { skipped: false as const, ...result, maxEpoch: null };
 		}
 		const seen = new Set<string>();
@@ -98,6 +100,8 @@ export async function runTheCragSync(opts?: { full?: boolean }) {
 
 		// Opt-in (ROUTE_HISTORY_IMPORT): check the next 100 routes' history in the background.
 		triggerRouteHistoryImport('after sync');
+		// Opt-in (WEATHER_IMPORT): cache Open-Meteo daily weather for outdoor days (#268).
+		triggerWeatherImport('after sync');
 
 		return {
 			skipped: false as const,

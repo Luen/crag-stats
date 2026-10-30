@@ -31,6 +31,11 @@ import {
 	runRouteHistoryImport
 } from '#lib/server/routeHistoryImport';
 import { getSyncStatus, runTheCragSync } from '#lib/server/sync';
+import {
+	getWeatherImportStatus,
+	isWeatherImportEnabled,
+	runWeatherImport
+} from '#lib/server/weatherImport';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ cookies }) => {
@@ -46,7 +51,8 @@ export const load: PageServerLoad = async ({ cookies }) => {
 			getAppSetting('dashboard_layout'),
 			cookies.get(DASH_LAYOUT_COOKIE)
 		),
-		routeHistory: getRouteHistoryStatus()
+		routeHistory: getRouteHistoryStatus(),
+		weatherImport: getWeatherImportStatus()
 	};
 };
 
@@ -192,5 +198,20 @@ export const actions: Actions = {
 			ok: true,
 			routeHistoryMessage: `${n} routes will be checked again, ${getRouteHistoryStatus().perRun} per run. After they re-fetch, use Re-apply from saved history (with Replace existing if needed) to update marks.`
 		};
+	},
+	/** Fetch the next batch of outdoor weather days from Open-Meteo (#268). */
+	fetchWeather: async ({ locals }) => {
+		if (!locals.authed) return fail(403);
+		if (!isWeatherImportEnabled()) {
+			return fail(400, { ok: false, message: 'Set WEATHER_IMPORT=true to enable this.' });
+		}
+		const result = await runWeatherImport();
+		if (!result.ok) {
+			if (result.outcome === 'waiting') {
+				return fail(400, { ok: false, weatherWaiting: true });
+			}
+			return fail(400, { ok: false, message: result.message, weatherMessage: result.message });
+		}
+		return { ok: true, weatherMessage: result.message };
 	}
 };
