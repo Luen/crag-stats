@@ -1,6 +1,6 @@
 # Weekday
 
-The **Weekday** card shows which days of the week you climb on, inspired by [Dreeve](https://dreeve.app/)’s weekday chart for Strava. The distribution is a **donut (pie) chart** with a Mon–Sun legend.
+The **Weekday** card shows which days of the week you climb on, inspired by [Dreeve](https://dreeve.app/)’s weekday chart for Strava. The distribution is a **donut (pie) chart** with a Mon–Sun legend. By default it sits beside **Sessions per week** (half-width); Customize dashboard can move either card.
 
 ## What counts
 

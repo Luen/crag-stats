@@ -343,7 +343,7 @@
 		display: flex;
 		flex-wrap: wrap;
 		gap: 0.45rem 0.75rem;
-		justify-content: flex-end;
+		justify-content: flex-start;
 	}
 	.toggles {
 		display: flex;
@@ -376,13 +376,13 @@
 	}
 	.chart {
 		display: grid;
-		grid-template-columns: minmax(12rem, 14rem) minmax(0, 1fr);
-		gap: 1rem 1.25rem;
+		grid-template-columns: minmax(9rem, 11rem) minmax(0, 1fr);
+		gap: 0.75rem 1rem;
 		align-items: center;
 	}
 	.pie {
 		width: 100%;
-		max-width: 14rem;
+		max-width: 11rem;
 		height: auto;
 		justify-self: center;
 	}
