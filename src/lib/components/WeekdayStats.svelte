@@ -240,31 +240,19 @@
 		{/if}
 
 		<div class="chart">
-			<svg
-				class="pie"
-				viewBox="0 0 {size} {size}"
-				role="img"
-				aria-label="Weekday {unitPlural} pie chart"
-			>
+			<svg class="pie" viewBox="0 0 {size} {size}" aria-hidden="true" focusable="false">
 				{#each pieSlices as s (s.weekday)}
 					<path
-						class="slice"
-						class:dim={hoverWeekday != null && hoverWeekday !== s.weekday}
-						class:hot={hoverWeekday === s.weekday || most?.weekday === s.weekday}
+						class={[
+							'slice',
+							{
+								dim: hoverWeekday != null && hoverWeekday !== s.weekday,
+								hot: hoverWeekday === s.weekday || most?.weekday === s.weekday
+							}
+						]}
 						d={s.d}
 						style="fill: {s.color}"
-						role="img"
-						aria-label="{s.label}: {formatNumber(s.value, dateDisplay)} {s.value === 1
-							? unit
-							: unitPlural} ({s.pct}%)"
-						onmouseenter={() => (hoverWeekday = s.weekday)}
-						onmouseleave={() => (hoverWeekday = null)}
-					>
-						<title
-							>{s.label}: {formatNumber(s.value, dateDisplay)}
-							{s.value === 1 ? unit : unitPlural} ({s.pct}%)</title
-						>
-					</path>
+					></path>
 				{/each}
 				<circle class="hole" {cx} {cy} r={innerR - 1} />
 				{#if most}
@@ -281,21 +269,64 @@
 					{@const value = metric === 'sessions' ? row.sessions : row.ascents}
 					{@const pct = total > 0 ? Math.round((value / total) * 1000) / 10 : 0}
 					<li
-						class:zero={value === 0}
-						class:hot={hoverWeekday === row.weekday || most?.weekday === row.weekday}
-						onmouseenter={() => (hoverWeekday = value > 0 ? row.weekday : null)}
-						onmouseleave={() => (hoverWeekday = null)}
+						class={{
+							zero: value === 0,
+							hot: hoverWeekday === row.weekday || most?.weekday === row.weekday
+						}}
 					>
-						<i style:background={DAY_COLORS[row.weekday]}></i>
-						<span class="lab">{row.label}</span>
-						<span class="val"
-							>{formatNumber(value, dateDisplay)}{#if value > 0}
-								<span class="pct"> · {pct}%</span>{/if}</span
+						<button
+							type="button"
+							class="legend-btn"
+							disabled={value === 0}
+							aria-label="{row.label}: {formatNumber(value, dateDisplay)} {value === 1
+								? unit
+								: unitPlural}{value > 0 ? ` (${pct}%)` : ''}"
+							onmouseenter={() => (hoverWeekday = value > 0 ? row.weekday : null)}
+							onmouseleave={() => (hoverWeekday = null)}
+							onfocus={() => (hoverWeekday = value > 0 ? row.weekday : null)}
+							onblur={() => (hoverWeekday = null)}
 						>
+							<i style:background={DAY_COLORS[row.weekday]}></i>
+							<span class="lab">{row.label}</span>
+							<span class="val"
+								>{formatNumber(value, dateDisplay)}{#if value > 0}
+									<span class="pct"> · {pct}%</span>{/if}</span
+							>
+						</button>
 					</li>
 				{/each}
 			</ul>
 		</div>
+
+		<details class="values">
+			<summary>View weekday values</summary>
+			<table>
+				<caption
+					>Weekday {unitPlural}{styleLabel ? ` · ${styleLabel}` : ''} ·
+					{range === 'last12' ? 'last 12 weeks' : 'all time'}</caption
+				>
+				<thead>
+					<tr>
+						<th scope="col">Day</th>
+						<th scope="col">Sessions</th>
+						<th scope="col">Ascents</th>
+						<th scope="col">Share</th>
+					</tr>
+				</thead>
+				<tbody>
+					{#each slice.rows as row (row.weekday)}
+						{@const value = metric === 'sessions' ? row.sessions : row.ascents}
+						{@const pct = total > 0 ? Math.round((value / total) * 1000) / 10 : 0}
+						<tr>
+							<th scope="row">{row.label}</th>
+							<td>{formatNumber(row.sessions, dateDisplay)}</td>
+							<td>{formatNumber(row.ascents, dateDisplay)}</td>
+							<td>{value > 0 ? `${pct}%` : '—'}</td>
+						</tr>
+					{/each}
+				</tbody>
+			</table>
+		</details>
 
 		<p class="hint">
 			{#if metric === 'sessions'}
@@ -420,11 +451,32 @@
 		gap: 0.35rem;
 	}
 	.legend li {
+		margin: 0;
+		padding: 0;
+	}
+	.legend-btn {
 		display: grid;
 		grid-template-columns: auto 1fr auto;
 		align-items: center;
 		gap: 0.45rem;
+		width: 100%;
+		margin: 0;
+		padding: 0.1rem 0.15rem;
+		border: none;
+		border-radius: 0.3rem;
+		background: transparent;
+		font: inherit;
 		font-size: 0.88rem;
+		text-align: left;
+		color: inherit;
+		cursor: pointer;
+	}
+	.legend-btn:disabled {
+		cursor: default;
+	}
+	.legend-btn:focus-visible {
+		outline: 2px solid var(--accent);
+		outline-offset: 1px;
 	}
 	/* Dim the swatch only — opacity on the whole row washes --ink-muted below AA. */
 	.legend li.zero i {
@@ -450,6 +502,32 @@
 	}
 	.pct {
 		font-size: 0.8em;
+	}
+	.values {
+		margin-top: 0.65rem;
+		font-size: 0.85rem;
+	}
+	.values summary {
+		cursor: pointer;
+		font-weight: 600;
+		color: var(--ink-muted);
+	}
+	.values table {
+		width: 100%;
+		margin-top: 0.45rem;
+		border-collapse: collapse;
+		font-variant-numeric: tabular-nums;
+	}
+	.values th,
+	.values td {
+		text-align: left;
+		padding: 0.35rem 0.45rem;
+		border-bottom: 1px solid var(--line);
+	}
+	.values th {
+		color: var(--ink-muted);
+		font-weight: 600;
+		font-size: 0.78rem;
 	}
 	.hint,
 	.empty {

@@ -1027,7 +1027,13 @@ export function getDashboardStats(
 		badges,
 		trainingLoad,
 		sessionsPerWeek: buildSessionsPerWeek(all.map((r) => r.ascentDate)),
-		weekday: buildWeekdayStats(all.map((r) => ({ date: r.ascentDate, gearStyle: r.gearStyle }))),
+		weekday: buildWeekdayStats(
+			all.map((r) => ({
+				date: r.ascentDate,
+				gearStyle: r.gearStyle,
+				ascentGearStyle: r.ascentGearStyle
+			}))
+		),
 		styleMix,
 		partners,
 		starsScatter,

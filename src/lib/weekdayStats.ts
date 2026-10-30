@@ -4,12 +4,16 @@
  * Weekday is taken from the YYYY-MM-DD string in UTC (logbook dates have no time).
  */
 
+import { matchesClimbStyle } from '#lib/climbStyle';
+
 export type WeekdayId = 0 | 1 | 2 | 3 | 4 | 5 | 6; // Sun … Sat (Date#getUTCDay)
 
 export type WeekdayMetric = 'sessions' | 'ascents';
 
 /** Style chips on the card — “all” includes top-rope / alpine / unknown, etc. */
 export type WeekdayStyleKey = 'all' | 'sport' | 'trad' | 'boulder';
+
+const DISCIPLINE_KEYS = ['sport', 'trad', 'boulder'] as const;
 
 /** Display order Monday → Sunday. */
 export const WEEKDAY_ORDER: readonly WeekdayId[] = [1, 2, 3, 4, 5, 6, 0];
@@ -65,28 +69,55 @@ export type WeekdayStatsView = {
 
 export type WeekdayAscentInput = {
 	date: string | null | undefined;
+	/** Route discipline from the logbook row. */
 	gearStyle?: string | null;
+	/** Climbed style when the ascent overrides the route (same as logbook filters). */
+	ascentGearStyle?: string | null;
 };
 
-function validDay(iso: string | null | undefined): string | null {
+/** Strict YYYY-MM-DD with a real calendar month/day (rejects 2018-00-00 / 2024-02-31). */
+export function validWeekdayDay(iso: string | null | undefined): string | null {
 	const d = (iso ?? '').slice(0, 10);
-	return /^\d{4}-\d{2}-\d{2}$/.test(d) && !d.includes('-00') ? d : null;
+	const m = d.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+	if (!m) return null;
+	const year = Number(m[1]);
+	const month = Number(m[2]);
+	const day = Number(m[3]);
+	if (month < 1 || month > 12 || day < 1 || day > 31) return null;
+	const dt = new Date(`${d}T12:00:00Z`);
+	if (Number.isNaN(dt.getTime())) return null;
+	if (dt.getUTCFullYear() !== year || dt.getUTCMonth() + 1 !== month || dt.getUTCDate() !== day) {
+		return null;
+	}
+	return d;
 }
 
 export function weekdayOfIsoDay(day: string): WeekdayId {
 	return new Date(`${day}T12:00:00Z`).getUTCDay() as WeekdayId;
 }
 
-/** Map gear style into a Sport/Trad/Boulder chip, or null if only under “All”. */
+/**
+ * Sport / Trad / Boulder chips an ascent belongs to.
+ * Matches logbook style filters: ascent style OR route style.
+ */
+export function weekdayDisciplines(
+	ascentGearStyle: string | null | undefined,
+	gearStyle: string | null | undefined
+): Array<'sport' | 'trad' | 'boulder'> {
+	const out: Array<'sport' | 'trad' | 'boulder'> = [];
+	for (const key of DISCIPLINE_KEYS) {
+		if (matchesClimbStyle(ascentGearStyle, key) || matchesClimbStyle(gearStyle, key)) {
+			out.push(key);
+		}
+	}
+	return out;
+}
+
+/** Single-field helper (route or climbed style). Prefer weekdayDisciplines when both exist. */
 export function weekdayDiscipline(
 	gearStyle: string | null | undefined
 ): 'sport' | 'trad' | 'boulder' | null {
-	const lower = (gearStyle || '').trim().toLowerCase();
-	if (!lower) return null;
-	if (lower.includes('boulder')) return 'boulder';
-	if (lower.includes('trad')) return 'trad';
-	if (lower.includes('sport')) return 'sport';
-	return null;
+	return weekdayDisciplines(null, gearStyle)[0] ?? null;
 }
 
 function emptyCounts(): { sessions: Set<string>[]; ascents: number[] } {
@@ -181,17 +212,17 @@ export function buildWeekdayStats(
 	const last12 = emptyBuckets();
 
 	for (const row of ascents) {
-		const day = validDay(row.date);
+		const day = validWeekdayDay(row.date);
 		if (!day) continue;
 		const wd = weekdayOfIsoDay(day);
-		const discipline = weekdayDiscipline(row.gearStyle);
+		const disciplines = weekdayDisciplines(row.ascentGearStyle, row.gearStyle);
 
 		addTo(allTime.all, wd, day);
-		if (discipline) addTo(allTime[discipline], wd, day);
+		for (const discipline of disciplines) addTo(allTime[discipline], wd, day);
 
 		if (day >= cutoff && day <= todayIso) {
 			addTo(last12.all, wd, day);
-			if (discipline) addTo(last12[discipline], wd, day);
+			for (const discipline of disciplines) addTo(last12[discipline], wd, day);
 		}
 	}
 

@@ -13,10 +13,10 @@ Weekday is taken from the ascent’s `YYYY-MM-DD` date in UTC — logbook rows a
 
 - **All time** / **Last 12 weeks** — inclusive 84-day window ending today for the short range
 - **Sessions** / **Ascents** — what the slice size means
-- **All** / **Sport** / **Trad** / **Boulder** — style chips use the same discipline colours as the rest of the app. Top-rope and other styles only appear under **All**.
+- **All** / **Sport** / **Trad** / **Boulder** — style chips use the same discipline colours as the rest of the app, and match logbook style filters (climbed style **or** route style). Top-rope and other styles only appear under **All**.
 
 Choices are stored in the browser (`cs_weekday_range`, `cs_weekday_metric`, `cs_weekday_style`).
 
 ## Most active day
 
-The centre of the donut and the lead line name the weekday with the highest value for the current metric (ties break toward the other metric). That weekday’s slice and legend row are emphasised.
+The centre of the donut and the lead line name the weekday with the highest value for the current metric (ties break toward the other metric). That weekday’s slice and legend row are emphasised. **View weekday values** under the chart lists exact sessions, ascents and share for screen readers and keyboard users.

@@ -3,7 +3,9 @@ import {
 	buildWeekdayStats,
 	last12WeeksCutoff,
 	pickMostActive,
+	validWeekdayDay,
 	weekdayDiscipline,
+	weekdayDisciplines,
 	weekdayOfIsoDay,
 	WEEKDAY_FULL
 } from './weekdayStats';
@@ -15,12 +17,20 @@ describe('weekdayStats', () => {
 		expect(weekdayOfIsoDay('2024-01-07')).toBe(0);
 	});
 
+	it('rejects invalid calendar days', () => {
+		expect(validWeekdayDay('2018-00-00')).toBeNull();
+		expect(validWeekdayDay('2024-02-31')).toBeNull();
+		expect(validWeekdayDay('2024-01-15')).toBe('2024-01-15');
+	});
+
 	it('classifies Sport / Trad / Boulder gear styles', () => {
 		expect(weekdayDiscipline('Sport')).toBe('sport');
 		expect(weekdayDiscipline('trad alpine')).toBe('trad');
 		expect(weekdayDiscipline('Boulder')).toBe('boulder');
 		expect(weekdayDiscipline('Top rope')).toBeNull();
 		expect(weekdayDiscipline(null)).toBeNull();
+		expect(weekdayDisciplines('Boulder', 'Sport')).toEqual(['sport', 'boulder']);
+		expect(weekdayDisciplines('Top rope', null)).toEqual([]);
 	});
 
 	it('counts unique session days and ascents per weekday', () => {
@@ -52,15 +62,19 @@ describe('weekdayStats', () => {
 				{ date: '2024-01-01', gearStyle: 'Sport' }, // Mon
 				{ date: '2024-01-06', gearStyle: 'Boulder' }, // Sat
 				{ date: '2024-01-06', gearStyle: 'Sport' }, // Sat sport too
-				{ date: '2024-01-07', gearStyle: 'Top rope' } // Sun — all only
+				{ date: '2024-01-07', gearStyle: 'Top rope' }, // Sun — all only
+				// Climbed Boulder on a Sport route — counts for both chips (logbook OR).
+				{ date: '2024-01-08', gearStyle: 'Sport', ascentGearStyle: 'Boulder' }
 			],
 			'2024-01-20'
 		);
-		expect(stats.allTime.sport.rows.find((r) => r.weekday === 1)?.sessions).toBe(1);
+		expect(stats.allTime.sport.rows.find((r) => r.weekday === 1)?.sessions).toBe(2); // 1 Jan + 8 Jan
 		expect(stats.allTime.sport.rows.find((r) => r.weekday === 6)?.sessions).toBe(1);
 		expect(stats.allTime.boulder.rows.find((r) => r.weekday === 6)?.sessions).toBe(1);
-		expect(stats.allTime.boulder.totalSessions).toBe(1);
-		expect(stats.allTime.all.totalSessions).toBe(3); // Mon, Sat, Sun
+		expect(stats.allTime.boulder.rows.find((r) => r.weekday === 1)?.sessions).toBe(1); // 8 Jan ascent
+		expect(stats.allTime.boulder.totalSessions).toBe(2); // Sat + Mon
+		expect(stats.allTime.sport.totalSessions).toBe(3); // Mon×2 days + Sat
+		expect(stats.allTime.all.totalSessions).toBe(4); // Mon, Sat, Sun, Mon
 		expect(stats.allTime.trad.totalSessions).toBe(0);
 	});
 
