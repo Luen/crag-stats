@@ -319,6 +319,7 @@ You'll often notice things outside the task at hand. **Don't silently fix them i
 | 2026-10 | #132: logbook popularity uses shared relative/global score precedence, with count-only routes null-last; quality sort shares the rating helper. |
 
 | 2026-10 | #131/#36: hidden gems retain routeId for stable list keys; popularity counts use the configured display locale. |
+| 2026-10 | #284: Route popularity hidden gems capped at 3 (`MAX_GEMS`); gem titles use normal list size (bucket `%` keeps large `strong`). |
 
 | 2026-10 | #126/#127: tick facets include top-rope/solo types and preserve selected legacy values; style filters normalize dws and top-rope aliases. |
 
