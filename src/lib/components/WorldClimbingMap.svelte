@@ -21,7 +21,6 @@
 	const centre = $derived(longitudeCentre(places));
 	let customView = $state<MapView | null>(null);
 	const view = $derived(customView ?? fitMapPlaces(places, centre));
-	let mode = $state<'circles' | 'glow'>('circles');
 	let selectedKey = $state<string | null>(null);
 	const clusters = $derived(clusterMapPlaces(places, view, centre));
 	const selected = $derived(clusters.find((c) => c.key === selectedKey));
@@ -64,13 +63,6 @@
 </script>
 
 <div class="controls">
-	<div role="group" aria-label="Map display">
-		<button type="button" aria-pressed={mode === 'circles'} onclick={() => (mode = 'circles')}
-			>Circles</button
-		><button type="button" aria-pressed={mode === 'glow'} onclick={() => (mode = 'glow')}
-			>Glow</button
-		>
-	</div>
 	<div role="group" aria-label="Map navigation">
 		<button type="button" onclick={() => zoom(0.6)} aria-label="Zoom in">+</button><button
 			type="button"
@@ -111,7 +103,7 @@
 		{@const size = 28 + 24 * Math.sqrt(c.count / max)}
 		<button
 			type="button"
-			class={['marker', { glow: mode === 'glow' }]}
+			class="marker glow"
 			style:left={`${((c.x - view.x) / view.width) * 100}%`}
 			style:top={`${((c.y - view.y) / view.height) * 100}%`}
 			style:width={`${size}px`}
@@ -125,8 +117,8 @@
 	{/each}
 </div>
 <p class="legend">
-	Larger circles mean more logged ascents; Glow adds stronger light for higher counts. Nearby places
-	cluster at this zoom. Select a marker for details.
+	Larger, brighter glows mean more logged ascents. Nearby places cluster at this zoom. Select a
+	marker for details.
 </p>
 {#if selected}
 	<section class="selection" aria-label="Selected map places" aria-live="polite">
