@@ -455,7 +455,7 @@ _Add a row when you change behaviour agents must know about._
 - Sectors climate (#278): `CragSectorGroup.visitClimate` from `listVisitClimateByCrag()` (`sectors.ts`) via `buildVisitClimate` (`#lib/visitClimate`): distinct outdoor location-days with cached weather per crag, shown only at ≥5 days, always labelled as visit-day weather, not climate normals.
 - Fair-weather metric (#280): `WeatherConditionsView.fairWeather` (`buildFairWeatherMetric` in `#lib/weatherStats`) needs ≥20 weather days; fair = `isFairWeather`, tough = heat/freeze/rain/snow/wind. Labels (fair-leaning ≥60% fair, all-weather ≥50% tough, else mixed) are descriptive, never a score.
 - Badges #279: `partners_crowded_belay` (3+ distinct partners), `multipitch_day` (3+ sent pitches/day via pitch labels or `pitchesTotal`), `travel_week` (4 outdoor crags in 7 days; `DashboardExtraRow.cragName`), `route_persistence` (first send after 4+ days on the route). Stable ids, one-shot (not in Almost there), neutral wording.
-- Partners page (`/partners`, #269): Ascents | Sessions | Areas metric toggle (`cs_partners_metric`); helpers in `#lib/partnerStats`. Dashboard card stays ascent-ranked. Docs at `/docs/partners`.
+- Partners page (`/partners`, #269): Ascents | Sessions | Areas metric toggle (`cs_partners_metric`); helpers in `#lib/partnerStats`. Dashboard card shares the selected metric and limits the ranked full list to seven. Docs at `/docs/partners`.
 
 - Weather PR review: preserve main’s indoor badge guards and shared partner statistics when updating the weather stack. Fair weather requires measured precipitation below 0.1 mm; missing rain is unknown, not dry.
 
@@ -479,3 +479,5 @@ _Add a row when you change behaviour agents must know about._
 - Session/day analytics share `#lib/calendarDay`: strict UTC date round-trip, rejecting placeholders, impossible dates and unknown year 0000. Keep timestamps on their written calendar date; never shift into the server time zone.
 
 - Card display preferences (#296) use whitelisted cookies for SSR; legacy localStorage choices migrate on mount. The pre-paint script in `app.html` sets `html[data-card-prefs-migrating]` only when a whitelisted key exists in localStorage without its cookie, and only then do cookie-less cards reserve their layout (hidden) until migration completes. New visitors and no-JS clients see default cards immediately. Keep the key list in `app.html` in sync with `CARD_PREFERENCE_KEYS`. Cookie and storage failures remain nonfatal.
+
+- Dashboard Partners (#298) shares the Ascents/Sessions/Areas preference with the Partners page. Rank the full partner set by the chosen metric before applying the dashboard seven-row limit; keep the title link to the full leaderboard. Compact toggle buttons wrap within quarter-width cards.

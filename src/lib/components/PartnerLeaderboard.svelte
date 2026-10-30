@@ -22,12 +22,16 @@
 		titleHref?: string | null;
 		/** Ascents / Sessions / Areas toggle (Partners page). */
 		metricToggle?: boolean;
+		limit?: number;
+		compact?: boolean;
 	};
 	let {
 		preferences = EMPTY_CARD_PREFERENCES,
 		partners,
 		titleHref = null,
-		metricToggle = false
+		metricToggle = false,
+		limit,
+		compact = false
 	}: Props = $props();
 
 	const METRIC_KEY = 'cs_partners_metric';
@@ -48,7 +52,7 @@
 		saveCardPreference(METRIC_KEY, next);
 	}
 
-	const ranked = $derived(sortPartners(partners, metric));
+	const ranked = $derived(sortPartners(partners, metric).slice(0, limit));
 	const max = $derived(Math.max(1, ...ranked.map((p) => partnerMetricValue(p, metric))));
 
 	const metricButtonLabel = (m: PartnerMetric): string => {
@@ -69,6 +73,7 @@
 <article
 	class={[
 		'panel',
+		{ compact },
 		{
 			'card-preference-pending':
 				!ready && !(!metricToggle || preferences.cs_partners_metric != null)
@@ -131,6 +136,18 @@
 </article>
 
 <style>
+	.compact .toggles {
+		flex-wrap: wrap;
+		gap: 0.2rem;
+	}
+	.compact .toggles button {
+		padding: 0.25rem 0.4rem;
+		font-size: 0.74rem;
+	}
+	.compact .hint {
+		font-size: 0.74rem;
+	}
+
 	.panel {
 		padding: 1.1rem 1.2rem;
 		border-radius: 1rem;

@@ -4,8 +4,10 @@ import {
 	partnerAreaKey,
 	partnerMetricLabel,
 	partnerMetricValue,
+	PARTNER_METRICS,
 	sortPartners,
-	splitPartners
+	splitPartners,
+	topPartnersPerMetric
 } from './partnerStats';
 
 describe('splitPartners', () => {
@@ -106,4 +108,19 @@ it('counts a shared ascent once per normalized partner identity', () => {
 	expect(
 		buildPartnerStats([{ partners: '@Pat, pat and PAT', ascentDate: '2024-01-01', cragName: 'A' }])
 	).toEqual([{ name: 'Pat', ascents: 1, sessions: 1, areas: 1 }]);
+});
+
+it('keeps only the per-metric top partners without changing any ranking', () => {
+	const partners = Array.from({ length: 30 }, (_, i) => ({
+		name: `P${String(i).padStart(2, '0')}`,
+		ascents: 100 - i,
+		sessions: i,
+		areas: i % 3
+	}));
+	const kept = topPartnersPerMetric(partners, 7);
+	expect(kept.length).toBeLessThanOrEqual(21);
+	for (const metric of PARTNER_METRICS)
+		expect(sortPartners(kept, metric).slice(0, 7)).toEqual(
+			sortPartners(partners, metric).slice(0, 7)
+		);
 });
