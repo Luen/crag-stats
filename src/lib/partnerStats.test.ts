@@ -39,6 +39,22 @@ describe('buildPartnerStats', () => {
 		expect(bob.sessions).toBe(4); // 1, 3, 4, 5 Jan (invalid day skipped)
 		expect(bob.areas).toBe(1); // Castle Hill only (Unknown/blank skipped)
 		expect(partnerAreaKey('Unknown')).toBeNull();
+		expect(partnerAreaKey('Castle Hill')).toBe('castle hill');
+		expect(partnerAreaKey('castle hill')).toBe('castle hill');
+	});
+
+	it('treats crag names case-insensitively for areas', () => {
+		const stats = buildPartnerStats([
+			{ ascentDate: '2024-01-01', partners: 'Pat', cragName: 'Castle Hill' },
+			{ ascentDate: '2024-01-02', partners: 'Pat', cragName: 'castle hill' },
+			{ ascentDate: '2024-01-03', partners: 'Pat', cragName: 'Mt Stuart' }
+		]);
+		expect(stats.find((p) => p.name === 'Pat')).toEqual({
+			name: 'Pat',
+			ascents: 3,
+			sessions: 3,
+			areas: 2
+		});
 	});
 
 	it('sorts by the selected metric', () => {

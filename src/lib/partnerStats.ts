@@ -49,8 +49,10 @@ function validDay(iso: string | null | undefined): string | null {
 export function partnerAreaKey(cragName: string | null | undefined): string | null {
 	const n = (cragName ?? '').trim();
 	if (!n) return null;
-	if (n.toLowerCase() === 'unknown') return null;
-	return n;
+	const key = n.toLowerCase();
+	if (key === 'unknown') return null;
+	// Lowercase so provider casing noise doesn’t inflate distinct-area counts.
+	return key;
 }
 
 export function partnerMetricValue(p: PartnerStat, metric: PartnerMetric): number {

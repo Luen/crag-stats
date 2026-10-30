@@ -7,8 +7,8 @@ The **Partners** page (and the dashboard card) ranks people tagged in your logbo
 Use the top-right toggle:
 
 - **Ascents** (default) — every logged ascent that names that partner (same as the dashboard card)
-- **Sessions** — unique calendar days with at least one shared ascent (same “session = day” idea as [Sessions per week](/docs/sessions-per-week))
-- **Areas** — distinct crags climbed with that partner. Blank names and a literal “Unknown” venue are skipped so they don’t swamp the ranking
+- **Sessions** — unique calendar days with at least one shared ascent (same “session = day” idea as [Sessions per week](/docs/sessions-per-week); invalid placeholders like `2018-00-00` are skipped, as on Weekday)
+- **Areas** — distinct crags climbed with that partner (case-insensitive). Blank names and a literal “Unknown” venue are skipped so they don’t swamp the ranking
 
 Your choice is stored in the browser (`cs_partners_metric`).
 
