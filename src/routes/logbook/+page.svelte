@@ -528,6 +528,15 @@
 					<td class="weather-cell">
 						{#if row.weather}
 							<div class="weather-values">
+								{#if row.weatherLocation}<span title={row.weatherLocation.precision}
+										>Location: {row.weatherLocation.source === 'place'
+											? 'Approximate nearby place'
+											: row.weatherLocation.source === 'route'
+												? 'Route'
+												: row.weatherLocation.source === 'cached'
+													? 'Cached point'
+													: 'Approximate crag/sector'} · {row.weatherLocation.name}</span
+									>{/if}
 								<span
 									>High {row.weather.tempMaxC == null
 										? '—'

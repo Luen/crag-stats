@@ -225,7 +225,7 @@ export const actions: Actions = {
 				weatherMessage:
 					status.cachedOk === 0
 						? 'No outdoor days with route coordinates yet.'
-						: 'Every outdoor day with coordinates has weather cached.'
+						: 'Every outdoor day with a usable weather location has weather cached.'
 			};
 		}
 		triggerWeatherImport('settings');

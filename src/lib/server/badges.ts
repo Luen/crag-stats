@@ -989,7 +989,10 @@ export function buildBadges(
 		}
 
 		// Keep the indoor guard for callers that do not supply an explicit outdoor flag.
-		const weather = lookupAscentWeather(context.weatherByKey, { ...row, outdoor });
+		const weather =
+			row.weatherLocation?.source === 'place'
+				? null
+				: lookupAscentWeather(context.weatherByKey, { ...row, outdoor });
 		if (weather) {
 			if (isHeatWeather(weather)) {
 				mark('weather_heat', hitAt(row, `Hot day · ${Math.round(weather.tempMaxC!)}°C high`));

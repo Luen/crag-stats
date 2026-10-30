@@ -1,3 +1,4 @@
+import { loadWeatherLocations, attachWeatherLocation } from './weatherLocations';
 /**
  * Outdoor weather-day import engine (#268). Free of env wiring so tests can inject a client.
  * Opt-in via WEATHER_IMPORT; paced Open-Meteo archive fetches for outdoor logbook days with
@@ -5,7 +6,7 @@
  */
 import { asc, eq, sql } from 'drizzle-orm';
 import {
-	roundCoord,
+	ascentWeatherKey,
 	weatherAscentDay,
 	weatherDayKey,
 	type WeatherSnapshot
@@ -136,9 +137,11 @@ export function listPendingWeatherDays(limit: number, now: number): PendingDay[]
 	ensureSchema();
 	const today = utcToday(now);
 	// Oldest climb days first so large backlogs unlock early-history badges before recent ones.
+	const locations = loadWeatherLocations();
 	const rows = db
 		.select({
 			ascentDate: ascents.ascentDate,
+			routeId: ascents.routeId,
 			lat: routes.lat,
 			lon: routes.lon,
 			gearStyle: routes.gearStyle,
@@ -149,7 +152,8 @@ export function listPendingWeatherDays(limit: number, now: number): PendingDay[]
 		.from(ascents)
 		.innerJoin(routes, eq(ascents.routeId, routes.id))
 		.orderBy(asc(ascents.ascentDate))
-		.all();
+		.all()
+		.map((r) => attachWeatherLocation(r, locations));
 
 	const cached = loadWeatherCachedKeys();
 
@@ -158,8 +162,7 @@ export function listPendingWeatherDays(limit: number, now: number): PendingDay[]
 	for (const row of rows) {
 		const day = (row.ascentDate || '').trim().slice(0, 10);
 		if (!isValidDay(day) || day >= today) continue;
-		if (row.lat == null || row.lon == null) continue;
-		if (!Number.isFinite(row.lat) || !Number.isFinite(row.lon)) continue;
+		if (!row.weatherLocation) continue;
 		if (
 			isLikelyIndoorRoute({
 				gearStyle: row.gearStyle,
@@ -170,9 +173,9 @@ export function listPendingWeatherDays(limit: number, now: number): PendingDay[]
 		) {
 			continue;
 		}
-		const latKey = roundCoord(row.lat);
-		const lonKey = roundCoord(row.lon);
-		const key = weatherDayKey(latKey, lonKey, day);
+		const key = ascentWeatherKey(row);
+		if (!key) continue;
+		const [latKey, lonKey] = key.split('|').slice(0, 2).map(Number);
 		if (seen.has(key) || cached.has(key)) continue;
 		seen.add(key);
 		pending.push({ latKey, lonKey, day });
@@ -321,7 +324,11 @@ export async function runWeatherImportOnce(
 
 	const pending = listPendingWeatherDays(DAYS_PER_RUN, now);
 	if (!pending.length) {
-		return result(true, 'done', 'Every outdoor day with coordinates has weather cached.');
+		return result(
+			true,
+			'done',
+			'Every outdoor day with a usable weather location has weather cached.'
+		);
 	}
 
 	running = true;

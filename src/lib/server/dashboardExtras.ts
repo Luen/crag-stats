@@ -17,6 +17,7 @@ export { splitPartners };
 
 /** Minimal row shape shared by extras builders. */
 export type DashboardExtraRow = {
+	weatherLocation?: import('#lib/weatherKeys').WeatherLocation | null;
 	/** Ascent protection style, kept separate from the route discipline. */
 	ascentGearStyle?: string | null;
 	ascentDate: string | null;
