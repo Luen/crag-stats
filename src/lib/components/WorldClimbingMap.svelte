@@ -8,7 +8,12 @@
 		type ClimbingPlace,
 		type MapView
 	} from '#lib/climbingMap';
-	import { DEFAULT_DATE_DISPLAY, formatNumber, type DateDisplay } from '#lib/dates';
+	import {
+		DEFAULT_DATE_DISPLAY,
+		formatCalendarDate,
+		formatNumber,
+		type DateDisplay
+	} from '#lib/dates';
 	let {
 		places,
 		dateDisplay = DEFAULT_DATE_DISPLAY
@@ -129,8 +134,9 @@
 		{#if selected.places.length > 1}<button
 				type="button"
 				onclick={() => {
-					customView = fitMapPlaces(selected.places, centre);
-					zoom(0.6);
+					// Small floor so close places separate; the spread padding keeps all of them in view.
+					customView = fitMapPlaces(selected.places, centre, 8);
+					selectedKey = null;
 				}}>Zoom to these places</button
 			>{/if}
 		<ul>
@@ -138,7 +144,11 @@
 					<a href={p.href}
 						>{p.name}{p.country ? ` · ${p.country}` : ''}: {formatNumber(p.count, dateDisplay)} ascents</a
 					>
-					· {p.routes} routes · {p.firstDay ?? 'Date unknown'}–{p.lastDay ?? 'date unknown'}
+					· {p.routes} routes · {p.firstDay
+						? formatCalendarDate(p.firstDay, dateDisplay)
+						: 'Date unknown'}–{p.lastDay
+						? formatCalendarDate(p.lastDay, dateDisplay)
+						: 'date unknown'}
 				</li>{/each}
 		</ul>
 	</section>

@@ -81,14 +81,14 @@ export function projectMapPoint(
 	return { x: 500 + (wrapLongitude(lon - centre) / 360) * 1000, y: ((90 - lat) / 180) * 500 };
 }
 export type MapView = { x: number; y: number; width: number; height: number };
-export function fitMapPlaces(points: ClimbingPlace[], centre: number): MapView {
+export function fitMapPlaces(points: ClimbingPlace[], centre: number, minWidth = 80): MapView {
 	if (!points.length) return { x: 0, y: 0, width: 1000, height: 500 };
 	const coords = points.map((p) => projectMapPoint(p.lat, p.lon, centre));
 	const minX = Math.min(...coords.map((p) => p.x)),
 		maxX = Math.max(...coords.map((p) => p.x)),
 		minY = Math.min(...coords.map((p) => p.y)),
 		maxY = Math.max(...coords.map((p) => p.y));
-	const width = Math.min(1000, Math.max(80, (maxX - minX) * 1.4, (maxY - minY) * 2.8));
+	const width = Math.min(1000, Math.max(minWidth, (maxX - minX) * 1.4, (maxY - minY) * 2.8));
 	return {
 		x: (minX + maxX - width) / 2,
 		y: Math.max(0, Math.min(500 - width / 2, (minY + maxY - width / 2) / 2)),

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import WorldClimbingMap from '#lib/components/WorldClimbingMap.svelte';
-	import { formatNumber } from '#lib/dates';
+	import { formatCalendarDate, formatNumber } from '#lib/dates';
 	import { LOGBOOK_STYLES, includeSelectedOptions } from '#lib/logbookFilters';
 	import type { PageProps } from './$types';
 	let { data }: PageProps = $props();
@@ -61,9 +61,9 @@
 				>{#each data.places as p (p.key)}<tr
 						><td><a href={p.href}>{p.name}{p.country ? ` · ${p.country}` : ''}</a></td><td
 							>{formatNumber(p.count, data.dateDisplay)}</td
-						><td>{formatNumber(p.routes, data.dateDisplay)}</td><td>{p.firstDay ?? '—'}</td><td
-							>{p.lastDay ?? '—'}</td
-						></tr
+						><td>{formatNumber(p.routes, data.dateDisplay)}</td><td
+							>{p.firstDay ? formatCalendarDate(p.firstDay, data.dateDisplay) : '—'}</td
+						><td>{p.lastDay ? formatCalendarDate(p.lastDay, data.dateDisplay) : '—'}</td></tr
 					>{/each}</tbody
 			>
 		</table>

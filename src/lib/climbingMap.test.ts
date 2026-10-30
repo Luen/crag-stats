@@ -57,3 +57,13 @@ it('uses provider area identity and rejects invalid coordinates without rejectin
 	])
 		expect(validMapCoords(lat, lon)).toBe(false);
 });
+it('fits a selection with a small floor without cropping its spread', () => {
+	const sel = [place('a', 10), place('b', 40)].map((p) => ({ ...p, lat: 10 }));
+	const view = fitMapPlaces(sel, 25, 8);
+	for (const p of sel) {
+		const x = 500 + ((p.lon - 25) / 360) * 1000;
+		expect(x).toBeGreaterThanOrEqual(view.x);
+		expect(x).toBeLessThanOrEqual(view.x + view.width);
+	}
+	expect(fitMapPlaces([place('a', 10), place('b', 10.1)], 10, 8).width).toBeLessThan(80);
+});
