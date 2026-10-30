@@ -33,8 +33,13 @@ for (const colorScheme of ['light', 'dark'] as const) {
 					VALUES ('thecrag', 'idle', ?, ?, ?)`
 				).run(new Date(now - 30_000).toISOString(), nextAllowedAt, new Date(now).toISOString());
 			};
-			// No click or POST may ever reach theCrag during this test.
+			// Enforce no upstream: abort theCrag hosts and keep login mismatched for CSV mode.
 			try {
+				await page.route(/thecrag\.com/i, (route) => route.abort());
+				const profileLogin = db
+					.prepare("SELECT login FROM profiles WHERE provider = 'thecrag'")
+					.get() as { login: string | null } | undefined;
+				expect(profileLogin?.login?.toLowerCase() ?? '').not.toBe('synthetic-account');
 				db.prepare(
 					`INSERT INTO routes (provider, external_id, name, updated_at)
 					VALUES ('thecrag', 'cooldown-test-route', 'Cooldown test route', ?)`

@@ -120,6 +120,7 @@ Because the brand accent is orange, it sits close to _Trad_ and _Experienced_. T
 - Pills and filters: the active state is solid accent with white text.
 - Highlight metric (for example, onsights): `--accent-soft` background with the number in accent.
 - Focus: a 2px accent `:focus-visible` outline globally.
+- Settings CSV import: stack a file picker (at most 32rem, shrinking to fit mobile) above the left-aligned primary action. Use the shared primary button style and theme tokens for the native file-selector button.
 - Route-history import shows a live countdown on its disabled action during the one-minute cooldown or a longer upstream back-off, then restores the normal action automatically. Use surface and muted-ink tokens for disabled buttons.
 
 ## Settings-driven site preferences

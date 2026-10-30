@@ -21,6 +21,7 @@
 
 	onMount(() => {
 		// Anchor to the server's clock so a skewed device clock cannot skip the cooldown.
+		// Tick once per second so the accessible name does not chatter.
 		let serverNow = data.serverNow;
 		let started = performance.now();
 		const timer = setInterval(() => {
@@ -29,7 +30,7 @@
 				started = performance.now();
 			}
 			elapsed = performance.now() - started;
-		}, 250);
+		}, 1000);
 		return () => clearInterval(timer);
 	});
 	const notesCsvOnly = $derived(data.syncConfiguration.mode === 'csv');
@@ -487,24 +488,33 @@
 		flex-direction: column;
 		align-items: stretch;
 	}
-	/* File + compact primary control (not a full-width accent bar). */
 	.csv-import {
 		display: flex;
-		flex-wrap: wrap;
+		flex-direction: column;
 		gap: 0.65rem;
-		align-items: center;
+		align-items: flex-start;
 	}
 	.csv-import input[type='file'] {
-		flex: 1 1 14rem;
+		width: 100%;
+		max-width: 32rem;
 		min-width: 0;
+		padding: 0.35rem;
 		background: var(--paper);
+		color: var(--ink-muted);
 	}
-	.csv-import button {
-		flex: 0 0 auto;
-		align-self: center;
-		padding: 0.55rem 1.15rem;
-		border: 1px solid color-mix(in srgb, var(--accent) 55%, var(--ink));
-		box-shadow: var(--shadow);
+	.csv-import input::file-selector-button {
+		margin-right: 0.75rem;
+		padding: 0.45rem 0.7rem;
+		border: 1px solid var(--line);
+		border-radius: 0.35rem;
+		background: var(--surface-2);
+		color: var(--ink);
+		font: inherit;
+		font-weight: 600;
+		cursor: pointer;
+	}
+	.csv-import input::file-selector-button:hover {
+		background: var(--surface-3);
 	}
 	button,
 	.btn,
@@ -527,14 +537,11 @@
 	.btn:hover {
 		background: var(--accent-strong);
 	}
-	button:disabled {
+	button:disabled,
+	button:disabled:hover {
 		background: var(--surface-3);
 		color: var(--ink-muted);
 		cursor: not-allowed;
-	}
-	.csv-import button:hover {
-		border-color: var(--accent-strong);
-		box-shadow: var(--shadow);
 	}
 	.btn {
 		display: inline-flex;
@@ -580,5 +587,9 @@
 	.err {
 		background: color-mix(in srgb, var(--band-expert) 12%, var(--paper));
 		color: var(--band-expert);
+	}
+	.banner.hint {
+		background: var(--accent-soft);
+		color: var(--ink);
 	}
 </style>
