@@ -184,8 +184,8 @@
 			</div>
 		{:else}
 			<div class="legend grade">
-				<span>Attempts</span>
 				<i class="attempt"></i>
+				<span>Attempts</span>
 				{#each GRADE_BANDS as band (band.id)}
 					<i class="b{band.id}" title={band.name}></i>
 					<span class="band-name">{band.name}</span>
