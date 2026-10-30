@@ -15,7 +15,7 @@
 
 	type Props = {
 		years: YearRow[];
-		/** Daily ascents for thin within-year cumulative lines (optional). */
+		/** Daily ascents for within-year cumulative lines (optional). */
 		days?: HeatmapDay[];
 		/** Dashboard links to `/activity` when that route exists; omit/null to skip. */
 		titleHref?: string | null;
@@ -23,16 +23,44 @@
 	let { years, days = [], titleHref = null }: Props = $props();
 
 	type Metric = 'ascents' | 'sends' | 'heightM';
-	type ChartMode = 'year' | 'cumulative';
+	/** per-year bars · by-year daily overlays · career running total */
+	type ChartMode = 'year' | 'byYear' | 'career';
 
 	const MODE_KEY = 'cs_yearly_chart';
 
+	/** Distinct strokes for each year line (readable on light + dark). */
+	const YEAR_COLORS = [
+		'#c2410c',
+		'#1d6fa5',
+		'#2a9d8f',
+		'#a12b4a',
+		'#7b5ea7',
+		'#e07a2f',
+		'#0f766e',
+		'#c9a227',
+		'#576071',
+		'#9a3412',
+		'#4c6ef5',
+		'#e8590c'
+	] as const;
+
 	let metric = $state<Metric>('ascents');
 	let chartMode = $state<ChartMode>('year');
+	let hover = $state<{
+		year: number;
+		date: string;
+		value: number;
+		x: number;
+		y: number;
+		color: string;
+	} | null>(null);
 
 	onMount(() => {
 		try {
-			if (localStorage.getItem(MODE_KEY) === 'cumulative') chartMode = 'cumulative';
+			const v = localStorage.getItem(MODE_KEY);
+			if (v === 'byYear' || v === 'cumulative') chartMode = 'byYear';
+			else if (v === 'career') chartMode = 'career';
+			else chartMode = 'year';
 		} catch {
 			/* ignore */
 		}
@@ -40,6 +68,7 @@
 
 	function setChartMode(next: ChartMode) {
 		chartMode = next;
+		hover = null;
 		try {
 			localStorage.setItem(MODE_KEY, next);
 		} catch {
@@ -47,7 +76,6 @@
 		}
 	}
 
-	// Analytics may return either order; chart reads left→right oldest→newest.
 	const chronological = $derived([...years].sort((a, b) => a.year - b.year));
 
 	const values = $derived(
@@ -63,8 +91,7 @@
 		})
 	);
 
-	const series = $derived.by(() => {
-		if (chartMode === 'year') return values;
+	const careerSeries = $derived.by(() => {
 		let sum = 0;
 		return values.map((p) => {
 			sum += p.value;
@@ -72,16 +99,11 @@
 		});
 	});
 
-	const max = $derived(Math.max(1, ...series.map((v) => v.value)));
-	/** Y-scale for thin within-year lines (each year starts at 0). */
-	const maxYear = $derived(Math.max(1, ...values.map((v) => v.value)));
+	const barSeries = $derived(chartMode === 'career' ? careerSeries : values);
+	const max = $derived(Math.max(1, ...barSeries.map((v) => v.value)));
 
 	const metricLabel = $derived(
 		metric === 'ascents' ? 'Ascents' : metric === 'sends' ? 'Sends' : 'Height (m)'
-	);
-
-	const chartLabel = $derived(
-		chartMode === 'cumulative' ? `Total ${metricLabel.toLowerCase()}` : metricLabel
 	);
 
 	function formatValue(v: number): string {
@@ -109,48 +131,55 @@
 		return d.count;
 	}
 
-	function dayOfYearFrac(iso: string): number {
+	function dayOfYearIndex(iso: string): number {
 		const y = Number(iso.slice(0, 4));
 		const start = Date.UTC(y, 0, 1);
-		const t = Date.UTC(
-			Number(iso.slice(0, 4)),
-			Number(iso.slice(5, 7)) - 1,
-			Number(iso.slice(8, 10))
-		);
-		const leap = y % 4 === 0 && (y % 100 !== 0 || y % 400 === 0);
-		const daysInYear = leap ? 366 : 365;
-		return Math.min(1, Math.max(0, (t - start) / (daysInYear * 86400000)));
+		const t = Date.UTC(y, Number(iso.slice(5, 7)) - 1, Number(iso.slice(8, 10)));
+		return Math.max(0, Math.round((t - start) / 86400000));
 	}
 
-	/** SVG plot box for the cumulative line (viewBox coords). */
-	const plot = { w: 1000, h: 220, padX: 28, padTop: 16, padBot: 8 };
+	function colorForYear(year: number, index: number): string {
+		return YEAR_COLORS[index % YEAR_COLORS.length]!;
+	}
 
-	const linePoints = $derived.by(() => {
-		const n = series.length;
-		if (n === 0) return [] as { x: number; y: number; year: number; value: number }[];
+	const plot = { w: 1000, h: 240, padX: 36, padTop: 18, padBot: 28 };
+
+	const monthTicks = $derived.by(() => {
+		const labels = [
+			'Jan',
+			'Feb',
+			'Mar',
+			'Apr',
+			'May',
+			'Jun',
+			'Jul',
+			'Aug',
+			'Sep',
+			'Oct',
+			'Nov',
+			'Dec'
+		];
 		const innerW = plot.w - plot.padX * 2;
-		const innerH = plot.h - plot.padTop - plot.padBot;
-		return series.map((p, i) => {
-			const x = n === 1 ? plot.w / 2 : plot.padX + (i / (n - 1)) * innerW;
-			const y = plot.padTop + innerH * (1 - p.value / max);
-			return { x, y, year: p.year, value: p.value };
-		});
+		return labels.map((label, i) => ({
+			label,
+			x: plot.padX + (i / 12) * innerW
+		}));
 	});
 
-	const polyline = $derived(linePoints.map((p) => `${p.x},${p.y}`).join(' '));
+	type YearLine = {
+		year: number;
+		color: string;
+		points: string;
+		dots: { date: string; value: number; x: number; y: number }[];
+	};
 
-	/**
-	 * Thin polylines: each year starts at 0 and rises by day for the selected metric.
-	 * Drawn in the horizontal band for that year; y-scale is max single-year total.
-	 */
-	const yearPaths = $derived.by(() => {
-		if (chartMode !== 'cumulative' || days.length === 0 || chronological.length === 0) {
-			return [] as { year: number; points: string }[];
+	/** Full-width overlays: shared day-of-year X, each year from 0. */
+	const yearLines = $derived.by(() => {
+		if (chartMode !== 'byYear' || days.length === 0 || chronological.length === 0) {
+			return [] as YearLine[];
 		}
-		const n = chronological.length;
 		const innerW = plot.w - plot.padX * 2;
 		const innerH = plot.h - plot.padTop - plot.padBot;
-		const xAt = (i: number) => (n === 1 ? plot.w / 2 : plot.padX + (i / (n - 1)) * innerW);
 		const byYear = new Map<number, HeatmapDay[]>();
 		for (const d of days) {
 			const y = Number(d.date.slice(0, 4));
@@ -160,36 +189,72 @@
 			byYear.set(y, list);
 		}
 
+		const maxWithin = Math.max(
+			1,
+			...chronological.map((row) => {
+				const yd = byYear.get(row.year) ?? [];
+				return yd.reduce((s, d) => s + dayMetric(d), 0);
+			})
+		);
+
 		return chronological.map((row, i) => {
-			const x0 = i === 0 ? plot.padX : (xAt(i - 1) + xAt(i)) / 2;
-			const x1 = i === n - 1 ? plot.w - plot.padX : (xAt(i) + xAt(i + 1)) / 2;
-			const span = Math.max(1, x1 - x0);
 			const yearDays = [...(byYear.get(row.year) ?? [])].sort((a, b) =>
 				a.date.localeCompare(b.date)
 			);
-			const pts: { x: number; y: number }[] = [
-				{ x: x0, y: plot.padTop + innerH } // year start at 0
-			];
+			const leap = row.year % 4 === 0 && (row.year % 100 !== 0 || row.year % 400 === 0);
+			const daysInYear = leap ? 366 : 365;
+			const dots: YearLine['dots'] = [];
+			const pts: string[] = [];
+			// Always start at day 0 / value 0
+			const y0 = plot.padTop + innerH;
+			pts.push(`${plot.padX},${y0}`);
 			let cum = 0;
 			for (const d of yearDays) {
 				cum += dayMetric(d);
-				const frac = dayOfYearFrac(d.date);
-				pts.push({
-					x: x0 + frac * span,
-					y: plot.padTop + innerH * (1 - cum / maxYear)
-				});
+				const frac = dayOfYearIndex(d.date) / Math.max(1, daysInYear - 1);
+				const x = plot.padX + frac * innerW;
+				const y = plot.padTop + innerH * (1 - cum / maxWithin);
+				pts.push(`${x},${y}`);
+				dots.push({ date: d.date, value: cum, x, y });
 			}
-			// Hold flat to the end of the year band at the year's total.
-			pts.push({
-				x: x1,
-				y: plot.padTop + innerH * (1 - (values[i]?.value ?? cum) / maxYear)
-			});
 			return {
 				year: row.year,
-				points: pts.map((p) => `${p.x},${p.y}`).join(' ')
+				color: colorForYear(row.year, i),
+				points: pts.join(' '),
+				dots
 			};
 		});
 	});
+
+	const careerPoints = $derived.by(() => {
+		const n = careerSeries.length;
+		if (n === 0) return [] as { x: number; y: number; year: number; value: number }[];
+		const innerW = plot.w - plot.padX * 2;
+		const innerH = plot.h - plot.padTop - plot.padBot;
+		const careerMax = Math.max(1, ...careerSeries.map((p) => p.value));
+		return careerSeries.map((p, i) => {
+			const x = n === 1 ? plot.w / 2 : plot.padX + (i / (n - 1)) * innerW;
+			const y = plot.padTop + innerH * (1 - p.value / careerMax);
+			return { x, y, year: p.year, value: p.value };
+		});
+	});
+
+	const careerPolyline = $derived(careerPoints.map((p) => `${p.x},${p.y}`).join(' '));
+
+	function onDotEnter(
+		year: number,
+		date: string,
+		value: number,
+		x: number,
+		y: number,
+		color: string
+	) {
+		hover = { year, date, value, x, y, color };
+	}
+
+	function onDotLeave() {
+		hover = null;
+	}
 </script>
 
 <article class="panel">
@@ -211,8 +276,13 @@
 					>
 					<button
 						type="button"
-						class={{ active: chartMode === 'cumulative' }}
-						onclick={() => setChartMode('cumulative')}>Cumulative</button
+						class={{ active: chartMode === 'byYear' }}
+						onclick={() => setChartMode('byYear')}>By year</button
+					>
+					<button
+						type="button"
+						class={{ active: chartMode === 'career' }}
+						onclick={() => setChartMode('career')}>Career</button
 					>
 				</div>
 				<div class="toggles" role="group" aria-label="Metric">
@@ -238,57 +308,151 @@
 
 	{#if years.length === 0}
 		<p class="empty">No yearly data yet.</p>
-	{:else if chartMode === 'cumulative'}
+	{:else if chartMode === 'byYear'}
+		{#if yearLines.length === 0}
+			<p class="empty">No daily ticks yet for within-year lines.</p>
+		{:else}
+			<div class="line-wrap">
+				<svg
+					class="line-chart"
+					viewBox="0 0 {plot.w} {plot.h}"
+					role="img"
+					aria-label="Each year from 0, rising day by day ({metricLabel})"
+				>
+					{#each monthTicks as tick (tick.label)}
+						<line
+							class="grid"
+							x1={tick.x}
+							x2={tick.x}
+							y1={plot.padTop}
+							y2={plot.h - plot.padBot}
+							style="stroke: color-mix(in srgb, var(--ink) 12%, transparent)"
+						/>
+						<text class="month-tick" x={tick.x} y={plot.h - 8} style="fill: var(--ink-muted)"
+							>{tick.label}</text
+						>
+					{/each}
+					{#each yearLines as yl (yl.year)}
+						<polyline
+							fill="none"
+							points={yl.points}
+							style="stroke: {yl.color}"
+							stroke-width="2"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+							opacity="0.85"
+						/>
+						{#each yl.dots as dot (dot.date)}
+							<circle
+								class="hit"
+								cx={dot.x}
+								cy={dot.y}
+								r="9"
+								fill="transparent"
+								role="img"
+								aria-label="{dot.date}: {formatValue(dot.value)} {metricLabel}"
+								onmouseenter={() =>
+									onDotEnter(yl.year, dot.date, dot.value, dot.x, dot.y, yl.color)}
+								onmouseleave={onDotLeave}
+								focusin={() => onDotEnter(yl.year, dot.date, dot.value, dot.x, dot.y, yl.color)}
+								focusout={onDotLeave}
+								tabindex="0"
+							/>
+							<circle
+								class="dot"
+								cx={dot.x}
+								cy={dot.y}
+								r="3.5"
+								style="fill: {yl.color}; stroke: var(--paper)"
+								stroke-width="1.5"
+								pointer-events="none"
+							/>
+						{/each}
+					{/each}
+					{#if hover}
+						<g pointer-events="none">
+							<line
+								x1={hover.x}
+								x2={hover.x}
+								y1={plot.padTop}
+								y2={plot.h - plot.padBot}
+								style="stroke: {hover.color}"
+								stroke-width="1"
+								opacity="0.45"
+								stroke-dasharray="4 3"
+							/>
+							<circle
+								cx={hover.x}
+								cy={hover.y}
+								r="6"
+								style="fill: {hover.color}; stroke: var(--paper)"
+								stroke-width="2"
+							/>
+						</g>
+					{/if}
+				</svg>
+				{#if hover}
+					<p class="hover-label" style:color={hover.color}>
+						{hover.date} · {hover.year} · {formatValue(hover.value)}
+						{metricLabel.toLowerCase()}
+					</p>
+				{:else}
+					<p class="hint">Hover a point for the date. Each line starts at 0 on 1 Jan.</p>
+				{/if}
+				<ul class="legend">
+					{#each yearLines as yl (yl.year)}
+						<li>
+							<a href={`/logbook?year=${yl.year}`}>
+								<i style:background={yl.color}></i>
+								{yl.year}
+							</a>
+						</li>
+					{/each}
+				</ul>
+			</div>
+		{/if}
+	{:else if chartMode === 'career'}
 		<div class="line-wrap">
 			<svg
 				class="line-chart"
 				viewBox="0 0 {plot.w} {plot.h}"
 				role="img"
-				aria-label="{chartLabel} by year, cumulative, with within-year daily progress"
+				aria-label="Career total {metricLabel} by year"
 			>
-				{#each yearPaths as yp (yp.year)}
+				{#if careerPoints.length > 1}
 					<polyline
-						class="year-line"
 						fill="none"
-						points={yp.points}
-						style="stroke: var(--accent)"
-						stroke-width="1.25"
-						stroke-linecap="round"
-						stroke-linejoin="round"
-						opacity="0.35"
-					>
-						<title>{yp.year} daily {metricLabel.toLowerCase()} (starts at 0)</title>
-					</polyline>
-				{/each}
-				{#if linePoints.length > 1}
-					<polyline
-						class="line"
-						fill="none"
-						points={polyline}
+						points={careerPolyline}
 						style="stroke: var(--accent)"
 						stroke-width="3"
 						stroke-linecap="round"
 						stroke-linejoin="round"
 					/>
 				{/if}
-				{#each linePoints as p, i (p.year)}
+				{#each careerPoints as p, i (p.year)}
 					<a
 						href={`/logbook?year=${p.year}`}
-						aria-label="{p.year}: {formatValue(p.value)} {chartLabel}"
+						aria-label="{p.year}: {formatValue(p.value)} total {metricLabel}"
 					>
 						<title
-							>{p.year}: {formatValue(p.value)}
-							{chartLabel} ({fmtDelta(series[i]?.delta ?? null, deltaSuffix)} this year)</title
+							>{p.year}: {formatValue(p.value)} total ({fmtDelta(
+								careerSeries[i]?.delta ?? null,
+								deltaSuffix
+							)} this year)</title
 						>
-						<circle class="dot" cx={p.x} cy={p.y} r="7" />
+						<circle
+							class="dot"
+							cx={p.x}
+							cy={p.y}
+							r="7"
+							style="fill: var(--accent); stroke: var(--paper)"
+							stroke-width="2"
+						/>
 					</a>
 				{/each}
 			</svg>
-			{#if yearPaths.length > 0}
-				<p class="hint">Thin lines: each year from 0, rising day by day.</p>
-			{/if}
-			<div class="line-axis" style:--n={series.length}>
-				{#each series as point (point.year)}
+			<div class="line-axis" style:--n={careerSeries.length}>
+				{#each careerSeries as point (point.year)}
 					<a class="axis-col" href={`/logbook?year=${point.year}`}>
 						<span class="year-label">{point.year}</span>
 						<span class="cum-val">{formatValue(point.value)}</span>
@@ -298,8 +462,8 @@
 		</div>
 	{:else}
 		<div class="chart-scroll">
-			<div class="chart" style:--n={series.length}>
-				{#each series as point (point.year)}
+			<div class="chart" style:--n={barSeries.length}>
+				{#each barSeries as point (point.year)}
 					<a
 						class="col"
 						href={`/logbook?year=${point.year}`}
@@ -457,20 +621,52 @@
 		display: block;
 		width: 100%;
 		height: auto;
-		max-height: 200px;
+		max-height: 220px;
+	}
+	.month-tick {
+		font-size: 11px;
+		text-anchor: start;
+	}
+	.hit {
+		cursor: crosshair;
+		outline: none;
+	}
+	.hint,
+	.hover-label {
+		margin: 0.4rem 0 0;
+		font-size: 0.78rem;
+		font-weight: 600;
+		min-height: 1.2em;
 	}
 	.hint {
-		margin: 0.35rem 0 0;
-		font-size: 0.72rem;
 		color: var(--ink-muted);
+		font-weight: 500;
 	}
-	.line-chart .dot {
-		fill: var(--accent);
-		stroke: var(--paper);
-		stroke-width: 2;
+	.legend {
+		list-style: none;
+		margin: 0.65rem 0 0;
+		padding: 0;
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.35rem 0.75rem;
 	}
-	.line-chart a:hover .dot {
-		fill: var(--brand, var(--accent));
+	.legend a {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.35rem;
+		font-size: 0.78rem;
+		font-weight: 600;
+		color: var(--ink-muted);
+		text-decoration: none;
+	}
+	.legend a:hover {
+		color: var(--ink);
+	}
+	.legend i {
+		width: 0.65rem;
+		height: 0.65rem;
+		border-radius: 999px;
+		display: inline-block;
 	}
 	.line-axis {
 		display: grid;
