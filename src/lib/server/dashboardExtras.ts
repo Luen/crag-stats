@@ -1,8 +1,9 @@
-import { calendarDay as dayKey } from '#lib/calendarDay';
 /**
  * Pure dashboard aggregations for Phase 2–3 widgets.
  * Accept typed row arrays — no SQLite / better-sqlite3 imports.
  */
+
+import { calendarDay as dayKey } from '#lib/calendarDay';
 import { formatVScaleLabel, usesVScale } from '#lib/grades';
 import {
 	buildPartnerStats,
@@ -27,8 +28,6 @@ export type DashboardExtraRow = {
 	partners?: string | null;
 	/** Crag / venue name — partner “areas” (#269) and indoor weather-badge skip (#268). */
 	cragName?: string | null;
-	/** Cached provider-scoped crag identity for partner area counts. */
-	areaKey?: string | null;
 	quality?: string | null;
 	stars?: number | null;
 	gradeScore?: number | null;
