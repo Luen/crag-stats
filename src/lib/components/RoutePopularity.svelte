@@ -109,8 +109,11 @@
 		color: var(--ink-muted);
 		font-weight: 600;
 	}
-	strong {
+	.bucket strong {
 		font-size: 1.75rem;
+	}
+	.gems strong {
+		font-size: 0.95rem;
 	}
 	.n {
 		display: block;
