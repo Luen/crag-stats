@@ -332,6 +332,10 @@ export type DashboardStats = {
 		totalCount: number;
 	};
 	trainingLoad: TrainingLoadView;
+	sessionsPerWeek: {
+		years: string[];
+		byYear: Record<string, { weekStart: string; week: number; sessions: number }[]>;
+	};
 	styleMix: {
 		months: { month: string; Sport: number; Trad: number; Boulder: number; Other: number }[];
 	};

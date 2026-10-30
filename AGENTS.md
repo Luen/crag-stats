@@ -432,3 +432,4 @@ _Add a row when you change behaviour agents must know about._
 
 - Settings CSV import keeps the file picker and submit action stacked and left-aligned; avoid a growing file input that pushes the action to the card's far edge.
 - Route-history status exposes `retryAt` from the existing minimum run interval and upstream back-off. Settings counts down from server time and enables the action when due; retain the server pacing guards.
+- Sessions per week card: a session is a calendar day with ≥1 ascent; ISO weeks (Mon start); helpers in `#lib/sessionsPerWeek` (shared, not server-only).

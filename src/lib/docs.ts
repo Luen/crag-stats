@@ -52,6 +52,11 @@ export const DOC_PAGES: readonly DocPage[] = [
 		summary: 'The intensity-weighted acute:chronic load model behind the Training load card.'
 	},
 	{
+		slug: 'sessions-per-week',
+		title: 'Sessions per week',
+		summary: 'Climbing days per ISO week and the yearly average session rate.'
+	},
+	{
 		slug: 'best-months',
 		title: 'Best months',
 		summary:
