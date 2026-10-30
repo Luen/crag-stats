@@ -315,6 +315,98 @@ describe('buildBadges', () => {
 		).toBe(true);
 	});
 
+	it('earns bluebird, sticky, storm send, and four seasons (#271)', () => {
+		const weatherByKey = new Map([
+			[
+				'-33.9|151.2|2024-02-01',
+				{ tempMaxC: 36, tempMinC: 22, precipMm: 0, weatherCode: 0, humidityMean: 40 }
+			],
+			[
+				'-33.9|151.2|2024-02-02',
+				{ tempMaxC: 4, tempMinC: -1, precipMm: 0, weatherCode: 0, humidityMean: 50 }
+			],
+			[
+				'-33.9|151.2|2024-02-03',
+				{ tempMaxC: 14, tempMinC: 10, precipMm: 12, weatherCode: 63, humidityMean: 90 }
+			],
+			[
+				'-33.9|151.2|2024-02-04',
+				{ tempMaxC: 0.5, tempMinC: -3, precipMm: 2, weatherCode: 73, humidityMean: 70 }
+			],
+			[
+				'-33.9|151.2|2024-02-05',
+				{ tempMaxC: 20, tempMinC: 12, precipMm: 0, weatherCode: 1, humidityMean: 55 }
+			]
+		]);
+		const rows = [
+			row({
+				ascentDate: '2024-02-01',
+				lat: -33.87,
+				lon: 151.21,
+				routeName: 'Heat',
+				ascentId: 1,
+				isSend: true
+			}),
+			row({
+				ascentDate: '2024-02-02',
+				lat: -33.87,
+				lon: 151.21,
+				routeName: 'Freeze',
+				ascentId: 2,
+				isSend: true
+			}),
+			row({
+				ascentDate: '2024-02-03',
+				lat: -33.87,
+				lon: 151.21,
+				routeName: 'Storm',
+				ascentId: 3,
+				isSend: true,
+				tickType: 'Red point'
+			}),
+			row({
+				ascentDate: '2024-02-04',
+				lat: -33.87,
+				lon: 151.21,
+				routeName: 'Snow',
+				ascentId: 4,
+				isSend: true
+			}),
+			row({
+				ascentDate: '2024-02-05',
+				lat: -33.87,
+				lon: 151.21,
+				routeName: 'Fair',
+				ascentId: 5,
+				isSend: true
+			})
+		];
+		const earned = buildBadges(rows, [], [], { weatherByKey }).earned;
+		expect(earned.find((b) => b.id === 'weather_bluebird')?.detail).toMatch(/20°C/);
+		expect(earned.find((b) => b.id === 'weather_sticky')?.detail).toMatch(/90%/);
+		expect(earned.find((b) => b.id === 'weather_storm_send')?.detail).toMatch(/12\.0 mm/);
+		expect(earned.find((b) => b.id === 'weather_four_seasons')?.date).toBe('2024-02-04');
+		// Attempt on a storm day does not unlock Storm Send.
+		const attemptOnly = buildBadges(
+			[
+				row({
+					ascentDate: '2024-02-03',
+					lat: -33.87,
+					lon: 151.21,
+					routeName: 'Bail',
+					ascentId: 9,
+					isSend: false,
+					tickType: 'Attempt'
+				})
+			],
+			[],
+			[],
+			{ weatherByKey }
+		).earned;
+		expect(attemptOnly.some((b) => b.id === 'weather_storm_send')).toBe(false);
+		expect(attemptOnly.some((b) => b.id === 'weather_sticky')).toBe(true);
+	});
+
 	it('earns New Year from Eve or Day, as one badge', () => {
 		const eve = buildBadges([
 			row({

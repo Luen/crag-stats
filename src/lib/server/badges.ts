@@ -6,10 +6,13 @@ import { formatVScaleLabel, usesVScale } from '#lib/grades';
 import { tickKind } from '#lib/ticks';
 import { DEFAULT_DATE_DISPLAY, formatDateTime, formatNumber, type DateDisplay } from '#lib/dates';
 import {
+	isFairWeather,
 	isFreezeWeather,
 	isHeatWeather,
 	isRainWeather,
 	isSnowWeather,
+	isStickyHumidity,
+	isStormPrecip,
 	isWindyWeather,
 	roundCoord,
 	weatherDayKey,
@@ -297,6 +300,34 @@ export const BADGE_CATALOG: readonly BadgeDef[] = [
 		hint: 'Climb outdoors when the day’s max wind is 50 km/h or stronger',
 		icon: 'wind',
 		tone: 'slate'
+	},
+	{
+		id: 'weather_bluebird',
+		title: 'Bluebird',
+		hint: 'Climb outdoors on a pleasant dry day (high 15–25°C, little precip)',
+		icon: 'sun',
+		tone: 'blue'
+	},
+	{
+		id: 'weather_sticky',
+		title: 'Sticky',
+		hint: 'Climb outdoors when mean humidity is 85% or higher',
+		icon: 'droplet',
+		tone: 'green'
+	},
+	{
+		id: 'weather_storm_send',
+		title: 'Storm Send',
+		hint: 'Send outdoors on a day with at least 10 mm of non-snow rain',
+		icon: 'bolt',
+		tone: 'purple'
+	},
+	{
+		id: 'weather_four_seasons',
+		title: 'Four Seasons',
+		hint: 'Earn Heat Wave, Freeze Frame, Rain Check, and Climbing in the Snow',
+		icon: 'globe',
+		tone: 'warm'
 	},
 	{
 		id: 'sessions_10',
@@ -868,7 +899,7 @@ export function buildBadges(
 			);
 		}
 
-		// Outdoor weather badges from cached Open-Meteo days (#268).
+		// Outdoor weather badges from cached Open-Meteo days (#268 / #271).
 		const weather = lookupWeather(context.weatherByKey, row, day);
 		if (weather) {
 			if (isHeatWeather(weather)) {
@@ -884,6 +915,30 @@ export function buildBadges(
 			}
 			if (isWindyWeather(weather)) {
 				mark('weather_wind', hitAt(row, `Windy day · ${Math.round(weather.windMaxKmh!)} km/h max`));
+			}
+			if (isFairWeather(weather)) {
+				mark(
+					'weather_bluebird',
+					hitAt(row, `Bluebird day · ${Math.round(weather.tempMaxC!)}°C high`)
+				);
+			}
+			if (isStickyHumidity(weather)) {
+				mark(
+					'weather_sticky',
+					hitAt(row, `Sticky day · ${Math.round(weather.humidityMean!)}% humidity`)
+				);
+			}
+			if (send && isStormPrecip(weather)) {
+				mark('weather_storm_send', hitAt(row, `Storm send · ${weather.precipMm!.toFixed(1)} mm`));
+			}
+			if (
+				earned.has('weather_heat') &&
+				earned.has('weather_freeze') &&
+				earned.has('weather_rain') &&
+				earned.has('weather_snow') &&
+				!earned.has('weather_four_seasons')
+			) {
+				mark('weather_four_seasons', hitAt(row, 'Heat, freeze, rain, and snow'));
 			}
 		}
 
