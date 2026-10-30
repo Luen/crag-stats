@@ -613,3 +613,122 @@ describe('route setter badges', () => {
 		expect(earned.some((b) => b.id === 'setter_10')).toBe(false);
 	});
 });
+
+describe('partner, multipitch, travel and persistence badges (#279)', () => {
+	const ids = (rows: DashboardExtraRow[]) => buildBadges(rows).earned.map((b) => b.id);
+
+	it('awards Crowded Belay for 3+ distinct named partners on one ascent', () => {
+		const two = row({ ascentDate: '2024-03-01', partners: '@ana, Ben' });
+		const three = row({ ascentDate: '2024-03-02', partners: '@ana, Ben and Cy', ascentId: 2 });
+		expect(ids([two])).not.toContain('partners_crowded_belay');
+		expect(ids([row({ ascentDate: '2024-03-01', partners: 'Ana, ana, ANA' })])).not.toContain(
+			'partners_crowded_belay'
+		);
+		const earned = buildBadges([two, three]).earned.find((b) => b.id === 'partners_crowded_belay');
+		expect(earned?.date).toBe('2024-03-02');
+		expect(earned?.detail).toMatch(/3 partners/);
+	});
+
+	it('awards Multipitch Day for 3+ sent pitches in one day, not attempts or single pitches', () => {
+		const pitch = (n: number, over: Partial<Omit<DashboardExtraRow, 'ascentDate'>> = {}) =>
+			row({
+				ascentDate: '2024-04-01',
+				routeId: 7,
+				pitchLabel: `P${n}`,
+				isSend: true,
+				ascentId: n,
+				...over
+			});
+		expect(ids([pitch(1), pitch(2)])).not.toContain('multipitch_day');
+		expect(ids([pitch(1), pitch(2), pitch(3, { isSend: false })])).not.toContain('multipitch_day');
+		// Repeating the same pitch label never inflates the count.
+		expect(ids([pitch(1), pitch(1, { ascentId: 9 }), pitch(2)])).not.toContain('multipitch_day');
+		const earned = buildBadges([pitch(1), pitch(2), pitch(3)]).earned.find(
+			(b) => b.id === 'multipitch_day'
+		);
+		expect(earned?.detail).toMatch(/3 pitches/);
+		// A whole-route multipitch ascent carries its own pitch total.
+		expect(
+			ids([row({ ascentDate: '2024-04-02', routeId: 8, pitchesTotal: 4, isSend: true })])
+		).toContain('multipitch_day');
+		// Different days do not add up.
+		expect(
+			ids([
+				pitch(1),
+				pitch(2),
+				row({
+					ascentDate: '2024-04-02',
+					routeId: 7,
+					pitchLabel: 'P3',
+					isSend: true,
+					ascentId: 3
+				})
+			])
+		).not.toContain('multipitch_day');
+	});
+
+	it('awards Travel Week for 4 outdoor crags within 7 days only', () => {
+		const at = (
+			date: string,
+			crag: string,
+			id: number,
+			over: Partial<Omit<DashboardExtraRow, 'ascentDate'>> = {}
+		) => row({ ascentDate: date, cragName: crag, ascentId: id, ...over });
+		expect(
+			ids([at('2024-05-01', 'A', 1), at('2024-05-02', 'B', 2), at('2024-05-03', 'C', 3)])
+		).not.toContain('travel_week');
+		const week = [
+			at('2024-05-01', 'A', 1),
+			at('2024-05-03', 'B', 2),
+			at('2024-05-05', 'C', 3),
+			at('2024-05-07', 'D', 4)
+		];
+		const earned = buildBadges(week).earned.find((b) => b.id === 'travel_week');
+		expect(earned?.date).toBe('2024-05-07');
+		// The 8th day is outside the window.
+		expect(
+			ids([
+				at('2024-05-01', 'A', 1),
+				at('2024-05-03', 'B', 2),
+				at('2024-05-05', 'C', 3),
+				at('2024-05-08', 'D', 4)
+			])
+		).not.toContain('travel_week');
+		// Gyms and unknown crags never count.
+		expect(
+			ids([
+				at('2024-05-01', 'A', 1),
+				at('2024-05-02', 'B', 2),
+				at('2024-05-03', 'C', 3),
+				at('2024-05-04', 'Gym', 4, { outdoor: false }),
+				at('2024-05-05', 'Unknown', 5)
+			])
+		).not.toContain('travel_week');
+	});
+
+	it('awards Persistence Pays on the first send after 4+ days, not repeats of a favourite', () => {
+		const tick = (date: string, id: number, isSend: boolean) =>
+			row({ ascentDate: date, routeId: 11, ascentId: id, isSend });
+		expect(
+			ids([tick('2024-06-01', 1, false), tick('2024-06-08', 2, false), tick('2024-06-15', 3, true)])
+		).not.toContain('route_persistence');
+		const worked = [
+			tick('2024-06-01', 1, false),
+			tick('2024-06-08', 2, false),
+			tick('2024-06-15', 3, false),
+			tick('2024-06-22', 4, true)
+		];
+		const earned = buildBadges(worked).earned.find((b) => b.id === 'route_persistence');
+		expect(earned?.date).toBe('2024-06-22');
+		expect(earned?.detail).toMatch(/4 days/);
+		// Four sends on a route sent first time are repeats, not a grind.
+		expect(
+			ids([
+				tick('2024-07-01', 1, true),
+				tick('2024-07-08', 2, true),
+				tick('2024-07-15', 3, true),
+				tick('2024-07-22', 4, true)
+			])
+		).not.toContain('route_persistence');
+	});
+});

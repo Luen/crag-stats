@@ -15,3 +15,16 @@ Wiping local data resets this milestone along with the logbook; the next success
 ## Almost there
 
 On the full **[Badges](/badges)** page, **Almost there** lists up to three locked badges that are closest to completion. Only **countable** thresholds qualify (ascent totals, height, grade-band sends, FA/FFA counts, routes set, and similar). One-shot badges such as holiday days, weather days or First Moves are excluded. Progress is ranked by percent of the target (capped below 100% until earned), then by smaller targets when percentages tie. The dashboard badges card still shows recent earned badges only.
+
+## Partners, multipitch and travel
+
+These four badges use fields already in your logbook and are dated by the climb that completes them:
+
+| Badge                | Rule                                                                                                                                                     |
+| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Crowded Belay**    | One ascent lists 3 or more different partners (names are matched ignoring case).                                                                         |
+| **Multipitch Day**   | You send 3 or more pitches in one calendar day: each distinct pitch label counts once, and a whole-route multipitch ascent counts its pitches.           |
+| **Travel Week**      | You log climbs at 4 different outdoor crags within any 7 consecutive days. Gyms and unknown crags do not count.                                          |
+| **Persistence Pays** | You send a route for the first time after logging it on 4 or more different days (attempts included). Repeating a route you already sent does not count. |
+
+They are one-shot badges, so they do not appear in **Almost there**.

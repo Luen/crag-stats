@@ -42,6 +42,12 @@ export type DashboardExtraRow = {
 	lon?: number | null;
 	/** False for likely indoor/gym routes: weather never applies (#272). Undefined = outdoor. */
 	outdoor?: boolean;
+	/** Crag name, for travel-week badges (#279). */
+	cragName?: string | null;
+	/** Pitch label such as "P1" when the ascent is one pitch of a multipitch (#279). */
+	pitchLabel?: string | null;
+	/** Pitch count when the ascent covers a whole multipitch route (#279). */
+	pitchesTotal?: number | null;
 };
 
 /**

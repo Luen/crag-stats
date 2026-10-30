@@ -317,6 +317,7 @@ export function getDashboardStats(
 			effectiveGradeScore: ascents.effectiveGradeScore,
 			effectiveGradeBand: ascents.effectiveGradeBand,
 			pitchLabel: ascents.pitchLabel,
+			pitchesTotal: ascents.pitchesTotal,
 			ascentLabel: ascents.ascentLabel,
 			partners: ascents.partners,
 			quality: ascents.quality,
@@ -727,6 +728,9 @@ export function getDashboardStats(
 		hasPersonalGrade: hasPersonalAscentGrade(a.gradeProvenanceJson),
 		lat: a.lat,
 		lon: a.lon,
+		cragName: a.cragName,
+		pitchLabel: a.pitchLabel,
+		pitchesTotal: a.pitchesTotal,
 		outdoor: !isLikelyIndoorRoute({
 			gearStyle: a.gearStyle,
 			name: a.routeName,
