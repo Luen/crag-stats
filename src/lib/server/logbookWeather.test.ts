@@ -3,7 +3,7 @@ import { eq } from 'drizzle-orm';
 import { db } from './db';
 import { routes, weatherDays } from './db/schema';
 import { upsertAscents } from './ingest';
-import { listLogbook, wipeAllData } from './analytics';
+import { getDashboardStats, listLogbook, wipeAllData } from './analytics';
 import { isMissingLogbookWeather } from './logbookWeather';
 
 type Day = {
@@ -116,5 +116,32 @@ describe('logbook weather facets (#273)', () => {
 		const { rows, weatherAvailable } = listLogbook();
 		expect(weatherAvailable).toBe(false);
 		expect(rows.every((r) => r.weatherChips.length === 0)).toBe(true);
+	});
+});
+
+describe('dashboard weather surfaces (#272 / #274)', () => {
+	it('adds chips to recent activities for outdoor cache hits only', () => {
+		const recent = getDashboardStats().recent;
+		const by = Object.fromEntries(
+			recent.map((r) => [r.routeName, r.weatherChips.map((c) => c.key)])
+		);
+		expect(by['Route hot']).toEqual(['heat']);
+		expect(by['Route rain']).toEqual(['rain']);
+		expect(by['Gym Route']).toEqual([]);
+		expect(by['Route none']).toEqual([]);
+	});
+
+	it('builds the conditions card from outdoor days only and hides it with an empty cache', () => {
+		const card = getDashboardStats().weatherConditions;
+		expect(card).not.toBeNull();
+		// 6 cached outdoor days + "none"; gym and no-coords rows are excluded.
+		expect(card?.withWeather).toBe(5);
+		expect(card?.outdoorDays).toBe(6);
+		expect(card?.hottest?.tempC).toBe(38);
+		expect(card?.hottest?.routeName).toBe('Route hot');
+		expect(card?.coldest?.tempC).toBe(-6);
+		db.delete(weatherDays).run();
+		expect(getDashboardStats().weatherConditions).toBeNull();
+		expect(getDashboardStats().recent.every((r) => r.weatherChips.length === 0)).toBe(true);
 	});
 });

@@ -1,5 +1,6 @@
 import type { GradeSystem } from '#lib/grades';
 import type { WeatherConditionsView } from '#lib/weatherStats';
+import type { WeatherChip } from '#lib/weatherKeys';
 import type { WeekdayStatsView } from '#lib/weekdayStats';
 import type { KarmaStats } from './karma';
 import type { RoutePopularityStats } from './routePopularity';
@@ -268,6 +269,8 @@ export type DashboardStats = {
 		partners: string | null;
 		quality: string | null;
 		tags: RouteTag[];
+		/** Weather on the day for outdoor climbs with a cached day; empty otherwise (#274). */
+		weatherChips: WeatherChip[];
 		url: string | null;
 	}[];
 	blurb: {

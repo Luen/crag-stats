@@ -7,6 +7,8 @@ import {
 	roundCoord,
 	weatherAscentDay,
 	weatherDayKey,
+	weatherChips,
+	type WeatherChip,
 	type WeatherLookupMap,
 	type WeatherSnapshot
 } from '#lib/weatherKeys';
@@ -38,6 +40,15 @@ export function logbookRowWeather(
 ): WeatherSnapshot | null {
 	if (!map || map.size === 0) return null;
 	return lookupAscentWeather(map, { ...r, outdoor: isOutdoorLogbookRow(r) });
+}
+
+/** Chips for an outdoor ascent on a cached day; empty for indoor / uncached / ordinary days. */
+export function logbookRowWeatherChips(
+	map: WeatherLookupMap | null | undefined,
+	r: LogbookWeatherRow
+): WeatherChip[] {
+	const w = logbookRowWeather(map, r);
+	return w ? weatherChips(w) : [];
 }
 
 /**
