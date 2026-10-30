@@ -12,7 +12,8 @@ import type { LoadStatus, TrainingLoadView } from '#lib/types/trainingLoad';
 import { buildTrainingLoad, type DashboardExtraRow } from './dashboardExtras';
 
 const DAY_MS = 86_400_000;
-const WARMUP_DAYS = 120;
+/** Enough history for EWMA warm-up plus 26 displayed weeks on /training-load. */
+const WARMUP_DAYS = 210;
 
 /** Grade steps per halving of intensity. */
 const STEP = { route: 2, boulder: 1 } as const;
@@ -154,9 +155,16 @@ export function buildTrainingLoadView(
 		week += l;
 		// Close a week every 7 days counting back from today.
 		if (i % 7 === 0) {
-			if (i < 84) weekly.push({ end: day, load: Math.round(week) });
+			// Keep 26 weeks for /training-load; the dashboard card shows the newest 12.
+			if (i < 182) weekly.push({ end: day, load: Math.round(week) });
 			week = 0;
 		}
+	}
+
+	const daily28: { day: string; load: number }[] = [];
+	for (let i = 27; i >= 0; i--) {
+		const day = addDays(today, -i);
+		daily28.push({ day, load: Math.round((daily.get(day) ?? 0) * 10) / 10 });
 	}
 
 	const ratio = chronic >= 0.25 ? Math.round((acute / chronic) * 100) / 100 : null;
@@ -170,6 +178,7 @@ export function buildTrainingLoadView(
 		refBoulder: ref.boulder,
 		limitSends28,
 		limitShare28: graded28 ? Math.round((limit28 / graded28) * 100) : 0,
-		weekly
+		weekly,
+		daily28
 	};
 }

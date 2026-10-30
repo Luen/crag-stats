@@ -2,7 +2,14 @@
 	import { formatVScaleLabel } from '#lib/grades';
 	import type { LoadStatus, TrainingLoadView } from '#lib/types/trainingLoad';
 
-	let { load }: { load: TrainingLoadView } = $props();
+	type Props = {
+		load: TrainingLoadView;
+		/** Dashboard shows the newest N weeks; detail page can show all. */
+		weeksShown?: number;
+		titleHref?: string | null;
+		showDaily?: boolean;
+	};
+	let { load, weeksShown = 12, titleHref = '/training-load', showDaily = false }: Props = $props();
 
 	const STATUS: Record<LoadStatus, { label: string; hint: string }> = {
 		idle: { label: 'Resting', hint: 'Nothing logged in the last couple of weeks.' },
@@ -21,7 +28,9 @@
 	const status = $derived(STATUS[load.status]);
 	/** Gauge position for the ratio, 0–2 mapped to 0–100%. */
 	const gauge = $derived(load.ratio == null ? null : Math.min(100, (load.ratio / 2) * 100));
-	const maxWeek = $derived(Math.max(1, ...load.weekly.map((w) => w.load)));
+	const weeks = $derived(load.weekly.slice(-Math.max(1, weeksShown)));
+	const maxWeek = $derived(Math.max(1, ...weeks.map((w) => w.load)));
+	const maxDay = $derived(Math.max(1, ...load.daily28.map((d) => d.load)));
 	const pct = (n: number) => `${Math.round(n)}%`;
 
 	const refs = $derived(
@@ -34,7 +43,13 @@
 
 <article class="panel">
 	<header>
-		<h2>Training load</h2>
+		<h2>
+			{#if titleHref}
+				<a href={titleHref}>Training load</a>
+			{:else}
+				Training load
+			{/if}
+		</h2>
 		<a class="how" href="/docs/training-load">How it works</a>
 	</header>
 
@@ -58,8 +73,8 @@
 		<p class="hint">{status.hint}</p>
 	</div>
 
-	<div class="weeks" aria-label="Weekly load, last 12 weeks">
-		{#each load.weekly as w (w.end)}
+	<div class="weeks" aria-label="Weekly load, last {weeks.length} weeks">
+		{#each weeks as w (w.end)}
 			<span
 				class="wk"
 				style:height="{Math.max(4, (w.load / maxWeek) * 100)}%"
@@ -67,7 +82,21 @@
 			></span>
 		{/each}
 	</div>
-	<p class="weeks-cap">Weekly load · last 12 weeks</p>
+	<p class="weeks-cap">Weekly load · last {weeks.length} weeks</p>
+
+	{#if showDaily && load.daily28.length}
+		<div class="days" aria-label="Daily load, last 28 days">
+			{#each load.daily28 as d (d.day)}
+				<span
+					class="day"
+					class:rest={d.load <= 0}
+					style:height="{d.load <= 0 ? 4 : Math.max(4, (d.load / maxDay) * 100)}%"
+					title="{d.day}: load {d.load}"
+				></span>
+			{/each}
+		</div>
+		<p class="weeks-cap">Daily load · last 28 days</p>
+	{/if}
 
 	<dl class="kpis">
 		<div>
@@ -138,6 +167,13 @@
 	h2 {
 		margin: 0 0 0.75rem;
 		font-size: 1.05rem;
+	}
+	h2 a {
+		color: inherit;
+		text-decoration: none;
+	}
+	h2 a:hover {
+		color: var(--accent);
 	}
 	.how {
 		font-size: 0.8rem;
@@ -271,6 +307,25 @@
 	}
 	.wk:last-child {
 		background: var(--accent);
+	}
+	.days {
+		display: grid;
+		grid-auto-flow: column;
+		grid-auto-columns: minmax(0, 1fr);
+		align-items: end;
+		gap: 3px;
+		height: 3.25rem;
+		margin-top: 0.85rem;
+	}
+	.day {
+		border-radius: 2px 2px 1px 1px;
+		background: color-mix(in srgb, var(--accent-2) 55%, var(--paper));
+	}
+	.day.rest {
+		background: var(--surface-3);
+	}
+	.day:last-child {
+		background: var(--accent-2);
 	}
 	.weeks-cap,
 	.ref {
