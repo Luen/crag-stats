@@ -202,19 +202,15 @@
 		}
 		const innerW = plot.w - plot.padX * 2;
 		const innerH = plot.h - plot.padTop - plot.padBot;
-		const byYear = new Map<number, HeatmapDay[]>();
+		const byYear: Record<number, HeatmapDay[]> = {};
 		for (const d of days) {
 			const y = Number(d.date.slice(0, 4));
 			if (!Number.isFinite(y)) continue;
-			const list = byYear.get(y) ?? [];
-			list.push(d);
-			byYear.set(y, list);
+			(byYear[y] ??= []).push(d);
 		}
 
 		return chronological.map((row, i) => {
-			const yearDays = [...(byYear.get(row.year) ?? [])].sort((a, b) =>
-				a.date.localeCompare(b.date)
-			);
+			const yearDays = [...(byYear[row.year] ?? [])].sort((a, b) => a.date.localeCompare(b.date));
 			const leap = row.year % 4 === 0 && (row.year % 100 !== 0 || row.year % 400 === 0);
 			const daysInYear = leap ? 366 : 365;
 			const dots: YearLine['dots'] = [];
@@ -257,24 +253,29 @@
 
 <article class="panel">
 	<header class="head">
-		<h2>
-			{#if titleHref}
-				<a href={titleHref}>Yearly stats</a>
-			{:else}
-				Yearly stats
-			{/if}
-		</h2>
+		<div class="titles">
+			<h2>
+				{#if titleHref}
+					<a href={titleHref}>Yearly stats</a>
+				{:else}
+					Yearly stats
+				{/if}
+			</h2>
+			<a class="how" href="/docs/yearly-stats">How it works</a>
+		</div>
 		{#if years.length > 0}
 			<div class="controls">
 				<div class="toggles" role="group" aria-label="Chart mode">
 					<button
 						type="button"
 						class={{ active: chartMode === 'year' }}
+						aria-pressed={chartMode === 'year'}
 						onclick={() => setChartMode('year')}>Per year</button
 					>
 					<button
 						type="button"
 						class={{ active: chartMode === 'cumulative' }}
+						aria-pressed={chartMode === 'cumulative'}
 						onclick={() => setChartMode('cumulative')}>Cumulative</button
 					>
 				</div>
@@ -282,16 +283,19 @@
 					<button
 						type="button"
 						class={{ active: metric === 'ascents' }}
+						aria-pressed={metric === 'ascents'}
 						onclick={() => (metric = 'ascents')}>Ascents</button
 					>
 					<button
 						type="button"
 						class={{ active: metric === 'sends' }}
+						aria-pressed={metric === 'sends'}
 						onclick={() => (metric = 'sends')}>Sends</button
 					>
 					<button
 						type="button"
 						class={{ active: metric === 'heightM' }}
+						aria-pressed={metric === 'heightM'}
 						onclick={() => (metric = 'heightM')}>Height (m)</button
 					>
 				</div>
@@ -517,6 +521,12 @@
 		gap: 0.65rem 1rem;
 		margin-bottom: 0.85rem;
 	}
+	.titles {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		gap: 0.55rem 0.85rem;
+	}
 	h2 {
 		margin: 0;
 		font-size: 1.05rem;
@@ -526,6 +536,11 @@
 		text-decoration: none;
 	}
 	h2 a:hover {
+		color: var(--accent);
+	}
+	.how {
+		font-size: 0.8rem;
+		font-weight: 600;
 		color: var(--accent);
 	}
 	.controls {
