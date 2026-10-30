@@ -126,7 +126,8 @@ export function weatherAscentDay(date: string | null | undefined): string | null
 	if (!date) return null;
 	const key = date.trim().slice(0, 10);
 	if (!/^\d{4}-\d{2}-\d{2}$/.test(key)) return null;
-	if (key.includes('-00')) return null;
+	const parsed = new Date(`${key}T12:00:00Z`);
+	if (!Number.isFinite(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== key) return null;
 	return key;
 }
 
