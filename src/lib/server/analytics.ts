@@ -66,6 +66,8 @@ import { pickHardestSends } from './hardestSends';
 import { invalidateRouteHistoryRuns } from './routeHistoryEngine';
 import { invalidateWeatherRuns, loadWeatherSnapshotMap } from './weatherEngine';
 import { isLikelyIndoorRoute } from './venue';
+import { isMissingLogbookWeather, logbookRowWeather } from './logbookWeather';
+import { matchesWeatherFilter, weatherChips, type WeatherFilterKey } from '#lib/weatherKeys';
 import { buildWeatherConditionsView } from '#lib/weatherStats';
 import { buildTrainingLoadView, hasPersonalAscentGrade } from './trainingLoad';
 import { buildKarmaStats } from './karma';
@@ -1151,7 +1153,9 @@ export function listLogbook(filters?: {
 	/** has = non-empty partners; missing = empty/null */
 	partners?: 'has' | 'missing';
 	/** Route fields that are null/absent: height, bolts, cached pitch list (after route-info fetch) */
-	missing?: Array<'height' | 'bolts' | 'pitch'>;
+	missing?: Array<'height' | 'bolts' | 'pitch' | 'weather'>;
+	/** Outdoor ascents whose cached weather day matches (#273); indoor routes never match. */
+	weather?: WeatherFilterKey;
 	/** Case-insensitive substring match on route tag names in tags_json */
 	tag?: string;
 	/** Case-insensitive exact match on category+name; all entries must match (AND) */
@@ -1229,7 +1233,9 @@ export function listLogbook(filters?: {
 			routeInfoUpdatedAt: routes.routeInfoUpdatedAt,
 			isProject: routes.isProject,
 			tagsJson: routes.tagsJson,
-			ancestorsJson: routes.ancestorsJson
+			ancestorsJson: routes.ancestorsJson,
+			lat: routes.lat,
+			lon: routes.lon
 		})
 		.from(ascents)
 		.innerJoin(routes, eq(ascents.routeId, routes.id))
@@ -1383,6 +1389,19 @@ export function listLogbook(filters?: {
 			)
 		);
 	}
+	// Weather cache only loads when a facet or the row chips need it; empty cache = no chips.
+	const weatherByKey = loadWeatherSnapshotMap();
+	if (filters?.weather) {
+		const wanted = filters.weather;
+		rows = rows.filter((r) => {
+			const w = logbookRowWeather(weatherByKey, r);
+			return w != null && matchesWeatherFilter(w, wanted);
+		});
+	}
+	if (filters?.missing?.includes('weather')) {
+		const today = new Date().toISOString().slice(0, 10);
+		rows = rows.filter((r) => isMissingLogbookWeather(weatherByKey, r, today));
+	}
 	if (filters?.tag?.trim()) {
 		const needle = filters.tag.trim().toLowerCase();
 		rows = rows.filter((r) =>
@@ -1441,10 +1460,16 @@ export function listLogbook(filters?: {
 	rows = sortLogbookRows(rows, sortKey, asc, routeAscentCounts);
 
 	const total = rows.length;
+	const chipsFor = (r: (typeof rows)[number]) => {
+		const w = logbookRowWeather(weatherByKey, r);
+		return w ? weatherChips(w) : [];
+	};
 	return {
 		total,
+		weatherAvailable: weatherByKey.size > 0,
 		rows: rows.slice(offset, offset + limit).map((r) => ({
 			...r,
+			weatherChips: chipsFor(r),
 			firstAscent: firstAscentKindFor(faMarks, r.routeProvider, r.routeExternalId),
 			displayName: displayRouteName(r.routeName, r.pitchLabel, r.ascentLabel),
 			gradeBand: r.effectiveGradeBand ?? r.gradeBand,

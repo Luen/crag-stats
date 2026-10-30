@@ -4,6 +4,8 @@ import { getPreferredGradeSystem, getShowNotes } from '#lib/server/appSettings';
 import { parseFirstAscentKind, routeExists, setFirstAscent } from '#lib/server/firstAscents';
 import { notesVisible } from '#lib/server/notes';
 import { isRouteHistoryImportEnabled } from '#lib/server/routeHistoryImport';
+import { isWeatherImportEnabled } from '#lib/server/weatherImport';
+import { isWeatherFilterKey, type WeatherFilterKey } from '#lib/weatherKeys';
 import { routeGradeOptions } from '#lib/logbookFilters';
 import { parseTagExactParams } from '#lib/routeTags';
 import type { Actions, PageServerLoad } from './$types';
@@ -41,6 +43,10 @@ function parseProjectParam(raw: string | null): '' | 'yes' | 'no' {
 function parseSetterParam(raw: string | null): '' | 'me' | 'none' {
 	if (raw === 'me' || raw === 'none') return raw;
 	return '';
+}
+
+function parseWeatherParam(raw: string | null): WeatherFilterKey | '' {
+	return isWeatherFilterKey(raw) ? raw : '';
 }
 
 function parsePartnersParam(raw: string | null): '' | 'has' | 'missing' {
@@ -108,11 +114,14 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 	const withPartner = url.searchParams.get('with') ?? '';
 	const partners = parsePartnersParam(url.searchParams.get('partners'));
 	const missingRaw = multiParams(url, 'missing');
+	// missing=weather is an owner tool for the import backlog, so visitors never get it.
 	const missing = missingRaw
 		.map((v) => (v === 'pitches' ? 'pitch' : v))
 		.filter(
-			(v): v is 'height' | 'bolts' | 'pitch' => v === 'height' || v === 'bolts' || v === 'pitch'
+			(v): v is 'height' | 'bolts' | 'pitch' | 'weather' =>
+				v === 'height' || v === 'bolts' || v === 'pitch' || (v === 'weather' && locals.authed)
 		);
+	const weather = parseWeatherParam(url.searchParams.get('weather'));
 	const tag = url.searchParams.get('tag') ?? '';
 	const tagExact = parseTagExactParams(url.searchParams.getAll('tagExact'));
 	const partnerMatch = url.searchParams.get('partnerMatch') === 'exact' ? 'exact' : 'contains';
@@ -135,7 +144,7 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 	const limit = 50;
 	const notesShown = notesVisible(getShowNotes().enabled, locals.authed);
 	const gradeSystem = getPreferredGradeSystem();
-	const { total, rows } = listLogbook({
+	const { total, rows, weatherAvailable } = listLogbook({
 		q: q || undefined,
 		styles: styles.length ? styles : undefined,
 		ticks: ticks.length ? ticks : undefined,
@@ -157,6 +166,7 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 		with: withPartner || undefined,
 		partners: partners || undefined,
 		missing: missing.length ? missing : undefined,
+		weather: weather || undefined,
 		tag: tag || undefined,
 		tagExact: tagExact.length ? tagExact : undefined,
 		partnerMatch,
@@ -198,6 +208,9 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 		with: withPartner,
 		partners,
 		missing,
+		weather,
+		weatherAvailable,
+		canFilterMissingWeather: locals.authed && (weatherAvailable || isWeatherImportEnabled()),
 		tag,
 		tagExact: tagExact.map((t) => `${t.category}:${t.name}`),
 		partnerMatch,

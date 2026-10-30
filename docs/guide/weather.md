@@ -46,3 +46,11 @@ The dashboard **Weather conditions** card appears once at least one outdoor clim
 - **Daily high** is a small histogram of each day's maximum temperature in 5° bins.
 
 These are model values for the nearest grid cell, not official climate normals or a measurement at the wall.
+
+## Logbook filters and chips
+
+When any weather is cached, the logbook gains a **Weather on the day** filter (`?weather=`): `fair`, `heat`, `freeze`, `rain` or `snow`, using the same rules as the badges. It only matches **outdoor** ascents with route coordinates and a cached day for that location; gym routes, ascents without coordinates and days that have not been fetched never match.
+
+Rows on cached days also show small text chips (for example "Hot 36°C", "Freezing -2°C", "Rain 4 mm", "Snow", "Windy 55 km/h", "Fair 21°C"). Ordinary days show nothing.
+
+The signed-in owner also gets **No weather cached** (`?missing=weather`), which lists outdoor ascents with coordinates and a past date that still have no cached weather, so you can see what the next imports will fetch. Visitors never see this option.

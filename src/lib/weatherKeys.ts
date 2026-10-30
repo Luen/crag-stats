@@ -185,3 +185,34 @@ export function matchesWeatherFilter(w: WeatherSnapshot, key: WeatherFilterKey):
 			return isFairWeather(w);
 	}
 }
+
+export type WeatherChipKey = 'heat' | 'freeze' | 'rain' | 'snow' | 'wind' | 'fair';
+
+/** Structured chip data; the component formats numbers with the display locale. */
+export type WeatherChip = {
+	key: WeatherChipKey;
+	/** Visible word, e.g. "Hot". Never colour-only. */
+	name: string;
+	value: number | null;
+	unit: '°C' | 'mm' | 'km/h' | null;
+};
+
+/**
+ * Chips for one cached day (logbook rows, recent activities). Empty when nothing notable;
+ * callers hide the whole strip then. Each chip is plain text so it reads without colour.
+ */
+export function weatherChips(w: WeatherSnapshot): WeatherChip[] {
+	const out: WeatherChip[] = [];
+	if (isHeatWeather(w))
+		out.push({ key: 'heat', name: 'Hot', value: Math.round(w.tempMaxC!), unit: '°C' });
+	if (isFreezeWeather(w))
+		out.push({ key: 'freeze', name: 'Freezing', value: Math.round(w.tempMinC!), unit: '°C' });
+	if (isSnowWeather(w)) out.push({ key: 'snow', name: 'Snow', value: null, unit: null });
+	else if (isRainWeather(w))
+		out.push({ key: 'rain', name: 'Rain', value: Math.round(w.precipMm! * 10) / 10, unit: 'mm' });
+	if (isWindyWeather(w))
+		out.push({ key: 'wind', name: 'Windy', value: Math.round(w.windMaxKmh!), unit: 'km/h' });
+	if (isFairWeather(w))
+		out.push({ key: 'fair', name: 'Fair', value: Math.round(w.tempMaxC!), unit: '°C' });
+	return out;
+}
