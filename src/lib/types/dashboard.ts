@@ -1,4 +1,5 @@
 import type { GradeSystem } from '#lib/grades';
+import type { WeekdayStatsView } from '#lib/weekdayStats';
 import type { KarmaStats } from './karma';
 import type { RoutePopularityStats } from './routePopularity';
 import type { TrainingLoadView } from './trainingLoad';
@@ -345,6 +346,8 @@ export type DashboardStats = {
 		years: string[];
 		byYear: Record<string, { weekStart: string; week: number; sessions: number }[]>;
 	};
+	/** Mon–Sun session counts; hide when totalSessionsAllTime is 0. */
+	weekday: WeekdayStatsView;
 	styleMix: {
 		months: { month: string; Sport: number; Trad: number; Boulder: number; Other: number }[];
 	};

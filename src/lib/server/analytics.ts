@@ -69,6 +69,7 @@ import { buildKarmaStats } from './karma';
 import { buildRoutePopularityStats } from './routePopularity';
 import { buildBestMonthsView } from './bestMonths';
 import { buildSessionsPerWeek } from '#lib/sessionsPerWeek';
+import { buildWeekdayStats } from '#lib/weekdayStats';
 
 export type PyramidMode = 'all' | 'sends' | 'onsight';
 const PYRAMID_MODES: PyramidMode[] = ['all', 'sends', 'onsight'];
@@ -1026,6 +1027,7 @@ export function getDashboardStats(
 		badges,
 		trainingLoad,
 		sessionsPerWeek: buildSessionsPerWeek(all.map((r) => r.ascentDate)),
+		weekday: buildWeekdayStats(all.map((r) => r.ascentDate)),
 		styleMix,
 		partners,
 		starsScatter,

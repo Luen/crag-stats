@@ -28,6 +28,7 @@ export type DashCardId =
 	| 'projects'
 	| 'trainingLoad'
 	| 'sessionsPerWeek'
+	| 'weekday'
 	| 'milestones'
 	| 'styleMix'
 	| 'partners'
@@ -77,6 +78,7 @@ export const DEFAULT_DASH_CARDS: readonly DashCardDef[] = [
 	{ id: 'trainingLoad', label: 'Training load', width: 'half' },
 	{ id: 'milestones', label: 'Milestones', width: 'half' },
 	{ id: 'sessionsPerWeek', label: 'Sessions per week', width: 'full' },
+	{ id: 'weekday', label: 'Weekday', width: 'full' },
 	{ id: 'styleMix', label: 'Style mix', width: 'full' },
 	{ id: 'partners', label: 'Partners', width: 'quarter' },
 	{ id: 'rockTypes', label: 'Rock types', width: 'quarter' },

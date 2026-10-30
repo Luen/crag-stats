@@ -29,6 +29,7 @@
 	import TickTypeIcon from '#lib/components/TickTypeIcon.svelte';
 	import TrainingLoad from '#lib/components/TrainingLoad.svelte';
 	import SessionsPerWeek from '#lib/components/SessionsPerWeek.svelte';
+	import WeekdayStats from '#lib/components/WeekdayStats.svelte';
 	import VolumeChart from '#lib/components/VolumeChart.svelte';
 	import YearlyStats from '#lib/components/YearlyStats.svelte';
 	import { packLayoutRows, type DashCardId } from '#lib/dashboardLayout';
@@ -55,6 +56,9 @@
 					return { ...i, enabled: false };
 				}
 				if (i.id === 'bestMonths' && s.bestMonths.cragCount === 0) {
+					return { ...i, enabled: false };
+				}
+				if (i.id === 'weekday' && s.weekday.totalSessionsAllTime === 0) {
 					return { ...i, enabled: false };
 				}
 				return i;
@@ -180,6 +184,8 @@
 		<TrainingLoad load={s.trainingLoad} />
 	{:else if id === 'sessionsPerWeek'}
 		<SessionsPerWeek years={s.sessionsPerWeek.years} byYear={s.sessionsPerWeek.byYear} />
+	{:else if id === 'weekday'}
+		<WeekdayStats data={s.weekday} dateDisplay={data.dateDisplay} />
 	{:else if id === 'milestones'}
 		<Milestones items={s.milestones.items} limit={6} />
 	{:else if id === 'styleMix'}
