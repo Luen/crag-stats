@@ -454,11 +454,14 @@ _Add a row when you change behaviour agents must know about._
 - Ascent calendar Weather mode (#276): `HeatmapDay.weather` (`CalendarWeather`, lowest-id outdoor ascent with a cache hit) colours cells via `--weather-*` tokens; the mode button appears only when any day has weather and falls back to Intensity otherwise. A values table duplicates the data for screen readers.
 - Sectors climate (#278): `CragSectorGroup.visitClimate` from `listVisitClimateByCrag()` (`sectors.ts`) via `buildVisitClimate` (`#lib/visitClimate`): distinct outdoor location-days with cached weather per crag, shown only at ≥5 days, always labelled as visit-day weather, not climate normals.
 - Fair-weather metric (#280): `WeatherConditionsView.fairWeather` (`buildFairWeatherMetric` in `#lib/weatherStats`) needs ≥20 weather days; fair = `isFairWeather`, tough = heat/freeze/rain/snow/wind. Labels (fair-leaning ≥60% fair, all-weather ≥50% tough, else mixed) are descriptive, never a score.
+- Badges #279: `partners_crowded_belay` (3+ distinct partners), `multipitch_day` (3+ sent pitches/day via pitch labels or `pitchesTotal`), `travel_week` (4 outdoor crags in 7 days; `DashboardExtraRow.cragName`), `route_persistence` (first send after 4+ days on the route). Stable ids, one-shot (not in Almost there), neutral wording.
 - Partners page (`/partners`, #269): Ascents | Sessions | Areas metric toggle (`cs_partners_metric`); helpers in `#lib/partnerStats`. Dashboard card stays ascent-ranked. Docs at `/docs/partners`.
 
 - Weather PR review: preserve main’s indoor badge guards and shared partner statistics when updating the weather stack. Fair weather requires measured precipitation below 0.1 mm; missing rain is unknown, not dry.
 
 - Fair/tough weather groups overlap on mild dry days with strong wind or freezing lows. At ≥50% tough days, use the all-weather label before considering the fair-leaning threshold.
+
+- Multipitch badges deduplicate pitch ranges/lists and whole-route logs per route/day. Cached API per-pitch send ticks override summary labels; raw ascent JSON stays server-side.
 - Shared weather ascent days reject impossible dates by a UTC round-trip (including non-leap February 29), so coverage and backlog match real calendar days.
 
 - The weather backlog uses all checked cache keys, including unavailable (`missing`) rows, just like the importer. Usable weather lookups still include `ok` rows only.

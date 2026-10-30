@@ -30,7 +30,7 @@ import {
 	sortLogbookRows
 } from './logbookSort';
 import { buildCprTimeline } from './cpr';
-import { buildBadges } from './badges';
+import { sentPitchNumbersFromRaw, buildBadges } from './badges';
 import { getFirstImport, resetFirstImport } from './firstImport';
 import { communityAscentBadgeHits } from './communityBadges';
 import type { DateDisplay } from '#lib/dates';
@@ -321,6 +321,7 @@ export function getDashboardStats(
 			effectiveGradeScore: ascents.effectiveGradeScore,
 			effectiveGradeBand: ascents.effectiveGradeBand,
 			pitchLabel: ascents.pitchLabel,
+			pitchesTotal: ascents.pitchesTotal,
 			ascentLabel: ascents.ascentLabel,
 			partners: ascents.partners,
 			quality: ascents.quality,
@@ -732,6 +733,9 @@ export function getDashboardStats(
 		hasPersonalGrade: hasPersonalAscentGrade(a.gradeProvenanceJson),
 		lat: a.lat,
 		lon: a.lon,
+		pitchLabel: a.pitchLabel,
+		pitchesTotal: a.pitchesTotal,
+		sentPitchNumbers: sentPitchNumbersFromRaw(a.gradeProvenanceJson),
 		outdoor: !isLikelyIndoorRoute({
 			gearStyle: a.gearStyle,
 			name: a.routeName,
