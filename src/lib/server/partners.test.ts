@@ -47,3 +47,24 @@ it('uses the same partner universe and top seven as the full page, including leg
 	// Route-dependent totals still omit dangling-route rows.
 	expect(dashboard.totalAscents).toBe(9);
 });
+
+it('uses cached area ids consistently on the dashboard and page', () => {
+	upsertAscents(
+		['Old', 'Renamed', 'Renamed'].map((name, n) => ({
+			provider: 'thecrag',
+			externalId: `area-${n}`,
+			partners: 'Area partner',
+			isSend: true,
+			isAttempt: false,
+			route: {
+				provider: 'thecrag',
+				externalId: `area-route-${n}`,
+				name: `Route ${n}`,
+				cragName: name,
+				areaExternalId: n < 2 ? '123' : '456'
+			}
+		}))
+	);
+	expect(listPartners()[0]?.areas).toBe(2);
+	expect(getDashboardStats().partners[0]?.areas).toBe(2);
+});

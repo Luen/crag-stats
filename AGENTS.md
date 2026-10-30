@@ -473,3 +473,5 @@ _Add a row when you change behaviour agents must know about._
 - Accessibility regressions #300–#302: small tinted count/status pills use ink text; interactive crag SVGs use a named group and individually named links. Weather fixtures audit full dashboard/logbook/sectors pages in both themes.
 
 - Partner dashboard aggregation uses `listPartners` and its left join, matching `/partners` even for legacy missing-route ascents. Keep other dashboard analytics on their intentional route join.
+
+- Partner Areas prefer provider-scoped `routes.area_external_id`, then normalized names. Name-only rows resolve to an id only when the cached name/id association is unique. No provider fetch needed.

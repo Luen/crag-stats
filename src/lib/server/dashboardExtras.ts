@@ -26,6 +26,8 @@ export type DashboardExtraRow = {
 	partners?: string | null;
 	/** Crag / venue name — partner “areas” (#269) and indoor weather-badge skip (#268). */
 	cragName?: string | null;
+	/** Cached provider-scoped crag identity for partner area counts. */
+	areaKey?: string | null;
 	quality?: string | null;
 	stars?: number | null;
 	gradeScore?: number | null;
