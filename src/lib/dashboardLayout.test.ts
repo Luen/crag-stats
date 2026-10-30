@@ -17,6 +17,12 @@ describe('dashboardLayout', () => {
 		expect(d[0]?.id).toBe('climberType');
 		// Dreeve-style hero pair: recent activities left, climbing story right (#235).
 		expect(d.slice(0, 3).map((i) => i.id)).toEqual(['climberType', 'recent', 'blurb']);
+		expect(d.slice(3, 7).map((i) => i.id)).toEqual([
+			'badges',
+			'athleteProfile',
+			'streaks',
+			'eddington'
+		]);
 		const ids = d.map((i) => i.id);
 		const monthly = ids.indexOf('monthly');
 		const yearly = ids.indexOf('yearly');
