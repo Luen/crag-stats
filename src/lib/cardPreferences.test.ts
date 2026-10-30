@@ -1,5 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { normalizeCardPreference, readCardPreferences } from './cardPreferences';
+import { readFileSync } from 'node:fs';
+import {
+	CARD_PREFERENCE_KEYS,
+	normalizeCardPreference,
+	readCardPreferences
+} from './cardPreferences';
 describe('card preferences', () => {
 	it('whitelists cookie values without sharing state between requests', () => {
 		const first = readCardPreferences((key) =>
@@ -14,5 +19,12 @@ describe('card preferences', () => {
 			expect(normalizeCardPreference('cs_yearly_chart', old)).toBe('cumulative');
 		expect(normalizeCardPreference('cs_weekday_metric', 'areas')).toBeNull();
 		expect(normalizeCardPreference('cs_heatmap_mode', 'weather')).toBe('weather');
+	});
+	it('keeps the pre-paint migration key list in app.html in sync', () => {
+		const html = readFileSync('src/app.html', 'utf8');
+		const listed = [...html.matchAll(/'(cs_[a-z_]+)'/g)]
+			.map((m) => m[1])
+			.filter((k) => k !== 'cs_theme' && k !== 'cs_sidebar');
+		expect(listed).toEqual(CARD_PREFERENCE_KEYS);
 	});
 });

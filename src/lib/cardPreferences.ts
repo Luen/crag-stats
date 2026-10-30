@@ -8,6 +8,8 @@ const VALUES = {
 	cs_heatmap_mode: ['intensity', 'grade', 'weather']
 } as const;
 export type CardPreferenceKey = keyof typeof VALUES;
+/** Keep in sync with the pre-paint migration check in src/app.html. */
+export const CARD_PREFERENCE_KEYS = Object.keys(VALUES) as CardPreferenceKey[];
 export type CardPreferenceValue<K extends CardPreferenceKey> = (typeof VALUES)[K][number];
 export type CardPreferences = { [K in CardPreferenceKey]: CardPreferenceValue<K> | null };
 export function normalizeCardPreference<K extends CardPreferenceKey>(
@@ -22,10 +24,7 @@ export function normalizeCardPreference<K extends CardPreferenceKey>(
 }
 export function readCardPreferences(get: (key: string) => string | undefined): CardPreferences {
 	return Object.fromEntries(
-		Object.keys(VALUES).map((key) => [
-			key,
-			normalizeCardPreference(key as CardPreferenceKey, get(key))
-		])
+		CARD_PREFERENCE_KEYS.map((key) => [key, normalizeCardPreference(key, get(key))])
 	) as CardPreferences;
 }
 export const EMPTY_CARD_PREFERENCES = readCardPreferences(() => undefined);

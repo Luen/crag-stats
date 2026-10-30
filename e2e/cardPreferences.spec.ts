@@ -59,6 +59,7 @@ for (const colorScheme of ['light', 'dark'] as const)
 			localStorage.setItem('cs_yearly_chart', 'career');
 		});
 		await page.goto('/partners');
+		await expect(page.locator('html')).toHaveAttribute('data-card-prefs-migrating', '');
 		await expect(page.getByRole('button', { name: 'Areas', exact: true })).toHaveAttribute(
 			'aria-pressed',
 			'true'
@@ -98,4 +99,10 @@ test('blocked localStorage falls back to usable defaults', async ({ page }) => {
 		'aria-pressed',
 		'true'
 	);
+});
+
+test('first-time visitors never hide cards waiting for a migration', async ({ page }) => {
+	await page.goto('/');
+	await expect(page.locator('html')).not.toHaveAttribute('data-card-prefs-migrating');
+	await expect(page.getByRole('heading', { name: 'Weekday', exact: true })).toBeVisible();
 });

@@ -203,7 +203,7 @@ textarea {
 	outline-offset: 2px;
 }
 
-/* Reserve card geometry while migrating legacy browser-only preferences. */
-.card-preference-pending {
+/* Reserve card geometry while migrating legacy browser-only preferences (flag set in app.html). */
+html[data-card-prefs-migrating] .card-preference-pending {
 	visibility: hidden;
 }
