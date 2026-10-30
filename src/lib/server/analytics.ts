@@ -3,6 +3,9 @@ import {
 	attachWeatherLocation,
 	invalidateWeatherLocations
 } from './weatherLocations';
+
+import { validMapCoords, mapPlaceKey } from '#lib/climbingMap';
+
 import { calendarDay as validDay } from '#lib/calendarDay';
 import { listPartners } from './partners';
 import { topPartnersPerMetric } from '#lib/partnerStats';
@@ -79,6 +82,7 @@ import {
 import { isLikelyIndoorRoute } from './venue';
 import {
 	isMissingLogbookWeather,
+	isOutdoorLogbookRow,
 	logbookRowWeather,
 	logbookRowWeatherChips
 } from './logbookWeather';
@@ -1182,6 +1186,9 @@ export function listLogbook(filters?: {
 	missing?: Array<'height' | 'bolts' | 'pitch' | 'weather'>;
 	/** Outdoor ascents whose cached weather day matches (#273); indoor routes never match. */
 	weather?: WeatherFilterKey;
+	place?: string;
+	mapVenue?: string;
+
 	weatherHighMin?: number;
 	weatherHighMax?: number;
 	/** Case-insensitive substring match on route tag names in tags_json */
@@ -1224,6 +1231,7 @@ export function listLogbook(filters?: {
 			externalId: ascents.externalId,
 			routeProvider: routes.provider,
 			routeExternalId: routes.externalId,
+			areaExternalId: routes.areaExternalId,
 			ascentDate: ascents.ascentDate,
 			tickType: ascents.tickType,
 			isSend: ascents.isSend,
@@ -1272,6 +1280,11 @@ export function listLogbook(filters?: {
 		.orderBy(desc(ascents.ascentDate))
 		.all()
 		.map((r) => attachWeatherLocation(r, weatherLocations));
+
+	if (filters?.place)
+		rows = rows.filter((r) => validMapCoords(r.lat, r.lon) && mapPlaceKey(r) === filters.place);
+	if (filters?.mapVenue === 'outdoor' || filters?.mapVenue === 'indoor')
+		rows = rows.filter((r) => isOutdoorLogbookRow(r) === (filters.mapVenue === 'outdoor'));
 
 	const routeAscentCounts = buildRouteAscentCounts(rows);
 

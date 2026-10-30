@@ -90,6 +90,8 @@ export const actions: Actions = {
 
 export const load: PageServerLoad = async ({ url, locals }) => {
 	const q = url.searchParams.get('q') ?? '';
+	const place = (url.searchParams.get('place') ?? '').slice(0, 2000);
+	const mapVenue = url.searchParams.get('mapVenue') ?? '';
 	const styles = multiParams(url, 'style');
 	const ticks = multiParams(url, 'tick');
 	const qualities = multiParams(url, 'quality');
@@ -148,6 +150,8 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 	const gradeSystem = getPreferredGradeSystem();
 	const { total, rows, weatherAvailable } = listLogbook({
 		q: q || undefined,
+		place,
+		mapVenue,
 		styles: styles.length ? styles : undefined,
 		ticks: ticks.length ? ticks : undefined,
 		qualities: qualities.length ? qualities : undefined,
@@ -191,6 +195,8 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 		notesShown,
 		canMarkFirstAscents: locals.authed,
 		q,
+		place,
+		mapVenue,
 		styles,
 		ticks,
 		qualities,

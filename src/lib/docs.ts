@@ -26,6 +26,11 @@ export const DOC_PAGES: readonly DocPage[] = [
 			'Optional Open-Meteo outdoor day cache and heat / freeze / rain / snow / wind badges (opt-in WEATHER_IMPORT).'
 	},
 	{
+		slug: 'climbing-map',
+		title: 'Climbing map',
+		summary: 'Worldwide places, ascent-density circles and glow, filters and location coverage.'
+	},
+	{
 		slug: 'climber-type',
 		title: 'Climber type',
 		summary: 'How the dashboard decides whether you are a sport, trad, boulder or rock climber.'
