@@ -473,3 +473,9 @@ _Add a row when you change behaviour agents must know about._
 - Accessibility regressions #300–#302: small tinted count/status pills use ink text; interactive crag SVGs use a named group and individually named links. Weather fixtures audit full dashboard/logbook/sectors pages in both themes.
 
 - Greenpoint (#303): one-shot green badge for a sent `greenpoint`, `greenpointonsight` or `greenpointflash` tick (spacing/hyphens normalized), or an original Sport route with ascent protection recorded as Trad and a confident clean lead (onsight, flash, red/pink point, ground-up redpoint or an explicit successful Lead tick). Generic Tick/Send/Clean, attempts, top-rope and seconding do not establish a lead for the inferred path. Route and ascent styles stay separate. This badge has no Almost there counter and sits after Persistence Pays in `BADGE_CATALOG`. Provider tick IDs are documented in [theCrag API](https://www.thecrag.com/en/article/api) and [tick types](https://www.thecrag.com/en/article/ticktypes); tests are synthetic representations of those documented IDs, not captured private payloads.
+
+- Partner dashboard aggregation uses `listPartners` and its left join, matching `/partners` even for legacy missing-route ascents. Keep other dashboard analytics on their intentional route join.
+
+- Partner Areas prefer provider-scoped `routes.area_external_id`, then normalized names. Name-only rows resolve to an id only when the cached name/id association is unique. No provider fetch needed.
+
+- Session/day analytics share `#lib/calendarDay`: strict UTC date round-trip, rejecting placeholders, impossible dates and unknown year 0000. Keep timestamps on their written calendar date; never shift into the server time zone.

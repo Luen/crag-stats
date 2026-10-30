@@ -2,6 +2,8 @@
  * Soft coaching suggestions: next outdoor grade from the hardest send in the
  * last two years (#252). Pure helpers — no DB.
  */
+
+import { calendarDay as validDay } from '#lib/calendarDay';
 import {
 	convertFromEwbank,
 	convertFromVScale,
@@ -58,14 +60,6 @@ export type SuggestedGoalAscent = {
 	cragName: string | null;
 	tagsJson: string | null;
 };
-
-function validDay(iso: string | null | undefined): string | null {
-	const d = (iso || '').slice(0, 10);
-	if (!/^\d{4}-\d{2}-\d{2}$/.test(d)) return null;
-	const dt = new Date(`${d}T12:00:00`);
-	if (Number.isNaN(dt.getTime())) return null;
-	return d;
-}
 
 function formatScore(score: number, boulder: boolean, system: GradeSystem): string {
 	if (boulder) {

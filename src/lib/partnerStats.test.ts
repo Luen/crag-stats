@@ -78,3 +78,32 @@ describe('buildPartnerStats', () => {
 		expect(partnerMetricLabel('sessions', 2)).toBe('sessions');
 	});
 });
+
+it('counts stable area identities across renames and distinguishes identical display names', () => {
+	const [p] = buildPartnerStats([
+		{ partners: 'Pat', cragName: 'Old name', areaKey: 'thecrag:area:1' },
+		{ partners: 'Pat', cragName: 'New name', areaKey: 'thecrag:area:1' },
+		{ partners: 'Pat', cragName: 'New name', areaKey: 'thecrag:area:2' },
+		{ partners: 'Pat', cragName: null, areaKey: 'thecrag:area:3' },
+		{ partners: 'Pat', cragName: 'Old name' }
+	]);
+	expect(p?.areas).toBe(3);
+});
+
+it('falls back to normalized names without ids and does not merge provider namespaces', () => {
+	const [p] = buildPartnerStats([
+		{ partners: 'Pat', cragName: 'Only name' },
+		{ partners: 'Pat', cragName: 'ONLY NAME' },
+		{ partners: 'Pat', cragName: 'Unknown' },
+		{ partners: 'Pat', cragName: '' },
+		{ partners: 'Pat', cragName: 'Same', areaKey: 'thecrag:area:1' },
+		{ partners: 'Pat', cragName: 'Same', areaKey: 'other:area:1' }
+	]);
+	expect(p?.areas).toBe(3);
+});
+
+it('counts a shared ascent once per normalized partner identity', () => {
+	expect(
+		buildPartnerStats([{ partners: '@Pat, pat and PAT', ascentDate: '2024-01-01', cragName: 'A' }])
+	).toEqual([{ name: 'Pat', ascents: 1, sessions: 1, areas: 1 }]);
+});
