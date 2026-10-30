@@ -477,3 +477,5 @@ _Add a row when you change behaviour agents must know about._
 - Partner Areas prefer provider-scoped `routes.area_external_id`, then normalized names. Name-only rows resolve to an id only when the cached name/id association is unique. No provider fetch needed.
 
 - Session/day analytics share `#lib/calendarDay`: strict UTC date round-trip, rejecting placeholders, impossible dates and unknown year 0000. Keep timestamps on their written calendar date; never shift into the server time zone.
+
+- Card display preferences (#296) use whitelisted cookies for SSR; legacy localStorage choices migrate on mount. The pre-paint script in `app.html` sets `html[data-card-prefs-migrating]` only when a whitelisted key exists in localStorage without its cookie, and only then do cookie-less cards reserve their layout (hidden) until migration completes. New visitors and no-JS clients see default cards immediately. Keep the key list in `app.html` in sync with `CARD_PREFERENCE_KEYS`. Cookie and storage failures remain nonfatal.

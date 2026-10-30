@@ -1,5 +1,11 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import {
+		EMPTY_CARD_PREFERENCES,
+		migrateCardPreference,
+		saveCardPreference,
+		type CardPreferences
+	} from '#lib/cardPreferences';
 	import { GRADE_BANDS } from '#lib/grades/bands';
 	import {
 		DEFAULT_DATE_DISPLAY,
@@ -10,30 +16,27 @@
 	import type { HeatmapDay } from '#lib/types/dashboard';
 	import type { CalendarWeather, CalendarWeatherKind } from '#lib/weatherKeys';
 
-	type Props = { data: HeatmapDay[]; dateDisplay?: DateDisplay };
-	let { data, dateDisplay = DEFAULT_DATE_DISPLAY }: Props = $props();
+	type Props = { preferences?: CardPreferences; data: HeatmapDay[]; dateDisplay?: DateDisplay };
+	let {
+		preferences = EMPTY_CARD_PREFERENCES,
+		data,
+		dateDisplay = DEFAULT_DATE_DISPLAY
+	}: Props = $props();
 
 	type Mode = 'intensity' | 'grade' | 'weather';
 	const MODE_KEY = 'cs_heatmap_mode';
 
-	let mode = $state<Mode>('intensity');
+	let mode = $derived<Mode>(preferences.cs_heatmap_mode ?? 'intensity');
 
+	let ready = $state(false);
 	onMount(() => {
-		try {
-			const v = localStorage.getItem(MODE_KEY);
-			mode = v === 'grade' || v === 'weather' ? v : 'intensity';
-		} catch {
-			/* ignore */
-		}
+		mode = migrateCardPreference('cs_heatmap_mode', preferences.cs_heatmap_mode);
+		ready = true;
 	});
 
 	function setMode(next: Mode) {
 		mode = next;
-		try {
-			localStorage.setItem(MODE_KEY, next);
-		} catch {
-			/* ignore quota / private mode */
-		}
+		saveCardPreference(MODE_KEY, next);
 	}
 
 	/** Weather mode only exists once any climbed day has cached weather (opt-in import). */
@@ -192,7 +195,9 @@
 	}
 </script>
 
-<article class="panel">
+<article
+	class={['panel', { 'card-preference-pending': !ready && !(preferences.cs_heatmap_mode != null) }]}
+>
 	<header>
 		<div class="titles">
 			<h2>Ascent calendar</h2>
