@@ -191,6 +191,8 @@ export type HeatmapDay = {
 	date: string;
 	count: number;
 	sends: number;
+	/** Metres climbed that day (ascent or route height). */
+	heightM: number;
 	/** Hardest send that day as theCrag band 1–5; null if no graded send. */
 	maxBand: number | null;
 };

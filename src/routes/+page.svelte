@@ -160,7 +160,7 @@
 	{:else if id === 'monthly'}
 		<MonthlyStats months={s.monthly.months} years={s.monthly.years} />
 	{:else if id === 'yearly'}
-		<YearlyStats years={s.yearly.years} />
+		<YearlyStats years={s.yearly.years} days={s.heatmap} />
 	{:else if id === 'bestMonths'}
 		<BestMonths data={s.bestMonths} />
 	{:else if id === 'badges'}
