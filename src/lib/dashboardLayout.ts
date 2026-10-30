@@ -30,6 +30,7 @@ export type DashCardId =
 	| 'sessionsPerWeek'
 	| 'weekday'
 	| 'milestones'
+	| 'weatherConditions'
 	| 'styleMix'
 	| 'partners'
 	| 'rockTypes'
@@ -80,6 +81,7 @@ export const DEFAULT_DASH_CARDS: readonly DashCardDef[] = [
 	{ id: 'projects', label: 'Projects', width: 'half' },
 	{ id: 'trainingLoad', label: 'Training load', width: 'half' },
 	{ id: 'milestones', label: 'Milestones', width: 'half' },
+	{ id: 'weatherConditions', label: 'Weather conditions', width: 'half' },
 	{ id: 'styleMix', label: 'Style mix', width: 'full' },
 	{ id: 'partners', label: 'Partners', width: 'quarter' },
 	{ id: 'rockTypes', label: 'Rock types', width: 'quarter' },

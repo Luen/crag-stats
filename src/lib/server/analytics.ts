@@ -65,6 +65,8 @@ import { ascents, profiles, routeHistoryFetches, routes } from './db/schema';
 import { pickHardestSends } from './hardestSends';
 import { invalidateRouteHistoryRuns } from './routeHistoryEngine';
 import { invalidateWeatherRuns, loadWeatherSnapshotMap } from './weatherEngine';
+import { isLikelyIndoorRoute } from './venue';
+import { buildWeatherConditionsView } from '#lib/weatherStats';
 import { buildTrainingLoadView, hasPersonalAscentGrade } from './trainingLoad';
 import { buildKarmaStats } from './karma';
 import { buildRoutePopularityStats } from './routePopularity';
@@ -703,8 +705,16 @@ export function getDashboardStats(
 		routeIsProject: a.routeIsProject,
 		hasPersonalGrade: hasPersonalAscentGrade(a.gradeProvenanceJson),
 		lat: a.lat,
-		lon: a.lon
+		lon: a.lon,
+		outdoor: !isLikelyIndoorRoute({
+			gearStyle: a.gearStyle,
+			name: a.routeName,
+			cragName: a.cragName,
+			tagsJson: a.tagsJson
+		})
 	}));
+	const weatherByKey = loadWeatherSnapshotMap();
+	const weatherConditions = buildWeatherConditionsView(extraRows, weatherByKey);
 	const monthly = buildMonthlyStats(extraRows);
 	const yearly = buildYearlyStats(extraRows);
 	const milestones = buildMilestones(extraRows);
@@ -716,7 +726,7 @@ export function getDashboardStats(
 		{
 			firstImport: getFirstImport(),
 			dateDisplay: opts?.dateDisplay,
-			weatherByKey: loadWeatherSnapshotMap()
+			weatherByKey
 		}
 	);
 	const trainingLoad = buildTrainingLoadView(extraRows);
@@ -1056,7 +1066,8 @@ export function getDashboardStats(
 		pyramidMode,
 		routePopularity,
 		karma,
-		bestMonths
+		bestMonths,
+		weatherConditions
 	};
 }
 

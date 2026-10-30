@@ -29,6 +29,7 @@
 	import TickTypeIcon from '#lib/components/TickTypeIcon.svelte';
 	import TrainingLoad from '#lib/components/TrainingLoad.svelte';
 	import SessionsPerWeek from '#lib/components/SessionsPerWeek.svelte';
+	import WeatherConditions from '#lib/components/WeatherConditions.svelte';
 	import WeekdayStats from '#lib/components/WeekdayStats.svelte';
 	import VolumeChart from '#lib/components/VolumeChart.svelte';
 	import YearlyStats from '#lib/components/YearlyStats.svelte';
@@ -59,6 +60,9 @@
 					return { ...i, enabled: false };
 				}
 				if (i.id === 'weekday' && s.weekday.allTime.all.totalSessions === 0) {
+					return { ...i, enabled: false };
+				}
+				if (i.id === 'weatherConditions' && s.weatherConditions == null) {
 					return { ...i, enabled: false };
 				}
 				return i;
@@ -186,6 +190,8 @@
 		<SessionsPerWeek years={s.sessionsPerWeek.years} byYear={s.sessionsPerWeek.byYear} />
 	{:else if id === 'weekday'}
 		<WeekdayStats data={s.weekday} dateDisplay={data.dateDisplay} />
+	{:else if id === 'weatherConditions' && s.weatherConditions}
+		<WeatherConditions data={s.weatherConditions} dateDisplay={data.dateDisplay} />
 	{:else if id === 'milestones'}
 		<Milestones items={s.milestones.items} limit={6} />
 	{:else if id === 'styleMix'}

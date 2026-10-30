@@ -32,6 +32,8 @@ describe('dashboardLayout', () => {
 		expect(yearly).toBe(monthly + 1);
 		expect(weekday).toBe(yearly + 1);
 		expect(sessions).toBe(weekday + 1);
+		// Weather conditions sits after Milestones so the Training load | Milestones pair holds.
+		expect(ids.indexOf('weatherConditions')).toBe(ids.indexOf('milestones') + 1);
 	});
 
 	it('round-trips cookie JSON and drops unknown ids', () => {

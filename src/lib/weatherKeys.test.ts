@@ -7,8 +7,12 @@ import {
 	isSnowWeather,
 	isStickyHumidity,
 	isStormPrecip,
+	isWeatherFilterKey,
 	isWindyWeather,
+	lookupAscentWeather,
+	matchesWeatherFilter,
 	roundCoord,
+	weatherAscentDay,
 	weatherConditions,
 	weatherDayKey
 } from './weatherKeys';
@@ -125,5 +129,42 @@ describe('weather conditions', () => {
 		).toBe(false);
 		expect(isStormPrecip({ tempMaxC: 18, tempMinC: 14, precipMm: 10, weatherCode: 63 })).toBe(true);
 		expect(isStormPrecip({ tempMaxC: 0, tempMinC: -2, precipMm: 12, weatherCode: 73 })).toBe(false);
+	});
+});
+
+describe('ascent weather lookup', () => {
+	const w = { tempMaxC: 36, tempMinC: 22, precipMm: 0, weatherCode: 0 };
+	const map = new Map([[weatherDayKey(-33.9, 151.2, '2024-01-15'), w]]);
+	const row = { ascentDate: '2024-01-15T00:00:00Z', lat: -33.867, lon: 151.2093 };
+
+	it('validates calendar days', () => {
+		expect(weatherAscentDay('2024-01-15T10:00:00Z')).toBe('2024-01-15');
+		expect(weatherAscentDay('2018-00-00')).toBeNull();
+		expect(weatherAscentDay('2018-05-00')).toBeNull();
+		expect(weatherAscentDay(null)).toBeNull();
+	});
+
+	it('matches via rounded coords and the day', () => {
+		expect(lookupAscentWeather(map, row)).toBe(w);
+		expect(lookupAscentWeather(map, { ...row, ascentDate: '2024-01-16' })).toBeNull();
+		expect(lookupAscentWeather(map, { ...row, lat: null })).toBeNull();
+		expect(lookupAscentWeather(undefined, row)).toBeNull();
+		expect(lookupAscentWeather(new Map(), row)).toBeNull();
+	});
+
+	it('never matches indoor routes', () => {
+		expect(lookupAscentWeather(map, { ...row, outdoor: false })).toBeNull();
+		expect(lookupAscentWeather(map, { ...row, outdoor: true })).toBe(w);
+	});
+
+	it('maps filter keys onto the shared predicates', () => {
+		expect(isWeatherFilterKey('heat')).toBe(true);
+		expect(isWeatherFilterKey('wind')).toBe(false);
+		expect(isWeatherFilterKey(null)).toBe(false);
+		expect(matchesWeatherFilter(w, 'heat')).toBe(true);
+		expect(matchesWeatherFilter(w, 'fair')).toBe(false);
+		expect(
+			matchesWeatherFilter({ tempMaxC: 20, tempMinC: 10, precipMm: 0, weatherCode: 0 }, 'fair')
+		).toBe(true);
 	});
 });

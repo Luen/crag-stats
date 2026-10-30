@@ -14,8 +14,7 @@ import {
 	isStickyHumidity,
 	isStormPrecip,
 	isWindyWeather,
-	roundCoord,
-	weatherDayKey,
+	lookupAscentWeather,
 	type WeatherSnapshot
 } from '#lib/weatherKeys';
 import type { FirstImport } from './firstImport';
@@ -788,16 +787,6 @@ function hitAt(row: DashboardExtraRow, prefix: string): Hit {
 	};
 }
 
-function lookupWeather(
-	map: ReadonlyMap<string, WeatherSnapshot> | undefined,
-	row: DashboardExtraRow,
-	day: string
-): WeatherSnapshot | null {
-	if (!map || row.lat == null || row.lon == null) return null;
-	if (!Number.isFinite(row.lat) || !Number.isFinite(row.lon)) return null;
-	return map.get(weatherDayKey(roundCoord(row.lat), roundCoord(row.lon), day)) ?? null;
-}
-
 /**
  * Evaluate the badge catalog against chronological logbook rows.
  * Pure — no DB. Breaks do not erase earned badges.
@@ -888,7 +877,7 @@ export function buildBadges(
 
 		// Outdoor weather badges from cached Open-Meteo days (#268 / #271). Indoor routes
 		// skipped at import time; here we only need coords + a matching cache row.
-		const weather = lookupWeather(context.weatherByKey, row, day);
+		const weather = lookupAscentWeather(context.weatherByKey, row);
 		if (weather) {
 			if (isHeatWeather(weather)) {
 				mark('weather_heat', hitAt(row, `Hot day · ${Math.round(weather.tempMaxC!)}°C high`));
