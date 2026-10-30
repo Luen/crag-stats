@@ -278,7 +278,7 @@
 							type="button"
 							class="legend-btn"
 							disabled={value === 0}
-							aria-label="{row.label}: {formatNumber(value, dateDisplay)} {value === 1
+							title="{row.label}: {formatNumber(value, dateDisplay)} {value === 1
 								? unit
 								: unitPlural}{value > 0 ? ` (${pct}%)` : ''}"
 							onmouseenter={() => (hoverWeekday = value > 0 ? row.weekday : null)}
