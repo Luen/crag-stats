@@ -1,22 +1,9 @@
+import { calendarDay as validDay } from '#lib/calendarDay';
 import { eq } from 'drizzle-orm';
 import { theCragAscentUrl } from '#lib/thecragUrls';
 import { tickKind } from '#lib/ticks';
 import { db, ensureSchema } from './db';
 import { ascents, routes } from './db/schema';
-
-function validDay(iso: string | null | undefined): string | null {
-	const d = (iso || '').slice(0, 10);
-	const m = d.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-	if (!m) return null;
-	const year = Number(m[1]);
-	const month = Number(m[2]);
-	const day = Number(m[3]);
-	if (month < 1 || month > 12 || day < 1 || day > 31) return null;
-	const dt = new Date(`${d}T12:00:00`);
-	if (Number.isNaN(dt.getTime())) return null;
-	if (dt.getFullYear() !== year || dt.getMonth() + 1 !== month || dt.getDate() !== day) return null;
-	return d;
-}
 
 export type RewindYearSummary = {
 	year: number;

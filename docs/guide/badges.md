@@ -28,3 +28,12 @@ These four badges use fields already in your logbook and are dated by the climb 
 | **Persistence Pays** | You send a route for the first time after logging it on 4 or more different days (attempts included). Repeating a route you already sent does not count.                                                                                   |
 
 They are one-shot badges, so they do not appear in **Almost there**.
+
+## Greenpoint
+
+**Greenpoint** is a one-shot badge for leading a bolted sport route on your own trad gear. It unlocks the first time you either:
+
+- log a theCrag **Green point**, **Green point onsight** or **Green point flash** tick that counts as a send, or
+- send a route listed as **Sport** with your ascent recorded as **Trad**, using a clean lead tick (onsight, flash, red point, pink point, ground-up red point or Lead).
+
+Generic Tick/Send/Clean entries, attempts, top-rope and seconding don't count for the second path, because they don't show that you led on gear. Like the badges above, it does not appear in **Almost there**. See theCrag's [tick types](https://www.thecrag.com/en/article/ticktypes) for how Green point ticks are defined.

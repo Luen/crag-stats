@@ -1,5 +1,11 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import {
+		EMPTY_CARD_PREFERENCES,
+		migrateCardPreference,
+		saveCardPreference,
+		type CardPreferences
+	} from '#lib/cardPreferences';
 	import type { HeatmapDay } from '#lib/types/dashboard';
 	import { yearLineFractions } from '#lib/yearlyStatsLines';
 
@@ -15,13 +21,19 @@
 	};
 
 	type Props = {
+		preferences?: CardPreferences;
 		years: YearRow[];
 		/** Daily ascents for thin within-year cumulative lines (optional). */
 		days?: HeatmapDay[];
 		/** Dashboard links to `/activity` when that route exists; omit/null to skip. */
 		titleHref?: string | null;
 	};
-	let { years, days = [], titleHref = null }: Props = $props();
+	let {
+		preferences = EMPTY_CARD_PREFERENCES,
+		years,
+		days = [],
+		titleHref = null
+	}: Props = $props();
 
 	type Metric = 'ascents' | 'sends' | 'heightM';
 	type ChartMode = 'year' | 'cumulative';
@@ -45,7 +57,7 @@
 	] as const;
 
 	let metric = $state<Metric>('ascents');
-	let chartMode = $state<ChartMode>('year');
+	let chartMode = $derived<ChartMode>(preferences.cs_yearly_chart ?? 'year');
 	let hover = $state<{
 		year: number;
 		date: string;
@@ -55,25 +67,16 @@
 		color: string;
 	} | null>(null);
 
+	let ready = $state(false);
 	onMount(() => {
-		try {
-			const v = localStorage.getItem(MODE_KEY);
-			// Prior byYear/career tabs map back to cumulative.
-			if (v === 'cumulative' || v === 'byYear' || v === 'career') chartMode = 'cumulative';
-			else chartMode = 'year';
-		} catch {
-			/* ignore */
-		}
+		chartMode = migrateCardPreference('cs_yearly_chart', preferences.cs_yearly_chart);
+		ready = true;
 	});
 
 	function setChartMode(next: ChartMode) {
 		chartMode = next;
 		hover = null;
-		try {
-			localStorage.setItem(MODE_KEY, next);
-		} catch {
-			/* ignore */
-		}
+		saveCardPreference(MODE_KEY, next);
 	}
 
 	const chronological = $derived([...years].sort((a, b) => a.year - b.year));
@@ -256,7 +259,9 @@
 	}
 </script>
 
-<article class="panel">
+<article
+	class={['panel', { 'card-preference-pending': !ready && !(preferences.cs_yearly_chart != null) }]}
+>
 	<header class="head">
 		<div class="titles">
 			<h2>

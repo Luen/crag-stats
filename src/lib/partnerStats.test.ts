@@ -4,8 +4,10 @@ import {
 	partnerAreaKey,
 	partnerMetricLabel,
 	partnerMetricValue,
+	PARTNER_METRICS,
 	sortPartners,
-	splitPartners
+	splitPartners,
+	topPartnersPerMetric
 } from './partnerStats';
 
 describe('splitPartners', () => {
@@ -77,4 +79,48 @@ describe('buildPartnerStats', () => {
 		expect(partnerMetricLabel('areas', 1)).toBe('area');
 		expect(partnerMetricLabel('sessions', 2)).toBe('sessions');
 	});
+});
+
+it('counts stable area identities across renames and distinguishes identical display names', () => {
+	const [p] = buildPartnerStats([
+		{ partners: 'Pat', cragName: 'Old name', areaKey: 'thecrag:area:1' },
+		{ partners: 'Pat', cragName: 'New name', areaKey: 'thecrag:area:1' },
+		{ partners: 'Pat', cragName: 'New name', areaKey: 'thecrag:area:2' },
+		{ partners: 'Pat', cragName: null, areaKey: 'thecrag:area:3' },
+		{ partners: 'Pat', cragName: 'Old name' }
+	]);
+	expect(p?.areas).toBe(3);
+});
+
+it('falls back to normalized names without ids and does not merge provider namespaces', () => {
+	const [p] = buildPartnerStats([
+		{ partners: 'Pat', cragName: 'Only name' },
+		{ partners: 'Pat', cragName: 'ONLY NAME' },
+		{ partners: 'Pat', cragName: 'Unknown' },
+		{ partners: 'Pat', cragName: '' },
+		{ partners: 'Pat', cragName: 'Same', areaKey: 'thecrag:area:1' },
+		{ partners: 'Pat', cragName: 'Same', areaKey: 'other:area:1' }
+	]);
+	expect(p?.areas).toBe(3);
+});
+
+it('counts a shared ascent once per normalized partner identity', () => {
+	expect(
+		buildPartnerStats([{ partners: '@Pat, pat and PAT', ascentDate: '2024-01-01', cragName: 'A' }])
+	).toEqual([{ name: 'Pat', ascents: 1, sessions: 1, areas: 1 }]);
+});
+
+it('keeps only the per-metric top partners without changing any ranking', () => {
+	const partners = Array.from({ length: 30 }, (_, i) => ({
+		name: `P${String(i).padStart(2, '0')}`,
+		ascents: 100 - i,
+		sessions: i,
+		areas: i % 3
+	}));
+	const kept = topPartnersPerMetric(partners, 7);
+	expect(kept.length).toBeLessThanOrEqual(21);
+	for (const metric of PARTNER_METRICS)
+		expect(sortPartners(kept, metric).slice(0, 7)).toEqual(
+			sortPartners(partners, metric).slice(0, 7)
+		);
 });
