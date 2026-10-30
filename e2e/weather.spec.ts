@@ -90,14 +90,7 @@ for (const colorScheme of ['light', 'dark'] as const) {
 							'Hot 38°C'
 						);
 					}
-					// Audit the changed weather surfaces; the existing a11y suite covers the whole dashboard.
-					const audit = new AxeBuilder({ page });
-					if (path === '/') {
-						await card.evaluate((el) => el.setAttribute('data-review-weather-card', ''));
-						await recent.evaluate((el) => el.setAttribute('data-review-weather-recent', ''));
-						audit.include('[data-review-weather-card]').include('[data-review-weather-recent]');
-					}
-					const axe = await audit.analyze();
+					const axe = await new AxeBuilder({ page }).analyze();
 					expect(
 						axe.violations.filter((v) => v.impact === 'serious' || v.impact === 'critical')
 					).toEqual([]);
@@ -124,7 +117,14 @@ for (const colorScheme of ['light', 'dark'] as const) {
 				await expect(page.locator('.climate')).toContainText('On your 5 cached visit days');
 				await expect(page.locator('.climate')).toContainText('not official climate normals');
 				await expect(crag).toContainText('average high');
-				const climateAxe = await new AxeBuilder({ page }).include('.climate').analyze();
+				const map = page.getByRole('group', { name: 'Crag map of climbed areas' });
+				const cragLink = map.getByRole('link', {
+					name: 'Review Outdoor Crag · 5 ascents',
+					exact: true
+				});
+				await cragLink.focus();
+				await expect(cragLink).toBeFocused();
+				const climateAxe = await new AxeBuilder({ page }).analyze();
 				expect(
 					climateAxe.violations.filter((v) => v.impact === 'serious' || v.impact === 'critical')
 				).toEqual([]);
@@ -146,7 +146,7 @@ for (const colorScheme of ['light', 'dark'] as const) {
 				await expect(card.locator('.fair')).toContainText('All-weather climber');
 				await expect(card.locator('.fair')).toContainText('95%');
 				await expect(card.locator('.fair')).toContainText('80%');
-				const metricAxe = await new AxeBuilder({ page }).include('.fair').analyze();
+				const metricAxe = await new AxeBuilder({ page }).analyze();
 				expect(
 					metricAxe.violations.filter((v) => v.impact === 'serious' || v.impact === 'critical')
 				).toEqual([]);

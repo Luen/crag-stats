@@ -221,7 +221,7 @@
 		font-weight: 700;
 		padding: 0.1rem 0.55rem;
 		border-radius: 999px;
-		color: color-mix(in srgb, var(--s) 60%, var(--ink));
+		color: var(--ink);
 		background: color-mix(in srgb, var(--s) 16%, var(--paper));
 	}
 	.meter {

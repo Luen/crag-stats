@@ -443,7 +443,7 @@
 		font-size: 0.75rem;
 		font-weight: 700;
 		font-variant-numeric: tabular-nums;
-		color: var(--accent);
+		color: var(--ink);
 		background: color-mix(in srgb, var(--accent) 14%, var(--paper));
 		border-radius: 999px;
 		padding: 0.1rem 0.55rem;
