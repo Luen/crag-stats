@@ -68,6 +68,39 @@
 	<p class="banner err">{form.message}</p>
 {/if}
 
+{#if data.suggestions.length > 0}
+	<section class="panel suggest-panel">
+		<h2>Suggested</h2>
+		<p class="suggest-intro">
+			Next outdoor send based on your hardest send in the last two years. Suggestions never create a
+			goal until you add them.
+		</p>
+		<ul class="suggest-list">
+			{#each data.suggestions as s (s.family)}
+				<li class="suggest">
+					<div>
+						<strong>{s.title}</strong>
+						<p>{s.blurb}</p>
+					</div>
+					{#if s.alreadyTracking}
+						<span class="tracking">Already tracking</span>
+					{:else if data.canEdit}
+						<form method="POST" action="?/create">
+							<input type="hidden" name="kind" value="grade" />
+							<input type="hidden" name="title" value={s.title} />
+							<input type="hidden" name="venueScope" value={s.venueScope} />
+							<input type="hidden" name="year" value={s.year} />
+							<input type="hidden" name="targetGradeScore" value={s.targetScore} />
+							<input type="hidden" name="grade" value={s.targetLabel} />
+							<button type="submit">Add goal</button>
+						</form>
+					{/if}
+				</li>
+			{/each}
+		</ul>
+	</section>
+{/if}
+
 {#if data.canEdit}
 	<section class="panel form-panel">
 		<h2>Add goal</h2>
@@ -254,6 +287,47 @@
 		background: transparent;
 		border-color: var(--danger);
 		color: var(--danger);
+	}
+	.suggest-panel h2 {
+		margin: 0 0 0.35rem;
+	}
+	.suggest-intro {
+		margin: 0 0 0.75rem;
+		color: var(--ink-muted);
+		font-size: 0.9rem;
+		max-width: 40rem;
+		line-height: 1.45;
+	}
+	.suggest-list {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: grid;
+		gap: 0.65rem;
+	}
+	.suggest {
+		display: flex;
+		justify-content: space-between;
+		gap: 0.85rem;
+		align-items: flex-start;
+		flex-wrap: wrap;
+		padding: 0.85rem 0.9rem;
+		border: 1px solid var(--line);
+		border-radius: 0.75rem;
+		background: var(--surface-2);
+	}
+	.suggest p {
+		margin: 0.35rem 0 0;
+		color: var(--ink-muted);
+		font-size: 0.88rem;
+		line-height: 1.4;
+		max-width: 36rem;
+	}
+	.tracking {
+		font-size: 0.85rem;
+		font-weight: 600;
+		color: var(--ink-muted);
+		white-space: nowrap;
 	}
 	.list {
 		display: grid;

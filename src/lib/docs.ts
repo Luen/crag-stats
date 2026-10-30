@@ -31,6 +31,12 @@ export const DOC_PAGES: readonly DocPage[] = [
 			'First-person blurb from your logbook: tenure, put-up routes, home crag, partners and other strong signals.'
 	},
 	{
+		slug: 'climber-profile',
+		title: 'Climber profile',
+		summary:
+			'Radar axes for volume, variety, density, height, intensity and consistency over 30 vs 90 days.'
+	},
+	{
 		slug: 'grades',
 		title: 'Grades & grade bands',
 		summary: 'Beginner → Elite bands, how grade systems are compared, and conversion tables.'
