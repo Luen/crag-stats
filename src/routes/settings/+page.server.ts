@@ -35,6 +35,7 @@ import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ cookies }) => {
 	return {
+		serverNow: Date.now(),
 		sync: getSyncStatus(),
 		hasApiKey: hasTheCragApiKey(),
 		syncConfiguration: getTheCragSyncConfiguration(),
@@ -153,6 +154,9 @@ export const actions: Actions = {
 		}
 		const result = await runRouteHistoryImport();
 		if (!result.ok) {
+			if (result.outcome === 'waiting') {
+				return fail(400, { ok: false, routeHistoryWaiting: true });
+			}
 			return fail(400, { ok: false, message: result.message, routeHistoryMessage: result.message });
 		}
 		return { ok: true, routeHistoryMessage: result.message };

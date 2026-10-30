@@ -55,6 +55,8 @@ The card only appears for visitors once at least one FA is marked. Until then, t
 
 Route-history import must be enabled (`ROUTE_HISTORY_IMPORT=true`) to fill count snapshots. Community totals and owner-count snapshots come from the route API during background import (100 routes per run, pacing and back-off apply). To keep totals and other route data fresh automatically, set `ROUTE_DATA_REFRESH_DAYS` to a whole number of days from 30 through 3650 (e.g. `90` recommended, or `180` for about half a year) alongside `ROUTE_HISTORY_IMPORT=true`. Routes become eligible after that many days and refresh after a successful logbook sync, sharing the 100-route budget with new routes. New routes go first, then the oldest stale data; large backlogs can take multiple syncs. Unset, `0`, under 30, or over 3650 retains fetch-once behavior; **Refresh all** in Settings remains an optional manual reset. Manual marks and unmarks stay protected.
 
+In Settings, the route-history check button counts down until the next run is allowed and becomes available automatically. Runs have a one-minute minimum interval; a block or error can require a longer wait. Without JavaScript, reload Settings to update availability.
+
 ## When an FA counts, and its date
 
 A first ascent is the send, so each one is dated by your **first logged send** of the marked route. Earlier attempts and hang-dogs while you worked it don't count, and neither do later repeats. If you've only logged attempts so far, the route still appears on the card (dated by your earliest ascent), but it doesn't earn badges or a milestone until you log the send.

@@ -113,6 +113,8 @@ export type RouteHistoryStatus = {
 	lastMarked: number;
 	lastError: string | null;
 	nextAllowedAt: string | null;
+	/** Earliest next run, including both the minimum interval and upstream back-off. */
+	retryAt: number;
 	totalRoutes: number;
 	fetchedRoutes: number;
 	pendingRoutes: number;
@@ -593,6 +595,10 @@ export function routeHistoryStatus(
 		lastMarked: state?.lastMarked ?? 0,
 		lastError: state?.lastError ?? null,
 		nextAllowedAt: state?.nextAllowedAt ?? null,
+		retryAt: Math.max(
+			(Date.parse(state?.lastRunAt ?? '') || 0) + (state?.lastRunAt ? MIN_RUN_INTERVAL_MS : 0),
+			Date.parse(state?.nextAllowedAt ?? '') || 0
+		),
 		totalRoutes,
 		fetchedRoutes,
 		pendingRoutes,

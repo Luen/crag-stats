@@ -52,7 +52,11 @@ export default defineConfig({
 			APP_PASSWORD: TEST_PASSWORD,
 			AUTH_SCOPE: 'settings',
 			THECRAG_SYNC_MODE: 'csv',
-			THECRAG_USERNAME: 'synthetic-account'
+			THECRAG_USERNAME: 'synthetic-account',
+			// Cooldown UI needs import on; tests seed state, abort theCrag hosts, and
+			// never click Check once enabled (CSV ownerLogin still needs a matching profile).
+			ROUTE_HISTORY_IMPORT: 'true',
+			THECRAG_API_KEY: 'synthetic-cooldown-test-key'
 		}),
 		// Also covers the explicit ORIGIN override path.
 		server('all', {
