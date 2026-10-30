@@ -130,7 +130,7 @@ Height quirk: theCrag may return height as `[value, unit]` arrays — parse in t
 - **Notable ascents:** by style + by area; use `StyleBadge` + `TickTypeIcon` (theCrag-like SVGs).
 - **First ascents:** theCrag has no FA tick type; FAs live in route history, which the logbook API doesn't return. The owner marks FA/FFA in the logbook (`first_ascents`, 0009). Optionally (`ROUTE_HISTORY_IMPORT=true`, **off by default**) `routeHistoryEngine.ts` imports public history in the background after each sync: each route **once** by default (`route_history_fetches`), or opt-in rolling refresh via `ROUTE_DATA_REFRESH_DAYS` (whole days ≥ 30, e.g. 90 or 180), **100 routes per run**, ≥1.1 s between requests, one `impers` session per run, stop + back off (≥24 h, honours Retry-After) on any block. Auto-marks only on an exact `@login` match and never overrides manual marks/unmarks. Details: `docs/dev/ROUTE_HISTORY.md`. Mark/unmark and import actions require `locals.authed`.
 - Summary metrics: onsights, successful ascents, distance climbed (km).
-- **Weather (#268):** opt-in `WEATHER_IMPORT=true` (off by default). After sync, caches Open-Meteo archive days for outdoor ascents with route lat/lon (rounded to 1 decimal), **50 days per run**, ≥1.1 s between requests, back-off on errors. Badges: `weather_heat` (≥35°C max), `weather_freeze` (≤0°C min), `weather_rain` (≥1 mm, not snow), `weather_snow` (WMO 71–77/85–86 or precip + max ≤1°C), `weather_wind` (max 10 m wind ≥50 km/h). Wipe clears `weather_days` / `weather_import_state`. Docs: `/docs/weather`.
+- **Weather (#268):** opt-in `WEATHER_IMPORT=true` (off by default). After sync (and Settings, background), caches Open-Meteo archive days for outdoor ascents with route lat/lon (rounded to 1 decimal), **50 days per run** oldest-first, ≥1.1 s between requests, back-off on errors. Badges skip indoor rows even when a shared cache key exists: `weather_heat` (≥35°C max), `weather_freeze` (≤0°C min), `weather_rain` (≥1 mm, not snow), `weather_snow` (WMO 71–77/85–86 or precip + max ≤1°C), `weather_wind` (max 10 m wind ≥50 km/h). Wipe clears `weather_days` / `weather_import_state`. Docs: `/docs/weather`.
 
 ---
 
@@ -428,6 +428,7 @@ You'll often notice things outside the task at hand. **Don't silently fix them i
 | 2026-10 | Security remediation pins pnpm patches for deepmerge 4.3.1, picomatch 4.0.7 and uri-js 4.4.1, with installed-package exploit regressions in `dependencySecurity.test.ts`. Keep `patches/` available before Docker's frozen install. Adapter-node is build-only. Read `patches/README.md` and `docs/dev/SECURITY_SCAN.md`; version-based alerts can persist despite local fixes and must remain disclosed. |
 
 | 2026-10 | #268 / #277 / #281: opt-in `WEATHER_IMPORT` caches outdoor Open-Meteo days (`weather_days`, migration 0017, incl. wind km/h), post-sync paced fetch, Settings status/action, heat/freeze/rain/snow/wind badges. Conditions-vs-performance analytics deferred. |
+| 2026-10 | Weather follow-up: Settings fetch is background (avoid ~55s proxy timeouts); pending queue is oldest-day-first; badge eval skips indoor via `isLikelyIndoorRoute` + `cragName` on extra rows. |
 | 2026-10 | `extractLatLon` accepts theCrag TLC bare `[lon, lat]` geometry arrays (not only GeoJSON Points). `data:0005_repair_tlc_bare_geometry_coords` re-maps cached logbook `raw_json` so weather import can queue outdoor days. |
 
 - First ascents attribution follows saved mark source (plus cached setter credits), not `ROUTE_HISTORY_IMPORT`: manual/imported credits coexist and imported marks survive disabling import.
@@ -445,3 +446,6 @@ _Add a row when you change behaviour agents must know about._
 - Default dashboard places Milestones (half, capped list + Show more → `/milestones`) beside Training load; saved Customize cookies keep their order.
 - Ascent calendar fills the card width; `--heat-1..4` is green→yellow→orange→red (Dreeve-like intensity), not theCrag grade-band greens.
 - **New route?** on projects covers blank/`Project` grades and wide provisional spans (`21-23`, `V1-3`); adjacent half-grades (`V1/2`) stay ordinary. Midpoint chips still show when parsed.
+- Partners page (`/partners`, #269): Ascents | Sessions | Areas metric toggle (`cs_partners_metric`); helpers in `#lib/partnerStats`. Dashboard card stays ascent-ranked. Docs at `/docs/partners`.
+
+- Weather PR review: preserve main’s indoor badge guards and shared partner statistics when updating the weather stack. Fair weather requires measured precipitation below 0.1 mm; missing rain is unknown, not dry.

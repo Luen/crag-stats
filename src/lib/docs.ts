@@ -127,6 +127,11 @@ export const DOC_PAGES: readonly DocPage[] = [
 		summary: 'Top-rope, lead, free and deep water soloing, and ascents with no partner tagged.'
 	},
 	{
+		slug: 'partners',
+		title: 'Partners',
+		summary: 'Who you climb with — rank by shared ascents, sessions (days), or distinct crags.'
+	},
+	{
 		slug: 'route-popularity',
 		title: 'Route popularity',
 		summary:

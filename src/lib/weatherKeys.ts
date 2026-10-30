@@ -81,8 +81,8 @@ export function isStormCode(w: WeatherSnapshot): boolean {
 export function isFairWeather(w: WeatherSnapshot): boolean {
 	const tmax = w.tempMaxC;
 	if (tmax == null || tmax < FAIR_TEMP_MIN_C || tmax > FAIR_TEMP_MAX_C) return false;
-	const precip = w.precipMm ?? 0;
-	if (precip >= 0.1) return false;
+	const precip = w.precipMm;
+	if (precip == null || !Number.isFinite(precip) || precip < 0 || precip >= 0.1) return false;
 	if (isSnowWeather(w) || isStormCode(w)) return false;
 	return true;
 }

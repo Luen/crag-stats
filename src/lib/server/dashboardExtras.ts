@@ -3,7 +3,15 @@
  * Accept typed row arrays — no SQLite / better-sqlite3 imports.
  */
 import { formatVScaleLabel, usesVScale } from '#lib/grades';
+import {
+	buildPartnerStats,
+	sortPartners,
+	splitPartners,
+	type PartnerStat
+} from '#lib/partnerStats';
 import { tickKind } from '#lib/ticks';
+
+export { splitPartners };
 
 /** Minimal row shape shared by extras builders. */
 export type DashboardExtraRow = {
@@ -16,6 +24,8 @@ export type DashboardExtraRow = {
 	routeHeightM?: number | null;
 	tickType?: string | null;
 	partners?: string | null;
+	/** Crag / venue name — partner “areas” (#269) and indoor weather-badge skip (#268). */
+	cragName?: string | null;
 	quality?: string | null;
 	stars?: number | null;
 	gradeScore?: number | null;
@@ -192,15 +202,6 @@ function parseTagsJson(raw: string | null | undefined): { category: string; name
 	} catch {
 		return [];
 	}
-}
-
-/** Split partner strings; strip leading @ from handles. */
-export function splitPartners(raw: string | null | undefined): string[] {
-	if (!raw) return [];
-	return raw
-		.split(/[,;&/]+|\band\b/i)
-		.map((p) => p.trim().replace(/^@+/, '').trim())
-		.filter(Boolean);
 }
 
 function emptyWindow(): LoadWindow {
@@ -525,25 +526,18 @@ export function buildStyleMixOverTime(rows: DashboardExtraRow[]): { months: Styl
 	return { months };
 }
 
+/** Dashboard card shape: `count` is always shared ascents. Full metrics for `/partners`. */
+export type PartnerLeaderboardRow = PartnerStat & { count: number };
+
 export function buildPartnerLeaderboard(
 	rows: DashboardExtraRow[],
 	limit: number | null = 7
 ): {
-	partners: { name: string; count: number }[];
+	partners: PartnerLeaderboardRow[];
 } {
-	const counts = new Map<string, { name: string; count: number }>();
-	for (const row of rows) {
-		for (const name of splitPartners(row.partners)) {
-			const key = name.toLowerCase();
-			const prev = counts.get(key);
-			if (prev) prev.count += 1;
-			else counts.set(key, { name, count: 1 });
-		}
-	}
-	const sorted = [...counts.values()].sort(
-		(a, b) => b.count - a.count || a.name.localeCompare(b.name)
-	);
-	const partners = limit == null ? sorted : sorted.slice(0, limit);
+	const sorted = sortPartners(buildPartnerStats(rows), 'ascents');
+	const sliced = limit == null ? sorted : sorted.slice(0, limit);
+	const partners = sliced.map((p) => ({ ...p, count: p.ascents }));
 	return { partners };
 }
 
