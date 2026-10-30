@@ -56,10 +56,13 @@ test('community snapshots distinguish missing, partial, zero and positive counts
 		await expect(communityRows.first().locator('.badge')).toHaveText('Sport/bolted');
 		await expect(communityRows.last().locator('.badge')).toHaveText('Trad');
 		await expect(communityRows.locator('.missing')).toHaveText(['Unavailable', 'Unavailable']);
+		// Compact dashboard badges only show recent earned; locked community badges live on /badges.
+		await page.goto('/badges');
 		const sharedBadge = page
 			.locator('article.card')
 			.filter({ has: page.getByRole('heading', { name: 'Shared Crag', exact: true }) });
 		await expect(sharedBadge).toContainText('Locked');
+		await page.goto('/');
 		expect(errors).toEqual([]);
 
 		db.prepare('UPDATE routes SET ascent_count = 1, ascent_count_own = 1 WHERE id = ?').run(ids[0]);
