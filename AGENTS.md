@@ -429,3 +429,5 @@ You'll often notice things outside the task at hand. **Don't silently fix them i
 - Node 26 LTS is the runtime baseline. Install the exact `packageManager` with npm (Corepack is not bundled); the distroless image also needs the build-stage libatomic shared library. Validate native SQLite and importer on amd64 and arm64 after runtime updates.
 
 _Add a row when you change behaviour agents must know about._
+
+- Route-history status exposes `retryAt` from the existing minimum run interval and upstream back-off. Settings counts down from server time and enables the action when due; retain the server pacing guards.

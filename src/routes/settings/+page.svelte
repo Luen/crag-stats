@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
 	import DashboardLayoutEditor from '#lib/components/DashboardLayoutEditor.svelte';
 	import { formatDateTime } from '#lib/dates';
 	import type { PageProps } from './$types';
@@ -6,6 +7,31 @@
 	let { data, form }: PageProps = $props();
 
 	const rh = $derived(data.routeHistory);
+	let elapsed = $state(0);
+	const retrySeconds = $derived(
+		Math.max(0, Math.ceil((rh.retryAt - data.serverNow - elapsed) / 1000))
+	);
+	const retryLabel = $derived(
+		retrySeconds >= 3600
+			? `${Math.floor(retrySeconds / 3600)}h ${Math.floor((retrySeconds % 3600) / 60)}m ${retrySeconds % 60}s`
+			: retrySeconds >= 60
+				? `${Math.floor(retrySeconds / 60)}m ${retrySeconds % 60}s`
+				: `${retrySeconds}s`
+	);
+
+	onMount(() => {
+		// Anchor to the server's clock so a skewed device clock cannot skip the cooldown.
+		let serverNow = data.serverNow;
+		let started = performance.now();
+		const timer = setInterval(() => {
+			if (serverNow !== data.serverNow) {
+				serverNow = data.serverNow;
+				started = performance.now();
+			}
+			elapsed = performance.now() - started;
+		}, 250);
+		return () => clearInterval(timer);
+	});
 	const notesCsvOnly = $derived(data.syncConfiguration.mode === 'csv');
 	const notesDisabled = $derived(notesCsvOnly && !data.showNotes.enabled);
 
@@ -23,7 +49,13 @@
 	<p>Sync, display preferences, search visibility, imports and local data control.</p>
 </section>
 
-{#if form?.message}
+{#if form?.routeHistoryWaiting}
+	<p class="banner hint">
+		{retrySeconds > 0
+			? `Route history can be checked again in ${retryLabel}.`
+			: 'Route history is ready to check again.'}
+	</p>
+{:else if form?.message}
 	<p class="banner err">{form.message}</p>
 {:else if form?.sessionForgotten}
 	<p class="banner ok">Saved theCrag login cleared. The next CSV sync will log in again.</p>
@@ -251,11 +283,20 @@
 			{/if}
 			<div class="actions">
 				<form method="POST" action="?/fetchRouteHistory">
-					<button type="submit" disabled={rh.running || rh.pendingRoutes === 0}>
-						{rh.pendingRoutes === 0 ? 'All routes checked' : `Check next ${rh.perRun} routes now`}
+					<button type="submit" disabled={rh.running || rh.pendingRoutes === 0 || retrySeconds > 0}>
+						{rh.pendingRoutes === 0
+							? 'All routes checked'
+							: rh.running
+								? 'Checking routes…'
+								: retrySeconds > 0
+									? `Check again in ${retryLabel}`
+									: `Check next ${rh.perRun} routes now`}
 					</button>
 				</form>
 			</div>
+			<noscript>
+				<p class="hint">Reload this page to update route-history availability.</p>
+			</noscript>
 			<details>
 				<summary>Re-apply or refresh</summary>
 				<form method="POST" action="?/reapplyRouteHistory" class="stack">
@@ -485,6 +526,11 @@
 	button:hover,
 	.btn:hover {
 		background: var(--accent-strong);
+	}
+	button:disabled {
+		background: var(--surface-3);
+		color: var(--ink-muted);
+		cursor: not-allowed;
 	}
 	.csv-import button:hover {
 		border-color: var(--accent-strong);

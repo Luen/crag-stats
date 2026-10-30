@@ -7,7 +7,14 @@ import { randomBytes } from 'node:crypto';
 import { wipeAllData } from './analytics';
 import { db } from './db';
 import { eq } from 'drizzle-orm';
-import { ascents, profiles, routeHistory, routeHistoryFetches, routes } from './db/schema';
+import {
+	ascents,
+	profiles,
+	routeHistory,
+	routeHistoryFetches,
+	routeHistoryImportState,
+	routes
+} from './db/schema';
 import { buildRouteDeveloperImpact } from './routeDeveloperImpact';
 import { getFirstAscentMarks, setFirstAscent } from './firstAscents';
 import { upsertAscents } from './ingest';
@@ -122,6 +129,23 @@ beforeEach(() => {
 });
 
 describe('route history import', () => {
+	it('exposes the real retry deadline for short cooldowns and longer back-off', () => {
+		const now = Date.parse('2026-01-01T00:00:00Z');
+		expect(routeHistoryStatus(config, now).retryAt).toBe(0);
+		db.insert(routeHistoryImportState)
+			.values({
+				provider: 'thecrag',
+				lastRunAt: new Date(now).toISOString(),
+				updatedAt: new Date(now).toISOString()
+			})
+			.run();
+		expect(routeHistoryStatus(config, now).retryAt).toBe(now + MIN_RUN_INTERVAL_MS);
+		const later = now + 86_400_000;
+		db.update(routeHistoryImportState)
+			.set({ nextAllowedAt: new Date(later).toISOString() })
+			.run();
+		expect(routeHistoryStatus(config, now).retryAt).toBe(later);
+	});
 	it('refuses a configured owner that differs from the saved logbook account', async () => {
 		const h = harness({ [routeId(0)]: fa(routeId(0), '@different-owner') });
 		const result = await runRouteHistoryImportOnce(
