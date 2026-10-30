@@ -41,18 +41,20 @@ export function logbookRowWeather(
 }
 
 /**
- * Outdoor ascents with coordinates and a past day that have no usable cached weather: the
+ * Outdoor ascents with coordinates and a past day that have never been checked for cached weather: the
  * importer's backlog. Today (UTC) is excluded because the archive is incomplete for it.
  */
 export function isMissingLogbookWeather(
 	map: WeatherLookupMap | null | undefined,
 	r: LogbookWeatherRow,
-	todayUtc: string
+	todayUtc: string,
+	cachedKeys?: ReadonlySet<string>
 ): boolean {
 	const day = weatherAscentDay(r.ascentDate);
 	if (!day || day >= todayUtc) return false;
 	if (r.lat == null || r.lon == null) return false;
 	if (!Number.isFinite(r.lat) || !Number.isFinite(r.lon)) return false;
 	if (!isOutdoorLogbookRow(r)) return false;
-	return !map?.has(weatherDayKey(roundCoord(r.lat), roundCoord(r.lon), day));
+	const key = weatherDayKey(roundCoord(r.lat), roundCoord(r.lon), day);
+	return !(cachedKeys ? cachedKeys.has(key) : map?.has(key));
 }

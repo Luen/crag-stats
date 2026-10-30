@@ -149,6 +149,10 @@ describe('ascent weather lookup', () => {
 		expect(weatherAscentDay('2018-00-00')).toBeNull();
 		expect(weatherAscentDay('2018-05-00')).toBeNull();
 		expect(weatherAscentDay(null)).toBeNull();
+		for (const day of ['2025-02-29', '2024-02-30', '2024-04-31', '2024-13-01']) {
+			expect(weatherAscentDay(day)).toBeNull();
+		}
+		expect(weatherAscentDay('2024-02-29')).toBe('2024-02-29');
 	});
 
 	it('matches via rounded coords and the day', () => {
