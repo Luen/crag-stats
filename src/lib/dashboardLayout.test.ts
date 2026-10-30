@@ -23,6 +23,7 @@ describe('dashboardLayout', () => {
 			'streaks',
 			'eddington'
 		]);
+		expect(d.slice(7, 9).map((i) => i.id)).toEqual(['firstAscents', 'hardest']);
 		const ids = d.map((i) => i.id);
 		const monthly = ids.indexOf('monthly');
 		const yearly = ids.indexOf('yearly');

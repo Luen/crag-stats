@@ -63,7 +63,8 @@ export const DEFAULT_DASH_CARDS: readonly DashCardDef[] = [
 	{ id: 'athleteProfile', label: 'Athlete profile', width: 'half' },
 	{ id: 'streaks', label: 'Streaks', width: 'half' },
 	{ id: 'eddington', label: 'Eddington numbers', width: 'half' },
-	{ id: 'firstAscents', label: 'First ascents', width: 'full' },
+	{ id: 'firstAscents', label: 'First ascents', width: 'half' },
+	{ id: 'hardest', label: 'Hardest sends', width: 'half' },
 	{ id: 'solo', label: 'Solo climbing', width: 'full' },
 	{ id: 'heatmap', label: 'Ascent calendar', width: 'full' },
 	{ id: 'volume', label: 'Volume', width: 'quarter' },
@@ -88,8 +89,7 @@ export const DEFAULT_DASH_CARDS: readonly DashCardDef[] = [
 	{ id: 'karma', label: 'Karma', width: 'half' },
 	{ id: 'pyramids', label: 'Grade pyramids', width: 'full' },
 	{ id: 'notable', label: 'Notable ascents', width: 'full' },
-	{ id: 'cpr', label: 'CPR timelines', width: 'full' },
-	{ id: 'hardest', label: 'Hardest sends', width: 'half' }
+	{ id: 'cpr', label: 'CPR timelines', width: 'full' }
 ] as const;
 
 const DEF_BY_ID = new Map(DEFAULT_DASH_CARDS.map((c) => [c.id, c]));
