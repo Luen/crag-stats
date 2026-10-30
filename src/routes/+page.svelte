@@ -170,6 +170,7 @@
 			locked={s.badges.locked}
 			earnedCount={s.badges.earnedCount}
 			totalCount={s.badges.totalCount}
+			recentLimit={8}
 		/>
 	{:else if id === 'goals'}
 		<GoalsProgress goals={data.activeGoals} canEdit={data.showSettings} />
@@ -266,7 +267,7 @@
 		</article>
 	{:else if id === 'recent'}
 		<article class="panel">
-			<h2>Recent</h2>
+			<h2>Recent activities</h2>
 			<ul class="list">
 				{#each s.recent.slice(0, RECENT_LIMIT) as climb (climb.id)}
 					<li>
