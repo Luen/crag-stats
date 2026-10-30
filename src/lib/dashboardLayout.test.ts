@@ -15,6 +15,8 @@ describe('dashboardLayout', () => {
 		expect(d.length).toBeGreaterThan(10);
 		expect(d.every((i) => i.enabled)).toBe(true);
 		expect(d[0]?.id).toBe('climberType');
+		// Dreeve-style hero pair: recent activities left, climbing story right (#235).
+		expect(d.slice(0, 3).map((i) => i.id)).toEqual(['climberType', 'recent', 'blurb']);
 	});
 
 	it('round-trips cookie JSON and drops unknown ids', () => {

@@ -43,7 +43,15 @@
 
 <article class="panel">
 	<header>
-		<h2>Climber profile</h2>
+		<div class="title">
+			<h2>Climber profile</h2>
+			<a
+				class="help"
+				href="/docs/climber-profile"
+				aria-label="How climber profile works"
+				title="How climber profile works">?</a
+			>
+		</div>
 		<div class="legend">
 			<span class="l90">last 90 days</span>
 			<span class="l30">last 30 days</span>
@@ -92,9 +100,35 @@
 		align-items: baseline;
 		margin-bottom: 0.35rem;
 	}
+	.title {
+		display: flex;
+		align-items: center;
+		gap: 0.4rem;
+		min-width: 0;
+	}
 	h2 {
 		margin: 0;
 		font-size: 1.05rem;
+	}
+	.help {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 1.25rem;
+		height: 1.25rem;
+		border-radius: 999px;
+		border: 1px solid var(--line);
+		background: var(--surface-2);
+		color: var(--ink-muted);
+		font-size: 0.78rem;
+		font-weight: 700;
+		line-height: 1;
+		text-decoration: none;
+		flex: 0 0 auto;
+	}
+	.help:hover {
+		color: var(--ink);
+		border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
 	}
 	.legend {
 		display: flex;

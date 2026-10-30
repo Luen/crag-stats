@@ -18,7 +18,8 @@
 		| 'docs'
 		| 'logout'
 		| 'share'
-		| 'activity';
+		| 'activity'
+		| 'badges';
 </script>
 
 <script lang="ts">
@@ -110,6 +111,10 @@
 		{:else if name === 'activity'}
 			<path d="M3 3v18h18" />
 			<path d="m7 14 3-3 3 2 5-6" />
+		{:else if name === 'badges'}
+			<path
+				d="M12 3.6l2.4 4.86 5.36.78-3.88 3.78.92 5.34L12 16.9l-4.8 2.52.92-5.34-3.88-3.78 5.36-.78L12 3.6z"
+			/>
 		{/if}
 	</svg>
 {/if}

@@ -1,6 +1,6 @@
 # Climbing story
 
-The **Climbing story** card turns your logbook into a short first-person blurb on the dashboard. It is interpretive copy from local stats — not a second editable logbook, and it never includes private ascent notes.
+The **Climbing story** card turns your logbook into a short first-person blurb on the dashboard. By default it sits beside **Recent activities** near the top (Dreeve-style); Customize dashboard can move either card. It is interpretive copy from local stats — not a second editable logbook, and it never includes private ascent notes.
 
 ## What always appears
 

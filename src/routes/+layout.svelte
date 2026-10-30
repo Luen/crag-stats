@@ -25,6 +25,7 @@
 			[
 				{ href: '/goals', label: 'Goals', icon: 'goals' },
 				{ href: '/activity', label: 'Activity', icon: 'activity' },
+				{ href: '/badges', label: 'Badges', icon: 'badges' },
 				{ href: '/eddington', label: 'Eddington', icon: 'eddington' },
 				{ href: '/rewind', label: 'Rewind', icon: 'rewind' },
 				{ href: '/share', label: 'Share', icon: 'share' }

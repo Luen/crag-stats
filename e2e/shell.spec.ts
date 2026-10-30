@@ -67,6 +67,7 @@ test.describe('app shell', () => {
 			'/goals',
 			'/eddington',
 			'/activity',
+			'/badges',
 			'/rewind',
 			'/share'
 		]) {

@@ -49,7 +49,9 @@ Always use tokens. **Don't** hard-code `white`, `#fff` surfaces or ink-tinted `r
 | `--accent-2`          | `#0f766e`          | `#2dd4bf` | Secondary accent (sparingly)                                          |
 | `--shadow`            | very soft          | subtle    | `.panel` elevation                                                    |
 
-More tokens: `--style-*` (discipline colours, kept equal to `STYLE_BADGE_COLORS` by a unit test), `--danger`, `--gold` / `--gold-soft` (stars), `--series-1/2` (chart series), `--heat-1..4` (ascent calendar, dark-aware), `--shadow-lg`, `--scrim`.
+More tokens: `--style-*` (discipline colours, kept equal to `STYLE_BADGE_COLORS` by a unit test), `--danger`, `--gold` / `--gold-soft` (stars), `--series-1/2` (chart series), `--heat-1..4` (ascent calendar intensity: green → yellow → orange → red, dark-aware; not grade-band colours), `--shadow-lg`, `--scrim`.
+
+The ascent calendar stretches to the full card width (fluid week columns). Empty days stay `--surface-3`.
 
 **Contrast (WCAG AA) is tested** by the axe e2e suite in both themes. Text drawn in a data colour should be mixed toward ink, e.g. `color-mix(in srgb, var(--badge) 55%, var(--ink))`: this darkens it in light mode and lightens it in dark mode.
 

@@ -287,12 +287,29 @@ export function isTheCragProjectFlag(isProject: number | null | undefined): bool
 }
 
 /**
+ * Provisional multi-grade spans (e.g. 21-23, V1-3) often mean the line is still being
+ * dialled in — closer to a new/ungraded project than to a settled midpoint grade.
+ * Adjacent half-grades (V1/2, V5/6) are normal published notation and are excluded.
+ */
+export function isProvisionalGradeRange(gradeRaw: string | null | undefined): boolean {
+	const raw = (gradeRaw ?? '').trim().replace(/\s+/g, '');
+	if (!raw) return false;
+	const ewbank = raw.match(/^(\d{1,2})[-–](\d{1,2})$/);
+	if (ewbank) return Math.abs(Number(ewbank[1]) - Number(ewbank[2])) > 1;
+	const v = raw.match(/^V(\d+)[/\-–]V?(\d+)([+-])?$/i);
+	if (v) return Math.abs(Number(v[1]) - Number(v[2])) > 1;
+	return false;
+}
+
+/**
  * theCrag returns ungraded routes with no grade (and band 0) and has no separate project
  * flag. Some areas grade open projects literally "Project" / "Proj", so count those too.
+ * Wide provisional ranges (21-23, V1-3) also count for the New route? badge (#236).
  */
 export function isUngradedRoute(gradeScore: number | null, gradeRaw: string | null): boolean {
 	const raw = (gradeRaw ?? '').trim();
 	if (/^(open\s+)?proj(ect)?\.?$/i.test(raw)) return true;
+	if (isProvisionalGradeRange(raw)) return true;
 	return (gradeScore == null || !Number.isFinite(gradeScore)) && !raw;
 }
 
