@@ -17,11 +17,37 @@
 		locked: Badge[];
 		earnedCount: number;
 		totalCount: number;
+		/** Cap earned badges on the dashboard; omit on the full page. */
+		recentLimit?: number;
+		/** Dashboard links to `/badges`; pass `null` on the full page to skip the title link. */
+		titleHref?: string | null;
+		/** `rail` = horizontal carousel (dashboard); `grid` = wrapping gallery (detail page). */
+		layout?: 'rail' | 'grid';
 	};
 
-	let { earned, locked, earnedCount, totalCount }: Props = $props();
+	let {
+		earned,
+		locked,
+		earnedCount,
+		totalCount,
+		recentLimit,
+		titleHref = '/badges',
+		layout
+	}: Props = $props();
 
-	const cards = $derived([...earned, ...locked]);
+	const earnedSorted = $derived(
+		[...earned].sort((a, b) => String(b.date ?? '').localeCompare(String(a.date ?? '')))
+	);
+
+	const compact = $derived(recentLimit != null);
+	const resolvedLayout = $derived(layout ?? (compact ? 'rail' : 'grid'));
+	const shownEarned = $derived(compact ? earnedSorted.slice(0, recentLimit) : earnedSorted);
+	const remainingEarned = $derived(
+		compact ? Math.max(0, earnedSorted.length - shownEarned.length) : 0
+	);
+	const cards = $derived(compact ? shownEarned : [...shownEarned, ...locked]);
+	const moreHref = $derived(titleHref || '/badges');
+	const moreCount = $derived(compact ? remainingEarned + locked.length : 0);
 
 	let scroller: HTMLDivElement | undefined = $state();
 
@@ -52,11 +78,59 @@
 	};
 </script>
 
+{#snippet badgeCard(b: Badge)}
+	<article class={['card', { locked: !b.earned }]} data-tone={b.tone}>
+		<div class="icon" aria-hidden="true">
+			<svg
+				viewBox="0 0 24 24"
+				width="28"
+				height="28"
+				fill="none"
+				stroke="currentColor"
+				stroke-width="1.6"
+				stroke-linecap="round"
+				stroke-linejoin="round"
+			>
+				{#if b.icon === 'bolt' || b.icon === 'star' || b.icon === 'send'}
+					<path d={paths[b.icon]} fill="currentColor" stroke="none"></path>
+				{:else}
+					<path d={paths[b.icon] || paths.star}></path>
+				{/if}
+			</svg>
+		</div>
+		<h3>{b.title}</h3>
+		<p class="detail">
+			{#if b.earned}
+				{b.detail}
+			{:else}
+				{b.hint}
+			{/if}
+		</p>
+		{#if b.earned && b.href}
+			<a class="link" href={b.href} target="_blank" rel="noreferrer">View climb</a>
+		{:else if b.earned}
+			<span class="link muted">Earned</span>
+		{:else}
+			<span class="link muted">Locked</span>
+		{/if}
+	</article>
+{/snippet}
+
 <article class="panel">
 	<header class="head">
 		<div>
-			<h2>Badges</h2>
-			<p class="blurb">Real milestones from your logbook. Breaks do not erase them.</p>
+			<h2>
+				{#if titleHref}
+					<a href={titleHref}>Badges</a>
+				{:else}
+					Badges
+				{/if}
+			</h2>
+			{#if !compact}
+				<p class="blurb">Real milestones from your logbook. Breaks do not erase them.</p>
+			{:else}
+				<p class="blurb">Recently earned — open the gallery for locked badges too.</p>
+			{/if}
 		</div>
 		<div class="meta">
 			<span class="progress">{earnedCount} of {totalCount} earned</span>
@@ -65,7 +139,19 @@
 	</header>
 
 	{#if cards.length === 0}
-		<p class="empty">No badges yet — keep ticking.</p>
+		<p class="empty">
+			{#if compact && earnedCount === 0 && totalCount > 0}
+				No badges earned yet — <a href={moreHref}>see what is locked</a>.
+			{:else}
+				No badges yet — keep ticking.
+			{/if}
+		</p>
+	{:else if resolvedLayout === 'grid'}
+		<div class="grid">
+			{#each cards as b (b.id)}
+				{@render badgeCard(b)}
+			{/each}
+		</div>
 	{:else}
 		<div class="rail">
 			<button
@@ -76,41 +162,7 @@
 			>
 			<div class="scroller" bind:this={scroller}>
 				{#each cards as b (b.id)}
-					<article class={['card', { locked: !b.earned }]} data-tone={b.tone}>
-						<div class="icon" aria-hidden="true">
-							<svg
-								viewBox="0 0 24 24"
-								width="28"
-								height="28"
-								fill="none"
-								stroke="currentColor"
-								stroke-width="1.6"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-							>
-								{#if b.icon === 'bolt' || b.icon === 'star' || b.icon === 'send'}
-									<path d={paths[b.icon]} fill="currentColor" stroke="none"></path>
-								{:else}
-									<path d={paths[b.icon] || paths.star}></path>
-								{/if}
-							</svg>
-						</div>
-						<h3>{b.title}</h3>
-						<p class="detail">
-							{#if b.earned}
-								{b.detail}
-							{:else}
-								{b.hint}
-							{/if}
-						</p>
-						{#if b.earned && b.href}
-							<a class="link" href={b.href} target="_blank" rel="noreferrer">View climb</a>
-						{:else if b.earned}
-							<span class="link muted">Earned</span>
-						{:else}
-							<span class="link muted">Locked</span>
-						{/if}
-					</article>
+					{@render badgeCard(b)}
 				{/each}
 			</div>
 			<button
@@ -120,6 +172,10 @@
 				aria-label="Scroll badges right">›</button
 			>
 		</div>
+	{/if}
+
+	{#if moreCount > 0}
+		<a class="more" href={moreHref}>Show more ({moreCount} more)</a>
 	{/if}
 </article>
 
@@ -138,6 +194,13 @@
 	h2 {
 		margin: 0;
 		font-size: 1.15rem;
+	}
+	h2 a {
+		color: inherit;
+		text-decoration: none;
+	}
+	h2 a:hover {
+		color: var(--accent);
 	}
 	.blurb {
 		margin: 0.25rem 0 0;
@@ -179,6 +242,11 @@
 		scrollbar-width: thin;
 		padding: 0.15rem 0.1rem 0.45rem;
 	}
+	.grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(11.5rem, 1fr));
+		gap: 0.75rem;
+	}
 	.nav {
 		width: 2rem;
 		height: 2rem;
@@ -207,9 +275,17 @@
 		gap: 0.35rem;
 		min-height: 11.5rem;
 	}
-	.card.locked {
+	.grid .card {
+		flex: unset;
+		min-width: 0;
+	}
+	/* Mute locked cards via icon only — card-wide opacity/grayscale fails axe contrast. */
+	.card.locked .icon {
 		opacity: 0.55;
-		filter: grayscale(0.35);
+		filter: grayscale(0.45);
+	}
+	.card.locked h3 {
+		color: var(--ink-muted);
 	}
 	.icon {
 		width: 2.75rem;
@@ -262,9 +338,25 @@
 		color: var(--ink-muted);
 		font-weight: 500;
 	}
+	.more {
+		display: inline-block;
+		margin-top: 0.65rem;
+		font-size: 0.88rem;
+		font-weight: 600;
+		color: var(--accent);
+		text-decoration: none;
+	}
+	.more:hover {
+		text-decoration: underline;
+		text-underline-offset: 2px;
+	}
 	.empty {
 		margin: 0;
 		color: var(--ink-muted);
+	}
+	.empty a {
+		color: var(--accent);
+		font-weight: 600;
 	}
 	@media (max-width: 640px) {
 		.head {

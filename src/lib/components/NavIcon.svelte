@@ -18,7 +18,8 @@
 		| 'monitor'
 		| 'docs'
 		| 'logout'
-		| 'share';
+		| 'share'
+		| 'badges';
 </script>
 
 <script lang="ts">
@@ -113,6 +114,10 @@
 			<circle cx="6" cy="12" r="3" />
 			<circle cx="18" cy="19" r="3" />
 			<path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4" />
+		{:else if name === 'badges'}
+			<path
+				d="M12 3.6l2.4 4.86 5.36.78-3.88 3.78.92 5.34L12 16.9l-4.8 2.52.92-5.34-3.88-3.78 5.36-.78L12 3.6z"
+			/>
 		{/if}
 	</svg>
 {/if}

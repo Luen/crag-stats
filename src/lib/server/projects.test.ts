@@ -5,6 +5,7 @@ import {
 	isLikelyIndoorRoute,
 	isRecentlySent,
 	isTouchedWithin,
+	isProvisionalGradeRange,
 	isTheCragProjectFlag,
 	isUngradedRoute,
 	rankDashboardProjects,
@@ -21,6 +22,21 @@ describe('isTheCragProjectFlag', () => {
 	});
 });
 
+describe('isProvisionalGradeRange', () => {
+	it('flags multi-grade spans but not adjacent half-grades', () => {
+		expect(isProvisionalGradeRange('21-23')).toBe(true);
+		expect(isProvisionalGradeRange('21–23')).toBe(true);
+		expect(isProvisionalGradeRange('V1-3')).toBe(true);
+		expect(isProvisionalGradeRange('V1-V3')).toBe(true);
+		expect(isProvisionalGradeRange('V1/3')).toBe(true);
+		expect(isProvisionalGradeRange('V1/2')).toBe(false);
+		expect(isProvisionalGradeRange('V5/6')).toBe(false);
+		expect(isProvisionalGradeRange('22-23')).toBe(false);
+		expect(isProvisionalGradeRange('24')).toBe(false);
+		expect(isProvisionalGradeRange('HVS 5a')).toBe(false);
+	});
+});
+
 describe('isUngradedRoute', () => {
 	it('flags routes theCrag has no grade for, and literal project grades', () => {
 		expect(isUngradedRoute(null, null)).toBe(true);
@@ -30,6 +46,12 @@ describe('isUngradedRoute', () => {
 		expect(isUngradedRoute(24, '24')).toBe(false);
 		// Unparsed but real grades aren't projects.
 		expect(isUngradedRoute(null, 'HVS 5a')).toBe(false);
+	});
+
+	it('treats provisional multi-grade spans as New route? even with a midpoint score', () => {
+		expect(isUngradedRoute(22, '21-23')).toBe(true);
+		expect(isUngradedRoute(2, 'V1-3')).toBe(true);
+		expect(isUngradedRoute(1.5, 'V1/2')).toBe(false);
 	});
 });
 

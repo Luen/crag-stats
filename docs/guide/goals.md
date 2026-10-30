@@ -35,10 +35,14 @@ The progress line shows your best send, the N−1 / N−2 route counts, attempt 
 | 2 grades            | Medium     | ~35 attempts                                |
 | Wider / no send yet | Long-haul  | ~75 attempts                                |
 
+## Suggested next grade
+
+On the **Goals** page, when you have outdoor sends in the last **two years**, Crag Stats may offer a soft suggestion: take your hardest outdoor send (route and/or boulder, kept separate) and aim for the **next grade step** this year (V5 → V6, 25 → 26). Suggestions never write a goal until you click **Add goal**. If you already track that outdoor target for the year, the chip says **Already tracking**.
+
 ## What you see
 
 - **Dashboard** “Active goals” card: up to a few open goals with the same percentages and labels.
-- **Goals** page: full Active / Achieved lists, create/edit, and the same readiness copy for grade goals.
+- **Goals** page: optional suggested next-grade chips, full Active / Achieved lists, create/edit, and the same readiness copy for grade goals.
 
 ## Caveats
 
