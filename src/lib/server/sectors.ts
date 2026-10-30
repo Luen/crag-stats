@@ -2,6 +2,15 @@ import { eq, sql } from 'drizzle-orm';
 import type { CragSectorGroup } from '#lib/types/sectors';
 import { db, ensureSchema } from './db';
 import { ascents, routes } from './db/schema';
+import { buildVisitClimate, type VisitClimate } from '#lib/visitClimate';
+import {
+	roundCoord,
+	weatherAscentDay,
+	weatherDayKey,
+	type WeatherSnapshot
+} from '#lib/weatherKeys';
+import { logbookRowWeather } from './logbookWeather';
+import { loadWeatherSnapshotMap } from './weatherEngine';
 import {
 	ancestorAreaNames,
 	gearStyleMismatch,
@@ -22,6 +31,46 @@ export type CragMapPoint = {
 	lon: number;
 	count: number;
 };
+
+/**
+ * Cached weather on the distinct days (per rounded location) you climbed at each crag.
+ * Empty map when the weather cache is empty or a crag has fewer than 5 such days (#278).
+ */
+export function listVisitClimateByCrag(): Map<string, VisitClimate> {
+	ensureSchema();
+	const weatherByKey = loadWeatherSnapshotMap();
+	const out = new Map<string, VisitClimate>();
+	if (weatherByKey.size === 0) return out;
+	const rows = db
+		.select({
+			ascentDate: ascents.ascentDate,
+			lat: routes.lat,
+			lon: routes.lon,
+			gearStyle: routes.gearStyle,
+			routeName: routes.name,
+			cragName: routes.cragName,
+			tagsJson: routes.tagsJson
+		})
+		.from(ascents)
+		.innerJoin(routes, eq(ascents.routeId, routes.id))
+		.all();
+	const byCrag = new Map<string, Map<string, WeatherSnapshot>>();
+	for (const r of rows) {
+		const day = weatherAscentDay(r.ascentDate);
+		if (!day || r.lat == null || r.lon == null) continue;
+		const w = logbookRowWeather(weatherByKey, r);
+		if (!w) continue;
+		const crag = (r.cragName || 'Unknown').trim() || 'Unknown';
+		const days = byCrag.get(crag) ?? new Map<string, WeatherSnapshot>();
+		days.set(weatherDayKey(roundCoord(r.lat), roundCoord(r.lon), day), w);
+		byCrag.set(crag, days);
+	}
+	for (const [crag, days] of byCrag) {
+		const climate = buildVisitClimate([...days.values()]);
+		if (climate) out.set(crag, climate);
+	}
+	return out;
+}
 
 /** Group climbed routes by crag → sector tree (parentName, or ancestors when cached). */
 export function listSectors(): CragSectorGroup[] {
@@ -79,6 +128,7 @@ export function listSectors(): CragSectorGroup[] {
 		});
 	}
 
+	const climateByCrag = listVisitClimateByCrag();
 	return [...byCrag.entries()]
 		.map(([cragName, agg]) => {
 			const sectors = [...agg.sectors.values()]
@@ -94,7 +144,8 @@ export function listSectors(): CragSectorGroup[] {
 				ascentCount: agg.ascentCount,
 				areaBreadcrumb,
 				hasAreaTree,
-				sectors
+				sectors,
+				visitClimate: climateByCrag.get(cragName) ?? null
 			};
 		})
 		.sort((a, b) => b.ascentCount - a.ascentCount || a.cragName.localeCompare(b.cragName));
