@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import type { HeatmapDay } from '#lib/types/dashboard';
 
 	type YearRow = {
 		year: number;
@@ -14,10 +15,12 @@
 
 	type Props = {
 		years: YearRow[];
+		/** Daily ascents for thin within-year cumulative lines (optional). */
+		days?: HeatmapDay[];
 		/** Dashboard links to `/activity` when that route exists; omit/null to skip. */
 		titleHref?: string | null;
 	};
-	let { years, titleHref = null }: Props = $props();
+	let { years, days = [], titleHref = null }: Props = $props();
 
 	type Metric = 'ascents' | 'sends' | 'heightM';
 	type ChartMode = 'year' | 'cumulative';
@@ -70,6 +73,8 @@
 	});
 
 	const max = $derived(Math.max(1, ...series.map((v) => v.value)));
+	/** Y-scale for thin within-year lines (each year starts at 0). */
+	const maxYear = $derived(Math.max(1, ...values.map((v) => v.value)));
 
 	const metricLabel = $derived(
 		metric === 'ascents' ? 'Ascents' : metric === 'sends' ? 'Sends' : 'Height (m)'
@@ -98,6 +103,25 @@
 
 	const deltaSuffix = $derived(metric === 'heightM' ? ' m' : '');
 
+	function dayMetric(d: HeatmapDay): number {
+		if (metric === 'sends') return d.sends;
+		if (metric === 'heightM') return d.heightM;
+		return d.count;
+	}
+
+	function dayOfYearFrac(iso: string): number {
+		const y = Number(iso.slice(0, 4));
+		const start = Date.UTC(y, 0, 1);
+		const t = Date.UTC(
+			Number(iso.slice(0, 4)),
+			Number(iso.slice(5, 7)) - 1,
+			Number(iso.slice(8, 10))
+		);
+		const leap = y % 4 === 0 && (y % 100 !== 0 || y % 400 === 0);
+		const daysInYear = leap ? 366 : 365;
+		return Math.min(1, Math.max(0, (t - start) / (daysInYear * 86400000)));
+	}
+
 	/** SVG plot box for the cumulative line (viewBox coords). */
 	const plot = { w: 1000, h: 220, padX: 28, padTop: 16, padBot: 8 };
 
@@ -114,6 +138,58 @@
 	});
 
 	const polyline = $derived(linePoints.map((p) => `${p.x},${p.y}`).join(' '));
+
+	/**
+	 * Thin polylines: each year starts at 0 and rises by day for the selected metric.
+	 * Drawn in the horizontal band for that year; y-scale is max single-year total.
+	 */
+	const yearPaths = $derived.by(() => {
+		if (chartMode !== 'cumulative' || days.length === 0 || chronological.length === 0) {
+			return [] as { year: number; points: string }[];
+		}
+		const n = chronological.length;
+		const innerW = plot.w - plot.padX * 2;
+		const innerH = plot.h - plot.padTop - plot.padBot;
+		const xAt = (i: number) => (n === 1 ? plot.w / 2 : plot.padX + (i / (n - 1)) * innerW);
+		const byYear = new Map<number, HeatmapDay[]>();
+		for (const d of days) {
+			const y = Number(d.date.slice(0, 4));
+			if (!Number.isFinite(y)) continue;
+			const list = byYear.get(y) ?? [];
+			list.push(d);
+			byYear.set(y, list);
+		}
+
+		return chronological.map((row, i) => {
+			const x0 = i === 0 ? plot.padX : (xAt(i - 1) + xAt(i)) / 2;
+			const x1 = i === n - 1 ? plot.w - plot.padX : (xAt(i) + xAt(i + 1)) / 2;
+			const span = Math.max(1, x1 - x0);
+			const yearDays = [...(byYear.get(row.year) ?? [])].sort((a, b) =>
+				a.date.localeCompare(b.date)
+			);
+			const pts: { x: number; y: number }[] = [
+				{ x: x0, y: plot.padTop + innerH } // year start at 0
+			];
+			let cum = 0;
+			for (const d of yearDays) {
+				cum += dayMetric(d);
+				const frac = dayOfYearFrac(d.date);
+				pts.push({
+					x: x0 + frac * span,
+					y: plot.padTop + innerH * (1 - cum / maxYear)
+				});
+			}
+			// Hold flat to the end of the year band at the year's total.
+			pts.push({
+				x: x1,
+				y: plot.padTop + innerH * (1 - (values[i]?.value ?? cum) / maxYear)
+			});
+			return {
+				year: row.year,
+				points: pts.map((p) => `${p.x},${p.y}`).join(' ')
+			};
+		});
+	});
 </script>
 
 <article class="panel">
@@ -168,8 +244,22 @@
 				class="line-chart"
 				viewBox="0 0 {plot.w} {plot.h}"
 				role="img"
-				aria-label="{chartLabel} by year, cumulative"
+				aria-label="{chartLabel} by year, cumulative, with within-year daily progress"
 			>
+				{#each yearPaths as yp (yp.year)}
+					<polyline
+						class="year-line"
+						fill="none"
+						points={yp.points}
+						style="stroke: var(--accent)"
+						stroke-width="1.25"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+						opacity="0.35"
+					>
+						<title>{yp.year} daily {metricLabel.toLowerCase()} (starts at 0)</title>
+					</polyline>
+				{/each}
 				{#if linePoints.length > 1}
 					<polyline
 						class="line"
@@ -194,6 +284,9 @@
 					</a>
 				{/each}
 			</svg>
+			{#if yearPaths.length > 0}
+				<p class="hint">Thin lines: each year from 0, rising day by day.</p>
+			{/if}
 			<div class="line-axis" style:--n={series.length}>
 				{#each series as point (point.year)}
 					<a class="axis-col" href={`/logbook?year=${point.year}`}>
@@ -365,6 +458,11 @@
 		width: 100%;
 		height: auto;
 		max-height: 200px;
+	}
+	.hint {
+		margin: 0.35rem 0 0;
+		font-size: 0.72rem;
+		color: var(--ink-muted);
 	}
 	.line-chart .dot {
 		fill: var(--accent);

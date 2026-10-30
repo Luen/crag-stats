@@ -502,17 +502,24 @@ export function getDashboardStats(
 			? `${dominant.style} climber`
 			: 'Rock climber');
 
-	const dayMap = new Map<string, { count: number; sends: number }>();
+	const dayMap = new Map<string, { count: number; sends: number; heightM: number }>();
 	for (const row of all) {
 		const day = validDay(row.ascentDate);
 		if (!day) continue;
-		const slot = dayMap.get(day) ?? { count: 0, sends: 0 };
+		const slot = dayMap.get(day) ?? { count: 0, sends: 0, heightM: 0 };
 		slot.count += 1;
 		if (row.isSend) slot.sends += 1;
+		const h = row.heightM ?? row.routeHeightM ?? 0;
+		if (h > 0) slot.heightM += h;
 		dayMap.set(day, slot);
 	}
 	const heatmap = [...dayMap.entries()]
-		.map(([date, v]) => ({ date, count: v.count, sends: v.sends }))
+		.map(([date, v]) => ({
+			date,
+			count: v.count,
+			sends: v.sends,
+			heightM: Math.round(v.heightM * 10) / 10
+		}))
 		.sort((a, b) => a.date.localeCompare(b.date));
 
 	const styleOrder = ['Boulder', 'Sport', 'Trad', 'Top rope', 'Alpine', 'Aid'];

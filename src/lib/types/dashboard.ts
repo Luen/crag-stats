@@ -187,7 +187,13 @@ export type SoloStats = {
 	totalAscents: number;
 };
 
-export type HeatmapDay = { date: string; count: number; sends: number };
+export type HeatmapDay = {
+	date: string;
+	count: number;
+	sends: number;
+	/** Metres climbed that day (ascent or route height). */
+	heightM: number;
+};
 
 export type DashboardStats = {
 	profileName: string | null;
