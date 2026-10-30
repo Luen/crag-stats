@@ -177,7 +177,7 @@
 	{:else if id === 'trainingLoad'}
 		<TrainingLoad load={s.trainingLoad} />
 	{:else if id === 'milestones'}
-		<Milestones items={s.milestones.items} />
+		<Milestones items={s.milestones.items} limit={6} />
 	{:else if id === 'styleMix'}
 		<StyleMixChart months={s.styleMix.months} />
 	{:else if id === 'partners'}
