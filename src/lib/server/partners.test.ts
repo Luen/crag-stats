@@ -3,6 +3,7 @@ import { db } from './db';
 import { ascents } from './db/schema';
 import { getDashboardStats, wipeAllData } from './analytics';
 import { listPartners } from './partners';
+import { PARTNER_METRICS, sortPartners, topPartnersPerMetric } from '#lib/partnerStats';
 import { upsertAscents } from './ingest';
 
 beforeEach(() => wipeAllData());
@@ -43,7 +44,11 @@ it('uses the same partner universe and top seven as the full page, including leg
 	const full = listPartners();
 	expect(full[0]).toMatchObject({ name: 'Orphan partner', ascents: 3, sessions: 3, areas: 0 });
 	const dashboard = getDashboardStats();
-	expect(dashboard.partners.slice(0, 7)).toEqual(full.slice(0, 7));
+	expect(dashboard.partners).toEqual(topPartnersPerMetric(full, 7));
+	for (const metric of PARTNER_METRICS)
+		expect(sortPartners(dashboard.partners, metric).slice(0, 7)).toEqual(
+			sortPartners(full, metric).slice(0, 7)
+		);
 	// Route-dependent totals still omit dangling-route rows.
 	expect(dashboard.totalAscents).toBe(9);
 });

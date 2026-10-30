@@ -49,11 +49,20 @@ export function partnerMetricValue(p: PartnerStat, metric: PartnerMetric): numbe
 	return p.ascents;
 }
 
-export function sortPartners(partners: PartnerStat[], metric: PartnerMetric): PartnerStat[] {
+export function sortPartners<T extends PartnerStat>(partners: T[], metric: PartnerMetric): T[] {
 	return [...partners].sort(
 		(a, b) =>
 			partnerMetricValue(b, metric) - partnerMetricValue(a, metric) || a.name.localeCompare(b.name)
 	);
+}
+
+/**
+ * Smallest list that still yields the exact top `limit` for every metric (dashboard card):
+ * ties break by name, so ranking this union matches ranking the full set.
+ */
+export function topPartnersPerMetric<T extends PartnerStat>(partners: T[], limit: number): T[] {
+	const keep = new Set(PARTNER_METRICS.flatMap((m) => sortPartners(partners, m).slice(0, limit)));
+	return partners.filter((p) => keep.has(p));
 }
 
 export function partnerMetricLabel(metric: PartnerMetric, count: number): string {
