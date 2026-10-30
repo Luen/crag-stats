@@ -64,6 +64,12 @@ export const DOC_PAGES: readonly DocPage[] = [
 			'Year heatmap of logged days; Intensity scales by volume, Grade by hardest send band that day.'
 	},
 	{
+		slug: 'activity',
+		title: 'Activity',
+		summary:
+			'Monthly and yearly volume beyond the dashboard cards — full per-month tables and YoY deltas.'
+	},
+	{
 		slug: 'sessions-per-week',
 		title: 'Sessions per week',
 		summary: 'Climbing days per ISO week and the yearly average session rate.'
