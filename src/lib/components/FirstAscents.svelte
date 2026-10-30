@@ -14,7 +14,12 @@
 				? String(data.firstYear)
 				: `${data.firstYear}–${data.latestYear}`
 	);
-	const communityPreview = $derived(data.communityRoutes.slice(0, 8));
+	/** Cap lists so the half-width card stays near Hardest sends height. */
+	const LATEST_LIMIT = 3;
+	const COMMUNITY_LIMIT = 3;
+	const latestPreview = $derived(data.recent.slice(0, LATEST_LIMIT));
+	const latestMore = $derived(Math.max(0, data.total - latestPreview.length));
+	const communityPreview = $derived(data.communityRoutes.slice(0, COMMUNITY_LIMIT));
 	const communityMore = $derived(
 		Math.max(0, data.communityRoutes.length - communityPreview.length)
 	);
@@ -107,10 +112,10 @@
 			</ul>
 		{/if}
 
-		{#if data.recent.length > 0}
+		{#if latestPreview.length > 0}
 			<h3>Latest</h3>
 			<ul class="list">
-				{#each data.recent as r (r.routeId)}
+				{#each latestPreview as r (r.routeId)}
 					<li>
 						<div>
 							<strong>
@@ -129,6 +134,11 @@
 					</li>
 				{/each}
 			</ul>
+			{#if latestMore > 0}
+				<p class="more">
+					<a href="/logbook?fa=any">+{formatNumber(latestMore, dateDisplay)} more in the logbook</a>
+				</p>
+			{/if}
 		{/if}
 
 		{#if communityPreview.length > 0}

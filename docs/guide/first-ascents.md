@@ -48,7 +48,8 @@ When the card includes imported FA/FFA or setter credits, its footer credits the
 - **Years:** from the year of your first FA to your latest. Each FA is dated by your **first logged send** of the route (see below).
 - **Grade range:** your easiest and hardest FA, using the route's grade (not a single pitch). Routes and boulders are listed separately, because Ewbank and V-grades can't be compared. Grades show in your display grade system.
 - **Styles:** how your FAs split across sport, trad, boulder and so on, using the route's style on theCrag.
-- **Latest:** your five most recent FAs.
+- **Latest:** your three most recent FAs on the dashboard card (full list via the logbook).
+- **Community by route:** top three credited routes on the dashboard (more counted below the list).
 - **Community by route:** up to eight credited routes, ranked by the community estimate. Each row shows FA, FFA and/or setter credit, a style badge (Sport/bolted, Trad, Boulder, or other known gear style from cached route info), the estimate (or Unavailable), and when that count was fetched. Count freshness is stored separately from other route-info fields, so refreshing beta or quality alone does not pretend the counter is new.
 
 The card only appears for visitors once at least one FA is marked. Until then, the owner sees a short how-to instead.
