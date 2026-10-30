@@ -1,4 +1,4 @@
-export type RouteTag = { category: string; name: string };
+export type RouteTag = { category: string; name: string; source?: 'route' | 'parent' | 'ancestor' };
 
 export function parseTagsJson(raw: string | null | undefined): RouteTag[] {
 	if (!raw) return [];
@@ -13,7 +13,13 @@ export function parseTagsJson(raw: string | null | undefined): RouteTag[] {
 					typeof (t as { category?: unknown }).category === 'string' &&
 					typeof (t as { name?: unknown }).name === 'string'
 			)
-			.map((t) => ({ category: t.category, name: t.name }));
+			.map((t) => ({
+				category: t.category,
+				name: t.name,
+				...(t.source === 'route' || t.source === 'parent' || t.source === 'ancestor'
+					? { source: t.source }
+					: {})
+			}));
 	} catch {
 		return [];
 	}

@@ -12,7 +12,7 @@ describe('flattenRouteTags', () => {
 			expect.arrayContaining([
 				{ category: 'Rock type', name: 'Granite' },
 				{ category: 'Steepness', name: 'Vertical' },
-				{ category: 'Aspect', name: 'NE' }
+				{ category: 'Aspect', name: 'NE', source: 'route' }
 			])
 		);
 	});
@@ -282,4 +282,31 @@ describe('mapAscent — CPR / attempts / geo', () => {
 			lon: 141.8
 		});
 	});
+});
+
+it('ignores malformed tag names while preserving valid aspect provenance', () => {
+	const tags = { Aspect: { bad: { name: 42 }, good: { name: 'N', ancestor: { id: 2 } } } };
+	expect(flattenRouteTags(tags as unknown as Parameters<typeof flattenRouteTags>[0])).toEqual([
+		{ category: 'Aspect', name: 'N', source: 'ancestor' }
+	]);
+});
+
+it('identifies inherited exposure only when its source matches the immediate parent', () => {
+	const tags = {
+		Weather: { sun: { name: 'All day sun', ancestor: { id: 2, type: 'area', subType: 'Sector' } } }
+	};
+	expect(flattenRouteTags(tags, '2')).toEqual([
+		{ category: 'Weather', name: 'All day sun', source: 'parent' }
+	]);
+	expect(flattenRouteTags(tags, 3)[0]?.source).toBe('ancestor');
+	expect(flattenRouteTags(tags)[0]?.source).toBe('ancestor');
+	expect(
+		flattenRouteTags(
+			{ Weather: { sun: { name: 'All day sun', ancestor: { id: 2, subType: 'Country' } } } },
+			2
+		)[0]?.source
+	).toBe('ancestor');
+	expect(
+		flattenRouteTags({ Weather: { sun: { name: 'All day sun', ancestor: {} } } }, 2)[0]?.source
+	).toBe('ancestor');
 });
