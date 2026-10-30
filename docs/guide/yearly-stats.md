@@ -14,7 +14,7 @@ The small figure under each bar is the **year-over-year delta** versus the previ
 
 ## Cumulative
 
-A thick accent line is your **running career total** for the selected metric. Thin coloured overlays (when daily heatmap data is available) each restart at zero on 1 January and rise day by day across the shared Jan–Dec axis, so you can compare seasons side by side. Hover a day on a thin line for that date’s within-year total. Under the career dots, the parenthetical figure is **that year’s contribution**, not another YoY delta.
+A thick accent line is your **running career total** for the selected metric. Thin coloured overlays (when daily heatmap data is available) each restart at zero on 1 January and rise day by day across the shared Jan–Dec axis, so you can compare seasons side by side. After the last climb of a year the thin line continues **flat to December** (no invented volume). Click a day on a thin line to open `/logbook?day=` for that date (hover still shows the within-year total). Under the career dots, the parenthetical figure is **that year’s contribution**, not another YoY delta.
 
 Your chart-mode preference is stored in the browser (`cs_yearly_chart`).
 

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import type { HeatmapDay } from '#lib/types/dashboard';
+	import { yearLineFractions } from '#lib/yearlyStatsLines';
 
 	type YearRow = {
 		year: number;
@@ -136,13 +137,6 @@
 		return d.count;
 	}
 
-	function dayOfYearIndex(iso: string): number {
-		const y = Number(iso.slice(0, 4));
-		const start = Date.UTC(y, 0, 1);
-		const t = Date.UTC(y, Number(iso.slice(5, 7)) - 1, Number(iso.slice(8, 10)));
-		return Math.max(0, Math.round((t - start) / 86400000));
-	}
-
 	function colorForYear(index: number): string {
 		return YEAR_COLORS[index % YEAR_COLORS.length]!;
 	}
@@ -211,20 +205,31 @@
 
 		return chronological.map((row, i) => {
 			const yearDays = [...(byYear[row.year] ?? [])].sort((a, b) => a.date.localeCompare(b.date));
-			const leap = row.year % 4 === 0 && (row.year % 100 !== 0 || row.year % 400 === 0);
-			const daysInYear = leap ? 366 : 365;
+			const climbDates = yearDays.map((d) => d.date);
+			const fracs = yearLineFractions(climbDates, row.year);
 			const dots: YearLine['dots'] = [];
 			const pts: string[] = [];
 			const y0 = plot.padTop + innerH;
-			pts.push(`${plot.padX},${y0}`);
 			let cum = 0;
-			for (const d of yearDays) {
-				cum += dayMetric(d);
-				const frac = dayOfYearIndex(d.date) / Math.max(1, daysInYear - 1);
-				const x = plot.padX + frac * innerW;
-				const y = plot.padTop + innerH * (1 - cum / maxYear);
-				pts.push(`${x},${y}`);
-				dots.push({ date: d.date, value: cum, x, y });
+			let lastY = y0;
+			for (let fi = 0; fi < fracs.length; fi++) {
+				const x = plot.padX + fracs[fi]! * innerW;
+				if (fi === 0) {
+					pts.push(`${x},${y0}`);
+					continue;
+				}
+				const climbIdx = fi - 1;
+				if (climbIdx < yearDays.length) {
+					const d = yearDays[climbIdx]!;
+					cum += dayMetric(d);
+					const y = plot.padTop + innerH * (1 - cum / maxYear);
+					lastY = y;
+					pts.push(`${x},${y}`);
+					dots.push({ date: d.date, value: cum, x, y });
+				} else {
+					// Flat tip to Dec from yearLineFractions (no invented climbs).
+					pts.push(`${x},${lastY}`);
+				}
 			}
 			return {
 				year: row.year,
@@ -310,7 +315,7 @@
 			<svg
 				class="line-chart"
 				viewBox="0 0 {plot.w} {plot.h}"
-				role="img"
+				role="group"
 				aria-label="{chartLabel} by year, with within-year daily progress overlaid"
 			>
 				{#each monthTicks as tick (tick.label)}
@@ -338,18 +343,15 @@
 						opacity="0.75"
 					/>
 					{#each yl.dots as dot (dot.date)}
-						<circle
-							class="hit"
-							cx={dot.x}
-							cy={dot.y}
-							r="8"
-							fill="transparent"
-							aria-hidden="true"
+						<a
+							href="/logbook?day={encodeURIComponent(dot.date)}"
+							aria-label="{dot.date}: {formatValue(dot.value)} {metricLabel} — open logbook"
 							onmouseenter={() => onDotEnter(yl.year, dot.date, dot.value, dot.x, dot.y, yl.color)}
 							onmouseleave={onDotLeave}
 						>
 							<title>{dot.date}: {formatValue(dot.value)} {metricLabel}</title>
-						</circle>
+							<circle class="hit" cx={dot.x} cy={dot.y} r="8" fill="transparent" />
+						</a>
 					{/each}
 				{/each}
 				{#if linePoints.length > 1}
@@ -411,8 +413,8 @@
 				</p>
 			{:else if yearLines.length > 0}
 				<p class="hint">
-					Thick orange: career total. Thin lines: each year from 0 across the calendar — hover for
-					date.
+					Thick orange: career total. Thin lines: each year from 0 across the calendar — click a day
+					for the logbook; lines stay flat after the last climb of the year.
 				</p>
 			{/if}
 			{#if yearLines.length > 0}
@@ -621,8 +623,16 @@
 		text-anchor: start;
 	}
 	.hit {
-		cursor: crosshair;
+		cursor: pointer;
 		outline: none;
+	}
+	.line-chart a:focus-visible .hit {
+		stroke: var(--accent);
+		stroke-width: 2;
+	}
+	.line-chart a:focus-visible .dot {
+		stroke: var(--accent);
+		stroke-width: 3;
 	}
 	.hint,
 	.hover-label {
