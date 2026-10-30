@@ -1,6 +1,7 @@
 <script lang="ts">
 	import CragMap from '#lib/components/CragMap.svelte';
 	import SectorTreeList from '#lib/components/SectorTreeList.svelte';
+	import { formatNumber } from '#lib/dates';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -52,6 +53,27 @@
 					{#if crag.areaBreadcrumb}
 						<p class="breadcrumb">{crag.areaBreadcrumb}</p>
 					{/if}
+					{#if crag.visitClimate}
+						{@const c = crag.visitClimate}
+						<p class="climate">
+							<strong>On your {formatNumber(c.days, data.dateDisplay)} cached visit days:</strong>
+							{#if c.avgHighC != null}average high {formatNumber(
+									c.avgHighC,
+									data.dateDisplay
+								)}°C{/if}{#if c.avgLowC != null}, low {formatNumber(
+									c.avgLowC,
+									data.dateDisplay
+								)}°C{/if}
+							· rain {formatNumber(c.rainPct, data.dateDisplay)}%{#if c.snowPct > 0}
+								· snow {formatNumber(c.snowPct, data.dateDisplay)}%{/if}{#if c.freezePct > 0}
+								· freezing {formatNumber(c.freezePct, data.dateDisplay)}%{/if}{#if c.heatPct > 0}
+								· hot {formatNumber(c.heatPct, data.dateDisplay)}%{/if}
+							<span class="note"
+								>Weather on the days you climbed here, not official climate normals.</span
+							>
+							<a href="/docs/weather">How it works</a>
+						</p>
+					{/if}
 					{#if open[crag.cragName]}
 						<SectorTreeList
 							cragName={crag.cragName}
@@ -94,6 +116,19 @@
 	.breadcrumb {
 		grid-column: 1 / -1;
 		margin: 0.15rem 0 0 1.25rem;
+	}
+	.climate {
+		grid-column: 1 / -1;
+		margin: 0.15rem 0 0 1.25rem;
+		font-size: 0.85rem;
+		color: var(--ink-muted);
+	}
+	.climate strong {
+		color: var(--ink);
+	}
+	.climate a {
+		color: var(--accent);
+		font-weight: 600;
 	}
 	.crags {
 		list-style: none;

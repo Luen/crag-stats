@@ -452,6 +452,7 @@ _Add a row when you change behaviour agents must know about._
 - Recent activities (#274): `stats.recent[].weatherChips` come from `logbookRowWeatherChips` (same lookup as the logbook); the strip renders only for outdoor climbs with a cached day.
 - Climbing story weather (#275): `describeWeatherPersonality` in `climberBlurb.ts` takes the #272 `WeatherConditionsView` and adds at most one gated line (≥20 weather days, ≥50% of outdoor days covered); positive wording only. Docs: `/docs/climbing-story` + `/docs/weather`.
 - Ascent calendar Weather mode (#276): `HeatmapDay.weather` (`CalendarWeather`, lowest-id outdoor ascent with a cache hit) colours cells via `--weather-*` tokens; the mode button appears only when any day has weather and falls back to Intensity otherwise. A values table duplicates the data for screen readers.
+- Sectors climate (#278): `CragSectorGroup.visitClimate` from `listVisitClimateByCrag()` (`sectors.ts`) via `buildVisitClimate` (`#lib/visitClimate`): distinct outdoor location-days with cached weather per crag, shown only at ≥5 days, always labelled as visit-day weather, not climate normals.
 - Partners page (`/partners`, #269): Ascents | Sessions | Areas metric toggle (`cs_partners_metric`); helpers in `#lib/partnerStats`. Dashboard card stays ascent-ranked. Docs at `/docs/partners`.
 
 - Weather PR review: preserve main’s indoor badge guards and shared partner statistics when updating the weather stack. Fair weather requires measured precipitation below 0.1 mm; missing rain is unknown, not dry.

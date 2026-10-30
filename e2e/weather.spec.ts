@@ -102,6 +102,32 @@ for (const colorScheme of ['light', 'dark'] as const) {
 						axe.violations.filter((v) => v.impact === 'serious' || v.impact === 'critical')
 					).toEqual([]);
 				}
+
+				await page.goto('/sectors');
+				const crag = page
+					.locator('li')
+					.filter({ has: page.getByRole('button', { name: 'Review Outdoor Crag', exact: false }) })
+					.first();
+				await expect(page.locator('.climate')).toHaveCount(0);
+				for (const day of ['2026-10-25', '2026-10-26', '2026-10-27']) {
+					db.prepare(
+						`INSERT INTO ascents (provider, external_id, route_id, ascent_date, is_send, tick_type, updated_at)
+						VALUES ('thecrag', ?, ?, ?, 1, 'Red point', '2026-10-28')`
+					).run(`review-climate-${day}`, ids[0], day);
+					db.prepare(
+						`INSERT INTO weather_days (lat_key, lon_key, day, temp_max_c, temp_min_c, precip_mm, weather_code, status, fetched_at)
+						VALUES (12, 34, ?, 20, 10, 0, 0, 'ok', '2026-10-28')`
+					).run(day);
+				}
+				await page.reload();
+				await expect(page.locator('.climate')).toHaveCount(1);
+				await expect(page.locator('.climate')).toContainText('On your 5 cached visit days');
+				await expect(page.locator('.climate')).toContainText('not official climate normals');
+				await expect(crag).toContainText('average high');
+				const climateAxe = await new AxeBuilder({ page }).include('.climate').analyze();
+				expect(
+					climateAxe.violations.filter((v) => v.impact === 'serious' || v.impact === 'critical')
+				).toEqual([]);
 				await page.goto('/logbook?weather=fair');
 				await expect(page.locator('tbody')).toContainText('Review fair weather');
 				await expect(page.locator('tbody')).not.toContainText('Review Gym');
