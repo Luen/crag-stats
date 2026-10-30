@@ -66,7 +66,7 @@
 <article class="panel">
 	<h2>Notable ascents</h2>
 
-	<div class="groups">
+	<div class="groups groups-columns">
 		{#each styleGroups as g (g.group)}
 			<section class="group-block">
 				<header class="group-head">
@@ -89,7 +89,7 @@
 	</div>
 
 	<h3>By area</h3>
-	<div class="groups">
+	<div class="groups groups-columns">
 		{#each areaGroups as g (g.group)}
 			<section class="group-block">
 				<header class="group-head">
@@ -135,15 +135,20 @@
 		letter-spacing: 0.05em;
 	}
 	.groups {
-		display: flex;
-		flex-direction: column;
+		display: grid;
 		gap: 0.85rem;
+	}
+	/* Sport | Trad and Castle Hill | Mt Stuart (etc.) side by side on wide screens. */
+	.groups-columns {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		align-items: start;
 	}
 	.group-block {
 		border: 1px solid var(--line);
 		border-radius: 0.75rem;
 		overflow: hidden;
 		background: var(--surface-2);
+		min-width: 0;
 	}
 	.group-head {
 		padding: 0.55rem 0.75rem;
@@ -161,8 +166,8 @@
 	}
 	.tick-row {
 		display: grid;
-		grid-template-columns: minmax(7rem, 11rem) 7.5rem minmax(0, 1fr);
-		gap: 0.65rem 0.85rem;
+		grid-template-columns: minmax(5.5rem, 8rem) minmax(4rem, 6rem) minmax(0, 1fr);
+		gap: 0.5rem 0.65rem;
 		align-items: center;
 		padding: 0.55rem 0.75rem;
 		border-bottom: 1px solid var(--line);
@@ -185,7 +190,7 @@
 		display: flex;
 		height: 0.7rem;
 		width: 100%;
-		max-width: 7.5rem;
+		max-width: 6rem;
 		border-radius: 999px;
 		overflow: hidden;
 		background: color-mix(in srgb, var(--ink) 6%, transparent);
@@ -212,6 +217,11 @@
 	a {
 		text-decoration: underline;
 		text-underline-offset: 2px;
+	}
+	@media (max-width: 900px) {
+		.groups-columns {
+			grid-template-columns: 1fr;
+		}
 	}
 	@media (max-width: 700px) {
 		.tick-row {

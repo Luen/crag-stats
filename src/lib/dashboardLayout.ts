@@ -28,6 +28,7 @@ export type DashCardId =
 	| 'projects'
 	| 'trainingLoad'
 	| 'sessionsPerWeek'
+	| 'weekday'
 	| 'milestones'
 	| 'styleMix'
 	| 'partners'
@@ -58,10 +59,12 @@ export const DEFAULT_DASH_CARDS: readonly DashCardDef[] = [
 	{ id: 'climberType', label: 'Climber type', width: 'full' },
 	{ id: 'recent', label: 'Recent activities', width: 'half' },
 	{ id: 'blurb', label: 'Climbing story', width: 'half' },
-	{ id: 'streaks', label: 'Streaks', width: 'half' },
+	{ id: 'badges', label: 'Badges', width: 'half' },
 	{ id: 'athleteProfile', label: 'Athlete profile', width: 'half' },
-	{ id: 'eddington', label: 'Eddington numbers', width: 'full' },
-	{ id: 'firstAscents', label: 'First ascents', width: 'full' },
+	{ id: 'streaks', label: 'Streaks', width: 'half' },
+	{ id: 'eddington', label: 'Eddington numbers', width: 'half' },
+	{ id: 'firstAscents', label: 'First ascents', width: 'half' },
+	{ id: 'hardest', label: 'Hardest sends', width: 'half' },
 	{ id: 'solo', label: 'Solo climbing', width: 'full' },
 	{ id: 'heatmap', label: 'Ascent calendar', width: 'full' },
 	{ id: 'volume', label: 'Volume', width: 'quarter' },
@@ -70,13 +73,13 @@ export const DEFAULT_DASH_CARDS: readonly DashCardDef[] = [
 	{ id: 'tickTypes', label: 'Tick types', width: 'quarter' },
 	{ id: 'monthly', label: 'Monthly stats', width: 'half' },
 	{ id: 'yearly', label: 'Yearly stats', width: 'half' },
+	{ id: 'weekday', label: 'Weekday', width: 'half' },
+	{ id: 'sessionsPerWeek', label: 'Sessions per week', width: 'half' },
 	{ id: 'bestMonths', label: 'Best months', width: 'full' },
-	{ id: 'badges', label: 'Badges', width: 'full' },
 	{ id: 'goals', label: 'Active goals', width: 'half' },
 	{ id: 'projects', label: 'Projects', width: 'half' },
 	{ id: 'trainingLoad', label: 'Training load', width: 'half' },
 	{ id: 'milestones', label: 'Milestones', width: 'half' },
-	{ id: 'sessionsPerWeek', label: 'Sessions per week', width: 'full' },
 	{ id: 'styleMix', label: 'Style mix', width: 'full' },
 	{ id: 'partners', label: 'Partners', width: 'quarter' },
 	{ id: 'rockTypes', label: 'Rock types', width: 'quarter' },
@@ -86,8 +89,7 @@ export const DEFAULT_DASH_CARDS: readonly DashCardDef[] = [
 	{ id: 'karma', label: 'Karma', width: 'half' },
 	{ id: 'pyramids', label: 'Grade pyramids', width: 'full' },
 	{ id: 'notable', label: 'Notable ascents', width: 'full' },
-	{ id: 'cpr', label: 'CPR timelines', width: 'full' },
-	{ id: 'hardest', label: 'Hardest sends', width: 'half' }
+	{ id: 'cpr', label: 'CPR timelines', width: 'full' }
 ] as const;
 
 const DEF_BY_ID = new Map(DEFAULT_DASH_CARDS.map((c) => [c.id, c]));

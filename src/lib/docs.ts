@@ -75,6 +75,12 @@ export const DOC_PAGES: readonly DocPage[] = [
 		summary: 'Climbing days per ISO week and the yearly average session rate.'
 	},
 	{
+		slug: 'weekday',
+		title: 'Weekday',
+		summary:
+			'Which days of the week you climb — sessions and ascents Mon–Sun, all-time or last 12 weeks.'
+	},
+	{
 		slug: 'best-months',
 		title: 'Best months',
 		summary:

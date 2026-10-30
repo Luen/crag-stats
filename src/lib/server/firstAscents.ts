@@ -186,9 +186,10 @@ export function buildFirstAscentStats(rows: readonly FirstAscentRow[]): FirstAsc
 		boulderRange: range(rows.filter((r) => r.isBoulder)),
 		firstYear: years.length ? Math.min(...years) : null,
 		latestYear: years.length ? Math.max(...years) : null,
+		// Keep the dashboard card short beside Hardest sends (half-width pair).
 		recent: [...rows]
 			.sort((a, b) => (b.date || '').localeCompare(a.date || ''))
-			.slice(0, 5)
+			.slice(0, 3)
 			.map((r) => ({
 				routeId: r.routeId,
 				routeName: r.routeName,
