@@ -84,4 +84,8 @@ For seasonal recommendations from route metadata, see [Best months](/docs/best-m
 
 Fair-weather labels use the exact day counts for their thresholds; displayed rates are rounded to one decimal place. Display rounding alone never changes your label.
 
-Weather drill-downs (#307): the Weather conditions card links each condition row and entire daily-high bar to the logbook. Temperature ranges use `weatherHighMin` (inclusive) and `weatherHighMax` (exclusive), in Celsius, and persist through filtering, sorting and pagination. Card counts are outdoor location-days; the logbook shows every matching ascent, so counts can differ. The logbook Weather column shows cached daily high/low and precipitation plus notable condition chips on screens at least 1280px wide; smaller screens hide its header and cells. Indoor or uncached rows show a dash. No weather requests are made while viewing pages.
+### From the card to your logbook
+
+Each condition row and each daily-high bar on the **Weather conditions** card opens the logbook filtered to those days. A temperature bar includes its lower bound and stops just below the next bar (for example 20–24° covers 20.0 °C up to, but not including, 25 °C). The range stays applied while you sort, page or add other filters; use **Clear weather range** to remove only that range.
+
+The card counts outdoor _days_ at each location, while the logbook lists every matching _ascent_, so the two numbers can differ. On wide screens the logbook shows a Weather column with the cached daily high, low and rain; on smaller screens the condition chips appear next to the route instead. Indoor or uncached ascents show a dash. Viewing these pages never triggers a weather request.

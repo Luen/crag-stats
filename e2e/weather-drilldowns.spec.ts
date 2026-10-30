@@ -75,6 +75,13 @@ for (const colorScheme of ['light', 'dark'] as const) {
 						page.getByRole('columnheader', { name: 'Weather', exact: true })
 					).toHaveCount(0);
 					await expect(weather).not.toBeVisible();
+					await expect(
+						page
+							.locator('tbody tr')
+							.filter({ hasText: 'Drill rain' })
+							.first()
+							.locator('.route-weather-chips')
+					).toBeVisible();
 				}
 				await page.setViewportSize({ width: 1440, height: 1000 });
 				await page.goto('/');
@@ -93,6 +100,9 @@ for (const colorScheme of ['light', 'dark'] as const) {
 				await page.getByRole('button', { name: 'Apply filters', exact: true }).click();
 				await expect(page).toHaveURL(/weatherHighMin=20/);
 				await expect(page.locator('.head')).toContainText('52 ascents');
+				const clear = page.getByRole('link', { name: 'Clear weather range' });
+				await expect(clear).toHaveAttribute('href', /q=Drill\+rain/);
+				await expect(clear).not.toHaveAttribute('href', /weatherHigh/);
 				const axe = await new AxeBuilder({ page }).analyze();
 				expect(
 					axe.violations.filter((v) => v.impact === 'serious' || v.impact === 'critical')
