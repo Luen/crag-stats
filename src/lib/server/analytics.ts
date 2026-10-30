@@ -502,13 +502,26 @@ export function getDashboardStats(
 			? `${dominant.style} climber`
 			: 'Rock climber');
 
-	const dayMap = new Map<string, { count: number; sends: number; heightM: number }>();
+	const dayMap = new Map<
+		string,
+		{ count: number; sends: number; heightM: number; maxBand: number | null }
+	>();
 	for (const row of all) {
 		const day = validDay(row.ascentDate);
 		if (!day) continue;
-		const slot = dayMap.get(day) ?? { count: 0, sends: 0, heightM: 0 };
+		const slot = dayMap.get(day) ?? { count: 0, sends: 0, heightM: 0, maxBand: null };
 		slot.count += 1;
-		if (row.isSend) slot.sends += 1;
+		if (row.isSend) {
+			slot.sends += 1;
+			const rowScore = effectiveScore(row);
+			const rowBand = effectiveBand(row);
+			const isBoulder = vScale(row);
+			const band =
+				rowScore != null && isBoulder
+					? (bandFromVScale(rowScore)?.id ?? null)
+					: (rowBand ?? (rowScore != null ? (bandFromEwbank(rowScore)?.id ?? null) : null));
+			if (band != null && (slot.maxBand == null || band > slot.maxBand)) slot.maxBand = band;
+		}
 		const h = row.heightM ?? row.routeHeightM ?? 0;
 		if (h > 0) slot.heightM += h;
 		dayMap.set(day, slot);
@@ -518,7 +531,8 @@ export function getDashboardStats(
 			date,
 			count: v.count,
 			sends: v.sends,
-			heightM: Math.round(v.heightM * 10) / 10
+			heightM: Math.round(v.heightM * 10) / 10,
+			maxBand: v.maxBand
 		}))
 		.sort((a, b) => a.date.localeCompare(b.date));
 
