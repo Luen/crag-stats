@@ -91,6 +91,31 @@
 
 	const maxCount = $derived(Math.max(1, ...weeks.flat().map((c) => c.count)));
 
+	const MONTH_ABBR = [
+		'Jan',
+		'Feb',
+		'Mar',
+		'Apr',
+		'May',
+		'Jun',
+		'Jul',
+		'Aug',
+		'Sep',
+		'Oct',
+		'Nov',
+		'Dec'
+	] as const;
+
+	/** Label a week column when it contains the 1st of a month (GitHub/Dreeve style). */
+	const monthLabels = $derived(
+		weeks.map((col) => {
+			const day1 = col.find((c) => c.date && c.date.slice(8, 10) === '01');
+			if (!day1?.date) return null;
+			const month = Number(day1.date.slice(5, 7));
+			return MONTH_ABBR[month - 1] ?? null;
+		})
+	);
+
 	function level(count: number): number {
 		if (count <= 0) return 0;
 		const r = count / maxCount;
@@ -158,6 +183,14 @@
 		<p class="empty">No dated ascents yet</p>
 	{:else}
 		<div class="scroll">
+			<div class="months" style:--cols={weeks.length} aria-hidden="true">
+				{#each monthLabels as label, i (i)}
+					{@const monthNum = label ? MONTH_ABBR.indexOf(label) + 1 : 0}
+					<span class={['month', { sparse: monthNum > 0 && monthNum % 2 === 0 }]}
+						>{label ?? ''}</span
+					>
+				{/each}
+			</div>
 			<div class="grid" style:--cols={weeks.length}>
 				{#each weeks as col, wi (wi)}
 					<div class="week">
@@ -273,6 +306,23 @@
 		max-width: 100%;
 		min-width: 0;
 	}
+	.months {
+		display: grid;
+		grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+		gap: clamp(0.12rem, 0.35vw, 0.22rem);
+		width: 100%;
+		margin-bottom: 0.25rem;
+		font-size: 0.68rem;
+		line-height: 1.1;
+		color: var(--ink-muted);
+		font-weight: 600;
+	}
+	.month {
+		overflow: visible;
+		white-space: nowrap;
+		justify-self: start;
+		min-width: 0;
+	}
 	.grid {
 		display: grid;
 		grid-auto-flow: column;
@@ -283,6 +333,11 @@
 		/* Keep cells roughly square while filling the panel (Dreeve-style). */
 		aspect-ratio: var(--cols) / 7;
 		max-height: 11rem;
+	}
+	@media (max-width: 700px) {
+		.month.sparse {
+			visibility: hidden;
+		}
 	}
 	.week {
 		display: contents;
