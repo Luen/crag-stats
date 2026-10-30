@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
 	buildRoutePopularityStats,
 	gemQualityScore,
+	MAX_GEMS,
 	POPULARITY_BUSY_THRESHOLD,
 	routePopScore
 } from './routePopularity';
@@ -48,4 +49,21 @@ it('keeps distinct route identities for gems sharing a name and grade (#131)', (
 	)!.hiddenGems;
 	expect(gems.map((g) => g.routeId)).toEqual([1, 2]);
 	expect(new Set(gems.map((g) => g.routeId)).size).toBe(2);
+});
+
+it('caps hidden gems for the dashboard card (#284)', () => {
+	const gems = buildRoutePopularityStats(
+		[1, 2, 3, 4, 5].map((routeId) => ({
+			routeId,
+			routeName: `Gem ${routeId}`,
+			isSend: true,
+			stars: 3,
+			popularity: 10,
+			ascentCount: routeId
+		}))
+	)!.hiddenGems;
+	expect(MAX_GEMS).toBe(3);
+	expect(gems).toHaveLength(3);
+	// Quieter routes rank ahead when quality ties.
+	expect(gems.map((g) => g.routeId)).toEqual([1, 2, 3]);
 });

@@ -148,7 +148,7 @@ export function buildFairWeatherMetric(days: readonly WeatherSnapshot[]): FairWe
 		toughDays,
 		fairPct,
 		toughPct,
-		label: fairWeatherLabel(fairPct, toughPct)
+		label: fairWeatherLabel((fairDays / days.length) * 100, (toughDays / days.length) * 100)
 	};
 }
 

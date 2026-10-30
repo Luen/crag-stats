@@ -64,7 +64,11 @@ import {
 import { ascents, profiles, routeHistoryFetches, routes } from './db/schema';
 import { pickHardestSends } from './hardestSends';
 import { invalidateRouteHistoryRuns } from './routeHistoryEngine';
-import { invalidateWeatherRuns, loadWeatherSnapshotMap } from './weatherEngine';
+import {
+	invalidateWeatherRuns,
+	loadWeatherSnapshotMap,
+	loadWeatherCachedKeys
+} from './weatherEngine';
 import { isLikelyIndoorRoute } from './venue';
 import {
 	isMissingLogbookWeather,
@@ -1425,7 +1429,8 @@ export function listLogbook(filters?: {
 	}
 	if (filters?.missing?.includes('weather')) {
 		const today = new Date().toISOString().slice(0, 10);
-		rows = rows.filter((r) => isMissingLogbookWeather(weatherByKey, r, today));
+		const cachedKeys = loadWeatherCachedKeys();
+		rows = rows.filter((r) => isMissingLogbookWeather(weatherByKey, r, today, cachedKeys));
 	}
 	if (filters?.tag?.trim()) {
 		const needle = filters.tag.trim().toLowerCase();

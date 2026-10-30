@@ -169,6 +169,16 @@ describe('fair-weather metric (#280)', () => {
 		expect(isToughWeather(mild())).toBe(false);
 	});
 
+	it('uses exact shares for label thresholds before rounding display rates', () => {
+		const nearFair = [...Array.from({ length: 1200 }, fair), ...Array.from({ length: 801 }, mild)];
+		expect(buildFairWeatherMetric(nearFair)).toMatchObject({ fairPct: 60, label: 'mixed' });
+		const nearTough = [
+			...Array.from({ length: 1000 }, rainy),
+			...Array.from({ length: 1001 }, mild)
+		];
+		expect(buildFairWeatherMetric(nearTough)).toMatchObject({ toughPct: 50, label: 'mixed' });
+	});
+
 	it('labels without shaming either style', () => {
 		expect(fairWeatherLabel(70, 10)).toBe('fair-leaning');
 		expect(fairWeatherLabel(20, 55)).toBe('all-weather');
