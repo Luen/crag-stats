@@ -15,7 +15,7 @@
 	</div>
 </section>
 
-<PartnerLeaderboard partners={data.partners} metricToggle />
+<PartnerLeaderboard preferences={data.cardPreferences} partners={data.partners} metricToggle />
 
 <style>
 	.head {

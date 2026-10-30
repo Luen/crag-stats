@@ -10,10 +10,21 @@ export function listPartners(limit: number | null = null) {
 		.select({
 			ascentDate: ascents.ascentDate,
 			partners: ascents.partners,
-			cragName: routes.cragName
+			cragName: routes.cragName,
+			provider: routes.provider,
+			areaExternalId: routes.areaExternalId
 		})
 		.from(ascents)
 		.leftJoin(routes, eq(ascents.routeId, routes.id))
 		.all();
-	return buildPartnerLeaderboard(rows, limit).partners;
+	return buildPartnerLeaderboard(
+		rows.map((r) => ({
+			...r,
+			areaKey:
+				r.provider && r.areaExternalId?.trim()
+					? `${r.provider}:area:${r.areaExternalId.trim()}`
+					: null
+		})),
+		limit
+	).partners;
 }
