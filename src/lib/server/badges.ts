@@ -6,6 +6,7 @@ import { formatVScaleLabel, usesVScale } from '#lib/grades';
 import { tickKind } from '#lib/ticks';
 import { DEFAULT_DATE_DISPLAY, formatDateTime, formatNumber, type DateDisplay } from '#lib/dates';
 import type { FirstImport } from './firstImport';
+import { rankAlmostBadges, type BadgeAlmost } from '#lib/badgeProgress';
 import type { CommunityBadgeHit } from './communityBadges';
 import { displayStyle, type DashboardExtraRow } from './dashboardExtras';
 
@@ -59,6 +60,8 @@ export type BadgesResult = {
 	locked: BadgeCard[];
 	earnedCount: number;
 	totalCount: number;
+	/** Top locked countable badges by % complete (#254). */
+	almost: BadgeAlmost[];
 };
 
 type Hit = {
@@ -989,11 +992,39 @@ export function buildBadges(
 
 	const earnedCards = cards.filter((c) => c.earned);
 	const lockedCards = cards.filter((c) => !c.earned);
+	const titleOf = (id: string) => BADGE_CATALOG.find((d) => d.id === id)?.title ?? id;
+
+	const maxDayHeight = Math.max(0, ...dayHeights.values());
+	const almostCandidates: { id: string; title: string; current: number; target: number }[] = [];
+	const addAlmost = (id: string, current: number, target: number) => {
+		if (earned.has(id)) return;
+		almostCandidates.push({ id, title: titleOf(id), current, target });
+	};
+
+	for (const b of COUNT_BADGES) addAlmost(b.id, ascentCount, b.n);
+	for (const b of SEND_BADGES) addAlmost(b.id, sendCount, b.n);
+	for (const b of ONSIGHT_BADGES) addAlmost(b.id, onsightCount, b.n);
+	for (const b of FLASH_BADGES) addAlmost(b.id, flashCount, b.n);
+	for (const b of SESSION_BADGES) addAlmost(b.id, sessions.size, b.n);
+	for (const b of HEIGHT_BADGES) addAlmost(b.id, cumHeight, b.m);
+	addAlmost('day_height_250', maxDayHeight, 250);
+	for (const b of COUNTRY_BADGES) addAlmost(b.id, countries.size, b.n);
+	addAlmost('weekend_5', weekendSendCount, 5);
+	addAlmost('weekend_15', weekendSendCount, 15);
+	for (const b of FA_COUNT_BADGES) addAlmost(b.id, faRoutes.size, b.n);
+	for (const b of FFA_COUNT_BADGES) addAlmost(b.id, ffaCount, b.n);
+	for (const b of STYLE_FA_BADGES) {
+		addAlmost(b.id, styleFaCounts[b.style as 'Sport' | 'Trad' | 'Boulder'], b.n);
+	}
+	addAlmost('setter_5', setterHits.length, 5);
+	addAlmost('setter_10', setterHits.length, 10);
+	addAlmost('setter_25', setterHits.length, 25);
 
 	return {
 		earned: earnedCards,
 		locked: lockedCards,
 		earnedCount: earnedCards.length,
-		totalCount: cards.length
+		totalCount: cards.length,
+		almost: rankAlmostBadges(almostCandidates, { limit: 3 })
 	};
 }

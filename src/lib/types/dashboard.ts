@@ -330,6 +330,7 @@ export type DashboardStats = {
 		}[];
 		earnedCount: number;
 		totalCount: number;
+		almost: { id: string; title: string; current: number; target: number; pct: number }[];
 	};
 	trainingLoad: TrainingLoadView;
 	styleMix: {
