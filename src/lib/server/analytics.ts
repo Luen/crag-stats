@@ -914,6 +914,7 @@ export function getDashboardStats(
 		countries: countries.size,
 		rockBlurb,
 		putUpRoutes: developerImpact.routes,
+		weather: weatherConditions,
 		firstAscentCount: faMarks.size,
 		dateDisplay: opts?.dateDisplay
 	});
