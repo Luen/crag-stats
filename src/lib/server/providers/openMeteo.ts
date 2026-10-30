@@ -12,6 +12,9 @@ export type OpenMeteoDaily = {
 	precipMm: number | null;
 	weatherCode: number | null;
 	humidityMean: number | null;
+	/** km/h (Open-Meteo default for wind_speed_10m_*). */
+	windMaxKmh: number | null;
+	windMeanKmh: number | null;
 };
 
 export type OpenMeteoFetchResult =
@@ -29,7 +32,7 @@ export type OpenMeteoClient = {
 
 const ARCHIVE_URL = 'https://archive-api.open-meteo.com/v1/archive';
 const DAILY_VARS =
-	'temperature_2m_max,temperature_2m_min,precipitation_sum,weathercode,relative_humidity_2m_mean';
+	'temperature_2m_max,temperature_2m_min,precipitation_sum,weathercode,relative_humidity_2m_mean,wind_speed_10m_max,wind_speed_10m_mean';
 
 function numOrNull(v: unknown): number | null {
 	if (v == null) return null;
@@ -62,6 +65,8 @@ export function parseOpenMeteoArchive(body: unknown): OpenMeteoDaily[] {
 			? d.weather_code
 			: [];
 	const humidity = Array.isArray(d.relative_humidity_2m_mean) ? d.relative_humidity_2m_mean : [];
+	const windMax = Array.isArray(d.wind_speed_10m_max) ? d.wind_speed_10m_max : [];
+	const windMean = Array.isArray(d.wind_speed_10m_mean) ? d.wind_speed_10m_mean : [];
 
 	const out: OpenMeteoDaily[] = [];
 	for (let i = 0; i < times.length; i++) {
@@ -73,7 +78,9 @@ export function parseOpenMeteoArchive(body: unknown): OpenMeteoDaily[] {
 			tempMinC: numOrNull(tmin[i]),
 			precipMm: numOrNull(precip[i]),
 			weatherCode: numOrNull(codes[i]),
-			humidityMean: numOrNull(humidity[i])
+			humidityMean: numOrNull(humidity[i]),
+			windMaxKmh: numOrNull(windMax[i]),
+			windMeanKmh: numOrNull(windMean[i])
 		});
 	}
 	return out;

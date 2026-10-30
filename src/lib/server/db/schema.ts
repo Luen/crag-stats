@@ -292,6 +292,9 @@ export const weatherDays = sqliteTable(
 		precipMm: real('precip_mm'),
 		weatherCode: integer('weather_code'),
 		humidityMean: real('humidity_mean'),
+		/** Daily max 10 m wind speed (km/h) from Open-Meteo (#277 / #281). */
+		windMaxKmh: real('wind_max_kmh'),
+		windMeanKmh: real('wind_mean_kmh'),
 		source: text('source').notNull().default('open-meteo'),
 		/** ok | missing | error */
 		status: text('status').notNull(),

@@ -23,7 +23,7 @@ export const DOC_PAGES: readonly DocPage[] = [
 		slug: 'weather',
 		title: 'Weather',
 		summary:
-			'Optional Open-Meteo outdoor day cache and heat / freeze / rain / snow badges (opt-in WEATHER_IMPORT).'
+			'Optional Open-Meteo outdoor day cache and heat / freeze / rain / snow / wind badges (opt-in WEATHER_IMPORT).'
 	},
 	{
 		slug: 'climber-type',

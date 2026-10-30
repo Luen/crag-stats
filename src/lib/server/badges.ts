@@ -10,6 +10,7 @@ import {
 	isHeatWeather,
 	isRainWeather,
 	isSnowWeather,
+	isWindyWeather,
 	roundCoord,
 	weatherDayKey,
 	type WeatherSnapshot
@@ -35,7 +36,8 @@ export type BadgeIcon =
 	| 'hanger'
 	| 'thermometer'
 	| 'droplet'
-	| 'snowflake';
+	| 'snowflake'
+	| 'wind';
 
 export type BadgeTone = 'warm' | 'green' | 'blue' | 'purple' | 'slate';
 
@@ -287,6 +289,13 @@ export const BADGE_CATALOG: readonly BadgeDef[] = [
 		hint: 'Climb outdoors on a snowy day',
 		icon: 'snowflake',
 		tone: 'purple'
+	},
+	{
+		id: 'weather_wind',
+		title: 'Blown Away',
+		hint: 'Climb outdoors when the day’s max wind is 50 km/h or stronger',
+		icon: 'wind',
+		tone: 'slate'
 	},
 	{
 		id: 'sessions_10',
@@ -860,6 +869,9 @@ export function buildBadges(
 				mark('weather_snow', hitAt(row, 'Climbed in the snow'));
 			} else if (isRainWeather(weather)) {
 				mark('weather_rain', hitAt(row, `Rainy day · ${weather.precipMm!.toFixed(1)} mm`));
+			}
+			if (isWindyWeather(weather)) {
+				mark('weather_wind', hitAt(row, `Windy day · ${Math.round(weather.windMaxKmh!)} km/h max`));
 			}
 		}
 

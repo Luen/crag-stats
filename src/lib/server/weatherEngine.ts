@@ -209,6 +209,8 @@ function upsertWeatherDay(
 		precipMm: number | null;
 		weatherCode: number | null;
 		humidityMean: number | null;
+		windMaxKmh: number | null;
+		windMeanKmh: number | null;
 		status: string;
 		fetchedAt: string;
 	}
@@ -223,6 +225,8 @@ function upsertWeatherDay(
 			precipMm: fields.precipMm,
 			weatherCode: fields.weatherCode,
 			humidityMean: fields.humidityMean,
+			windMaxKmh: fields.windMaxKmh,
+			windMeanKmh: fields.windMeanKmh,
 			source: 'open-meteo',
 			status: fields.status,
 			fetchedAt: fields.fetchedAt
@@ -235,6 +239,8 @@ function upsertWeatherDay(
 				precipMm: fields.precipMm,
 				weatherCode: fields.weatherCode,
 				humidityMean: fields.humidityMean,
+				windMaxKmh: fields.windMaxKmh,
+				windMeanKmh: fields.windMeanKmh,
 				source: 'open-meteo',
 				status: fields.status,
 				fetchedAt: fields.fetchedAt
@@ -369,6 +375,8 @@ export async function runWeatherImportOnce(
 					precipMm: null,
 					weatherCode: null,
 					humidityMean: null,
+					windMaxKmh: null,
+					windMeanKmh: null,
 					status: 'missing',
 					fetchedAt
 				});
@@ -379,6 +387,8 @@ export async function runWeatherImportOnce(
 					precipMm: match.precipMm,
 					weatherCode: match.weatherCode,
 					humidityMean: match.humidityMean,
+					windMaxKmh: match.windMaxKmh,
+					windMeanKmh: match.windMeanKmh,
 					status: 'ok',
 					fetchedAt
 				});
@@ -428,7 +438,8 @@ export function loadWeatherSnapshotMap(): Map<string, WeatherSnapshot> {
 			tempMaxC: weatherDays.tempMaxC,
 			tempMinC: weatherDays.tempMinC,
 			precipMm: weatherDays.precipMm,
-			weatherCode: weatherDays.weatherCode
+			weatherCode: weatherDays.weatherCode,
+			windMaxKmh: weatherDays.windMaxKmh
 		})
 		.from(weatherDays)
 		.where(eq(weatherDays.status, 'ok'))
@@ -438,7 +449,8 @@ export function loadWeatherSnapshotMap(): Map<string, WeatherSnapshot> {
 			tempMaxC: r.tempMaxC,
 			tempMinC: r.tempMinC,
 			precipMm: r.precipMm,
-			weatherCode: r.weatherCode
+			weatherCode: r.weatherCode,
+			windMaxKmh: r.windMaxKmh
 		});
 	}
 	return map;

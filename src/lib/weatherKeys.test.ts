@@ -4,6 +4,7 @@ import {
 	isHeatWeather,
 	isRainWeather,
 	isSnowWeather,
+	isWindyWeather,
 	roundCoord,
 	weatherConditions,
 	weatherDayKey
@@ -53,9 +54,39 @@ describe('weather conditions', () => {
 		);
 	});
 
-	it('lists overlapping heat + rain', () => {
-		expect(weatherConditions({ tempMaxC: 36, tempMinC: 24, precipMm: 2, weatherCode: 63 })).toEqual(
-			['heat', 'rain']
-		);
+	it('detects wind at ≥50 km/h max', () => {
+		expect(
+			isWindyWeather({
+				tempMaxC: 18,
+				tempMinC: 10,
+				precipMm: 0,
+				weatherCode: 0,
+				windMaxKmh: 50
+			})
+		).toBe(true);
+		expect(
+			isWindyWeather({
+				tempMaxC: 18,
+				tempMinC: 10,
+				precipMm: 0,
+				weatherCode: 0,
+				windMaxKmh: 49.9
+			})
+		).toBe(false);
+		expect(
+			isWindyWeather({ tempMaxC: 18, tempMinC: 10, precipMm: 0, weatherCode: 0, windMaxKmh: null })
+		).toBe(false);
+	});
+
+	it('lists overlapping heat + rain + wind', () => {
+		expect(
+			weatherConditions({
+				tempMaxC: 36,
+				tempMinC: 24,
+				precipMm: 2,
+				weatherCode: 63,
+				windMaxKmh: 60
+			})
+		).toEqual(['heat', 'rain', 'wind']);
 	});
 });
