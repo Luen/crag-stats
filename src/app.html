@@ -12,10 +12,30 @@
 				var t = localStorage.getItem('cs_theme');
 				if (t === 'light' || t === 'dark') d.dataset.theme = t;
 				if (localStorage.getItem('cs_sidebar') === 'mini') d.dataset.sidebar = 'mini';
+				// Hide preference cards only while a legacy localStorage choice still needs its cookie
+				// (keys from CARD_PREFERENCE_KEYS in src/lib/cardPreferences.ts).
+				var keys = [
+					'cs_partners_metric',
+					'cs_weekday_range',
+					'cs_weekday_metric',
+					'cs_weekday_style',
+					'cs_yearly_chart',
+					'cs_heatmap_mode'
+				];
+				for (var i = 0; i < keys.length; i++) {
+					if (
+						localStorage.getItem(keys[i]) != null &&
+						document.cookie.split('; ').every(function (c) {
+							return c.indexOf(keys[i] + '=') !== 0;
+						})
+					) {
+						d.dataset.cardPrefsMigrating = '';
+						break;
+					}
+				}
 			} catch (e) {}
 		</script>
 		%sveltekit.head%
-		<noscript><link rel="stylesheet" href="%sveltekit.assets%/nojs-preferences.css" /></noscript>
 	</head>
 	<body data-sveltekit-preload-data="hover">
 		<div style="display: contents">%sveltekit.body%</div>

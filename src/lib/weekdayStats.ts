@@ -1,11 +1,13 @@
-import { calendarDay as validWeekdayDay } from '#lib/calendarDay';
 /**
  * Weekday distribution for the dashboard (Dreeve-style “Weekday” card).
  * A session = a calendar day with ≥1 matching ascent (same idea as Sessions per week).
  * Weekday is taken from the YYYY-MM-DD string in UTC (logbook dates have no time).
  */
 
+import { calendarDay as validWeekdayDay } from '#lib/calendarDay';
 import { matchesClimbStyle } from '#lib/climbStyle';
+
+export { validWeekdayDay };
 
 export type WeekdayId = 0 | 1 | 2 | 3 | 4 | 5 | 6; // Sun … Sat (Date#getUTCDay)
 
@@ -75,8 +77,6 @@ export type WeekdayAscentInput = {
 	/** Climbed style when the ascent overrides the route (same as logbook filters). */
 	ascentGearStyle?: string | null;
 };
-
-/** Strict YYYY-MM-DD with a real calendar month/day (rejects 2018-00-00 / 2024-02-31). */
 
 export function weekdayOfIsoDay(day: string): WeekdayId {
 	return new Date(`${day}T12:00:00Z`).getUTCDay() as WeekdayId;
@@ -217,5 +217,3 @@ export function buildWeekdayStats(
 		last12Weeks: bucketsToStyle(last12)
 	};
 }
-
-export { calendarDay as validWeekdayDay } from '#lib/calendarDay';

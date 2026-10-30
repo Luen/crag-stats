@@ -1,8 +1,9 @@
-import { calendarDay } from './calendarDay';
 /**
  * Shared weather cache keys and day classification (#268).
  * Lat/lon are rounded to 1 decimal so nearby routes at one crag share a row.
  */
+
+import { calendarDay } from './calendarDay';
 
 /** Round a coordinate to 1 decimal place (Open-Meteo cache key). */
 export function roundCoord(value: number): number {

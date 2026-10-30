@@ -1,8 +1,9 @@
-import { calendarDay as validDay } from '#lib/calendarDay';
 /**
  * Sessions per week for the dashboard card (#244).
  * A session = a calendar day with ≥1 logged ascent (same idea as project sessions).
  */
+
+import { calendarDay as validDay } from '#lib/calendarDay';
 
 export type SessionsWeek = {
 	/** Monday (UTC) of the week */
