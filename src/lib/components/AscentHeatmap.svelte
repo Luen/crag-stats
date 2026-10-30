@@ -73,9 +73,9 @@
 
 	const weeks = $derived.by(() => {
 		if (!year) return [] as Cell[][];
-		const start = new Date(`${year}-01-01T12:00:00`);
-		const end = new Date(`${year}-12-31T12:00:00`);
-		// Align to Monday-start week columns like GitHub (Sun=0 → shift)
+		const start = new Date(`${year}-01-01T12:00:00Z`);
+		const end = new Date(`${year}-12-31T12:00:00Z`);
+		// UTC calendar arithmetic keeps browser time zones and DST from shifting cells.
 		const cells: Cell[] = [];
 		for (let t = start.getTime(); t <= end.getTime(); t += 86400000) {
 			const d = new Date(t);
@@ -87,7 +87,7 @@
 				sends: hit?.sends ?? 0,
 				maxBand: hit?.maxBand ?? null,
 				weather: hit?.weather ?? null,
-				dow: d.getDay()
+				dow: d.getUTCDay()
 			});
 		}
 		const cols: Cell[][] = [];
