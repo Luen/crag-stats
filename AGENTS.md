@@ -471,3 +471,5 @@ _Add a row when you change behaviour agents must know about._
 - Apply fair-weather label thresholds to exact shares, before rounding rates for display.
 
 - Accessibility regressions #300–#302: small tinted count/status pills use ink text; interactive crag SVGs use a named group and individually named links. Weather fixtures audit full dashboard/logbook/sectors pages in both themes.
+
+World map (#313): `/map` uses bundled public-domain Natural Earth outlines, server-side ascent/place aggregation, native marker controls and a values table. Circles/glow use ascent counts. Stable `place` identity and `mapVenue` filters must survive logbook sort/page/form navigation. Shortest longitude arc and circular means prevent dateline splits; no third-party map requests or private notes.

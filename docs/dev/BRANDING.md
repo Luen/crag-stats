@@ -177,3 +177,5 @@ The First ascents footer credits theCrag route history when displayed FA/FFA or 
 ### Small tinted pills and interactive maps
 
 Sidebar count badges and Training load status pills use `--ink` for their small text, retaining their semantic tinted backgrounds. Test multi-digit counts and the Spike state in both themes. Interactive crag maps expose a named group of named links, rather than an image role containing focusable descendants.
+
+World map (#313): `/map` uses bundled public-domain Natural Earth outlines, server-side ascent/place aggregation, native marker controls and a values table. Circles/glow use ascent counts. Stable `place` identity and `mapVenue` filters must survive logbook sort/page/form navigation. Shortest longitude arc and circular means prevent dateline splits; no third-party map requests or private notes.

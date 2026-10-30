@@ -1,3 +1,4 @@
+import { validMapCoords, mapPlaceKey } from '#lib/climbingMap';
 import { matchesClimbStyle } from '#lib/climbStyle';
 import { forgetTheCragSession } from './theCragWebSession';
 
@@ -72,6 +73,7 @@ import {
 import { isLikelyIndoorRoute } from './venue';
 import {
 	isMissingLogbookWeather,
+	isOutdoorLogbookRow,
 	logbookRowWeather,
 	logbookRowWeatherChips
 } from './logbookWeather';
@@ -1185,6 +1187,8 @@ export function listLogbook(filters?: {
 	missing?: Array<'height' | 'bolts' | 'pitch' | 'weather'>;
 	/** Outdoor ascents whose cached weather day matches (#273); indoor routes never match. */
 	weather?: WeatherFilterKey;
+	place?: string;
+	mapVenue?: string;
 	/** Case-insensitive substring match on route tag names in tags_json */
 	tag?: string;
 	/** Case-insensitive exact match on category+name; all entries must match (AND) */
@@ -1223,6 +1227,7 @@ export function listLogbook(filters?: {
 			externalId: ascents.externalId,
 			routeProvider: routes.provider,
 			routeExternalId: routes.externalId,
+			areaExternalId: routes.areaExternalId,
 			ascentDate: ascents.ascentDate,
 			tickType: ascents.tickType,
 			isSend: ascents.isSend,
@@ -1270,6 +1275,11 @@ export function listLogbook(filters?: {
 		.innerJoin(routes, eq(ascents.routeId, routes.id))
 		.orderBy(desc(ascents.ascentDate))
 		.all();
+
+	if (filters?.place)
+		rows = rows.filter((r) => validMapCoords(r.lat, r.lon) && mapPlaceKey(r) === filters.place);
+	if (filters?.mapVenue === 'outdoor' || filters?.mapVenue === 'indoor')
+		rows = rows.filter((r) => isOutdoorLogbookRow(r) === (filters.mapVenue === 'outdoor'));
 
 	const routeAscentCounts = buildRouteAscentCounts(rows);
 

@@ -10,6 +10,11 @@ export type RenderedDoc = { slug: string; title: string; segments: DocSegment[] 
 
 export const DOC_PAGES: readonly DocPage[] = [
 	{
+		slug: 'climbing-map',
+		title: 'Climbing map',
+		summary: 'Worldwide places, ascent-density circles and glow, filters and location coverage.'
+	},
+	{
 		slug: 'logbook-sync',
 		title: 'Logbook sync',
 		summary: 'For the server owner: API sync or automatic CSV downloads with a saved theCrag login.'
