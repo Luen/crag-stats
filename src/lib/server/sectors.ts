@@ -1,14 +1,11 @@
+import { loadWeatherLocations, attachWeatherLocation } from './weatherLocations';
+import { ascentWeatherKey } from '#lib/weatherKeys';
 import { eq, sql } from 'drizzle-orm';
 import type { CragSectorGroup } from '#lib/types/sectors';
 import { db, ensureSchema } from './db';
 import { ascents, routes } from './db/schema';
 import { buildVisitClimate, type VisitClimate } from '#lib/visitClimate';
-import {
-	roundCoord,
-	weatherAscentDay,
-	weatherDayKey,
-	type WeatherSnapshot
-} from '#lib/weatherKeys';
+import { weatherAscentDay, type WeatherSnapshot } from '#lib/weatherKeys';
 import { logbookRowWeather } from './logbookWeather';
 import { loadWeatherSnapshotMap } from './weatherEngine';
 import {
@@ -41,9 +38,11 @@ export function listVisitClimateByCrag(): Map<string, VisitClimate> {
 	const weatherByKey = loadWeatherSnapshotMap();
 	const out = new Map<string, VisitClimate>();
 	if (weatherByKey.size === 0) return out;
+	const locations = loadWeatherLocations();
 	const rows = db
 		.select({
 			ascentDate: ascents.ascentDate,
+			routeId: ascents.routeId,
 			lat: routes.lat,
 			lon: routes.lon,
 			gearStyle: routes.gearStyle,
@@ -53,16 +52,18 @@ export function listVisitClimateByCrag(): Map<string, VisitClimate> {
 		})
 		.from(ascents)
 		.innerJoin(routes, eq(ascents.routeId, routes.id))
-		.all();
+		.all()
+		.map((r) => attachWeatherLocation(r, locations));
 	const byCrag = new Map<string, Map<string, WeatherSnapshot>>();
 	for (const r of rows) {
 		const day = weatherAscentDay(r.ascentDate);
-		if (!day || r.lat == null || r.lon == null) continue;
+		const key = ascentWeatherKey(r);
+		if (!day || !key) continue;
 		const w = logbookRowWeather(weatherByKey, r);
 		if (!w) continue;
 		const crag = (r.cragName || 'Unknown').trim() || 'Unknown';
 		const days = byCrag.get(crag) ?? new Map<string, WeatherSnapshot>();
-		days.set(weatherDayKey(roundCoord(r.lat), roundCoord(r.lon), day), w);
+		days.set(key, w);
 		byCrag.set(crag, days);
 	}
 	for (const [crag, days] of byCrag) {

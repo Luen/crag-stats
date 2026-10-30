@@ -3,6 +3,16 @@
  * Lat/lon are rounded to 1 decimal so nearby routes at one crag share a row.
  */
 
+export type WeatherLocation = {
+	lat: number;
+	lon: number;
+	source: 'route' | 'sector' | 'crag' | 'cached' | 'place';
+	name: string;
+	areaId: string | null;
+	precision: string;
+	resolvedAt: string;
+};
+
 /** Round a coordinate to 1 decimal place (Open-Meteo cache key). */
 export function roundCoord(value: number): number {
 	return Math.round(value * 10) / 10;
@@ -134,14 +144,19 @@ export function weatherAscentDay(date: string | null | undefined): string | null
 /** Cache key for an ascent's (rounded lat, lon, day), or null without coords / valid day. */
 export function ascentWeatherKey(row: {
 	ascentDate: string | null | undefined;
+	weatherLocation?: WeatherLocation | null;
 	lat?: number | null;
 	lon?: number | null;
 }): string | null {
 	const day = weatherAscentDay(row.ascentDate);
 	if (!day) return null;
-	if (row.lat == null || row.lon == null) return null;
-	if (!Number.isFinite(row.lat) || !Number.isFinite(row.lon)) return null;
-	return weatherDayKey(roundCoord(row.lat), roundCoord(row.lon), day);
+	if (row.weatherLocation === null) return null;
+	const lat = row.weatherLocation?.lat ?? row.lat;
+	const lon = row.weatherLocation?.lon ?? row.lon;
+	if (lat == null || lon == null) return null;
+	if (!Number.isFinite(lat) || !Number.isFinite(lon) || Math.abs(lat) > 90 || Math.abs(lon) > 180)
+		return null;
+	return weatherDayKey(roundCoord(lat), roundCoord(lon), day);
 }
 
 /**
@@ -152,6 +167,7 @@ export function lookupAscentWeather(
 	map: WeatherLookupMap | null | undefined,
 	row: {
 		ascentDate: string | null | undefined;
+		weatherLocation?: WeatherLocation | null;
 		lat?: number | null;
 		lon?: number | null;
 		/** Pass `false` for indoor/gym routes: they never match. Defaults to true. */

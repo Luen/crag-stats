@@ -1,3 +1,8 @@
+import {
+	loadWeatherLocations,
+	attachWeatherLocation,
+	invalidateWeatherLocations
+} from './weatherLocations';
 import { matchesClimbStyle } from '#lib/climbStyle';
 import { forgetTheCragSession } from './theCragWebSession';
 
@@ -309,6 +314,7 @@ export function getDashboardStats(
 			);
 		}
 	}
+	const weatherLocations = loadWeatherLocations();
 	const all = db
 		.select({
 			id: ascents.id,
@@ -362,7 +368,8 @@ export function getDashboardStats(
 		})
 		.from(ascents)
 		.innerJoin(routes, eq(ascents.routeId, routes.id))
-		.all();
+		.all()
+		.map((r) => attachWeatherLocation(r, weatherLocations));
 
 	const tickMap = new Map<string, number>();
 	const styleMap = new Map<string, number>();
@@ -733,6 +740,7 @@ export function getDashboardStats(
 		routeIsProject: a.routeIsProject,
 		hasPersonalGrade: hasPersonalAscentGrade(a.gradeProvenanceJson),
 		lat: a.lat,
+		weatherLocation: a.weatherLocation,
 		lon: a.lon,
 		pitchLabel: a.pitchLabel,
 		pitchesTotal: a.pitchesTotal,
@@ -851,6 +859,7 @@ export function getDashboardStats(
 				quality: r.quality,
 				tags: parseTagsJson(r.tagsJson).slice(0, 6),
 				weatherChips: logbookRowWeatherChips(weatherByKey, r),
+				weatherLocation: logbookRowWeather(weatherByKey, r) ? r.weatherLocation : null,
 				url: linkFor(r)
 			};
 		});
@@ -1220,9 +1229,11 @@ export function listLogbook(filters?: {
 	// from/to win over year/season so mixed URL params stay predictable (#85).
 	const useYearSeason = !fromBound && !toBound;
 
+	const weatherLocations = loadWeatherLocations();
 	let rows = db
 		.select({
 			id: ascents.id,
+			routeId: ascents.routeId,
 			externalId: ascents.externalId,
 			routeProvider: routes.provider,
 			routeExternalId: routes.externalId,
@@ -1272,7 +1283,8 @@ export function listLogbook(filters?: {
 		.from(ascents)
 		.innerJoin(routes, eq(ascents.routeId, routes.id))
 		.orderBy(desc(ascents.ascentDate))
-		.all();
+		.all()
+		.map((r) => attachWeatherLocation(r, weatherLocations));
 
 	const routeAscentCounts = buildRouteAscentCounts(rows);
 
@@ -1527,6 +1539,7 @@ export function wipeAllData() {
 	// Abandon any in-flight route-history import before clearing tables (#74).
 	invalidateRouteHistoryRuns();
 	invalidateWeatherRuns();
+	invalidateWeatherLocations();
 	db.run(sql`DELETE FROM projects`);
 	db.run(sql`DELETE FROM goals`);
 	db.run(sql`DELETE FROM first_ascents`);
@@ -1534,6 +1547,9 @@ export function wipeAllData() {
 	db.run(sql`DELETE FROM route_history`);
 	db.run(sql`DELETE FROM route_history_fetches`);
 	db.run(sql`DELETE FROM route_history_import_state`);
+	db.run(sql`DELETE FROM weather_locations`);
+	db.run(sql`DELETE FROM weather_place_overrides`);
+	db.run(sql`DELETE FROM weather_place_searches`);
 	db.run(sql`DELETE FROM weather_days`);
 	db.run(sql`DELETE FROM weather_import_state`);
 	db.run(sql`DELETE FROM ascents`);

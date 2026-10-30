@@ -305,7 +305,11 @@
 								{/if}
 							</div>
 							<TagChips tags={climb.tags} />
-							<WeatherChips chips={climb.weatherChips} dateDisplay={data.dateDisplay} />
+							<WeatherChips
+								location={climb.weatherLocation}
+								chips={climb.weatherChips}
+								dateDisplay={data.dateDisplay}
+							/>
 						</div>
 						<GradeChip grade={climb.gradeLabel ?? climb.gradeRaw} band={climb.gradeBand} />
 					</li>

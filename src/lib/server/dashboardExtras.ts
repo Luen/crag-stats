@@ -15,6 +15,7 @@ export { splitPartners };
 
 /** Minimal row shape shared by extras builders. */
 export type DashboardExtraRow = {
+	weatherLocation?: import('#lib/weatherKeys').WeatherLocation | null;
 	ascentDate: string | null;
 	/** Stable id for same-day ordering (badges / milestones). */
 	ascentId?: number | null;

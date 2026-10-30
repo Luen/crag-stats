@@ -93,6 +93,10 @@
 		</div>
 	{/if}
 
+	<p class="hint">
+		Weather can use an approximate crag or owner-selected nearby place. The logbook shows each
+		location source.
+	</p>
 	<h3>Share of days</h3>
 	<ul class="shares">
 		{#each data.shares as share (share.key)}

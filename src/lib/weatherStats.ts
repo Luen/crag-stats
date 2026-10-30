@@ -12,15 +12,16 @@ import {
 	isRainWeather,
 	isSnowWeather,
 	isWindyWeather,
-	roundCoord,
+	ascentWeatherKey,
+	type WeatherLocation,
 	weatherAscentDay,
-	weatherDayKey,
 	type WeatherLookupMap,
 	type WeatherSnapshot
 } from './weatherKeys';
 
 export type WeatherAscentRow = {
 	ascentDate: string | null;
+	weatherLocation?: WeatherLocation | null;
 	ascentId?: number | null;
 	lat?: number | null;
 	lon?: number | null;
@@ -206,9 +207,8 @@ export function buildWeatherConditionsView(
 	for (const row of rows) {
 		if (row.outdoor === false) continue;
 		const day = weatherAscentDay(row.ascentDate);
-		if (!day || row.lat == null || row.lon == null) continue;
-		if (!Number.isFinite(row.lat) || !Number.isFinite(row.lon)) continue;
-		const key = weatherDayKey(roundCoord(row.lat), roundCoord(row.lon), day);
+		const key = ascentWeatherKey(row);
+		if (!day || !key) continue;
 		const cur = days.get(key);
 		if (cur) {
 			if (repWins(row, cur.rep)) cur.rep = row;

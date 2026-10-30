@@ -273,6 +273,7 @@ export type DashboardStats = {
 		tags: RouteTag[];
 		/** Weather on the day for outdoor climbs with a cached day; empty otherwise (#274). */
 		weatherChips: WeatherChip[];
+		weatherLocation?: import('#lib/weatherKeys').WeatherLocation | null;
 		url: string | null;
 	}[];
 	blurb: {
