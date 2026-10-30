@@ -58,7 +58,7 @@
 				if (i.id === 'bestMonths' && s.bestMonths.cragCount === 0) {
 					return { ...i, enabled: false };
 				}
-				if (i.id === 'weekday' && s.weekday.totalSessionsAllTime === 0) {
+				if (i.id === 'weekday' && s.weekday.allTime.all.totalSessions === 0) {
 					return { ...i, enabled: false };
 				}
 				return i;

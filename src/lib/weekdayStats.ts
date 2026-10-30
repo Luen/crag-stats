@@ -1,10 +1,15 @@
 /**
  * Weekday distribution for the dashboard (Dreeve-style “Weekday” card).
- * A session = a calendar day with ≥1 ascent (same as Sessions per week).
+ * A session = a calendar day with ≥1 matching ascent (same idea as Sessions per week).
  * Weekday is taken from the YYYY-MM-DD string in UTC (logbook dates have no time).
  */
 
 export type WeekdayId = 0 | 1 | 2 | 3 | 4 | 5 | 6; // Sun … Sat (Date#getUTCDay)
+
+export type WeekdayMetric = 'sessions' | 'ascents';
+
+/** Style chips on the card — “all” includes top-rope / alpine / unknown, etc. */
+export type WeekdayStyleKey = 'all' | 'sport' | 'trad' | 'boulder';
 
 /** Display order Monday → Sunday. */
 export const WEEKDAY_ORDER: readonly WeekdayId[] = [1, 2, 3, 4, 5, 6, 0];
@@ -29,22 +34,38 @@ export const WEEKDAY_FULL: Record<WeekdayId, string> = {
 	6: 'Saturday'
 };
 
+export const WEEKDAY_STYLE_KEYS: readonly WeekdayStyleKey[] = [
+	'all',
+	'sport',
+	'trad',
+	'boulder'
+] as const;
+
 export type WeekdayRow = {
 	weekday: WeekdayId;
 	label: string;
-	/** Unique calendar days with ≥1 ascent. */
+	/** Unique calendar days with ≥1 matching ascent. */
 	sessions: number;
-	/** Total ascent rows that day-of-week. */
+	/** Total matching ascent rows that day-of-week. */
 	ascents: number;
 };
 
+export type WeekdaySlice = {
+	rows: WeekdayRow[];
+	totalSessions: number;
+	totalAscents: number;
+};
+
+export type WeekdayStyleBuckets = Record<WeekdayStyleKey, WeekdaySlice>;
+
 export type WeekdayStatsView = {
-	allTime: WeekdayRow[];
-	last12Weeks: WeekdayRow[];
-	mostActiveAllTime: { weekday: WeekdayId; label: string; sessions: number } | null;
-	mostActiveLast12: { weekday: WeekdayId; label: string; sessions: number } | null;
-	totalSessionsAllTime: number;
-	totalSessionsLast12: number;
+	allTime: WeekdayStyleBuckets;
+	last12Weeks: WeekdayStyleBuckets;
+};
+
+export type WeekdayAscentInput = {
+	date: string | null | undefined;
+	gearStyle?: string | null;
 };
 
 function validDay(iso: string | null | undefined): string | null {
@@ -56,6 +77,18 @@ export function weekdayOfIsoDay(day: string): WeekdayId {
 	return new Date(`${day}T12:00:00Z`).getUTCDay() as WeekdayId;
 }
 
+/** Map gear style into a Sport/Trad/Boulder chip, or null if only under “All”. */
+export function weekdayDiscipline(
+	gearStyle: string | null | undefined
+): 'sport' | 'trad' | 'boulder' | null {
+	const lower = (gearStyle || '').trim().toLowerCase();
+	if (!lower) return null;
+	if (lower.includes('boulder')) return 'boulder';
+	if (lower.includes('trad')) return 'trad';
+	if (lower.includes('sport')) return 'sport';
+	return null;
+}
+
 function emptyCounts(): { sessions: Set<string>[]; ascents: number[] } {
 	return {
 		sessions: [new Set(), new Set(), new Set(), new Set(), new Set(), new Set(), new Set()],
@@ -63,26 +96,35 @@ function emptyCounts(): { sessions: Set<string>[]; ascents: number[] } {
 	};
 }
 
-function toRows(counts: { sessions: Set<string>[]; ascents: number[] }): WeekdayRow[] {
-	return WEEKDAY_ORDER.map((weekday) => ({
+function toSlice(counts: { sessions: Set<string>[]; ascents: number[] }): WeekdaySlice {
+	const rows = WEEKDAY_ORDER.map((weekday) => ({
 		weekday,
 		label: WEEKDAY_LABELS[weekday],
 		sessions: counts.sessions[weekday]!.size,
 		ascents: counts.ascents[weekday]!
 	}));
+	return {
+		rows,
+		totalSessions: rows.reduce((s, r) => s + r.sessions, 0),
+		totalAscents: rows.reduce((s, r) => s + r.ascents, 0)
+	};
 }
 
-function mostActive(
-	rows: WeekdayRow[]
-): { weekday: WeekdayId; label: string; sessions: number } | null {
+export function pickMostActive(
+	rows: WeekdayRow[],
+	metric: WeekdayMetric
+): { weekday: WeekdayId; label: string; value: number } | null {
 	let best: WeekdayRow | null = null;
 	for (const row of rows) {
-		if (row.sessions === 0) continue;
-		if (
-			!best ||
-			row.sessions > best.sessions ||
-			(row.sessions === best.sessions && row.ascents > best.ascents)
-		) {
+		const value = metric === 'sessions' ? row.sessions : row.ascents;
+		if (value === 0) continue;
+		const bestValue = best ? (metric === 'sessions' ? best.sessions : best.ascents) : -1;
+		const tieBreak = best
+			? metric === 'sessions'
+				? row.ascents > best.ascents
+				: row.sessions > best.sessions
+			: false;
+		if (!best || value > bestValue || (value === bestValue && tieBreak)) {
 			best = row;
 		}
 	}
@@ -90,45 +132,71 @@ function mostActive(
 	return {
 		weekday: best.weekday,
 		label: WEEKDAY_FULL[best.weekday],
-		sessions: best.sessions
+		value: metric === 'sessions' ? best.sessions : best.ascents
 	};
 }
 
-/** ISO day 12 weeks (84 days) before `todayIso` (inclusive window starts the next day). */
+/** ISO day 12 weeks (84 days) before `todayIso` (inclusive window). */
 export function last12WeeksCutoff(todayIso: string): string {
 	const d = new Date(`${todayIso}T12:00:00Z`);
 	d.setUTCDate(d.getUTCDate() - 83);
 	return d.toISOString().slice(0, 10);
 }
 
+function emptyBuckets(): Record<WeekdayStyleKey, ReturnType<typeof emptyCounts>> {
+	return {
+		all: emptyCounts(),
+		sport: emptyCounts(),
+		trad: emptyCounts(),
+		boulder: emptyCounts()
+	};
+}
+
+function addTo(
+	bucket: { sessions: Set<string>[]; ascents: number[] },
+	weekday: WeekdayId,
+	day: string
+) {
+	bucket.sessions[weekday]!.add(day);
+	bucket.ascents[weekday]! += 1;
+}
+
+function bucketsToStyle(
+	buckets: Record<WeekdayStyleKey, ReturnType<typeof emptyCounts>>
+): WeekdayStyleBuckets {
+	return {
+		all: toSlice(buckets.all),
+		sport: toSlice(buckets.sport),
+		trad: toSlice(buckets.trad),
+		boulder: toSlice(buckets.boulder)
+	};
+}
+
 export function buildWeekdayStats(
-	ascentDates: (string | null | undefined)[],
+	ascents: WeekdayAscentInput[],
 	todayIso = new Date().toISOString().slice(0, 10)
 ): WeekdayStatsView {
 	const cutoff = last12WeeksCutoff(todayIso);
-	const all = emptyCounts();
-	const recent = emptyCounts();
+	const allTime = emptyBuckets();
+	const last12 = emptyBuckets();
 
-	for (const raw of ascentDates) {
-		const day = validDay(raw);
+	for (const row of ascents) {
+		const day = validDay(row.date);
 		if (!day) continue;
 		const wd = weekdayOfIsoDay(day);
-		all.sessions[wd]!.add(day);
-		all.ascents[wd]! += 1;
+		const discipline = weekdayDiscipline(row.gearStyle);
+
+		addTo(allTime.all, wd, day);
+		if (discipline) addTo(allTime[discipline], wd, day);
+
 		if (day >= cutoff && day <= todayIso) {
-			recent.sessions[wd]!.add(day);
-			recent.ascents[wd]! += 1;
+			addTo(last12.all, wd, day);
+			if (discipline) addTo(last12[discipline], wd, day);
 		}
 	}
 
-	const allTime = toRows(all);
-	const last12Weeks = toRows(recent);
 	return {
-		allTime,
-		last12Weeks,
-		mostActiveAllTime: mostActive(allTime),
-		mostActiveLast12: mostActive(last12Weeks),
-		totalSessionsAllTime: allTime.reduce((s, r) => s + r.sessions, 0),
-		totalSessionsLast12: last12Weeks.reduce((s, r) => s + r.sessions, 0)
+		allTime: bucketsToStyle(allTime),
+		last12Weeks: bucketsToStyle(last12)
 	};
 }

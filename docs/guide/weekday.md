@@ -1,20 +1,22 @@
 # Weekday
 
-The **Weekday** card shows which days of the week you climb on, inspired by [Dreeve](https://dreeve.app/)’s weekday chart for Strava.
+The **Weekday** card shows which days of the week you climb on, inspired by [Dreeve](https://dreeve.app/)’s weekday chart for Strava. The distribution is a **donut (pie) chart** with a Mon–Sun legend.
 
 ## What counts
 
-A **session** is a calendar day with at least one logged ascent (same definition as [Sessions per week](/docs/sessions-per-week)). The bar length is session count; the muted figure is total ascents that weekday.
+- **Sessions** (default) — a calendar day with at least one matching ascent (same idea as [Sessions per week](/docs/sessions-per-week))
+- **Ascents** — every matching tick that weekday
 
 Weekday is taken from the ascent’s `YYYY-MM-DD` date in UTC — logbook rows are day-stamped without a time of day.
 
-## Ranges
+## Filters
 
-- **All time** — every valid ascent date in the cache
-- **Last 12 weeks** — sessions on days in the inclusive 84-day window ending today
+- **All time** / **Last 12 weeks** — inclusive 84-day window ending today for the short range
+- **Sessions** / **Ascents** — what the slice size means
+- **All** / **Sport** / **Trad** / **Boulder** — style chips use the same discipline colours as the rest of the app. Top-rope and other styles only appear under **All**.
 
-Your last choice is stored in the browser (`cs_weekday_range`).
+Choices are stored in the browser (`cs_weekday_range`, `cs_weekday_metric`, `cs_weekday_style`).
 
 ## Most active day
 
-The highlight names the weekday with the most sessions (ties break toward more ascents). Bars for that weekday use the accent colour.
+The centre of the donut and the lead line name the weekday with the highest value for the current metric (ties break toward the other metric). That weekday’s slice and legend row are emphasised.
