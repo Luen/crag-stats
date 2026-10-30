@@ -121,7 +121,11 @@
 	{:else if id === 'athleteProfile'}
 		<AthleteProfile axes={s.athleteProfile.axes} />
 	{:else if id === 'heatmap'}
-		<AscentHeatmap data={s.heatmap} dateDisplay={data.dateDisplay} />
+		<AscentHeatmap
+			preferences={data.cardPreferences}
+			data={s.heatmap}
+			dateDisplay={data.dateDisplay}
+		/>
 	{:else if id === 'volume'}
 		<article class="panel">
 			<h2>Volume</h2>
@@ -170,7 +174,7 @@
 	{:else if id === 'monthly'}
 		<MonthlyStats months={s.monthly.months} years={s.monthly.years} />
 	{:else if id === 'yearly'}
-		<YearlyStats years={s.yearly.years} days={s.heatmap} />
+		<YearlyStats preferences={data.cardPreferences} years={s.yearly.years} days={s.heatmap} />
 	{:else if id === 'bestMonths'}
 		<BestMonths data={s.bestMonths} />
 	{:else if id === 'badges'}
@@ -190,7 +194,11 @@
 	{:else if id === 'sessionsPerWeek'}
 		<SessionsPerWeek years={s.sessionsPerWeek.years} byYear={s.sessionsPerWeek.byYear} />
 	{:else if id === 'weekday'}
-		<WeekdayStats data={s.weekday} dateDisplay={data.dateDisplay} />
+		<WeekdayStats
+			preferences={data.cardPreferences}
+			data={s.weekday}
+			dateDisplay={data.dateDisplay}
+		/>
 	{:else if id === 'weatherConditions' && s.weatherConditions}
 		<WeatherConditions data={s.weatherConditions} dateDisplay={data.dateDisplay} />
 	{:else if id === 'milestones'}
@@ -198,7 +206,11 @@
 	{:else if id === 'styleMix'}
 		<StyleMixChart months={s.styleMix.months} />
 	{:else if id === 'partners'}
-		<PartnerLeaderboard partners={s.partners} titleHref="/partners" />
+		<PartnerLeaderboard
+			preferences={data.cardPreferences}
+			partners={s.partners}
+			titleHref="/partners"
+		/>
 	{:else if id === 'rockTypes'}
 		<RockTypePanel
 			types={s.rockTypes.types}

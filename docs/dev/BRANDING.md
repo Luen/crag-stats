@@ -177,3 +177,5 @@ The First ascents footer credits theCrag route history when displayed FA/FFA or 
 ### Small tinted pills and interactive maps
 
 Sidebar count badges and Training load status pills use `--ink` for their small text, retaining their semantic tinted backgrounds. Test multi-digit counts and the Spike state in both themes. Interactive crag maps expose a named group of named links, rather than an image role containing focusable descendants.
+
+Card display preferences (#296) use whitelisted cookies for SSR; legacy localStorage choices migrate on mount. Cards without cookie values reserve their layout until migration completes. The no-JavaScript stylesheet reveals default cards. Cookie and storage failures remain nonfatal.
