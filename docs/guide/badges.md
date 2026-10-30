@@ -10,7 +10,7 @@ Wiping local data resets this milestone along with the logbook; the next success
 
 ## Weather
 
-**Heat Wave**, **Freeze Frame**, **Rain Check**, **Climbing in the Snow** and **Blown Away** need the optional outdoor weather cache (`WEATHER_IMPORT`). See [Weather](/docs/weather). Until those days are fetched, the badges stay locked.
+**Heat Wave**, **Freeze Frame**, **Rain Check**, **Climbing in the Snow**, **Blown Away**, **Bluebird**, **Sticky**, **Storm Send**, and **Four Seasons** need the optional outdoor weather cache (`WEATHER_IMPORT`). See [Weather](/docs/weather). Until those days are fetched, the badges stay locked. **Storm Send** requires a successful send on a heavy-rain day; attempts alone do not count.
 
 ## Almost there
 

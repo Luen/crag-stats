@@ -19,13 +19,28 @@ export type WeatherSnapshot = {
 	weatherCode: number | null;
 	/** Daily max 10 m wind (km/h); null when not fetched / missing. */
 	windMaxKmh?: number | null;
+	/** Daily mean relative humidity (%); null when not fetched / missing. */
+	humidityMean?: number | null;
 };
 
 /** WMO weather interpretation codes that indicate snowfall (Open-Meteo / WMO). */
 const SNOW_CODES = new Set([71, 72, 73, 74, 75, 76, 77, 85, 86]);
 
+/** WMO thunderstorm / severe codes — not “fair” / bluebird. */
+const STORM_CODES = new Set([95, 96, 97, 98, 99]);
+
 /** Outdoor day counts as very windy at or above this max wind (km/h). */
 export const WINDY_MAX_KMH = 50;
+
+/** Pleasant high for bluebird / fair days (°C inclusive). */
+export const FAIR_TEMP_MIN_C = 15;
+export const FAIR_TEMP_MAX_C = 25;
+
+/** Mean humidity at or above this % counts as sticky. */
+export const STICKY_HUMIDITY_PCT = 85;
+
+/** Non-snow precip (mm) that counts as a storm-send day. */
+export const STORM_PRECIP_MM = 10;
 
 export function isSnowWeather(w: WeatherSnapshot): boolean {
 	if (w.weatherCode != null && SNOW_CODES.has(w.weatherCode)) return true;
@@ -54,7 +69,38 @@ export function isWindyWeather(w: WeatherSnapshot): boolean {
 	return wind != null && wind >= WINDY_MAX_KMH;
 }
 
-export type WeatherCondition = 'heat' | 'freeze' | 'rain' | 'snow' | 'wind';
+/** Thunderstorm / severe WMO code. */
+export function isStormCode(w: WeatherSnapshot): boolean {
+	return w.weatherCode != null && STORM_CODES.has(w.weatherCode);
+}
+
+/**
+ * Bluebird / fair day: high in 15–25°C, precip ≈ 0, not snow/storm WMO (#271).
+ * Used by badges, logbook `weather=fair`, and fair-weather metrics.
+ */
+export function isFairWeather(w: WeatherSnapshot): boolean {
+	const tmax = w.tempMaxC;
+	if (tmax == null || tmax < FAIR_TEMP_MIN_C || tmax > FAIR_TEMP_MAX_C) return false;
+	const precip = w.precipMm ?? 0;
+	if (precip >= 0.1) return false;
+	if (isSnowWeather(w) || isStormCode(w)) return false;
+	return true;
+}
+
+/** High mean humidity (≥ {@link STICKY_HUMIDITY_PCT}%). */
+export function isStickyHumidity(w: WeatherSnapshot): boolean {
+	const h = w.humidityMean;
+	return h != null && h >= STICKY_HUMIDITY_PCT;
+}
+
+/** Heavy non-snow precip (≥ {@link STORM_PRECIP_MM} mm). */
+export function isStormPrecip(w: WeatherSnapshot): boolean {
+	if (isSnowWeather(w)) return false;
+	return w.precipMm != null && w.precipMm >= STORM_PRECIP_MM;
+}
+
+export type WeatherCondition =
+	'heat' | 'freeze' | 'rain' | 'snow' | 'wind' | 'fair' | 'sticky' | 'storm';
 
 export function weatherConditions(w: WeatherSnapshot): WeatherCondition[] {
 	const out: WeatherCondition[] = [];
@@ -63,5 +109,8 @@ export function weatherConditions(w: WeatherSnapshot): WeatherCondition[] {
 	if (isSnowWeather(w)) out.push('snow');
 	else if (isRainWeather(w)) out.push('rain');
 	if (isWindyWeather(w)) out.push('wind');
+	if (isFairWeather(w)) out.push('fair');
+	if (isStickyHumidity(w)) out.push('sticky');
+	if (isStormPrecip(w) || isStormCode(w)) out.push('storm');
 	return out;
 }

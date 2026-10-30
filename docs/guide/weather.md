@@ -1,6 +1,6 @@
 # Weather
 
-Crag Stats can cache **daily outdoor weather** for climbs that have route coordinates, then use it for a few badges. Conditions-vs-performance charts are not built yet — this is cache + badges only.
+Crag Stats can cache **daily outdoor weather** for climbs that have route coordinates, then use it for badges and (when enabled) dashboard / logbook surfaces. Full conditions-vs-performance charts are not built yet.
 
 ## Opt-in
 
@@ -21,12 +21,16 @@ Stored fields: daily max/min temperature (°C), precipitation (mm), WMO weather 
 
 Once a day is cached, these badges can unlock from any logged ascent that day at that location (attempts count):
 
-| Badge                    | Rule                                                            |
-| ------------------------ | --------------------------------------------------------------- |
-| **Heat Wave**            | Day's high ≥ 35°C                                               |
-| **Freeze Frame**         | Day's low ≤ 0°C                                                 |
-| **Rain Check**           | ≥ 1 mm precipitation and not classified as snow                 |
-| **Climbing in the Snow** | WMO snow codes (71–77, 85–86), or ≥ 1 mm precip with high ≤ 1°C |
-| **Blown Away**           | Day's max 10 m wind ≥ 50 km/h                                   |
+| Badge                    | Rule                                                                             |
+| ------------------------ | -------------------------------------------------------------------------------- |
+| **Heat Wave**            | Day's high ≥ 35°C                                                                |
+| **Freeze Frame**         | Day's low ≤ 0°C                                                                  |
+| **Rain Check**           | ≥ 1 mm precipitation and not classified as snow                                  |
+| **Climbing in the Snow** | WMO snow codes (71–77, 85–86), or ≥ 1 mm precip with high ≤ 1°C                  |
+| **Blown Away**           | Day's max 10 m wind ≥ 50 km/h                                                    |
+| **Bluebird**             | High 15–25°C, precip ≈ 0, not snow/thunderstorm WMO                              |
+| **Sticky**               | Mean humidity ≥ 85%                                                              |
+| **Storm Send**           | A **send** on a day with ≥ 10 mm non-snow precip                                 |
+| **Four Seasons**         | Earn Heat Wave, Freeze Frame, Rain Check, and Climbing in the Snow at least once |
 
-Without `WEATHER_IMPORT` (or before the backlog is fetched), these badges stay locked even if you climbed in those conditions.
+Without `WEATHER_IMPORT` (or before the backlog is fetched), these badges stay locked even if you climbed in those conditions. A “scorcher streak” (many heat days in one week) is deferred.

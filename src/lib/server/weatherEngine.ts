@@ -439,7 +439,8 @@ export function loadWeatherSnapshotMap(): Map<string, WeatherSnapshot> {
 			tempMinC: weatherDays.tempMinC,
 			precipMm: weatherDays.precipMm,
 			weatherCode: weatherDays.weatherCode,
-			windMaxKmh: weatherDays.windMaxKmh
+			windMaxKmh: weatherDays.windMaxKmh,
+			humidityMean: weatherDays.humidityMean
 		})
 		.from(weatherDays)
 		.where(eq(weatherDays.status, 'ok'))
@@ -450,7 +451,8 @@ export function loadWeatherSnapshotMap(): Map<string, WeatherSnapshot> {
 			tempMinC: r.tempMinC,
 			precipMm: r.precipMm,
 			weatherCode: r.weatherCode,
-			windMaxKmh: r.windMaxKmh
+			windMaxKmh: r.windMaxKmh,
+			humidityMean: r.humidityMean
 		});
 	}
 	return map;

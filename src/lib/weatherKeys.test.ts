@@ -1,9 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import {
+	isFairWeather,
 	isFreezeWeather,
 	isHeatWeather,
 	isRainWeather,
 	isSnowWeather,
+	isStickyHumidity,
+	isStormPrecip,
 	isWindyWeather,
 	roundCoord,
 	weatherConditions,
@@ -88,5 +91,39 @@ describe('weather conditions', () => {
 				windMaxKmh: 60
 			})
 		).toEqual(['heat', 'rain', 'wind']);
+	});
+
+	it('detects fair / bluebird days', () => {
+		expect(isFairWeather({ tempMaxC: 20, tempMinC: 12, precipMm: 0, weatherCode: 1 })).toBe(true);
+		expect(isFairWeather({ tempMaxC: 14.9, tempMinC: 10, precipMm: 0, weatherCode: 0 })).toBe(
+			false
+		);
+		expect(isFairWeather({ tempMaxC: 20, tempMinC: 12, precipMm: 0.2, weatherCode: 0 })).toBe(
+			false
+		);
+		expect(isFairWeather({ tempMaxC: 20, tempMinC: 12, precipMm: 0, weatherCode: 95 })).toBe(false);
+	});
+
+	it('detects sticky humidity and storm precip', () => {
+		expect(
+			isStickyHumidity({
+				tempMaxC: 28,
+				tempMinC: 22,
+				precipMm: 0,
+				weatherCode: 0,
+				humidityMean: 85
+			})
+		).toBe(true);
+		expect(
+			isStickyHumidity({
+				tempMaxC: 28,
+				tempMinC: 22,
+				precipMm: 0,
+				weatherCode: 0,
+				humidityMean: 84
+			})
+		).toBe(false);
+		expect(isStormPrecip({ tempMaxC: 18, tempMinC: 14, precipMm: 10, weatherCode: 63 })).toBe(true);
+		expect(isStormPrecip({ tempMaxC: 0, tempMinC: -2, precipMm: 12, weatherCode: 73 })).toBe(false);
 	});
 });
