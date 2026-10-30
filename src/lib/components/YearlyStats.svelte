@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { browser } from '$app/environment';
+	import { onMount } from 'svelte';
 
 	type YearRow = {
 		year: number;
@@ -24,21 +24,19 @@
 
 	const MODE_KEY = 'cs_yearly_chart';
 
-	function readStoredMode(): ChartMode {
-		if (!browser) return 'year';
-		try {
-			return localStorage.getItem(MODE_KEY) === 'cumulative' ? 'cumulative' : 'year';
-		} catch {
-			return 'year';
-		}
-	}
-
 	let metric = $state<Metric>('ascents');
-	let chartMode = $state<ChartMode>(readStoredMode());
+	let chartMode = $state<ChartMode>('year');
+
+	onMount(() => {
+		try {
+			if (localStorage.getItem(MODE_KEY) === 'cumulative') chartMode = 'cumulative';
+		} catch {
+			/* ignore */
+		}
+	});
 
 	function setChartMode(next: ChartMode) {
 		chartMode = next;
-		if (!browser) return;
 		try {
 			localStorage.setItem(MODE_KEY, next);
 		} catch {
