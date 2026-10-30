@@ -2,6 +2,10 @@
 
 Crag Stats lists **projects** the same way RoxClimbs does: outdoor routes where you logged at least one **unsent** attempt in the last year, plus routes you **sent after a fight** (shown on the “Recently sent” shelf for about a month). A route you onsighted or flashed first go is never a project.
 
+## New route?
+
+When a project has **no grade** on theCrag (or is literally graded “Project” / “Proj”), cards show a **New route?** badge — usually a new line you are bolting or still working. The same badge also appears for **wide provisional spans** such as `21-23` or `V1-3`, which often mean the grade is still being dialled in. Adjacent half-grades like `V1/2` stay ordinary published grades and do not get the badge. The grade chip still shows the parsed midpoint when one exists; only the badge changes. A definite theCrag **Project** flag (from route-info import) shows the separate Project badge instead.
+
 ## Guidebook text on project cards
 
 When **route history import** has cached public guidebook data for a route, project cards can show:
