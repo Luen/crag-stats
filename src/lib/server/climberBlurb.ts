@@ -4,6 +4,7 @@
  */
 import { MONTH_LABELS } from '#lib/bestMonths';
 import { DEFAULT_DATE_DISPLAY, formatNumber, type DateDisplay } from '#lib/dates';
+import type { WeatherConditionsView } from '#lib/weatherStats';
 import { isSportOrBolted, type DeveloperImpactRoute } from './routeDeveloperImpact';
 
 const MAJORITY = 0.55;
@@ -18,6 +19,14 @@ const POP_MIN_WITH_DATA = 20;
 const DEVELOPER_ROUTES_MIN = 2;
 const DEVELOPER_IMPACT_MIN = 10;
 const MAX_OPTIONAL = 3;
+/** Weather lines need enough cached outdoor days, and most of them covered (#275). */
+export const WEATHER_STORY_MIN_DAYS = 20;
+export const WEATHER_STORY_MIN_COVERAGE = 0.5;
+const WEATHER_COLD_SHARE = 25;
+const WEATHER_HEAT_SHARE = 15;
+const WEATHER_RAIN_SHARE = 20;
+const WEATHER_SNOW_MIN_DAYS = 3;
+const WEATHER_RANGE_MIN_C = 30;
 
 /** Sport → Trad → Boulder (boulders are easy to put up, so deprioritise). */
 export const PUT_UP_STYLE_PRIORITY = ['Sport', 'Trad', 'Boulder'] as const;
@@ -52,6 +61,8 @@ export type ClimberBlurbInput = {
 	rockBlurb?: string | null;
 	putUpRoutes?: readonly DeveloperImpactRoute[];
 	firstAscentCount?: number;
+	/** Outdoor weather summary (#272); null/absent until the weather cache has enough days. */
+	weather?: WeatherConditionsView | null;
 	dateDisplay?: DateDisplay;
 };
 
@@ -284,6 +295,48 @@ export function describePopularity(pop: {
 	return null;
 }
 
+/**
+ * One gated weather personality line from the cached outdoor days (#275). Null unless there are
+ * at least 20 days with weather covering at least half of the outdoor days,
+ * so a thin cache never invents a personality. Wording stays positive: it describes what
+ * you climb in, never what you avoid.
+ */
+export function describeWeatherPersonality(
+	weather: WeatherConditionsView | null | undefined,
+	format?: (n: number) => string
+): string | null {
+	if (!weather) return null;
+	const { withWeather, outdoorDays } = weather;
+	if (withWeather < WEATHER_STORY_MIN_DAYS || outdoorDays <= 0) return null;
+	if (withWeather / outdoorDays < WEATHER_STORY_MIN_COVERAGE) return null;
+	const fmt = format ?? String;
+	const share = (key: string) => weather.shares.find((s) => s.key === key);
+	const pct = (n: number) => fmt(Math.round(n));
+
+	const snow = share('snow');
+	if (snow && snow.days >= WEATHER_SNOW_MIN_DAYS) {
+		return `I've climbed in the snow on ${fmt(snow.days)} days.`;
+	}
+	const freeze = share('freeze');
+	if (freeze && freeze.pct >= WEATHER_COLD_SHARE) {
+		return `I'm happy climbing in the cold: ${pct(freeze.pct)}% of my cached outdoor days dipped to freezing or below.`;
+	}
+	const heat = share('heat');
+	if (heat && heat.pct >= WEATHER_HEAT_SHARE) {
+		return `I climb in the heat too: ${pct(heat.pct)}% of my cached outdoor days reached 35°C or more.`;
+	}
+	const rain = share('rain');
+	if (rain && rain.pct >= WEATHER_RAIN_SHARE) {
+		return `A bit of rain doesn't stop me: ${pct(rain.pct)}% of my cached outdoor days saw rain.`;
+	}
+	const hot = weather.hottest?.tempC;
+	const cold = weather.coldest?.tempC;
+	if (hot != null && cold != null && hot - cold >= WEATHER_RANGE_MIN_C) {
+		return `I've climbed in everything from ${fmt(Math.round(cold))}°C to ${fmt(Math.round(hot))}°C.`;
+	}
+	return null;
+}
+
 export function describeTravel(countries: number, format?: (n: number) => string): string | null {
 	if (countries < 2) return null;
 	const fmt = format ?? String;
@@ -348,6 +401,7 @@ export function buildClimberBlurb(input: ClimberBlurbInput): ClimberBlurb {
 	push(
 		describeSeason(input.activeDayDates ?? [], (input.dateDisplay ?? DEFAULT_DATE_DISPLAY).locale)
 	);
+	push(describeWeatherPersonality(input.weather, fmt));
 	push(describeSolo(input.soloByKind ?? []));
 	push(describeProjects(input.openProjects ?? 0, fmt));
 	push(describeHardest(input.hardestRouteLabel, input.hardestBoulderLabel));

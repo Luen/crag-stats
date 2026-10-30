@@ -13,8 +13,10 @@ import {
 	describeSolo,
 	describeTravel,
 	describeWanderer,
+	describeWeatherPersonality,
 	seasonNameForMonth
 } from './climberBlurb';
+import type { WeatherConditionsView } from '#lib/weatherStats';
 import type { DeveloperImpactRoute } from './routeDeveloperImpact';
 
 const route = (p: Partial<DeveloperImpactRoute>): DeveloperImpactRoute => ({
@@ -254,5 +256,116 @@ describe('buildClimberBlurb', () => {
 			)
 		});
 		expect(blurb.paragraphs.some((p) => /spring climber/i.test(p))).toBe(true);
+	});
+});
+
+describe('describeWeatherPersonality (#275)', () => {
+	const view = (over: Partial<WeatherConditionsView> = {}): WeatherConditionsView => ({
+		outdoorDays: 40,
+		withWeather: 30,
+		withoutWeather: 10,
+		hottest: { tempC: 28, routeName: 'A', date: '2025-01-01', href: null },
+		coldest: { tempC: 8, routeName: 'B', date: '2025-06-01', href: null },
+		shares: [
+			{ key: 'rain', label: 'Rainy', days: 1, pct: 3.3 },
+			{ key: 'snow', label: 'Snowy', days: 0, pct: 0 },
+			{ key: 'freeze', label: 'Freezing', days: 0, pct: 0 },
+			{ key: 'heat', label: 'Hot', days: 0, pct: 0 }
+		],
+		histogram: [],
+		...over
+	});
+	const withShare = (key: string, days: number, pct: number) =>
+		view().shares.map((s) => (s.key === key ? { ...s, days, pct } : s));
+
+	it('is silent without a view, with too few days, or with thin coverage', () => {
+		expect(describeWeatherPersonality(null)).toBeNull();
+		expect(describeWeatherPersonality(undefined)).toBeNull();
+		expect(describeWeatherPersonality(view({ withWeather: 19, outdoorDays: 19 }))).toBeNull();
+		expect(
+			describeWeatherPersonality(
+				view({ withWeather: 20, outdoorDays: 60, shares: withShare('freeze', 10, 50) })
+			)
+		).toBeNull();
+	});
+
+	it('is silent when nothing stands out', () => {
+		expect(describeWeatherPersonality(view())).toBeNull();
+	});
+
+	it('names the strongest signal in positive wording', () => {
+		expect(describeWeatherPersonality(view({ shares: withShare('snow', 4, 13.3) }))).toBe(
+			"I've climbed in the snow on 4 days."
+		);
+		expect(describeWeatherPersonality(view({ shares: withShare('freeze', 9, 30) }))).toContain(
+			'happy climbing in the cold: 30%'
+		);
+		expect(describeWeatherPersonality(view({ shares: withShare('heat', 5, 16.7) }))).toContain(
+			'in the heat too: 17%'
+		);
+		expect(describeWeatherPersonality(view({ shares: withShare('rain', 8, 26.7) }))).toContain(
+			"rain doesn't stop me: 27%"
+		);
+		expect(
+			describeWeatherPersonality(
+				view({
+					hottest: { tempC: 37.6, routeName: 'A', date: '2025-01-01', href: null },
+					coldest: { tempC: -3.2, routeName: 'B', date: '2025-06-01', href: null }
+				})
+			)
+		).toBe("I've climbed in everything from -3°C to 38°C.");
+	});
+
+	it('names the cached-day denominator when half the weather is unknown', () => {
+		expect(
+			describeWeatherPersonality(
+				view({
+					withWeather: 20,
+					outdoorDays: 40,
+					withoutWeather: 20,
+					shares: withShare('freeze', 10, 50)
+				})
+			)
+		).toBe(
+			"I'm happy climbing in the cold: 50% of my cached outdoor days dipped to freezing or below."
+		);
+	});
+
+	it('shows up in the story as an optional paragraph', () => {
+		const blurb = buildClimberBlurb({
+			firstDate: '2020-01-01',
+			activeDays: 100,
+			totalAscents: 300,
+			totalSends: 250,
+			onsightCount: 50,
+			flashCount: 10,
+			redpointCount: 80,
+			pinkpointCount: 5,
+			climberType: 'Sport climber',
+			heightM: 5000,
+			distinctRoutes: 200,
+			distinctCrags: 3,
+			outdoorAscents: 250,
+			indoorAscents: 50,
+			weather: view({ shares: withShare('freeze', 9, 30) })
+		});
+		expect(blurb.paragraphs.some((p) => p.includes('happy climbing in the cold'))).toBe(true);
+		const without = buildClimberBlurb({
+			firstDate: '2020-01-01',
+			activeDays: 100,
+			totalAscents: 300,
+			totalSends: 250,
+			onsightCount: 50,
+			flashCount: 10,
+			redpointCount: 80,
+			pinkpointCount: 5,
+			climberType: 'Sport climber',
+			heightM: 5000,
+			distinctRoutes: 200,
+			distinctCrags: 3,
+			outdoorAscents: 250,
+			indoorAscents: 50
+		});
+		expect(without.paragraphs.some((p) => /cold|snow|heat|rain/i.test(p))).toBe(false);
 	});
 });
