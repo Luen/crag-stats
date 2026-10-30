@@ -66,7 +66,7 @@
 <article class="panel">
 	<h2>Notable ascents</h2>
 
-	<div class="groups groups-style">
+	<div class="groups groups-columns">
 		{#each styleGroups as g (g.group)}
 			<section class="group-block">
 				<header class="group-head">
@@ -89,7 +89,7 @@
 	</div>
 
 	<h3>By area</h3>
-	<div class="groups groups-area">
+	<div class="groups groups-columns">
 		{#each areaGroups as g (g.group)}
 			<section class="group-block">
 				<header class="group-head">
@@ -138,13 +138,10 @@
 		display: grid;
 		gap: 0.85rem;
 	}
-	/* Sport | Trad (then Boulder / …) side by side on wide screens. */
-	.groups-style {
+	/* Sport | Trad and Castle Hill | Mt Stuart (etc.) side by side on wide screens. */
+	.groups-columns {
 		grid-template-columns: repeat(2, minmax(0, 1fr));
 		align-items: start;
-	}
-	.groups-area {
-		grid-template-columns: 1fr;
 	}
 	.group-block {
 		border: 1px solid var(--line);
@@ -222,7 +219,7 @@
 		text-underline-offset: 2px;
 	}
 	@media (max-width: 900px) {
-		.groups-style {
+		.groups-columns {
 			grid-template-columns: 1fr;
 		}
 	}
