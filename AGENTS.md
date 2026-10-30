@@ -428,6 +428,7 @@ You'll often notice things outside the task at hand. **Don't silently fix them i
 | 2026-10 | Security remediation pins pnpm patches for deepmerge 4.3.1, picomatch 4.0.7 and uri-js 4.4.1, with installed-package exploit regressions in `dependencySecurity.test.ts`. Keep `patches/` available before Docker's frozen install. Adapter-node is build-only. Read `patches/README.md` and `docs/dev/SECURITY_SCAN.md`; version-based alerts can persist despite local fixes and must remain disclosed. |
 
 | 2026-10 | #268 / #277 / #281: opt-in `WEATHER_IMPORT` caches outdoor Open-Meteo days (`weather_days`, migration 0017, incl. wind km/h), post-sync paced fetch, Settings status/action, heat/freeze/rain/snow/wind badges. Conditions-vs-performance analytics deferred. |
+| 2026-10 | `extractLatLon` accepts theCrag TLC bare `[lon, lat]` geometry arrays (not only GeoJSON Points). `data:0005_repair_tlc_bare_geometry_coords` re-maps cached logbook `raw_json` so weather import can queue outdoor days. |
 
 - First ascents attribution follows saved mark source (plus cached setter credits), not `ROUTE_HISTORY_IMPORT`: manual/imported credits coexist and imported marks survive disabling import.
 
