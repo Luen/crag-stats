@@ -76,6 +76,12 @@ function oldDatabase(path: string, applied: string[]) {
 			`INSERT INTO thecrag_web_sessions (account_key, encrypted_cookies, next_allowed_at, failures) VALUES ('synthetic-account-key', 'synthetic-encrypted-payload', 42, 2)`
 		).run();
 	}
+	if (applied.includes('0017_weather_days.sql')) {
+		db.prepare(
+			`INSERT INTO weather_days (lat_key, lon_key, day, temp_max_c, temp_min_c, precip_mm, weather_code, status, fetched_at)
+			 VALUES (-33.9, 151.2, '2024-01-10', 36.0, 22.0, 0, 0, 'ok', ?)`
+		).run(NOW);
+	}
 	db.close();
 }
 
@@ -160,6 +166,13 @@ describe('migrations survive skipped releases', () => {
 						encrypted_cookies: 'synthetic-encrypted-payload',
 						next_allowed_at: 42,
 						failures: 2
+					});
+				}
+				if (k >= FILES.indexOf('0017_weather_days.sql') + 1) {
+					expect(db.prepare('SELECT day, temp_max_c, status FROM weather_days').get()).toEqual({
+						day: '2024-01-10',
+						temp_max_c: 36.0,
+						status: 'ok'
 					});
 				}
 			} finally {

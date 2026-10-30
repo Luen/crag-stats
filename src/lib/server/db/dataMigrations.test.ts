@@ -19,7 +19,8 @@ const ALL = [
 	ID,
 	'data:0002_legacy_env_settings',
 	'data:0003_csv_au_boulder_grades',
-	'data:0004_invalidate_incomplete_route_cache'
+	'data:0004_invalidate_incomplete_route_cache',
+	'data:0005_repair_tlc_bare_geometry_coords'
 ];
 
 beforeEach(() => {

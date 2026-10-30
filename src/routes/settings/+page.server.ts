@@ -31,6 +31,11 @@ import {
 	runRouteHistoryImport
 } from '#lib/server/routeHistoryImport';
 import { getSyncStatus, runTheCragSync } from '#lib/server/sync';
+import {
+	getWeatherImportStatus,
+	isWeatherImportEnabled,
+	triggerWeatherImport
+} from '#lib/server/weatherImport';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ cookies }) => {
@@ -46,7 +51,8 @@ export const load: PageServerLoad = async ({ cookies }) => {
 			getAppSetting('dashboard_layout'),
 			cookies.get(DASH_LAYOUT_COOKIE)
 		),
-		routeHistory: getRouteHistoryStatus()
+		routeHistory: getRouteHistoryStatus(),
+		weatherImport: getWeatherImportStatus()
 	};
 };
 
@@ -191,6 +197,41 @@ export const actions: Actions = {
 		return {
 			ok: true,
 			routeHistoryMessage: `${n} routes will be checked again, ${getRouteHistoryStatus().perRun} per run. After they re-fetch, use Re-apply from saved history (with Replace existing if needed) to update marks.`
+		};
+	},
+	/**
+	 * Start the next batch of outdoor weather days in the background (#268).
+	 * Awaits would block ~55s (50 days × ≥1.1s) and risk reverse-proxy timeouts.
+	 */
+	fetchWeather: async ({ locals }) => {
+		if (!locals.authed) return fail(403);
+		if (!isWeatherImportEnabled()) {
+			return fail(400, { ok: false, message: 'Set WEATHER_IMPORT=true to enable this.' });
+		}
+		const status = getWeatherImportStatus();
+		if (status.running) {
+			return fail(400, {
+				ok: false,
+				message: 'A weather import run is already in progress.',
+				weatherMessage: 'A weather import run is already in progress.'
+			});
+		}
+		if (status.retryAt > Date.now()) {
+			return fail(400, { ok: false, weatherWaiting: true });
+		}
+		if (status.totalPending === 0) {
+			return {
+				ok: true,
+				weatherMessage:
+					status.cachedOk === 0
+						? 'No outdoor days with route coordinates yet.'
+						: 'Every outdoor day with coordinates has weather cached.'
+			};
+		}
+		triggerWeatherImport('settings');
+		return {
+			ok: true,
+			weatherMessage: `Fetching up to ${status.perRun} outdoor days in the background…`
 		};
 	}
 };

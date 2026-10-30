@@ -20,6 +20,12 @@ export const DOC_PAGES: readonly DocPage[] = [
 		summary: 'Logbook milestones and the automatic First Moves import date.'
 	},
 	{
+		slug: 'weather',
+		title: 'Weather',
+		summary:
+			'Optional Open-Meteo outdoor day cache and heat / freeze / rain / snow / wind badges (opt-in WEATHER_IMPORT).'
+	},
+	{
 		slug: 'climber-type',
 		title: 'Climber type',
 		summary: 'How the dashboard decides whether you are a sport, trad, boulder or rock climber.'

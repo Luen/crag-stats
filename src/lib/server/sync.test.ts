@@ -1,6 +1,7 @@
 import { beforeEach, expect, it, vi } from 'vitest';
 import { syncTheCragAll } from './providers/thecrag';
 import { triggerRouteHistoryImport } from './routeHistoryImport';
+import { triggerWeatherImport } from './weatherImport';
 import { runTheCragSync } from './sync';
 import { getTheCragSyncConfiguration } from './env';
 import { syncTheCragCsv } from './csvLogbookSync';
@@ -23,6 +24,7 @@ vi.mock('./ingest', () => ({
 vi.mock('./projects', () => ({ refreshProjects: vi.fn() }));
 vi.mock('./repairGrades', () => ({ repairGradesFromRawJson: vi.fn() }));
 vi.mock('./routeHistoryImport', () => ({ triggerRouteHistoryImport: vi.fn() }));
+vi.mock('./weatherImport', () => ({ triggerWeatherImport: vi.fn() }));
 
 beforeEach(() => {
 	vi.clearAllMocks();
@@ -46,6 +48,7 @@ it('uses CSV when selected, returns CSV prune stats, and triggers normal post-sy
 	// Prune runs inside syncTheCragCsv, not via a second reconcile from runTheCragSync.
 	expect(reconcileProviderAscents).not.toHaveBeenCalled();
 	expect(triggerRouteHistoryImport).toHaveBeenCalledOnce();
+	expect(triggerWeatherImport).toHaveBeenCalledOnce();
 });
 
 it('does not fall back to CSV after an API error', async () => {
@@ -68,6 +71,7 @@ it('does not record a successful sync or recreate state after a wipe', async () 
 	expect(updateSyncState).toHaveBeenCalledTimes(2); // running, then idle after cancel
 	expect(updateSyncState).toHaveBeenLastCalledWith('thecrag', { status: 'idle', lastError: null });
 	expect(triggerRouteHistoryImport).not.toHaveBeenCalled();
+	expect(triggerWeatherImport).not.toHaveBeenCalled();
 });
 
 it('triggers background route enrichment after every successful sync', async () => {
@@ -76,10 +80,14 @@ it('triggers background route enrichment after every successful sync', async () 
 	expect(triggerRouteHistoryImport).toHaveBeenCalledTimes(2);
 	expect(triggerRouteHistoryImport).toHaveBeenNthCalledWith(1, 'after sync');
 	expect(triggerRouteHistoryImport).toHaveBeenNthCalledWith(2, 'after sync');
+	expect(triggerWeatherImport).toHaveBeenCalledTimes(2);
+	expect(triggerWeatherImport).toHaveBeenNthCalledWith(1, 'after sync');
+	expect(triggerWeatherImport).toHaveBeenNthCalledWith(2, 'after sync');
 });
 
 it('does not trigger route enrichment when the logbook sync fails', async () => {
 	vi.mocked(syncTheCragAll).mockRejectedValueOnce(new Error('synthetic upstream failure'));
 	await expect(runTheCragSync()).rejects.toThrow('synthetic upstream failure');
 	expect(triggerRouteHistoryImport).not.toHaveBeenCalled();
+	expect(triggerWeatherImport).not.toHaveBeenCalled();
 });

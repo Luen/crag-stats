@@ -24,7 +24,7 @@ export type DashboardExtraRow = {
 	routeHeightM?: number | null;
 	tickType?: string | null;
 	partners?: string | null;
-	/** Crag / venue name for partner “areas” metric (#269). */
+	/** Crag / venue name — partner “areas” (#269) and indoor weather-badge skip (#268). */
 	cragName?: string | null;
 	quality?: string | null;
 	stars?: number | null;
@@ -47,6 +47,9 @@ export type DashboardExtraRow = {
 	hasPersonalGrade?: boolean;
 	/** Owner-marked first ascent of this route (firstAscents.ts) */
 	firstAscent?: 'FA' | 'FFA' | null;
+	/** Route coordinates for outdoor weather badge lookup (#268). */
+	lat?: number | null;
+	lon?: number | null;
 };
 
 /**

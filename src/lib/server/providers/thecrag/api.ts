@@ -204,6 +204,14 @@ export function extractLatLon(source: unknown): { lat: number; lon: number } | n
 	}
 
 	const geometry = obj.geometry;
+	// theCrag often sends TLC/parent geo as a bare [lon, lat] array (not a GeoJSON object).
+	if (Array.isArray(geometry) && geometry.length >= 2) {
+		const glon = finiteCoord(geometry[0]);
+		const glat = finiteCoord(geometry[1]);
+		if (glat != null && glon != null && Math.abs(glat) <= 90 && Math.abs(glon) <= 180) {
+			return { lat: glat, lon: glon };
+		}
+	}
 	if (geometry && typeof geometry === 'object') {
 		const g = geometry as { type?: string; coordinates?: unknown };
 		const coords = g.coordinates;
