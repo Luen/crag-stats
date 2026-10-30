@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import type { HeatmapDay } from '#lib/types/dashboard';
-	import { dayOfYearIndex, daysInCalendarYear } from '#lib/yearlyStatsLines';
+	import { yearLineFractions } from '#lib/yearlyStatsLines';
 
 	type YearRow = {
 		year: number;
@@ -205,28 +205,31 @@
 
 		return chronological.map((row, i) => {
 			const yearDays = [...(byYear[row.year] ?? [])].sort((a, b) => a.date.localeCompare(b.date));
-			const daysInYear = daysInCalendarYear(row.year);
-			const denom = Math.max(1, daysInYear - 1);
+			const climbDates = yearDays.map((d) => d.date);
+			const fracs = yearLineFractions(climbDates, row.year);
 			const dots: YearLine['dots'] = [];
 			const pts: string[] = [];
 			const y0 = plot.padTop + innerH;
-			pts.push(`${plot.padX},${y0}`);
 			let cum = 0;
 			let lastY = y0;
-			let lastDayIndex = -1;
-			for (const d of yearDays) {
-				cum += dayMetric(d);
-				const dayIndex = dayOfYearIndex(d.date);
-				lastDayIndex = dayIndex;
-				const x = plot.padX + (dayIndex / denom) * innerW;
-				const y = plot.padTop + innerH * (1 - cum / maxYear);
-				lastY = y;
-				pts.push(`${x},${y}`);
-				dots.push({ date: d.date, value: cum, x, y });
-			}
-			// Flat to Dec once climbing stops for the year (no invented climbs).
-			if (dots.length > 0 && lastDayIndex < daysInYear - 1) {
-				pts.push(`${plot.padX + innerW},${lastY}`);
+			for (let fi = 0; fi < fracs.length; fi++) {
+				const x = plot.padX + fracs[fi]! * innerW;
+				if (fi === 0) {
+					pts.push(`${x},${y0}`);
+					continue;
+				}
+				const climbIdx = fi - 1;
+				if (climbIdx < yearDays.length) {
+					const d = yearDays[climbIdx]!;
+					cum += dayMetric(d);
+					const y = plot.padTop + innerH * (1 - cum / maxYear);
+					lastY = y;
+					pts.push(`${x},${y}`);
+					dots.push({ date: d.date, value: cum, x, y });
+				} else {
+					// Flat tip to Dec from yearLineFractions (no invented climbs).
+					pts.push(`${x},${lastY}`);
+				}
 			}
 			return {
 				year: row.year,
@@ -312,7 +315,7 @@
 			<svg
 				class="line-chart"
 				viewBox="0 0 {plot.w} {plot.h}"
-				role="img"
+				role="group"
 				aria-label="{chartLabel} by year, with within-year daily progress overlaid"
 			>
 				{#each monthTicks as tick (tick.label)}
@@ -343,18 +346,12 @@
 						<a
 							href="/logbook?day={encodeURIComponent(dot.date)}"
 							aria-label="{dot.date}: {formatValue(dot.value)} {metricLabel} — open logbook"
+							onmouseenter={() =>
+								onDotEnter(yl.year, dot.date, dot.value, dot.x, dot.y, yl.color)}
+							onmouseleave={onDotLeave}
 						>
 							<title>{dot.date}: {formatValue(dot.value)} {metricLabel}</title>
-							<circle
-								class="hit"
-								cx={dot.x}
-								cy={dot.y}
-								r="8"
-								fill="transparent"
-								onmouseenter={() =>
-									onDotEnter(yl.year, dot.date, dot.value, dot.x, dot.y, yl.color)}
-								onmouseleave={onDotLeave}
-							/>
+							<circle class="hit" cx={dot.x} cy={dot.y} r="8" fill="transparent" />
 						</a>
 					{/each}
 				{/each}
@@ -629,6 +626,14 @@
 	.hit {
 		cursor: pointer;
 		outline: none;
+	}
+	.line-chart a:focus-visible .hit {
+		stroke: var(--accent);
+		stroke-width: 2;
+	}
+	.line-chart a:focus-visible .dot {
+		stroke: var(--accent);
+		stroke-width: 3;
 	}
 	.hint,
 	.hover-label {
