@@ -12,9 +12,10 @@
 	type Props = {
 		items: Item[];
 		maxBars?: number;
+		wholeRowLinks?: boolean;
 	};
 
-	let { items, maxBars = 12 }: Props = $props();
+	let { items, maxBars = 12, wholeRowLinks = false }: Props = $props();
 
 	const visible = $derived(items.slice(0, maxBars));
 	const max = $derived(Math.max(1, ...visible.map((i) => i.value)));
@@ -24,35 +25,59 @@
 <ul class="bars">
 	{#each visible as item, i (itemKey(item, i))}
 		<li>
-			<div class="row">
-				<span class="label">
-					{#if item.href}
-						{@const external = /^https?:\/\//i.test(item.href)}
-						<a
-							href={item.href}
-							target={external ? '_blank' : undefined}
-							rel={external ? 'noreferrer' : undefined}>{item.label}</a
-						>
-					{:else}
-						{item.label}
-					{/if}
-				</span>
-				<span class="value"
-					>{item.value}{#if item.meta}<span class="meta"> · {item.meta}</span>{/if}</span
+			{#snippet contents()}
+				<div class="row">
+					<span class="label">
+						{#if item.href && !wholeRowLinks}
+							{@const external = /^https?:\/\//i.test(item.href)}
+							<a
+								href={item.href}
+								target={external ? '_blank' : undefined}
+								rel={external ? 'noreferrer' : undefined}>{item.label}</a
+							>
+						{:else}
+							{item.label}
+						{/if}
+					</span>
+					<span class="value"
+						>{item.value}{#if item.meta}<span class="meta"> · {item.meta}</span>{/if}</span
+					>
+				</div>
+				<div class="track">
+					<div
+						class="fill"
+						style:width="{(item.value / max) * 100}%"
+						style:background={item.color ?? 'var(--accent)'}
+					></div>
+				</div>
+			{/snippet}
+			{#if wholeRowLinks && item.href}
+				<a
+					class="whole-row"
+					href={item.href}
+					target={/^https?:\/\//i.test(item.href) ? '_blank' : undefined}
+					rel={/^https?:\/\//i.test(item.href) ? 'noreferrer' : undefined}>{@render contents()}</a
 				>
-			</div>
-			<div class="track">
-				<div
-					class="fill"
-					style:width="{(item.value / max) * 100}%"
-					style:background={item.color ?? 'var(--accent)'}
-				></div>
-			</div>
+			{:else}{@render contents()}{/if}
 		</li>
 	{/each}
 </ul>
 
 <style>
+	.whole-row {
+		display: block;
+		color: inherit;
+		text-decoration: none;
+	}
+	.whole-row:hover .label {
+		text-decoration: underline;
+	}
+	.whole-row:focus-visible {
+		outline: 2px solid var(--accent);
+		outline-offset: 4px;
+		border-radius: 3px;
+	}
+
 	.bars {
 		list-style: none;
 		margin: 0;

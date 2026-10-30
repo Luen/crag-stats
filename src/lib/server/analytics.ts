@@ -79,6 +79,7 @@ import {
 } from './logbookWeather';
 import {
 	matchesWeatherFilter,
+	matchesWeatherHighRange,
 	toCalendarWeather,
 	type CalendarWeather,
 	type WeatherFilterKey
@@ -1172,6 +1173,8 @@ export function listLogbook(filters?: {
 	missing?: Array<'height' | 'bolts' | 'pitch' | 'weather'>;
 	/** Outdoor ascents whose cached weather day matches (#273); indoor routes never match. */
 	weather?: WeatherFilterKey;
+	weatherHighMin?: number;
+	weatherHighMax?: number;
 	/** Case-insensitive substring match on route tag names in tags_json */
 	tag?: string;
 	/** Case-insensitive exact match on category+name; all entries must match (AND) */
@@ -1414,6 +1417,14 @@ export function listLogbook(filters?: {
 			return w != null && matchesWeatherFilter(w, wanted);
 		});
 	}
+	if (filters?.weatherHighMin != null || filters?.weatherHighMax != null) {
+		rows = rows.filter((r) => {
+			const w = logbookRowWeather(weatherByKey, r);
+			return (
+				w != null && matchesWeatherHighRange(w, filters.weatherHighMin, filters.weatherHighMax)
+			);
+		});
+	}
 	if (filters?.missing?.includes('weather')) {
 		const today = new Date().toISOString().slice(0, 10);
 		const cachedKeys = loadWeatherCachedKeys();
@@ -1483,6 +1494,7 @@ export function listLogbook(filters?: {
 		rows: rows.slice(offset, offset + limit).map((r) => ({
 			...r,
 			weatherChips: logbookRowWeatherChips(weatherByKey, r),
+			weather: logbookRowWeather(weatherByKey, r),
 			firstAscent: firstAscentKindFor(faMarks, r.routeProvider, r.routeExternalId),
 			displayName: displayRouteName(r.routeName, r.pitchLabel, r.ascentLabel),
 			gradeBand: r.effectiveGradeBand ?? r.gradeBand,

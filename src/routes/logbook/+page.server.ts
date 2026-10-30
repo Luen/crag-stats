@@ -5,7 +5,7 @@ import { parseFirstAscentKind, routeExists, setFirstAscent } from '#lib/server/f
 import { notesVisible } from '#lib/server/notes';
 import { isRouteHistoryImportEnabled } from '#lib/server/routeHistoryImport';
 import { isWeatherImportEnabled } from '#lib/server/weatherImport';
-import { isWeatherFilterKey, type WeatherFilterKey } from '#lib/weatherKeys';
+import { isWeatherFilterKey, parseWeatherHighBound, type WeatherFilterKey } from '#lib/weatherKeys';
 import { routeGradeOptions } from '#lib/logbookFilters';
 import { parseTagExactParams } from '#lib/routeTags';
 import type { Actions, PageServerLoad } from './$types';
@@ -122,6 +122,8 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 				v === 'height' || v === 'bolts' || v === 'pitch' || (v === 'weather' && locals.authed)
 		);
 	const weather = parseWeatherParam(url.searchParams.get('weather'));
+	const weatherHighMin = parseWeatherHighBound(url.searchParams.get('weatherHighMin'));
+	const weatherHighMax = parseWeatherHighBound(url.searchParams.get('weatherHighMax'));
 	const tag = url.searchParams.get('tag') ?? '';
 	const tagExact = parseTagExactParams(url.searchParams.getAll('tagExact'));
 	const partnerMatch = url.searchParams.get('partnerMatch') === 'exact' ? 'exact' : 'contains';
@@ -167,6 +169,8 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 		partners: partners || undefined,
 		missing: missing.length ? missing : undefined,
 		weather: weather || undefined,
+		weatherHighMin,
+		weatherHighMax,
 		tag: tag || undefined,
 		tagExact: tagExact.length ? tagExact : undefined,
 		partnerMatch,
@@ -209,6 +213,8 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 		partners,
 		missing,
 		weather,
+		weatherHighMin: weatherHighMin ?? ('' as const),
+		weatherHighMax: weatherHighMax ?? ('' as const),
 		weatherAvailable,
 		canFilterMissingWeather: locals.authed && (weatherAvailable || isWeatherImportEnabled()),
 		tag,
