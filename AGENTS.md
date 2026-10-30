@@ -433,7 +433,7 @@ _Add a row when you change behaviour agents must know about._
 - Settings CSV import keeps the file picker and submit action stacked and left-aligned; avoid a growing file input that pushes the action to the card's far edge.
 - Route-history status exposes `retryAt` from the existing minimum run interval and upstream back-off. Settings counts down from server time and enables the action when due; retain the server pacing guards.
 - Sessions per week card: a session is a calendar day with ≥1 ascent; ISO weeks (Mon start); helpers in `#lib/sessionsPerWeek` (shared, not server-only).
-- Weekday card (`#lib/weekdayStats`): Mon–Sun donut (UTC day from `YYYY-MM-DD`); Sessions|Ascents × All|Sport|Trad|Boulder × All time|Last 12 weeks (`cs_weekday_*`); default half beside Sessions per week; hide when no sessions.
+- Weekday card (`#lib/weekdayStats`): Mon–Sun donut (UTC day from `YYYY-MM-DD`); Sessions|Ascents × All|Sport|Trad|Boulder × All time|Last 12 weeks (`cs_weekday_*`); default half beside Sessions per week under Monthly/Yearly; hide when no sessions.
 - Training load detail lives at `/training-load` (26-week + daily28); the dashboard card title links there and still shows 12 weeks.
 - Default dashboard layout pairs Recent activities (left) with Climbing story (right) after climber type; saved Customize cookies keep their order.
 - Default dashboard places Milestones (half, capped list + Show more → `/milestones`) beside Training load; saved Customize cookies keep their order.

@@ -17,6 +17,14 @@ describe('dashboardLayout', () => {
 		expect(d[0]?.id).toBe('climberType');
 		// Dreeve-style hero pair: recent activities left, climbing story right (#235).
 		expect(d.slice(0, 3).map((i) => i.id)).toEqual(['climberType', 'recent', 'blurb']);
+		const ids = d.map((i) => i.id);
+		const monthly = ids.indexOf('monthly');
+		const yearly = ids.indexOf('yearly');
+		const sessions = ids.indexOf('sessionsPerWeek');
+		const weekday = ids.indexOf('weekday');
+		expect(yearly).toBe(monthly + 1);
+		expect(sessions).toBe(yearly + 1);
+		expect(weekday).toBe(sessions + 1);
 	});
 
 	it('round-trips cookie JSON and drops unknown ids', () => {
