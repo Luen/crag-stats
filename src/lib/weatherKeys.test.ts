@@ -235,3 +235,23 @@ describe('calendar weather (#276)', () => {
 		});
 	});
 });
+
+describe('daily high filter bounds', () => {
+	it('keeps zero and negative bounds and ignores blank/nonfinite input', async () => {
+		const { parseWeatherHighBound } = await import('./weatherKeys');
+		expect(parseWeatherHighBound('0')).toBe(0);
+		expect(parseWeatherHighBound('-5')).toBe(-5);
+		for (const raw of [null, '', ' ', 'Infinity', 'oops'])
+			expect(parseWeatherHighBound(raw)).toBeUndefined();
+	});
+	it('uses exact inclusive lower and exclusive upper edges and skips unknown highs', async () => {
+		const { matchesWeatherHighRange } = await import('./weatherKeys');
+		const snapshot = { tempMaxC: 24.9, tempMinC: 10, precipMm: 0, weatherCode: 0 };
+		expect(matchesWeatherHighRange(snapshot, 20, 25)).toBe(true);
+		expect(matchesWeatherHighRange({ ...snapshot, tempMaxC: 25 }, 20, 25)).toBe(false);
+		expect(matchesWeatherHighRange({ ...snapshot, tempMaxC: 20 }, 20, 25)).toBe(true);
+		expect(matchesWeatherHighRange({ ...snapshot, tempMaxC: -0.1 }, undefined, 0)).toBe(true);
+		for (const tempMaxC of [null, NaN, Infinity])
+			expect(matchesWeatherHighRange({ ...snapshot, tempMaxC }, 0)).toBe(false);
+	});
+});

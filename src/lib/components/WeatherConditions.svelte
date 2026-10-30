@@ -5,7 +5,11 @@
 		formatNumber,
 		type DateDisplay
 	} from '#lib/dates';
-	import type { WeatherConditionsView, WeatherExtreme } from '#lib/weatherStats';
+	import {
+		histogramBinHref,
+		type WeatherConditionsView,
+		type WeatherExtreme
+	} from '#lib/weatherStats';
 	import BarList from './BarList.svelte';
 
 	type Props = { data: WeatherConditionsView; dateDisplay?: DateDisplay };
@@ -25,7 +29,8 @@
 	} as const;
 
 	const histogram = $derived(
-		data.histogram.map((b) => ({
+		data.histogram.map((b, index) => ({
+			href: histogramBinHref(index),
 			id: b.id,
 			label: b.label,
 			value: b.days,
@@ -92,24 +97,26 @@
 	<ul class="shares">
 		{#each data.shares as share (share.key)}
 			<li>
-				<span class="label">{share.label}</span>
-				<span class="value">
-					{formatNumber(share.pct, dateDisplay)}% · {formatNumber(share.days, dateDisplay)}
-					{share.days === 1 ? 'day' : 'days'}
-				</span>
-				<div class="track" aria-hidden="true">
-					<div
-						class="fill"
-						style:width="{formatNumber(share.pct, dateDisplay)}%"
-						style:background={SHARE_COLORS[share.key]}
-					></div>
-				</div>
+				<a href={`/logbook?weather=${share.key}`}>
+					<span class="label">{share.label}</span>
+					<span class="value">
+						{formatNumber(share.pct, dateDisplay)}% · {formatNumber(share.days, dateDisplay)}
+						{share.days === 1 ? 'day' : 'days'}
+					</span>
+					<div class="track" aria-hidden="true">
+						<div
+							class="fill"
+							style:width="{share.pct}%"
+							style:background={SHARE_COLORS[share.key]}
+						></div>
+					</div>
+				</a>
 			</li>
 		{/each}
 	</ul>
 
 	<h3>Daily high (°C)</h3>
-	<BarList items={histogram} maxBars={histogram.length} />
+	<BarList items={histogram} maxBars={histogram.length} wholeRowLinks />
 	<p class="hint">
 		Days per bin · open-meteo.com daily maximum at your crag's cached location (not official climate
 		normals).
@@ -204,11 +211,21 @@
 		display: grid;
 		gap: 0.55rem;
 	}
-	.shares li {
+	.shares a {
+		color: inherit;
+		text-decoration: none;
 		display: grid;
 		grid-template-columns: 1fr auto;
 		gap: 0.2rem 0.75rem;
 		font-size: 0.88rem;
+	}
+	.shares a:hover .label {
+		text-decoration: underline;
+	}
+	.shares a:focus-visible {
+		outline: 2px solid var(--accent);
+		outline-offset: 4px;
+		border-radius: 3px;
 	}
 	.label {
 		font-weight: 600;

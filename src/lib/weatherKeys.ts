@@ -249,3 +249,21 @@ export function toCalendarWeather(w: WeatherSnapshot): CalendarWeather {
 		precipMm: w.precipMm
 	};
 }
+
+/** Finite Celsius bound from a query parameter; blank values leave the range open. */
+export function parseWeatherHighBound(raw: string | null): number | undefined {
+	if (raw == null || raw.trim() === '') return undefined;
+	const value = Number(raw);
+	return Number.isFinite(value) ? value : undefined;
+}
+
+/** Histogram ranges include their lower bound and exclude their upper bound. */
+export function matchesWeatherHighRange(w: WeatherSnapshot, min?: number, max?: number): boolean {
+	const high = w.tempMaxC;
+	return (
+		high != null &&
+		Number.isFinite(high) &&
+		(min == null || high >= min) &&
+		(max == null || high < max)
+	);
+}

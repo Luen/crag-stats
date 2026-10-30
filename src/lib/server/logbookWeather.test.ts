@@ -198,3 +198,18 @@ describe('dashboard weather surfaces (#272 / #274)', () => {
 		expect(getDashboardStats().recent.every((r) => r.weatherChips.length === 0)).toBe(true);
 	});
 });
+
+it('returns cached snapshots and composes exact temperature ranges with weather facets', () => {
+	expect(names(listLogbook({ weatherHighMin: 0, weatherHighMax: 3 }).rows)).toEqual(['Route snow']);
+	expect(names(listLogbook({ weatherHighMin: 3, weatherHighMax: 14 }).rows)).toEqual([
+		'Route freeze'
+	]);
+	expect(
+		names(listLogbook({ weatherHighMin: 14, weatherHighMax: 21, weather: 'rain' }).rows)
+	).toEqual(['Route rain']);
+	expect(names(listLogbook({ weatherHighMin: 35 }).rows)).toEqual(['Route hot']);
+	const rows = listLogbook().rows;
+	expect(rows.find((r) => r.routeName === 'Route hot')?.weather?.tempMaxC).toBe(38);
+	for (const name of ['Gym Route', 'Route none', 'Route nocoords'])
+		expect(rows.find((r) => r.routeName === name)?.weather).toBeNull();
+});

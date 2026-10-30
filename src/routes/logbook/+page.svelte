@@ -4,6 +4,7 @@
 	import StyleBadge from '#lib/components/StyleBadge.svelte';
 	import TagChips from '#lib/components/TagChips.svelte';
 	import TickTypeIcon from '#lib/components/TickTypeIcon.svelte';
+	import { formatNumber } from '#lib/dates';
 	import WeatherChips from '#lib/components/WeatherChips.svelte';
 	import {
 		includeSelectedOptions,
@@ -40,6 +41,8 @@
 		if (data.partners) p.set('partners', data.partners);
 		for (const m of data.missing) p.append('missing', m);
 		if (data.weather) p.set('weather', data.weather);
+		if (data.weatherHighMin !== '') p.set('weatherHighMin', String(data.weatherHighMin));
+		if (data.weatherHighMax !== '') p.set('weatherHighMax', String(data.weatherHighMax));
 		if (data.tag) p.set('tag', data.tag);
 		for (const t of data.tagExact) p.append('tagExact', t);
 		if (data.partnerMatch === 'exact') p.set('partnerMatch', 'exact');
@@ -117,6 +120,13 @@
 		{#if data.weather}
 			· {WEATHER_LABELS[data.weather]} days
 		{/if}
+		{#if data.weatherHighMin !== ''}
+			· daily high ≥{formatNumber(data.weatherHighMin, data.dateDisplay)}°C{/if}
+		{#if data.weatherHighMax !== ''}
+			· daily high &lt;{formatNumber(data.weatherHighMax, data.dateDisplay)}°C{/if}
+		{#if data.weatherHighMin !== '' || data.weatherHighMax !== ''}<a href="/logbook"
+				>Clear weather range</a
+			>{/if}
 		{#if data.rock}
 			· rock {data.rock}
 		{/if}
@@ -127,6 +137,16 @@
 </section>
 
 <form class="panel filters" method="GET">
+	{#if data.weatherHighMin !== ''}<input
+			type="hidden"
+			name="weatherHighMin"
+			value={data.weatherHighMin}
+		/>{/if}
+	{#if data.weatherHighMax !== ''}<input
+			type="hidden"
+			name="weatherHighMax"
+			value={data.weatherHighMax}
+		/>{/if}
 	<div class="filter-row">
 		<input
 			name="q"
@@ -408,6 +428,7 @@
 			<tr>
 				<th><a href={sortHref('date')}>Date{sortMark('date')}</a></th>
 				<th>Route</th>
+				<th class="weather-cell">Weather</th>
 				<th><a href={sortHref('grade')}>Grade{sortMark('grade')}</a></th>
 				<th><a href={sortHref('tick')}>Tick{sortMark('tick')}</a></th>
 				<th><a href={sortHref('quality')}>Quality{sortMark('quality')}</a></th>
@@ -450,7 +471,6 @@
 							<span class="chip">{row.numberAttempts} attempts</span>
 						{/if}
 						<TagChips tags={row.tags} />
-						<WeatherChips chips={row.weatherChips} dateDisplay={data.dateDisplay} />
 						{#if row.comment}
 							{#if row.comment.length > 140}
 								<details class="note">
@@ -483,6 +503,28 @@
 								{/if}
 							</form>
 						{/if}
+					</td>
+					<td class="weather-cell">
+						{#if row.weather}
+							<div class="weather-values">
+								<span
+									>High {row.weather.tempMaxC == null
+										? '—'
+										: `${formatNumber(row.weather.tempMaxC, data.dateDisplay)}°C`}</span
+								>
+								<span
+									>Low {row.weather.tempMinC == null
+										? '—'
+										: `${formatNumber(row.weather.tempMinC, data.dateDisplay)}°C`}</span
+								>
+								<span
+									>Rain {row.weather.precipMm == null
+										? '—'
+										: `${formatNumber(row.weather.precipMm, data.dateDisplay)} mm`}</span
+								>
+							</div>
+							<WeatherChips chips={row.weatherChips} dateDisplay={data.dateDisplay} />
+						{:else}—{/if}
 					</td>
 					<td class="nowrap"><GradeChip grade={row.gradeRaw} band={row.gradeBand} /></td>
 					<td class="tick-cell">
@@ -537,6 +579,22 @@
 {/if}
 
 <style>
+	.weather-values {
+		display: grid;
+		gap: 0.15rem;
+		white-space: nowrap;
+		font-size: 0.8rem;
+		color: var(--ink-muted);
+	}
+	.weather-cell {
+		min-width: 9rem;
+	}
+	@media (max-width: 1279px) {
+		.weather-cell {
+			display: none;
+		}
+	}
+
 	.head,
 	.filters,
 	.table-wrap {

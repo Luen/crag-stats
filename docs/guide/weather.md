@@ -83,3 +83,5 @@ The label is descriptive, not a grade: **Fair-weather leaning** at 60% fair or m
 For seasonal recommendations from route metadata, see [Best months](/docs/best-months); those recommendations are separate from the weather sampled on your logged visits.
 
 Fair-weather labels use the exact day counts for their thresholds; displayed rates are rounded to one decimal place. Display rounding alone never changes your label.
+
+Weather drill-downs (#307): the Weather conditions card links each condition row and entire daily-high bar to the logbook. Temperature ranges use `weatherHighMin` (inclusive) and `weatherHighMax` (exclusive), in Celsius, and persist through filtering, sorting and pagination. Card counts are outdoor location-days; the logbook shows every matching ascent, so counts can differ. The logbook Weather column shows cached daily high/low and precipitation plus notable condition chips on screens at least 1280px wide; smaller screens hide its header and cells. Indoor or uncached rows show a dash. No weather requests are made while viewing pages.
