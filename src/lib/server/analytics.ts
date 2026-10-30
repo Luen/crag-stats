@@ -697,6 +697,7 @@ export function getDashboardStats(
 		routeId: a.routeId,
 		firstAscent: firstAscentKindFor(faMarks, a.routeProvider, a.routeExternalId),
 		gearStyle: a.gearStyle,
+		ascentGearStyle: a.ascentGearStyle,
 		isSend: a.isSend,
 		heightM: a.heightM,
 		routeHeightM: a.routeHeightM,

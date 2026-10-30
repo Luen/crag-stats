@@ -17,6 +17,8 @@ export { splitPartners };
 
 /** Minimal row shape shared by extras builders. */
 export type DashboardExtraRow = {
+	/** Ascent protection style, kept separate from the route discipline. */
+	ascentGearStyle?: string | null;
 	ascentDate: string | null;
 	/** Stable id for same-day ordering (badges / milestones). */
 	ascentId?: number | null;
