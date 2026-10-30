@@ -12,9 +12,11 @@
 	type Props = {
 		months: MonthRow[];
 		years: number[];
+		/** Dashboard links to `/activity`; pass `null` on the detail page. */
+		titleHref?: string | null;
 	};
 
-	let { months, years }: Props = $props();
+	let { months, years, titleHref = '/activity' }: Props = $props();
 
 	type Metric = 'ascents' | 'sends' | 'heightM';
 
@@ -74,7 +76,13 @@
 </script>
 
 <article class="panel">
-	<h2>Monthly stats</h2>
+	<h2>
+		{#if titleHref}
+			<a href={titleHref}>Monthly stats</a>
+		{:else}
+			Monthly stats
+		{/if}
+	</h2>
 
 	{#if months.length === 0}
 		<p class="empty">No monthly data yet.</p>
@@ -143,6 +151,13 @@
 	h2 {
 		margin: 0 0 0.75rem;
 		font-size: 1.05rem;
+	}
+	h2 a {
+		color: inherit;
+		text-decoration: none;
+	}
+	h2 a:hover {
+		color: var(--accent);
 	}
 	.controls {
 		display: flex;

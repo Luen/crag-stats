@@ -10,8 +10,12 @@
 		deltaOnsights: number | null;
 	};
 
-	type Props = { years: YearRow[] };
-	let { years }: Props = $props();
+	type Props = {
+		years: YearRow[];
+		/** Dashboard links to `/activity`; pass `null` on the detail page. */
+		titleHref?: string | null;
+	};
+	let { years, titleHref = '/activity' }: Props = $props();
 
 	function fmtDelta(n: number | null, suffix = ''): string {
 		if (n == null) return '—';
@@ -26,7 +30,13 @@
 </script>
 
 <article class="panel">
-	<h2>Yearly stats</h2>
+	<h2>
+		{#if titleHref}
+			<a href={titleHref}>Yearly stats</a>
+		{:else}
+			Yearly stats
+		{/if}
+	</h2>
 
 	{#if years.length === 0}
 		<p class="empty">No yearly data yet.</p>
@@ -111,6 +121,13 @@
 	h2 {
 		margin: 0 0 0.75rem;
 		font-size: 1.05rem;
+	}
+	h2 a {
+		color: inherit;
+		text-decoration: none;
+	}
+	h2 a:hover {
+		color: var(--accent);
 	}
 	.table-wrap {
 		overflow-x: auto;

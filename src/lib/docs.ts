@@ -52,6 +52,12 @@ export const DOC_PAGES: readonly DocPage[] = [
 		summary: 'The intensity-weighted acute:chronic load model behind the Training load card.'
 	},
 	{
+		slug: 'activity',
+		title: 'Activity',
+		summary:
+			'Monthly and yearly volume beyond the dashboard cards — full per-month tables and YoY deltas.'
+	},
+	{
 		slug: 'best-months',
 		title: 'Best months',
 		summary:

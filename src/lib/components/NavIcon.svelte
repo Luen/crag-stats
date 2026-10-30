@@ -17,7 +17,8 @@
 		| 'monitor'
 		| 'docs'
 		| 'logout'
-		| 'share';
+		| 'share'
+		| 'activity';
 </script>
 
 <script lang="ts">
@@ -106,6 +107,9 @@
 			<circle cx="6" cy="12" r="3" />
 			<circle cx="18" cy="19" r="3" />
 			<path d="m8.6 13.5 6.8 4M15.4 6.5l-6.8 4" />
+		{:else if name === 'activity'}
+			<path d="M3 3v18h18" />
+			<path d="m7 14 3-3 3 2 5-6" />
 		{/if}
 	</svg>
 {/if}
