@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { browser } from '$app/environment';
+
 	type YearRow = {
 		year: number;
 		ascents: number;
@@ -10,13 +12,41 @@
 		deltaOnsights: number | null;
 	};
 
-	type Props = { years: YearRow[] };
-	let { years }: Props = $props();
+	type Props = {
+		years: YearRow[];
+		/** Dashboard links to `/activity` when that route exists; omit/null to skip. */
+		titleHref?: string | null;
+	};
+	let { years, titleHref = null }: Props = $props();
 
 	type Metric = 'ascents' | 'sends' | 'heightM';
-	let metric = $state<Metric>('ascents');
+	type ChartMode = 'year' | 'cumulative';
 
-	// Analytics returns newest-first; chart reads left→right oldest→newest.
+	const MODE_KEY = 'cs_yearly_chart';
+
+	function readStoredMode(): ChartMode {
+		if (!browser) return 'year';
+		try {
+			return localStorage.getItem(MODE_KEY) === 'cumulative' ? 'cumulative' : 'year';
+		} catch {
+			return 'year';
+		}
+	}
+
+	let metric = $state<Metric>('ascents');
+	let chartMode = $state<ChartMode>(readStoredMode());
+
+	function setChartMode(next: ChartMode) {
+		chartMode = next;
+		if (!browser) return;
+		try {
+			localStorage.setItem(MODE_KEY, next);
+		} catch {
+			/* ignore */
+		}
+	}
+
+	// Analytics may return either order; chart reads left→right oldest→newest.
 	const chronological = $derived([...years].sort((a, b) => a.year - b.year));
 
 	const values = $derived(
@@ -32,15 +62,28 @@
 		})
 	);
 
-	const max = $derived(Math.max(1, ...values.map((v) => v.value)));
+	const series = $derived.by(() => {
+		if (chartMode === 'year') return values;
+		let sum = 0;
+		return values.map((p) => {
+			sum += p.value;
+			return { ...p, value: sum, delta: p.value };
+		});
+	});
+
+	const max = $derived(Math.max(1, ...series.map((v) => v.value)));
 
 	const metricLabel = $derived(
 		metric === 'ascents' ? 'Ascents' : metric === 'sends' ? 'Sends' : 'Height (m)'
 	);
 
+	const chartLabel = $derived(
+		chartMode === 'cumulative' ? `Total ${metricLabel.toLowerCase()}` : metricLabel
+	);
+
 	function formatValue(v: number): string {
 		if (metric === 'heightM') return `${Math.round(v)} m`;
-		return String(v);
+		return String(Math.round(v));
 	}
 
 	function fmtDelta(n: number | null, suffix = ''): string {
@@ -56,38 +99,116 @@
 	}
 
 	const deltaSuffix = $derived(metric === 'heightM' ? ' m' : '');
+
+	/** SVG plot box for the cumulative line (viewBox coords). */
+	const plot = { w: 1000, h: 220, padX: 28, padTop: 16, padBot: 8 };
+
+	const linePoints = $derived.by(() => {
+		const n = series.length;
+		if (n === 0) return [] as { x: number; y: number; year: number; value: number }[];
+		const innerW = plot.w - plot.padX * 2;
+		const innerH = plot.h - plot.padTop - plot.padBot;
+		return series.map((p, i) => {
+			const x = n === 1 ? plot.w / 2 : plot.padX + (i / (n - 1)) * innerW;
+			const y = plot.padTop + innerH * (1 - p.value / max);
+			return { x, y, year: p.year, value: p.value };
+		});
+	});
+
+	const polyline = $derived(linePoints.map((p) => `${p.x},${p.y}`).join(' '));
 </script>
 
 <article class="panel">
 	<header class="head">
-		<h2>Yearly stats</h2>
+		<h2>
+			{#if titleHref}
+				<a href={titleHref}>Yearly stats</a>
+			{:else}
+				Yearly stats
+			{/if}
+		</h2>
 		{#if years.length > 0}
-			<div class="toggles" role="group" aria-label="Metric">
-				<button
-					type="button"
-					class={{ active: metric === 'ascents' }}
-					onclick={() => (metric = 'ascents')}>Ascents</button
-				>
-				<button
-					type="button"
-					class={{ active: metric === 'sends' }}
-					onclick={() => (metric = 'sends')}>Sends</button
-				>
-				<button
-					type="button"
-					class={{ active: metric === 'heightM' }}
-					onclick={() => (metric = 'heightM')}>Height (m)</button
-				>
+			<div class="controls">
+				<div class="toggles" role="group" aria-label="Chart mode">
+					<button
+						type="button"
+						class={{ active: chartMode === 'year' }}
+						onclick={() => setChartMode('year')}>Per year</button
+					>
+					<button
+						type="button"
+						class={{ active: chartMode === 'cumulative' }}
+						onclick={() => setChartMode('cumulative')}>Cumulative</button
+					>
+				</div>
+				<div class="toggles" role="group" aria-label="Metric">
+					<button
+						type="button"
+						class={{ active: metric === 'ascents' }}
+						onclick={() => (metric = 'ascents')}>Ascents</button
+					>
+					<button
+						type="button"
+						class={{ active: metric === 'sends' }}
+						onclick={() => (metric = 'sends')}>Sends</button
+					>
+					<button
+						type="button"
+						class={{ active: metric === 'heightM' }}
+						onclick={() => (metric = 'heightM')}>Height (m)</button
+					>
+				</div>
 			</div>
 		{/if}
 	</header>
 
 	{#if years.length === 0}
 		<p class="empty">No yearly data yet.</p>
+	{:else if chartMode === 'cumulative'}
+		<div class="line-wrap">
+			<svg
+				class="line-chart"
+				viewBox="0 0 {plot.w} {plot.h}"
+				role="img"
+				aria-label="{chartLabel} by year, cumulative"
+			>
+				{#if linePoints.length > 1}
+					<polyline
+						class="line"
+						fill="none"
+						points={polyline}
+						style="stroke: var(--accent)"
+						stroke-width="3"
+						stroke-linecap="round"
+						stroke-linejoin="round"
+					/>
+				{/if}
+				{#each linePoints as p, i (p.year)}
+					<a
+						href={`/logbook?year=${p.year}`}
+						aria-label="{p.year}: {formatValue(p.value)} {chartLabel}"
+					>
+						<title
+							>{p.year}: {formatValue(p.value)}
+							{chartLabel} ({fmtDelta(series[i]?.delta ?? null, deltaSuffix)} this year)</title
+						>
+						<circle class="dot" cx={p.x} cy={p.y} r="7" />
+					</a>
+				{/each}
+			</svg>
+			<div class="line-axis" style:--n={series.length}>
+				{#each series as point (point.year)}
+					<a class="axis-col" href={`/logbook?year=${point.year}`}>
+						<span class="year-label">{point.year}</span>
+						<span class="cum-val">{formatValue(point.value)}</span>
+					</a>
+				{/each}
+			</div>
+		</div>
 	{:else}
 		<div class="chart-scroll">
-			<div class="chart" style:--n={values.length}>
-				{#each values as point (point.year)}
+			<div class="chart" style:--n={series.length}>
+				{#each series as point (point.year)}
 					<a
 						class="col"
 						href={`/logbook?year=${point.year}`}
@@ -107,7 +228,9 @@
 				{/each}
 			</div>
 		</div>
+	{/if}
 
+	{#if years.length > 0}
 		<details class="yoy">
 			<summary>Year-over-year table</summary>
 			<div class="table-wrap">
@@ -164,6 +287,19 @@
 	h2 {
 		margin: 0;
 		font-size: 1.05rem;
+	}
+	h2 a {
+		color: inherit;
+		text-decoration: none;
+	}
+	h2 a:hover {
+		color: var(--accent);
+	}
+	.controls {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.55rem 0.85rem;
+		align-items: center;
 	}
 	.toggles {
 		display: flex;
@@ -222,12 +358,51 @@
 		background: var(--accent);
 		min-height: 2px;
 	}
+	.line-wrap {
+		max-width: 100%;
+		min-width: 0;
+	}
+	.line-chart {
+		display: block;
+		width: 100%;
+		height: auto;
+		max-height: 200px;
+	}
+	.line-chart .dot {
+		fill: var(--accent);
+		stroke: var(--paper);
+		stroke-width: 2;
+	}
+	.line-chart a:hover .dot {
+		fill: var(--brand, var(--accent));
+	}
+	.line-axis {
+		display: grid;
+		grid-template-columns: repeat(var(--n), minmax(0, 1fr));
+		gap: 0.25rem;
+		margin-top: 0.35rem;
+	}
+	.axis-col {
+		display: grid;
+		gap: 0.15rem;
+		justify-items: center;
+		text-decoration: none;
+		color: inherit;
+		min-width: 0;
+	}
 	.year-label {
 		justify-self: center;
 		font-size: 0.78rem;
 		font-weight: 600;
 		color: var(--ink);
 		line-height: 1.1;
+	}
+	.cum-val {
+		font-size: 0.72rem;
+		font-weight: 600;
+		color: var(--ink-muted);
+		line-height: 1.1;
+		text-align: center;
 	}
 	.delta {
 		justify-self: center;
