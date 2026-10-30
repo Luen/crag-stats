@@ -4,9 +4,9 @@
  */
 import {
 	lookupAscentWeather,
-	roundCoord,
+	ascentWeatherKey,
+	type WeatherLocation,
 	weatherAscentDay,
-	weatherDayKey,
 	weatherChips,
 	type WeatherChip,
 	type WeatherLookupMap,
@@ -16,6 +16,7 @@ import { isLikelyIndoorRoute } from './venue';
 
 export type LogbookWeatherRow = {
 	ascentDate: string | null;
+	weatherLocation?: WeatherLocation | null;
 	lat: number | null;
 	lon: number | null;
 	gearStyle: string | null;
@@ -63,9 +64,8 @@ export function isMissingLogbookWeather(
 ): boolean {
 	const day = weatherAscentDay(r.ascentDate);
 	if (!day || day >= todayUtc) return false;
-	if (r.lat == null || r.lon == null) return false;
-	if (!Number.isFinite(r.lat) || !Number.isFinite(r.lon)) return false;
 	if (!isOutdoorLogbookRow(r)) return false;
-	const key = weatherDayKey(roundCoord(r.lat), roundCoord(r.lon), day);
+	const key = ascentWeatherKey(r);
+	if (!key) return false;
 	return !(cachedKeys ? cachedKeys.has(key) : map?.has(key));
 }

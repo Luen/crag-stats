@@ -12,15 +12,16 @@ import {
 	isRainWeather,
 	isSnowWeather,
 	isWindyWeather,
-	roundCoord,
+	ascentWeatherKey,
+	type WeatherLocation,
 	weatherAscentDay,
-	weatherDayKey,
 	type WeatherLookupMap,
 	type WeatherSnapshot
 } from './weatherKeys';
 
 export type WeatherAscentRow = {
 	ascentDate: string | null;
+	weatherLocation?: WeatherLocation | null;
 	ascentId?: number | null;
 	lat?: number | null;
 	lon?: number | null;
@@ -97,6 +98,15 @@ export function histogramBinLabel(index: number): string {
 	if (index >= bins - 1) return `${HIST_MAX}°+`;
 	const from = HIST_MIN + (index - 1) * HIST_STEP;
 	return `${from}–${from + HIST_STEP - 1}°`;
+}
+
+/** Logbook drill-down using the same exact Celsius edges as the histogram. */
+export function histogramBinHref(index: number): string {
+	const last = (HIST_MAX - HIST_MIN) / HIST_STEP + 1;
+	if (index <= 0) return `/logbook?weatherHighMax=${HIST_MIN}`;
+	if (index >= last) return `/logbook?weatherHighMin=${HIST_MAX}`;
+	const from = HIST_MIN + (index - 1) * HIST_STEP;
+	return `/logbook?weatherHighMin=${from}&weatherHighMax=${from + HIST_STEP}`;
 }
 
 export function histogramBinIndex(tempMaxC: number): number {
@@ -197,9 +207,8 @@ export function buildWeatherConditionsView(
 	for (const row of rows) {
 		if (row.outdoor === false) continue;
 		const day = weatherAscentDay(row.ascentDate);
-		if (!day || row.lat == null || row.lon == null) continue;
-		if (!Number.isFinite(row.lat) || !Number.isFinite(row.lon)) continue;
-		const key = weatherDayKey(roundCoord(row.lat), roundCoord(row.lon), day);
+		const key = ascentWeatherKey(row);
+		if (!day || !key) continue;
 		const cur = days.get(key);
 		if (cur) {
 			if (repWins(row, cur.rep)) cur.rep = row;

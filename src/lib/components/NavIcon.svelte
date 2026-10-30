@@ -4,6 +4,7 @@
 		| 'logbook'
 		| 'projects'
 		| 'sectors'
+		| 'map'
 		| 'partners'
 		| 'goals'
 		| 'eddington'
@@ -64,7 +65,12 @@
 		{:else if name === 'sectors'}
 			<path d="m3 20 6-12 4 7 2-3 6 8Z" />
 			<circle cx="17" cy="6" r="2" />
-		{:else if name === 'partners'}
+		{:else if name === 'map'}<circle cx="12" cy="12" r="9" /><ellipse
+				cx="12"
+				cy="12"
+				rx="4"
+				ry="9"
+			/><path d="M3 12h18" />{:else if name === 'partners'}
 			<path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
 			<circle cx="9" cy="7" r="4" />
 			<path d="M22 21v-2a4 4 0 0 0-3-3.87" />

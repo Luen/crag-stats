@@ -1,9 +1,13 @@
 <script lang="ts">
 	import { DEFAULT_DATE_DISPLAY, formatNumber, type DateDisplay } from '#lib/dates';
-	import type { WeatherChip } from '#lib/weatherKeys';
+	import type { WeatherChip, WeatherLocation } from '#lib/weatherKeys';
 
-	type Props = { chips?: WeatherChip[] | null; dateDisplay?: DateDisplay };
-	let { chips = [], dateDisplay = DEFAULT_DATE_DISPLAY }: Props = $props();
+	type Props = {
+		location?: WeatherLocation | null;
+		chips?: WeatherChip[] | null;
+		dateDisplay?: DateDisplay;
+	};
+	let { location = null, chips = [], dateDisplay = DEFAULT_DATE_DISPLAY }: Props = $props();
 
 	function label(chip: WeatherChip): string {
 		if (chip.value == null || chip.unit == null) return chip.name;
@@ -20,7 +24,22 @@
 	</ul>
 {/if}
 
+{#if location && location.source !== 'route'}<p class="location">
+		Weather location: {location.source === 'place'
+			? 'Approximate nearby place'
+			: location.source === 'cached'
+				? 'Cached point'
+				: 'Approximate crag/sector'} · {location.name}
+	</p>{/if}
+
 <style>
+	.location {
+		font-size: 0.75rem;
+		color: var(--ink-muted);
+		margin: 0.25rem 0;
+		overflow-wrap: anywhere;
+	}
+
 	.weather-chips {
 		display: flex;
 		flex-wrap: wrap;

@@ -82,6 +82,18 @@ function oldDatabase(path: string, applied: string[]) {
 			 VALUES (-33.9, 151.2, '2024-01-10', 36.0, 22.0, 0, 0, 'ok', ?)`
 		).run(NOW);
 	}
+	if (applied.includes('0018_weather_locations.sql')) {
+		db.prepare(
+			`INSERT INTO weather_place_overrides (area_key,location_json,updated_at) VALUES ('synthetic-area','{"source":"place","lat":1,"lon":2}',?)`
+		).run(NOW);
+		db.prepare(
+			`INSERT INTO weather_locations (route_id,signature,location_json,resolved_at) VALUES (1,'synthetic-signature',NULL,?)`
+		).run(NOW);
+		db.prepare(
+			`INSERT INTO weather_place_searches (query_key,results_json,expires_at,next_allowed_at) VALUES ('synthetic-query','[]',123,42)`
+		).run();
+	}
+
 	db.close();
 }
 
@@ -173,6 +185,17 @@ describe('migrations survive skipped releases', () => {
 						day: '2024-01-10',
 						temp_max_c: 36.0,
 						status: 'ok'
+					});
+				}
+				if (k >= FILES.indexOf('0018_weather_locations.sql') + 1) {
+					expect(db.prepare('SELECT area_key FROM weather_place_overrides').get()).toEqual({
+						area_key: 'synthetic-area'
+					});
+					expect(db.prepare('SELECT signature FROM weather_locations').get()).toEqual({
+						signature: 'synthetic-signature'
+					});
+					expect(db.prepare('SELECT expires_at FROM weather_place_searches').get()).toEqual({
+						expires_at: 123
 					});
 				}
 			} finally {

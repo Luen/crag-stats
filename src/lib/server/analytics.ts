@@ -1,3 +1,11 @@
+import {
+	loadWeatherLocations,
+	attachWeatherLocation,
+	invalidateWeatherLocations
+} from './weatherLocations';
+
+import { validMapCoords, mapPlaceKey } from '#lib/climbingMap';
+
 import { calendarDay as validDay } from '#lib/calendarDay';
 import { listPartners } from './partners';
 import { topPartnersPerMetric } from '#lib/partnerStats';
@@ -74,11 +82,13 @@ import {
 import { isLikelyIndoorRoute } from './venue';
 import {
 	isMissingLogbookWeather,
+	isOutdoorLogbookRow,
 	logbookRowWeather,
 	logbookRowWeatherChips
 } from './logbookWeather';
 import {
 	matchesWeatherFilter,
+	matchesWeatherHighRange,
 	toCalendarWeather,
 	type CalendarWeather,
 	type WeatherFilterKey
@@ -294,6 +304,7 @@ export function getDashboardStats(
 			);
 		}
 	}
+	const weatherLocations = loadWeatherLocations();
 	const all = db
 		.select({
 			id: ascents.id,
@@ -347,7 +358,8 @@ export function getDashboardStats(
 		})
 		.from(ascents)
 		.innerJoin(routes, eq(ascents.routeId, routes.id))
-		.all();
+		.all()
+		.map((r) => attachWeatherLocation(r, weatherLocations));
 
 	const tickMap = new Map<string, number>();
 	const styleMap = new Map<string, number>();
@@ -719,6 +731,7 @@ export function getDashboardStats(
 		routeIsProject: a.routeIsProject,
 		hasPersonalGrade: hasPersonalAscentGrade(a.gradeProvenanceJson),
 		lat: a.lat,
+		weatherLocation: a.weatherLocation,
 		lon: a.lon,
 		pitchLabel: a.pitchLabel,
 		pitchesTotal: a.pitchesTotal,
@@ -837,6 +850,7 @@ export function getDashboardStats(
 				quality: r.quality,
 				tags: parseTagsJson(r.tagsJson).slice(0, 6),
 				weatherChips: logbookRowWeatherChips(weatherByKey, r),
+				weatherLocation: logbookRowWeather(weatherByKey, r) ? r.weatherLocation : null,
 				url: linkFor(r)
 			};
 		});
@@ -1172,6 +1186,11 @@ export function listLogbook(filters?: {
 	missing?: Array<'height' | 'bolts' | 'pitch' | 'weather'>;
 	/** Outdoor ascents whose cached weather day matches (#273); indoor routes never match. */
 	weather?: WeatherFilterKey;
+	place?: string;
+	mapVenue?: string;
+
+	weatherHighMin?: number;
+	weatherHighMax?: number;
 	/** Case-insensitive substring match on route tag names in tags_json */
 	tag?: string;
 	/** Case-insensitive exact match on category+name; all entries must match (AND) */
@@ -1204,12 +1223,15 @@ export function listLogbook(filters?: {
 	// from/to win over year/season so mixed URL params stay predictable (#85).
 	const useYearSeason = !fromBound && !toBound;
 
+	const weatherLocations = loadWeatherLocations();
 	let rows = db
 		.select({
 			id: ascents.id,
+			routeId: ascents.routeId,
 			externalId: ascents.externalId,
 			routeProvider: routes.provider,
 			routeExternalId: routes.externalId,
+			areaExternalId: routes.areaExternalId,
 			ascentDate: ascents.ascentDate,
 			tickType: ascents.tickType,
 			isSend: ascents.isSend,
@@ -1256,7 +1278,13 @@ export function listLogbook(filters?: {
 		.from(ascents)
 		.innerJoin(routes, eq(ascents.routeId, routes.id))
 		.orderBy(desc(ascents.ascentDate))
-		.all();
+		.all()
+		.map((r) => attachWeatherLocation(r, weatherLocations));
+
+	if (filters?.place)
+		rows = rows.filter((r) => validMapCoords(r.lat, r.lon) && mapPlaceKey(r) === filters.place);
+	if (filters?.mapVenue === 'outdoor' || filters?.mapVenue === 'indoor')
+		rows = rows.filter((r) => isOutdoorLogbookRow(r) === (filters.mapVenue === 'outdoor'));
 
 	const routeAscentCounts = buildRouteAscentCounts(rows);
 
@@ -1414,6 +1442,14 @@ export function listLogbook(filters?: {
 			return w != null && matchesWeatherFilter(w, wanted);
 		});
 	}
+	if (filters?.weatherHighMin != null || filters?.weatherHighMax != null) {
+		rows = rows.filter((r) => {
+			const w = logbookRowWeather(weatherByKey, r);
+			return (
+				w != null && matchesWeatherHighRange(w, filters.weatherHighMin, filters.weatherHighMax)
+			);
+		});
+	}
 	if (filters?.missing?.includes('weather')) {
 		const today = new Date().toISOString().slice(0, 10);
 		const cachedKeys = loadWeatherCachedKeys();
@@ -1483,6 +1519,7 @@ export function listLogbook(filters?: {
 		rows: rows.slice(offset, offset + limit).map((r) => ({
 			...r,
 			weatherChips: logbookRowWeatherChips(weatherByKey, r),
+			weather: logbookRowWeather(weatherByKey, r),
 			firstAscent: firstAscentKindFor(faMarks, r.routeProvider, r.routeExternalId),
 			displayName: displayRouteName(r.routeName, r.pitchLabel, r.ascentLabel),
 			gradeBand: r.effectiveGradeBand ?? r.gradeBand,
@@ -1502,6 +1539,7 @@ export function wipeAllData() {
 	// Abandon any in-flight route-history import before clearing tables (#74).
 	invalidateRouteHistoryRuns();
 	invalidateWeatherRuns();
+	invalidateWeatherLocations();
 	db.run(sql`DELETE FROM projects`);
 	db.run(sql`DELETE FROM goals`);
 	db.run(sql`DELETE FROM first_ascents`);
@@ -1509,6 +1547,9 @@ export function wipeAllData() {
 	db.run(sql`DELETE FROM route_history`);
 	db.run(sql`DELETE FROM route_history_fetches`);
 	db.run(sql`DELETE FROM route_history_import_state`);
+	db.run(sql`DELETE FROM weather_locations`);
+	db.run(sql`DELETE FROM weather_place_overrides`);
+	db.run(sql`DELETE FROM weather_place_searches`);
 	db.run(sql`DELETE FROM weather_days`);
 	db.run(sql`DELETE FROM weather_import_state`);
 	db.run(sql`DELETE FROM ascents`);

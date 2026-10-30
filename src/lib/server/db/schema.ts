@@ -314,3 +314,25 @@ export const weatherImportState = sqliteTable('weather_import_state', {
 	nextAllowedAt: text('next_allowed_at'),
 	updatedAt: text('updated_at').notNull()
 });
+
+/** Local weather resolution cache and owner-confirmed settlement approximations (#309). */
+export const weatherLocations = sqliteTable('weather_locations', {
+	routeId: integer('route_id')
+		.primaryKey()
+		.references(() => routes.id, { onDelete: 'cascade' }),
+	signature: text('signature').notNull(),
+	locationJson: text('location_json'),
+	resolvedAt: text('resolved_at').notNull()
+});
+export const weatherPlaceOverrides = sqliteTable('weather_place_overrides', {
+	areaKey: text('area_key').primaryKey().notNull(),
+	locationJson: text('location_json').notNull(),
+	updatedAt: text('updated_at').notNull()
+});
+export const weatherPlaceSearches = sqliteTable('weather_place_searches', {
+	queryKey: text('query_key').primaryKey().notNull(),
+	resultsJson: text('results_json').notNull(),
+	expiresAt: integer('expires_at').notNull(),
+	nextAllowedAt: integer('next_allowed_at').notNull(),
+	error: text('error')
+});

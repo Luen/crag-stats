@@ -83,3 +83,21 @@ The label is descriptive, not a grade: **Fair-weather leaning** at 60% fair or m
 For seasonal recommendations from route metadata, see [Best months](/docs/best-months); those recommendations are separate from the weather sampled on your logged visits.
 
 Fair-weather labels use the exact day counts for their thresholds; displayed rates are rounded to one decimal place. Display rounding alone never changes your label.
+
+### From the card to your logbook
+
+Each condition row and each daily-high bar on the **Weather conditions** card opens the logbook filtered to those days. A temperature bar includes its lower bound and stops just below the next bar (for example 20–24° covers 20.0 °C up to, but not including, 25 °C). The range stays applied while you sort, page or add other filters; use **Clear weather range** to remove only that range.
+
+The card counts outdoor _days_ at each location, while the logbook lists every matching _ascent_, so the two numbers can differ. On wide screens the logbook shows a Weather column with the cached daily high, low and rain; on smaller screens the condition chips appear next to the route instead. Indoor or uncached ascents show a dash. Viewing these pages never triggers a weather request.
+
+## Weather locations when route coordinates are missing
+
+Weather prefers an explicit route point, then its immediate sector or top-level crag (TLC) point from cached provider data. It ignores country-only and arbitrary ancestor geometry. Older cached points without original provider geometry remain usable and are labelled “Cached point”; their original precision cannot be recovered from that point alone. Indoor routes remain excluded.
+
+Settings → Import weather → **Review weather locations** lists outdoor areas and unresolved route counts. For a missing location, search a nearby town using its name/region and a two-letter country code, then explicitly choose the correct result. The search submits only that entered text and country code to [Open-Meteo geocoding](https://open-meteo.com/en/docs/geocoding-api), whose location data comes from GeoNames. It does not send routes, ascent dates, private notes or API keys. Searches happen only after submitting the form, are cached for 30 days, paced, and back off on errors.
+
+A chosen town is an **approximate nearby-place fallback**, shared only by the same provider area ID (or route identity if no area ID exists). It does not overwrite route coordinates, alter route maps or claim to be the nearest settlement. A valid route/sector/crag point always wins. Town weather can differ from a cliff because of distance, elevation and terrain, so town-based data appears in weather views and filters but **does not unlock weather badges**. You can remove the fallback at any time.
+
+The logbook and recent activity show the weather location source. The importer, backlog, calendar, conditions card, crag visit summaries and logbook use the same resolved location/day key. Changing or removing a fallback immediately stops using its old key; old weather stays cached and can still be used by other climbs at that location. Fetch the next weather batch to fill a newly chosen location. Wipe clears resolutions, place choices and search results, and cancels in-flight searches.
+
+Polygon/MultiPolygon fallbacks remain disabled: the current provider polygon payload and inherited geometry have not been established with a real sanitized fixture. The location resolver rejects non-point or malformed geometry rather than guessing a centroid. Issue #309 stays open for that follow-up; the same verified-evidence requirement applies to the separate sun-facing badge research (#283).
