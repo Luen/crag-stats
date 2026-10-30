@@ -229,3 +229,32 @@ it('does not show recent weather source labels until weather is cached', () => {
 	]);
 	expect(getDashboardStats().recent[0].weatherLocation).toBeNull();
 });
+
+it('prefers an enriched route point over a logbook crag point across every weather surface', () => {
+	const ascent = raw();
+	Object.assign(ascent.route.ancestors.TLC, { geometry: [150.3, -33.6] });
+	upsertAscents([mapAscent(ascent)!]);
+	db.update(routes)
+		.set({ routeApiJson: JSON.stringify({ id: 101, lat: -34.2, lon: 151.1 }) })
+		.run();
+	expect([...loadWeatherLocations().values()][0]).toMatchObject({
+		source: 'route',
+		lat: -34.2,
+		lon: 151.1
+	});
+	expect(listPendingWeatherDays(50, NOW)).toEqual([
+		{ latKey: -34.2, lonKey: 151.1, day: '2025-01-01' }
+	]);
+	db.insert(weatherDays)
+		.values({
+			latKey: -34.2,
+			lonKey: 151.1,
+			day: '2025-01-01',
+			tempMaxC: 38,
+			status: 'ok',
+			fetchedAt: 'now'
+		})
+		.run();
+	expect(listLogbook({ weather: 'heat' }).total).toBe(1);
+	expect(getDashboardStats().weatherConditions?.withWeather).toBe(1);
+});

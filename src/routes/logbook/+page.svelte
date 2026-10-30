@@ -58,6 +58,14 @@
 		return p;
 	}
 
+	function clearWeatherRangeHref() {
+		const p = filterParams();
+		p.delete('weatherHighMin');
+		p.delete('weatherHighMax');
+		const query = p.toString();
+		return query ? `?${query}` : '/logbook';
+	}
+
 	function pageHref(page: number) {
 		const p = filterParams();
 		p.set('page', String(page));
@@ -124,7 +132,7 @@
 			· daily high ≥{formatNumber(data.weatherHighMin, data.dateDisplay)}°C{/if}
 		{#if data.weatherHighMax !== ''}
 			· daily high &lt;{formatNumber(data.weatherHighMax, data.dateDisplay)}°C{/if}
-		{#if data.weatherHighMin !== '' || data.weatherHighMax !== ''}<a href="/logbook"
+		{#if data.weatherHighMin !== '' || data.weatherHighMax !== ''}<a href={clearWeatherRangeHref()}
 				>Clear weather range</a
 			>{/if}
 		{#if data.rock}
@@ -471,6 +479,10 @@
 							<span class="chip">{row.numberAttempts} attempts</span>
 						{/if}
 						<TagChips tags={row.tags} />
+						<!-- Narrow screens hide the Weather column; keep chips beside the route there. -->
+						<span class="route-weather-chips">
+							<WeatherChips chips={row.weatherChips} dateDisplay={data.dateDisplay} />
+						</span>
 						{#if row.comment}
 							{#if row.comment.length > 140}
 								<details class="note">
@@ -600,6 +612,11 @@
 	}
 	@media (max-width: 1279px) {
 		.weather-cell {
+			display: none;
+		}
+	}
+	@media (min-width: 1280px) {
+		.route-weather-chips {
 			display: none;
 		}
 	}

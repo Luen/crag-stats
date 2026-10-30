@@ -172,7 +172,13 @@ export function loadWeatherLocations(): Map<number, WeatherLocation | null> {
 			) {
 				const api = object(parse(route.routeApiJson));
 				const ascentRoute = object(object(parse(raw))?.route);
-				location = resolveWeatherLocation(ascentRoute, at) ?? resolveWeatherLocation(api, at);
+				// Compare both caches before falling back: an enriched route point must beat
+				// a logbook payload that only carries its crag/sector point.
+				const priority = { route: 0, sector: 1, crag: 2, cached: 3, place: 4 };
+				location =
+					[resolveWeatherLocation(ascentRoute, at), resolveWeatherLocation(api, at)]
+						.filter((p): p is WeatherLocation => p != null)
+						.sort((a, b) => priority[a.source] - priority[b.source])[0] ?? null;
 				// A known upstream payload with country-only geometry must not fall back to a flattened legacy country point.
 				if (!location && !ascentRoute && !api) {
 					const p = point(route);
