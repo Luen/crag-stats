@@ -133,7 +133,7 @@ export function flattenRouteTags(tags: ApiRouteTags | null | undefined): RouteTa
 				out.push({
 					category,
 					name,
-					...(category.trim().toLowerCase() === 'aspect'
+					...(['aspect', 'weather'].includes(category.trim().toLowerCase())
 						? {
 								source: Object.hasOwn(leaf, 'ancestor') ? ('ancestor' as const) : ('route' as const)
 							}

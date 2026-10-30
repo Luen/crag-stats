@@ -43,7 +43,17 @@ export function isSunFacingSummer(row: {
 	const month = Number(day.slice(5, 7));
 	if (lat > 0 ? month < 6 || month > 8 : !(month === 12 || month === 1 || month === 2))
 		return false;
-	const tags = parseTagsJson(row.tagsJson).filter(
+	const direct = parseTagsJson(row.tagsJson).filter((t) => t.source === 'route');
+	const weather = direct.filter((t) => t.category.trim().toLowerCase() === 'weather');
+	const normalize = (name: string) =>
+		name
+			.trim()
+			.toLowerCase()
+			.replace(/[\s_-]+/g, '');
+	// A route's explicit shade tag contradicts both routes to this sunny-face badge.
+	if (weather.some((t) => normalize(t.name) === 'alwaysshady')) return false;
+	if (weather.some((t) => normalize(t.name) === 'alldaysun')) return true;
+	const tags = direct.filter(
 		(t) => t.category.trim().toLowerCase() === 'aspect' && t.source === 'route'
 	);
 	if (!tags.length) return false;

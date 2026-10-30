@@ -1,0 +1,5 @@
+{
+	"direct": { "Weather": { "sun": { "id": 1, "name": "All day sun" } } },
+	"inherited": { "Weather": { "sun": { "id": 1, "name": "All day sun", "ancestor": {} } } },
+	"shade": { "Weather": { "shade": { "id": 2, "name": "Always shady" } } }
+}

@@ -5,6 +5,13 @@ import { parseTagsJson } from '#lib/routeTags';
 import { flattenRouteTags } from './providers/thecrag/api';
 /** One-time cached metadata upgrade. Touches aspect tags only, without another provider request. */
 export function repairAspectTagSources() {
+	repairTagSources('Aspect');
+}
+/** Preserve Weather-tag provenance for explicit route sun/shade evidence. */
+export function repairWeatherTagSources() {
+	repairTagSources('Weather');
+}
+function repairTagSources(category: 'Aspect' | 'Weather') {
 	const seen = new Set<number>();
 	const rows = db
 		.select({ routeId: ascents.routeId, rawJson: ascents.rawJson, tagsJson: routes.tagsJson })
@@ -23,12 +30,10 @@ export function repairAspectTagSources() {
 		if (!raw?.route || typeof raw.route !== 'object') continue;
 		seen.add(r.routeId);
 		const tags = raw.route.tags;
-		if (!tags || typeof tags !== 'object' || !Object.hasOwn(tags, 'Aspect')) continue;
-		const aspects = flattenRouteTags({ Aspect: tags.Aspect }).filter(
-			(t) => t.category === 'Aspect'
-		);
+		if (!tags || typeof tags !== 'object' || !Object.hasOwn(tags, category)) continue;
+		const aspects = flattenRouteTags({ [category]: tags[category] });
 		const other = parseTagsJson(r.tagsJson).filter(
-			(t) => t.category.trim().toLowerCase() !== 'aspect'
+			(t) => t.category.trim().toLowerCase() !== category.toLowerCase()
 		);
 		db.update(routes)
 			.set({ tagsJson: JSON.stringify([...other, ...aspects]) })

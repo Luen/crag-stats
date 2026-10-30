@@ -53,3 +53,43 @@ it('excludes tropics, high latitudes, bad dates and uncertain location sources',
 			})
 		).toBe(false);
 });
+
+it('accepts direct All day sun without aspect, but rejects inherited, legacy, partial sun and shade', () => {
+	const weather = (name: string, source: string | undefined = 'route') =>
+		JSON.stringify([{ category: 'Weather', name, source }]);
+	for (const lat of [-34, 34]) {
+		const base = row(lat, lat < 0 ? '2025-01-01' : '2025-07-01');
+		expect(isSunFacingSummer({ ...base, tagsJson: weather('All day sun') })).toBe(true);
+		for (const source of ['ancestor', undefined])
+			expect(
+				isSunFacingSummer({
+					...base,
+					tagsJson: JSON.stringify([{ category: 'Weather', name: 'All day sun', source }])
+				})
+			).toBe(false);
+		for (const name of ['Morning sun', 'Noon sun', 'Afternoon sun', 'Always shady'])
+			expect(isSunFacingSummer({ ...base, tagsJson: weather(name) })).toBe(false);
+	}
+	const tagsJson = weather('All day sun');
+	expect(isSunFacingSummer({ ...row(-34, '2025-07-01'), tagsJson })).toBe(false);
+	expect(isSunFacingSummer({ ...row(-10), tagsJson })).toBe(false);
+	expect(isSunFacingSummer({ ...row(), weatherLocation: null, tagsJson })).toBe(false);
+	expect(
+		isSunFacingSummer({
+			...row(),
+			tagsJson: JSON.stringify([
+				{ category: 'Weather', name: 'All day sun', source: 'route' },
+				{ category: 'Weather', name: 'Always shady', source: 'route' }
+			])
+		})
+	).toBe(false);
+	expect(
+		isSunFacingSummer({
+			...row(),
+			tagsJson: JSON.stringify([
+				{ category: 'Aspect', name: 'N', source: 'route' },
+				{ category: 'Weather', name: 'Always shady', source: 'route' }
+			])
+		})
+	).toBe(false);
+});

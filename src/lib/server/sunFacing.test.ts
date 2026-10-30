@@ -73,3 +73,47 @@ it('repairs legacy aspect provenance at startup without touching notes, other ta
 	expect(getDashboardStats().badges.earned.some((b) => b.id === 'sun_facing_summer')).toBe(true);
 	expect(runDataMigrations()).toEqual([]);
 });
+
+it('maps and upgrades direct Weather tags while inherited sun and indoor climbs stay excluded', async () => {
+	const { default: sun } = await import('./providers/thecrag/fixtures/sun-tags.sanitized.json');
+	const direct = mapped(11, sun.direct as unknown as typeof fixture.direct);
+	const inherited = mapped(12, sun.inherited as unknown as typeof fixture.inherited, '2024-01-01');
+	const indoor = mapped(
+		13,
+		sun.direct as unknown as typeof fixture.direct,
+		'2023-01-01',
+		'Indoor gym'
+	);
+	upsertAscents([direct, inherited, indoor]);
+	runDataMigrations();
+	db.update(routes)
+		.set({
+			tagsJson:
+				'[{"category":"Weather","name":"All day sun"},{"category":"Rock type","name":"Granite"}]'
+		})
+		.run();
+	db.run(sql`DELETE FROM schema_migrations WHERE id='data:0007_preserve_weather_tag_provenance'`);
+	db.update(ascents).set({ comment: 'Private test note' }).run();
+	expect(runDataMigrations()).toEqual(['data:0007_preserve_weather_tag_provenance']);
+	const tags = db.select().from(routes).all();
+	expect(JSON.parse(tags.find((r) => r.externalId === '11')!.tagsJson!)).toContainEqual({
+		category: 'Weather',
+		name: 'All day sun',
+		source: 'route'
+	});
+	expect(JSON.parse(tags.find((r) => r.externalId === '12')!.tagsJson!)).toContainEqual({
+		category: 'Weather',
+		name: 'All day sun',
+		source: 'ancestor'
+	});
+	expect(
+		tags.every((r) =>
+			JSON.parse(r.tagsJson!).some((t: { category: string }) => t.category === 'Rock type')
+		)
+	).toBe(true);
+	const stats = getDashboardStats();
+	expect(stats.badges.earned.find((b) => b.id === 'sun_facing_summer')?.date).toBe('2025-01-01');
+	expect(JSON.stringify(stats)).not.toContain('Private test note');
+	expect(db.select().from(ascents).get()?.comment).toBe('Private test note');
+	expect(runDataMigrations()).toEqual([]);
+});
