@@ -15,7 +15,7 @@ The card shows what **share of those ticks** fall in each bucket. Ascents on rou
 
 ## Hidden gems
 
-**Hidden gems** are **sends** on routes that are both well regarded (`qualityScore` ≥ 70, or at least ★★★, or a strong quality label on your tick) and quiet (community **ascent count** ≤ 100 and popularity score &lt; 50). Up to eight distinct routes are listed, ranked by quality.
+**Hidden gems** are **sends** on routes that are both well regarded (`qualityScore` ≥ 70, or at least ★★★, or a strong quality label on your tick) and quiet (community **ascent count** ≤ 100 and popularity score &lt; 50). Up to three distinct routes are listed, ranked by quality.
 
 ## Logbook
 

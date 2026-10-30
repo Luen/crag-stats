@@ -52,7 +52,8 @@ function formatPopLabel(row: RoutePopularityRow): string | null {
 	return null;
 }
 
-const MAX_GEMS = 8;
+/** Keep the half-width card near Karma height (#284). */
+export const MAX_GEMS = 3;
 
 export function buildRoutePopularityStats(
 	rows: RoutePopularityRow[],
