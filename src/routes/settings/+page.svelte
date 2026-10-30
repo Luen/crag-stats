@@ -387,6 +387,13 @@
 					{wx.lastError} Paused until {formatDateTime(wx.nextAllowedAt, data.dateDisplay)}.
 				</p>
 			{/if}
+			{#if wx.totalPending === 0 && wx.cachedOk === 0}
+				<p class="hint">
+					No outdoor days with route coordinates yet. Weather needs lat/lon from theCrag (usually
+					the crag TLC on each ascent). Sync the logbook again after upgrading, then try this
+					action.
+				</p>
+			{/if}
 			<div class="actions">
 				<form method="POST" action="?/fetchWeather">
 					<button
@@ -394,7 +401,9 @@
 						disabled={wx.running || wx.totalPending === 0 || weatherRetrySeconds > 0}
 					>
 						{wx.totalPending === 0
-							? 'All outdoor days cached'
+							? wx.cachedOk === 0
+								? 'No days with coordinates'
+								: 'All outdoor days cached'
 							: wx.running
 								? 'Fetching weather…'
 								: weatherRetrySeconds > 0

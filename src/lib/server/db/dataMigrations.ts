@@ -63,6 +63,15 @@ const MIGRATIONS = [
 		apply: () => {
 			invalidateIncompleteRouteCache();
 		}
+	},
+	{
+		// Logbook TLC geometry is often a bare [lon, lat] array; older extractLatLon
+		// only accepted GeoJSON Points, so routes.lat/lon stayed null and weather
+		// import had nothing to queue (#268 weather cache).
+		id: 'data:0005_repair_tlc_bare_geometry_coords',
+		apply: () => {
+			repairGradesFromRawJson();
+		}
 	}
 ];
 

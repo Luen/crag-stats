@@ -249,6 +249,33 @@ describe('mapAscent — CPR / attempts / geo', () => {
 		expect(mapped!.route.cragName).toBe('Arapiles');
 	});
 
+	it('extracts lat/lon from TLC bare [lon, lat] geometry arrays', () => {
+		// Live logbook payloads use this shape (not GeoJSON Point objects).
+		const mapped = mapAscent({
+			id: 103,
+			tick: { name: 'Red point' },
+			route: {
+				id: 103,
+				name: 'Cahorros Route',
+				grade: '6a',
+				style: 'Sport',
+				ancestors: {
+					TLC: {
+						id: 102845973,
+						name: 'Los Cahorros',
+						geometry: [-3.526023, 37.129051]
+					}
+				}
+			}
+		});
+		expect(mapped!.route.lat).toBe(37.129051);
+		expect(mapped!.route.lon).toBe(-3.526023);
+		expect(extractLatLon({ geometry: [146.133184, -19.026443] })).toEqual({
+			lat: -19.026443,
+			lon: 146.133184
+		});
+	});
+
 	it('extractLatLon reads latitude/longitude fields', () => {
 		expect(extractLatLon({ latitude: '-36.7', longitude: '141.8' })).toEqual({
 			lat: -36.7,
