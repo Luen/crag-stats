@@ -363,7 +363,8 @@
 	.toggles button.active {
 		background: var(--chip, var(--accent));
 		border-color: var(--chip, var(--accent));
-		color: #fff;
+		/* Dark accent is lighter orange — white fails AA; --on-accent tracks the theme. */
+		color: var(--on-accent);
 	}
 	.lead {
 		margin: 0 0 0.85rem;
@@ -425,7 +426,8 @@
 		gap: 0.45rem;
 		font-size: 0.88rem;
 	}
-	.legend li.zero {
+	/* Dim the swatch only — opacity on the whole row washes --ink-muted below AA. */
+	.legend li.zero i {
 		opacity: 0.45;
 	}
 	.legend li.hot .lab {
@@ -440,7 +442,7 @@
 	}
 	.lab {
 		font-weight: 600;
-		color: var(--ink-muted);
+		color: var(--ink);
 	}
 	.val {
 		color: var(--ink-muted);
