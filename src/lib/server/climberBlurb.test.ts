@@ -273,6 +273,7 @@ describe('describeWeatherPersonality (#275)', () => {
 			{ key: 'heat', label: 'Hot', days: 0, pct: 0 }
 		],
 		histogram: [],
+		fairWeather: null,
 		...over
 	});
 	const withShare = (key: string, days: number, pct: number) =>

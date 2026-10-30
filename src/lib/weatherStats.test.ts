@@ -1,7 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import { roundCoord, weatherDayKey, type WeatherSnapshot } from './weatherKeys';
 import {
+	buildFairWeatherMetric,
 	buildWeatherConditionsView,
+	FAIR_WEATHER_MIN_DAYS,
+	fairWeatherLabel,
+	isToughWeather,
 	histogramBinIndex,
 	histogramBinLabel,
 	type WeatherAscentRow
@@ -131,5 +135,76 @@ describe('buildWeatherConditionsView', () => {
 		expect(view.histogram.find((b) => b.label === '20–24°')?.days).toBe(2);
 		expect(view.histogram.find((b) => b.label === '35°+')?.days).toBe(1);
 		expect(view.histogram.reduce((n, b) => n + b.days, 0)).toBe(3);
+	});
+});
+
+describe('fair-weather metric (#280)', () => {
+	const fair = () => snap({ tempMaxC: 21 });
+	const rainy = () => snap({ tempMaxC: 14, precipMm: 5, weatherCode: 61 });
+	const mild = () => snap({ tempMaxC: 29 });
+
+	it('stays hidden below the minimum number of weather days', () => {
+		expect(FAIR_WEATHER_MIN_DAYS).toBe(20);
+		expect(buildFairWeatherMetric(Array.from({ length: 19 }, fair))).toBeNull();
+		expect(buildFairWeatherMetric(Array.from({ length: 20 }, fair))?.fairPct).toBe(100);
+	});
+
+	it('counts fair, tough and in-between days', () => {
+		const days = [
+			...Array.from({ length: 10 }, fair),
+			...Array.from({ length: 6 }, rainy),
+			...Array.from({ length: 4 }, mild)
+		];
+		const m = buildFairWeatherMetric(days)!;
+		expect(m).toMatchObject({ days: 20, fairDays: 10, toughDays: 6, fairPct: 50, toughPct: 30 });
+		expect(m.label).toBe('mixed');
+	});
+
+	it('treats heat, freeze, rain, snow and strong wind as tough days', () => {
+		expect(isToughWeather(snap({ tempMaxC: 36 }))).toBe(true);
+		expect(isToughWeather(snap({ tempMinC: -1 }))).toBe(true);
+		expect(isToughWeather(rainy())).toBe(true);
+		expect(isToughWeather(snap({ windMaxKmh: 60 }))).toBe(true);
+		expect(isToughWeather(fair())).toBe(false);
+		expect(isToughWeather(mild())).toBe(false);
+	});
+
+	it('uses exact shares for label thresholds before rounding display rates', () => {
+		const nearFair = [...Array.from({ length: 1200 }, fair), ...Array.from({ length: 801 }, mild)];
+		expect(buildFairWeatherMetric(nearFair)).toMatchObject({ fairPct: 60, label: 'mixed' });
+		const nearTough = [
+			...Array.from({ length: 1000 }, rainy),
+			...Array.from({ length: 1001 }, mild)
+		];
+		expect(buildFairWeatherMetric(nearTough)).toMatchObject({ toughPct: 50, label: 'mixed' });
+	});
+
+	it('labels without shaming either style', () => {
+		expect(fairWeatherLabel(70, 10)).toBe('fair-leaning');
+		expect(fairWeatherLabel(20, 55)).toBe('all-weather');
+		expect(fairWeatherLabel(40, 30)).toBe('mixed');
+	});
+
+	it('does not label mostly windy or freezing days fair-weather leaning', () => {
+		for (const condition of [{ windMaxKmh: 60 }, { tempMinC: -2 }]) {
+			const days = Array.from({ length: 20 }, () => snap({ tempMaxC: 20, ...condition }));
+			expect(buildFairWeatherMetric(days)).toMatchObject({
+				fairPct: 100,
+				toughPct: 100,
+				label: 'all-weather'
+			});
+		}
+	});
+
+	it('flows through the card view only once 20 weather days exist', () => {
+		const entries: [number, number, string, WeatherSnapshot][] = Array.from(
+			{ length: 20 },
+			(_, i) => [-33.6, 150.3, `2025-03-${String(i + 1).padStart(2, '0')}`, fair()]
+		);
+		const rows = entries.map(([, , d], i) => row({ ascentDate: d, ascentId: i + 1 }));
+		expect(buildWeatherConditionsView(rows, mapOf(entries))?.fairWeather?.fairPct).toBe(100);
+		expect(
+			buildWeatherConditionsView(rows.slice(0, 19), mapOf(entries.slice(0, 19)))?.fairWeather
+		).toBeNull();
 	});
 });

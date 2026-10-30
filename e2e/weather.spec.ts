@@ -128,6 +128,30 @@ for (const colorScheme of ['light', 'dark'] as const) {
 				expect(
 					climateAxe.violations.filter((v) => v.impact === 'serious' || v.impact === 'critical')
 				).toEqual([]);
+
+				await page.goto('/');
+				await expect(card.locator('.fair')).toHaveCount(0);
+				for (let n = 10; n <= 24; n++) {
+					const day = `2026-10-${n}`;
+					db.prepare(
+						`INSERT INTO ascents (provider, external_id, route_id, ascent_date, is_send, tick_type, updated_at)
+						VALUES ('thecrag', ?, ?, ?, 1, 'Red point', '2026-10-28')`
+					).run(`review-metric-${day}`, ids[0], day);
+					db.prepare(
+						`INSERT INTO weather_days (lat_key, lon_key, day, temp_max_c, temp_min_c, precip_mm, weather_code, wind_max_kmh, status, fetched_at)
+						VALUES (12, 34, ?, 20, 10, 0, 0, 60, 'ok', '2026-10-28')`
+					).run(day);
+				}
+				await page.reload();
+				await expect(card.locator('.fair')).toContainText('All-weather climber');
+				await expect(card.locator('.fair')).toContainText('95%');
+				await expect(card.locator('.fair')).toContainText('80%');
+				const metricAxe = await new AxeBuilder({ page }).include('.fair').analyze();
+				expect(
+					metricAxe.violations.filter((v) => v.impact === 'serious' || v.impact === 'critical')
+				).toEqual([]);
+				await card.getByRole('link', { name: 'Fair days in the logbook' }).click();
+				await expect(page).toHaveURL(/weather=fair/);
 				await page.goto('/logbook?weather=fair');
 				await expect(page.locator('tbody')).toContainText('Review fair weather');
 				await expect(page.locator('tbody')).not.toContainText('Review Gym');
