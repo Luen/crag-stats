@@ -144,8 +144,27 @@ function routeLine(name: string | null | undefined, date: string | null): string
 	return '';
 }
 
+/** Explicit provider tick or a clean lead of a sport route using trad protection. */
+export function isGreenpoint(row: DashboardExtraRow): boolean {
+	if (!row.isSend) return false;
+	const tick = (row.tickType ?? '').toLowerCase().replace(/[\s_-]+/g, '');
+	if (['greenpoint', 'greenpointonsight', 'greenpointflash'].includes(tick)) return true;
+	return (
+		row.gearStyle?.trim().toLowerCase() === 'sport' &&
+		row.ascentGearStyle?.trim().toLowerCase() === 'trad' &&
+		['onsight', 'flash', 'redpoint', 'pinkpoint', 'groundupredpoint', 'lead'].includes(tick)
+	);
+}
+
 /** Static catalog — order is display order for locked badges. */
 export const BADGE_CATALOG: readonly BadgeDef[] = [
+	{
+		id: 'greenpoint',
+		title: 'Greenpoint',
+		hint: 'Greenpoint a sport route, or send one with a clean lead recorded as Trad.',
+		icon: 'knot',
+		tone: 'green'
+	},
 	{
 		id: 'first_moves',
 		title: 'First Moves',
@@ -951,6 +970,7 @@ export function buildBadges(
 
 		const kind = tickKind(row.tickType);
 		const send = Boolean(row.isSend);
+		if (isGreenpoint(row)) mark('greenpoint', hitAt(row, 'Sport route led on trad protection'));
 		const outdoor =
 			row.outdoor !== false &&
 			!isLikelyIndoorRoute({
