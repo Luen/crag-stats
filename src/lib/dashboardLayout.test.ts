@@ -29,8 +29,8 @@ describe('dashboardLayout', () => {
 		const sessions = ids.indexOf('sessionsPerWeek');
 		const weekday = ids.indexOf('weekday');
 		expect(yearly).toBe(monthly + 1);
-		expect(sessions).toBe(yearly + 1);
-		expect(weekday).toBe(sessions + 1);
+		expect(weekday).toBe(yearly + 1);
+		expect(sessions).toBe(weekday + 1);
 	});
 
 	it('round-trips cookie JSON and drops unknown ids', () => {
