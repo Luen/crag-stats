@@ -53,13 +53,21 @@
 {#if points.length === 0}
 	<p class="empty">No crag coordinates yet — sync from theCrag API after the geo migration.</p>
 {:else}
-	<svg class="map" viewBox="0 0 {width} {height}" role="img" aria-label="Crag map of climbed areas">
+	<svg
+		class="map"
+		viewBox="0 0 {width} {height}"
+		role="group"
+		aria-label="Crag map of climbed areas"
+	>
 		<rect class="bg" x="0" y="0" {width} {height} rx="12" />
 		{#each points as p (p.crag)}
 			{@const cx = xOf(p.lon)}
 			{@const cy = yOf(p.lat)}
 			{@const r = rOf(p.count)}
-			<a href="/logbook?crag={encodeURIComponent(p.crag)}">
+			<a
+				href="/logbook?crag={encodeURIComponent(p.crag)}"
+				aria-label="{p.crag} · {p.count} ascents"
+			>
 				<title>{p.crag} · {p.count} ascents</title>
 				<circle class="dot" {cx} {cy} {r} />
 				<text class="label" x={cx} y={cy - r - 4} text-anchor="middle">{p.crag}</text>
