@@ -704,8 +704,7 @@ export function getDashboardStats(
 		routeIsProject: a.routeIsProject,
 		hasPersonalGrade: hasPersonalAscentGrade(a.gradeProvenanceJson),
 		lat: a.lat,
-		lon: a.lon,
-		cragName: a.cragName
+		lon: a.lon
 	}));
 	const monthly = buildMonthlyStats(extraRows);
 	const yearly = buildYearlyStats(extraRows);
