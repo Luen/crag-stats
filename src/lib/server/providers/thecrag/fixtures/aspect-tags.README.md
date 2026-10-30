@@ -1,0 +1,5 @@
+# Aspect tag fixture provenance
+
+Observed 2026-10-30 in real, locally cached theCrag logbook API ascent payloads (`route.tags.Aspect`). This fixture retains only public compass labels and the direct/inherited nesting contract. Tag IDs were replaced with 1/2; identifying fields inside the inherited `ancestor` object were removed. Route/ascent/account IDs, dates, names, coordinates, notes, raw payloads and credentials are absent. The inherited marker was an area object; read-only identity checks matched these source nodes to parents or other ancestors rather than the route itself. Direct route tags lacked that property.
+
+The public [logbook API guide](https://www.thecrag.com/en/article/logbookreadapi) and [tagging guide](https://www.thecrag.com/en/article/tagging) describe aspect tags. This fixture establishes the observed cache contract without assuming that inherited sector aspect proves an individual route's facing. Tests combine these minimized tags with separately synthetic route/date/coordinate data.

@@ -1,3 +1,4 @@
+import { repairAspectTagSources } from '../repairAspectTags';
 import { eq, sql } from 'drizzle-orm';
 import { db, ensureSchema } from './index';
 import { appSettings } from './schema';
@@ -72,7 +73,8 @@ const MIGRATIONS = [
 		apply: () => {
 			repairGradesFromRawJson();
 		}
-	}
+	},
+	{ id: 'data:0006_preserve_aspect_tag_provenance', apply: () => repairAspectTagSources() }
 ];
 
 /**

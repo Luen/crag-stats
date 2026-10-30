@@ -12,7 +12,7 @@ describe('flattenRouteTags', () => {
 			expect.arrayContaining([
 				{ category: 'Rock type', name: 'Granite' },
 				{ category: 'Steepness', name: 'Vertical' },
-				{ category: 'Aspect', name: 'NE' }
+				{ category: 'Aspect', name: 'NE', source: 'route' }
 			])
 		);
 	});
@@ -282,4 +282,11 @@ describe('mapAscent — CPR / attempts / geo', () => {
 			lon: 141.8
 		});
 	});
+});
+
+it('ignores malformed tag names while preserving valid aspect provenance', () => {
+	const tags = { Aspect: { bad: { name: 42 }, good: { name: 'N', ancestor: { id: 2 } } } };
+	expect(flattenRouteTags(tags as unknown as Parameters<typeof flattenRouteTags>[0])).toEqual([
+		{ category: 'Aspect', name: 'N', source: 'ancestor' }
+	]);
 });

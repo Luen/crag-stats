@@ -28,3 +28,11 @@ These four badges use fields already in your logbook and are dated by the climb 
 | **Persistence Pays** | You send a route for the first time after logging it on 4 or more different days (attempts included). Repeating a route you already sent does not count.                                                                                   |
 
 They are one-shot badges, so they do not appear in **Almost there**.
+
+## Summer Sun Face
+
+Log an outdoor climb on an equator-facing route in local meteorological summer: N/NE/NW during December–February in the southern hemisphere, or S/SE/SW during June–August in the northern hemisphere. This conservative version covers absolute latitudes from 25° up to (but not including) 60°. Attempts count as logged climbs, as with weather-day badges. The badge unlocks once on the earliest qualifying day and has no Almost there counter.
+
+Only verified **direct route** Aspect tags qualify. Inherited sector/crag tags, older tags without provenance, unknown or conflicting directions, indoor climbs, invalid dates, tropical/high-latitude locations, legacy points of unknown precision and nearby-town approximations do not qualify. A cached-data upgrade recovers direct/inherited markers from existing API payloads without another sync or external request.
+
+This is a seasonal/aspect heuristic for a potentially sunny face. It does not establish the time you climbed, actual sunshine, shade, overhangs or rock temperature, and requires no Open-Meteo cache. The separate heat badge describes cached high air temperature. A minimized real API tag fixture and its provenance are documented in the repository.

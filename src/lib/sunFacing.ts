@@ -1,0 +1,61 @@
+import { parseTagsJson } from './routeTags';
+import { weatherAscentDay, type WeatherLocation } from './weatherKeys';
+/** Product coverage limits: buffer outside the tropics, exclude high-latitude solar complexity. */
+export const SUN_FACE_MIN_LAT = 25;
+export const SUN_FACE_MAX_LAT = 60;
+const ASPECTS: Record<string, string> = {
+	n: 'N',
+	north: 'N',
+	ne: 'NE',
+	northeast: 'NE',
+	e: 'E',
+	east: 'E',
+	se: 'SE',
+	southeast: 'SE',
+	s: 'S',
+	south: 'S',
+	sw: 'SW',
+	southwest: 'SW',
+	w: 'W',
+	west: 'W',
+	nw: 'NW',
+	northwest: 'NW'
+};
+/** Seasonal/aspect heuristic, not a claim of measured sunshine or rock temperature. */
+export function isSunFacingSummer(row: {
+	ascentDate: string | null;
+	lat?: number | null;
+	tagsJson?: string | null;
+	weatherLocation?: WeatherLocation | null;
+}): boolean {
+	const day = weatherAscentDay(row.ascentDate);
+	if (!day || day.startsWith('0000-') || row.weatherLocation === null) return false;
+	if (row.weatherLocation?.source === 'place' || row.weatherLocation?.source === 'cached')
+		return false;
+	const lat = row.weatherLocation?.lat ?? row.lat;
+	if (
+		lat == null ||
+		!Number.isFinite(lat) ||
+		Math.abs(lat) < SUN_FACE_MIN_LAT ||
+		Math.abs(lat) >= SUN_FACE_MAX_LAT
+	)
+		return false;
+	const month = Number(day.slice(5, 7));
+	if (lat > 0 ? month < 6 || month > 8 : !(month === 12 || month === 1 || month === 2))
+		return false;
+	const tags = parseTagsJson(row.tagsJson).filter(
+		(t) => t.category.trim().toLowerCase() === 'aspect' && t.source === 'route'
+	);
+	if (!tags.length) return false;
+	const wanted = lat < 0 ? new Set(['N', 'NE', 'NW']) : new Set(['S', 'SE', 'SW']);
+	return tags.every((t) =>
+		wanted.has(
+			ASPECTS[
+				t.name
+					.trim()
+					.toLowerCase()
+					.replace(/[\s_-]+/g, '')
+			] ?? ''
+		)
+	);
+}

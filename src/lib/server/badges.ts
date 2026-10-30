@@ -1,3 +1,4 @@
+import { isSunFacingSummer } from '#lib/sunFacing';
 /**
  * RoxClimbs-inspired badges: real milestones from logged data.
  * Taking a break does not erase a milestone — recognition when something genuinely happened.
@@ -264,6 +265,13 @@ export const BADGE_CATALOG: readonly BadgeDef[] = [
 		title: 'New Year',
 		hint: 'Climb on New Year’s Eve or Day',
 		icon: 'calendar',
+		tone: 'warm'
+	},
+	{
+		id: 'sun_facing_summer',
+		title: 'Summer Sun Face',
+		hint: 'Log a route with direct equator-facing aspect in local summer (25–60° latitude).',
+		icon: 'sun',
 		tone: 'warm'
 	},
 	{
@@ -959,6 +967,11 @@ export function buildBadges(
 				cragName: row.cragName,
 				tagsJson: row.tagsJson
 			});
+		if (outdoor && isSunFacingSummer(row))
+			mark(
+				'sun_facing_summer',
+				hitAt(row, 'Equator-facing route in local summer · aspect heuristic')
+			);
 		const monthDay = day.slice(5); // MM-DD from calendar dayKey — no local TZ
 
 		if (sessions.size === 1 && !earned.has('first_session')) {

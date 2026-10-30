@@ -1,3 +1,4 @@
+import type { RouteTag } from '#lib/routeTags';
 import { detectAndParseGrade, parseHeightMeters } from '#lib/grades';
 import { resolveTheCragAvatar } from '#lib/thecragAvatar';
 import { theCragAreaUrl, theCragAscentUrl, theCragRouteUrl } from '#lib/thecragUrls';
@@ -25,7 +26,7 @@ type ApiAreaNode = {
 	longitude?: number | string | null;
 	latitude?: number | string | null;
 };
-type ApiTagLeaf = { id?: number | string; name?: string };
+type ApiTagLeaf = { id?: number | string; name?: string; ancestor?: unknown };
 /** route.tags: { Aspect: { NE: { name, id, ... } }, ... } */
 type ApiRouteTags = Record<string, Record<string, ApiTagLeaf>>;
 type ApiRoute = {
@@ -121,16 +122,23 @@ export function ascentNotes(a: Pick<ApiAscent, 'markdown' | 'privateMarkdown'>):
 }
 
 /** Flatten theCrag route.tags nested map into chip-friendly pairs. */
-export function flattenRouteTags(
-	tags: ApiRouteTags | null | undefined
-): { category: string; name: string }[] {
+export function flattenRouteTags(tags: ApiRouteTags | null | undefined): RouteTag[] {
 	if (!tags || typeof tags !== 'object') return [];
-	const out: { category: string; name: string }[] = [];
+	const out: RouteTag[] = [];
 	for (const [category, leaves] of Object.entries(tags)) {
 		if (!leaves || typeof leaves !== 'object') continue;
 		for (const leaf of Object.values(leaves)) {
-			const name = leaf?.name?.trim();
-			if (name) out.push({ category, name });
+			const name = typeof leaf?.name === 'string' ? leaf.name.trim() : '';
+			if (name)
+				out.push({
+					category,
+					name,
+					...(category.trim().toLowerCase() === 'aspect'
+						? {
+								source: Object.hasOwn(leaf, 'ancestor') ? ('ancestor' as const) : ('route' as const)
+							}
+						: {})
+				});
 		}
 	}
 	return out;
