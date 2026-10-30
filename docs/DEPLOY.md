@@ -12,9 +12,15 @@ Platforms: `linux/amd64`, `linux/arm64` (homeservers / Raspberry Pi / x86 NAS).
 
 Triggers:
 
-- Git tag `v*` (e.g. `git tag v0.1.0 && git push --tags`)
-- GitHub Release published
+- Git tag `v*` (e.g. `git tag v0.1.0 && git push --tags`, or `gh release create` which pushes the tag once — see #164)
 - Manual `workflow_dispatch`
+- `workflow_call` from the nightly deps release
+
+Publishing a GitHub Release for an **existing** tag does **not** rebuild the image; use a new version tag or manual dispatch.
+
+## Admin after deploy
+
+Open **`/settings`** on your host for sync, wipe and display options. With `APP_PASSWORD` set, sign in at **`/login`** first (Settings redirects there when logged out). Prefer Cloudflare Access (or similar) in front of `/settings*` and `/login*` on public tunnels; the app password remains a second factor.
 
 ## HTTP, HTTPS and reverse proxies
 
@@ -50,4 +56,4 @@ pnpm version patch   # or minor / major
 git push origin main --follow-tags
 ```
 
-Or create a GitHub Release from the UI — the workflow publishes `latest` plus semver tags.
+Or create a GitHub Release from the UI **with a new `v*` tag** — the tag push publishes `latest` plus semver tags. Releasing against an already-pushed tag does not rebuild.

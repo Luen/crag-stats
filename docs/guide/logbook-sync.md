@@ -1,6 +1,6 @@
 # Logbook sync
 
-Crag Stats can sync through theCrag's supporter API or download your CSV export with a saved login. Choose one mode on the server. Both use the existing schedule (`SYNC_CRON`, daily by default), **Settings → Sync now**, and Docker worker. A new installation syncs on startup when configured.
+Crag Stats can sync through theCrag's supporter API or download your CSV export with a saved login. Choose one mode on the server. Both use the existing schedule (`SYNC_CRON`, daily by default), **Settings → Sync now** (open **`/settings`**, or **`/login`** first when `APP_PASSWORD` is set), and Docker worker. A new installation syncs on startup when configured.
 
 ## API sync (default)
 
