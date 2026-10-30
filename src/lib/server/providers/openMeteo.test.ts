@@ -10,7 +10,9 @@ describe('parseOpenMeteoArchive', () => {
 				temperature_2m_min: [22, -5.5],
 				precipitation_sum: [0, 3.2],
 				weathercode: [1, 73],
-				relative_humidity_2m_mean: [40, 90]
+				relative_humidity_2m_mean: [40, 90],
+				wind_speed_10m_max: [12, 55],
+				wind_speed_10m_mean: [8, 40]
 			}
 		});
 		expect(rows).toEqual([
@@ -20,7 +22,9 @@ describe('parseOpenMeteoArchive', () => {
 				tempMinC: 22,
 				precipMm: 0,
 				weatherCode: 1,
-				humidityMean: 40
+				humidityMean: 40,
+				windMaxKmh: 12,
+				windMeanKmh: 8
 			},
 			{
 				day: '2024-01-16',
@@ -28,7 +32,9 @@ describe('parseOpenMeteoArchive', () => {
 				tempMinC: -5.5,
 				precipMm: 3.2,
 				weatherCode: 73,
-				humidityMean: 90
+				humidityMean: 90,
+				windMaxKmh: 55,
+				windMeanKmh: 40
 			}
 		]);
 	});
@@ -52,7 +58,9 @@ describe('parseOpenMeteoArchive', () => {
 				tempMinC: null,
 				precipMm: 1.5,
 				weatherCode: 61,
-				humidityMean: null
+				humidityMean: null,
+				windMaxKmh: null,
+				windMeanKmh: null
 			}
 		]);
 	});
@@ -73,6 +81,7 @@ describe('createOpenMeteoClient', () => {
 			expect(url).toContain('start_date=2024-02-01');
 			expect(url).toContain('end_date=2024-02-01');
 			expect(url).toContain('temperature_2m_max');
+			expect(url).toContain('wind_speed_10m_max');
 			return new Response(
 				JSON.stringify({
 					daily: {
@@ -81,7 +90,9 @@ describe('createOpenMeteoClient', () => {
 						temperature_2m_min: [18],
 						precipitation_sum: [0],
 						weathercode: [0],
-						relative_humidity_2m_mean: [55]
+						relative_humidity_2m_mean: [55],
+						wind_speed_10m_max: [22],
+						wind_speed_10m_mean: [14]
 					}
 				}),
 				{ status: 200, headers: { 'Content-Type': 'application/json' } }

@@ -17,10 +17,15 @@ export type WeatherSnapshot = {
 	tempMinC: number | null;
 	precipMm: number | null;
 	weatherCode: number | null;
+	/** Daily max 10 m wind (km/h); null when not fetched / missing. */
+	windMaxKmh?: number | null;
 };
 
 /** WMO weather interpretation codes that indicate snowfall (Open-Meteo / WMO). */
 const SNOW_CODES = new Set([71, 72, 73, 74, 75, 76, 77, 85, 86]);
+
+/** Outdoor day counts as very windy at or above this max wind (km/h). */
+export const WINDY_MAX_KMH = 50;
 
 export function isSnowWeather(w: WeatherSnapshot): boolean {
 	if (w.weatherCode != null && SNOW_CODES.has(w.weatherCode)) return true;
@@ -43,7 +48,13 @@ export function isRainWeather(w: WeatherSnapshot): boolean {
 	return w.precipMm != null && w.precipMm >= 1;
 }
 
-export type WeatherCondition = 'heat' | 'freeze' | 'rain' | 'snow';
+/** Very windy: daily max 10 m wind ≥ {@link WINDY_MAX_KMH} km/h (#281). */
+export function isWindyWeather(w: WeatherSnapshot): boolean {
+	const wind = w.windMaxKmh;
+	return wind != null && wind >= WINDY_MAX_KMH;
+}
+
+export type WeatherCondition = 'heat' | 'freeze' | 'rain' | 'snow' | 'wind';
 
 export function weatherConditions(w: WeatherSnapshot): WeatherCondition[] {
 	const out: WeatherCondition[] = [];
@@ -51,5 +62,6 @@ export function weatherConditions(w: WeatherSnapshot): WeatherCondition[] {
 	if (isFreezeWeather(w)) out.push('freeze');
 	if (isSnowWeather(w)) out.push('snow');
 	else if (isRainWeather(w)) out.push('rain');
+	if (isWindyWeather(w)) out.push('wind');
 	return out;
 }

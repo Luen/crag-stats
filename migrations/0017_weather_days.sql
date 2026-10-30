@@ -9,6 +9,8 @@ CREATE TABLE IF NOT EXISTS weather_days (
   precip_mm REAL,
   weather_code INTEGER,
   humidity_mean REAL,
+  wind_max_kmh REAL,
+  wind_mean_kmh REAL,
   source TEXT NOT NULL DEFAULT 'open-meteo',
   status TEXT NOT NULL,
   fetched_at TEXT NOT NULL,

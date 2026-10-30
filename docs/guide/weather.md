@@ -15,7 +15,7 @@ Open-Meteo's free non-commercial tier is intended for personal self-hosted insta
 - **Past days** — today's UTC date is skipped; the archive is often incomplete for the current day.
 - **Shared cache key** — lat/lon are rounded to **one decimal place**, so nearby routes at one crag share a day row.
 
-Stored fields: daily max/min temperature (°C), precipitation (mm), WMO weather code, mean humidity.
+Stored fields: daily max/min temperature (°C), precipitation (mm), WMO weather code, mean humidity, max/mean 10 m wind (km/h).
 
 ## Badges
 
@@ -27,5 +27,6 @@ Once a day is cached, these badges can unlock from any logged ascent that day at
 | **Freeze Frame**         | Day's low ≤ 0°C                                                 |
 | **Rain Check**           | ≥ 1 mm precipitation and not classified as snow                 |
 | **Climbing in the Snow** | WMO snow codes (71–77, 85–86), or ≥ 1 mm precip with high ≤ 1°C |
+| **Blown Away**           | Day's max 10 m wind ≥ 50 km/h                                   |
 
 Without `WEATHER_IMPORT` (or before the backlog is fetched), these badges stay locked even if you climbed in those conditions.

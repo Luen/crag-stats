@@ -111,7 +111,9 @@ describe('weatherEngine', () => {
 						tempMinC: 22,
 						precipMm: 0,
 						weatherCode: 0,
-						humidityMean: 40
+						humidityMean: 40,
+						windMaxKmh: 18,
+						windMeanKmh: 12
 					}
 				]
 			}))

@@ -355,8 +355,8 @@
 		<h2>Import weather</h2>
 		<p class="hint">
 			Caches daily outdoor weather (Open-Meteo) for logbook days that have route coordinates. Powers
-			heat, freeze, rain and snow badges. Up to {wx.perRun} days per run, at most one request a second,
-			after each logbook sync.
+			heat, freeze, rain, snow and wind badges. Up to {wx.perRun} days per run, at most one request a
+			second, after each logbook sync.
 			<a href="/docs/weather">How weather works</a>
 		</p>
 		{#if !wx.enabled}
