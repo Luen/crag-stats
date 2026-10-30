@@ -28,6 +28,7 @@
 	import TagChips from '#lib/components/TagChips.svelte';
 	import TickTypeIcon from '#lib/components/TickTypeIcon.svelte';
 	import TrainingLoad from '#lib/components/TrainingLoad.svelte';
+	import SessionsPerWeek from '#lib/components/SessionsPerWeek.svelte';
 	import VolumeChart from '#lib/components/VolumeChart.svelte';
 	import YearlyStats from '#lib/components/YearlyStats.svelte';
 	import { packLayoutRows, type DashCardId } from '#lib/dashboardLayout';
@@ -177,6 +178,8 @@
 		<ProjectsHighlight projects={data.dashboardProjects} />
 	{:else if id === 'trainingLoad'}
 		<TrainingLoad load={s.trainingLoad} />
+	{:else if id === 'sessionsPerWeek'}
+		<SessionsPerWeek years={s.sessionsPerWeek.years} byYear={s.sessionsPerWeek.byYear} />
 	{:else if id === 'milestones'}
 		<Milestones items={s.milestones.items} limit={6} />
 	{:else if id === 'styleMix'}

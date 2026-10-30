@@ -64,6 +64,11 @@ export const DOC_PAGES: readonly DocPage[] = [
 			'Year heatmap of logged days; Intensity scales by volume, Grade by hardest send band that day.'
 	},
 	{
+		slug: 'sessions-per-week',
+		title: 'Sessions per week',
+		summary: 'Climbing days per ISO week and the yearly average session rate.'
+	},
+	{
 		slug: 'best-months',
 		title: 'Best months',
 		summary:
