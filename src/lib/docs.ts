@@ -52,6 +52,12 @@ export const DOC_PAGES: readonly DocPage[] = [
 		summary: 'The intensity-weighted acute:chronic load model behind the Training load card.'
 	},
 	{
+		slug: 'ascent-calendar',
+		title: 'Ascent calendar',
+		summary:
+			'Year heatmap of logged days; Intensity scales by volume, Grade by hardest send band that day.'
+	},
+	{
 		slug: 'best-months',
 		title: 'Best months',
 		summary:
