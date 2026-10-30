@@ -75,7 +75,12 @@ import {
 	logbookRowWeather,
 	logbookRowWeatherChips
 } from './logbookWeather';
-import { matchesWeatherFilter, type WeatherFilterKey } from '#lib/weatherKeys';
+import {
+	matchesWeatherFilter,
+	toCalendarWeather,
+	type CalendarWeather,
+	type WeatherFilterKey
+} from '#lib/weatherKeys';
 import { buildWeatherConditionsView } from '#lib/weatherStats';
 import { buildTrainingLoadView, hasPersonalAscentGrade } from './trainingLoad';
 import { buildKarmaStats } from './karma';
@@ -519,6 +524,9 @@ export function getDashboardStats(
 			? `${dominant.style} climber`
 			: 'Rock climber');
 
+	const weatherByKey = loadWeatherSnapshotMap();
+	// Calendar weather: the lowest-id outdoor ascent that day with a cache hit decides the colour.
+	const dayWeather = new Map<string, { id: number; weather: CalendarWeather }>();
 	const dayMap = new Map<
 		string,
 		{ count: number; sends: number; heightM: number; maxBand: number | null }
@@ -526,6 +534,12 @@ export function getDashboardStats(
 	for (const row of all) {
 		const day = validDay(row.ascentDate);
 		if (!day) continue;
+		const snap = logbookRowWeather(weatherByKey, row);
+		if (snap) {
+			const cur = dayWeather.get(day);
+			if (!cur || row.id < cur.id)
+				dayWeather.set(day, { id: row.id, weather: toCalendarWeather(snap) });
+		}
 		const slot = dayMap.get(day) ?? { count: 0, sends: 0, heightM: 0, maxBand: null };
 		slot.count += 1;
 		if (row.isSend) {
@@ -549,7 +563,8 @@ export function getDashboardStats(
 			count: v.count,
 			sends: v.sends,
 			heightM: Math.round(v.heightM * 10) / 10,
-			maxBand: v.maxBand
+			maxBand: v.maxBand,
+			weather: dayWeather.get(date)?.weather ?? null
 		}))
 		.sort((a, b) => a.date.localeCompare(b.date));
 
@@ -724,7 +739,6 @@ export function getDashboardStats(
 			tagsJson: a.tagsJson
 		})
 	}));
-	const weatherByKey = loadWeatherSnapshotMap();
 	const weatherConditions = buildWeatherConditionsView(extraRows, weatherByKey);
 	const monthly = buildMonthlyStats(extraRows);
 	const yearly = buildYearlyStats(extraRows);

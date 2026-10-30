@@ -451,6 +451,7 @@ _Add a row when you change behaviour agents must know about._
 - Logbook weather (#273): `?weather=heat|freeze|rain|snow|fair` and owner-only `?missing=weather` via `logbookWeather.ts` (outdoor rule = `isLikelyIndoorRoute`; indoor never matches). `listLogbook` rows carry `weatherChips` (`weatherChips()` in `#lib/weatherKeys`, rendered by `WeatherChips.svelte`) and `weatherAvailable`; hide weather UI when the cache is empty.
 - Recent activities (#274): `stats.recent[].weatherChips` come from `logbookRowWeatherChips` (same lookup as the logbook); the strip renders only for outdoor climbs with a cached day.
 - Climbing story weather (#275): `describeWeatherPersonality` in `climberBlurb.ts` takes the #272 `WeatherConditionsView` and adds at most one gated line (≥20 weather days, ≥50% of outdoor days covered); positive wording only. Docs: `/docs/climbing-story` + `/docs/weather`.
+- Ascent calendar Weather mode (#276): `HeatmapDay.weather` (`CalendarWeather`, lowest-id outdoor ascent with a cache hit) colours cells via `--weather-*` tokens; the mode button appears only when any day has weather and falls back to Intensity otherwise. A values table duplicates the data for screen readers.
 - Partners page (`/partners`, #269): Ascents | Sessions | Areas metric toggle (`cs_partners_metric`); helpers in `#lib/partnerStats`. Dashboard card stays ascent-ranked. Docs at `/docs/partners`.
 
 - Weather PR review: preserve main’s indoor badge guards and shared partner statistics when updating the weather stack. Fair weather requires measured precipitation below 0.1 mm; missing rain is unknown, not dry.
@@ -458,3 +459,5 @@ _Add a row when you change behaviour agents must know about._
 - Shared weather ascent days reject impossible dates by a UTC round-trip (including non-leap February 29), so coverage and backlog match real calendar days.
 
 - The weather backlog uses all checked cache keys, including unavailable (`missing`) rows, just like the importer. Usable weather lookups still include `ok` rows only.
+
+- Ascent calendar day iteration and weekdays use UTC throughout; local noon can fall on the prior UTC date in UTC+13/+14 browsers. Test Pacific/Kiritimati and America/New_York.

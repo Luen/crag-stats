@@ -51,6 +51,23 @@ for (const colorScheme of ['light', 'dark'] as const) {
 				await expect(card).toContainText('38°C');
 				await expect(card).toContainText('Review hot weather');
 				await expect(card).not.toContainText('Review Gym');
+				const calendar = page
+					.locator('article')
+					.filter({ has: page.getByRole('heading', { name: 'Ascent calendar', exact: true }) });
+				await calendar.getByRole('button', { name: 'Weather', exact: true }).click();
+				await expect(
+					calendar.getByRole('button', { name: 'Weather', exact: true })
+				).toHaveAttribute('aria-pressed', 'true');
+				await calendar.getByText('View weather values', { exact: false }).click();
+				await expect(calendar.getByRole('table')).toContainText('38°C');
+				await expect(calendar.locator('a[href="/logbook?day=2026-10-29"]').first()).toHaveAttribute(
+					'title',
+					/Hot.*high 38°C/
+				);
+				const calendarAxe = await new AxeBuilder({ page }).include('.values').analyze();
+				expect(
+					calendarAxe.violations.filter((v) => v.impact === 'serious' || v.impact === 'critical')
+				).toEqual([]);
 				const recent = page
 					.locator('article')
 					.filter({ has: page.getByRole('heading', { name: 'Recent activities', exact: true }) });
