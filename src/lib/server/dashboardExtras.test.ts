@@ -29,7 +29,9 @@ describe('buildPartnerLeaderboard', () => {
 			{ ascentDate: '2024-01-04', partners: 'Bob' }
 		];
 		const { partners } = buildPartnerLeaderboard(rows);
-		expect(partners[0]).toEqual({ name: 'Bob', count: 3 });
+		expect(partners[0]?.name).toBe('Bob');
+		expect(partners[0]?.count).toBe(3);
+		expect(partners[0]?.ascents).toBe(3);
 		expect(partners.find((p) => p.name === 'alice')?.count).toBe(2);
 		expect(partners.find((p) => p.name === 'carol')?.count).toBe(1);
 	});

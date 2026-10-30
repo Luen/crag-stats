@@ -685,6 +685,7 @@ export function getDashboardStats(
 		routeHeightM: a.routeHeightM,
 		tickType: a.tickType,
 		partners: a.partners,
+		cragName: a.cragName,
 		quality: a.quality,
 		stars: a.stars,
 		qualityScore: a.qualityScore,

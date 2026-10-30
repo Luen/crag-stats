@@ -439,3 +439,4 @@ _Add a row when you change behaviour agents must know about._
 - Default dashboard places Milestones (half, capped list + Show more → `/milestones`) beside Training load; saved Customize cookies keep their order.
 - Ascent calendar fills the card width; `--heat-1..4` is green→yellow→orange→red (Dreeve-like intensity), not theCrag grade-band greens.
 - **New route?** on projects covers blank/`Project` grades and wide provisional spans (`21-23`, `V1-3`); adjacent half-grades (`V1/2`) stay ordinary. Midpoint chips still show when parsed.
+- Partners page (`/partners`, #269): Ascents | Sessions | Areas metric toggle (`cs_partners_metric`); helpers in `#lib/partnerStats`. Dashboard card stays ascent-ranked. Docs at `/docs/partners`.
