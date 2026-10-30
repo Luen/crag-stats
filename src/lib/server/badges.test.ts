@@ -795,3 +795,53 @@ describe('multipitch counting regressions (#294 review)', () => {
 		expect(buildBadges(rows).earned.some((b) => b.id === 'travel_week')).toBe(false);
 	});
 });
+
+describe('Greenpoint badge', () => {
+	const base = row({
+		ascentDate: '2025-06-01',
+		isSend: true,
+		gearStyle: 'Sport',
+		ascentGearStyle: 'Trad',
+		tickType: 'Red point'
+	});
+	it('accepts documented provider greenpoint tick variants and normalized labels', () => {
+		for (const tickType of [
+			'greenpoint',
+			'greenpointonsight',
+			'greenpointflash',
+			'Green point onsight',
+			'Green-point-flash'
+		]) {
+			expect(
+				buildBadges([{ ...base, gearStyle: null, ascentGearStyle: null, tickType }]).earned.some(
+					(b) => b.id === 'greenpoint'
+				)
+			).toBe(true);
+		}
+	});
+	it('accepts an explicit successful Lead tick with Trad protection on Sport', () => {
+		expect(
+			buildBadges([{ ...base, tickType: 'Lead' }]).earned.some((b) => b.id === 'greenpoint')
+		).toBe(true);
+	});
+	it('requires a confident clean lead when inferring from style and preserves the first unlock', () => {
+		const later = { ...base, ascentDate: '2025-07-01', routeName: 'Later' };
+		const badge = buildBadges([later, base]).earned.find((b) => b.id === 'greenpoint');
+		expect(badge?.date).toBe('2025-06-01');
+		expect(badge?.tone).toBe('green');
+		for (const tickType of ['Tick', 'Send', 'Clean', 'Top rope', 'Second', 'Attempt', null])
+			expect(buildBadges([{ ...base, tickType }]).earned.some((b) => b.id === 'greenpoint')).toBe(
+				false
+			);
+		for (const change of [
+			{ isSend: false },
+			{ gearStyle: 'Trad' },
+			{ ascentGearStyle: 'Sport' },
+			{ ascentGearStyle: null }
+		])
+			expect(buildBadges([{ ...base, ...change }]).earned.some((b) => b.id === 'greenpoint')).toBe(
+				false
+			);
+		expect(buildBadges([]).almost.some((b) => b.id === 'greenpoint')).toBe(false);
+	});
+});

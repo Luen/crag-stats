@@ -1,3 +1,4 @@
+import { readCardPreferences } from '#lib/cardPreferences';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { sql } from 'drizzle-orm';
@@ -38,7 +39,7 @@ function navCounts(): { ascents: number; projects: number } {
 	}
 }
 
-export const load: LayoutServerLoad = async ({ locals, url }) => {
+export const load: LayoutServerLoad = async ({ locals, url, cookies }) => {
 	const authOn = isAuthEnabled();
 	const scope = authScope();
 	const showSettings = !authOn || locals.authed;
@@ -46,6 +47,7 @@ export const load: LayoutServerLoad = async ({ locals, url }) => {
 	const gated = authOn && scope === 'all' && !locals.authed;
 	return {
 		appVersion: readAppVersion(),
+		cardPreferences: readCardPreferences((key) => cookies.get(key)),
 		githubUrl: 'https://github.com/Luen/crag-stats',
 		authed: locals.authed,
 		authEnabled: authOn,

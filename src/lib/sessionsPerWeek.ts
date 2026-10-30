@@ -3,6 +3,8 @@
  * A session = a calendar day with ≥1 logged ascent (same idea as project sessions).
  */
 
+import { calendarDay as validDay } from '#lib/calendarDay';
+
 export type SessionsWeek = {
 	/** Monday (UTC) of the week */
 	weekStart: string;
@@ -16,11 +18,6 @@ export type SessionsPerWeekStats = {
 	/** Weeks for each calendar year (ISO weeks that contain a day in that year). */
 	byYear: Record<string, SessionsWeek[]>;
 };
-
-function validDay(iso: string | null | undefined): string | null {
-	const d = (iso ?? '').slice(0, 10);
-	return /^\d{4}-\d{2}-\d{2}$/.test(d) && !d.includes('-00') ? d : null;
-}
 
 /** Monday UTC of the ISO week containing `day`. */
 export function mondayOf(day: string): string {
@@ -37,7 +34,9 @@ export function isoWeekNumber(day: string): number {
 	// Thursday of this week determines the ISO week-year.
 	const thu = new Date(d);
 	thu.setUTCDate(d.getUTCDate() + 3);
-	const yearStart = new Date(Date.UTC(thu.getUTCFullYear(), 0, 1));
+	const yearStart = new Date(0);
+	yearStart.setUTCHours(0, 0, 0, 0);
+	yearStart.setUTCFullYear(thu.getUTCFullYear(), 0, 1);
 	return 1 + Math.floor((thu.getTime() - yearStart.getTime()) / 86_400_000 / 7);
 }
 
@@ -49,12 +48,13 @@ export function addDays(day: string, n: number): string {
 
 /** Every Monday that overlaps calendar year `year`. */
 export function mondaysOverlappingYear(year: number): string[] {
-	const first = mondayOf(`${year}-01-01`);
-	const lastDay = `${year}-12-31`;
+	const yearLabel = String(year).padStart(4, '0');
+	const first = mondayOf(`${yearLabel}-01-01`);
+	const lastDay = `${yearLabel}-12-31`;
 	const out: string[] = [];
 	for (let m = first; m <= lastDay || mondayOf(m) <= mondayOf(lastDay); m = addDays(m, 7)) {
 		const end = addDays(m, 6);
-		if (end < `${year}-01-01`) continue;
+		if (end < `${yearLabel}-01-01`) continue;
 		if (m > lastDay) break;
 		out.push(m);
 		if (out.length > 60) break;

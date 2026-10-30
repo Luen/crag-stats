@@ -56,7 +56,12 @@
 
 <div class="charts">
 	<MonthlyStats months={data.monthly.months} years={data.monthly.years} titleHref={null} />
-	<YearlyStats years={data.yearly.years} days={data.heatmap} titleHref={null} />
+	<YearlyStats
+		preferences={data.cardPreferences}
+		years={data.yearly.years}
+		days={data.heatmap}
+		titleHref={null}
+	/>
 </div>
 
 <section class="panel table-panel">

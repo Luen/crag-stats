@@ -1,6 +1,12 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import {
+		EMPTY_CARD_PREFERENCES,
+		migrateCardPreference,
+		saveCardPreference,
+		type CardPreferences
+	} from '#lib/cardPreferences';
+	import {
 		PARTNER_METRICS,
 		partnerMetricLabel,
 		partnerMetricValue,
@@ -10,38 +16,43 @@
 	} from '#lib/partnerStats';
 
 	type Props = {
+		preferences?: CardPreferences;
 		partners: PartnerStat[];
 		/** When set, the card title links here (dashboard → full list). */
 		titleHref?: string | null;
 		/** Ascents / Sessions / Areas toggle (Partners page). */
 		metricToggle?: boolean;
+		limit?: number;
+		compact?: boolean;
 	};
-	let { partners, titleHref = null, metricToggle = false }: Props = $props();
+	let {
+		preferences = EMPTY_CARD_PREFERENCES,
+		partners,
+		titleHref = null,
+		metricToggle = false,
+		limit,
+		compact = false
+	}: Props = $props();
 
 	const METRIC_KEY = 'cs_partners_metric';
 
-	let metric = $state<PartnerMetric>('ascents');
+	let metric = $derived<PartnerMetric>(
+		metricToggle ? (preferences.cs_partners_metric ?? 'ascents') : 'ascents'
+	);
 
+	let ready = $state(false);
 	onMount(() => {
-		if (!metricToggle) return;
-		try {
-			const v = localStorage.getItem(METRIC_KEY);
-			if (v === 'ascents' || v === 'sessions' || v === 'areas') metric = v;
-		} catch {
-			/* ignore */
-		}
+		if (metricToggle)
+			metric = migrateCardPreference('cs_partners_metric', preferences.cs_partners_metric);
+		ready = true;
 	});
 
 	function setMetric(next: PartnerMetric) {
 		metric = next;
-		try {
-			localStorage.setItem(METRIC_KEY, next);
-		} catch {
-			/* ignore */
-		}
+		saveCardPreference(METRIC_KEY, next);
 	}
 
-	const ranked = $derived(sortPartners(partners, metric));
+	const ranked = $derived(sortPartners(partners, metric).slice(0, limit));
 	const max = $derived(Math.max(1, ...ranked.map((p) => partnerMetricValue(p, metric))));
 
 	const metricButtonLabel = (m: PartnerMetric): string => {
@@ -59,7 +70,16 @@
 	);
 </script>
 
-<article class="panel">
+<article
+	class={[
+		'panel',
+		{ compact },
+		{
+			'card-preference-pending':
+				!ready && !(!metricToggle || preferences.cs_partners_metric != null)
+		}
+	]}
+>
 	<header>
 		<div class="titles">
 			<h2>
@@ -116,6 +136,18 @@
 </article>
 
 <style>
+	.compact .toggles {
+		flex-wrap: wrap;
+		gap: 0.2rem;
+	}
+	.compact .toggles button {
+		padding: 0.25rem 0.4rem;
+		font-size: 0.74rem;
+	}
+	.compact .hint {
+		font-size: 0.74rem;
+	}
+
 	.panel {
 		padding: 1.1rem 1.2rem;
 		border-radius: 1rem;
