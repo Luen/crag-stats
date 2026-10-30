@@ -121,7 +121,7 @@
 	{:else if id === 'athleteProfile'}
 		<AthleteProfile axes={s.athleteProfile.axes} />
 	{:else if id === 'heatmap'}
-		<AscentHeatmap data={s.heatmap} />
+		<AscentHeatmap data={s.heatmap} dateDisplay={data.dateDisplay} />
 	{:else if id === 'volume'}
 		<article class="panel">
 			<h2>Volume</h2>

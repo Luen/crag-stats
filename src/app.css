@@ -56,6 +56,12 @@
 	--heat-2: #facc15;
 	--heat-3: #fb923c;
 	--heat-4: #ef4444;
+	--weather-heat: #ea580c;
+	--weather-freeze: #7dd3fc;
+	--weather-rain: #2563eb;
+	--weather-snow: #a78bfa;
+	--weather-fair: #34d399;
+	--weather-mild: #cbd5e1;
 	--shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.18);
 	--scrim: rgba(10, 12, 16, 0.35);
 
@@ -87,6 +93,12 @@
 	--heat-2: #ca8a04;
 	--heat-3: #ea580c;
 	--heat-4: #f87171;
+	--weather-heat: #fb923c;
+	--weather-freeze: #38bdf8;
+	--weather-rain: #3b82f6;
+	--weather-snow: #c4b5fd;
+	--weather-fair: #10b981;
+	--weather-mild: #475569;
 	color-scheme: dark;
 }
 
@@ -112,6 +124,12 @@
 		--heat-2: #ca8a04;
 		--heat-3: #ea580c;
 		--heat-4: #f87171;
+		--weather-heat: #fb923c;
+		--weather-freeze: #38bdf8;
+		--weather-rain: #3b82f6;
+		--weather-snow: #c4b5fd;
+		--weather-fair: #10b981;
+		--weather-mild: #475569;
 		color-scheme: dark;
 	}
 }

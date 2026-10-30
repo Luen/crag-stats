@@ -131,6 +131,18 @@ describe('dashboard weather surfaces (#272 / #274)', () => {
 		expect(by['Route none']).toEqual([]);
 	});
 
+	it('colours calendar days from cached weather and leaves gym / uncached days blank', () => {
+		const days = Object.fromEntries(getDashboardStats().heatmap.map((d) => [d.date, d.weather]));
+		expect(days['2025-03-01']?.kind).toBe('heat');
+		expect(days['2025-03-02']?.kind).toBe('freeze');
+		expect(days['2025-03-03']?.kind).toBe('rain');
+		expect(days['2025-03-04']?.kind).toBe('snow');
+		expect(days['2025-03-05']?.kind).toBe('fair');
+		expect(days['2025-03-05']?.tempMaxC).toBe(21);
+		expect(days['2025-03-06']).toBeNull();
+		expect(days['2025-03-07']).toBeNull();
+	});
+
 	it('builds the conditions card from outdoor days only and hides it with an empty cache', () => {
 		const card = getDashboardStats().weatherConditions;
 		expect(card).not.toBeNull();

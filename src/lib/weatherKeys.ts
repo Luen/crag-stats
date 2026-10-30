@@ -216,3 +216,35 @@ export function weatherChips(w: WeatherSnapshot): WeatherChip[] {
 		out.push({ key: 'fair', name: 'Fair', value: Math.round(w.tempMaxC!), unit: '°C' });
 	return out;
 }
+
+export type CalendarWeatherKind = 'snow' | 'rain' | 'heat' | 'freeze' | 'fair' | 'mild';
+
+/** Fields the ascent calendar keeps per day (#276). */
+export type CalendarWeather = {
+	kind: CalendarWeatherKind;
+	tempMaxC: number | null;
+	tempMinC: number | null;
+	precipMm: number | null;
+};
+
+/**
+ * One colour class per cached day: precipitation first (snow, then rain), then temperature
+ * extremes (heat, then freeze), then fair; everything else is a plain "mild" day.
+ */
+export function calendarWeatherKind(w: WeatherSnapshot): CalendarWeatherKind {
+	if (isSnowWeather(w)) return 'snow';
+	if (isRainWeather(w)) return 'rain';
+	if (isHeatWeather(w)) return 'heat';
+	if (isFreezeWeather(w)) return 'freeze';
+	if (isFairWeather(w)) return 'fair';
+	return 'mild';
+}
+
+export function toCalendarWeather(w: WeatherSnapshot): CalendarWeather {
+	return {
+		kind: calendarWeatherKind(w),
+		tempMaxC: w.tempMaxC,
+		tempMinC: w.tempMinC,
+		precipMm: w.precipMm
+	};
+}

@@ -7,7 +7,9 @@ import {
 	isSnowWeather,
 	isStickyHumidity,
 	isStormPrecip,
+	calendarWeatherKind,
 	isWeatherFilterKey,
+	toCalendarWeather,
 	isWindyWeather,
 	lookupAscentWeather,
 	matchesWeatherFilter,
@@ -191,5 +193,35 @@ describe('weatherChips', () => {
 			(c) => c.key
 		);
 		expect(keys).toEqual(['freeze', 'snow']);
+	});
+});
+
+describe('calendar weather (#276)', () => {
+	const day = (over: Partial<Parameters<typeof calendarWeatherKind>[0]>) => ({
+		tempMaxC: 20,
+		tempMinC: 10,
+		precipMm: 0,
+		weatherCode: 1,
+		...over
+	});
+
+	it('classifies one colour per day with precipitation first', () => {
+		expect(
+			calendarWeatherKind(day({ tempMaxC: 0, tempMinC: -5, precipMm: 4, weatherCode: 73 }))
+		).toBe('snow');
+		expect(calendarWeatherKind(day({ tempMaxC: 36, precipMm: 5, weatherCode: 61 }))).toBe('rain');
+		expect(calendarWeatherKind(day({ tempMaxC: 36 }))).toBe('heat');
+		expect(calendarWeatherKind(day({ tempMaxC: 8, tempMinC: -1 }))).toBe('freeze');
+		expect(calendarWeatherKind(day({}))).toBe('fair');
+		expect(calendarWeatherKind(day({ tempMaxC: 28 }))).toBe('mild');
+	});
+
+	it('keeps the numbers the tooltip and table need', () => {
+		expect(toCalendarWeather(day({ tempMaxC: 28, precipMm: 0.2 }))).toEqual({
+			kind: 'mild',
+			tempMaxC: 28,
+			tempMinC: 10,
+			precipMm: 0.2
+		});
 	});
 });

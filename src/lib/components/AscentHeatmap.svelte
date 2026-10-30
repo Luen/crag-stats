@@ -1,12 +1,19 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { GRADE_BANDS } from '#lib/grades/bands';
+	import {
+		DEFAULT_DATE_DISPLAY,
+		formatCalendarDate,
+		formatNumber,
+		type DateDisplay
+	} from '#lib/dates';
 	import type { HeatmapDay } from '#lib/types/dashboard';
+	import type { CalendarWeather, CalendarWeatherKind } from '#lib/weatherKeys';
 
-	type Props = { data: HeatmapDay[] };
-	let { data }: Props = $props();
+	type Props = { data: HeatmapDay[]; dateDisplay?: DateDisplay };
+	let { data, dateDisplay = DEFAULT_DATE_DISPLAY }: Props = $props();
 
-	type Mode = 'intensity' | 'grade';
+	type Mode = 'intensity' | 'grade' | 'weather';
 	const MODE_KEY = 'cs_heatmap_mode';
 
 	let mode = $state<Mode>('intensity');
@@ -14,7 +21,7 @@
 	onMount(() => {
 		try {
 			const v = localStorage.getItem(MODE_KEY);
-			mode = v === 'grade' ? 'grade' : 'intensity';
+			mode = v === 'grade' || v === 'weather' ? v : 'intensity';
 		} catch {
 			/* ignore */
 		}
@@ -28,6 +35,20 @@
 			/* ignore quota / private mode */
 		}
 	}
+
+	/** Weather mode only exists once any climbed day has cached weather (opt-in import). */
+	const hasWeather = $derived(data.some((d) => d.weather != null));
+	const activeMode = $derived<Mode>(mode === 'weather' && !hasWeather ? 'intensity' : mode);
+
+	const WEATHER_KINDS: { kind: CalendarWeatherKind; label: string }[] = [
+		{ kind: 'snow', label: 'Snow' },
+		{ kind: 'rain', label: 'Rain' },
+		{ kind: 'heat', label: 'Hot (35°C+)' },
+		{ kind: 'freeze', label: 'Freezing' },
+		{ kind: 'fair', label: 'Fair' },
+		{ kind: 'mild', label: 'Mild' }
+	];
+	const kindLabel = (k: CalendarWeatherKind) => WEATHER_KINDS.find((w) => w.kind === k)?.label ?? k;
 
 	const years = $derived(
 		[...new Set(data.map((d) => d.date.slice(0, 4)))].sort((a, b) => b.localeCompare(a))
@@ -46,6 +67,7 @@
 		count: number;
 		sends: number;
 		maxBand: number | null;
+		weather: CalendarWeather | null;
 		dow: number;
 	};
 
@@ -64,6 +86,7 @@
 				count: hit?.count ?? 0,
 				sends: hit?.sends ?? 0,
 				maxBand: hit?.maxBand ?? null,
+				weather: hit?.weather ?? null,
 				dow: d.getDay()
 			});
 		}
@@ -72,7 +95,7 @@
 		// pad first column
 		const firstDow = cells[0]?.dow ?? 0;
 		for (let i = 0; i < firstDow; i++) {
-			col.push({ date: '', count: 0, sends: 0, maxBand: null, dow: i });
+			col.push({ date: '', count: 0, sends: 0, maxBand: null, weather: null, dow: i });
 		}
 		for (const cell of cells) {
 			if (col.length === 7) {
@@ -83,7 +106,7 @@
 		}
 		if (col.length) {
 			while (col.length < 7)
-				col.push({ date: '', count: 0, sends: 0, maxBand: null, dow: col.length });
+				col.push({ date: '', count: 0, sends: 0, maxBand: null, weather: null, dow: col.length });
 			cols.push(col);
 		}
 		return cols;
@@ -131,9 +154,39 @@
 		return `b${band}`;
 	};
 
+	const weatherClass = (cell: Cell): string => {
+		if (cell.count <= 0) return 'l0';
+		return cell.weather ? `w-${cell.weather.kind}` : 'attempt';
+	};
+
+	const tempText = (n: number | null) =>
+		n == null ? '—' : `${formatNumber(Math.round(n), dateDisplay)}°C`;
+
+	function weatherSummary(w: CalendarWeather): string {
+		const rain =
+			w.precipMm != null && w.precipMm >= 1
+				? `, ${formatNumber(Math.round(w.precipMm * 10) / 10, dateDisplay)} mm`
+				: '';
+		return `${kindLabel(w.kind)} · high ${tempText(w.tempMaxC)}, low ${tempText(w.tempMinC)}${rain}`;
+	}
+
+	/** Days in the chosen year that have cached weather, for the screen-reader values table. */
+	const weatherDays = $derived(
+		data
+			.filter((d) => d.weather != null && d.date.startsWith(year))
+			.sort((a, b) => a.date.localeCompare(b.date))
+	);
+
 	function cellTitle(cell: Cell): string {
+		if (activeMode === 'weather') {
+			const head = `${formatCalendarDate(cell.date, dateDisplay)}: ${cell.count} ascent${cell.count === 1 ? '' : 's'}`;
+			if (cell.count <= 0) return head;
+			return cell.weather
+				? `${head} · ${weatherSummary(cell.weather)}`
+				: `${head} · no weather data`;
+		}
 		const base = `${cell.date}: ${cell.count} ascent${cell.count === 1 ? '' : 's'} (${cell.sends} send${cell.sends === 1 ? '' : 's'})`;
-		if (mode !== 'grade' || cell.maxBand == null) return base;
+		if (activeMode !== 'grade' || cell.maxBand == null) return base;
 		const name = GRADE_BANDS.find((b) => b.id === cell.maxBand)?.name ?? `band ${cell.maxBand}`;
 		return `${base} · hardest send ${name}`;
 	}
@@ -150,16 +203,24 @@
 				<div class="toggles" role="group" aria-label="Colour mode">
 					<button
 						type="button"
-						class={{ active: mode === 'intensity' }}
-						aria-pressed={mode === 'intensity'}
+						class={{ active: activeMode === 'intensity' }}
+						aria-pressed={activeMode === 'intensity'}
 						onclick={() => setMode('intensity')}>Intensity</button
 					>
 					<button
 						type="button"
-						class={{ active: mode === 'grade' }}
-						aria-pressed={mode === 'grade'}
+						class={{ active: activeMode === 'grade' }}
+						aria-pressed={activeMode === 'grade'}
 						onclick={() => setMode('grade')}>Grade</button
 					>
+					{#if hasWeather}
+						<button
+							type="button"
+							class={{ active: activeMode === 'weather' }}
+							aria-pressed={activeMode === 'weather'}
+							onclick={() => setMode('weather')}>Weather</button
+						>
+					{/if}
 				</div>
 			{/if}
 			{#if years.length > 1}
@@ -199,9 +260,11 @@
 								<a
 									class={[
 										'cell',
-										mode === 'intensity'
+										activeMode === 'intensity'
 											? `l${level(cell.count)}`
-											: bandClass(cell.maxBand, cell.count)
+											: activeMode === 'weather'
+												? weatherClass(cell)
+												: bandClass(cell.maxBand, cell.count)
 									]}
 									href="/logbook?day={encodeURIComponent(cell.date)}"
 									title={cellTitle(cell)}
@@ -214,12 +277,59 @@
 				{/each}
 			</div>
 		</div>
-		{#if mode === 'intensity'}
+		{#if activeMode === 'intensity'}
 			<div class="legend">
 				<span>Less</span>
 				<i class="l0"></i><i class="l1"></i><i class="l2"></i><i class="l3"></i><i class="l4"></i>
 				<span>More</span>
 			</div>
+		{:else if activeMode === 'weather'}
+			<div class="legend grade">
+				<i class="attempt"></i>
+				<span class="band-name">No weather data</span>
+				{#each WEATHER_KINDS as w (w.kind)}
+					<i class="w-{w.kind}"></i>
+					<span class="band-name">{w.label}</span>
+				{/each}
+			</div>
+			<details class="values">
+				<summary>View weather values ({year})</summary>
+				{#if weatherDays.length === 0}
+					<p class="empty">No cached weather for {year}.</p>
+				{:else}
+					<table>
+						<caption>Weather on climbing days in {year}</caption>
+						<thead>
+							<tr>
+								<th scope="col">Date</th>
+								<th scope="col">Conditions</th>
+								<th scope="col">High</th>
+								<th scope="col">Low</th>
+								<th scope="col">Precipitation</th>
+							</tr>
+						</thead>
+						<tbody>
+							{#each weatherDays as day (day.date)}
+								<tr>
+									<th scope="row"
+										><a href="/logbook?day={encodeURIComponent(day.date)}"
+											>{formatCalendarDate(day.date, dateDisplay)}</a
+										></th
+									>
+									<td>{kindLabel(day.weather!.kind)}</td>
+									<td>{tempText(day.weather!.tempMaxC)}</td>
+									<td>{tempText(day.weather!.tempMinC)}</td>
+									<td>
+										{day.weather!.precipMm == null
+											? '—'
+											: `${formatNumber(Math.round(day.weather!.precipMm * 10) / 10, dateDisplay)} mm`}
+									</td>
+								</tr>
+							{/each}
+						</tbody>
+					</table>
+				{/if}
+			</details>
 		{:else}
 			<div class="legend grade">
 				<i class="attempt"></i>
@@ -390,6 +500,54 @@
 	}
 	.b5 {
 		background: var(--band-elite);
+	}
+	.w-snow {
+		background: var(--weather-snow);
+	}
+	.w-rain {
+		background: var(--weather-rain);
+	}
+	.w-heat {
+		background: var(--weather-heat);
+	}
+	.w-freeze {
+		background: var(--weather-freeze);
+	}
+	.w-fair {
+		background: var(--weather-fair);
+	}
+	.w-mild {
+		background: var(--weather-mild);
+	}
+	.values {
+		margin-top: 0.75rem;
+		font-size: 0.85rem;
+	}
+	.values summary {
+		cursor: pointer;
+		font-weight: 600;
+		color: var(--ink-muted);
+	}
+	.values table {
+		width: 100%;
+		margin-top: 0.45rem;
+		border-collapse: collapse;
+		font-variant-numeric: tabular-nums;
+	}
+	.values th,
+	.values td {
+		text-align: left;
+		padding: 0.3rem 0.45rem;
+		border-bottom: 1px solid var(--line);
+	}
+	.values thead th {
+		color: var(--ink-muted);
+		font-weight: 600;
+		font-size: 0.78rem;
+	}
+	.values tbody th a {
+		color: var(--accent);
+		font-weight: 600;
 	}
 	.legend {
 		display: flex;

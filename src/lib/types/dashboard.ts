@@ -1,6 +1,6 @@
 import type { GradeSystem } from '#lib/grades';
 import type { WeatherConditionsView } from '#lib/weatherStats';
-import type { WeatherChip } from '#lib/weatherKeys';
+import type { CalendarWeather, WeatherChip } from '#lib/weatherKeys';
 import type { WeekdayStatsView } from '#lib/weekdayStats';
 import type { KarmaStats } from './karma';
 import type { RoutePopularityStats } from './routePopularity';
@@ -198,6 +198,8 @@ export type HeatmapDay = {
 	heightM: number;
 	/** Hardest send that day as theCrag band 1–5; null if no graded send. */
 	maxBand: number | null;
+	/** Cached weather for the day's first outdoor ascent with a cache hit; absent otherwise (#276). */
+	weather?: CalendarWeather | null;
 };
 
 export type DashboardStats = {
