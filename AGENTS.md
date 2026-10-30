@@ -471,3 +471,5 @@ _Add a row when you change behaviour agents must know about._
 - Apply fair-weather label thresholds to exact shares, before rounding rates for display.
 
 - Accessibility regressions #300–#302: small tinted count/status pills use ink text; interactive crag SVGs use a named group and individually named links. Weather fixtures audit full dashboard/logbook/sectors pages in both themes.
+
+- Sun-facing badge research (#283): see `docs/dev/SUN_FACING_BADGE_RESEARCH.md`. Public docs describe aspect tags, but no sanitized real sync fixture establishes their contract/inheritance. Keep the badge disabled until that evidence and the award rule are verified; tropical solar direction is seasonal, not always sun-facing.
