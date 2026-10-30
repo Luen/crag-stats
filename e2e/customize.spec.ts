@@ -13,11 +13,15 @@ test('customize the dashboard from Settings', async ({ page }) => {
 	await section.getByRole('button', { name: 'Save layout' }).click();
 	await expect(page.getByText('Dashboard layout saved.')).toBeVisible();
 	await page.goto('/');
-	await expect(page.getByRole('heading', { name: 'Recent activities', exact: true })).toHaveCount(0);
+	await expect(page.getByRole('heading', { name: 'Recent activities', exact: true })).toHaveCount(
+		0
+	);
 
 	// Leave shared e2e state as it was.
 	await page.goto('/settings#dashboard');
 	await page.getByRole('button', { name: 'Clear saved layout' }).click();
 	await page.goto('/');
-	await expect(page.getByRole('heading', { name: 'Recent activities', exact: true })).toHaveCount(1);
+	await expect(page.getByRole('heading', { name: 'Recent activities', exact: true })).toHaveCount(
+		1
+	);
 });
