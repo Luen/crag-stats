@@ -99,6 +99,15 @@ export function histogramBinLabel(index: number): string {
 	return `${from}–${from + HIST_STEP - 1}°`;
 }
 
+/** Logbook drill-down using the same exact Celsius edges as the histogram. */
+export function histogramBinHref(index: number): string {
+	const last = (HIST_MAX - HIST_MIN) / HIST_STEP + 1;
+	if (index <= 0) return `/logbook?weatherHighMax=${HIST_MIN}`;
+	if (index >= last) return `/logbook?weatherHighMin=${HIST_MAX}`;
+	const from = HIST_MIN + (index - 1) * HIST_STEP;
+	return `/logbook?weatherHighMin=${from}&weatherHighMax=${from + HIST_STEP}`;
+}
+
 export function histogramBinIndex(tempMaxC: number): number {
 	if (tempMaxC < HIST_MIN) return 0;
 	if (tempMaxC >= HIST_MAX) return (HIST_MAX - HIST_MIN) / HIST_STEP + 1;

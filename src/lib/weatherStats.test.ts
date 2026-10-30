@@ -208,3 +208,18 @@ describe('fair-weather metric (#280)', () => {
 		).toBeNull();
 	});
 });
+
+it('links every histogram bin to the exact range that assigned it', async () => {
+	const { histogramBinIndex, histogramBinHref } = await import('./weatherStats');
+	const { matchesWeatherHighRange, parseWeatherHighBound } = await import('./weatherKeys');
+	for (const high of [-12, -0.1, 0, 4.99, 5, 19.99, 20, 24.9, 25, 34.99, 35, 42]) {
+		const url = new URL(histogramBinHref(histogramBinIndex(high)), 'http://localhost');
+		expect(
+			matchesWeatherHighRange(
+				{ tempMaxC: high, tempMinC: null, precipMm: null, weatherCode: null },
+				parseWeatherHighBound(url.searchParams.get('weatherHighMin')),
+				parseWeatherHighBound(url.searchParams.get('weatherHighMax'))
+			)
+		).toBe(true);
+	}
+});
