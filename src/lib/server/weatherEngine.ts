@@ -4,7 +4,12 @@
  * route lat/lon. Cache key = rounded lat/lon (1 decimal) + calendar day.
  */
 import { asc, eq, sql } from 'drizzle-orm';
-import { roundCoord, weatherDayKey, type WeatherSnapshot } from '#lib/weatherKeys';
+import {
+	roundCoord,
+	weatherAscentDay,
+	weatherDayKey,
+	type WeatherSnapshot
+} from '#lib/weatherKeys';
 import { isLikelyIndoorRoute } from './venue';
 import { db, ensureSchema } from './db';
 import { ascents, routes, weatherDays, weatherImportState } from './db/schema';
@@ -120,7 +125,7 @@ function utcToday(now: number): string {
 }
 
 function isValidDay(day: string): boolean {
-	return /^\d{4}-\d{2}-\d{2}$/.test(day) && !day.includes('-00');
+	return weatherAscentDay(day) === day;
 }
 
 /**
@@ -146,17 +151,7 @@ export function listPendingWeatherDays(limit: number, now: number): PendingDay[]
 		.orderBy(asc(ascents.ascentDate))
 		.all();
 
-	const cached = new Set(
-		db
-			.select({
-				latKey: weatherDays.latKey,
-				lonKey: weatherDays.lonKey,
-				day: weatherDays.day
-			})
-			.from(weatherDays)
-			.all()
-			.map((r) => weatherDayKey(r.latKey, r.lonKey, r.day))
-	);
+	const cached = loadWeatherCachedKeys();
 
 	const seen = new Set<string>();
 	const pending: PendingDay[] = [];
@@ -458,4 +453,16 @@ export function loadWeatherSnapshotMap(): Map<string, WeatherSnapshot> {
 		});
 	}
 	return map;
+}
+
+/** All checked location-days, including provider responses with no available data. */
+export function loadWeatherCachedKeys(): Set<string> {
+	ensureSchema();
+	return new Set(
+		db
+			.select({ latKey: weatherDays.latKey, lonKey: weatherDays.lonKey, day: weatherDays.day })
+			.from(weatherDays)
+			.all()
+			.map((r) => weatherDayKey(r.latKey, r.lonKey, r.day))
+	);
 }
