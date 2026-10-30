@@ -6,10 +6,12 @@
  * so a day split across two crags counts twice and a gym session never counts.
  */
 import {
+	isFairWeather,
 	isFreezeWeather,
 	isHeatWeather,
 	isRainWeather,
 	isSnowWeather,
+	isWindyWeather,
 	roundCoord,
 	weatherAscentDay,
 	weatherDayKey,
@@ -54,6 +56,23 @@ export type WeatherHistogramBin = {
 	days: number;
 };
 
+/** The fair-weather metric needs at least this many outdoor days with cached weather (#280). */
+export const FAIR_WEATHER_MIN_DAYS = 20;
+
+export type FairWeatherLabel = 'fair-leaning' | 'all-weather' | 'mixed';
+
+export type FairWeatherMetric = {
+	/** Days with cached weather the metric is based on (>= {@link FAIR_WEATHER_MIN_DAYS}). */
+	days: number;
+	/** 15-25°C, dry, no snow/thunderstorm. */
+	fairDays: number;
+	/** Heat, freezing, rain, snow or very windy. */
+	toughDays: number;
+	fairPct: number;
+	toughPct: number;
+	label: FairWeatherLabel;
+};
+
 export type WeatherConditionsView = {
 	/** Outdoor location-days with route coordinates. */
 	outdoorDays: number;
@@ -64,6 +83,8 @@ export type WeatherConditionsView = {
 	shares: WeatherShare[];
 	/** Daily high (°C) in 5° bins; first bin is below 0°, last is 35° and up. */
 	histogram: WeatherHistogramBin[];
+	/** Fair-weather vs all-weather mix; null until enough weather days (#280). */
+	fairWeather: FairWeatherMetric | null;
 };
 
 const HIST_STEP = 5;
@@ -95,6 +116,39 @@ function repWins(a: WeatherAscentRow, b: WeatherAscentRow): boolean {
 	const ai = a.ascentId ?? Number.MAX_SAFE_INTEGER;
 	const bi = b.ascentId ?? Number.MAX_SAFE_INTEGER;
 	return ai < bi;
+}
+
+export function isToughWeather(w: WeatherSnapshot): boolean {
+	return (
+		isHeatWeather(w) ||
+		isFreezeWeather(w) ||
+		isRainWeather(w) ||
+		isSnowWeather(w) ||
+		isWindyWeather(w)
+	);
+}
+
+/** Mostly fair days lean fair-weather; half or more tough days read as all-weather. */
+export function fairWeatherLabel(fairPct: number, toughPct: number): FairWeatherLabel {
+	if (fairPct >= 60) return 'fair-leaning';
+	if (toughPct >= 50) return 'all-weather';
+	return 'mixed';
+}
+
+export function buildFairWeatherMetric(days: readonly WeatherSnapshot[]): FairWeatherMetric | null {
+	if (days.length < FAIR_WEATHER_MIN_DAYS) return null;
+	const fairDays = days.filter(isFairWeather).length;
+	const toughDays = days.filter(isToughWeather).length;
+	const fairPct = pct(fairDays, days.length);
+	const toughPct = pct(toughDays, days.length);
+	return {
+		days: days.length,
+		fairDays,
+		toughDays,
+		fairPct,
+		toughPct,
+		label: fairWeatherLabel(fairPct, toughPct)
+	};
 }
 
 function pct(days: number, total: number): number {
@@ -198,6 +252,7 @@ export function buildWeatherConditionsView(
 			shareOf('freeze', 'Freezing', count(isFreezeWeather)),
 			shareOf('heat', 'Hot', count(isHeatWeather))
 		],
-		histogram
+		histogram,
+		fairWeather: buildFairWeatherMetric(withData.map((d) => d.weather!))
 	};
 }

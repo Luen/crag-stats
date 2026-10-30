@@ -18,6 +18,12 @@
 		heat: 'var(--accent)'
 	};
 
+	const FAIR_LABELS = {
+		'fair-leaning': 'Fair-weather leaning',
+		'all-weather': 'All-weather climber',
+		mixed: 'A bit of both'
+	} as const;
+
 	const histogram = $derived(
 		data.histogram.map((b) => ({
 			id: b.id,
@@ -64,6 +70,22 @@
 		{@render extreme('Hottest climb', data.hottest)}
 		{@render extreme('Coldest climb', data.coldest)}
 	</div>
+
+	{#if data.fairWeather}
+		{@const f = data.fairWeather}
+		<div class="fair">
+			<span class="k">Fair-weather rate</span>
+			<strong>{f.fairPct}%</strong>
+			<span class="meta">
+				{FAIR_LABELS[f.label]}: {formatNumber(f.fairDays, dateDisplay)} of {formatNumber(
+					f.days,
+					dateDisplay
+				)}
+				days were fair (15–25°C and dry); {f.toughPct}% were hot, freezing, wet or windy.
+				<a href="/logbook?weather=fair">Fair days in the logbook</a>
+			</span>
+		</div>
+	{/if}
 
 	<h3>Share of days</h3>
 	<ul class="shares">
@@ -155,6 +177,24 @@
 	}
 	.meta a:hover {
 		color: var(--accent);
+	}
+	.fair {
+		margin-top: 0.75rem;
+		padding: 0.75rem 0.9rem;
+		border-radius: 0.75rem;
+		background: var(--surface-2);
+		display: grid;
+		gap: 0.1rem;
+	}
+	.fair strong {
+		font-size: 1.5rem;
+		font-variant-numeric: tabular-nums;
+	}
+	.fair a {
+		color: var(--accent);
+		font-weight: 600;
+		text-decoration: underline;
+		text-underline-offset: 2px;
 	}
 	.shares {
 		list-style: none;
