@@ -450,3 +450,5 @@ _Add a row when you change behaviour agents must know about._
 - Partners page (`/partners`, #269): Ascents | Sessions | Areas metric toggle (`cs_partners_metric`); helpers in `#lib/partnerStats`. Dashboard card stays ascent-ranked. Docs at `/docs/partners`.
 
 - Weather PR review: preserve main’s indoor badge guards and shared partner statistics when updating the weather stack. Fair weather requires measured precipitation below 0.1 mm; missing rain is unknown, not dry.
+
+- Shared weather ascent days reject impossible dates by a UTC round-trip (including non-leap February 29), so coverage and backlog match real calendar days.
