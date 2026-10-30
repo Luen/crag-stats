@@ -1,7 +1,8 @@
-import { calendarDay as validDay } from '#lib/calendarDay';
 /**
  * Route setter credits from cached `route_history` (no extra theCrag fetch).
  */
+
+import { calendarDay as validDay } from '#lib/calendarDay';
 import { eq } from 'drizzle-orm';
 import { climbersMentionLogin, historyTypeIsSetter } from './providers/thecrag/routeHistoryParse';
 import { db, ensureSchema } from './db';

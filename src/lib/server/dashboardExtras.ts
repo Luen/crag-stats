@@ -1,8 +1,9 @@
-import { calendarDay as dayKey } from '#lib/calendarDay';
 /**
  * Pure dashboard aggregations for Phase 2–3 widgets.
  * Accept typed row arrays — no SQLite / better-sqlite3 imports.
  */
+
+import { calendarDay as dayKey } from '#lib/calendarDay';
 import { formatVScaleLabel, usesVScale } from '#lib/grades';
 import {
 	buildPartnerStats,

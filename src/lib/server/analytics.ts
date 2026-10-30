@@ -144,8 +144,6 @@ function monthKey(iso: string | null | undefined): string | null {
 	return iso.slice(0, 7);
 }
 
-/** Strict YYYY-MM-DD with real calendar month/day (rejects 2018-00-00 etc.). */
-
 function displayStyle(gearStyle: string | null | undefined): string {
 	const s = (gearStyle || '').trim();
 	if (!s) return 'Unknown';

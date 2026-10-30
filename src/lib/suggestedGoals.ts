@@ -1,8 +1,9 @@
-import { calendarDay as validDay } from '#lib/calendarDay';
 /**
  * Soft coaching suggestions: next outdoor grade from the hardest send in the
  * last two years (#252). Pure helpers — no DB.
  */
+
+import { calendarDay as validDay } from '#lib/calendarDay';
 import {
 	convertFromEwbank,
 	convertFromVScale,

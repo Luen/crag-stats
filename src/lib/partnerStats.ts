@@ -1,8 +1,9 @@
-import { calendarDay as validDay } from '#lib/calendarDay';
 /**
  * Partner leaderboard metrics for `/partners` (and the dashboard card).
  * Ascents = shared ticks; sessions = unique calendar days; areas = unique crags.
  */
+
+import { calendarDay as validDay } from '#lib/calendarDay';
 
 export type PartnerMetric = 'ascents' | 'sessions' | 'areas';
 
