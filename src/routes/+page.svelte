@@ -29,6 +29,7 @@
 	import TickTypeIcon from '#lib/components/TickTypeIcon.svelte';
 	import TrainingLoad from '#lib/components/TrainingLoad.svelte';
 	import SessionsPerWeek from '#lib/components/SessionsPerWeek.svelte';
+	import WeatherChips from '#lib/components/WeatherChips.svelte';
 	import WeatherConditions from '#lib/components/WeatherConditions.svelte';
 	import WeekdayStats from '#lib/components/WeekdayStats.svelte';
 	import VolumeChart from '#lib/components/VolumeChart.svelte';
@@ -304,6 +305,7 @@
 								{/if}
 							</div>
 							<TagChips tags={climb.tags} />
+							<WeatherChips chips={climb.weatherChips} dateDisplay={data.dateDisplay} />
 						</div>
 						<GradeChip grade={climb.gradeLabel ?? climb.gradeRaw} band={climb.gradeBand} />
 					</li>

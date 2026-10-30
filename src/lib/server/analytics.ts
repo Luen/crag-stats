@@ -70,8 +70,12 @@ import {
 	loadWeatherCachedKeys
 } from './weatherEngine';
 import { isLikelyIndoorRoute } from './venue';
-import { isMissingLogbookWeather, logbookRowWeather } from './logbookWeather';
-import { matchesWeatherFilter, weatherChips, type WeatherFilterKey } from '#lib/weatherKeys';
+import {
+	isMissingLogbookWeather,
+	logbookRowWeather,
+	logbookRowWeatherChips
+} from './logbookWeather';
+import { matchesWeatherFilter, type WeatherFilterKey } from '#lib/weatherKeys';
 import { buildWeatherConditionsView } from '#lib/weatherStats';
 import { buildTrainingLoadView, hasPersonalAscentGrade } from './trainingLoad';
 import { buildKarmaStats } from './karma';
@@ -827,6 +831,7 @@ export function getDashboardStats(
 				partners: r.partners,
 				quality: r.quality,
 				tags: parseTagsJson(r.tagsJson).slice(0, 6),
+				weatherChips: logbookRowWeatherChips(weatherByKey, r),
 				url: linkFor(r)
 			};
 		});
@@ -1466,16 +1471,12 @@ export function listLogbook(filters?: {
 	rows = sortLogbookRows(rows, sortKey, asc, routeAscentCounts);
 
 	const total = rows.length;
-	const chipsFor = (r: (typeof rows)[number]) => {
-		const w = logbookRowWeather(weatherByKey, r);
-		return w ? weatherChips(w) : [];
-	};
 	return {
 		total,
 		weatherAvailable: weatherByKey.size > 0,
 		rows: rows.slice(offset, offset + limit).map((r) => ({
 			...r,
-			weatherChips: chipsFor(r),
+			weatherChips: logbookRowWeatherChips(weatherByKey, r),
 			firstAscent: firstAscentKindFor(faMarks, r.routeProvider, r.routeExternalId),
 			displayName: displayRouteName(r.routeName, r.pitchLabel, r.ascentLabel),
 			gradeBand: r.effectiveGradeBand ?? r.gradeBand,
