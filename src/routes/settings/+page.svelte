@@ -446,24 +446,33 @@
 		flex-direction: column;
 		align-items: stretch;
 	}
-	/* File + compact primary control (not a full-width accent bar). */
 	.csv-import {
 		display: flex;
-		flex-wrap: wrap;
+		flex-direction: column;
 		gap: 0.65rem;
-		align-items: center;
+		align-items: flex-start;
 	}
 	.csv-import input[type='file'] {
-		flex: 1 1 14rem;
+		width: 100%;
+		max-width: 32rem;
 		min-width: 0;
+		padding: 0.35rem;
 		background: var(--paper);
+		color: var(--ink-muted);
 	}
-	.csv-import button {
-		flex: 0 0 auto;
-		align-self: center;
-		padding: 0.55rem 1.15rem;
-		border: 1px solid color-mix(in srgb, var(--accent) 55%, var(--ink));
-		box-shadow: var(--shadow);
+	.csv-import input::file-selector-button {
+		margin-right: 0.75rem;
+		padding: 0.45rem 0.7rem;
+		border: 1px solid var(--line);
+		border-radius: 0.35rem;
+		background: var(--surface-2);
+		color: var(--ink);
+		font: inherit;
+		font-weight: 600;
+		cursor: pointer;
+	}
+	.csv-import input::file-selector-button:hover {
+		background: var(--surface-3);
 	}
 	button,
 	.btn,
@@ -485,10 +494,6 @@
 	button:hover,
 	.btn:hover {
 		background: var(--accent-strong);
-	}
-	.csv-import button:hover {
-		border-color: var(--accent-strong);
-		box-shadow: var(--shadow);
 	}
 	.btn {
 		display: inline-flex;
