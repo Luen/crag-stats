@@ -2,12 +2,16 @@
 
 Crag Stats is designed for **personal self-hosting**. Your ascent history stays in a local SQLite file.
 
+## Admin pages
+
+Owner controls live at **`/settings`**. With `APP_PASSWORD` set, open **`/login`** first (or follow the redirect from `/settings`). Without a password, anyone who can reach the host can open Settings — only skip the password on offline or trusted home-network installs.
+
 ## theCrag API keys
 
 - Personal Logbook Read keys grant **read access to your entire logbook**, including private notes.
 - Store keys only in `.env` (never commit them).
 - Revoking a key on theCrag stops future API access; it does **not** delete data already synced into Crag Stats.
-- Use **Settings → Wipe all local data** to remove the local copy. Wipe is **local-only** — it never deletes or changes your theCrag account.
+- Use **Settings → Wipe all local data** (`/settings`) to remove the local copy. Wipe is **local-only** — it never deletes or changes your theCrag account.
 - Use **Settings → Download local logbook as CSV** to export a backup before wiping.
 
 ## Private ascent notes
@@ -27,4 +31,4 @@ CSV/XLS exports may also include comments and partner names. Treat uploaded file
 
 ## Future providers
 
-Mountain Project and wearable integrations are **not planned** for this project.
+Mountain Project and wearable integrations are **not implemented** yet (tracked as deferred epics on the roadmap). This release is theCrag-only.

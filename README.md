@@ -101,7 +101,14 @@ pnpm check
 pnpm dev
 ```
 
-Open http://localhost:5173 — then **Settings** → sync API or upload CSV.
+Open http://localhost:5173 — then **`/settings`** → sync API or upload CSV. The gear icon in the header opens the same page.
+
+### Admin access (`/settings` and `/login`)
+
+- **`/settings`** — sync, wipe, grade system, private notes, dashboard layout, and other owner controls.
+- **`/login`** — unlock with `APP_PASSWORD` when that env var is set. Visiting `/settings` (or any protected route) while logged out redirects here (`/login?next=…`).
+- With no `APP_PASSWORD`, `/settings` is open to anyone who can reach the host — fine on localhost or a private LAN; set a password (and prefer Cloudflare Access in front of public tunnels) before exposing the app.
+- `AUTH_SCOPE=settings` (default) only gates admin; `AUTH_SCOPE=all` requires login for the whole UI.
 
 ## Homeserver deploy (recommended)
 
@@ -150,8 +157,8 @@ docker compose up --build -d
 | `THECRAG_SYNC_MODE`                     | `api` (default) or `csv` (automatic CSV export using a saved login). See [logbook sync](docs/guide/logbook-sync.md).                                                                                                                                                                                    |
 | `THECRAG_USERNAME` / `THECRAG_PASSWORD` | Server-side credentials for CSV mode. Use your username, not email. Cookies are encrypted with `SESSION_SECRET` in SQLite and reused until a new login is needed.                                                                                                                                       |
 | `THECRAG_API_KEY`                       | Personal logbook read key ([docs](https://www.thecrag.com/en/article/logbookreadapi))                                                                                                                                                                                                                   |
-| `APP_PASSWORD`                          | Optional UI password gate                                                                                                                                                                                                                                                                               |
-| `AUTH_SCOPE`                            | `settings` (default: protect admin only) or `all` (whole site; also forces search engines off)                                                                                                                                                                                                          |
+| `APP_PASSWORD`                          | Optional UI password gate. Sign in at `/login`; admin lives at `/settings`                                                                                                                                                                                                                              |
+| `AUTH_SCOPE`                            | `settings` (default: protect `/settings` and related admin actions only) or `all` (whole site; also forces search engines off)                                                                                                                                                                          |
 | `SESSION_SECRET`                        | Cookie signing, worker authentication and encryption of saved theCrag login cookies                                                                                                                                                                                                                     |
 | `DATABASE_PATH`                         | SQLite file path                                                                                                                                                                                                                                                                                        |
 | `SYNC_CRON`                             | Cron expression (default `0 6 * * *`)                                                                                                                                                                                                                                                                   |
