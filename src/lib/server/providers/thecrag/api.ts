@@ -1,3 +1,4 @@
+import type { RouteTag } from '#lib/routeTags';
 import { detectAndParseGrade, parseHeightMeters } from '#lib/grades';
 import { resolveTheCragAvatar } from '#lib/thecragAvatar';
 import { theCragAreaUrl, theCragAscentUrl, theCragRouteUrl } from '#lib/thecragUrls';
@@ -25,7 +26,7 @@ type ApiAreaNode = {
 	longitude?: number | string | null;
 	latitude?: number | string | null;
 };
-type ApiTagLeaf = { id?: number | string; name?: string };
+type ApiTagLeaf = { id?: number | string; name?: string; ancestor?: unknown };
 /** route.tags: { Aspect: { NE: { name, id, ... } }, ... } */
 type ApiRouteTags = Record<string, Record<string, ApiTagLeaf>>;
 type ApiRoute = {
@@ -122,15 +123,43 @@ export function ascentNotes(a: Pick<ApiAscent, 'markdown' | 'privateMarkdown'>):
 
 /** Flatten theCrag route.tags nested map into chip-friendly pairs. */
 export function flattenRouteTags(
-	tags: ApiRouteTags | null | undefined
-): { category: string; name: string }[] {
+	tags: ApiRouteTags | null | undefined,
+	parentId?: string | number | null
+): RouteTag[] {
 	if (!tags || typeof tags !== 'object') return [];
-	const out: { category: string; name: string }[] = [];
+	const out: RouteTag[] = [];
 	for (const [category, leaves] of Object.entries(tags)) {
 		if (!leaves || typeof leaves !== 'object') continue;
 		for (const leaf of Object.values(leaves)) {
-			const name = leaf?.name?.trim();
-			if (name) out.push({ category, name });
+			const name = typeof leaf?.name === 'string' ? leaf.name.trim() : '';
+			const ancestor =
+				leaf?.ancestor != null && typeof leaf.ancestor === 'object' && !Array.isArray(leaf.ancestor)
+					? (leaf.ancestor as Record<string, unknown>)
+					: null;
+			const parent =
+				(typeof parentId === 'string' ||
+					(typeof parentId === 'number' && Number.isFinite(parentId))) &&
+				String(parentId).trim() !== '' &&
+				(typeof ancestor?.id === 'string' ||
+					(typeof ancestor?.id === 'number' && Number.isFinite(ancestor.id))) &&
+				String(ancestor.id) === String(parentId) &&
+				!/^(country|continent|state|province|region)$/i.test(
+					String(ancestor.subType ?? ancestor.type ?? '')
+				);
+			if (name)
+				out.push({
+					category,
+					name,
+					...(['aspect', 'weather'].includes(category.trim().toLowerCase())
+						? {
+								source: !Object.hasOwn(leaf, 'ancestor')
+									? ('route' as const)
+									: parent
+										? ('parent' as const)
+										: ('ancestor' as const)
+							}
+						: {})
+				});
 		}
 	}
 	return out;
@@ -291,7 +320,7 @@ export function mapAscent(a: ApiAscent): CanonicalAscent | null {
 	const country = route.ancestors?.country?.name;
 	const areaId = tlc?.id ?? parent?.id ?? null;
 	const areaStub = tlc?.urlAncestorStub ?? parent?.urlAncestorStub ?? route.urlAncestorStub ?? null;
-	const tags = flattenRouteTags(route.tags);
+	const tags = flattenRouteTags(route.tags, parent?.id);
 	const boltsRaw = route.bolts;
 	const bolts =
 		typeof boltsRaw === 'number'

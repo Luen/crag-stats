@@ -25,7 +25,7 @@ export type CanonicalRoute = {
 	cragUrl?: string | null;
 	areaExternalId?: string | null;
 	/** Flattened route tags for chips */
-	tags?: { category: string; name: string }[] | null;
+	tags?: import('#lib/routeTags').RouteTag[] | null;
 	bolts?: number | null;
 	parentName?: string | null;
 	parentExternalId?: string | null;

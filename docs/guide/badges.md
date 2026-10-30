@@ -29,6 +29,18 @@ These four badges use fields already in your logbook and are dated by the climb 
 
 They are one-shot badges, so they do not appear in **Almost there**.
 
+## Summer Sun Face
+
+Log an outdoor climb on an equator-facing route in local meteorological summer: N/NE/NW during December–February in the southern hemisphere, or S/SE/SW during June–August in the northern hemisphere. This conservative version covers absolute latitudes from 25° up to (but not including) 60°. Attempts count as logged climbs, as with weather-day badges. The badge unlocks once on the earliest qualifying day and has no Almost there counter.
+
+Use the route's own sun/aspect tags first. When it has no exposure tags of its own, tags inherited from its **immediate parent** (for example its sector, cliff or boulder) can fill in. The cached tag's source ID must match that exact parent. Tags from higher ancestors, unknown sources and broad geographic areas never fill in. A route's own exposure tags take priority even when the parent says something different; unknown or conflicting route directions do not trigger a parent fallback.
+
+At the chosen level, **All day sun** can qualify without a facing direction. **Always shady** prevents the award. Otherwise, the aspect must face the equator as described above; morning/noon/afternoon-only sun tags do not qualify on their own. Both sun and aspect tags are not required together.
+
+Indoor climbs, invalid dates, tropical/high-latitude locations, legacy points of unknown precision and nearby-town approximations do not qualify. Cached-data upgrades recover route/parent/higher-ancestor provenance without another sync or external request.
+
+This records provider-described exposure plus a seasonal heuristic. It does not establish the time you climbed, actual sunshine, shade from overhangs or rock temperature, and requires no Open-Meteo cache. The separate heat badge describes cached high air temperature. Minimized real API tag fixtures and their provenance are documented in the repository.
+
 ## Greenpoint
 
 **Greenpoint** is a one-shot badge for leading a bolted sport route on your own trad gear. It unlocks the first time you either:
@@ -44,4 +56,4 @@ Generic Tick/Send/Clean entries, attempts, top-rope and seconding don't count fo
 
 Classification matches the Solo climbing card. The [provider API](https://www.thecrag.com/en/article/api) documents `leadsolo` and `ropedsolo`; display labels and their case/spacing/separator variants are recognized without changing the original tick text. A cached-data upgrade repairs old completion flags only when the stored provider payload confirms the same explicit solo method. Route discipline and ascent style remain separate.
 
-Attempts, hangdogs, retreats, free solos, deep-water solos, aid solos, ordinary top-rope ascents and entries with unknown completion or conflicting unroped ascent styles do not qualify. Missing partners alone do not establish solo climbing. These milestones apply to indoor and outdoor climbs and need neither coordinates nor weather imports.
+Attempts, hangdogs, retreats, free solos, deep-water solos, aid solos, ordinary top-rope ascents and entries with unknown completion do not qualify. An ascent explicitly recorded as Boulder or Second also contradicts either rope-solo method and cannot unlock these badges. Missing partners alone do not establish solo climbing. These milestones apply to indoor and outdoor climbs and need neither coordinates nor weather imports.

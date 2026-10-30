@@ -38,16 +38,21 @@ it('upgrades old completion flags only with matching explicit cached provider ev
 	upsertAscents([
 		mapped(1, 'leadsolo', 'Trad'),
 		mapped(2, 'ropedsolo', 'Top rope'),
-		mapped(3, 'Attempt', 'Sport')
+		mapped(3, 'Attempt', 'Sport'),
+		mapped(4, 'Roped Solo', 'Top rope'),
+		mapped(5, 'leadsolo', 'Trad')
 	]);
 	runDataMigrations();
-	db.run(sql`DELETE FROM schema_migrations WHERE id='data:0007_repair_explicit_solo_tick_flags'`);
+	db.run(sql`DELETE FROM schema_migrations WHERE id='data:0009_repair_explicit_solo_tick_flags'`);
 	db.update(ascents).set({ isSend: false, isAttempt: false }).run();
+	// Inconsistent or unreadable provider evidence must never promote completion.
+	db.update(ascents).set({ tickType: 'leadsolo' }).where(eq(ascents.externalId, '4')).run();
+	db.update(ascents).set({ rawJson: '{invalid' }).where(eq(ascents.externalId, '5')).run();
 	const before = db.select().from(routes).all();
 	db.insert(projects)
 		.values({ routeId: before[0].id, status: 'open', updatedAt: '2025-01-01' })
 		.run();
-	expect(runDataMigrations()).toEqual(['data:0007_repair_explicit_solo_tick_flags']);
+	expect(runDataMigrations()).toEqual(['data:0009_repair_explicit_solo_tick_flags']);
 	expect(db.select().from(ascents).where(eq(ascents.externalId, '1')).get()).toMatchObject({
 		isSend: true,
 		ascentGearStyle: 'Trad',
@@ -55,6 +60,8 @@ it('upgrades old completion flags only with matching explicit cached provider ev
 	});
 	expect(db.select().from(ascents).where(eq(ascents.externalId, '2')).get()?.isSend).toBe(true);
 	expect(db.select().from(ascents).where(eq(ascents.externalId, '3')).get()?.isSend).toBe(false);
+	for (const id of ['4', '5'])
+		expect(db.select().from(ascents).where(eq(ascents.externalId, id)).get()?.isSend).toBe(false);
 	expect(db.select().from(routes).all()).toEqual(before);
 	expect(
 		db.select().from(projects).where(eq(projects.routeId, before[0].id)).get()

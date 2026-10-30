@@ -1,4 +1,3 @@
-import { soloTickKind } from '#lib/soloTicks';
 /**
  * Solo climbing, from theCrag tick types and the ascent's climbed gear style
  * (https://www.thecrag.com/en/article/ticktypes). See docs/guide/solo.md.
@@ -9,6 +8,8 @@ import { soloTickKind } from '#lib/soloTicks';
  * - Free solo:     climbed gear style "solo" / "Free solo" (any tick)
  * - Deep water solo: climbed gear style "dws"
  */
+
+import { soloTickKind } from '#lib/soloTicks';
 import type { SoloKind, SoloStats } from '#lib/types/dashboard';
 
 export type SoloRow = {

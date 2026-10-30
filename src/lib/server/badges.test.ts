@@ -899,8 +899,17 @@ describe('first rope-solo badges', () => {
 				)
 			).toBe(false);
 	});
-	it('rejects explicit rope-solo ticks with conflicting unroped/aid ascent styles', () => {
-		for (const ascentGearStyle of ['Free solo', 'solo', 'dws', 'Deep water solo', 'Aid'])
+	it('rejects explicit rope-solo ticks with conflicting unroped, aid or seconding ascent styles', () => {
+		for (const ascentGearStyle of [
+			'Free solo',
+			'solo',
+			'dws',
+			'Deep water solo',
+			'Aid',
+			'Boulder',
+			'Second',
+			'seconding'
+		])
 			for (const tickType of ['Lead solo', 'Roped Solo'])
 				expect(
 					buildBadges([{ ...lead, ascentGearStyle, tickType }]).earned.some(

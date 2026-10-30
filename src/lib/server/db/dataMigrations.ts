@@ -1,4 +1,5 @@
 import { repairSoloTickFlags } from '../repairSoloTicks';
+import { repairAspectTagSources, repairWeatherTagSources } from '../repairAspectTags';
 import { eq, sql } from 'drizzle-orm';
 import { db, ensureSchema } from './index';
 import { appSettings } from './schema';
@@ -74,9 +75,17 @@ const MIGRATIONS = [
 			repairGradesFromRawJson();
 		}
 	},
-	// 0006 is reserved by the aspect-provenance upgrade in PR #318.
+	{ id: 'data:0006_preserve_aspect_tag_provenance', apply: () => repairAspectTagSources() },
+	{ id: 'data:0007_preserve_weather_tag_provenance', apply: () => repairWeatherTagSources() },
 	{
-		id: 'data:0007_repair_explicit_solo_tick_flags',
+		id: 'data:0008_verify_immediate_parent_exposure',
+		apply: () => {
+			repairAspectTagSources();
+			repairWeatherTagSources();
+		}
+	},
+	{
+		id: 'data:0009_repair_explicit_solo_tick_flags',
 		apply: () => {
 			repairSoloTickFlags();
 			refreshProjects();

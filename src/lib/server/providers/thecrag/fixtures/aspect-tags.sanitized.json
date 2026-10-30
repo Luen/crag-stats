@@ -1,0 +1,4 @@
+{
+	"direct": { "Aspect": { "N": { "id": 1, "name": "N" } } },
+	"inherited": { "Aspect": { "NE": { "id": 2, "name": "NE", "ancestor": {} } } }
+}

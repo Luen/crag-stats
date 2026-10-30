@@ -1,9 +1,11 @@
-import { climbStyleLabel } from '#lib/climbStyle';
-import { soloKind } from './solo';
 /**
  * RoxClimbs-inspired badges: real milestones from logged data.
  * Taking a break does not erase a milestone — recognition when something genuinely happened.
  */
+
+import { climbStyleLabel } from '#lib/climbStyle';
+import { soloKind } from './solo';
+import { isSunFacingSummer } from '#lib/sunFacing';
 
 import { calendarDay as dayKey } from '#lib/calendarDay';
 import { formatVScaleLabel, usesVScale } from '#lib/grades';
@@ -270,6 +272,13 @@ export const BADGE_CATALOG: readonly BadgeDef[] = [
 		title: 'New Year',
 		hint: 'Climb on New Year’s Eve or Day',
 		icon: 'calendar',
+		tone: 'warm'
+	},
+	{
+		id: 'sun_facing_summer',
+		title: 'Summer Sun Face',
+		hint: 'Log a route in local summer with equator-facing aspect or All day sun on it or its immediate parent.',
+		icon: 'sun',
 		tone: 'warm'
 	},
 	{
@@ -979,9 +988,14 @@ export function buildBadges(
 		const kind = tickKind(row.tickType);
 		const send = Boolean(row.isSend);
 		const soloStyle = climbStyleLabel(row.ascentGearStyle);
+		const ascentStyle = (row.ascentGearStyle ?? '')
+			.trim()
+			.toLowerCase()
+			.replace(/[\s_-]+/g, ' ');
 		if (
 			send &&
-			!['Free solo', 'Deep water solo', 'Aid'].includes(soloStyle) &&
+			!['Free solo', 'Deep water solo', 'Aid', 'Boulder'].includes(soloStyle) &&
+			!['second', 'seconding'].includes(ascentStyle) &&
 			classifyTick(row.tickType).isSend
 		) {
 			const solo = soloKind({
@@ -1003,6 +1017,11 @@ export function buildBadges(
 				cragName: row.cragName,
 				tagsJson: row.tagsJson
 			});
+		if (outdoor && isSunFacingSummer(row))
+			mark(
+				'sun_facing_summer',
+				hitAt(row, 'Sunny exposure in local summer · tag/aspect heuristic')
+			);
 		const monthDay = day.slice(5); // MM-DD from calendar dayKey — no local TZ
 
 		if (sessions.size === 1 && !earned.has('first_session')) {
