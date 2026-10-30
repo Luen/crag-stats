@@ -316,6 +316,21 @@ describe('describeWeatherPersonality (#275)', () => {
 		).toBe("I've climbed in everything from -3°C to 38°C.");
 	});
 
+	it('names the cached-day denominator when half the weather is unknown', () => {
+		expect(
+			describeWeatherPersonality(
+				view({
+					withWeather: 20,
+					outdoorDays: 40,
+					withoutWeather: 20,
+					shares: withShare('freeze', 10, 50)
+				})
+			)
+		).toBe(
+			"I'm happy climbing in the cold: 50% of my cached outdoor days dipped to freezing or below."
+		);
+	});
+
 	it('shows up in the story as an optional paragraph', () => {
 		const blurb = buildClimberBlurb({
 			firstDate: '2020-01-01',

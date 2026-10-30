@@ -34,7 +34,7 @@ import { getSyncStatus, runTheCragSync } from '#lib/server/sync';
 import {
 	getWeatherImportStatus,
 	isWeatherImportEnabled,
-	runWeatherImport
+	triggerWeatherImport
 } from '#lib/server/weatherImport';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -199,19 +199,39 @@ export const actions: Actions = {
 			routeHistoryMessage: `${n} routes will be checked again, ${getRouteHistoryStatus().perRun} per run. After they re-fetch, use Re-apply from saved history (with Replace existing if needed) to update marks.`
 		};
 	},
-	/** Fetch the next batch of outdoor weather days from Open-Meteo (#268). */
+	/**
+	 * Start the next batch of outdoor weather days in the background (#268).
+	 * Awaits would block ~55s (50 days × ≥1.1s) and risk reverse-proxy timeouts.
+	 */
 	fetchWeather: async ({ locals }) => {
 		if (!locals.authed) return fail(403);
 		if (!isWeatherImportEnabled()) {
 			return fail(400, { ok: false, message: 'Set WEATHER_IMPORT=true to enable this.' });
 		}
-		const result = await runWeatherImport();
-		if (!result.ok) {
-			if (result.outcome === 'waiting') {
-				return fail(400, { ok: false, weatherWaiting: true });
-			}
-			return fail(400, { ok: false, message: result.message, weatherMessage: result.message });
+		const status = getWeatherImportStatus();
+		if (status.running) {
+			return fail(400, {
+				ok: false,
+				message: 'A weather import run is already in progress.',
+				weatherMessage: 'A weather import run is already in progress.'
+			});
 		}
-		return { ok: true, weatherMessage: result.message };
+		if (status.retryAt > Date.now()) {
+			return fail(400, { ok: false, weatherWaiting: true });
+		}
+		if (status.totalPending === 0) {
+			return {
+				ok: true,
+				weatherMessage:
+					status.cachedOk === 0
+						? 'No outdoor days with route coordinates yet.'
+						: 'Every outdoor day with coordinates has weather cached.'
+			};
+		}
+		triggerWeatherImport('settings');
+		return {
+			ok: true,
+			weatherMessage: `Fetching up to ${status.perRun} outdoor days in the background…`
+		};
 	}
 };
