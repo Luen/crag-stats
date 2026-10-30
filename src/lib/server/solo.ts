@@ -1,3 +1,4 @@
+import { soloTickKind } from '#lib/soloTicks';
 /**
  * Solo climbing, from theCrag tick types and the ascent's climbed gear style
  * (https://www.thecrag.com/en/article/ticktypes). See docs/guide/solo.md.
@@ -35,14 +36,12 @@ export const SOLO_KINDS: readonly { kind: SoloKind; label: string }[] = [
 ];
 
 export function soloKind(row: Pick<SoloRow, 'tickType' | 'ascentGearStyle'>): SoloKind | null {
-	const tick = (row.tickType ?? '').trim().toLowerCase();
+	const explicit = soloTickKind(row.tickType);
+	if (explicit) return explicit;
 	const gear = (row.ascentGearStyle ?? '')
 		.trim()
 		.toLowerCase()
 		.replace(/[\s_]+/g, '-');
-	if (tick === 'roped solo' || tick === 'top rope solo') return 'toprope';
-	if (tick === 'lead solo') return 'lead';
-	if (tick === 'aid solo') return 'aid';
 	if (gear === 'dws' || gear === 'deep-water-solo') return 'dws';
 	if (gear === 'solo' || gear === 'free-solo') return 'free';
 	return null;

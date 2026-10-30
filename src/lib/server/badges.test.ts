@@ -845,3 +845,93 @@ describe('Greenpoint badge', () => {
 		expect(buildBadges([]).almost.some((b) => b.id === 'greenpoint')).toBe(false);
 	});
 });
+
+describe('first rope-solo badges', () => {
+	const lead = row({
+		ascentDate: '2025-01-01',
+		ascentId: 2,
+		isSend: true,
+		tickType: 'Lead solo',
+		ascentGearStyle: 'Sport',
+		routeName: 'Lead route',
+		ascentUrl: 'https://www.thecrag.com/ascent/2'
+	});
+	const top = {
+		...lead,
+		tickType: 'Roped Solo',
+		ascentGearStyle: 'Top rope',
+		routeName: 'TR route'
+	};
+	it('awards each once, independently, with earliest date and stable same-day ascent order', () => {
+		const result = buildBadges([
+			{ ...lead, ascentDate: '2025-01-02' },
+			{ ...lead, ascentId: 3, routeName: 'Later same-day' },
+			{ ...lead, ascentId: 1, routeName: 'First same-day' },
+			top
+		]);
+		expect(result.earned.find((b) => b.id === 'first_lead_rope_solo')).toMatchObject({
+			date: '2025-01-01',
+			routeName: 'First same-day',
+			href: lead.ascentUrl
+		});
+		expect(result.earned.filter((b) => b.id === 'first_top_rope_solo')).toHaveLength(1);
+		expect(
+			result.almost.some((b) => b.id === 'first_lead_rope_solo' || b.id === 'first_top_rope_solo')
+		).toBe(false);
+	});
+	it('accepts explicit known aliases but requires successful, valid dated ascents', () => {
+		for (const tickType of ['leadsolo', 'Lead-Solo', ' LEAD  SOLO '])
+			expect(
+				buildBadges([{ ...lead, tickType }]).earned.some((b) => b.id === 'first_lead_rope_solo')
+			).toBe(true);
+		for (const tickType of ['ropedsolo', 'Roped_Solo', 'top-rope solo'])
+			expect(
+				buildBadges([{ ...top, tickType }]).earned.some((b) => b.id === 'first_top_rope_solo')
+			).toBe(true);
+		for (const item of [
+			{ ...lead, isSend: false },
+			{ ...top, isSend: false },
+			...['2018-00-00', '2025-02-29', '0000-01-01'].map((ascentDate) => ({ ...lead, ascentDate }))
+		])
+			expect(
+				buildBadges([item]).earned.some(
+					(b) => b.id === 'first_lead_rope_solo' || b.id === 'first_top_rope_solo'
+				)
+			).toBe(false);
+	});
+	it('rejects explicit rope-solo ticks with conflicting unroped/aid ascent styles', () => {
+		for (const ascentGearStyle of ['Free solo', 'solo', 'dws', 'Deep water solo', 'Aid'])
+			for (const tickType of ['Lead solo', 'Roped Solo'])
+				expect(
+					buildBadges([{ ...lead, ascentGearStyle, tickType }]).earned.some(
+						(b) => b.id === 'first_lead_rope_solo' || b.id === 'first_top_rope_solo'
+					)
+				).toBe(false);
+		expect(
+			buildBadges([{ ...lead, ascentGearStyle: 'Top rope' }]).earned.some(
+				(b) => b.id === 'first_lead_rope_solo'
+			)
+		).toBe(false);
+	});
+	it('does not infer rope solos from route style, missing partners or other solo/top-rope types', () => {
+		for (const tickType of [
+			'Attempt',
+			'Hang dog',
+			'Retreat',
+			'Aid solo',
+			'aidsolo',
+			'Free solo',
+			'Top rope',
+			'Tick',
+			null
+		])
+			for (const ascentGearStyle of ['Sport', 'Trad', 'Top rope', 'Free solo', 'dws', null]) {
+				const result = buildBadges([{ ...lead, tickType, ascentGearStyle, partners: null }]);
+				expect(
+					result.earned.some(
+						(b) => b.id === 'first_lead_rope_solo' || b.id === 'first_top_rope_solo'
+					)
+				).toBe(false);
+			}
+	});
+});

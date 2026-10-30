@@ -1,3 +1,4 @@
+import { repairSoloTickFlags } from '../repairSoloTicks';
 import { eq, sql } from 'drizzle-orm';
 import { db, ensureSchema } from './index';
 import { appSettings } from './schema';
@@ -71,6 +72,14 @@ const MIGRATIONS = [
 		id: 'data:0005_repair_tlc_bare_geometry_coords',
 		apply: () => {
 			repairGradesFromRawJson();
+		}
+	},
+	// 0006 is reserved by the aspect-provenance upgrade in PR #318.
+	{
+		id: 'data:0007_repair_explicit_solo_tick_flags',
+		apply: () => {
+			repairSoloTickFlags();
+			refreshProjects();
 		}
 	}
 ];

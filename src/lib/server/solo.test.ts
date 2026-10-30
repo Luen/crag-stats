@@ -85,3 +85,11 @@ describe('buildSoloStats', () => {
 		expect(s.total).toBe(0);
 	});
 });
+
+it('normalizes the same explicit solo IDs/labels used by completion and badges', () => {
+	for (const tickType of ['leadsolo', 'Lead-Solo', ' LEAD  SOLO '])
+		expect(soloKind({ tickType, ascentGearStyle: null })).toBe('lead');
+	for (const tickType of ['ropedsolo', 'Roped_Solo', 'top-rope solo'])
+		expect(soloKind({ tickType, ascentGearStyle: null })).toBe('toprope');
+	expect(soloKind({ tickType: 'aidsolo', ascentGearStyle: null })).toBe('aid');
+});

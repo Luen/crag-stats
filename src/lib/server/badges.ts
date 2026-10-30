@@ -1,3 +1,5 @@
+import { climbStyleLabel } from '#lib/climbStyle';
+import { soloKind } from './solo';
 /**
  * RoxClimbs-inspired badges: real milestones from logged data.
  * Taking a break does not erase a milestone — recognition when something genuinely happened.
@@ -367,6 +369,20 @@ export const BADGE_CATALOG: readonly BadgeDef[] = [
 		hint: 'Greenpoint a sport route, or send one with a clean lead recorded as Trad.',
 		icon: 'knot',
 		tone: 'green'
+	},
+	{
+		id: 'first_lead_rope_solo',
+		title: 'First Lead Rope Solo',
+		hint: 'Complete your first explicitly logged lead rope-solo ascent.',
+		icon: 'carabiner',
+		tone: 'blue'
+	},
+	{
+		id: 'first_top_rope_solo',
+		title: 'First Top-Rope Solo',
+		hint: 'Complete your first explicitly logged top-rope solo ascent.',
+		icon: 'knot',
+		tone: 'purple'
 	},
 	{
 		id: 'sessions_10',
@@ -962,6 +978,22 @@ export function buildBadges(
 
 		const kind = tickKind(row.tickType);
 		const send = Boolean(row.isSend);
+		const soloStyle = climbStyleLabel(row.ascentGearStyle);
+		if (
+			send &&
+			!['Free solo', 'Deep water solo', 'Aid'].includes(soloStyle) &&
+			classifyTick(row.tickType).isSend
+		) {
+			const solo = soloKind({
+				tickType: row.tickType ?? null,
+				ascentGearStyle: row.ascentGearStyle ?? null
+			});
+			if (solo === 'lead' && soloStyle !== 'Top rope')
+				mark('first_lead_rope_solo', hitAt(row, 'First completed lead rope solo'));
+			if (solo === 'toprope')
+				mark('first_top_rope_solo', hitAt(row, 'First completed top-rope solo'));
+		}
+
 		if (isGreenpoint(row)) mark('greenpoint', hitAt(row, 'Sport route led on trad protection'));
 		const outdoor =
 			row.outdoor !== false &&
