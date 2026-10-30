@@ -433,3 +433,5 @@ _Add a row when you change behaviour agents must know about._
 - Settings CSV import keeps the file picker and submit action stacked and left-aligned; avoid a growing file input that pushes the action to the card's far edge.
 - Route-history status exposes `retryAt` from the existing minimum run interval and upstream back-off. Settings counts down from server time and enables the action when due; retain the server pacing guards.
 - Training load detail lives at `/training-load` (26-week + daily28); the dashboard card title links there and still shows 12 weeks.
+- Ascent calendar fills the card width; `--heat-1..4` is green→yellow→orange→red (Dreeve-like intensity), not theCrag grade-band greens.
+- **New route?** on projects covers blank/`Project` grades and wide provisional spans (`21-23`, `V1-3`); adjacent half-grades (`V1/2`) stay ordinary. Midpoint chips still show when parsed.

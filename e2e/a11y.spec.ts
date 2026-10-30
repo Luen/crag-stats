@@ -11,7 +11,8 @@ for (const scheme of ['light', 'dark'] as const) {
 			'/settings',
 			'/docs/grades',
 			'/docs/training-load',
-			'/training-load'
+			'/training-load',
+			'/badges'
 		]) {
 			test(`axe: ${path}`, async ({ page }) => {
 				await page.goto(path);

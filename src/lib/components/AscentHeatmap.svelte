@@ -1,8 +1,33 @@
 <script lang="ts">
+	import { onMount } from 'svelte';
+	import { GRADE_BANDS } from '#lib/grades/bands';
 	import type { HeatmapDay } from '#lib/types/dashboard';
 
 	type Props = { data: HeatmapDay[] };
 	let { data }: Props = $props();
+
+	type Mode = 'intensity' | 'grade';
+	const MODE_KEY = 'cs_heatmap_mode';
+
+	let mode = $state<Mode>('intensity');
+
+	onMount(() => {
+		try {
+			const v = localStorage.getItem(MODE_KEY);
+			mode = v === 'grade' ? 'grade' : 'intensity';
+		} catch {
+			/* ignore */
+		}
+	});
+
+	function setMode(next: Mode) {
+		mode = next;
+		try {
+			localStorage.setItem(MODE_KEY, next);
+		} catch {
+			/* ignore quota / private mode */
+		}
+	}
 
 	const years = $derived(
 		[...new Set(data.map((d) => d.date.slice(0, 4)))].sort((a, b) => b.localeCompare(a))
@@ -12,31 +37,42 @@
 		selectedYear && years.includes(selectedYear) ? selectedYear : (years[0] ?? '')
 	);
 
-	const byDate = $derived(new Map(data.map((d) => [d.date, d])));
+	const byDate = $derived(
+		Object.fromEntries(data.map((d) => [d.date, d])) as Record<string, HeatmapDay>
+	);
+
+	type Cell = {
+		date: string;
+		count: number;
+		sends: number;
+		maxBand: number | null;
+		dow: number;
+	};
 
 	const weeks = $derived.by(() => {
-		if (!year) return [] as { date: string; count: number; sends: number; dow: number }[][];
+		if (!year) return [] as Cell[][];
 		const start = new Date(`${year}-01-01T12:00:00`);
 		const end = new Date(`${year}-12-31T12:00:00`);
 		// Align to Monday-start week columns like GitHub (Sun=0 → shift)
-		const cells: { date: string; count: number; sends: number; dow: number }[] = [];
+		const cells: Cell[] = [];
 		for (let t = start.getTime(); t <= end.getTime(); t += 86400000) {
 			const d = new Date(t);
 			const iso = d.toISOString().slice(0, 10);
-			const hit = byDate.get(iso);
+			const hit = byDate[iso];
 			cells.push({
 				date: iso,
 				count: hit?.count ?? 0,
 				sends: hit?.sends ?? 0,
+				maxBand: hit?.maxBand ?? null,
 				dow: d.getDay()
 			});
 		}
-		const cols: (typeof cells)[] = [];
-		let col: typeof cells = [];
+		const cols: Cell[][] = [];
+		let col: Cell[] = [];
 		// pad first column
 		const firstDow = cells[0]?.dow ?? 0;
 		for (let i = 0; i < firstDow; i++) {
-			col.push({ date: '', count: 0, sends: 0, dow: i });
+			col.push({ date: '', count: 0, sends: 0, maxBand: null, dow: i });
 		}
 		for (const cell of cells) {
 			if (col.length === 7) {
@@ -46,13 +82,39 @@
 			col.push(cell);
 		}
 		if (col.length) {
-			while (col.length < 7) col.push({ date: '', count: 0, sends: 0, dow: col.length });
+			while (col.length < 7)
+				col.push({ date: '', count: 0, sends: 0, maxBand: null, dow: col.length });
 			cols.push(col);
 		}
 		return cols;
 	});
 
 	const maxCount = $derived(Math.max(1, ...weeks.flat().map((c) => c.count)));
+
+	const MONTH_ABBR = [
+		'Jan',
+		'Feb',
+		'Mar',
+		'Apr',
+		'May',
+		'Jun',
+		'Jul',
+		'Aug',
+		'Sep',
+		'Oct',
+		'Nov',
+		'Dec'
+	] as const;
+
+	/** Label a week column when it contains the 1st of a month (GitHub/Dreeve style). */
+	const monthLabels = $derived(
+		weeks.map((col) => {
+			const day1 = col.find((c) => c.date && c.date.slice(8, 10) === '01');
+			if (!day1?.date) return null;
+			const month = Number(day1.date.slice(5, 7));
+			return MONTH_ABBR[month - 1] ?? null;
+		})
+	);
 
 	function level(count: number): number {
 		if (count <= 0) return 0;
@@ -62,42 +124,87 @@
 		if (r < 0.75) return 3;
 		return 4;
 	}
+
+	const bandClass = (band: number | null, count: number): string => {
+		if (count <= 0) return 'l0';
+		if (band == null) return 'attempt';
+		return `b${band}`;
+	};
+
+	function cellTitle(cell: Cell): string {
+		const base = `${cell.date}: ${cell.count} ascent${cell.count === 1 ? '' : 's'} (${cell.sends} send${cell.sends === 1 ? '' : 's'})`;
+		if (mode !== 'grade' || cell.maxBand == null) return base;
+		const name = GRADE_BANDS.find((b) => b.id === cell.maxBand)?.name ?? `band ${cell.maxBand}`;
+		return `${base} · hardest send ${name}`;
+	}
 </script>
 
 <article class="panel">
 	<header>
-		<h2>Ascent calendar</h2>
-		{#if years.length > 1}
-			<select
-				value={year}
-				aria-label="Heatmap year"
-				onchange={(e) => {
-					selectedYear = e.currentTarget.value;
-				}}
-			>
-				{#each years as y (y)}
-					<option value={y}>{y}</option>
-				{/each}
-			</select>
-		{:else if year}
-			<span class="year">{year}</span>
-		{/if}
+		<div class="titles">
+			<h2>Ascent calendar</h2>
+			<a class="how" href="/docs/ascent-calendar">How it works</a>
+		</div>
+		<div class="controls">
+			{#if years.length > 0}
+				<div class="toggles" role="group" aria-label="Colour mode">
+					<button
+						type="button"
+						class={{ active: mode === 'intensity' }}
+						aria-pressed={mode === 'intensity'}
+						onclick={() => setMode('intensity')}>Intensity</button
+					>
+					<button
+						type="button"
+						class={{ active: mode === 'grade' }}
+						aria-pressed={mode === 'grade'}
+						onclick={() => setMode('grade')}>Grade</button
+					>
+				</div>
+			{/if}
+			{#if years.length > 1}
+				<select
+					value={year}
+					aria-label="Heatmap year"
+					onchange={(e) => {
+						selectedYear = e.currentTarget.value;
+					}}
+				>
+					{#each years as y (y)}
+						<option value={y}>{y}</option>
+					{/each}
+				</select>
+			{:else if year}
+				<span class="year">{year}</span>
+			{/if}
+		</div>
 	</header>
 	{#if !weeks.length}
 		<p class="empty">No dated ascents yet</p>
 	{:else}
 		<div class="scroll">
+			<div class="months" style:--cols={weeks.length} aria-hidden="true">
+				{#each monthLabels as label, i (i)}
+					{@const monthNum = label ? MONTH_ABBR.indexOf(label) + 1 : 0}
+					<span class={['month', { sparse: monthNum > 0 && monthNum % 2 === 0 }]}
+						>{label ?? ''}</span
+					>
+				{/each}
+			</div>
 			<div class="grid" style:--cols={weeks.length}>
 				{#each weeks as col, wi (wi)}
 					<div class="week">
 						{#each col as cell, di (di)}
 							{#if cell.date}
 								<a
-									class="cell l{level(cell.count)}"
+									class={[
+										'cell',
+										mode === 'intensity'
+											? `l${level(cell.count)}`
+											: bandClass(cell.maxBand, cell.count)
+									]}
 									href="/logbook?day={encodeURIComponent(cell.date)}"
-									title="{cell.date}: {cell.count} ascent{cell.count === 1
-										? ''
-										: 's'} ({cell.sends} send{cell.sends === 1 ? '' : 's'})"
+									title={cellTitle(cell)}
 								></a>
 							{:else}
 								<span class="cell empty"></span>
@@ -107,12 +214,22 @@
 				{/each}
 			</div>
 		</div>
-		<p class="swipe-hint" aria-hidden="true">swipe →</p>
-		<div class="legend">
-			<span>Less</span>
-			<i class="l0"></i><i class="l1"></i><i class="l2"></i><i class="l3"></i><i class="l4"></i>
-			<span>More</span>
-		</div>
+		{#if mode === 'intensity'}
+			<div class="legend">
+				<span>Less</span>
+				<i class="l0"></i><i class="l1"></i><i class="l2"></i><i class="l3"></i><i class="l4"></i>
+				<span>More</span>
+			</div>
+		{:else}
+			<div class="legend grade">
+				<i class="attempt"></i>
+				<span>Attempts</span>
+				{#each GRADE_BANDS as band (band.id)}
+					<i class="b{band.id}" title={band.name}></i>
+					<span class="band-name">{band.name}</span>
+				{/each}
+			</div>
+		{/if}
 	{/if}
 </article>
 
@@ -129,10 +246,48 @@
 		align-items: center;
 		gap: 0.75rem;
 		margin-bottom: 0.75rem;
+		flex-wrap: wrap;
+	}
+	.titles {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		gap: 0.55rem 0.85rem;
 	}
 	h2 {
 		margin: 0;
 		font-size: 1.05rem;
+	}
+	.how {
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: var(--accent);
+	}
+	.controls {
+		display: flex;
+		align-items: center;
+		gap: 0.55rem;
+		flex-wrap: wrap;
+		margin-left: auto;
+	}
+	.toggles {
+		display: flex;
+		gap: 0.3rem;
+	}
+	.toggles button {
+		font: inherit;
+		font-size: 0.82rem;
+		padding: 0.28rem 0.55rem;
+		border: 1px solid var(--line);
+		border-radius: 0.4rem;
+		background: var(--paper);
+		color: var(--ink-muted);
+		cursor: pointer;
+	}
+	.toggles button.active {
+		background: var(--accent);
+		border-color: var(--accent);
+		color: var(--on-accent);
 	}
 	select {
 		font: inherit;
@@ -140,6 +295,7 @@
 		border-radius: 0.4rem;
 		border: 1px solid var(--line);
 		background: var(--paper);
+		color: var(--ink);
 	}
 	.year,
 	.empty {
@@ -147,34 +303,50 @@
 		font-size: 0.9rem;
 	}
 	.scroll {
-		overflow-x: auto;
 		max-width: 100%;
 		min-width: 0;
-		padding-bottom: 0.35rem;
-		-webkit-overflow-scrolling: touch;
-		scrollbar-width: thin;
 	}
-	.scroll::-webkit-scrollbar {
-		height: 6px;
+	.months {
+		display: grid;
+		grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+		gap: clamp(0.12rem, 0.35vw, 0.22rem);
+		width: 100%;
+		margin-bottom: 0.25rem;
+		font-size: 0.68rem;
+		line-height: 1.1;
+		color: var(--ink-muted);
+		font-weight: 600;
 	}
-	.scroll::-webkit-scrollbar-thumb {
-		background: color-mix(in srgb, var(--ink-muted) 45%, transparent);
-		border-radius: 999px;
+	.month {
+		overflow: visible;
+		white-space: nowrap;
+		justify-self: start;
+		min-width: 0;
 	}
 	.grid {
 		display: grid;
 		grid-auto-flow: column;
-		grid-template-rows: repeat(7, 0.72rem);
-		grid-auto-columns: 0.72rem;
-		gap: 0.18rem;
-		width: max-content;
+		grid-template-rows: repeat(7, minmax(0, 1fr));
+		grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+		gap: clamp(0.12rem, 0.35vw, 0.22rem);
+		width: 100%;
+		/* Keep cells roughly square while filling the panel (Dreeve-style). */
+		aspect-ratio: var(--cols) / 7;
+		max-height: 11rem;
+	}
+	@media (max-width: 700px) {
+		.month.sparse {
+			visibility: hidden;
+		}
 	}
 	.week {
 		display: contents;
 	}
 	.cell {
-		width: 0.72rem;
-		height: 0.72rem;
+		width: 100%;
+		height: 100%;
+		min-width: 0;
+		min-height: 0;
 		border-radius: 2px;
 		display: block;
 	}
@@ -201,11 +373,23 @@
 	.l4 {
 		background: var(--heat-4);
 	}
-	.swipe-hint {
-		display: none;
-		margin: 0.2rem 0 0;
-		font-size: 0.72rem;
-		color: var(--ink-muted);
+	.attempt {
+		background: color-mix(in srgb, var(--ink-muted) 35%, var(--surface-3));
+	}
+	.b1 {
+		background: var(--band-beginner);
+	}
+	.b2 {
+		background: var(--band-intermediate);
+	}
+	.b3 {
+		background: var(--band-experienced);
+	}
+	.b4 {
+		background: var(--band-expert);
+	}
+	.b5 {
+		background: var(--band-elite);
 	}
 	.legend {
 		display: flex;
@@ -214,25 +398,19 @@
 		margin-top: 0.65rem;
 		font-size: 0.72rem;
 		color: var(--ink-muted);
+		flex-wrap: wrap;
+	}
+	.legend.grade {
+		gap: 0.35rem 0.45rem;
+	}
+	.legend .band-name {
+		margin-right: 0.15rem;
 	}
 	.legend i {
 		width: 0.65rem;
 		height: 0.65rem;
 		border-radius: 2px;
 		display: inline-block;
-	}
-	@media (max-width: 640px) {
-		.grid {
-			grid-template-rows: repeat(7, 0.58rem);
-			grid-auto-columns: 0.58rem;
-			gap: 0.14rem;
-		}
-		.cell {
-			width: 0.58rem;
-			height: 0.58rem;
-		}
-		.swipe-hint {
-			display: block;
-		}
+		flex-shrink: 0;
 	}
 </style>

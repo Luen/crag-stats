@@ -7,6 +7,7 @@ import {
 	setGoalCompleted,
 	type GoalKind
 } from '#lib/server/goals';
+import { listSuggestedGradeGoals } from '#lib/server/suggestedGoals';
 import type { Actions, PageServerLoad } from './$types';
 
 // Goals are the owner's: visitors can read progress but never create or change goals.
@@ -18,7 +19,8 @@ export const load: PageServerLoad = async ({ locals }) => {
 		canEdit: locals.authed,
 		goals,
 		active: goals.filter((g) => !g.completed),
-		achieved: goals.filter((g) => g.completed)
+		achieved: goals.filter((g) => g.completed),
+		suggestions: listSuggestedGradeGoals()
 	};
 };
 
