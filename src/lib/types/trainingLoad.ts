@@ -32,6 +32,8 @@ export type TrainingLoadView = {
 	limitSends28: number;
 	/** Share (0–100) of the last 28 days' graded ascents that were near the limit. */
 	limitShare28: number;
-	/** Summed load for the last 12 weeks, oldest first (week ending on `end`). */
+	/** Summed load by week ending on `end`, oldest first (up to 26 weeks for the detail page). */
 	weekly: { end: string; load: number }[];
+	/** Daily load for the trailing 28 days (oldest first), for the detail page. */
+	daily28: { day: string; load: number }[];
 };

@@ -79,7 +79,8 @@ describe('buildTrainingLoadView', () => {
 		expect(view.ratio!).toBeGreaterThan(1.5);
 		expect(view.status).toBe('spike');
 		expect(view.limitSends28).toBe(12);
-		expect(view.weekly).toHaveLength(12);
+		expect(view.weekly).toHaveLength(26);
+		expect(view.daily28).toHaveLength(28);
 	});
 
 	it('is idle with no recent climbing', () => {

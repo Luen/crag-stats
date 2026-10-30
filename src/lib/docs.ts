@@ -81,6 +81,12 @@ export const DOC_PAGES: readonly DocPage[] = [
 			"Cycling's Eddington number adapted to climbing: send days, vertical days and grade indexes."
 	},
 	{
+		slug: 'yearly-stats',
+		title: 'Yearly stats',
+		summary:
+			'Per-year bars or cumulative career totals for ascents, sends and height, with optional within-year lines.'
+	},
+	{
 		slug: 'first-ascents',
 		title: 'First ascents',
 		summary: 'Marking your FAs and FFAs, routes you set, and community ticks on lines you put up.'

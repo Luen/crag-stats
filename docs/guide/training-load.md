@@ -1,6 +1,6 @@
 # Training load
 
-The **Training load** card estimates how hard you've been climbing recently compared with what your body is used to. A quick increase is when finger and shoulder injuries most often happen.
+The **Training load** card (and the dedicated [`/training-load`](/training-load) page) estimates how hard you've been climbing recently compared with what your body is used to. A quick increase is when finger and shoulder injuries most often happen. The dashboard card summarises the newest 12 weeks; the page shows 26 weeks plus a 28-day daily load strip.
 
 ## 1. Load per ascent
 
@@ -46,9 +46,10 @@ Daily loads are averaged two ways, both weighted towards recent days:
 
 These bands come from the acute:chronic workload ratio used in sports science and climbing coaching. Treat them as a nudge, not a diagnosis.
 
-## Also on the card
+## Also on the card / page
 
-- **Weekly load:** the total load for each of the last 12 weeks. The current week is the highlighted bar.
+- **Weekly load:** the total load for each week (12 on the card, 26 on the page). The current week is the highlighted bar.
+- **Daily load (page):** the last 28 days of intensity-weighted load, including rest days.
 - **Near-limit sends · 28d:** sends in the last 28 days within 2 Ewbank grades (1 V-grade) of your 12-month max.
 - **Near-limit share:** the percentage of the last 28 days' graded ascents that were near your limit. A high share over several weeks means a lot of limit climbing; consider deload weeks.
 - **Last 7 / 28 days:** ascents, sends, active and rest days, height climbed and send rate.

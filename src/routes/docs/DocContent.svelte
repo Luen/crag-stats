@@ -51,7 +51,12 @@
 		font-size: 0.88em;
 		padding: 0.1rem 0.35rem;
 		border-radius: 0.35rem;
+		color: var(--ink);
 		background: var(--surface-3);
+	}
+	/* Accent-on-surface code fails AA inside links; keep ink + parent underline. */
+	.prose :global(a code) {
+		color: var(--ink);
 	}
 	.prose :global(blockquote) {
 		margin: 1rem 0;

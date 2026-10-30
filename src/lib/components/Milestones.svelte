@@ -7,18 +7,38 @@
 		detail: string;
 	};
 
-	type Props = { items: Item[] };
-	let { items }: Props = $props();
+	type Props = {
+		items: Item[];
+		/** Cap list length on the dashboard; omit on the full page. */
+		limit?: number;
+		/** Dashboard links to `/milestones`; pass `null` on the full page to skip the title link. */
+		titleHref?: string | null;
+	};
+	let { items, limit, titleHref = '/milestones' }: Props = $props();
+
+	const sorted = $derived(
+		[...items].sort((a, b) => String(b.date ?? '').localeCompare(String(a.date ?? '')))
+	);
+	const shown = $derived(limit != null ? sorted.slice(0, limit) : sorted);
+	const remaining = $derived(limit != null ? Math.max(0, sorted.length - shown.length) : 0);
 </script>
 
 <article class="panel">
-	<h2>Milestones</h2>
+	<header>
+		<h2>
+			{#if titleHref}
+				<a href={titleHref}>Milestones</a>
+			{:else}
+				Milestones
+			{/if}
+		</h2>
+	</header>
 
-	{#if items.length === 0}
+	{#if sorted.length === 0}
 		<p class="empty">No milestones yet — keep ticking.</p>
 	{:else}
 		<ul>
-			{#each items as item (item.id)}
+			{#each shown as item (item.id)}
 				<li>
 					<span class="kind">{item.kind}</span>
 					<div class="body">
@@ -33,6 +53,9 @@
 				</li>
 			{/each}
 		</ul>
+		{#if remaining > 0}
+			<a class="more" href={titleHref || '/milestones'}>Show more ({remaining} more)</a>
+		{/if}
 	{/if}
 </article>
 
@@ -41,9 +64,19 @@
 		padding: 1.1rem 1.2rem;
 		border-radius: 1rem;
 	}
+	header {
+		margin-bottom: 0.75rem;
+	}
 	h2 {
-		margin: 0 0 0.75rem;
+		margin: 0;
 		font-size: 1.05rem;
+	}
+	h2 a {
+		color: inherit;
+		text-decoration: none;
+	}
+	h2 a:hover {
+		color: var(--accent);
 	}
 	ul {
 		list-style: none;
@@ -92,6 +125,13 @@
 		color: var(--ink-muted);
 		font-size: 0.8rem;
 		white-space: nowrap;
+	}
+	.more {
+		display: inline-block;
+		margin-top: 0.75rem;
+		font-size: 0.85rem;
+		font-weight: 600;
+		color: var(--accent);
 	}
 	.empty {
 		color: var(--ink-muted);
