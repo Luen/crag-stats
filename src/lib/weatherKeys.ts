@@ -12,6 +12,7 @@ export type WeatherLocation = {
 	precision: string;
 	resolvedAt: string;
 };
+import { calendarDay } from './calendarDay';
 
 /** Round a coordinate to 1 decimal place (Open-Meteo cache key). */
 export function roundCoord(value: number): number {
@@ -133,12 +134,7 @@ export type WeatherLookupMap = ReadonlyMap<string, WeatherSnapshot>;
  * (`2018-00-00`). Shared by badges, logbook, calendar and dashboard weather surfaces.
  */
 export function weatherAscentDay(date: string | null | undefined): string | null {
-	if (!date) return null;
-	const key = date.trim().slice(0, 10);
-	if (!/^\d{4}-\d{2}-\d{2}$/.test(key)) return null;
-	const parsed = new Date(`${key}T12:00:00Z`);
-	if (!Number.isFinite(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== key) return null;
-	return key;
+	return calendarDay(date);
 }
 
 /** Cache key for an ascent's (rounded lat, lon, day), or null without coords / valid day. */

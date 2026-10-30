@@ -2,6 +2,8 @@
  * Pure dashboard aggregations for Phase 2–3 widgets.
  * Accept typed row arrays — no SQLite / better-sqlite3 imports.
  */
+
+import { calendarDay as dayKey } from '#lib/calendarDay';
 import { formatVScaleLabel, usesVScale } from '#lib/grades';
 import {
 	buildPartnerStats,
@@ -16,6 +18,8 @@ export { splitPartners };
 /** Minimal row shape shared by extras builders. */
 export type DashboardExtraRow = {
 	weatherLocation?: import('#lib/weatherKeys').WeatherLocation | null;
+	/** Ascent protection style, kept separate from the route discipline. */
+	ascentGearStyle?: string | null;
 	ascentDate: string | null;
 	/** Stable id for same-day ordering (badges / milestones). */
 	ascentId?: number | null;
@@ -167,12 +171,6 @@ function yearOf(iso: string | null | undefined): number | null {
 	if (!m) return null;
 	const y = Number(m.slice(0, 4));
 	return Number.isFinite(y) ? y : null;
-}
-
-function dayKey(iso: string | null | undefined): string | null {
-	if (!iso) return null;
-	const d = iso.slice(0, 10);
-	return /^\d{4}-\d{2}-\d{2}$/.test(d) ? d : null;
 }
 
 function heightOf(row: DashboardExtraRow): number {

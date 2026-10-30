@@ -3,6 +3,8 @@
  * Taking a break does not erase a milestone — recognition when something genuinely happened.
  */
 import { isSunFacingSummer } from '#lib/sunFacing';
+
+import { calendarDay as dayKey } from '#lib/calendarDay';
 import { formatVScaleLabel, usesVScale } from '#lib/grades';
 import { tickKind } from '#lib/ticks';
 import { DEFAULT_DATE_DISPLAY, formatDateTime, formatNumber, type DateDisplay } from '#lib/dates';
@@ -90,16 +92,6 @@ type Hit = {
 	detail: string;
 };
 
-function dayKey(d: string | null | undefined): string | null {
-	if (!d) return null;
-	const t = d.trim();
-	if (t.length < 10) return null;
-	const key = t.slice(0, 10);
-	if (!/^\d{4}-\d{2}-\d{2}$/.test(key)) return null;
-	if (key.endsWith('-00-00') || key.includes('-00-')) return null;
-	return key;
-}
-
 function scoreOf(row: DashboardExtraRow): number | null {
 	const s = row.effectiveGradeScore ?? row.gradeScore;
 	return s != null && Number.isFinite(s) ? Number(s) : null;
@@ -143,6 +135,18 @@ function routeLine(name: string | null | undefined, date: string | null): string
 	if (n) return n;
 	if (when) return when;
 	return '';
+}
+
+/** Explicit provider tick or a clean lead of a sport route using trad protection. */
+export function isGreenpoint(row: DashboardExtraRow): boolean {
+	if (!row.isSend) return false;
+	const tick = (row.tickType ?? '').toLowerCase().replace(/[\s_-]+/g, '');
+	if (['greenpoint', 'greenpointonsight', 'greenpointflash'].includes(tick)) return true;
+	return (
+		row.gearStyle?.trim().toLowerCase() === 'sport' &&
+		row.ascentGearStyle?.trim().toLowerCase() === 'trad' &&
+		['onsight', 'flash', 'redpoint', 'pinkpoint', 'groundupredpoint', 'lead'].includes(tick)
+	);
 }
 
 /** Static catalog — order is display order for locked badges. */
@@ -364,6 +368,13 @@ export const BADGE_CATALOG: readonly BadgeDef[] = [
 		hint: 'Send a route after working it over 4 or more different days',
 		icon: 'knot',
 		tone: 'purple'
+	},
+	{
+		id: 'greenpoint',
+		title: 'Greenpoint',
+		hint: 'Greenpoint a sport route, or send one with a clean lead recorded as Trad.',
+		icon: 'knot',
+		tone: 'green'
 	},
 	{
 		id: 'sessions_10',
@@ -959,6 +970,7 @@ export function buildBadges(
 
 		const kind = tickKind(row.tickType);
 		const send = Boolean(row.isSend);
+		if (isGreenpoint(row)) mark('greenpoint', hitAt(row, 'Sport route led on trad protection'));
 		const outdoor =
 			row.outdoor !== false &&
 			!isLikelyIndoorRoute({

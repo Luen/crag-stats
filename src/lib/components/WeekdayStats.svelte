@@ -1,5 +1,11 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
+	import {
+		EMPTY_CARD_PREFERENCES,
+		migrateCardPreference,
+		saveCardPreference,
+		type CardPreferences
+	} from '#lib/cardPreferences';
 	import { DEFAULT_DATE_DISPLAY, formatNumber, type DateDisplay } from '#lib/dates';
 	import { STYLE_COLORS } from '#lib/ticks';
 	import {
@@ -13,11 +19,16 @@
 	type Range = 'all' | 'last12';
 
 	type Props = {
+		preferences?: CardPreferences;
 		data: WeekdayStatsView;
 		dateDisplay?: DateDisplay;
 	};
 
-	let { data, dateDisplay = DEFAULT_DATE_DISPLAY }: Props = $props();
+	let {
+		preferences = EMPTY_CARD_PREFERENCES,
+		data,
+		dateDisplay = DEFAULT_DATE_DISPLAY
+	}: Props = $props();
 
 	const RANGE_KEY = 'cs_weekday_range';
 	const METRIC_KEY = 'cs_weekday_metric';
@@ -34,30 +45,24 @@
 		0: '#576071'
 	};
 
-	let range = $state<Range>('all');
-	let metric = $state<WeekdayMetric>('sessions');
-	let style = $state<WeekdayStyleKey>('all');
+	let range = $derived<Range>(preferences.cs_weekday_range ?? 'all');
+	let metric = $derived<WeekdayMetric>(preferences.cs_weekday_metric ?? 'sessions');
+	let style = $derived<WeekdayStyleKey>(preferences.cs_weekday_style ?? 'all');
 	let hoverWeekday = $state<number | null>(null);
 
+	let ready = $state(false);
 	onMount(() => {
-		try {
-			const r = localStorage.getItem(RANGE_KEY);
-			if (r === 'last12' || r === 'all') range = r;
-			const m = localStorage.getItem(METRIC_KEY);
-			if (m === 'sessions' || m === 'ascents') metric = m;
-			const s = localStorage.getItem(STYLE_KEY);
-			if (s === 'all' || s === 'sport' || s === 'trad' || s === 'boulder') style = s;
-		} catch {
-			/* ignore */
-		}
+		range = migrateCardPreference('cs_weekday_range', preferences.cs_weekday_range);
+		metric = migrateCardPreference('cs_weekday_metric', preferences.cs_weekday_metric);
+		style = migrateCardPreference('cs_weekday_style', preferences.cs_weekday_style);
+		ready = true;
 	});
 
-	function persist(key: string, value: string) {
-		try {
-			localStorage.setItem(key, value);
-		} catch {
-			/* ignore */
-		}
+	function persist(
+		key: typeof RANGE_KEY | typeof METRIC_KEY | typeof STYLE_KEY,
+		value: Range | WeekdayMetric | WeekdayStyleKey
+	) {
+		saveCardPreference(key, value);
 	}
 
 	function setRange(next: Range) {
@@ -167,7 +172,20 @@
 	};
 </script>
 
-<article class="panel">
+<article
+	class={[
+		'panel',
+		{
+			'card-preference-pending':
+				!ready &&
+				!(
+					preferences.cs_weekday_range != null &&
+					preferences.cs_weekday_metric != null &&
+					preferences.cs_weekday_style != null
+				)
+		}
+	]}
+>
 	<header>
 		<div class="titles">
 			<h2>Weekday</h2>

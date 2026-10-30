@@ -38,3 +38,12 @@ Verified **direct route** Aspect tags establish facing. Inherited sector/crag ta
 This is a seasonal/aspect heuristic for a potentially sunny face. It does not establish the time you climbed, actual sunshine, shade, overhangs or rock temperature, and requires no Open-Meteo cache. The separate heat badge describes cached high air temperature. A minimized real API tag fixture and its provenance are documented in the repository.
 
 A direct **All day sun** Weather tag can also unlock Summer Sun Face during the same local summer and latitude range, even without an aspect tag. An inherited area tag or a morning/noon/afternoon-only sun tag cannot qualify on its own. A direct **Always shady** tag prevents the award when tags conflict. This records provider-described exposure, not observed weather at the time of your climb.
+
+## Greenpoint
+
+**Greenpoint** is a one-shot badge for leading a bolted sport route on your own trad gear. It unlocks the first time you either:
+
+- log a theCrag **Green point**, **Green point onsight** or **Green point flash** tick that counts as a send, or
+- send a route listed as **Sport** with your ascent recorded as **Trad**, using a clean lead tick (onsight, flash, red point, pink point, ground-up red point or Lead).
+
+Generic Tick/Send/Clean entries, attempts, top-rope and seconding don't count for the second path, because they don't show that you led on gear. Like the badges above, it does not appear in **Almost there**. See theCrag's [tick types](https://www.thecrag.com/en/article/ticktypes) for how Green point ticks are defined.

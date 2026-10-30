@@ -3,6 +3,9 @@ import {
 	attachWeatherLocation,
 	invalidateWeatherLocations
 } from './weatherLocations';
+import { calendarDay as validDay } from '#lib/calendarDay';
+import { listPartners } from './partners';
+import { topPartnersPerMetric } from '#lib/partnerStats';
 import { matchesClimbStyle } from '#lib/climbStyle';
 import { forgetTheCragSession } from './theCragWebSession';
 
@@ -46,7 +49,6 @@ import { countActiveProjects } from './projects';
 import {
 	buildMilestones,
 	buildMonthlyStats,
-	buildPartnerLeaderboard,
 	splitPartners,
 	buildQualityBreakdown,
 	buildRockTypeStats,
@@ -147,22 +149,6 @@ const TICK_COLORS: Record<string, string> = {
 function monthKey(iso: string | null | undefined): string | null {
 	if (!iso) return null;
 	return iso.slice(0, 7);
-}
-
-/** Strict YYYY-MM-DD with real calendar month/day (rejects 2018-00-00 etc.). */
-function validDay(iso: string | null | undefined): string | null {
-	const d = (iso || '').slice(0, 10);
-	const m = d.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-	if (!m) return null;
-	const year = Number(m[1]);
-	const month = Number(m[2]);
-	const day = Number(m[3]);
-	if (month < 1 || month > 12 || day < 1 || day > 31) return null;
-	const dt = new Date(`${d}T12:00:00`);
-	if (Number.isNaN(dt.getTime())) return null;
-	// Reject JS date rollover (e.g. 2024-02-31 → March)
-	if (dt.getFullYear() !== year || dt.getMonth() + 1 !== month || dt.getDate() !== day) return null;
-	return d;
 }
 
 function displayStyle(gearStyle: string | null | undefined): string {
@@ -719,6 +705,7 @@ export function getDashboardStats(
 		routeId: a.routeId,
 		firstAscent: firstAscentKindFor(faMarks, a.routeProvider, a.routeExternalId),
 		gearStyle: a.gearStyle,
+		ascentGearStyle: a.ascentGearStyle,
 		isSend: a.isSend,
 		heightM: a.heightM,
 		routeHeightM: a.routeHeightM,
@@ -769,7 +756,7 @@ export function getDashboardStats(
 	);
 	const trainingLoad = buildTrainingLoadView(extraRows);
 	const styleMix = buildStyleMixOverTime(extraRows);
-	const partners = buildPartnerLeaderboard(extraRows, 7).partners;
+	const partners = topPartnersPerMetric(listPartners(), 7);
 	const starsScatter = buildStarsScatter(extraRows).points;
 	const qualityBreakdown = buildQualityBreakdown(extraRows).ratings;
 	const routePopularity = buildRoutePopularityStats(

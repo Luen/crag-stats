@@ -455,7 +455,7 @@ _Add a row when you change behaviour agents must know about._
 - Sectors climate (#278): `CragSectorGroup.visitClimate` from `listVisitClimateByCrag()` (`sectors.ts`) via `buildVisitClimate` (`#lib/visitClimate`): distinct outdoor location-days with cached weather per crag, shown only at ≥5 days, always labelled as visit-day weather, not climate normals.
 - Fair-weather metric (#280): `WeatherConditionsView.fairWeather` (`buildFairWeatherMetric` in `#lib/weatherStats`) needs ≥20 weather days; fair = `isFairWeather`, tough = heat/freeze/rain/snow/wind. Labels (fair-leaning ≥60% fair, all-weather ≥50% tough, else mixed) are descriptive, never a score.
 - Badges #279: `partners_crowded_belay` (3+ distinct partners), `multipitch_day` (3+ sent pitches/day via pitch labels or `pitchesTotal`), `travel_week` (4 outdoor crags in 7 days; `DashboardExtraRow.cragName`), `route_persistence` (first send after 4+ days on the route). Stable ids, one-shot (not in Almost there), neutral wording.
-- Partners page (`/partners`, #269): Ascents | Sessions | Areas metric toggle (`cs_partners_metric`); helpers in `#lib/partnerStats`. Dashboard card stays ascent-ranked. Docs at `/docs/partners`.
+- Partners page (`/partners`, #269): Ascents | Sessions | Areas metric toggle (`cs_partners_metric`); helpers in `#lib/partnerStats`. Dashboard card shares the selected metric and limits the ranked full list to seven. Docs at `/docs/partners`.
 
 - Weather PR review: preserve main’s indoor badge guards and shared partner statistics when updating the weather stack. Fair weather requires measured precipitation below 0.1 mm; missing rain is unknown, not dry.
 
@@ -481,3 +481,14 @@ _Add a row when you change behaviour agents must know about._
 - Summer Sun Face also accepts direct `Weather:All day sun` as an alternative to equator-facing aspect, retaining summer, latitude, outdoor and reliable-location guards. Preserve Weather tag provenance; data migration 0007 repairs it from cached raw payloads. Inherited/legacy/partial-day sun tags do not establish all-day sun, and direct Always shady vetoes the badge. Sanitized evidence is in `sun-tags.sanitized.json`.
 
 - Weather location precedence compares both cached logbook and route API payloads: route point beats sector point, then crag point, regardless of which cache supplied it.
+- Greenpoint (#303): one-shot green badge for a sent `greenpoint`, `greenpointonsight` or `greenpointflash` tick (spacing/hyphens normalized), or an original Sport route with ascent protection recorded as Trad and a confident clean lead (onsight, flash, red/pink point, ground-up redpoint or an explicit successful Lead tick). Generic Tick/Send/Clean, attempts, top-rope and seconding do not establish a lead for the inferred path. Route and ascent styles stay separate. This badge has no Almost there counter and sits after Persistence Pays in `BADGE_CATALOG`. Provider tick IDs are documented in [theCrag API](https://www.thecrag.com/en/article/api) and [tick types](https://www.thecrag.com/en/article/ticktypes); tests are synthetic representations of those documented IDs, not captured private payloads.
+
+- Partner dashboard aggregation uses `listPartners` and its left join, matching `/partners` even for legacy missing-route ascents. Keep other dashboard analytics on their intentional route join.
+
+- Partner Areas prefer provider-scoped `routes.area_external_id`, then normalized names. Name-only rows resolve to an id only when the cached name/id association is unique. No provider fetch needed.
+
+- Session/day analytics share `#lib/calendarDay`: strict UTC date round-trip, rejecting placeholders, impossible dates and unknown year 0000. Keep timestamps on their written calendar date; never shift into the server time zone.
+
+- Card display preferences (#296) use whitelisted cookies for SSR; legacy localStorage choices migrate on mount. The pre-paint script in `app.html` sets `html[data-card-prefs-migrating]` only when a whitelisted key exists in localStorage without its cookie, and only then do cookie-less cards reserve their layout (hidden) until migration completes. New visitors and no-JS clients see default cards immediately. Keep the key list in `app.html` in sync with `CARD_PREFERENCE_KEYS`. Cookie and storage failures remain nonfatal.
+
+- Dashboard Partners (#298) shares the Ascents/Sessions/Areas preference with the Partners page. Rank the full partner set by the chosen metric before applying the dashboard seven-row limit; keep the title link to the full leaderboard. Compact toggle buttons wrap within quarter-width cards.
