@@ -1,3 +1,4 @@
+import { listPartners } from './partners';
 import { matchesClimbStyle } from '#lib/climbStyle';
 import { forgetTheCragSession } from './theCragWebSession';
 
@@ -41,7 +42,6 @@ import { countActiveProjects } from './projects';
 import {
 	buildMilestones,
 	buildMonthlyStats,
-	buildPartnerLeaderboard,
 	splitPartners,
 	buildQualityBreakdown,
 	buildRockTypeStats,
@@ -760,7 +760,7 @@ export function getDashboardStats(
 	);
 	const trainingLoad = buildTrainingLoadView(extraRows);
 	const styleMix = buildStyleMixOverTime(extraRows);
-	const partners = buildPartnerLeaderboard(extraRows, 7).partners;
+	const partners = listPartners(7);
 	const starsScatter = buildStarsScatter(extraRows).points;
 	const qualityBreakdown = buildQualityBreakdown(extraRows).ratings;
 	const routePopularity = buildRoutePopularityStats(

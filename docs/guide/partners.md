@@ -17,3 +17,5 @@ Your choice is stored in the browser (`cs_partners_metric`).
 - Handles are normalised (leading `@` stripped); the same person under different casing shares one bar.
 - Multi-pitch days with many ticks inflate **Ascents** more than **Sessions**.
 - Someone you only climb with at one crag ranks lower under **Areas** than a travelling partner with fewer ticks.
+
+The dashboard preview and full page use the same logged ascents, including legacy ascents whose route record is unavailable. Missing route details do not erase partner ascents or valid session days; they contribute no area without a known venue. Other route-based dashboard analytics still require a route record.
