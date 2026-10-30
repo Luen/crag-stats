@@ -1,4 +1,4 @@
-export type RouteTag = { category: string; name: string; source?: 'route' | 'ancestor' };
+export type RouteTag = { category: string; name: string; source?: 'route' | 'parent' | 'ancestor' };
 
 export function parseTagsJson(raw: string | null | undefined): RouteTag[] {
 	if (!raw) return [];
@@ -16,7 +16,9 @@ export function parseTagsJson(raw: string | null | undefined): RouteTag[] {
 			.map((t) => ({
 				category: t.category,
 				name: t.name,
-				...(t.source === 'route' || t.source === 'ancestor' ? { source: t.source } : {})
+				...(t.source === 'route' || t.source === 'parent' || t.source === 'ancestor'
+					? { source: t.source }
+					: {})
 			}));
 	} catch {
 		return [];

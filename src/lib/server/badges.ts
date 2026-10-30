@@ -274,7 +274,7 @@ export const BADGE_CATALOG: readonly BadgeDef[] = [
 	{
 		id: 'sun_facing_summer',
 		title: 'Summer Sun Face',
-		hint: 'Log a route with direct equator-facing aspect or All day sun in local summer (25–60° latitude).',
+		hint: 'Log a route in local summer with equator-facing aspect or All day sun on it or its immediate parent.',
 		icon: 'sun',
 		tone: 'warm'
 	},
@@ -980,7 +980,10 @@ export function buildBadges(
 				tagsJson: row.tagsJson
 			});
 		if (outdoor && isSunFacingSummer(row))
-			mark('sun_facing_summer', hitAt(row, 'Sunny route in local summer · tag/aspect heuristic'));
+			mark(
+				'sun_facing_summer',
+				hitAt(row, 'Sunny exposure in local summer · tag/aspect heuristic')
+			);
 		const monthDay = day.slice(5); // MM-DD from calendar dayKey — no local TZ
 
 		if (sessions.size === 1 && !earned.has('first_session')) {

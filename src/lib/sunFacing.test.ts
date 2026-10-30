@@ -93,3 +93,44 @@ it('accepts direct All day sun without aspect, but rejects inherited, legacy, pa
 		})
 	).toBe(false);
 });
+
+it('uses immediate-parent exposure only when route exposure is absent, with route overrides winning', () => {
+	const tag = (category: string, name: string, source: string | undefined) => ({
+		category,
+		name,
+		source
+	});
+	const qualify = (...tags: ReturnType<typeof tag>[]) =>
+		isSunFacingSummer({ ...row(), tagsJson: JSON.stringify(tags) });
+	expect(qualify(tag('Weather', 'All day sun', 'parent'))).toBe(true);
+	expect(qualify(tag('Aspect', 'N', 'parent'))).toBe(true);
+	expect(qualify(tag('Weather', 'All day sun', 'ancestor'))).toBe(false);
+	expect(
+		qualify(tag('Weather', 'Always shady', 'route'), tag('Weather', 'All day sun', 'parent'))
+	).toBe(false);
+	expect(qualify(tag('Aspect', 'S', 'route'), tag('Weather', 'All day sun', 'parent'))).toBe(false);
+	expect(qualify(tag('Aspect', 'Unknown', 'route'), tag('Aspect', 'N', 'parent'))).toBe(false);
+	expect(
+		qualify(tag('Weather', 'Morning sun', 'route'), tag('Weather', 'All day sun', 'parent'))
+	).toBe(false);
+	expect(
+		qualify(tag('Weather', 'All day sun', 'route'), tag('Weather', 'Always shady', 'parent'))
+	).toBe(true);
+	expect(qualify(tag('Aspect', 'N', 'route'), tag('Weather', 'Always shady', 'parent'))).toBe(true);
+	expect(
+		qualify(tag('Weather', 'Wet in rain', 'route'), tag('Weather', 'All day sun', 'parent'))
+	).toBe(true);
+	expect(qualify(tag('Aspect', 'N', undefined), tag('Weather', 'All day sun', 'parent'))).toBe(
+		false
+	);
+	expect(qualify(tag('Weather', 'Always shady', 'parent'), tag('Aspect', 'N', 'parent'))).toBe(
+		false
+	);
+	for (const date of ['2025-07-01', '2025-02-29'])
+		expect(
+			isSunFacingSummer({
+				...row(-34, date),
+				tagsJson: JSON.stringify([tag('Weather', 'All day sun', 'parent')])
+			})
+		).toBe(false);
+});

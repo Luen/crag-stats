@@ -1,5 +1,66 @@
 {
-	"direct": { "Weather": { "sun": { "id": 1, "name": "All day sun" } } },
-	"inherited": { "Weather": { "sun": { "id": 1, "name": "All day sun", "ancestor": {} } } },
-	"shade": { "Weather": { "shade": { "id": 2, "name": "Always shady" } } }
+	"direct": {
+		"Weather": {
+			"sun": {
+				"id": 1,
+				"name": "All day sun"
+			}
+		}
+	},
+	"inherited": {
+		"Weather": {
+			"sun": {
+				"id": 1,
+				"name": "All day sun",
+				"ancestor": {}
+			}
+		}
+	},
+	"shade": {
+		"Weather": {
+			"shade": {
+				"id": 2,
+				"name": "Always shady"
+			}
+		}
+	},
+	"parent": {
+		"Weather": {
+			"sun": {
+				"id": 1,
+				"name": "All day sun",
+				"ancestor": {
+					"id": 2,
+					"type": "area",
+					"subType": "Sector"
+				}
+			}
+		}
+	},
+	"higher": {
+		"Weather": {
+			"sun": {
+				"id": 1,
+				"name": "All day sun",
+				"ancestor": {
+					"id": 3,
+					"type": "area",
+					"subType": "Crag"
+				}
+			}
+		}
+	},
+	"parentAspect": {
+		"Aspect": {
+			"north": {
+				"id": 4,
+				"name": "N",
+				"ancestor": {
+					"id": 2,
+					"type": "area",
+					"subType": "Sector"
+				}
+			}
+		}
+	}
 }

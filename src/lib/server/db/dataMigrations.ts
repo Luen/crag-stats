@@ -75,7 +75,14 @@ const MIGRATIONS = [
 		}
 	},
 	{ id: 'data:0006_preserve_aspect_tag_provenance', apply: () => repairAspectTagSources() },
-	{ id: 'data:0007_preserve_weather_tag_provenance', apply: () => repairWeatherTagSources() }
+	{ id: 'data:0007_preserve_weather_tag_provenance', apply: () => repairWeatherTagSources() },
+	{
+		id: 'data:0008_verify_immediate_parent_exposure',
+		apply: () => {
+			repairAspectTagSources();
+			repairWeatherTagSources();
+		}
+	}
 ];
 
 /**

@@ -117,3 +117,60 @@ it('maps and upgrades direct Weather tags while inherited sun and indoor climbs 
 	expect(db.select().from(ascents).get()?.comment).toBe('Private test note');
 	expect(runDataMigrations()).toEqual([]);
 });
+
+it('repairs verified immediate-parent sun/aspect provenance and awards its earliest eligible climb', async () => {
+	const { default: sun } = await import('./providers/thecrag/fixtures/sun-tags.sanitized.json');
+	const withParent = (id: number, tags: unknown, date: string) =>
+		mapAscent({
+			id,
+			date,
+			tick: { name: 'Attempt' },
+			route: {
+				id,
+				name: 'Parent exposure fixture',
+				style: 'Sport',
+				tags: tags as typeof fixture.direct,
+				ancestors: { parent: { id: 2 }, TLC: { id: 999, geometry: [151, -34] } }
+			}
+		})!;
+	upsertAscents([
+		withParent(20, sun.parent, '2025-01-02'),
+		withParent(21, sun.higher, '2024-01-01'),
+		withParent(22, sun.parentAspect, '2025-01-01')
+	]);
+	runDataMigrations();
+	db.update(routes)
+		.set({
+			tagsJson:
+				'[{"category":"Weather","name":"All day sun","source":"ancestor"},{"category":"Rock type","name":"Granite"}]'
+		})
+		.run();
+	db.run(sql`DELETE FROM schema_migrations WHERE id='data:0008_verify_immediate_parent_exposure'`);
+	db.update(ascents).set({ comment: 'Parent fixture private note' }).run();
+	expect(runDataMigrations()).toEqual(['data:0008_verify_immediate_parent_exposure']);
+	const repaired = db.select().from(routes).all();
+	expect(JSON.parse(repaired.find((r) => r.externalId === '20')!.tagsJson!)).toContainEqual({
+		category: 'Weather',
+		name: 'All day sun',
+		source: 'parent'
+	});
+	expect(JSON.parse(repaired.find((r) => r.externalId === '21')!.tagsJson!)).toContainEqual({
+		category: 'Weather',
+		name: 'All day sun',
+		source: 'ancestor'
+	});
+	expect(JSON.parse(repaired.find((r) => r.externalId === '22')!.tagsJson!)).toContainEqual({
+		category: 'Aspect',
+		name: 'N',
+		source: 'parent'
+	});
+	const stats = getDashboardStats();
+	expect(stats.badges.earned.find((b) => b.id === 'sun_facing_summer')?.date).toBe('2025-01-01');
+	expect(JSON.stringify(stats)).not.toContain('Parent fixture private note');
+	expect(
+		repaired.every((r) =>
+			JSON.parse(r.tagsJson!).some((t: { category: string }) => t.category === 'Rock type')
+		)
+	).toBe(true);
+	expect(runDataMigrations()).toEqual([]);
+});

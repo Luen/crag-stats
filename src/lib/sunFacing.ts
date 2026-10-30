@@ -43,19 +43,29 @@ export function isSunFacingSummer(row: {
 	const month = Number(day.slice(5, 7));
 	if (lat > 0 ? month < 6 || month > 8 : !(month === 12 || month === 1 || month === 2))
 		return false;
-	const direct = parseTagsJson(row.tagsJson).filter((t) => t.source === 'route');
-	const weather = direct.filter((t) => t.category.trim().toLowerCase() === 'weather');
 	const normalize = (name: string) =>
 		name
 			.trim()
 			.toLowerCase()
 			.replace(/[\s_-]+/g, '');
-	// A route's explicit shade tag contradicts both routes to this sunny-face badge.
+	const sunTags = new Set(['alldaysun', 'morningsun', 'noonsun', 'afternoonsun', 'alwaysshady']);
+	const exposure = parseTagsJson(row.tagsJson).filter(
+		(t) =>
+			t.category.trim().toLowerCase() === 'aspect' ||
+			(t.category.trim().toLowerCase() === 'weather' && sunTags.has(normalize(t.name)))
+	);
+	// Route-specific exposure always wins. Only when absent may the verified immediate parent fill in.
+	const direct = exposure.filter((t) => t.source === 'route');
+	const selected = direct.length
+		? direct
+		: exposure.some((t) => t.source == null)
+			? []
+			: exposure.filter((t) => t.source === 'parent');
+	const weather = selected.filter((t) => t.category.trim().toLowerCase() === 'weather');
+	// Shade contradicts both routes to this sunny-face badge at the selected source level.
 	if (weather.some((t) => normalize(t.name) === 'alwaysshady')) return false;
 	if (weather.some((t) => normalize(t.name) === 'alldaysun')) return true;
-	const tags = direct.filter(
-		(t) => t.category.trim().toLowerCase() === 'aspect' && t.source === 'route'
-	);
+	const tags = selected.filter((t) => t.category.trim().toLowerCase() === 'aspect');
 	if (!tags.length) return false;
 	const wanted = lat < 0 ? new Set(['N', 'NE', 'NW']) : new Set(['S', 'SE', 'SW']);
 	return tags.every((t) =>

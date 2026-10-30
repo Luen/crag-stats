@@ -290,3 +290,23 @@ it('ignores malformed tag names while preserving valid aspect provenance', () =>
 		{ category: 'Aspect', name: 'N', source: 'ancestor' }
 	]);
 });
+
+it('identifies inherited exposure only when its source matches the immediate parent', () => {
+	const tags = {
+		Weather: { sun: { name: 'All day sun', ancestor: { id: 2, type: 'area', subType: 'Sector' } } }
+	};
+	expect(flattenRouteTags(tags, '2')).toEqual([
+		{ category: 'Weather', name: 'All day sun', source: 'parent' }
+	]);
+	expect(flattenRouteTags(tags, 3)[0]?.source).toBe('ancestor');
+	expect(flattenRouteTags(tags)[0]?.source).toBe('ancestor');
+	expect(
+		flattenRouteTags(
+			{ Weather: { sun: { name: 'All day sun', ancestor: { id: 2, subType: 'Country' } } } },
+			2
+		)[0]?.source
+	).toBe('ancestor');
+	expect(
+		flattenRouteTags({ Weather: { sun: { name: 'All day sun', ancestor: {} } } }, 2)[0]?.source
+	).toBe('ancestor');
+});

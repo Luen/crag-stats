@@ -31,7 +31,10 @@ function repairTagSources(category: 'Aspect' | 'Weather') {
 		seen.add(r.routeId);
 		const tags = raw.route.tags;
 		if (!tags || typeof tags !== 'object' || !Object.hasOwn(tags, category)) continue;
-		const aspects = flattenRouteTags({ [category]: tags[category] });
+		const aspects = flattenRouteTags(
+			{ [category]: tags[category] },
+			raw.route.ancestors?.parent?.id
+		);
 		const other = parseTagsJson(r.tagsJson).filter(
 			(t) => t.category.trim().toLowerCase() !== category.toLowerCase()
 		);

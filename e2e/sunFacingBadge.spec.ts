@@ -1,10 +1,17 @@
 import Database from 'better-sqlite3';
 import { expect, test } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
-for (const evidence of ['aspect', 'all-day-sun'] as const)
+for (const evidence of ['aspect', 'all-day-sun', 'parent-aspect', 'parent-all-day-sun'] as const)
 	for (const colorScheme of ['light', 'dark'] as const)
-		test(`direct ${evidence} summer badge in ${colorScheme}`, async ({ page }) => {
+		test(`${evidence} summer badge in ${colorScheme}`, async ({ page }) => {
 			await page.emulateMedia({ colorScheme });
+			const aspect = evidence.endsWith('aspect');
+			const inherited = evidence.startsWith('parent-');
+			const leaf = {
+				name: aspect ? 'N' : 'All day sun',
+				id: 1,
+				...(inherited ? { ancestor: { id: 2 } } : {})
+			};
 			const db = new Database('e2e/.tmp/open.sqlite');
 			let routeId: number | undefined;
 			try {
@@ -16,9 +23,9 @@ for (const evidence of ['aspect', 'all-day-sun'] as const)
 						.run(
 							JSON.stringify([
 								{
-									category: evidence === 'aspect' ? 'Aspect' : 'Weather',
-									name: evidence === 'aspect' ? 'N' : 'All day sun',
-									source: 'route'
+									category: aspect ? 'Aspect' : 'Weather',
+									name: aspect ? 'N' : 'All day sun',
+									source: inherited ? 'parent' : 'route'
 								}
 							])
 						).lastInsertRowid
@@ -33,10 +40,8 @@ for (const evidence of ['aspect', 'all-day-sun'] as const)
 						style: 'Sport',
 						lat: -34,
 						lon: 151,
-						tags:
-							evidence === 'aspect'
-								? { Aspect: { N: { name: 'N', id: 1 } } }
-								: { Weather: { sun: { name: 'All day sun', id: 1 } } }
+						ancestors: { parent: { id: 2 } },
+						tags: aspect ? { Aspect: { N: leaf } } : { Weather: { sun: leaf } }
 					}
 				};
 				db.prepare(

@@ -22,7 +22,8 @@ const ALL = [
 	'data:0004_invalidate_incomplete_route_cache',
 	'data:0005_repair_tlc_bare_geometry_coords',
 	'data:0006_preserve_aspect_tag_provenance',
-	'data:0007_preserve_weather_tag_provenance'
+	'data:0007_preserve_weather_tag_provenance',
+	'data:0008_verify_immediate_parent_exposure'
 ];
 
 beforeEach(() => {
