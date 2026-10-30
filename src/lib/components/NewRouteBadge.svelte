@@ -1,9 +1,10 @@
 <script lang="ts">
 	/**
-	 * Marks a project on a route with no grade on theCrag: usually a new line the climber
-	 * bolted or is still working. theCrag's API has no "project" flag, so this is a guess.
+	 * Marks a project with no grade, or a wide provisional span (21-23, V1-3): usually a new
+	 * line still being dialled in. Adjacent half-grades (V1/2) stay ordinary published grades.
 	 */
-	const TITLE = "Ungraded on theCrag, so probably a new route you're bolting or working";
+	const TITLE =
+		"No firm grade on theCrag (blank or a wide estimate like 21-23 / V1-3), so probably a new route you're bolting or working";
 </script>
 
 <span class="new-route" title={TITLE}>

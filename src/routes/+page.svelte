@@ -169,6 +169,7 @@
 			locked={s.badges.locked}
 			earnedCount={s.badges.earnedCount}
 			totalCount={s.badges.totalCount}
+			recentLimit={8}
 		/>
 	{:else if id === 'goals'}
 		<GoalsProgress goals={data.activeGoals} canEdit={data.showSettings} />

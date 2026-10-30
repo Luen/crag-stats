@@ -56,10 +56,13 @@ test('community snapshots distinguish missing, partial, zero and positive counts
 		await expect(communityRows.first().locator('.badge')).toHaveText('Sport/bolted');
 		await expect(communityRows.last().locator('.badge')).toHaveText('Trad');
 		await expect(communityRows.locator('.missing')).toHaveText(['Unavailable', 'Unavailable']);
+		// Compact dashboard badges only show recent earned; locked community badges live on /badges.
+		await page.goto('/badges');
 		const sharedBadge = page
 			.locator('article.card')
 			.filter({ has: page.getByRole('heading', { name: 'Shared Crag', exact: true }) });
 		await expect(sharedBadge).toContainText('Locked');
+		await page.goto('/');
 		expect(errors).toEqual([]);
 
 		db.prepare('UPDATE routes SET ascent_count = 1, ascent_count_own = 1 WHERE id = ?').run(ids[0]);
@@ -95,9 +98,9 @@ test('community snapshots distinguish missing, partial, zero and positive counts
 		await page.reload();
 		// Owner snapshot stays paired with the fetch — live repeats must not shrink the estimate (#140).
 		await expect(communityTile.locator('strong')).toHaveText('4');
-		// Crossing a threshold updates the actual badge carousel from the paired cache.
+		// Crossing a threshold updates community badges (full gallery; compact rail may omit null-date earns).
 		db.prepare('UPDATE routes SET ascent_count = 51 WHERE id = ?').run(ids[0]);
-		await page.reload();
+		await page.goto('/badges');
 		await expect(sharedBadge).toContainText('~50 community ascents (estimate)');
 		await expect(sharedBadge).toContainText('Earned');
 		const crowdBadge = page
