@@ -18,7 +18,10 @@
 
 <article class="panel">
 	<header>
-		<h2>Sessions per week</h2>
+		<div class="titles">
+			<h2>Sessions per week</h2>
+			<a class="how" href="/docs/sessions-per-week">How it works</a>
+		</div>
 		{#if years.length > 1}
 			<select
 				value={year}
@@ -59,10 +62,7 @@
 			{/each}
 		</div>
 		<p class="avg">Average {avg} sessions / week</p>
-		<p class="hint">
-			A session is a calendar day with at least one ascent.
-			<a href="/docs/sessions-per-week">How it works</a>
-		</p>
+		<p class="hint">A session is a calendar day with at least one ascent.</p>
 	{/if}
 </article>
 
@@ -78,9 +78,20 @@
 		gap: 0.75rem;
 		margin-bottom: 0.75rem;
 	}
+	.titles {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		gap: 0.55rem 0.85rem;
+	}
 	h2 {
 		margin: 0;
 		font-size: 1.05rem;
+	}
+	.how {
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: var(--accent);
 	}
 	select {
 		font: inherit;
@@ -129,8 +140,5 @@
 		margin: 0.35rem 0 0;
 		font-size: 0.78rem;
 		color: var(--ink-muted);
-	}
-	.hint a {
-		color: var(--accent);
 	}
 </style>
