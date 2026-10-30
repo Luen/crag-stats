@@ -8,16 +8,20 @@ test('customize the dashboard from Settings', async ({ page }) => {
 	const section = page.locator('#dashboard');
 	await expect(section.getByRole('heading', { name: 'Dashboard layout' })).toBeVisible();
 
-	// Hide "Recent" and save: Settings confirms, the dashboard drops the card.
+	// Hide "Recent activities" and save: Settings confirms, the dashboard drops the card.
 	await section.getByRole('checkbox', { name: /^Recent/ }).uncheck();
 	await section.getByRole('button', { name: 'Save layout' }).click();
 	await expect(page.getByText('Dashboard layout saved.')).toBeVisible();
 	await page.goto('/');
-	await expect(page.getByRole('heading', { name: 'Recent', exact: true })).toHaveCount(0);
+	await expect(page.getByRole('heading', { name: 'Recent activities', exact: true })).toHaveCount(
+		0
+	);
 
 	// Leave shared e2e state as it was.
 	await page.goto('/settings#dashboard');
 	await page.getByRole('button', { name: 'Clear saved layout' }).click();
 	await page.goto('/');
-	await expect(page.getByRole('heading', { name: 'Recent', exact: true })).toHaveCount(1);
+	await expect(page.getByRole('heading', { name: 'Recent activities', exact: true })).toHaveCount(
+		1
+	);
 });

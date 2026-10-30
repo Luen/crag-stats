@@ -52,10 +52,11 @@ export type DashLayoutItem = {
 	enabled: boolean;
 };
 
-/** Default order/visibility — mirrors the current dashboard. */
+/** Default order/visibility — Dreeve-style: recent left, climbing story right near the top. */
 export const DEFAULT_DASH_CARDS: readonly DashCardDef[] = [
 	{ id: 'climberType', label: 'Climber type', width: 'full' },
-	{ id: 'blurb', label: 'Climber blurb', width: 'full' },
+	{ id: 'recent', label: 'Recent activities', width: 'half' },
+	{ id: 'blurb', label: 'Climbing story', width: 'half' },
 	{ id: 'streaks', label: 'Streaks', width: 'half' },
 	{ id: 'athleteProfile', label: 'Athlete profile', width: 'half' },
 	{ id: 'eddington', label: 'Eddington numbers', width: 'full' },
@@ -84,8 +85,7 @@ export const DEFAULT_DASH_CARDS: readonly DashCardDef[] = [
 	{ id: 'pyramids', label: 'Grade pyramids', width: 'full' },
 	{ id: 'notable', label: 'Notable ascents', width: 'full' },
 	{ id: 'cpr', label: 'CPR timelines', width: 'full' },
-	{ id: 'hardest', label: 'Hardest sends', width: 'half' },
-	{ id: 'recent', label: 'Recent', width: 'half' }
+	{ id: 'hardest', label: 'Hardest sends', width: 'half' }
 ] as const;
 
 const DEF_BY_ID = new Map(DEFAULT_DASH_CARDS.map((c) => [c.id, c]));

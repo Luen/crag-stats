@@ -264,7 +264,7 @@
 		</article>
 	{:else if id === 'recent'}
 		<article class="panel">
-			<h2>Recent</h2>
+			<h2>Recent activities</h2>
 			<ul class="list">
 				{#each s.recent.slice(0, RECENT_LIMIT) as climb (climb.id)}
 					<li>
