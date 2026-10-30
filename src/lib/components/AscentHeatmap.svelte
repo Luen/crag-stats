@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { browser } from '$app/environment';
+	import { onMount } from 'svelte';
 	import { GRADE_BANDS } from '#lib/grades/bands';
 	import type { HeatmapDay } from '#lib/types/dashboard';
 
@@ -9,21 +9,19 @@
 	type Mode = 'intensity' | 'grade';
 	const MODE_KEY = 'cs_heatmap_mode';
 
-	function readStoredMode(): Mode {
-		if (!browser) return 'intensity';
+	let mode = $state<Mode>('intensity');
+
+	onMount(() => {
 		try {
 			const v = localStorage.getItem(MODE_KEY);
-			return v === 'grade' ? 'grade' : 'intensity';
+			mode = v === 'grade' ? 'grade' : 'intensity';
 		} catch {
-			return 'intensity';
+			/* ignore */
 		}
-	}
-
-	let mode = $state<Mode>(readStoredMode());
+	});
 
 	function setMode(next: Mode) {
 		mode = next;
-		if (!browser) return;
 		try {
 			localStorage.setItem(MODE_KEY, next);
 		} catch {
@@ -39,7 +37,9 @@
 		selectedYear && years.includes(selectedYear) ? selectedYear : (years[0] ?? '')
 	);
 
-	const byDate = $derived(new Map(data.map((d) => [d.date, d])));
+	const byDate = $derived(
+		Object.fromEntries(data.map((d) => [d.date, d])) as Record<string, HeatmapDay>
+	);
 
 	type Cell = {
 		date: string;
@@ -58,7 +58,7 @@
 		for (let t = start.getTime(); t <= end.getTime(); t += 86400000) {
 			const d = new Date(t);
 			const iso = d.toISOString().slice(0, 10);
-			const hit = byDate.get(iso);
+			const hit = byDate[iso];
 			cells.push({
 				date: iso,
 				count: hit?.count ?? 0,
@@ -116,18 +116,23 @@
 
 <article class="panel">
 	<header>
-		<h2>Ascent calendar</h2>
+		<div class="titles">
+			<h2>Ascent calendar</h2>
+			<a class="how" href="/docs/ascent-calendar">How it works</a>
+		</div>
 		<div class="controls">
 			{#if years.length > 0}
 				<div class="toggles" role="group" aria-label="Colour mode">
 					<button
 						type="button"
 						class={{ active: mode === 'intensity' }}
+						aria-pressed={mode === 'intensity'}
 						onclick={() => setMode('intensity')}>Intensity</button
 					>
 					<button
 						type="button"
 						class={{ active: mode === 'grade' }}
+						aria-pressed={mode === 'grade'}
 						onclick={() => setMode('grade')}>Grade</button
 					>
 				</div>
@@ -210,9 +215,20 @@
 		margin-bottom: 0.75rem;
 		flex-wrap: wrap;
 	}
+	.titles {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: baseline;
+		gap: 0.55rem 0.85rem;
+	}
 	h2 {
 		margin: 0;
 		font-size: 1.05rem;
+	}
+	.how {
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: var(--accent);
 	}
 	.controls {
 		display: flex;
