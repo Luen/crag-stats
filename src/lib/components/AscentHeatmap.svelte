@@ -107,7 +107,6 @@
 				{/each}
 			</div>
 		</div>
-		<p class="swipe-hint" aria-hidden="true">swipe →</p>
 		<div class="legend">
 			<span>Less</span>
 			<i class="l0"></i><i class="l1"></i><i class="l2"></i><i class="l3"></i><i class="l4"></i>
@@ -147,34 +146,28 @@
 		font-size: 0.9rem;
 	}
 	.scroll {
-		overflow-x: auto;
 		max-width: 100%;
 		min-width: 0;
-		padding-bottom: 0.35rem;
-		-webkit-overflow-scrolling: touch;
-		scrollbar-width: thin;
-	}
-	.scroll::-webkit-scrollbar {
-		height: 6px;
-	}
-	.scroll::-webkit-scrollbar-thumb {
-		background: color-mix(in srgb, var(--ink-muted) 45%, transparent);
-		border-radius: 999px;
 	}
 	.grid {
 		display: grid;
 		grid-auto-flow: column;
-		grid-template-rows: repeat(7, 0.72rem);
-		grid-auto-columns: 0.72rem;
-		gap: 0.18rem;
-		width: max-content;
+		grid-template-rows: repeat(7, minmax(0, 1fr));
+		grid-template-columns: repeat(var(--cols), minmax(0, 1fr));
+		gap: clamp(0.12rem, 0.35vw, 0.22rem);
+		width: 100%;
+		/* Keep cells roughly square while filling the panel (Dreeve-style). */
+		aspect-ratio: var(--cols) / 7;
+		max-height: 11rem;
 	}
 	.week {
 		display: contents;
 	}
 	.cell {
-		width: 0.72rem;
-		height: 0.72rem;
+		width: 100%;
+		height: 100%;
+		min-width: 0;
+		min-height: 0;
 		border-radius: 2px;
 		display: block;
 	}
@@ -201,12 +194,6 @@
 	.l4 {
 		background: var(--heat-4);
 	}
-	.swipe-hint {
-		display: none;
-		margin: 0.2rem 0 0;
-		font-size: 0.72rem;
-		color: var(--ink-muted);
-	}
 	.legend {
 		display: flex;
 		align-items: center;
@@ -220,19 +207,5 @@
 		height: 0.65rem;
 		border-radius: 2px;
 		display: inline-block;
-	}
-	@media (max-width: 640px) {
-		.grid {
-			grid-template-rows: repeat(7, 0.58rem);
-			grid-auto-columns: 0.58rem;
-			gap: 0.14rem;
-		}
-		.cell {
-			width: 0.58rem;
-			height: 0.58rem;
-		}
-		.swipe-hint {
-			display: block;
-		}
 	}
 </style>
