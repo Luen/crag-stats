@@ -1,6 +1,7 @@
 <script lang="ts">
 	import MonthlyStats from '#lib/components/MonthlyStats.svelte';
 	import YearlyStats from '#lib/components/YearlyStats.svelte';
+	import { formatNumber } from '#lib/dates';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -14,6 +15,14 @@
 	);
 
 	const newestFirst = $derived([...tableMonths].sort((a, b) => b.month.localeCompare(a.month)));
+
+	/** Last calendar day of `YYYY-MM` (UTC), for logbook `from`/`to` filters. */
+	function monthEndIso(ym: string): string {
+		const [y, m] = ym.split('-').map(Number);
+		if (!y || !m) return `${ym}-28`;
+		const last = new Date(Date.UTC(y, m, 0)).getUTCDate();
+		return `${ym}-${String(last).padStart(2, '0')}`;
+	}
 
 	function styleCount(byStyle: Record<string, number>, key: string): number {
 		return byStyle[key] ?? 0;
@@ -87,15 +96,17 @@
 					{#each newestFirst as row (row.month)}
 						<tr>
 							<td>
-								<a href={`/logbook?from=${row.month}-01&to=${row.month}-31`}>{row.month}</a>
+								<a href={`/logbook?from=${row.month}-01&to=${monthEndIso(row.month)}`}>
+									{row.month}
+								</a>
 							</td>
-							<td>{row.ascents}</td>
-							<td>{row.sends}</td>
-							<td>{Math.round(row.heightM)} m</td>
-							<td>{styleCount(row.byStyle, 'Sport')}</td>
-							<td>{styleCount(row.byStyle, 'Trad')}</td>
-							<td>{styleCount(row.byStyle, 'Boulder')}</td>
-							<td>{otherCount(row)}</td>
+							<td>{formatNumber(row.ascents, data.dateDisplay)}</td>
+							<td>{formatNumber(row.sends, data.dateDisplay)}</td>
+							<td>{formatNumber(Math.round(row.heightM), data.dateDisplay)} m</td>
+							<td>{formatNumber(styleCount(row.byStyle, 'Sport'), data.dateDisplay)}</td>
+							<td>{formatNumber(styleCount(row.byStyle, 'Trad'), data.dateDisplay)}</td>
+							<td>{formatNumber(styleCount(row.byStyle, 'Boulder'), data.dateDisplay)}</td>
+							<td>{formatNumber(otherCount(row), data.dateDisplay)}</td>
 						</tr>
 					{/each}
 				</tbody>
