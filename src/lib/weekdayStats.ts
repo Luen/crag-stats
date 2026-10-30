@@ -1,3 +1,4 @@
+import { calendarDay as validWeekdayDay } from '#lib/calendarDay';
 /**
  * Weekday distribution for the dashboard (Dreeve-style “Weekday” card).
  * A session = a calendar day with ≥1 matching ascent (same idea as Sessions per week).
@@ -76,21 +77,6 @@ export type WeekdayAscentInput = {
 };
 
 /** Strict YYYY-MM-DD with a real calendar month/day (rejects 2018-00-00 / 2024-02-31). */
-export function validWeekdayDay(iso: string | null | undefined): string | null {
-	const d = (iso ?? '').slice(0, 10);
-	const m = d.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-	if (!m) return null;
-	const year = Number(m[1]);
-	const month = Number(m[2]);
-	const day = Number(m[3]);
-	if (month < 1 || month > 12 || day < 1 || day > 31) return null;
-	const dt = new Date(`${d}T12:00:00Z`);
-	if (Number.isNaN(dt.getTime())) return null;
-	if (dt.getUTCFullYear() !== year || dt.getUTCMonth() + 1 !== month || dt.getUTCDate() !== day) {
-		return null;
-	}
-	return d;
-}
 
 export function weekdayOfIsoDay(day: string): WeekdayId {
 	return new Date(`${day}T12:00:00Z`).getUTCDay() as WeekdayId;
@@ -231,3 +217,5 @@ export function buildWeekdayStats(
 		last12Weeks: bucketsToStyle(last12)
 	};
 }
+
+export { calendarDay as validWeekdayDay } from '#lib/calendarDay';

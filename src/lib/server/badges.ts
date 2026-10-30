@@ -1,3 +1,4 @@
+import { calendarDay as dayKey } from '#lib/calendarDay';
 /**
  * RoxClimbs-inspired badges: real milestones from logged data.
  * Taking a break does not erase a milestone — recognition when something genuinely happened.
@@ -88,16 +89,6 @@ type Hit = {
 	href: string | null;
 	detail: string;
 };
-
-function dayKey(d: string | null | undefined): string | null {
-	if (!d) return null;
-	const t = d.trim();
-	if (t.length < 10) return null;
-	const key = t.slice(0, 10);
-	if (!/^\d{4}-\d{2}-\d{2}$/.test(key)) return null;
-	if (key.endsWith('-00-00') || key.includes('-00-')) return null;
-	return key;
-}
 
 function scoreOf(row: DashboardExtraRow): number | null {
 	const s = row.effectiveGradeScore ?? row.gradeScore;

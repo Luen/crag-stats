@@ -1,3 +1,4 @@
+import { calendarDay as validDay } from '#lib/calendarDay';
 /**
  * Route setter credits from cached `route_history` (no extra theCrag fetch).
  */
@@ -15,17 +16,6 @@ function ownerLogin(provider = PROVIDER): string | null {
 		db.select({ login: profiles.login }).from(profiles).where(eq(profiles.provider, provider)).get()
 			?.login ?? null
 	);
-}
-
-function validDay(raw: string | null | undefined): string | null {
-	const s = String(raw ?? '').trim();
-	if (!s) return null;
-	const m = s.match(/^(\d{4}-\d{2}-\d{2})/);
-	if (!m) return null;
-	const parsed = new Date(m[1] + 'T12:00:00Z');
-	return Number.isFinite(parsed.getTime()) && parsed.toISOString().slice(0, 10) === m[1]
-		? m[1]
-		: null;
 }
 
 export type OwnerSetRoute = {
