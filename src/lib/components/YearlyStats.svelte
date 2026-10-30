@@ -346,8 +346,7 @@
 						<a
 							href="/logbook?day={encodeURIComponent(dot.date)}"
 							aria-label="{dot.date}: {formatValue(dot.value)} {metricLabel} — open logbook"
-							onmouseenter={() =>
-								onDotEnter(yl.year, dot.date, dot.value, dot.x, dot.y, yl.color)}
+							onmouseenter={() => onDotEnter(yl.year, dot.date, dot.value, dot.x, dot.y, yl.color)}
 							onmouseleave={onDotLeave}
 						>
 							<title>{dot.date}: {formatValue(dot.value)} {metricLabel}</title>
