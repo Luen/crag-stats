@@ -276,3 +276,38 @@ export const routeHistoryImportState = sqliteTable('route_history_import_state',
 	nextAllowedAt: text('next_allowed_at'),
 	updatedAt: text('updated_at').notNull()
 });
+
+/**
+ * Daily Open-Meteo archive rows keyed by rounded lat/lon + calendar day (#268).
+ * Only outdoor days with route coordinates are fetched when WEATHER_IMPORT=true.
+ */
+export const weatherDays = sqliteTable(
+	'weather_days',
+	{
+		latKey: real('lat_key').notNull(),
+		lonKey: real('lon_key').notNull(),
+		day: text('day').notNull(),
+		tempMaxC: real('temp_max_c'),
+		tempMinC: real('temp_min_c'),
+		precipMm: real('precip_mm'),
+		weatherCode: integer('weather_code'),
+		humidityMean: real('humidity_mean'),
+		source: text('source').notNull().default('open-meteo'),
+		/** ok | missing | error */
+		status: text('status').notNull(),
+		fetchedAt: text('fetched_at').notNull()
+	},
+	(t) => [primaryKey({ columns: [t.latKey, t.lonKey, t.day] })]
+);
+
+export const weatherImportState = sqliteTable('weather_import_state', {
+	id: integer('id').primaryKey().default(1),
+	/** idle | running | blocked | error */
+	status: text('status').notNull().default('idle'),
+	lastRunAt: text('last_run_at'),
+	lastFetched: integer('last_fetched').notNull().default(0),
+	lastError: text('last_error'),
+	consecutiveFailures: integer('consecutive_failures').notNull().default(0),
+	nextAllowedAt: text('next_allowed_at'),
+	updatedAt: text('updated_at').notNull()
+});

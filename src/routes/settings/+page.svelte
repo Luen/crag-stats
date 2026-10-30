@@ -7,17 +7,22 @@
 	let { data, form }: PageProps = $props();
 
 	const rh = $derived(data.routeHistory);
+	const wx = $derived(data.weatherImport);
 	let elapsed = $state(0);
 	const retrySeconds = $derived(
 		Math.max(0, Math.ceil((rh.retryAt - data.serverNow - elapsed) / 1000))
 	);
-	const retryLabel = $derived(
-		retrySeconds >= 3600
-			? `${Math.floor(retrySeconds / 3600)}h ${Math.floor((retrySeconds % 3600) / 60)}m ${retrySeconds % 60}s`
-			: retrySeconds >= 60
-				? `${Math.floor(retrySeconds / 60)}m ${retrySeconds % 60}s`
-				: `${retrySeconds}s`
+	const weatherRetrySeconds = $derived(
+		Math.max(0, Math.ceil((wx.retryAt - data.serverNow - elapsed) / 1000))
 	);
+	function formatRetry(seconds: number): string {
+		if (seconds >= 3600)
+			return `${Math.floor(seconds / 3600)}h ${Math.floor((seconds % 3600) / 60)}m ${seconds % 60}s`;
+		if (seconds >= 60) return `${Math.floor(seconds / 60)}m ${seconds % 60}s`;
+		return `${seconds}s`;
+	}
+	const retryLabel = $derived(formatRetry(retrySeconds));
+	const weatherRetryLabel = $derived(formatRetry(weatherRetrySeconds));
 
 	onMount(() => {
 		// Anchor to the server's clock so a skewed device clock cannot skip the cooldown.
@@ -56,6 +61,12 @@
 			? `Route history can be checked again in ${retryLabel}.`
 			: 'Route history is ready to check again.'}
 	</p>
+{:else if form?.weatherWaiting}
+	<p class="banner hint">
+		{weatherRetrySeconds > 0
+			? `Weather import can run again in ${weatherRetryLabel}.`
+			: 'Weather import is ready to run again.'}
+	</p>
 {:else if form?.message}
 	<p class="banner err">{form.message}</p>
 {:else if form?.sessionForgotten}
@@ -66,6 +77,8 @@
 	<p class="banner ok">Preferences saved.</p>
 {:else if form?.routeHistoryMessage}
 	<p class="banner ok">{form.routeHistoryMessage}</p>
+{:else if form?.weatherMessage}
+	<p class="banner ok">{form.weatherMessage}</p>
 {:else if form?.ok}
 	<p class="banner ok">Done.</p>
 {/if}
@@ -335,6 +348,61 @@
 					<button type="submit" class="secondary">Refresh all routes</button>
 				</form>
 			</details>
+		{/if}
+	</article>
+
+	<article class="panel">
+		<h2>Import weather</h2>
+		<p class="hint">
+			Caches daily outdoor weather (Open-Meteo) for logbook days that have route coordinates. Powers
+			heat, freeze, rain and snow badges. Up to {wx.perRun} days per run, at most one request a second,
+			after each logbook sync.
+			<a href="/docs/weather">How weather works</a>
+		</p>
+		{#if !wx.enabled}
+			<p class="hint">
+				Off. To turn it on, set <code>WEATHER_IMPORT=true</code> in <code>.env</code> and restart. Uses
+				Open-Meteo's free non-commercial archive API — fine for personal self-hosted installs.
+			</p>
+		{:else}
+			<p class="status">
+				<span
+					class={[
+						'pill',
+						{
+							ok: wx.status === 'idle' || wx.status === 'running',
+							err: wx.status === 'error' || wx.status === 'blocked'
+						}
+					]}>{wx.status}</span
+				>
+				<span>
+					{wx.cachedOk} days cached · {wx.totalPending} pending
+					{#if wx.lastRunAt}
+						· last run {formatDateTime(wx.lastRunAt, data.dateDisplay)} ({wx.lastFetched} fetched)
+					{/if}
+				</span>
+			</p>
+			{#if wx.nextAllowedAt && (wx.status === 'blocked' || wx.status === 'error')}
+				<p class="err">
+					{wx.lastError} Paused until {formatDateTime(wx.nextAllowedAt, data.dateDisplay)}.
+				</p>
+			{/if}
+			<div class="actions">
+				<form method="POST" action="?/fetchWeather">
+					<button
+						type="submit"
+						disabled={wx.running || wx.totalPending === 0 || weatherRetrySeconds > 0}
+					>
+						{wx.totalPending === 0
+							? 'All outdoor days cached'
+							: wx.running
+								? 'Fetching weather…'
+								: weatherRetrySeconds > 0
+									? `Fetch again in ${weatherRetryLabel}`
+									: `Fetch next ${wx.perRun} days now`}
+					</button>
+				</form>
+			</div>
 		{/if}
 	</article>
 

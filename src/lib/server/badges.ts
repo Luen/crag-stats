@@ -5,6 +5,15 @@
 import { formatVScaleLabel, usesVScale } from '#lib/grades';
 import { tickKind } from '#lib/ticks';
 import { DEFAULT_DATE_DISPLAY, formatDateTime, formatNumber, type DateDisplay } from '#lib/dates';
+import {
+	isFreezeWeather,
+	isHeatWeather,
+	isRainWeather,
+	isSnowWeather,
+	roundCoord,
+	weatherDayKey,
+	type WeatherSnapshot
+} from '#lib/weatherKeys';
 import type { FirstImport } from './firstImport';
 import { rankAlmostBadges, type BadgeAlmost } from '#lib/badgeProgress';
 import type { CommunityBadgeHit } from './communityBadges';
@@ -23,7 +32,10 @@ export type BadgeIcon =
 	| 'globe'
 	| 'route'
 	| 'send'
-	| 'hanger';
+	| 'hanger'
+	| 'thermometer'
+	| 'droplet'
+	| 'snowflake';
 
 export type BadgeTone = 'warm' | 'green' | 'blue' | 'purple' | 'slate';
 
@@ -247,6 +259,34 @@ export const BADGE_CATALOG: readonly BadgeDef[] = [
 		hint: 'Climb on New Year’s Eve or Day',
 		icon: 'calendar',
 		tone: 'warm'
+	},
+	{
+		id: 'weather_heat',
+		title: 'Heat Wave',
+		hint: 'Climb outdoors when the day’s high is 35°C or hotter',
+		icon: 'thermometer',
+		tone: 'warm'
+	},
+	{
+		id: 'weather_freeze',
+		title: 'Freeze Frame',
+		hint: 'Climb outdoors when the day’s low is 0°C or colder',
+		icon: 'snowflake',
+		tone: 'blue'
+	},
+	{
+		id: 'weather_rain',
+		title: 'Rain Check',
+		hint: 'Climb outdoors on a day with at least 1 mm of rain',
+		icon: 'droplet',
+		tone: 'blue'
+	},
+	{
+		id: 'weather_snow',
+		title: 'Climbing in the Snow',
+		hint: 'Climb outdoors on a snowy day',
+		icon: 'snowflake',
+		tone: 'purple'
 	},
 	{
 		id: 'sessions_10',
@@ -708,6 +748,16 @@ function hitAt(row: DashboardExtraRow, prefix: string): Hit {
 	};
 }
 
+function lookupWeather(
+	map: ReadonlyMap<string, WeatherSnapshot> | undefined,
+	row: DashboardExtraRow,
+	day: string
+): WeatherSnapshot | null {
+	if (!map || row.lat == null || row.lon == null) return null;
+	if (!Number.isFinite(row.lat) || !Number.isFinite(row.lon)) return null;
+	return map.get(weatherDayKey(roundCoord(row.lat), roundCoord(row.lon), day)) ?? null;
+}
+
 /**
  * Evaluate the badge catalog against chronological logbook rows.
  * Pure — no DB. Breaks do not erase earned badges.
@@ -721,7 +771,12 @@ export function buildBadges(
 	rows: DashboardExtraRow[],
 	setterHits: readonly SetterBadgeHit[] = [],
 	communityHits: readonly CommunityBadgeHit[] = [],
-	context: { firstImport?: FirstImport | null; dateDisplay?: DateDisplay } = {}
+	context: {
+		firstImport?: FirstImport | null;
+		dateDisplay?: DateDisplay;
+		/** Cached Open-Meteo days keyed by lat|lon|day (#268). */
+		weatherByKey?: ReadonlyMap<string, WeatherSnapshot>;
+	} = {}
 ): BadgesResult {
 	// Chronological by day, then stable ascent id — never alphabetise route names
 	// (that made “Nacho Libre” beat earlier same-day climbs like “Torched”).
@@ -789,6 +844,23 @@ export function buildBadges(
 				'holiday_new_year',
 				hitAt(row, monthDay === '12-31' ? 'Climbed on New Year’s Eve' : 'Climbed on New Year’s Day')
 			);
+		}
+
+		// Outdoor weather badges from cached Open-Meteo days (#268). Indoor routes skipped
+		// at import time; here we only need coords + a matching cache row.
+		const weather = lookupWeather(context.weatherByKey, row, day);
+		if (weather) {
+			if (isHeatWeather(weather)) {
+				mark('weather_heat', hitAt(row, `Hot day · ${Math.round(weather.tempMaxC!)}°C high`));
+			}
+			if (isFreezeWeather(weather)) {
+				mark('weather_freeze', hitAt(row, `Cold day · ${Math.round(weather.tempMinC!)}°C low`));
+			}
+			if (isSnowWeather(weather)) {
+				mark('weather_snow', hitAt(row, 'Climbed in the snow'));
+			} else if (isRainWeather(weather)) {
+				mark('weather_rain', hitAt(row, `Rainy day · ${weather.precipMm!.toFixed(1)} mm`));
+			}
 		}
 
 		for (const b of COUNT_BADGES) {

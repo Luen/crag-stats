@@ -64,6 +64,7 @@ import {
 import { ascents, profiles, routeHistoryFetches, routes } from './db/schema';
 import { pickHardestSends } from './hardestSends';
 import { invalidateRouteHistoryRuns } from './routeHistoryEngine';
+import { invalidateWeatherRuns, loadWeatherSnapshotMap } from './weatherEngine';
 import { buildTrainingLoadView, hasPersonalAscentGrade } from './trainingLoad';
 import { buildKarmaStats } from './karma';
 import { buildRoutePopularityStats } from './routePopularity';
@@ -336,7 +337,9 @@ export function getDashboardStats(
 			cprScore: ascents.cprScore,
 			ascentCount: routes.ascentCount,
 			popularity: routes.popularity,
-			relativePopularity: routes.relativePopularity
+			relativePopularity: routes.relativePopularity,
+			lat: routes.lat,
+			lon: routes.lon
 		})
 		.from(ascents)
 		.innerJoin(routes, eq(ascents.routeId, routes.id))
@@ -699,7 +702,9 @@ export function getDashboardStats(
 		tagsJson: a.tagsJson,
 		country: a.country,
 		routeIsProject: a.routeIsProject,
-		hasPersonalGrade: hasPersonalAscentGrade(a.gradeProvenanceJson)
+		hasPersonalGrade: hasPersonalAscentGrade(a.gradeProvenanceJson),
+		lat: a.lat,
+		lon: a.lon
 	}));
 	const monthly = buildMonthlyStats(extraRows);
 	const yearly = buildYearlyStats(extraRows);
@@ -709,7 +714,11 @@ export function getDashboardStats(
 		extraRows,
 		setterBadgeHits(),
 		communityAscentBadgeHits(developerImpact, opts?.dateDisplay),
-		{ firstImport: getFirstImport(), dateDisplay: opts?.dateDisplay }
+		{
+			firstImport: getFirstImport(),
+			dateDisplay: opts?.dateDisplay,
+			weatherByKey: loadWeatherSnapshotMap()
+		}
 	);
 	const trainingLoad = buildTrainingLoadView(extraRows);
 	const styleMix = buildStyleMixOverTime(extraRows);
@@ -1444,6 +1453,7 @@ export function wipeAllData() {
 	resetFirstImport();
 	// Abandon any in-flight route-history import before clearing tables (#74).
 	invalidateRouteHistoryRuns();
+	invalidateWeatherRuns();
 	db.run(sql`DELETE FROM projects`);
 	db.run(sql`DELETE FROM goals`);
 	db.run(sql`DELETE FROM first_ascents`);
@@ -1451,6 +1461,8 @@ export function wipeAllData() {
 	db.run(sql`DELETE FROM route_history`);
 	db.run(sql`DELETE FROM route_history_fetches`);
 	db.run(sql`DELETE FROM route_history_import_state`);
+	db.run(sql`DELETE FROM weather_days`);
+	db.run(sql`DELETE FROM weather_import_state`);
 	db.run(sql`DELETE FROM ascents`);
 	db.run(sql`DELETE FROM routes`);
 	db.run(sql`DELETE FROM profiles`);
