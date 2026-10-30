@@ -130,8 +130,9 @@ export function isToughWeather(w: WeatherSnapshot): boolean {
 
 /** Mostly fair days lean fair-weather; half or more tough days read as all-weather. */
 export function fairWeatherLabel(fairPct: number, toughPct: number): FairWeatherLabel {
-	if (fairPct >= 60) return 'fair-leaning';
+	// A mild, dry day can still be windy or freezing overnight; tough takes priority.
 	if (toughPct >= 50) return 'all-weather';
+	if (fairPct >= 60) return 'fair-leaning';
 	return 'mixed';
 }
 

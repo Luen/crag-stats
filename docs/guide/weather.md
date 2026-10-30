@@ -4,7 +4,7 @@ Crag Stats can cache **daily outdoor weather** for climbs that have route coordi
 
 ## Opt-in
 
-Off by default. The server owner sets `WEATHER_IMPORT=true` in `.env` and restarts. After each successful logbook sync (and from **Settings → Import weather**), Crag Stats fetches up to **50** missing outdoor days per run from [Open-Meteo](https://open-meteo.com/)'s historical weather API, with at least **1.1 seconds** between requests. Wipe clears the cache.
+Off by default. The server owner sets `WEATHER_IMPORT=true` in `.env` and restarts. After each successful logbook sync (and from **Settings → Import weather**), Crag Stats fetches up to **50** missing outdoor days per run from [Open-Meteo](https://open-meteo.com/)'s historical weather API, oldest climb days first, with at least **1.1 seconds** between requests. The Settings action starts that run in the background so the page does not wait on the full batch. Wipe clears the cache.
 
 Open-Meteo's free non-commercial tier is intended for personal self-hosted installs. Do not enable this for a commercial multi-tenant service without reviewing their terms and paid options.
 
@@ -19,7 +19,7 @@ Stored fields: daily max/min temperature (°C), precipitation (mm), WMO weather 
 
 ## Badges
 
-Once a day is cached, these badges can unlock from any logged ascent that day at that location (attempts count):
+Once a day is cached, these badges can unlock from any **outdoor** logged ascent that day at that location (attempts count; indoor/gym rows are skipped even if they share a cached lat/lon):
 
 | Badge                    | Rule                                                                             |
 | ------------------------ | -------------------------------------------------------------------------------- |
@@ -28,7 +28,7 @@ Once a day is cached, these badges can unlock from any logged ascent that day at
 | **Rain Check**           | ≥ 1 mm precipitation and not classified as snow                                  |
 | **Climbing in the Snow** | WMO snow codes (71–77, 85–86), or ≥ 1 mm precip with high ≤ 1°C                  |
 | **Blown Away**           | Day's max 10 m wind ≥ 50 km/h                                                    |
-| **Bluebird**             | High 15–25°C, precip ≈ 0, not snow/thunderstorm WMO                              |
+| **Bluebird**             | High 15–25°C, measured precip < 0.1 mm, not snow/thunderstorm WMO                |
 | **Sticky**               | Mean humidity ≥ 85%                                                              |
 | **Storm Send**           | A **send** on a day with ≥ 10 mm non-snow precip                                 |
 | **Four Seasons**         | Earn Heat Wave, Freeze Frame, Rain Check, and Climbing in the Snow at least once |
@@ -61,6 +61,8 @@ The dashboard **Recent activities** card shows the same text chips under an outd
 
 ## Climbing story
 
+Story percentages describe cached outdoor location-days, not days whose weather is still unknown.
+
 When the cache covers at least 20 outdoor days and half or more of your outdoor days, the [Climbing story](/docs/climbing-story) can add one short line about the conditions you climb in (snow, cold, heat, rain or a wide temperature spread). It describes what you do climb in, never what you avoid, and stays out of the story when coverage is thin.
 
 ## Ascent calendar
@@ -75,4 +77,5 @@ On the **Sectors** page, a crag with at least **5** cached outdoor visit days sh
 
 Once **20 or more** outdoor days have cached weather, the Weather conditions card adds a **Fair-weather rate**: the share of those days that were _fair_ (high 15-25°C, dry, no snow or thunderstorm - the same rule as **Bluebird**). It also reports the share of _tough_ days (hot, freezing, wet, snowy or very windy). Days in between, such as a dry 29°C day, are counted in neither group.
 
-The label is descriptive, not a grade: **Fair-weather leaning** at 60% fair or more, **All-weather climber** at 50% tough or more, otherwise **A bit of both**. Below 20 days nothing is shown, so a thin cache never labels you. The link opens the logbook filtered to fair days.
+The label is descriptive, not a grade: **Fair-weather leaning** at 60% fair or more, **All-weather climber** at 50% tough or more, otherwise **A bit of both**. The groups can overlap: a mild dry day may still be very windy or freezing overnight. When both label thresholds are met, **All-weather climber** takes priority. Below 20 days nothing is shown, so a thin cache never labels you. The link opens the logbook filtered to fair days.
+For seasonal recommendations from route metadata, see [Best months](/docs/best-months); those recommendations are separate from the weather sampled on your logged visits.

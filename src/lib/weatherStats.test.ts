@@ -175,6 +175,17 @@ describe('fair-weather metric (#280)', () => {
 		expect(fairWeatherLabel(40, 30)).toBe('mixed');
 	});
 
+	it('does not label mostly windy or freezing days fair-weather leaning', () => {
+		for (const condition of [{ windMaxKmh: 60 }, { tempMinC: -2 }]) {
+			const days = Array.from({ length: 20 }, () => snap({ tempMaxC: 20, ...condition }));
+			expect(buildFairWeatherMetric(days)).toMatchObject({
+				fairPct: 100,
+				toughPct: 100,
+				label: 'all-weather'
+			});
+		}
+	});
+
 	it('flows through the card view only once 20 weather days exist', () => {
 		const entries: [number, number, string, WeatherSnapshot][] = Array.from(
 			{ length: 20 },
