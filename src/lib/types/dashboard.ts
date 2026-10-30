@@ -187,7 +187,13 @@ export type SoloStats = {
 	totalAscents: number;
 };
 
-export type HeatmapDay = { date: string; count: number; sends: number };
+export type HeatmapDay = {
+	date: string;
+	count: number;
+	sends: number;
+	/** Hardest send that day as theCrag band 1–5; null if no graded send. */
+	maxBand: number | null;
+};
 
 export type DashboardStats = {
 	profileName: string | null;
