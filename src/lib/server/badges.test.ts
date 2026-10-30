@@ -285,6 +285,36 @@ describe('buildBadges', () => {
 		expect(buildBadges(rows).earned.some((b) => b.id.startsWith('weather_'))).toBe(false);
 	});
 
+	it('does not award weather badges for indoor routes that share a cached day', () => {
+		const weatherByKey = new Map([
+			['-33.9|151.2|2024-01-10', { tempMaxC: 36, tempMinC: 22, precipMm: 0, weatherCode: 0 }]
+		]);
+		const outdoor = row({
+			ascentDate: '2024-01-10',
+			lat: -33.87,
+			lon: 151.21,
+			routeName: 'Hot Route',
+			cragName: 'Real Crag',
+			gearStyle: 'Sport',
+			ascentId: 1
+		});
+		const indoor = row({
+			ascentDate: '2024-01-10',
+			lat: -33.87,
+			lon: 151.21,
+			routeName: 'Campus Board',
+			cragName: 'Local Climbing Gym',
+			gearStyle: 'Boulder',
+			ascentId: 2
+		});
+		expect(
+			buildBadges([indoor], [], [], { weatherByKey }).earned.some((b) => b.id === 'weather_heat')
+		).toBe(false);
+		expect(
+			buildBadges([outdoor], [], [], { weatherByKey }).earned.some((b) => b.id === 'weather_heat')
+		).toBe(true);
+	});
+
 	it('earns New Year from Eve or Day, as one badge', () => {
 		const eve = buildBadges([
 			row({

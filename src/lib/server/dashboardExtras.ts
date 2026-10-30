@@ -50,6 +50,8 @@ export type DashboardExtraRow = {
 	/** Route coordinates for outdoor weather badge lookup (#268). */
 	lat?: number | null;
 	lon?: number | null;
+	/** Crag name — used with gear/tags to skip indoor weather badges (#268). */
+	cragName?: string | null;
 };
 
 /**

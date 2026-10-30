@@ -19,6 +19,7 @@ import type { FirstImport } from './firstImport';
 import { rankAlmostBadges, type BadgeAlmost } from '#lib/badgeProgress';
 import type { CommunityBadgeHit } from './communityBadges';
 import { displayStyle, type DashboardExtraRow } from './dashboardExtras';
+import { isLikelyIndoorRoute } from './venue';
 
 export type BadgeIcon =
 	| 'carabiner'
@@ -764,6 +765,18 @@ function lookupWeather(
 ): WeatherSnapshot | null {
 	if (!map || row.lat == null || row.lon == null) return null;
 	if (!Number.isFinite(row.lat) || !Number.isFinite(row.lon)) return null;
+	// Import skips gyms; evaluate the same way so shared lat/lon/day cache rows cannot
+	// unlock outdoor weather badges on indoor ascents.
+	if (
+		isLikelyIndoorRoute({
+			gearStyle: row.gearStyle,
+			name: row.routeName,
+			cragName: row.cragName,
+			tagsJson: row.tagsJson
+		})
+	) {
+		return null;
+	}
 	return map.get(weatherDayKey(roundCoord(row.lat), roundCoord(row.lon), day)) ?? null;
 }
 
@@ -855,8 +868,7 @@ export function buildBadges(
 			);
 		}
 
-		// Outdoor weather badges from cached Open-Meteo days (#268). Indoor routes skipped
-		// at import time; here we only need coords + a matching cache row.
+		// Outdoor weather badges from cached Open-Meteo days (#268).
 		const weather = lookupWeather(context.weatherByKey, row, day);
 		if (weather) {
 			if (isHeatWeather(weather)) {

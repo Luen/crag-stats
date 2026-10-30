@@ -3,7 +3,7 @@
  * Opt-in via WEATHER_IMPORT; paced Open-Meteo archive fetches for outdoor logbook days with
  * route lat/lon. Cache key = rounded lat/lon (1 decimal) + calendar day.
  */
-import { eq, sql } from 'drizzle-orm';
+import { asc, eq, sql } from 'drizzle-orm';
 import { roundCoord, weatherDayKey, type WeatherSnapshot } from '#lib/weatherKeys';
 import { isLikelyIndoorRoute } from './venue';
 import { db, ensureSchema } from './db';
@@ -130,6 +130,7 @@ function isValidDay(day: string): boolean {
 export function listPendingWeatherDays(limit: number, now: number): PendingDay[] {
 	ensureSchema();
 	const today = utcToday(now);
+	// Oldest climb days first so large backlogs unlock early-history badges before recent ones.
 	const rows = db
 		.select({
 			ascentDate: ascents.ascentDate,
@@ -142,6 +143,7 @@ export function listPendingWeatherDays(limit: number, now: number): PendingDay[]
 		})
 		.from(ascents)
 		.innerJoin(routes, eq(ascents.routeId, routes.id))
+		.orderBy(asc(ascents.ascentDate))
 		.all();
 
 	const cached = new Set(
