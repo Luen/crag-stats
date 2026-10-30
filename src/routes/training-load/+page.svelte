@@ -42,5 +42,8 @@
 	}
 	.head a {
 		color: var(--accent);
+		font-weight: 600;
+		text-decoration: underline;
+		text-underline-offset: 2px;
 	}
 </style>
