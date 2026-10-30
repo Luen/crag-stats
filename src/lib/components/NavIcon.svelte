@@ -7,6 +7,7 @@
 		| 'partners'
 		| 'goals'
 		| 'eddington'
+		| 'milestones'
 		| 'training'
 		| 'rewind'
 		| 'settings'
@@ -73,6 +74,12 @@
 			<circle cx="12" cy="12" r="1.2" fill="currentColor" />
 		{:else if name === 'eddington'}
 			<path d="M4 20V4M4 20h16M8 16V8M12 16V6M16 16v-4" />
+		{:else if name === 'milestones'}
+			<path d="M8 21h8" />
+			<path d="M12 17v4" />
+			<path d="M7 4h10v6a5 5 0 0 1-10 0V4Z" />
+			<path d="M7 4H4v2a3 3 0 0 0 3 3" />
+			<path d="M17 4h3v2a3 3 0 0 1-3 3" />
 		{:else if name === 'training'}
 			<path d="M4 20V10" />
 			<path d="M10 20V4" />
