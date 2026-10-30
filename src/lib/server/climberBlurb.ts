@@ -297,7 +297,7 @@ export function describePopularity(pop: {
 
 /**
  * One gated weather personality line from the cached outdoor days (#275). Null unless there are
- * at least  days with weather covering at least half of the outdoor days,
+ * at least 20 days with weather covering at least half of the outdoor days,
  * so a thin cache never invents a personality. Wording stays positive: it describes what
  * you climb in, never what you avoid.
  */
@@ -319,15 +319,15 @@ export function describeWeatherPersonality(
 	}
 	const freeze = share('freeze');
 	if (freeze && freeze.pct >= WEATHER_COLD_SHARE) {
-		return `I'm happy climbing in the cold: ${pct(freeze.pct)}% of my outdoor days dipped to freezing or below.`;
+		return `I'm happy climbing in the cold: ${pct(freeze.pct)}% of my cached outdoor days dipped to freezing or below.`;
 	}
 	const heat = share('heat');
 	if (heat && heat.pct >= WEATHER_HEAT_SHARE) {
-		return `I climb in the heat too: ${pct(heat.pct)}% of my outdoor days topped 35°C.`;
+		return `I climb in the heat too: ${pct(heat.pct)}% of my cached outdoor days reached 35°C or more.`;
 	}
 	const rain = share('rain');
 	if (rain && rain.pct >= WEATHER_RAIN_SHARE) {
-		return `A bit of rain doesn't stop me: ${pct(rain.pct)}% of my outdoor days saw rain.`;
+		return `A bit of rain doesn't stop me: ${pct(rain.pct)}% of my cached outdoor days saw rain.`;
 	}
 	const hot = weather.hottest?.tempC;
 	const cold = weather.coldest?.tempC;

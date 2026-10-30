@@ -20,11 +20,11 @@ On the full **[Badges](/badges)** page, **Almost there** lists up to three locke
 
 These four badges use fields already in your logbook and are dated by the climb that completes them:
 
-| Badge                | Rule                                                                                                                                                     |
-| -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Crowded Belay**    | One ascent lists 3 or more different partners (names are matched ignoring case).                                                                         |
-| **Multipitch Day**   | You send 3 or more pitches in one calendar day: each distinct pitch label counts once, and a whole-route multipitch ascent counts its pitches.           |
-| **Travel Week**      | You log climbs at 4 different outdoor crags within any 7 consecutive days. Gyms and unknown crags do not count.                                          |
-| **Persistence Pays** | You send a route for the first time after logging it on 4 or more different days (attempts included). Repeating a route you already sent does not count. |
+| Badge                | Rule                                                                                                                                                                                                                                       |
+| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Crowded Belay**    | One ascent lists 3 or more different partners (names are matched ignoring case).                                                                                                                                                           |
+| **Multipitch Day**   | You send 3 or more pitches in one calendar day: pitch ranges and lists are expanded and deduplicated per route/day. Whole-route and individual-pitch logs do not double-count. When cached API pitch ticks exist, only sent pitches count. |
+| **Travel Week**      | You log climbs at 4 different outdoor crags within any 7 consecutive days. Gyms and unknown crags do not count.                                                                                                                            |
+| **Persistence Pays** | You send a route for the first time after logging it on 4 or more different days (attempts included). Repeating a route you already sent does not count.                                                                                   |
 
 They are one-shot badges, so they do not appear in **Almost there**.

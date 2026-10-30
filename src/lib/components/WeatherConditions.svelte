@@ -38,7 +38,7 @@
 	<div class="extreme">
 		<span class="k">{title}</span>
 		{#if e}
-			<strong>{Math.round(e.tempC)}°C</strong>
+			<strong>{formatNumber(Math.round(e.tempC), dateDisplay)}°C</strong>
 			<span class="meta">
 				{#if e.href}
 					<a href={e.href} target="_blank" rel="noreferrer">{e.routeName ?? 'Ascent'}</a>
@@ -75,13 +75,14 @@
 		{@const f = data.fairWeather}
 		<div class="fair">
 			<span class="k">Fair-weather rate</span>
-			<strong>{f.fairPct}%</strong>
+			<strong>{formatNumber(f.fairPct, dateDisplay)}%</strong>
 			<span class="meta">
 				{FAIR_LABELS[f.label]}: {formatNumber(f.fairDays, dateDisplay)} of {formatNumber(
 					f.days,
 					dateDisplay
 				)}
-				days were fair (15–25°C and dry); {f.toughPct}% were hot, freezing, wet or windy.
+				days were fair (15–25°C and dry); {formatNumber(f.toughPct, dateDisplay)}% were hot,
+				freezing, wet or windy.
 				<a href="/logbook?weather=fair">Fair days in the logbook</a>
 			</span>
 		</div>
@@ -93,13 +94,13 @@
 			<li>
 				<span class="label">{share.label}</span>
 				<span class="value">
-					{share.pct}% · {formatNumber(share.days, dateDisplay)}
+					{formatNumber(share.pct, dateDisplay)}% · {formatNumber(share.days, dateDisplay)}
 					{share.days === 1 ? 'day' : 'days'}
 				</span>
 				<div class="track" aria-hidden="true">
 					<div
 						class="fill"
-						style:width="{share.pct}%"
+						style:width="{formatNumber(share.pct, dateDisplay)}%"
 						style:background={SHARE_COLORS[share.key]}
 					></div>
 				</div>

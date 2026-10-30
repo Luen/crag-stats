@@ -285,6 +285,36 @@ describe('buildBadges', () => {
 		expect(buildBadges(rows).earned.some((b) => b.id.startsWith('weather_'))).toBe(false);
 	});
 
+	it('does not award weather badges for indoor routes that share a cached day', () => {
+		const weatherByKey = new Map([
+			['-33.9|151.2|2024-01-10', { tempMaxC: 36, tempMinC: 22, precipMm: 0, weatherCode: 0 }]
+		]);
+		const outdoor = row({
+			ascentDate: '2024-01-10',
+			lat: -33.87,
+			lon: 151.21,
+			routeName: 'Hot Route',
+			cragName: 'Real Crag',
+			gearStyle: 'Sport',
+			ascentId: 1
+		});
+		const indoor = row({
+			ascentDate: '2024-01-10',
+			lat: -33.87,
+			lon: 151.21,
+			routeName: 'Campus Board',
+			cragName: 'Local Climbing Gym',
+			gearStyle: 'Boulder',
+			ascentId: 2
+		});
+		expect(
+			buildBadges([indoor], [], [], { weatherByKey }).earned.some((b) => b.id === 'weather_heat')
+		).toBe(false);
+		expect(
+			buildBadges([outdoor], [], [], { weatherByKey }).earned.some((b) => b.id === 'weather_heat')
+		).toBe(true);
+	});
+
 	it('earns bluebird, sticky, storm send, and four seasons (#271)', () => {
 		const weatherByKey = new Map([
 			[
@@ -730,5 +760,38 @@ describe('partner, multipitch, travel and persistence badges (#279)', () => {
 				tick('2024-07-22', 4, true)
 			])
 		).not.toContain('route_persistence');
+	});
+});
+
+describe('multipitch counting regressions (#294 review)', () => {
+	const earned = (rows: DashboardExtraRow[]) =>
+		buildBadges(rows).earned.some((b) => b.id === 'multipitch_day');
+	const pitch = (
+		pitchLabel: string | null,
+		over: Partial<Omit<DashboardExtraRow, 'ascentDate'>> = {}
+	) => row({ ascentDate: '2024-04-01', routeId: 7, isSend: true, pitchLabel, ...over });
+	it('expands API ranges and non-contiguous lists, deduplicating overlapping logs', () => {
+		expect(earned([pitch('P1–P3')])).toBe(true);
+		expect(earned([pitch('P1, P3, P5')])).toBe(true);
+		expect(earned([pitch('P1–P2'), pitch('P2')])).toBe(false);
+		expect(earned([pitch('P1–P2'), pitch('P2, P3')])).toBe(true);
+	});
+	it('does not count a whole route and its individual pitches twice in either order', () => {
+		const whole = pitch(null, { pitchesTotal: 2 });
+		for (const rows of [
+			[whole, pitch('P1')],
+			[pitch('P1'), whole]
+		])
+			expect(earned(rows)).toBe(false);
+		expect(earned([whole, pitch('P1', { routeId: 8 })])).toBe(true);
+	});
+	it('uses explicit sent pitch evidence instead of the aggregate tick or label', () => {
+		expect(earned([pitch('P1–P3', { sentPitchNumbers: [1] })])).toBe(false);
+		expect(earned([pitch('P1–P3', { sentPitchNumbers: [] })])).toBe(false);
+		expect(earned([pitch('P1–P4', { isSend: false, sentPitchNumbers: [1, 3, 4] })])).toBe(true);
+	});
+	it('does not count an inferred gym as an outdoor travel crag', () => {
+		const rows = ['A', 'B', 'C', 'Local Climbing Gym'].map((cragName) => pitch(null, { cragName }));
+		expect(buildBadges(rows).earned.some((b) => b.id === 'travel_week')).toBe(false);
 	});
 });

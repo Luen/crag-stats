@@ -21,6 +21,8 @@ import type { FirstImport } from './firstImport';
 import { rankAlmostBadges, type BadgeAlmost } from '#lib/badgeProgress';
 import type { CommunityBadgeHit } from './communityBadges';
 import { displayStyle, splitPartners, type DashboardExtraRow } from './dashboardExtras';
+import { isLikelyIndoorRoute } from './venue';
+import { classifyTick } from './providers/types';
 
 export type BadgeIcon =
 	| 'carabiner'
@@ -802,19 +804,61 @@ const STYLE_FA_BADGES = [
 	{ id: 'fa_boulder_50', style: 'Boulder', n: 50 }
 ] as const;
 
-/**
- * Pitches a sent row adds to a day: one per distinct pitch label, or the route's pitch total
- * for a whole-route multipitch ascent. Single-pitch rows add nothing.
- */
-function pitchKeyOf(row: DashboardExtraRow): { key: string; pitches: number } | null {
-	const route = row.routeId ?? row.routeName ?? 'route';
-	const label = (row.pitchLabel || '').trim();
-	if (label) return { key: `${route}:${label.toLowerCase()}`, pitches: 1 };
-	const total = row.pitchesTotal;
-	if (total != null && Number.isFinite(total) && total >= 2) {
-		return { key: `${route}:all`, pitches: Math.floor(total) };
+/** Known sent API pitch numbers; null means the legacy columns are the only evidence. */
+export function sentPitchNumbersFromRaw(raw: string | null | undefined): number[] | null {
+	if (!raw) return null;
+	try {
+		const data = JSON.parse(raw);
+		if (!Array.isArray(data?.pitch) || data.pitch.length === 0) return null;
+		return data.pitch.flatMap(
+			(p: { number?: number; tick?: { label?: string; name?: string } | null }) =>
+				p &&
+				Number.isInteger(p.number) &&
+				p.number! > 0 &&
+				classifyTick(p.tick?.label || p.tick?.name).isSend
+					? [p.number!]
+					: []
+		);
+	} catch {
+		return null;
 	}
-	return null;
+}
+
+type PitchCredit = { labels: Set<string>; whole: number };
+
+function pitchCredit(row: DashboardExtraRow): PitchCredit | null {
+	if (row.sentPitchNumbers != null) {
+		return row.sentPitchNumbers.length
+			? { labels: new Set(row.sentPitchNumbers.map((n) => `p${n}`)), whole: 0 }
+			: null;
+	}
+	const label = (row.pitchLabel || '').trim().toLowerCase();
+	if (label) {
+		const range = /^p(\d+)[–-]p(\d+)$/.exec(label);
+		if (range) {
+			const start = Number(range[1]),
+				end = Number(range[2]);
+			if (start > 0 && end >= start && end - start < 1000) {
+				return {
+					labels: new Set(Array.from({ length: end - start + 1 }, (_, i) => `p${start + i}`)),
+					whole: 0
+				};
+			}
+		}
+		return {
+			labels: new Set(
+				label
+					.split(',')
+					.map((p) => p.trim())
+					.filter(Boolean)
+			),
+			whole: 0
+		};
+	}
+	const total = row.pitchesTotal;
+	return total != null && Number.isFinite(total) && total >= 2
+		? { labels: new Set(), whole: Math.floor(total) }
+		: null;
 }
 
 function hitAt(row: DashboardExtraRow, prefix: string): Hit {
@@ -889,7 +933,7 @@ export function buildBadges(
 	};
 
 	// #279 state: pitches per day, crags per rolling week, days spent on each route.
-	const pitchesByDay = new Map<string, Map<string, number>>();
+	const pitchesByDay = new Map<string, Map<string | number, PitchCredit>>();
 	const cragEvents: { t: number; crag: string }[] = [];
 	const routeDays = new Map<number, Set<string>>();
 	const routeSent = new Set<number>();
@@ -907,6 +951,14 @@ export function buildBadges(
 
 		const kind = tickKind(row.tickType);
 		const send = Boolean(row.isSend);
+		const outdoor =
+			row.outdoor !== false &&
+			!isLikelyIndoorRoute({
+				gearStyle: row.gearStyle,
+				name: row.routeName,
+				cragName: row.cragName,
+				tagsJson: row.tagsJson
+			});
 		const monthDay = day.slice(5); // MM-DD from calendar dayKey — no local TZ
 
 		if (sessions.size === 1 && !earned.has('first_session')) {
@@ -924,9 +976,8 @@ export function buildBadges(
 			);
 		}
 
-		// Outdoor weather badges from cached Open-Meteo days (#268 / #271). Indoor routes
-		// skipped at import time; here we only need coords + a matching cache row.
-		const weather = lookupAscentWeather(context.weatherByKey, row);
+		// Keep the indoor guard for callers that do not supply an explicit outdoor flag.
+		const weather = lookupAscentWeather(context.weatherByKey, { ...row, outdoor });
 		if (weather) {
 			if (isHeatWeather(weather)) {
 				mark('weather_heat', hitAt(row, `Hot day · ${Math.round(weather.tempMaxC!)}°C high`));
@@ -974,19 +1025,26 @@ export function buildBadges(
 			mark('partners_crowded_belay', hitAt(row, `Crowded belay · ${partnerNames.size} partners`));
 		}
 
-		if (send) {
-			const pitch = pitchKeyOf(row);
+		if (send || row.sentPitchNumbers != null) {
+			const pitch = pitchCredit(row);
 			if (pitch) {
-				const dayPitches = pitchesByDay.get(day) ?? new Map<string, number>();
-				dayPitches.set(pitch.key, pitch.pitches);
+				const dayPitches = pitchesByDay.get(day) ?? new Map<string | number, PitchCredit>();
+				const route = row.routeId ?? row.routeName ?? 'route';
+				const current = dayPitches.get(route) ?? { labels: new Set<string>(), whole: 0 };
+				for (const label of pitch.labels) current.labels.add(label);
+				current.whole = Math.max(current.whole, pitch.whole);
+				dayPitches.set(route, current);
 				pitchesByDay.set(day, dayPitches);
-				const total = [...dayPitches.values()].reduce((a, b) => a + b, 0);
+				const total = [...dayPitches.values()].reduce(
+					(n, p) => n + Math.max(p.whole, p.labels.size),
+					0
+				);
 				if (total >= 3) mark('multipitch_day', hitAt(row, `Multipitch day · ${total} pitches`));
 			}
 		}
 
 		const crag = (row.cragName || '').trim().toLowerCase();
-		if (crag && crag !== 'unknown' && row.outdoor !== false) {
+		if (crag && crag !== 'unknown' && outdoor) {
 			const t = Math.floor(Date.parse(`${day}T12:00:00Z`) / 86_400_000);
 			if (Number.isFinite(t)) {
 				cragEvents.push({ t, crag });
