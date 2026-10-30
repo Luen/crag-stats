@@ -279,9 +279,15 @@
 		flex: unset;
 		min-width: 0;
 	}
+	/* Mute locked cards via icon/filter only — full-card opacity fails axe contrast. */
 	.card.locked {
+		filter: grayscale(0.4);
+	}
+	.card.locked .icon {
 		opacity: 0.55;
-		filter: grayscale(0.35);
+	}
+	.card.locked h3 {
+		color: var(--ink-muted);
 	}
 	.icon {
 		width: 2.75rem;
