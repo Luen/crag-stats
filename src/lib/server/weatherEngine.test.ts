@@ -91,6 +91,26 @@ describe('weatherEngine', () => {
 		expect(pending).toEqual([{ latKey: -33.9, lonKey: 151.2, day: '2024-01-10' }]);
 	});
 
+	it('queues oldest climb days first', () => {
+		const now = Date.parse('2024-06-15T12:00:00.000Z');
+		seedRouteAscent({
+			routeExternalId: 'r-new',
+			ascentExternalId: 'a-new',
+			ascentDate: '2024-03-01',
+			lat: -33.87,
+			lon: 151.21
+		});
+		seedRouteAscent({
+			routeExternalId: 'r-old',
+			ascentExternalId: 'a-old',
+			ascentDate: '2023-01-15',
+			lat: -37.8,
+			lon: 144.9
+		});
+		const pending = listPendingWeatherDays(DAYS_PER_RUN, now);
+		expect(pending.map((p) => p.day)).toEqual(['2023-01-15', '2024-03-01']);
+	});
+
 	it('fetches and caches weather for pending days', async () => {
 		const now = Date.parse('2024-06-15T12:00:00.000Z');
 		seedRouteAscent({

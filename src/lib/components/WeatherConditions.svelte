@@ -32,7 +32,7 @@
 	<div class="extreme">
 		<span class="k">{title}</span>
 		{#if e}
-			<strong>{Math.round(e.tempC)}°C</strong>
+			<strong>{formatNumber(Math.round(e.tempC), dateDisplay)}°C</strong>
 			<span class="meta">
 				{#if e.href}
 					<a href={e.href} target="_blank" rel="noreferrer">{e.routeName ?? 'Ascent'}</a>
@@ -71,13 +71,13 @@
 			<li>
 				<span class="label">{share.label}</span>
 				<span class="value">
-					{share.pct}% · {formatNumber(share.days, dateDisplay)}
+					{formatNumber(share.pct, dateDisplay)}% · {formatNumber(share.days, dateDisplay)}
 					{share.days === 1 ? 'day' : 'days'}
 				</span>
 				<div class="track" aria-hidden="true">
 					<div
 						class="fill"
-						style:width="{share.pct}%"
+						style:width="{formatNumber(share.pct, dateDisplay)}%"
 						style:background={SHARE_COLORS[share.key]}
 					></div>
 				</div>

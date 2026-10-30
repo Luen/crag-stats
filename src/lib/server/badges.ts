@@ -21,6 +21,7 @@ import type { FirstImport } from './firstImport';
 import { rankAlmostBadges, type BadgeAlmost } from '#lib/badgeProgress';
 import type { CommunityBadgeHit } from './communityBadges';
 import { displayStyle, type DashboardExtraRow } from './dashboardExtras';
+import { isLikelyIndoorRoute } from './venue';
 
 export type BadgeIcon =
 	| 'carabiner'
@@ -875,9 +876,18 @@ export function buildBadges(
 			);
 		}
 
-		// Outdoor weather badges from cached Open-Meteo days (#268 / #271). Indoor routes
-		// skipped at import time; here we only need coords + a matching cache row.
-		const weather = lookupAscentWeather(context.weatherByKey, row);
+		// Keep the indoor guard for callers that do not supply an explicit outdoor flag.
+		const weather = lookupAscentWeather(context.weatherByKey, {
+			...row,
+			outdoor:
+				row.outdoor !== false &&
+				!isLikelyIndoorRoute({
+					gearStyle: row.gearStyle,
+					name: row.routeName,
+					cragName: row.cragName,
+					tagsJson: row.tagsJson
+				})
+		});
 		if (weather) {
 			if (isHeatWeather(weather)) {
 				mark('weather_heat', hitAt(row, `Hot day · ${Math.round(weather.tempMaxC!)}°C high`));

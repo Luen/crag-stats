@@ -108,6 +108,12 @@ describe('weather conditions', () => {
 		expect(isFairWeather({ tempMaxC: 20, tempMinC: 12, precipMm: 0, weatherCode: 95 })).toBe(false);
 	});
 
+	it('does not infer a dry day from missing precipitation', () => {
+		expect(isFairWeather({ tempMaxC: 20, tempMinC: 12, precipMm: null, weatherCode: 1 })).toBe(
+			false
+		);
+	});
+
 	it('detects sticky humidity and storm precip', () => {
 		expect(
 			isStickyHumidity({
