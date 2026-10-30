@@ -14,8 +14,7 @@ import {
 	isStickyHumidity,
 	isStormPrecip,
 	isWindyWeather,
-	roundCoord,
-	weatherDayKey,
+	lookupAscentWeather,
 	type WeatherSnapshot
 } from '#lib/weatherKeys';
 import type { FirstImport } from './firstImport';
@@ -789,28 +788,6 @@ function hitAt(row: DashboardExtraRow, prefix: string): Hit {
 	};
 }
 
-function lookupWeather(
-	map: ReadonlyMap<string, WeatherSnapshot> | undefined,
-	row: DashboardExtraRow,
-	day: string
-): WeatherSnapshot | null {
-	if (!map || row.lat == null || row.lon == null) return null;
-	if (!Number.isFinite(row.lat) || !Number.isFinite(row.lon)) return null;
-	// Import skips gyms; evaluate the same way so shared lat/lon/day cache rows cannot
-	// unlock outdoor weather badges on indoor ascents.
-	if (
-		isLikelyIndoorRoute({
-			gearStyle: row.gearStyle,
-			name: row.routeName,
-			cragName: row.cragName,
-			tagsJson: row.tagsJson
-		})
-	) {
-		return null;
-	}
-	return map.get(weatherDayKey(roundCoord(row.lat), roundCoord(row.lon), day)) ?? null;
-}
-
 /**
  * Evaluate the badge catalog against chronological logbook rows.
  * Pure — no DB. Breaks do not erase earned badges.
@@ -899,8 +876,18 @@ export function buildBadges(
 			);
 		}
 
-		// Outdoor weather badges from cached Open-Meteo days (#268 / #271).
-		const weather = lookupWeather(context.weatherByKey, row, day);
+		// Keep the indoor guard for callers that do not supply an explicit outdoor flag.
+		const weather = lookupAscentWeather(context.weatherByKey, {
+			...row,
+			outdoor:
+				row.outdoor !== false &&
+				!isLikelyIndoorRoute({
+					gearStyle: row.gearStyle,
+					name: row.routeName,
+					cragName: row.cragName,
+					tagsJson: row.tagsJson
+				})
+		});
 		if (weather) {
 			if (isHeatWeather(weather)) {
 				mark('weather_heat', hitAt(row, `Hot day · ${Math.round(weather.tempMaxC!)}°C high`));

@@ -1,4 +1,5 @@
 import type { GradeSystem } from '#lib/grades';
+import type { WeatherConditionsView } from '#lib/weatherStats';
 import type { WeekdayStatsView } from '#lib/weekdayStats';
 import type { KarmaStats } from './karma';
 import type { RoutePopularityStats } from './routePopularity';
@@ -379,6 +380,8 @@ export type DashboardStats = {
 	karma: KarmaStats;
 	/** cragCount 0 → hide Best months card. */
 	bestMonths: BestMonthsView;
+	/** Open-Meteo conditions on outdoor days; null (card hidden) until any day is cached (#272). */
+	weatherConditions: WeatherConditionsView | null;
 };
 
 export type BestMonthsCrag = {

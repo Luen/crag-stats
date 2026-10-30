@@ -50,6 +50,8 @@ export type DashboardExtraRow = {
 	/** Route coordinates for outdoor weather badge lookup (#268). */
 	lat?: number | null;
 	lon?: number | null;
+	/** False for likely indoor/gym routes: weather never applies (#272). Undefined = outdoor. */
+	outdoor?: boolean;
 };
 
 /**

@@ -114,3 +114,75 @@ export function weatherConditions(w: WeatherSnapshot): WeatherCondition[] {
 	if (isStormPrecip(w) || isStormCode(w)) out.push('storm');
 	return out;
 }
+
+/** Lookup of cached `ok` Open-Meteo days by {@link weatherDayKey}. */
+export type WeatherLookupMap = ReadonlyMap<string, WeatherSnapshot>;
+
+/**
+ * Calendar day (`YYYY-MM-DD`) for an ascent date, or null when missing / partial
+ * (`2018-00-00`). Shared by badges, logbook, calendar and dashboard weather surfaces.
+ */
+export function weatherAscentDay(date: string | null | undefined): string | null {
+	if (!date) return null;
+	const key = date.trim().slice(0, 10);
+	if (!/^\d{4}-\d{2}-\d{2}$/.test(key)) return null;
+	const parsed = new Date(`${key}T12:00:00Z`);
+	if (!Number.isFinite(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== key) return null;
+	return key;
+}
+
+/** Cache key for an ascent's (rounded lat, lon, day), or null without coords / valid day. */
+export function ascentWeatherKey(row: {
+	ascentDate: string | null | undefined;
+	lat?: number | null;
+	lon?: number | null;
+}): string | null {
+	const day = weatherAscentDay(row.ascentDate);
+	if (!day) return null;
+	if (row.lat == null || row.lon == null) return null;
+	if (!Number.isFinite(row.lat) || !Number.isFinite(row.lon)) return null;
+	return weatherDayKey(roundCoord(row.lat), roundCoord(row.lon), day);
+}
+
+/**
+ * Cached weather for one ascent. Null when the map is absent/empty, coordinates or day are
+ * missing, the day is not cached, or the route is indoor (`outdoor === false`).
+ */
+export function lookupAscentWeather(
+	map: WeatherLookupMap | null | undefined,
+	row: {
+		ascentDate: string | null | undefined;
+		lat?: number | null;
+		lon?: number | null;
+		/** Pass `false` for indoor/gym routes: they never match. Defaults to true. */
+		outdoor?: boolean;
+	}
+): WeatherSnapshot | null {
+	if (!map || map.size === 0 || row.outdoor === false) return null;
+	const key = ascentWeatherKey(row);
+	return key ? (map.get(key) ?? null) : null;
+}
+
+/** Logbook / chip facets backed by the weather cache. */
+export const WEATHER_FILTER_KEYS = ['heat', 'freeze', 'rain', 'snow', 'fair'] as const;
+export type WeatherFilterKey = (typeof WEATHER_FILTER_KEYS)[number];
+
+export function isWeatherFilterKey(v: string | null | undefined): v is WeatherFilterKey {
+	return v != null && (WEATHER_FILTER_KEYS as readonly string[]).includes(v);
+}
+
+/** Whether a cached day matches one logbook weather facet. */
+export function matchesWeatherFilter(w: WeatherSnapshot, key: WeatherFilterKey): boolean {
+	switch (key) {
+		case 'heat':
+			return isHeatWeather(w);
+		case 'freeze':
+			return isFreezeWeather(w);
+		case 'rain':
+			return isRainWeather(w);
+		case 'snow':
+			return isSnowWeather(w);
+		case 'fair':
+			return isFairWeather(w);
+	}
+}
