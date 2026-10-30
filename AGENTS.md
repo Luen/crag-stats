@@ -319,6 +319,7 @@ You'll often notice things outside the task at hand. **Don't silently fix them i
 | 2026-10 | #132: logbook popularity uses shared relative/global score precedence, with count-only routes null-last; quality sort shares the rating helper. |
 
 | 2026-10 | #131/#36: hidden gems retain routeId for stable list keys; popularity counts use the configured display locale. |
+| 2026-10 | #284: Route popularity hidden gems capped at 3 (`MAX_GEMS`); gem titles use normal list size (bucket `%` keeps large `strong`). |
 
 | 2026-10 | #126/#127: tick facets include top-rope/solo types and preserve selected legacy values; style filters normalize dws and top-rope aliases. |
 
@@ -455,3 +456,9 @@ _Add a row when you change behaviour agents must know about._
 - Partners page (`/partners`, #269): Ascents | Sessions | Areas metric toggle (`cs_partners_metric`); helpers in `#lib/partnerStats`. Dashboard card stays ascent-ranked. Docs at `/docs/partners`.
 
 - Weather PR review: preserve main’s indoor badge guards and shared partner statistics when updating the weather stack. Fair weather requires measured precipitation below 0.1 mm; missing rain is unknown, not dry.
+
+- Shared weather ascent days reject impossible dates by a UTC round-trip (including non-leap February 29), so coverage and backlog match real calendar days.
+
+- The weather backlog uses all checked cache keys, including unavailable (`missing`) rows, just like the importer. Usable weather lookups still include `ok` rows only.
+
+- Ascent calendar day iteration and weekdays use UTC throughout; local noon can fall on the prior UTC date in UTC+13/+14 browsers. Test Pacific/Kiritimati and America/New_York.

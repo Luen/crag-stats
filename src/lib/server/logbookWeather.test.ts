@@ -5,6 +5,7 @@ import { routes, weatherDays } from './db/schema';
 import { upsertAscents } from './ingest';
 import { getDashboardStats, listLogbook, wipeAllData } from './analytics';
 import { isMissingLogbookWeather } from './logbookWeather';
+import { listPendingWeatherDays } from './weatherEngine';
 
 type Day = {
 	latKey: number;
@@ -98,6 +99,46 @@ describe('logbook weather facets (#273)', () => {
 		expect(
 			isMissingLogbookWeather(new Map(), { ...row, ascentDate: '2018-00-00' }, '2026-01-01')
 		).toBe(false);
+	});
+
+	it('excludes checked days with unavailable provider data from the import backlog', () => {
+		cache({
+			latKey: -33.6,
+			lonKey: 150.3,
+			day: '2025-03-07',
+			tempMaxC: null,
+			tempMinC: null,
+			precipMm: null,
+			weatherCode: null,
+			status: 'missing'
+		});
+		expect(names(listLogbook({ missing: ['weather'] }).rows)).toEqual([]);
+		expect(listPendingWeatherDays(50, Date.parse('2026-01-01'))).toEqual([]);
+		expect(listLogbook().rows.find((r) => r.routeName === 'Route none')?.weatherChips).toEqual([]);
+	});
+
+	it('rejects impossible dates consistently in the filter and importer', () => {
+		upsertAscents([
+			{
+				provider: 'thecrag',
+				externalId: 'bad-date',
+				ascentDate: '2025-02-29',
+				isSend: true,
+				isAttempt: false,
+				route: {
+					provider: 'thecrag',
+					externalId: 'invalid-day-route',
+					name: 'Invalid date route',
+					gearStyle: 'Sport',
+					lat: -33.6,
+					lon: 150.3
+				}
+			}
+		]);
+		expect(names(listLogbook({ missing: ['weather'] }).rows)).toEqual(['Route none']);
+		expect(listPendingWeatherDays(50, Date.parse('2026-01-01')).map((d) => d.day)).toEqual([
+			'2025-03-07'
+		]);
 	});
 
 	it('attaches accessible chips only to outdoor rows with a cache hit', () => {
