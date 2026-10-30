@@ -448,8 +448,11 @@ _Add a row when you change behaviour agents must know about._
 - Ascent calendar fills the card width; `--heat-1..4` is green→yellow→orange→red (Dreeve-like intensity), not theCrag grade-band greens.
 - **New route?** on projects covers blank/`Project` grades and wide provisional spans (`21-23`, `V1-3`); adjacent half-grades (`V1/2`) stay ordinary. Midpoint chips still show when parsed.
 - Weather conditions card (`weatherConditions`, #272): half-width after Milestones, hidden (`stats.weatherConditions == null`) until ≥1 outdoor day has an ok `weather_days` row. A "day" is a location-day (rounded lat/lon + date); likely-indoor routes never count (`DashboardExtraRow.outdoor`). Pure builder `#lib/weatherStats`. Reuse `lookupAscentWeather` / `weatherAscentDay` / `matchesWeatherFilter` from `#lib/weatherKeys` for any ascent→weather surface; format calendar days with `formatCalendarDate`.
+- Logbook weather (#273): `?weather=heat|freeze|rain|snow|fair` and owner-only `?missing=weather` via `logbookWeather.ts` (outdoor rule = `isLikelyIndoorRoute`; indoor never matches). `listLogbook` rows carry `weatherChips` (`weatherChips()` in `#lib/weatherKeys`, rendered by `WeatherChips.svelte`) and `weatherAvailable`; hide weather UI when the cache is empty.
 - Partners page (`/partners`, #269): Ascents | Sessions | Areas metric toggle (`cs_partners_metric`); helpers in `#lib/partnerStats`. Dashboard card stays ascent-ranked. Docs at `/docs/partners`.
 
 - Weather PR review: preserve main’s indoor badge guards and shared partner statistics when updating the weather stack. Fair weather requires measured precipitation below 0.1 mm; missing rain is unknown, not dry.
 
 - Shared weather ascent days reject impossible dates by a UTC round-trip (including non-leap February 29), so coverage and backlog match real calendar days.
+
+- The weather backlog uses all checked cache keys, including unavailable (`missing`) rows, just like the importer. Usable weather lookups still include `ok` rows only.

@@ -4,6 +4,7 @@
 	import StyleBadge from '#lib/components/StyleBadge.svelte';
 	import TagChips from '#lib/components/TagChips.svelte';
 	import TickTypeIcon from '#lib/components/TickTypeIcon.svelte';
+	import WeatherChips from '#lib/components/WeatherChips.svelte';
 	import {
 		includeSelectedOptions,
 		LOGBOOK_QUALITIES,
@@ -38,6 +39,7 @@
 		if (data.with) p.set('with', data.with);
 		if (data.partners) p.set('partners', data.partners);
 		for (const m of data.missing) p.append('missing', m);
+		if (data.weather) p.set('weather', data.weather);
 		if (data.tag) p.set('tag', data.tag);
 		for (const t of data.tagExact) p.append('tagExact', t);
 		if (data.partnerMatch === 'exact') p.set('partnerMatch', 'exact');
@@ -72,6 +74,14 @@
 		return data.order === 'asc' ? ' ↑' : ' ↓';
 	}
 
+	const WEATHER_LABELS = {
+		heat: 'hot',
+		freeze: 'freezing',
+		rain: 'rainy',
+		snow: 'snowy',
+		fair: 'fair-weather'
+	} as const;
+
 	function checked(list: string[], value: string) {
 		return list.includes(value);
 	}
@@ -103,6 +113,9 @@
 		{/if}
 		{#if data.setter}
 			· {data.setter === 'me' ? 'routes I set' : 'no setter credit found'}
+		{/if}
+		{#if data.weather}
+			· {WEATHER_LABELS[data.weather]} days
 		{/if}
 		{#if data.rock}
 			· rock {data.rock}
@@ -207,6 +220,16 @@
 				<option value="pending">History not checked yet</option>
 			</select>
 		{/if}
+		{#if data.weatherAvailable || data.weather}
+			<select name="weather" aria-label="Weather on the day" value={data.weather}>
+				<option value="">Any weather</option>
+				<option value="fair">Fair day (15–25°C, dry)</option>
+				<option value="heat">Hot day (35°C+)</option>
+				<option value="freeze">Freezing (low 0°C or below)</option>
+				<option value="rain">Rainy day</option>
+				<option value="snow">Snowy day</option>
+			</select>
+		{/if}
 		<select name="partners" aria-label="Partners" value={data.partners}>
 			<option value="">Any partners</option>
 			<option value="has">Has partners</option>
@@ -307,6 +330,17 @@
 				/>
 				No pitch list cached
 			</label>
+			{#if data.canFilterMissingWeather}
+				<label class="check">
+					<input
+						type="checkbox"
+						name="missing"
+						value="weather"
+						checked={checked(data.missing, 'weather')}
+					/>
+					No weather cached
+				</label>
+			{/if}
 		</div>
 	</fieldset>
 
@@ -362,7 +396,9 @@
 		Exact tag matches Category:Name (case-insensitive, repeat <code>tagExact</code> in the URL for AND).
 		Categories include Rock type, Steepness, Aspect, Style, Weather, Walk in time, Legality, and Condition
 		when shown on chips. Project filters exclude unknown flags. No setter credit found includes routes
-		whose history has not been imported.
+		whose history has not been imported. Weather filters use the opt-in Open-Meteo cache and only match
+		outdoor ascents with cached weather for that day; the owner can also list outdoor ascents with no
+		weather cached yet.
 	</p>
 </form>
 
@@ -414,6 +450,7 @@
 							<span class="chip">{row.numberAttempts} attempts</span>
 						{/if}
 						<TagChips tags={row.tags} />
+						<WeatherChips chips={row.weatherChips} dateDisplay={data.dateDisplay} />
 						{#if row.comment}
 							{#if row.comment.length > 140}
 								<details class="note">

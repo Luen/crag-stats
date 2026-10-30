@@ -13,6 +13,7 @@ import {
 	matchesWeatherFilter,
 	roundCoord,
 	weatherAscentDay,
+	weatherChips,
 	weatherConditions,
 	weatherDayKey
 } from './weatherKeys';
@@ -176,5 +177,29 @@ describe('ascent weather lookup', () => {
 		expect(
 			matchesWeatherFilter({ tempMaxC: 20, tempMinC: 10, precipMm: 0, weatherCode: 0 }, 'fair')
 		).toBe(true);
+	});
+});
+
+describe('weatherChips', () => {
+	it('returns plain-text chips for notable days and nothing for ordinary ones', () => {
+		expect(weatherChips({ tempMaxC: 18, tempMinC: 8, precipMm: 3, weatherCode: 61 })).toEqual([
+			{ key: 'rain', name: 'Rain', value: 3, unit: 'mm' }
+		]);
+		expect(weatherChips({ tempMaxC: 30, tempMinC: 15, precipMm: 0, weatherCode: 1 })).toEqual([]);
+		const keys = weatherChips({
+			tempMaxC: 37,
+			tempMinC: 25,
+			precipMm: 0,
+			weatherCode: 0,
+			windMaxKmh: 60
+		}).map((c) => c.key);
+		expect(keys).toEqual(['heat', 'wind']);
+	});
+
+	it('shows snow instead of rain and keeps freezing alongside', () => {
+		const keys = weatherChips({ tempMaxC: 0, tempMinC: -5, precipMm: 4, weatherCode: 73 }).map(
+			(c) => c.key
+		);
+		expect(keys).toEqual(['freeze', 'snow']);
 	});
 });
