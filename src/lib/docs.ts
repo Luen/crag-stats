@@ -70,6 +70,11 @@ export const DOC_PAGES: readonly DocPage[] = [
 			'Monthly and yearly volume beyond the dashboard cards — full per-month tables and YoY deltas.'
 	},
 	{
+		slug: 'sessions-per-week',
+		title: 'Sessions per week',
+		summary: 'Climbing days per ISO week and the yearly average session rate.'
+	},
+	{
 		slug: 'best-months',
 		title: 'Best months',
 		summary:
@@ -80,6 +85,12 @@ export const DOC_PAGES: readonly DocPage[] = [
 		title: 'Eddington numbers',
 		summary:
 			"Cycling's Eddington number adapted to climbing: send days, vertical days and grade indexes."
+	},
+	{
+		slug: 'yearly-stats',
+		title: 'Yearly stats',
+		summary:
+			'Per-year bars or cumulative career totals for ascents, sends and height, with optional within-year lines.'
 	},
 	{
 		slug: 'first-ascents',

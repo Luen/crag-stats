@@ -27,6 +27,8 @@
 				{ href: '/activity', label: 'Activity', icon: 'activity' },
 				{ href: '/badges', label: 'Badges', icon: 'badges' },
 				{ href: '/eddington', label: 'Eddington', icon: 'eddington' },
+				{ href: '/training-load', label: 'Training load', icon: 'training' },
+				{ href: '/milestones', label: 'Milestones', icon: 'milestones' },
 				{ href: '/rewind', label: 'Rewind', icon: 'rewind' },
 				{ href: '/share', label: 'Share', icon: 'share' }
 			],

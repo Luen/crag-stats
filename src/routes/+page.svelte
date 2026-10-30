@@ -28,6 +28,7 @@
 	import TagChips from '#lib/components/TagChips.svelte';
 	import TickTypeIcon from '#lib/components/TickTypeIcon.svelte';
 	import TrainingLoad from '#lib/components/TrainingLoad.svelte';
+	import SessionsPerWeek from '#lib/components/SessionsPerWeek.svelte';
 	import VolumeChart from '#lib/components/VolumeChart.svelte';
 	import YearlyStats from '#lib/components/YearlyStats.svelte';
 	import { packLayoutRows, type DashCardId } from '#lib/dashboardLayout';
@@ -160,7 +161,7 @@
 	{:else if id === 'monthly'}
 		<MonthlyStats months={s.monthly.months} years={s.monthly.years} />
 	{:else if id === 'yearly'}
-		<YearlyStats years={s.yearly.years} />
+		<YearlyStats years={s.yearly.years} days={s.heatmap} />
 	{:else if id === 'bestMonths'}
 		<BestMonths data={s.bestMonths} />
 	{:else if id === 'badges'}
@@ -177,8 +178,10 @@
 		<ProjectsHighlight projects={data.dashboardProjects} />
 	{:else if id === 'trainingLoad'}
 		<TrainingLoad load={s.trainingLoad} />
+	{:else if id === 'sessionsPerWeek'}
+		<SessionsPerWeek years={s.sessionsPerWeek.years} byYear={s.sessionsPerWeek.byYear} />
 	{:else if id === 'milestones'}
-		<Milestones items={s.milestones.items} />
+		<Milestones items={s.milestones.items} limit={6} />
 	{:else if id === 'styleMix'}
 		<StyleMixChart months={s.styleMix.months} />
 	{:else if id === 'partners'}

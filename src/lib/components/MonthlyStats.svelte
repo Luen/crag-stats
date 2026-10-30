@@ -12,20 +12,32 @@
 	type Props = {
 		months: MonthRow[];
 		years: number[];
-		/** Dashboard links to `/activity`; pass `null` on the detail page. */
+		/** Dashboard links to `/activity` when that route exists; omit/null to skip. */
 		titleHref?: string | null;
 	};
 
-	let { months, years, titleHref = '/activity' }: Props = $props();
+	let { months, years, titleHref = null }: Props = $props();
 
 	type Metric = 'ascents' | 'sends' | 'heightM';
 
-	// years are oldest→newest from analytics; keep "all" as default and scroll wide ranges
-	let yearFilter = $state<string>('all');
+	/** YYYY-MM cutoff for a rolling last-12-calendar-months window (inclusive). */
+	function last12Cutoff(now = new Date()): string {
+		const d = new Date(now.getFullYear(), now.getMonth() - 11, 1);
+		return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+	}
+
+	// Default to the past 12 months — more useful than “all years” on a long logbook.
+	let yearFilter = $state<string>('last12');
 	let metric = $state<Metric>('ascents');
 
+	const cutoff = $derived(last12Cutoff());
+
 	const filtered = $derived(
-		yearFilter === 'all' ? months : months.filter((m) => m.month.startsWith(yearFilter))
+		yearFilter === 'all'
+			? months
+			: yearFilter === 'last12'
+				? months.filter((m) => m.month >= cutoff)
+				: months.filter((m) => m.month.startsWith(yearFilter))
 	);
 
 	const values = $derived(
@@ -43,6 +55,7 @@
 
 	const narrow = $derived((innerWidth.current ?? 900) < 700);
 	const sparseLabels = $derived(values.length > (narrow ? 12 : 18));
+	const showYearInLabel = $derived(yearFilter === 'all' || yearFilter === 'last12');
 
 	const MONTH_NAMES = [
 		'Jan',
@@ -59,19 +72,28 @@
 		'Dec'
 	];
 
-	// Labels stay horizontal: rotated ones ran into the neighbouring bars. A dense chart
-	// is labelled by year, at each January (and the first column), so every label has
-	// the next eleven empty columns to spill into. A sparse chart names every month.
 	function axisLabel(month: string, index: number): string | null {
 		const isYearStart = month.endsWith('-01') || index === 0;
 		if (sparseLabels) return isYearStart ? month.slice(0, 4) : null;
 		const name = MONTH_NAMES[Number(month.slice(5, 7)) - 1] ?? month;
-		return yearFilter === 'all' && isYearStart ? `${name} '${month.slice(2, 4)}` : name;
+		return showYearInLabel && isYearStart ? `${name} '${month.slice(2, 4)}` : name;
 	}
 
 	function formatValue(v: number): string {
 		if (metric === 'heightM') return `${Math.round(v)} m`;
 		return String(v);
+	}
+
+	/** Inclusive last calendar day for a YYYY-MM (UTC), for logbook `to` filters. */
+	function monthEndIso(ym: string): string {
+		const [y, m] = ym.split('-').map(Number);
+		if (!y || !m) return `${ym}-28`;
+		const last = new Date(Date.UTC(y, m, 0)).getUTCDate();
+		return `${ym}-${String(last).padStart(2, '0')}`;
+	}
+
+	function monthHref(month: string): string {
+		return `/logbook?from=${month}-01&to=${monthEndIso(month)}`;
 	}
 </script>
 
@@ -89,10 +111,11 @@
 	{:else}
 		<div class="controls">
 			<label>
-				<span class="sr">Year</span>
+				<span class="sr">Range</span>
 				<select bind:value={yearFilter}>
+					<option value="last12">Past 12 months</option>
 					<option value="all">All years</option>
-					{#each years as y (y)}
+					{#each [...years].reverse() as y (y)}
 						<option value={String(y)}>{y}</option>
 					{/each}
 				</select>
@@ -117,14 +140,14 @@
 		</div>
 
 		{#if values.length === 0}
-			<p class="empty">No months for this year.</p>
+			<p class="empty">No months in this range.</p>
 		{:else}
 			<div class="chart-scroll">
 				<div class="chart" style:--n={values.length}>
 					{#each values as point, i (point.month)}
 						<a
 							class="col"
-							href={`/logbook?year=${point.month.slice(0, 4)}`}
+							href={monthHref(point.month)}
 							title="{point.month}: {formatValue(point.value)} {metricLabel}"
 						>
 							<div class="stack">

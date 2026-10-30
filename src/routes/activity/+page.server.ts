@@ -5,6 +5,7 @@ export const load: PageServerLoad = async () => {
 	const stats = getDashboardStats();
 	return {
 		monthly: stats.monthly,
-		yearly: stats.yearly
+		yearly: stats.yearly,
+		heatmap: stats.heatmap
 	};
 };

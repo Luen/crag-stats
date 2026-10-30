@@ -68,6 +68,7 @@ import { buildTrainingLoadView, hasPersonalAscentGrade } from './trainingLoad';
 import { buildKarmaStats } from './karma';
 import { buildRoutePopularityStats } from './routePopularity';
 import { buildBestMonthsView } from './bestMonths';
+import { buildSessionsPerWeek } from '#lib/sessionsPerWeek';
 
 export type PyramidMode = 'all' | 'sends' | 'onsight';
 const PYRAMID_MODES: PyramidMode[] = ['all', 'sends', 'onsight'];
@@ -502,11 +503,14 @@ export function getDashboardStats(
 			? `${dominant.style} climber`
 			: 'Rock climber');
 
-	const dayMap = new Map<string, { count: number; sends: number; maxBand: number | null }>();
+	const dayMap = new Map<
+		string,
+		{ count: number; sends: number; heightM: number; maxBand: number | null }
+	>();
 	for (const row of all) {
 		const day = validDay(row.ascentDate);
 		if (!day) continue;
-		const slot = dayMap.get(day) ?? { count: 0, sends: 0, maxBand: null };
+		const slot = dayMap.get(day) ?? { count: 0, sends: 0, heightM: 0, maxBand: null };
 		slot.count += 1;
 		if (row.isSend) {
 			slot.sends += 1;
@@ -519,10 +523,18 @@ export function getDashboardStats(
 					: (rowBand ?? (rowScore != null ? (bandFromEwbank(rowScore)?.id ?? null) : null));
 			if (band != null && (slot.maxBand == null || band > slot.maxBand)) slot.maxBand = band;
 		}
+		const h = row.heightM ?? row.routeHeightM ?? 0;
+		if (h > 0) slot.heightM += h;
 		dayMap.set(day, slot);
 	}
 	const heatmap = [...dayMap.entries()]
-		.map(([date, v]) => ({ date, count: v.count, sends: v.sends, maxBand: v.maxBand }))
+		.map(([date, v]) => ({
+			date,
+			count: v.count,
+			sends: v.sends,
+			heightM: Math.round(v.heightM * 10) / 10,
+			maxBand: v.maxBand
+		}))
 		.sort((a, b) => a.date.localeCompare(b.date));
 
 	const styleOrder = ['Boulder', 'Sport', 'Trad', 'Top rope', 'Alpine', 'Aid'];
@@ -1013,6 +1025,7 @@ export function getDashboardStats(
 		milestones,
 		badges,
 		trainingLoad,
+		sessionsPerWeek: buildSessionsPerWeek(all.map((r) => r.ascentDate)),
 		styleMix,
 		partners,
 		starsScatter,
