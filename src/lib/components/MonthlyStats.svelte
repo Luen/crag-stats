@@ -84,8 +84,16 @@
 		return String(v);
 	}
 
+	/** Inclusive last calendar day for a YYYY-MM (UTC), for logbook `to` filters. */
+	function monthEndIso(ym: string): string {
+		const [y, m] = ym.split('-').map(Number);
+		if (!y || !m) return `${ym}-28`;
+		const last = new Date(Date.UTC(y, m, 0)).getUTCDate();
+		return `${ym}-${String(last).padStart(2, '0')}`;
+	}
+
 	function monthHref(month: string): string {
-		return `/logbook?from=${month}-01&to=${month}-31`;
+		return `/logbook?from=${month}-01&to=${monthEndIso(month)}`;
 	}
 </script>
 
