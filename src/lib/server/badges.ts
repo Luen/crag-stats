@@ -159,13 +159,6 @@ export function isGreenpoint(row: DashboardExtraRow): boolean {
 /** Static catalog — order is display order for locked badges. */
 export const BADGE_CATALOG: readonly BadgeDef[] = [
 	{
-		id: 'greenpoint',
-		title: 'Greenpoint',
-		hint: 'Greenpoint a sport route, or send one with a clean lead recorded as Trad.',
-		icon: 'knot',
-		tone: 'green'
-	},
-	{
 		id: 'first_moves',
 		title: 'First Moves',
 		hint: 'Import your logbook into Crag Stats',
@@ -375,6 +368,13 @@ export const BADGE_CATALOG: readonly BadgeDef[] = [
 		hint: 'Send a route after working it over 4 or more different days',
 		icon: 'knot',
 		tone: 'purple'
+	},
+	{
+		id: 'greenpoint',
+		title: 'Greenpoint',
+		hint: 'Greenpoint a sport route, or send one with a clean lead recorded as Trad.',
+		icon: 'knot',
+		tone: 'green'
 	},
 	{
 		id: 'sessions_10',

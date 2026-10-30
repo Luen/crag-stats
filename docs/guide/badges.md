@@ -29,4 +29,11 @@ These four badges use fields already in your logbook and are dated by the climb 
 
 They are one-shot badges, so they do not appear in **Almost there**.
 
-Greenpoint (#303): one-shot green badge for a sent `greenpoint`, `greenpointonsight` or `greenpointflash` tick (spacing/hyphens normalized), or an original Sport route with ascent protection recorded as Trad and a confident clean lead (onsight, flash, red/pink point, ground-up redpoint or an explicit successful Lead tick). Generic Tick/Send/Clean, attempts, top-rope and seconding do not establish a lead for the inferred path. Route and ascent styles stay separate. This badge has no Almost there counter. Provider tick IDs are documented in [theCrag API](https://www.thecrag.com/en/article/api) and [tick types](https://staging.thecrag.com/en/article/ticktypes); tests are synthetic representations of those documented IDs, not captured private payloads.
+## Greenpoint
+
+**Greenpoint** is a one-shot badge for leading a bolted sport route on your own trad gear. It unlocks the first time you either:
+
+- log a theCrag **Green point**, **Green point onsight** or **Green point flash** tick that counts as a send, or
+- send a route listed as **Sport** with your ascent recorded as **Trad**, using a clean lead tick (onsight, flash, red point, pink point, ground-up red point or Lead).
+
+Generic Tick/Send/Clean entries, attempts, top-rope and seconding don't count for the second path, because they don't show that you led on gear. Like the badges above, it does not appear in **Almost there**. See theCrag's [tick types](https://www.thecrag.com/en/article/ticktypes) for how Green point ticks are defined.
