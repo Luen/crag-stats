@@ -210,6 +210,9 @@
 			preferences={data.cardPreferences}
 			partners={s.partners}
 			titleHref="/partners"
+			metricToggle
+			compact
+			limit={7}
 		/>
 	{:else if id === 'rockTypes'}
 		<RockTypePanel

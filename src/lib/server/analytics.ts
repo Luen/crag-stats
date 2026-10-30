@@ -747,7 +747,7 @@ export function getDashboardStats(
 	);
 	const trainingLoad = buildTrainingLoadView(extraRows);
 	const styleMix = buildStyleMixOverTime(extraRows);
-	const partners = listPartners(7);
+	const partners = listPartners();
 	const starsScatter = buildStarsScatter(extraRows).points;
 	const qualityBreakdown = buildQualityBreakdown(extraRows).ratings;
 	const routePopularity = buildRoutePopularityStats(

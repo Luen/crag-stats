@@ -179,3 +179,5 @@ The First ascents footer credits theCrag route history when displayed FA/FFA or 
 Sidebar count badges and Training load status pills use `--ink` for their small text, retaining their semantic tinted backgrounds. Test multi-digit counts and the Spike state in both themes. Interactive crag maps expose a named group of named links, rather than an image role containing focusable descendants.
 
 Card display preferences (#296) use whitelisted cookies for SSR; legacy localStorage choices migrate on mount. Cards without cookie values reserve their layout until migration completes. The no-JavaScript stylesheet reveals default cards. Cookie and storage failures remain nonfatal.
+
+Dashboard Partners (#298) shares the Ascents/Sessions/Areas preference with the Partners page. Rank the full partner set by the chosen metric before applying the dashboard seven-row limit; keep the title link to the full leaderboard. Compact toggle buttons wrap within quarter-width cards.
