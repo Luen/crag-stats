@@ -7,6 +7,7 @@
 		| 'partners'
 		| 'goals'
 		| 'eddington'
+		| 'training'
 		| 'rewind'
 		| 'settings'
 		| 'home'
@@ -71,6 +72,11 @@
 			<circle cx="12" cy="12" r="1.2" fill="currentColor" />
 		{:else if name === 'eddington'}
 			<path d="M4 20V4M4 20h16M8 16V8M12 16V6M16 16v-4" />
+		{:else if name === 'training'}
+			<path d="M4 20V10" />
+			<path d="M10 20V4" />
+			<path d="M16 20v-8" />
+			<path d="M22 20V8" />
 		{:else if name === 'rewind'}
 			<path d="M3 12a9 9 0 1 0 3-6.7L3 8" />
 			<path d="M3 3v5h5" />

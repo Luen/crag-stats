@@ -432,3 +432,4 @@ _Add a row when you change behaviour agents must know about._
 
 - Settings CSV import keeps the file picker and submit action stacked and left-aligned; avoid a growing file input that pushes the action to the card's far edge.
 - Route-history status exposes `retryAt` from the existing minimum run interval and upstream back-off. Settings counts down from server time and enables the action when due; retain the server pacing guards.
+- Training load detail lives at `/training-load` (26-week + daily28); the dashboard card title links there and still shows 12 weeks.
