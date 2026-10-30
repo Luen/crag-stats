@@ -357,7 +357,13 @@ export type DashboardStats = {
 	styleMix: {
 		months: { month: string; Sport: number; Trad: number; Boulder: number; Other: number }[];
 	};
-	partners: { name: string; count: number }[];
+	partners: {
+		name: string;
+		count: number;
+		ascents: number;
+		sessions: number;
+		areas: number;
+	}[];
 	starsScatter: {
 		stars: number | null;
 		qualityScore: number | null;

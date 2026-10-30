@@ -4,7 +4,7 @@ Crag Stats can cache **daily outdoor weather** for climbs that have route coordi
 
 ## Opt-in
 
-Off by default. The server owner sets `WEATHER_IMPORT=true` in `.env` and restarts. After each successful logbook sync (and from **Settings → Import weather**), Crag Stats fetches up to **50** missing outdoor days per run from [Open-Meteo](https://open-meteo.com/)'s historical weather API, with at least **1.1 seconds** between requests. Wipe clears the cache.
+Off by default. The server owner sets `WEATHER_IMPORT=true` in `.env` and restarts. After each successful logbook sync (and from **Settings → Import weather**), Crag Stats fetches up to **50** missing outdoor days per run from [Open-Meteo](https://open-meteo.com/)'s historical weather API, oldest climb days first, with at least **1.1 seconds** between requests. The Settings action starts that run in the background so the page does not wait on the full batch. Wipe clears the cache.
 
 Open-Meteo's free non-commercial tier is intended for personal self-hosted installs. Do not enable this for a commercial multi-tenant service without reviewing their terms and paid options.
 
@@ -19,7 +19,7 @@ Stored fields: daily max/min temperature (°C), precipitation (mm), WMO weather 
 
 ## Badges
 
-Once a day is cached, these badges can unlock from any logged ascent that day at that location (attempts count):
+Once a day is cached, these badges can unlock from any **outdoor** logged ascent that day at that location (attempts count; indoor/gym rows are skipped even if they share a cached lat/lon):
 
 | Badge                    | Rule                                                                             |
 | ------------------------ | -------------------------------------------------------------------------------- |
@@ -28,7 +28,7 @@ Once a day is cached, these badges can unlock from any logged ascent that day at
 | **Rain Check**           | ≥ 1 mm precipitation and not classified as snow                                  |
 | **Climbing in the Snow** | WMO snow codes (71–77, 85–86), or ≥ 1 mm precip with high ≤ 1°C                  |
 | **Blown Away**           | Day's max 10 m wind ≥ 50 km/h                                                    |
-| **Bluebird**             | High 15–25°C, precip ≈ 0, not snow/thunderstorm WMO                              |
+| **Bluebird**             | High 15–25°C, measured precip < 0.1 mm, not snow/thunderstorm WMO                |
 | **Sticky**               | Mean humidity ≥ 85%                                                              |
 | **Storm Send**           | A **send** on a day with ≥ 10 mm non-snow precip                                 |
 | **Four Seasons**         | Earn Heat Wave, Freeze Frame, Rain Check, and Climbing in the Snow at least once |
@@ -60,6 +60,8 @@ The signed-in owner also gets **No weather cached** (`?missing=weather`), which 
 The dashboard **Recent activities** card shows the same text chips under an outdoor climb when its day is cached. They are read as a short list labelled "Weather on the day", never colour-only, and the strip is omitted for gym routes, uncached days and ordinary weather.
 
 ## Climbing story
+
+Story percentages describe cached outdoor location-days, not days whose weather is still unknown.
 
 When the cache covers at least 20 outdoor days and half or more of your outdoor days, the [Climbing story](/docs/climbing-story) can add one short line about the conditions you climb in (snow, cold, heat, rain or a wide temperature spread). It describes what you do climb in, never what you avoid, and stays out of the story when coverage is thin.
 

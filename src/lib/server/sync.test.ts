@@ -89,4 +89,5 @@ it('does not trigger route enrichment when the logbook sync fails', async () => 
 	vi.mocked(syncTheCragAll).mockRejectedValueOnce(new Error('synthetic upstream failure'));
 	await expect(runTheCragSync()).rejects.toThrow('synthetic upstream failure');
 	expect(triggerRouteHistoryImport).not.toHaveBeenCalled();
+	expect(triggerWeatherImport).not.toHaveBeenCalled();
 });
