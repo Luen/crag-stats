@@ -18,3 +18,17 @@ describe('classifyTick', () => {
 		expect(classifyTick(null)).toEqual({ isSend: false, isAttempt: false });
 	});
 });
+
+it('classifies documented solo IDs and normalized labels as completed ascents', () => {
+	for (const tick of [
+		'leadsolo',
+		'ropedsolo',
+		'aidsolo',
+		' LEAD  SOLO ',
+		'top-rope solo',
+		'Roped_Solo'
+	])
+		expect(classifyTick(tick)).toEqual({ isSend: true, isAttempt: false });
+	for (const tick of ['lead solo attempt', 'attempted roped solo'])
+		expect(classifyTick(tick).isSend).toBe(false);
+});

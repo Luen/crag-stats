@@ -23,7 +23,8 @@ const ALL = [
 	'data:0005_repair_tlc_bare_geometry_coords',
 	'data:0006_preserve_aspect_tag_provenance',
 	'data:0007_preserve_weather_tag_provenance',
-	'data:0008_verify_immediate_parent_exposure'
+	'data:0008_verify_immediate_parent_exposure',
+	'data:0009_repair_explicit_solo_tick_flags'
 ];
 
 beforeEach(() => {

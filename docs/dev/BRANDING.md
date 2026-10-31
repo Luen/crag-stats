@@ -186,3 +186,5 @@ Weather source labels (#309): logbook desktop Weather cells and recent activity 
 Card display preferences (#296) use whitelisted cookies for SSR; legacy localStorage choices migrate on mount. The pre-paint script in `app.html` sets `html[data-card-prefs-migrating]` only when a whitelisted key exists in localStorage without its cookie, and only then do cookie-less cards reserve their layout (hidden) until migration completes. New visitors and no-JS clients see default cards immediately. Keep the key list in `app.html` in sync with `CARD_PREFERENCE_KEYS`. Cookie and storage failures remain nonfatal.
 
 Dashboard Partners (#298) shares the Ascents/Sessions/Areas preference with the Partners page. Rank the full partner set by the chosen metric before applying the dashboard seven-row limit; keep the title link to the full leaderboard. Compact toggle buttons wrap within quarter-width cards.
+
+First rope-solo badges (#319) reuse the existing blue carabiner for First Lead Rope Solo and purple knot for First Top-Rope Solo. Each has a distinct text title and first-completion detail; meaning never depends on colour alone.
