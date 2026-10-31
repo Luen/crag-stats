@@ -30,8 +30,10 @@ for (const colorScheme of ['light', 'dark'] as const)
 			await expect(page.getByRole('heading', { name: 'Climbing around the world' })).toBeVisible();
 			await expect(page.getByRole('table')).toContainText('World same name');
 			await expect(page.getByRole('group', { name: 'Worldwide climbing places' })).toBeVisible();
-			await page.getByRole('button', { name: 'Glow', exact: true }).click();
+			await expect(page.getByRole('group', { name: 'Map display' })).toHaveCount(0);
+			await expect(page.getByRole('button', { name: /^(Circles|Glow)$/ })).toHaveCount(0);
 			await expect(page.locator('.marker.glow').first()).toBeVisible();
+			await expect(page.locator('.marker.glow').first()).not.toHaveCSS('box-shadow', 'none');
 			await page.locator('.marker').first().focus();
 			await expect(page.locator('.marker').first()).toBeFocused();
 			await page.keyboard.press('Enter');
