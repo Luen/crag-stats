@@ -188,3 +188,5 @@ Card display preferences (#296) use whitelisted cookies for SSR; legacy localSto
 Dashboard Partners (#298) shares the Ascents/Sessions/Areas preference with the Partners page. Rank the full partner set by the chosen metric before applying the dashboard seven-row limit; keep the title link to the full leaderboard. Compact toggle buttons wrap within quarter-width cards.
 
 First rope-solo badges (#319) reuse the existing blue carabiner for First Lead Rope Solo and purple knot for First Top-Rope Solo. Each has a distinct text title and first-completion detail; meaning never depends on colour alone.
+
+Project status pills use `--ink` text over their semantic tinted backgrounds so the small Open label meets contrast requirements in both themes. Projects browser coverage includes desktop/mobile cards in light and dark.

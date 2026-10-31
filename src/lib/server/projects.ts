@@ -1,3 +1,4 @@
+import { calendarDay } from '#lib/calendarDay';
 import { asc, eq, sql } from 'drizzle-orm';
 import { projectPublicBetaFromJson, type ProjectPublicBeta } from '#lib/routeBeta';
 import { theCragBestLink, theCragRouteUrl } from '#lib/thecragUrls';
@@ -13,24 +14,20 @@ function nowIso() {
 
 export type ProjectClassification = 'open' | 'sent' | 'none';
 
-/**
- * RoxClimbs-style: a project is a route you tried and did not send at least once
- * before it went. First-try onsights/flashes are never projects.
- */
-export function classifyRouteProject(input: {
-	nonSendCount: number;
-	sendCount: number;
-	hadAttemptsBeforeSend: boolean;
-}): ProjectClassification {
-	const nonSends = Math.max(0, Number(input.nonSendCount) || 0);
-	const sends = Math.max(0, Number(input.sendCount) || 0);
-
-	if (sends > 0) {
-		// First-go onsight/flash: never a project. Fought-then-sent needs prior non-sends.
-		return input.hadAttemptsBeforeSend && nonSends >= 1 ? 'sent' : 'none';
+/** Open projects need two days; completed projects also allow a same-day fight. */
+export function classifyRouteProject(
+	input: Pick<
+		RouteAscentStats,
+		'sendCount' | 'sessionCount' | 'sessionsThroughSend' | 'triesBeforeSend'
+	>
+): ProjectClassification {
+	if (input.sendCount > 0) {
+		return input.triesBeforeSend >= 1 &&
+			(input.sessionsThroughSend >= 2 || input.triesBeforeSend >= 2)
+			? 'sent'
+			: 'none';
 	}
-	if (nonSends >= 1) return 'open';
-	return 'none';
+	return input.sessionCount >= 2 ? 'open' : 'none';
 }
 
 function parseAscentDay(raw: string | null | undefined): number | null {
@@ -88,26 +85,75 @@ export type RouteAscentStats = {
 	lastAttemptAt: string | null;
 	sentAt: string | null;
 	hadAttemptsBeforeSend: boolean;
+	sessionsThroughSend: number;
+	triesBeforeSend: number;
 };
 
-export function summarizeRouteAscents(
-	rows: Array<{
-		ascentDate: string | null;
-		isSend: boolean;
-		isAttempt: boolean;
-		numberAttempts: number | null;
-	}>
-): RouteAscentStats {
+type ProjectAscent = {
+	ascentId?: number;
+	ascentDate: string | null;
+	isSend: boolean;
+	isAttempt: boolean;
+	numberAttempts: number | null;
+};
+
+/** Date-only records cannot establish within-day ordering; timestamp clocks default to UTC. */
+function ascentTime(raw: string | null): number | null {
+	const value = raw?.trim();
+	if (!value || !/^\d{4}-\d{2}-\d{2}[Tt ]\d{2}:\d{2}/.test(value)) return null;
+	const zoned = /[zZ]$|[+-]\d{2}:?\d{2}$/.test(value) ? value : `${value}Z`;
+	const time = Date.parse(zoned);
+	return Number.isFinite(time) ? time : null;
+}
+
+/** Known timestamps establish chronology; date-only candidates use written days and stored order. */
+function firstSendInOrder(rows: ProjectAscent[]): ProjectAscent | null {
+	let timed: ProjectAscent | null = null;
+	let earliestTime = Infinity;
+	for (const row of rows) {
+		const time = ascentTime(row.ascentDate);
+		if (time == null) continue;
+		if (
+			time < earliestTime ||
+			(time === earliestTime &&
+				row.ascentId != null &&
+				timed?.ascentId != null &&
+				row.ascentId < timed.ascentId)
+		) {
+			timed = row;
+			earliestTime = time;
+		}
+	}
+	let first: ProjectAscent | null = null;
+	for (const row of rows) {
+		if (ascentTime(row.ascentDate) != null && row !== timed) continue;
+		const day = calendarDay(row.ascentDate)!;
+		const firstDay = first ? calendarDay(first.ascentDate)! : null;
+		if (
+			!first ||
+			day < firstDay! ||
+			(day === firstDay &&
+				row.ascentId != null &&
+				first.ascentId != null &&
+				row.ascentId < first.ascentId)
+		)
+			first = row;
+	}
+	return first;
+}
+
+export function summarizeRouteAscents(rows: ProjectAscent[]): RouteAscentStats {
 	let nonSendCount = 0;
 	let sendCount = 0;
 	let tryCount = 0;
 	const dates = new Set<string>();
 	let firstAttemptAt: string | null = null;
 	let lastAttemptAt: string | null = null;
-	let sentAt: string | null = null;
+	const datedSends: ProjectAscent[] = [];
 
 	for (const row of rows) {
-		const date = row.ascentDate?.trim() || null;
+		const day = calendarDay(row.ascentDate);
+		const date = day ? row.ascentDate!.trim() : null;
 		if (date) {
 			dates.add(date.slice(0, 10));
 			if (!firstAttemptAt || date < firstAttemptAt) firstAttemptAt = date;
@@ -116,7 +162,7 @@ export function summarizeRouteAscents(
 
 		if (row.isSend) {
 			sendCount += 1;
-			if (date && (!sentAt || date < sentAt)) sentAt = date;
+			if (day) datedSends.push(row);
 		} else {
 			nonSendCount += 1;
 			tryCount += triesFromAscent(row.numberAttempts, false);
@@ -125,32 +171,49 @@ export function summarizeRouteAscents(
 		}
 	}
 
-	const hadAttemptsBeforeSend =
-		sendCount > 0 &&
-		nonSendCount > 0 &&
-		rows.some((row) => {
-			if (row.isSend) return false;
-			if (!sentAt) return true;
-			const d = row.ascentDate?.trim();
-			if (!d) return true;
-			return d.slice(0, 10) <= sentAt.slice(0, 10);
-		});
+	const firstSend = firstSendInOrder(datedSends);
+	const sentAt = firstSend?.ascentDate?.trim() ?? null;
+	const sendDay = calendarDay(sentAt);
+	const daysThroughSend = new Set<string>();
+	let triesBeforeSend = 0;
+	const firstSendTime = ascentTime(sentAt);
+	for (const row of rows) {
+		const day = calendarDay(row.ascentDate);
+		if (!day || !sendDay) continue;
+		if (!row.isSend) {
+			const time = ascentTime(row.ascentDate);
+			if (time != null && firstSendTime != null) {
+				if (time > firstSendTime) continue;
+			} else if (day > sendDay) continue;
+			daysThroughSend.add(day);
+			triesBeforeSend += triesFromAscent(row.numberAttempts, false);
+		}
+	}
+	if (sendDay) daysThroughSend.add(sendDay);
+	// numberAttempts on the earliest send includes the successful try.
+	const n = Number(firstSend?.numberAttempts);
+	const sendTries = Number.isFinite(n) && n > 1 ? n - 1 : 0;
+	// Separate rows may already describe those same tries; don't double-count them.
+	triesBeforeSend = Math.max(triesBeforeSend, sendTries);
+	const hadAttemptsBeforeSend = triesBeforeSend > 0;
 
 	return {
 		nonSendCount,
 		sendCount,
-		tryCount,
+		tryCount: Math.max(tryCount, triesBeforeSend),
 		sessionCount: dates.size,
 		firstAttemptAt,
 		lastAttemptAt,
 		sentAt,
-		hadAttemptsBeforeSend
+		hadAttemptsBeforeSend,
+		sessionsThroughSend: daysThroughSend.size,
+		triesBeforeSend
 	};
 }
 
 /**
  * Auto-detect projects from theCrag logbook (RoxClimbs-style).
- * Log attempts → route becomes a project. First-go sends are never projects.
+ * Open projects require two calendar days. Same-day sends need two failed tries.
  * Open projects untouched for a year are dropped.
  */
 export function refreshProjects(now: Date = new Date()) {
@@ -158,6 +221,7 @@ export function refreshProjects(now: Date = new Date()) {
 
 	const ascentRows = db
 		.select({
+			ascentId: ascents.id,
 			routeId: ascents.routeId,
 			ascentDate: ascents.ascentDate,
 			isSend: ascents.isSend,
@@ -206,11 +270,7 @@ export function refreshProjects(now: Date = new Date()) {
 		}
 
 		const stats = summarizeRouteAscents(rows);
-		const status = classifyRouteProject({
-			nonSendCount: stats.nonSendCount,
-			sendCount: stats.sendCount,
-			hadAttemptsBeforeSend: stats.hadAttemptsBeforeSend
-		});
+		const status = classifyRouteProject(stats);
 		if (status === 'none') continue;
 		// Stale open projects (no touch in a year) fall off — not actively projecting.
 		if (status === 'open' && !isTouchedWithin(stats.lastAttemptAt, now)) continue;
@@ -335,11 +395,6 @@ export function listProjects(status?: 'open' | 'sent' | 'archived'): ProjectList
 		ORDER BY a.is_send DESC, a.ascent_date DESC
 		LIMIT 1
 	)`;
-	const sessionCountSql = sql<number>`(
-		SELECT count(DISTINCT substr(a.ascent_date, 1, 10)) FROM ascents a
-		WHERE a.route_id = ${routes.id} AND a.ascent_date IS NOT NULL AND trim(a.ascent_date) != ''
-	)`;
-
 	const q = db
 		.select({
 			id: projects.id,
@@ -364,17 +419,31 @@ export function listProjects(status?: 'open' | 'sent' | 'archived'): ProjectList
 			url: routes.url,
 			betaJson: routes.betaJson,
 			ascentExternalId: preferredAscentExternalId,
-			ascentUrl: preferredAscentUrl,
-			sessionCount: sessionCountSql
+			ascentUrl: preferredAscentUrl
 		})
 		.from(projects)
 		.innerJoin(routes, eq(projects.routeId, routes.id));
 
 	const rows = status ? q.where(eq(projects.status, status)).all() : q.all();
+	const datesQuery = db
+		.select({ routeId: projects.routeId, ascentDate: ascents.ascentDate })
+		.from(projects)
+		.innerJoin(ascents, eq(ascents.routeId, projects.routeId));
+	const projectDates = status
+		? datesQuery.where(eq(projects.status, status)).all()
+		: datesQuery.all();
+	const sessionsByRoute = new Map<number, Set<string>>();
+	for (const row of projectDates) {
+		const day = calendarDay(row.ascentDate);
+		if (!day) continue;
+		const days = sessionsByRoute.get(row.routeId) ?? new Set<string>();
+		days.add(day);
+		sessionsByRoute.set(row.routeId, days);
+	}
 	return rows.map((row) => ({
 		...row,
 		tryCount: row.attemptCount,
-		sessionCount: Number(row.sessionCount) || 0,
+		sessionCount: sessionsByRoute.get(row.routeId)?.size ?? 0,
 		ungraded: isUngradedRoute(row.gradeScore, row.gradeRaw),
 		isProject: isTheCragProjectFlag(row.isProject),
 		areaLabel: areaLabel(row.parentName, row.cragName),

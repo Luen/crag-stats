@@ -23,11 +23,10 @@
 </script>
 
 {#snippet projectCard(p: ProjectCard)}
-	<article class="card" class:sent={p.status === 'sent'}>
+	<article class={['card', { sent: p.status === 'sent' }]}>
 		<div class="card-top">
 			<span
-				class="star"
-				class:filled={(p.stars ?? 0) > 0}
+				class={['star', { filled: (p.stars ?? 0) > 0 }]}
 				title={starTitle(p.stars)}
 				aria-hidden="true"
 			>
@@ -43,7 +42,7 @@
 				{:else if p.ungraded}
 					<NewRouteBadge />
 				{/if}
-				<span class="badge" class:open={p.status === 'open'} class:muted={p.status === 'sent'}>
+				<span class={['badge', { open: p.status === 'open', muted: p.status === 'sent' }]}>
 					{p.status === 'sent' ? 'sent' : 'open'}
 				</span>
 			</div>
@@ -83,9 +82,9 @@
 	<p class="eyebrow">Outdoor routes</p>
 	<h1>Auto-detected projects</h1>
 	<p class="blurb">
-		Auto-detected from theCrag: open routes with unsent attempts in the last year, plus sends that
-		had a fight before the send (shown ~31 days). Routes untouched for a year drop off. First-try
-		sends are not projects.
+		Auto-detected from theCrag: open projects need unsent attempts on two separate climbing days.
+		Completed projects include sends after work across days or at least two failed tries that day
+		(shown ~31 days). Routes untouched for a year drop off. First-try sends are not projects.
 		<a class="doc-link" href="/docs/projects">Guidebook text &amp; privacy</a>
 	</p>
 </section>
@@ -96,7 +95,9 @@
 		<span class="count">{data.workingOn.length} route{data.workingOn.length === 1 ? '' : 's'}</span>
 	</div>
 	{#if data.workingOn.length === 0}
-		<p class="empty">No open projects yet. Log an attempt on theCrag and it will show up here.</p>
+		<p class="empty">
+			No open projects yet. Log unsent attempts on two different climbing days on theCrag.
+		</p>
 	{:else}
 		<div class="cards">
 			{#each data.workingOn as p (p.id)}
@@ -258,7 +259,7 @@
 		text-transform: lowercase;
 		border: 1px solid color-mix(in srgb, var(--accent-2) 40%, var(--line));
 		background: color-mix(in srgb, var(--band-intermediate) 32%, var(--paper));
-		color: color-mix(in srgb, var(--accent-2) 85%, var(--ink));
+		color: var(--ink);
 	}
 	.badge.muted {
 		background: color-mix(in srgb, var(--bg-deep) 65%, var(--paper));
