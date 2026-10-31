@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { eq, sql } from 'drizzle-orm';
 import { db } from './index';
-import { appSettings, ascents, goals, routes } from './schema';
+import { appSettings, ascents, goals, projects as projectRows, routes } from './schema';
 import {
 	invalidateIncompleteRouteCache,
 	legacyEnvSettings,
@@ -23,7 +23,8 @@ const ALL = [
 	'data:0005_repair_tlc_bare_geometry_coords',
 	'data:0006_preserve_aspect_tag_provenance',
 	'data:0007_preserve_weather_tag_provenance',
-	'data:0008_verify_immediate_parent_exposure'
+	'data:0008_verify_immediate_parent_exposure',
+	'data:0009_project_session_threshold'
 ];
 
 beforeEach(() => {
@@ -58,6 +59,36 @@ function seedOldGrades() {
 }
 
 describe('startup data migrations', () => {
+	it('rebuilds legacy single-session projects on upgrade', () => {
+		runDataMigrations();
+		db.run(sql`DELETE FROM schema_migrations WHERE id = 'data:0009_project_session_threshold'`);
+		const day = new Date().toISOString().slice(0, 10);
+		for (const [id, tick, numberAttempts] of [
+			[991, 'Attempt', 1],
+			[992, 'Red point', 3]
+		] as const) {
+			upsertAscents([
+				mapAscent({
+					id,
+					date: day,
+					numberAttempts,
+					tick: { name: tick },
+					route: { id, name: 'Synthetic project', grade: '24', style: 'Sport' }
+				})!
+			]);
+		}
+		const route = db.select().from(routes).where(eq(routes.externalId, '991')).get()!;
+		const now = new Date().toISOString();
+		db.insert(projectRows)
+			.values({ routeId: route.id, status: 'open', attemptCount: 1, updatedAt: now })
+			.run();
+		expect(runDataMigrations()).toEqual(['data:0009_project_session_threshold']);
+		const cached = db.select().from(projectRows).all();
+		expect(cached).toHaveLength(1);
+		expect(cached[0]).toMatchObject({ status: 'sent', attemptCount: 2 });
+		expect(runDataMigrations()).toEqual([]);
+	});
+
 	it('repairs CSV grades after earlier data migrations have already run', () => {
 		runDataMigrations();
 		db.run(sql`DELETE FROM schema_migrations WHERE id = 'data:0003_csv_au_boulder_grades'`);

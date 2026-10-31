@@ -55,38 +55,6 @@ describe('isUngradedRoute', () => {
 	});
 });
 
-describe('classifyRouteProject', () => {
-	it('marks open when there are unsent attempts and no sends', () => {
-		expect(
-			classifyRouteProject({ nonSendCount: 1, sendCount: 0, hadAttemptsBeforeSend: false })
-		).toBe('open');
-		expect(
-			classifyRouteProject({ nonSendCount: 3, sendCount: 0, hadAttemptsBeforeSend: false })
-		).toBe('open');
-	});
-
-	it('marks sent when fought then sent', () => {
-		expect(
-			classifyRouteProject({ nonSendCount: 2, sendCount: 1, hadAttemptsBeforeSend: true })
-		).toBe('sent');
-	});
-
-	it('never treats first-go onsight/flash as a project', () => {
-		expect(
-			classifyRouteProject({ nonSendCount: 0, sendCount: 1, hadAttemptsBeforeSend: false })
-		).toBe('none');
-		expect(
-			classifyRouteProject({ nonSendCount: 0, sendCount: 2, hadAttemptsBeforeSend: false })
-		).toBe('none');
-	});
-
-	it('still rejects first-go sends even if fight flag is wrongly set', () => {
-		expect(
-			classifyRouteProject({ nonSendCount: 0, sendCount: 1, hadAttemptsBeforeSend: true })
-		).toBe('none');
-	});
-});
-
 describe('isRecentlySent', () => {
 	const now = new Date('2026-10-27T12:00:00Z');
 
@@ -163,11 +131,11 @@ describe('summarizeRouteAscents', () => {
 		expect(classifyRouteProject(stats)).toBe('none');
 	});
 
-	it('opens a project from a single attempt', () => {
+	it('waits after a single attempt', () => {
 		const stats = summarizeRouteAscents([
 			{ ascentDate: '2026-04-01', isSend: false, isAttempt: true, numberAttempts: null }
 		]);
-		expect(classifyRouteProject(stats)).toBe('open');
+		expect(classifyRouteProject(stats)).toBe('none');
 		expect(stats.tryCount).toBe(1);
 		expect(stats.sessionCount).toBe(1);
 	});
@@ -221,5 +189,51 @@ describe('countTouched', () => {
 		expect(countTouched(rows, now)).toBe(
 			rows.filter((r) => isTouchedWithin(r.lastAttemptAt, now)).length
 		);
+	});
+});
+
+describe('project thresholds', () => {
+	const attempt = (ascentDate: string | null, numberAttempts: number | null = null) => ({
+		ascentDate,
+		numberAttempts,
+		isSend: false,
+		isAttempt: true
+	});
+	const send = (ascentDate: string, numberAttempts = 1) => ({
+		ascentDate,
+		numberAttempts,
+		isSend: true,
+		isAttempt: false
+	});
+	const classify = (rows: Parameters<typeof summarizeRouteAscents>[0]) =>
+		classifyRouteProject(summarizeRouteAscents(rows));
+	it('requires two valid days for an open project', () => {
+		expect(classify([attempt('2026-01-01', 10), attempt('2026-01-01')])).toBe('none');
+		expect(classify([attempt('2026-01-01'), attempt('2026-01-02')])).toBe('open');
+		expect(classify([attempt('2026-01-01'), attempt('2026-02-30'), attempt(null)])).toBe('none');
+	});
+	it('recognises a send on the second session', () => {
+		expect(classify([send('2026-01-02'), attempt('2026-01-01')])).toBe('sent');
+	});
+	it('requires two failed tries for a same-day completed project', () => {
+		expect(classify([attempt('2026-01-01'), send('2026-01-01')])).toBe('none');
+		expect(classify([attempt('2026-01-01', 2), send('2026-01-01')])).toBe('sent');
+		expect(classify([attempt('2026-01-01'), attempt('2026-01-01'), send('2026-01-01')])).toBe(
+			'sent'
+		);
+		expect(classify([send('2026-01-01', 3)])).toBe('sent');
+		expect(classify([send('2026-01-01', 2)])).toBe('none');
+		expect(classify([attempt('2026-01-01'), send('2026-01-01', 2)])).toBe('none');
+	});
+	it('ignores later attempts and repeats when classifying the first send', () => {
+		expect(classify([send('2026-01-01'), attempt('2026-01-02', 4), send('2026-01-03', 5)])).toBe(
+			'none'
+		);
+		expect(classify([attempt(null, 10), send('2026-01-01')])).toBe('none');
+	});
+	it('keeps timestamps on their written calendar day', () => {
+		expect(
+			classify([attempt('2026-01-01T01:00:00+14:00'), attempt('2026-01-01T23:00:00-10:00')])
+		).toBe('none');
 	});
 });

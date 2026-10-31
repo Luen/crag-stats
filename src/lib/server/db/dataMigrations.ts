@@ -82,7 +82,8 @@ const MIGRATIONS = [
 			repairAspectTagSources();
 			repairWeatherTagSources();
 		}
-	}
+	},
+	{ id: 'data:0009_project_session_threshold', apply: () => refreshProjects() }
 ];
 
 /**
