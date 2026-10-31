@@ -19,3 +19,7 @@ For each kind you see how many ascents and sends, the years they span, and your 
 ## No partner tagged
 
 The last line counts ascents with nobody in theCrag's **With** field, and how many were sends. That's not the same as soloing. It also includes days you climbed with someone but didn't tag them, and indoor sessions. It's a rough measure of how often you climb without logging a partner, and it includes your roped and free solos.
+
+## First rope-solo badges
+
+Successful **Lead solo** and **Roped Solo / Top rope solo** ascents unlock separate first-event badges. The card and badges share normalization of explicit solo ticks, including the documented `leadsolo` and `ropedsolo` identifiers and ordinary case/spacing/separator variants. Original provider tick text is retained. The card can count an explicitly classified ascent without a send, but the badges require successful completion and a valid calendar date. See [Badges](/docs/badges).

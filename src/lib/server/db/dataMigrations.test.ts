@@ -24,7 +24,8 @@ const ALL = [
 	'data:0006_preserve_aspect_tag_provenance',
 	'data:0007_preserve_weather_tag_provenance',
 	'data:0008_verify_immediate_parent_exposure',
-	'data:0009_project_session_threshold'
+	'data:0009_repair_explicit_solo_tick_flags',
+	'data:0010_project_session_threshold'
 ];
 
 beforeEach(() => {
@@ -61,7 +62,7 @@ function seedOldGrades() {
 describe('startup data migrations', () => {
 	it('rebuilds legacy single-session projects on upgrade', () => {
 		runDataMigrations();
-		db.run(sql`DELETE FROM schema_migrations WHERE id = 'data:0009_project_session_threshold'`);
+		db.run(sql`DELETE FROM schema_migrations WHERE id = 'data:0010_project_session_threshold'`);
 		const day = new Date().toISOString().slice(0, 10);
 		for (const [id, tick, numberAttempts] of [
 			[991, 'Attempt', 1],
@@ -82,7 +83,7 @@ describe('startup data migrations', () => {
 		db.insert(projectRows)
 			.values({ routeId: route.id, status: 'open', attemptCount: 1, updatedAt: now })
 			.run();
-		expect(runDataMigrations()).toEqual(['data:0009_project_session_threshold']);
+		expect(runDataMigrations()).toEqual(['data:0010_project_session_threshold']);
 		const cached = db.select().from(projectRows).all();
 		expect(cached).toHaveLength(1);
 		expect(cached[0]).toMatchObject({ status: 'sent', attemptCount: 2 });

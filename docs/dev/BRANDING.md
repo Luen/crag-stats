@@ -178,7 +178,7 @@ The First ascents footer credits theCrag route history when displayed FA/FFA or 
 
 Sidebar count badges and Training load status pills use `--ink` for their small text, retaining their semantic tinted backgrounds. Test multi-digit counts and the Spike state in both themes. Interactive crag maps expose a named group of named links, rather than an image role containing focusable descendants.
 
-World map (#313): `/map` uses bundled public-domain Natural Earth outlines, server-side ascent/place aggregation, native marker controls and a values table. Circles/glow use ascent counts. Stable `place` identity and `mapVenue` filters must survive logbook sort/page/form navigation. Shortest longitude arc and circular means prevent dateline splits; no third-party map requests or private notes.
+World map (#313): `/map` uses bundled public-domain Natural Earth outlines, server-side ascent/place aggregation, native marker controls and a values table. Glowing markers use ascent counts; glow is the only display style, with no mode toggle. Stable `place` identity and `mapVenue` filters must survive logbook sort/page/form navigation. Shortest longitude arc and circular means prevent dateline splits; no third-party map requests or private notes.
 
 Weather drill-downs (#307): the Weather conditions card links each condition row and entire daily-high bar to the logbook. Temperature ranges use `weatherHighMin` (inclusive) and `weatherHighMax` (exclusive), in Celsius, and persist through filtering, sorting and pagination. Card counts are outdoor location-days; the logbook shows every matching ascent, so counts can differ. The logbook Weather column shows cached daily high/low and precipitation plus notable condition chips on screens at least 1280px wide; smaller screens hide its header and cells and show the condition chips in the route cell instead. Indoor or uncached rows show a dash. No weather requests are made while viewing pages.
 
@@ -186,3 +186,7 @@ Weather source labels (#309): logbook desktop Weather cells and recent activity 
 Card display preferences (#296) use whitelisted cookies for SSR; legacy localStorage choices migrate on mount. The pre-paint script in `app.html` sets `html[data-card-prefs-migrating]` only when a whitelisted key exists in localStorage without its cookie, and only then do cookie-less cards reserve their layout (hidden) until migration completes. New visitors and no-JS clients see default cards immediately. Keep the key list in `app.html` in sync with `CARD_PREFERENCE_KEYS`. Cookie and storage failures remain nonfatal.
 
 Dashboard Partners (#298) shares the Ascents/Sessions/Areas preference with the Partners page. Rank the full partner set by the chosen metric before applying the dashboard seven-row limit; keep the title link to the full leaderboard. Compact toggle buttons wrap within quarter-width cards.
+
+First rope-solo badges (#319) reuse the existing blue carabiner for First Lead Rope Solo and purple knot for First Top-Rope Solo. Each has a distinct text title and first-completion detail; meaning never depends on colour alone.
+
+Project status pills use `--ink` text over their semantic tinted backgrounds so the small Open label meets contrast requirements in both themes. Projects browser coverage includes desktop/mobile cards in light and dark.

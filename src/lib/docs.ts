@@ -28,7 +28,7 @@ export const DOC_PAGES: readonly DocPage[] = [
 	{
 		slug: 'climbing-map',
 		title: 'Climbing map',
-		summary: 'Worldwide places, ascent-density circles and glow, filters and location coverage.'
+		summary: 'Worldwide places, glowing ascent-density markers, filters and location coverage.'
 	},
 	{
 		slug: 'climber-type',

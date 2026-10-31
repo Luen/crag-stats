@@ -1,3 +1,4 @@
+import { repairSoloTickFlags } from '../repairSoloTicks';
 import { repairAspectTagSources, repairWeatherTagSources } from '../repairAspectTags';
 import { eq, sql } from 'drizzle-orm';
 import { db, ensureSchema } from './index';
@@ -83,7 +84,14 @@ const MIGRATIONS = [
 			repairWeatherTagSources();
 		}
 	},
-	{ id: 'data:0009_project_session_threshold', apply: () => refreshProjects() }
+	{
+		id: 'data:0009_repair_explicit_solo_tick_flags',
+		apply: () => {
+			repairSoloTickFlags();
+			refreshProjects();
+		}
+	},
+	{ id: 'data:0010_project_session_threshold', apply: () => refreshProjects() }
 ];
 
 /**

@@ -1,3 +1,4 @@
+import { soloTickKind } from '#lib/soloTicks';
 export type ProviderId = 'thecrag' | 'mountainproject' | (string & {});
 
 export type SyncCursor = {
@@ -141,7 +142,7 @@ export function classifyTick(tick: string | null | undefined): {
 	const key = (tick ?? '').trim().toLowerCase();
 	if (!key) return { isSend: false, isAttempt: false };
 	if (ATTEMPT_TICKS.has(key)) return { isSend: false, isAttempt: true };
-	if (SEND_TICKS.has(key)) return { isSend: true, isAttempt: false };
+	if (SEND_TICKS.has(key) || soloTickKind(key) != null) return { isSend: true, isAttempt: false };
 	// Second / top rope clean still counts as send for volume analytics
 	if (key.includes('point') || key.includes('sight') || key === 'second') {
 		return { isSend: true, isAttempt: false };

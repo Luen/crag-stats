@@ -1,4 +1,7 @@
-import { describe, expect, it } from 'vitest';
+import { upsertAscents } from './ingest';
+import { wipeAllData } from './analytics';
+import { refreshProjects, listProjects, listDashboardProjects } from './projects';
+import { beforeEach, describe, expect, it } from 'vitest';
 import {
 	classifyRouteProject,
 	countTouched,
@@ -236,4 +239,155 @@ describe('project thresholds', () => {
 			classify([attempt('2026-01-01T01:00:00+14:00'), attempt('2026-01-01T23:00:00-10:00')])
 		).toBe('none');
 	});
+});
+
+it('does not count timestamped work after the first same-day send', () => {
+	const stats = summarizeRouteAscents([
+		{ ascentDate: '2026-01-01T09:00:00Z', isSend: true, isAttempt: false, numberAttempts: 1 },
+		{ ascentDate: '2026-01-01T10:00:00Z', isSend: false, isAttempt: true, numberAttempts: 3 }
+	]);
+	expect(classifyRouteProject(stats)).toBe('none');
+	expect(stats.triesBeforeSend).toBe(0);
+});
+
+describe('project session counts in list and dashboard', () => {
+	beforeEach(() => wipeAllData());
+	it('counts only valid written calendar days in project cards and ranking', () => {
+		upsertAscents(
+			['2026-10-29', '2026-10-30', '2026-02-30', '0000-01-01', null].map((ascentDate, i) => ({
+				provider: 'thecrag',
+				externalId: `valid-project-${i}`,
+				ascentDate,
+				isSend: false,
+				isAttempt: true,
+				route: {
+					provider: 'thecrag',
+					externalId: 'valid-project-route',
+					name: 'Synthetic project',
+					gearStyle: 'Sport'
+				}
+			}))
+		);
+		refreshProjects(new Date('2026-10-31T12:00:00Z'));
+		expect(listProjects('open')[0]?.sessionCount).toBe(2);
+		expect(listDashboardProjects(3, new Date('2026-10-31T12:00:00Z'))[0]?.sessionCount).toBe(2);
+	});
+});
+
+it('uses known times before stored ascent order for the first send on a written day', () => {
+	const rows = [
+		{
+			ascentId: 1,
+			ascentDate: '2026-01-01T08:00:00Z',
+			isSend: true,
+			isAttempt: false,
+			numberAttempts: 1
+		},
+		{
+			ascentId: 2,
+			ascentDate: '2026-01-01T09:00:00+02:00',
+			isSend: true,
+			isAttempt: false,
+			numberAttempts: 3
+		}
+	];
+	const stats = summarizeRouteAscents(rows);
+	expect(stats.sentAt).toBe('2026-01-01T09:00:00+02:00');
+	expect(classifyRouteProject(stats)).toBe('sent');
+	expect(classifyRouteProject(summarizeRouteAscents([...rows].reverse()))).toBe('sent');
+});
+
+it('uses stable ascent IDs for date-only send ties and keeps ambiguous same-day work', () => {
+	const first = {
+		ascentId: 1,
+		ascentDate: '2026-01-01',
+		isSend: true,
+		isAttempt: false,
+		numberAttempts: 1
+	};
+	const repeat = { ...first, ascentId: 2, numberAttempts: 5 };
+	expect(classifyRouteProject(summarizeRouteAscents([repeat, first]))).toBe('none');
+	const attempt = { ascentDate: '2026-01-01', isSend: false, isAttempt: true, numberAttempts: 2 };
+	expect(
+		classifyRouteProject(
+			summarizeRouteAscents([attempt, { ...first, ascentDate: '2026-01-01T09:00:00Z' }])
+		)
+	).toBe('sent');
+	const before = { ...attempt, ascentDate: '2026-01-01T08:00:00Z' };
+	expect(
+		classifyRouteProject(
+			summarizeRouteAscents([before, { ...first, ascentDate: '2026-01-01T09:00:00Z' }])
+		)
+	).toBe('sent');
+});
+
+it('keeps mixed timed and date-only send ordering independent of input order', () => {
+	const timedFirst = {
+		ascentId: 3,
+		ascentDate: '2026-01-01T08:00:00Z',
+		isSend: true,
+		isAttempt: false,
+		numberAttempts: 1
+	};
+	const dateOnly = {
+		ascentId: 2,
+		ascentDate: '2026-01-01',
+		isSend: true,
+		isAttempt: false,
+		numberAttempts: 3
+	};
+	const timedLater = {
+		ascentId: 1,
+		ascentDate: '2026-01-01T09:00:00Z',
+		isSend: true,
+		isAttempt: false,
+		numberAttempts: 1
+	};
+	for (const rows of [
+		[timedFirst, dateOnly, timedLater],
+		[timedLater, timedFirst, dateOnly],
+		[dateOnly, timedLater, timedFirst]
+	]) {
+		const stats = summarizeRouteAscents(rows);
+		expect(stats.sentAt).toBe('2026-01-01');
+		expect(classifyRouteProject(stats)).toBe('sent');
+	}
+});
+
+it('orders known send and attempt timestamps across different written dates and offsets', () => {
+	const first = {
+		ascentId: 2,
+		ascentDate: '2026-01-02T08:00:00+02:00',
+		isSend: true,
+		isAttempt: false,
+		numberAttempts: 1
+	};
+	const later = {
+		ascentId: 1,
+		ascentDate: '2026-01-01T23:00:00-10:00',
+		isSend: false,
+		isAttempt: true,
+		numberAttempts: 3
+	};
+	expect(classifyRouteProject(summarizeRouteAscents([later, first]))).toBe('none');
+	expect(summarizeRouteAscents([later, first]).triesBeforeSend).toBe(0);
+	const result = summarizeRouteAscents([
+		{ ...later, isSend: true, isAttempt: false, numberAttempts: 1 },
+		{ ...first, numberAttempts: 3 }
+	]);
+	expect(result.sentAt).toBe(first.ascentDate);
+	expect(classifyRouteProject(result)).toBe('sent');
+});
+
+it('orders different date-only send days before stored ascent IDs', () => {
+	const first = {
+		ascentId: 2,
+		ascentDate: '2026-01-01',
+		isSend: true,
+		isAttempt: false,
+		numberAttempts: 1
+	};
+	const later = { ...first, ascentId: 1, ascentDate: '2026-01-02', numberAttempts: 5 };
+	expect(classifyRouteProject(summarizeRouteAscents([later, first]))).toBe('none');
+	expect(summarizeRouteAscents([later, first]).sentAt).toBe(first.ascentDate);
 });

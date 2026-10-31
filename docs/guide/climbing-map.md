@@ -1,6 +1,6 @@
 # Climbing map
 
-The Map page shows where you have climbed around the world. Circles grow with logged ascent counts, including repeat ascents. Glow adds stronger light for higher counts. Counts are not unique routes; the values table lists both measures.
+The Map page shows where you have climbed around the world. Glowing markers grow with logged ascent counts, including repeat ascents, and glow more strongly for higher counts. Counts are not unique routes; the values table lists both measures.
 
 Nearby places cluster in a projected grid at the current zoom. Each place belongs to one cluster. Zoom in to separate them, or select a marker to see individual places and exact counts. Fit places frames your filtered locations using the shortest longitude arc, including across the international date line. The world outline uses an equirectangular projection, so shapes are distorted at high latitudes.
 
