@@ -494,3 +494,5 @@ World map (#313): `/map` uses bundled public-domain Natural Earth outlines, serv
 - Dashboard Partners (#298) shares the Ascents/Sessions/Areas preference with the Partners page. Rank the full partner set by the chosen metric before applying the dashboard seven-row limit; keep the title link to the full leaderboard. Compact toggle buttons wrap within quarter-width cards.
 
 - Rope-solo milestones (#319): `#lib/soloTicks` normalizes only explicit known lead/top-rope/aid solo ticks; provider completion classification and `soloKind` share it. First lead/top-rope badges additionally require a send and strict valid day; never infer them from missing partners or route style. One-shot stable IDs `first_lead_rope_solo` / `first_top_rope_solo`, no Almost there. Data migration 0009 repairs completion flags only with matching cached provider tick evidence, preserving route metadata, styles and notes; 0006–0008 belong to #318.
+
+- Solo card drill-down uses `/logbook?solo=toprope|lead|free|dws|aid` and shared `#lib/soloKind` classification (explicit tick wins over ascent style). Preserve the filter through sort/page/form navigation; hardest-send links remain separate.

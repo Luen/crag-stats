@@ -23,3 +23,5 @@ The last line counts ascents with nobody in theCrag's **With** field, and how ma
 ## First rope-solo badges
 
 Successful **Lead solo** and **Roped Solo / Top rope solo** ascents unlock separate first-event badges. The card and badges share normalization of explicit solo ticks, including the documented `leadsolo` and `ropedsolo` identifiers and ordinary case/spacing/separator variants. Original provider tick text is retained. The card can count an explicitly classified ascent without a send, but the badges require successful completion and a valid calendar date. See [Badges](/docs/badges).
+
+Click a solo-type card to open all matching ascents in the logbook, including attempts. The Solo type filter stays selected when you sort, paginate, or change other filters. The hardest-send link still opens that individual climb on theCrag.

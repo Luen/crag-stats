@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { SOLO_KINDS } from '#lib/soloKind';
 	import { SvelteURLSearchParams } from 'svelte/reactivity';
 	import GradeChip from '#lib/components/GradeChip.svelte';
 	import StyleBadge from '#lib/components/StyleBadge.svelte';
@@ -22,6 +23,7 @@
 		// Query builder for hrefs, rebuilt when called.
 		const p = new SvelteURLSearchParams();
 		if (data.q) p.set('q', data.q);
+		if (data.solo) p.set('solo', data.solo);
 		if (data.place) p.set('place', data.place);
 		if (data.mapVenue) p.set('mapVenue', data.mapVenue);
 		for (const s of data.styles) p.append('style', s);
@@ -206,6 +208,12 @@
 			placeholder="To (YYYY-MM-DD)"
 			aria-label="To date (overrides year/season when set)"
 		/>
+		<select name="solo" aria-label="Solo type" value={data.solo}>
+			<option value="">Any solo type</option>
+			{#each SOLO_KINDS as kind (kind.kind)}
+				<option value={kind.kind}>{kind.label}</option>
+			{/each}
+		</select>
 		<select name="season" aria-label="Season" value={data.season}>
 			<option value="">Any season</option>
 			<option value="ytd">Year to date</option>
