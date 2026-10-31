@@ -37,7 +37,7 @@ it('excludes tropics, high latitudes, bad dates and uncertain location sources',
 	for (const date of ['2018-00-00', '2025-02-29', '2025-06-31', '0000-01-01'])
 		expect(isSunFacingSummer(row(-34, date))).toBe(false);
 	expect(isSunFacingSummer({ ...row(), weatherLocation: null })).toBe(false);
-	for (const source of ['place', 'cached'] as const)
+	for (const source of ['place', 'cached', 'polygon'] as const)
 		expect(
 			isSunFacingSummer({
 				...row(),

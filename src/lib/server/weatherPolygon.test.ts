@@ -1,7 +1,6 @@
 import { expect, it } from 'vitest';
 import { weatherPolygonPoint } from './weatherPolygon';
-
-// Synthetic GeoJSON only. These are NOT captured theCrag payloads.
+// Synthetic GeoJSON only, never claimed as captured theCrag payloads.
 const box = (x: number, y: number, size: number) => [
 	[x, y],
 	[x + size, y],
@@ -10,9 +9,9 @@ const box = (x: number, y: number, size: number) => [
 	[x, y]
 ];
 const polygon = (...rings: number[][][]) => ({ type: 'Polygon', coordinates: rings });
-
-it('finds a strictly interior point in a concave polygon whose centroid is outside', () => {
-	const shape = [
+it('reads the supplied first exterior coordinate in longitude/latitude order, not the centre', () => {
+	expect(weatherPolygonPoint(polygon(box(150, -33, 0.04)))).toEqual({ lon: 150, lat: -33 });
+	const concave = [
 		[0, 0],
 		[0.04, 0],
 		[0.04, 0.01],
@@ -21,73 +20,30 @@ it('finds a strictly interior point in a concave polygon whose centroid is outsi
 		[0, 0.04],
 		[0, 0]
 	];
-	const p = weatherPolygonPoint(polygon(shape));
-	expect(p).not.toBeNull();
-	expect(p!.lat).toBeGreaterThan(0);
-	expect(p!.lon).toBeGreaterThan(0);
-	expect(p!.lat < 0.01 || p!.lon < 0.01).toBe(true);
+	expect(weatherPolygonPoint(polygon(concave))).toEqual({ lon: 0, lat: 0 });
 });
-
-it('avoids holes and ignores ring winding', () => {
-	const outer = box(10, 20, 0.04),
-		hole = box(10.01, 20.01, 0.02);
-	const p = weatherPolygonPoint(polygon(outer, hole));
-	expect(p).not.toBeNull();
-	expect(p!.lat > 20.01 && p!.lat < 20.03 && p!.lon > 10.01 && p!.lon < 10.03).toBe(false);
-	expect(weatherPolygonPoint(polygon(outer.toReversed(), hole.toReversed()))).toEqual(p);
+it('takes the first exterior vertex rather than a hole or another multipolygon component', () => {
+	const a = box(10, 20, 0.04),
+		hole = box(10.01, 20.01, 0.02),
+		b = box(10.06, 20, 0.02);
+	expect(weatherPolygonPoint(polygon(a, hole))).toEqual({ lon: 10, lat: 20 });
+	expect(weatherPolygonPoint({ type: 'MultiPolygon', coordinates: [[a, hole], [b]] })).toEqual({
+		lon: 10,
+		lat: 20
+	});
 });
-
-it('handles disjoint multipolygons and rejects overlapping components', () => {
-	const a = box(0, 0, 0.01),
-		b = box(0.03, 0, 0.02);
-	const p = weatherPolygonPoint({ type: 'MultiPolygon', coordinates: [[a], [b]] });
-	expect(p).not.toBeNull();
-	expect(p!.lon).toBeGreaterThan(0.03);
-	expect(p!.lon).toBeLessThan(0.05);
-	expect(
-		weatherPolygonPoint({ type: 'MultiPolygon', coordinates: [[a], [box(0.005, 0.005, 0.01)]] })
-	).toBeNull();
-});
-
-it('rejects self crossings, open/degenerate rings and invalid hole topology', () => {
-	for (const shape of [
-		polygon([
-			[0, 0],
-			[0.03, 0.03],
-			[0, 0.03],
-			[0.03, 0],
-			[0, 0]
-		]),
-		polygon(box(0, 0, 0.02).slice(0, -1)),
-		polygon([
-			[0, 0],
-			[0.01, 0.01],
-			[0.02, 0.02],
-			[0, 0]
-		]),
-		polygon(box(0, 0, 0.02), box(0.03, 0.03, 0.01)),
-		polygon(box(0, 0, 0.02), box(0.015, 0.015, 0.01)),
-		polygon(box(0, 0, 0.04), box(0.01, 0.01, 0.02), box(0.015, 0.015, 0.005)),
-		polygon(box(0, 0, 0.04), box(0.01, 0.01, 0.02), box(0.02, 0.02, 0.015))
-	])
-		expect(weatherPolygonPoint(shape)).toBeNull();
-});
-
-it('fails closed on broad, dateline, polar, malformed or oversized geometry', () => {
+it('rejects unsupported, malformed, open, collapsed and nonnumeric coordinate arrays', () => {
 	for (const shape of [
 		null,
 		[],
 		{ type: 'Point', coordinates: [0, 0] },
 		polygon(),
-		polygon(box(0, 0, 1)),
-		polygon(box(181, 0, 0.01)),
-		polygon(box(0, 89, 0.01)),
+		polygon(box(0, 0, 0.02).slice(0, -1)),
 		polygon([
-			[179.99, 0],
-			[-179.99, 0],
-			[-179.99, 0.01],
-			[179.99, 0.01],
-			[179.99, 0]
+			[0, 0],
+			[0, 0],
+			[0, 0],
+			[0, 0]
 		]),
 		polygon([
 			[0, 0],
@@ -112,6 +68,22 @@ it('fails closed on broad, dateline, polar, malformed or oversized geometry', ()
 				]
 			]
 		},
+		{ type: 'MultiPolygon', coordinates: [[box(0, 0, 0.01)], []] }
+	])
+		expect(weatherPolygonPoint(shape)).toBeNull();
+});
+it('rejects broad, dateline, polar, out-of-range and excessively large geometry', () => {
+	for (const shape of [
+		polygon(box(0, 0, 1)),
+		polygon(box(181, 0, 0.01)),
+		polygon(box(0, 89, 0.01)),
+		polygon([
+			[179.99, 0],
+			[-179.99, 0],
+			[-179.99, 0.01],
+			[179.99, 0.01],
+			[179.99, 0]
+		]),
 		{ type: 'MultiPolygon', coordinates: Array(17).fill([box(0, 0, 0.01)]) },
 		polygon(Array.from({ length: 257 }, (_, i) => [i / 10000, 0]))
 	])

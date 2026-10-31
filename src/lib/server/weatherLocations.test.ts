@@ -1,8 +1,10 @@
+import { createHash } from 'node:crypto';
 import { beforeEach, expect, it, vi } from 'vitest';
 import { eq } from 'drizzle-orm';
 import { db } from './db';
 import {
 	routes,
+	ascents,
 	weatherDays,
 	weatherLocations,
 	weatherPlaceOverrides,
@@ -72,7 +74,7 @@ const response = () =>
 			]
 		})
 	);
-it('prefers route, then immediate sector/crag points; rejects country and unverified polygons', () => {
+it('prefers route, then crag, then sector points; rejects country and invalid geometry', () => {
 	const route = {
 		name: 'R',
 		lat: 0,
@@ -85,9 +87,9 @@ it('prefers route, then immediate sector/crag points; rejects country and unveri
 	};
 	expect(resolveWeatherLocation(route, 'now')).toMatchObject({ source: 'route', lat: 0, lon: 0 });
 	expect(resolveWeatherLocation({ ...route, lat: null, lon: null }, 'now')).toMatchObject({
-		source: 'sector',
-		lat: 20,
-		lon: 30
+		source: 'crag',
+		lat: 50,
+		lon: 40
 	});
 	expect(
 		resolveWeatherLocation(
@@ -257,4 +259,120 @@ it('prefers an enriched route point over a logbook crag point across every weath
 		.run();
 	expect(listLogbook({ weather: 'heat' }).total).toBe(1);
 	expect(getDashboardStats().weatherConditions?.withWeather).toBe(1);
+});
+
+// Explicit synthetic GeoJSON; no claim that this is a captured provider payload.
+const areaPolygon = {
+	type: 'Polygon',
+	coordinates: [
+		[
+			[150.29, -33.61],
+			[150.31, -33.61],
+			[150.31, -33.59],
+			[150.29, -33.59],
+			[150.29, -33.61]
+		]
+	]
+};
+it('uses typed area polygons only after all points and excludes broad/unknown geometry', () => {
+	const crag = { id: 30, name: 'Polygon crag', geometry: areaPolygon };
+	const area = { ancestors: { TLC: crag } };
+	expect(resolveWeatherLocation(area, 'now')).toMatchObject({
+		source: 'polygon',
+		areaId: '30',
+		lat: -33.61,
+		lon: 150.29
+	});
+	expect(
+		resolveWeatherLocation(
+			{ ...area, ancestors: { ...area.ancestors, parent: { id: 31, geometry: [151, -34] } } },
+			'now'
+		)
+	).toMatchObject({ source: 'sector', lat: -34 });
+	for (const invalid of [
+		{ ...crag, type: 'country' },
+		{ ...crag, geometry: areaPolygon.coordinates },
+		{ id: 30, Fence: areaPolygon },
+		{ geometry: areaPolygon }
+	])
+		expect(resolveWeatherLocation({ ancestors: { TLC: invalid } }, 'now')).toBeNull();
+	expect(
+		resolveWeatherLocation({ ancestors: { TLC: crag, country: { id: 30 } } }, 'now')
+	).toBeNull();
+});
+it('uses polygon weather throughout the shared pipeline without moving routes or awarding badges', () => {
+	const ascent = raw();
+	Object.assign(ascent.route.ancestors.TLC, { geometry: areaPolygon });
+	upsertAscents([mapAscent(ascent)!]);
+	const routeBefore = db.select().from(routes).get()!;
+	expect(listPendingWeatherDays(50, NOW)).toEqual([
+		{ latKey: -33.6, lonKey: 150.3, day: '2025-01-01' }
+	]);
+	db.insert(weatherDays)
+		.values({
+			latKey: -33.6,
+			lonKey: 150.3,
+			day: '2025-01-01',
+			tempMaxC: 38,
+			status: 'ok',
+			fetchedAt: 'now'
+		})
+		.run();
+	expect(listLogbook({ weather: 'heat' }).rows[0].weatherLocation).toMatchObject({
+		source: 'polygon'
+	});
+	const stats = getDashboardStats();
+	expect(stats.weatherConditions?.withWeather).toBe(1);
+	expect(stats.heatmap[0].weather?.tempMaxC).toBe(38);
+	expect(stats.badges.earned.some((b) => b.id === 'weather_heat')).toBe(false);
+	expect(db.select().from(routes).get()).toEqual(routeBefore);
+	// A route point in either cache beats a polygon from the other cache.
+	db.update(routes)
+		.set({ routeApiJson: JSON.stringify({ lat: -34, lon: 151 }) })
+		.run();
+	expect([...loadWeatherLocations().values()][0]).toMatchObject({ source: 'route', lat: -34 });
+	expect(listLogbook({ weather: 'heat' }).total).toBe(0);
+});
+it('prefers a crag point over a sector point from the other payload', () => {
+	const ascent = raw();
+	Object.assign(ascent.route.ancestors, { parent: { id: 31, geometry: [151, -34] } });
+	upsertAscents([mapAscent(ascent)!]);
+	db.update(routes)
+		.set({
+			routeApiJson: JSON.stringify({ ancestors: { TLC: { id: 30, geometry: [150.3, -33.6] } } })
+		})
+		.run();
+	expect([...loadWeatherLocations().values()][0]).toMatchObject({ source: 'crag', lat: -33.6 });
+});
+
+it('invalidates a pre-polygon cached unresolved location without changing provider data', () => {
+	const ascent = raw();
+	Object.assign(ascent.route.ancestors.TLC, { geometry: areaPolygon });
+	upsertAscents([mapAscent(ascent)!]);
+	const r = db.select().from(routes).get()!;
+	// Signature used by the shipped v1 resolver, before the policy version prefix.
+	const legacySignature = createHash('sha256')
+		.update(
+			JSON.stringify([
+				r.updatedAt,
+				r.name,
+				r.gearStyle,
+				r.tagsJson,
+				r.cragName,
+				r.areaExternalId,
+				r.parentExternalId,
+				r.lat,
+				r.lon,
+				r.routeApiJson,
+				db.select().from(ascents).get()!.rawJson,
+				undefined,
+				undefined
+			])
+		)
+		.digest('hex');
+	db.insert(weatherLocations)
+		.values({ routeId: r.id, signature: legacySignature, locationJson: null, resolvedAt: 'old' })
+		.run();
+	expect(loadWeatherLocations().get(r.id)?.source).toBe('polygon');
+	expect(db.select().from(weatherLocations).get()?.signature).not.toBe(legacySignature);
 });

@@ -107,6 +107,37 @@ for (const colorScheme of ['light', 'dark'] as const)
 			await expect(group).toContainText('1/1 unresolved');
 			await page.goto('/logbook?weather=rain&q=Fallback');
 			await expect(page.locator('.head')).toContainText('0 ascents');
+
+			// Synthetic typed GeoJSON verifies the complete cached polygon → UI path.
+			const stored = db.prepare('SELECT raw_json FROM ascents WHERE route_id=?').get(ids[0]) as {
+				raw_json: string;
+			};
+			const polygonRaw = JSON.parse(stored.raw_json);
+			polygonRaw.route.ancestors.TLC.geometry = {
+				type: 'Polygon',
+				coordinates: [
+					[
+						[133.29, -44.41],
+						[133.31, -44.41],
+						[133.31, -44.39],
+						[133.29, -44.39],
+						[133.29, -44.41]
+					]
+				]
+			};
+			db.prepare('UPDATE ascents SET raw_json=? WHERE route_id=?').run(
+				JSON.stringify(polygonRaw),
+				ids[0]
+			);
+			await page.goto('/settings/weather-locations');
+			await expect(group).toContainText('0/1 unresolved');
+			await expect(group).toContainText('polygon');
+			await page.goto('/logbook?weather=rain&q=Fallback');
+			await expect(page.locator('.head')).toContainText('1 ascent');
+			await expect(page.locator('.weather-cell').last()).toContainText('Approximate area polygon');
+			await expect(page.locator('.weather-cell').last()).toContainText('High 38°C');
+			await page.setViewportSize({ width: 800, height: 1000 });
+			await expect(page.locator('tbody')).toContainText('Approximate area polygon');
 			await page.goto('http://localhost:4302/settings/weather-locations');
 			await expect(page).toHaveURL(/\/login/);
 		} finally {

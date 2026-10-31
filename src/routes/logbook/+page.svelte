@@ -533,9 +533,11 @@
 											? 'Approximate nearby place'
 											: row.weatherLocation.source === 'route'
 												? 'Route'
-												: row.weatherLocation.source === 'cached'
-													? 'Cached point'
-													: 'Approximate crag/sector'} · {row.weatherLocation.name}</span
+												: row.weatherLocation.source === 'polygon'
+													? 'Approximate area polygon'
+													: row.weatherLocation.source === 'cached'
+														? 'Cached point'
+														: 'Approximate crag/sector'} · {row.weatherLocation.name}</span
 									>{/if}
 								<span
 									>High {row.weather.tempMaxC == null

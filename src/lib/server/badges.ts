@@ -1041,7 +1041,7 @@ export function buildBadges(
 
 		// Keep the indoor guard for callers that do not supply an explicit outdoor flag.
 		const weather =
-			row.weatherLocation?.source === 'place'
+			row.weatherLocation?.source === 'place' || row.weatherLocation?.source === 'polygon'
 				? null
 				: lookupAscentWeather(context.weatherByKey, { ...row, outdoor });
 		if (weather) {
