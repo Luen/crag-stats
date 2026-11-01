@@ -166,7 +166,15 @@
 				onclick={() => scrollBy(-1)}
 				aria-label="Scroll badges left">‹</button
 			>
-			<div class="scroller" bind:this={scroller}>
+			<div
+				class="scroller"
+				{@attach (node) => {
+					scroller = node;
+					return () => {
+						scroller = undefined;
+					};
+				}}
+			>
 				{#each cards as b (b.id)}
 					{@render badgeCard(b)}
 				{/each}
@@ -324,6 +332,7 @@
 		font-family: var(--font-display);
 	}
 	.detail {
+		overflow-wrap: anywhere;
 		margin: 0;
 		font-size: 0.8rem;
 		color: var(--ink-muted);

@@ -518,3 +518,5 @@ World map (#313): `/map` uses bundled public-domain Natural Earth outlines, serv
 - Solo card drill-down uses `/logbook?solo=toprope|lead|free|dws|aid` and shared `#lib/soloKind` classification (explicit tick wins over ascent style). Preserve the filter through sort/page/form navigation; hardest-send links remain separate.
 
 - Daily streak records/badges (#339) share `#lib/dayStreaks`: unique strict written calendar days, UTC adjacency, earliest longest-run tie. Card exposes longestStartDate/longestEndDate and formats them as calendar dates. One-shot streak_days_7/10/30 badges use the first threshold-reaching day, include attempts/indoor climbs and have no Almost there counter. Current day/week/month logic is unchanged; do not infer streaks from log timestamps.
+
+- Partner context (#349): `ascentPartners` formats case-insensitive distinct upstream names. Badge details (including day/cumulative achievements) refer only to the linked qualifying ascent. Hardest/notable/recent cards and grade/FA milestones retain that ascent attribution; never infer companions from private notes or route-level aggregates.

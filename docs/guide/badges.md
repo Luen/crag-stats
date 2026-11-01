@@ -70,3 +70,7 @@ between time zones.
 Each badge is dated to the earliest day its threshold was reached. Taking a break
 does not erase a milestone in your recorded history. These are one-shot awards
 and do not appear in Almost there.
+
+## Who you climbed with
+
+Earned badges with a qualifying climb show its recorded companions. “Partners on this ascent” refers only to the linked climb, including badges earned across several pitches, days or routes. It is not a list of everyone who contributed to the whole achievement. Missing names do not imply a solo ascent.

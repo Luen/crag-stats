@@ -659,6 +659,7 @@ export function getDashboardStats(
 				hardestDate: relativeTime(hardest?.ascentDate ?? null),
 				hardestStars: hardest?.stars ?? null,
 				hardestPitchLabel: hardest?.pitchLabel ?? null,
+				hardestPartners: hardest?.partners ?? null,
 				bandShares: GRADE_BANDS.map((b) => ({
 					band: b.id,
 					name: b.name,
@@ -822,6 +823,7 @@ export function getDashboardStats(
 		return {
 			discipline,
 			id: r.id,
+			partners: r.partners,
 			routeName: displayRouteName(r.routeName, r.pitchLabel, r.ascentLabel),
 			gradeRaw: raw,
 			gradeLabel: score != null ? formatGrade(score, isBoulder, preferredSystem, raw) : raw,

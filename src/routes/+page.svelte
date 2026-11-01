@@ -35,6 +35,7 @@
 	import VolumeChart from '#lib/components/VolumeChart.svelte';
 	import YearlyStats from '#lib/components/YearlyStats.svelte';
 	import { packLayoutRows, type DashCardId } from '#lib/dashboardLayout';
+	import { ascentPartners } from '#lib/partnerStats';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -290,6 +291,9 @@
 								{/if}
 								· <TickTypeIcon tick={climb.tickType} />
 							</div>
+							{#if ascentPartners(climb.partners)}
+								<div class="sub companions">{ascentPartners(climb.partners)}</div>
+							{/if}
 						</div>
 						<GradeChip grade={climb.gradeLabel ?? climb.gradeRaw} band={climb.gradeBand} />
 					</li>
@@ -318,10 +322,10 @@
 								{#if climb.quality}
 									· {climb.quality}
 								{/if}
-								{#if climb.partners}
-									· with {climb.partners}
-								{/if}
 							</div>
+							{#if ascentPartners(climb.partners)}
+								<div class="sub companions">{ascentPartners(climb.partners)}</div>
+							{/if}
 							<TagChips tags={climb.tags} />
 							<WeatherChips
 								location={climb.weatherLocation}
@@ -430,6 +434,9 @@
 {/if}
 
 <style>
+	.companions {
+		overflow-wrap: anywhere;
+	}
 	.customize {
 		margin: 0 0 0.75rem;
 		text-align: right;

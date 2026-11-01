@@ -118,6 +118,7 @@
 		font-size: 0.95rem;
 	}
 	.detail {
+		overflow-wrap: anywhere;
 		color: var(--ink-muted);
 		font-size: 0.85rem;
 	}

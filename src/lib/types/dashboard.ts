@@ -38,6 +38,7 @@ export type NotableRow = {
 	hardestStars: number | null;
 	/** e.g. P1 when only some pitches of a multipitch were climbed */
 	hardestPitchLabel: string | null;
+	hardestPartners?: string | null;
 	bandShares: { band: number; name: string; count: number; color: string }[];
 };
 
@@ -242,6 +243,7 @@ export type DashboardStats = {
 	};
 	/** Routes (ranked on Ewbank) first, then boulders (ranked on V-scale). */
 	hardestSends: {
+		partners: string | null;
 		id: number;
 		discipline: 'route' | 'boulder';
 		routeName: string;

@@ -3,6 +3,7 @@
 	import StyleBadge from '#lib/components/StyleBadge.svelte';
 	import TickTypeIcon from '#lib/components/TickTypeIcon.svelte';
 	import type { NotableRow } from '#lib/types/dashboard';
+	import { ascentPartners } from '#lib/partnerStats';
 
 	type Props = { byStyle: NotableRow[]; byArea: NotableRow[] };
 	let { byStyle, byArea }: Props = $props();
@@ -49,6 +50,9 @@
 		{/if}
 		{#if row.hardestDate}
 			<span class="ago">{row.hardestDate}</span>
+		{/if}
+		{#if ascentPartners(row.hardestPartners)}
+			<span class="companions">{ascentPartners(row.hardestPartners)}</span>
 		{/if}
 	</div>
 {/snippet}
@@ -117,6 +121,11 @@
 </article>
 
 <style>
+	.companions {
+		flex-basis: 100%;
+		overflow-wrap: anywhere;
+		color: var(--ink-muted);
+	}
 	.panel {
 		padding: 1.1rem 1.2rem;
 		border-radius: 1rem;
