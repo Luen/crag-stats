@@ -71,7 +71,16 @@ ESLint time is almost all type-aware parsing of `.svelte` files (`projectService
 
 E2E, same build and similar machine load, run back to back: 81 tests in 2.7 min (159.8 s summed) → 71 tests in 2.6 min (151.4 s summed). Per spec: weather drill-downs −5.0 s, solo cards −3.0 s, world map −2.6 s, sun-facing badge −2.2 s, weather locations −2.1 s. The saving is small because the axe scans themselves dominate, and every scanned state is kept.
 
-CI timings after this change: see the PR for #325.
+First CI run after the change (PR #340, cold Playwright cache):
+
+| Job / step                  | Before                         | After                                               |
+| --------------------------- | ------------------------------ | --------------------------------------------------- |
+| Lint + types + unit result  | after the whole job, 180–242 s | `check` job: 53 s (lint 14 s, check 8 s, unit 12 s) |
+| Browser path                | inside `check`                 | `e2e` job: 190 s (E2E step 143 s)                   |
+| Install Playwright Chromium | 13–17 s                        | 16 s (cache miss); skipped on later hits            |
+| `docker (amd64)`            | 67–131 s                       | 91 s                                                |
+
+The real gain is that lint, type and unit failures now report in about a minute instead of waiting behind the browser suite. The browser path itself is about as long as before: the E2E step's runtime is within the old range, and runner variance is larger than the consolidation saving. `docker (arm64)` still sets PR wall time.
 
 ### Investigated and not changed
 
