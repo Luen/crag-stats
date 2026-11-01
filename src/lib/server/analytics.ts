@@ -1159,6 +1159,7 @@ function normalizeList(single: string | undefined, many: string[] | undefined): 
 }
 
 export function listLogbook(filters?: {
+	route?: number;
 	q?: string;
 	/** Single style (legacy / deep links); prefer `styles` for multi-select */
 	style?: string;
@@ -1305,6 +1306,7 @@ export function listLogbook(filters?: {
 		.all()
 		.map((r) => attachWeatherLocation(r, weatherLocations));
 
+	if (filters?.route != null) rows = rows.filter((r) => r.routeId === filters.route);
 	if (filters?.place)
 		rows = rows.filter((r) => validMapCoords(r.lat, r.lon) && mapPlaceKey(r) === filters.place);
 	if (filters?.mapVenue === 'outdoor' || filters?.mapVenue === 'indoor')

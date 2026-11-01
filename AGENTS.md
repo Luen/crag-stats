@@ -500,6 +500,8 @@ World map (#313): `/map` uses bundled public-domain Natural Earth outlines, serv
 
 - Rope-solo milestones (#319): `#lib/soloTicks` normalizes only explicit known lead/top-rope/aid solo ticks; provider completion classification and `soloKind` share it. First lead/top-rope badges additionally require a send and strict valid day; never infer them from missing partners or route style. One-shot stable IDs `first_lead_rope_solo` / `first_top_rope_solo`, no Almost there. Data migration 0009 repairs completion flags only with matching cached provider tick evidence, preserving route metadata, styles and notes; 0006–0008 belong to #318.
 
+- Seasonality search (#331) at `/seasonality` uses cached logged-route curves only. Ranking is selected-month / annual-peak (no cutoff); zero curves have no signal. Share `weightedSeasonality` with Best months, keep provider area identities separate, preserve URL filters, and use exact `/logbook?route=<local id>` links rather than name search. No provider fetch on view/search.
+
 - Recent activities (#333): order by valid written climbing day descending, then provider logDate instant descending, then stored ascent ID descending. Missing/invalid log times follow known times; unzoned log clocks default to UTC. Never use epoch/updated_at (edits/sync) as log creation time. Sort the full set before the twenty-row limit, and keep the displayed ascent date unchanged.
 
 - Solo card drill-down uses `/logbook?solo=toprope|lead|free|dws|aid` and shared `#lib/soloKind` classification (explicit tick wins over ascent style). Preserve the filter through sort/page/form navigation; hardest-send links remain separate.
