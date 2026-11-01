@@ -48,7 +48,7 @@ export async function syncTheCragCsv(stillCurrent: () => boolean) {
 			const localCount =
 				db.select({ n: count() }).from(ascents).where(eq(ascents.provider, PROVIDER)).get()?.n ?? 0;
 			assertCsvExportPlausibleForPrune(localCount, rows.length);
-			upsertAscents(rows);
+			const created = upsertAscents(rows);
 			const pruned = reconcileProviderAscents(
 				PROVIDER,
 				rows.map((a) => a.externalId),
@@ -69,7 +69,7 @@ export async function syncTheCragCsv(stillCurrent: () => boolean) {
 				routesTicked: null,
 				rawJson: null
 			});
-			return { count: rows.length, profileName: username, pruned };
+			return { count: rows.length, created, profileName: username, pruned };
 		},
 		{ behavior: 'immediate' }
 	);

@@ -193,6 +193,8 @@ Solo climbing cards use a full-card link to the matching logbook solo type with 
 
 Project status pills use `--ink` text over their semantic tinted backgrounds so the small Open label meets contrast requirements in both themes. Projects browser coverage includes desktop/mobile cards in light and dark.
 
+Settings sync completion (#335) uses the existing success-banner tokens with a text heading and a short count list in a status region. Skipped runs use the neutral hint banner. Counts use the configured number locale and include explicit new/refreshed/removed labels; do not rely on colour alone.
+
 Seasonality search (#331): responsive result cards with orange annual month strips, selected-month underline and expandable numeric tables. Native labelled month/search/view/sort controls submit shareable URLs. Display data coverage and seasonal score in text; no colour-only meaning. Best months links to the search page.
 
 Streaks (#339): retain the three current-counter tiles and longest-length footer; show the all-time record's formatted start/end dates on a wrapping text line below it. Use one date for a single-day record and no dates for an empty record. Streak badges reuse the calendar icon with green/blue/purple tones for 7/10/30 days.

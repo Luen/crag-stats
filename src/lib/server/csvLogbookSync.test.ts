@@ -167,3 +167,16 @@ it('refuses to mix another account into an existing logbook', async () => {
 	expect(downloadLogbook).not.toHaveBeenCalled();
 	expect(db.select().from(theCragWebSessions).all()).toEqual([]);
 });
+
+it('reports actual new routes and ascents, counting a shared route once and unchanged rows as refreshed', async () => {
+	const rows = [sample[0], { ...sample[0], externalId: 'another-ascent' }];
+	vi.mocked(downloadLogbook).mockResolvedValue(rows);
+	const first = await syncTheCragCsv(() => true);
+	expect(first).toMatchObject({ count: 2, created: { routes: 1, ascents: 2 } });
+	const repeat = await syncTheCragCsv(() => true);
+	expect(repeat).toMatchObject({
+		count: 2,
+		created: { routes: 0, ascents: 0 },
+		pruned: { deletedAscents: 0, deletedRoutes: 0 }
+	});
+});

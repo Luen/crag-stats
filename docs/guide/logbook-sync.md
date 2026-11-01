@@ -2,6 +2,20 @@
 
 Crag Stats can sync through theCrag's supporter API or download your CSV export with a saved login. Choose one mode on the server. Both use the existing schedule (`SYNC_CRON`, daily by default), **Settings → Sync now** (open **`/settings`**, or **`/login`** first when `APP_PASSWORD` is set), and Docker worker. A new installation syncs on startup when configured.
 
+## What a manual sync imported
+
+After **Sync now** or **Full re-sync** succeeds, Settings shows processed ascents,
+new ascents, existing ascents refreshed, new routes, and removed ascents/routes.
+A route shared by several ascents counts as one new route. “Refreshed” means an
+existing ascent was processed again; it does not mean its contents changed.
+An unchanged logbook therefore shows zero additions/removals and existing ascents
+refreshed. Skipped runs and errors show their own messages, not a success summary.
+
+Manual CSV uploads show processed/new/refreshed counts too, but never remove
+missing entries. Route-history and weather enrichment are separate background
+imports and are not included in these logbook counts. The summary describes the
+completed button action; it is not a persistent sync history.
+
 ## API sync (default)
 
 Set `THECRAG_API_KEY` to your supporter logbook read key. Leave `THECRAG_SYNC_MODE` unset or set it to `api`. Each sync reads the full logbook and reconciles local ascents, including deletions. This mode provides richer route, profile and multipitch data.

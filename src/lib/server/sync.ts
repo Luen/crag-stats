@@ -72,12 +72,15 @@ export async function runTheCragSync(opts?: { full?: boolean }) {
 			return { skipped: false as const, ...result, maxEpoch: null };
 		}
 		const seen = new Set<string>();
+		const created = { routes: 0, ascents: 0 };
 
 		// Always full pull — incremental `since` cannot detect deletes.
 		const result = await syncTheCragAll(apiKey, { since: null }, async (batch) => {
 			assertCurrent();
 			if (batch.profile) upsertProfile(batch.profile);
-			upsertAscents(batch.ascents);
+			const inserted = upsertAscents(batch.ascents);
+			created.routes += inserted.routes;
+			created.ascents += inserted.ascents;
 			for (const a of batch.ascents) seen.add(a.externalId);
 		});
 		assertCurrent();
@@ -106,6 +109,7 @@ export async function runTheCragSync(opts?: { full?: boolean }) {
 		return {
 			skipped: false as const,
 			count: result.count,
+			created,
 			maxEpoch: result.maxEpoch,
 			profileName: result.profile?.name ?? null,
 			pruned
