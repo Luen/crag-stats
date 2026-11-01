@@ -1562,6 +1562,7 @@ export function listLogbook(filters?: {
 
 export function wipeAllData() {
 	ensureSchema();
+	db.run(sql`DELETE FROM app_settings WHERE key = 'offline_revision'`);
 	forgetTheCragSession();
 	resetFirstImport();
 	// Abandon any in-flight route-history import before clearing tables (#74).

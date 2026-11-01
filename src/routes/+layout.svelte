@@ -191,7 +191,12 @@
 <div class="app" class:drawer-open={drawerOpen}>
 	<header class="topbar">
 		<button
-			bind:this={toggleBtn}
+			{@attach (node) => {
+				toggleBtn = node;
+				return () => {
+					toggleBtn = undefined;
+				};
+			}}
 			type="button"
 			class="icon-btn"
 			onclick={toggleSidebar}
@@ -246,7 +251,12 @@
 
 	<!-- Off-screen drawer is inert on mobile so hidden links aren't tabbable. -->
 	<aside
-		bind:this={sideEl}
+		{@attach (node) => {
+			sideEl = node;
+			return () => {
+				sideEl = undefined;
+			};
+		}}
 		class="side"
 		id="side-nav"
 		aria-label="Primary"
@@ -300,6 +310,7 @@
 				<a href="https://www.thecrag.com/" target="_blank" rel="noreferrer">theCrag</a>
 				·
 				<a href={data.githubUrl} target="_blank" rel="noreferrer">{data.appVersion}</a>
+				· <a href="/offline" data-sveltekit-reload>Offline copy</a>
 			</p>
 		</footer>
 	</div>
