@@ -190,3 +190,5 @@ Dashboard Partners (#298) shares the Ascents/Sessions/Areas preference with the 
 First rope-solo badges (#319) reuse the existing blue carabiner for First Lead Rope Solo and purple knot for First Top-Rope Solo. Each has a distinct text title and first-completion detail; meaning never depends on colour alone.
 
 Project status pills use `--ink` text over their semantic tinted backgrounds so the small Open label meets contrast requirements in both themes. Projects browser coverage includes desktop/mobile cards in light and dark.
+
+Settings sync completion (#335) uses the existing success-banner tokens with a text heading and a short count list in a status region. Skipped runs use the neutral hint banner. Counts use the configured number locale and include explicit new/refreshed/removed labels; do not rely on colour alone.

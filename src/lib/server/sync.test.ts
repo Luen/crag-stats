@@ -16,9 +16,13 @@ vi.mock('./csvLogbookSync', () => ({ syncTheCragCsv: vi.fn() }));
 vi.mock('./providers/thecrag', () => ({ syncTheCragAll: vi.fn() }));
 vi.mock('./ingest', () => ({
 	getOrCreateSyncState: vi.fn(),
-	reconcileProviderAscents: vi.fn(() => 0),
+	reconcileProviderAscents: vi.fn(() => ({
+		deletedAscents: 0,
+		deletedRoutes: 0,
+		deletedProjects: 0
+	})),
 	updateSyncState: vi.fn(),
-	upsertAscents: vi.fn(),
+	upsertAscents: vi.fn(() => ({ routes: 0, ascents: 0 })),
 	upsertProfile: vi.fn()
 }));
 vi.mock('./projects', () => ({ refreshProjects: vi.fn() }));
@@ -36,11 +40,13 @@ it('uses CSV when selected, returns CSV prune stats, and triggers normal post-sy
 	vi.mocked(getTheCragSyncConfiguration).mockReturnValue({ mode: 'csv', configured: true });
 	vi.mocked(syncTheCragCsv).mockResolvedValue({
 		count: 2,
+		created: { routes: 1, ascents: 1 },
 		profileName: 'Synthetic climber',
 		pruned: { deletedAscents: 1, deletedRoutes: 0, deletedProjects: 0 }
 	});
 	expect(await runTheCragSync()).toMatchObject({
 		count: 2,
+		created: { routes: 1, ascents: 1 },
 		pruned: { deletedAscents: 1, deletedRoutes: 0, deletedProjects: 0 },
 		maxEpoch: null
 	});
@@ -63,6 +69,7 @@ it('does not record a successful sync or recreate state after a wipe', async () 
 		invalidateLogbookSync();
 		return {
 			count: 2,
+			created: { routes: 1, ascents: 1 },
 			profileName: 'Synthetic climber',
 			pruned: { deletedAscents: 0, deletedRoutes: 0, deletedProjects: 0 }
 		};
