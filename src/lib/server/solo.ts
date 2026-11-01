@@ -9,7 +9,8 @@
  * - Deep water solo: climbed gear style "dws"
  */
 
-import { soloTickKind } from '#lib/soloTicks';
+import { SOLO_KINDS, soloKind } from '#lib/soloKind';
+export { SOLO_KINDS, soloKind } from '#lib/soloKind';
 import type { SoloKind, SoloStats } from '#lib/types/dashboard';
 
 export type SoloRow = {
@@ -27,26 +28,6 @@ export type SoloRow = {
 	band: number | null;
 	url: string | null;
 };
-
-export const SOLO_KINDS: readonly { kind: SoloKind; label: string }[] = [
-	{ kind: 'toprope', label: 'Top-rope solo' },
-	{ kind: 'lead', label: 'Lead solo' },
-	{ kind: 'free', label: 'Free solo' },
-	{ kind: 'dws', label: 'Deep water solo' },
-	{ kind: 'aid', label: 'Aid solo' }
-];
-
-export function soloKind(row: Pick<SoloRow, 'tickType' | 'ascentGearStyle'>): SoloKind | null {
-	const explicit = soloTickKind(row.tickType);
-	if (explicit) return explicit;
-	const gear = (row.ascentGearStyle ?? '')
-		.trim()
-		.toLowerCase()
-		.replace(/[\s_]+/g, '-');
-	if (gear === 'dws' || gear === 'deep-water-solo') return 'dws';
-	if (gear === 'solo' || gear === 'free-solo') return 'free';
-	return null;
-}
 
 function hasPartner(partners: string | null): boolean {
 	return Boolean((partners ?? '').trim());

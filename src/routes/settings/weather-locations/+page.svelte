@@ -8,10 +8,12 @@
 	<h1>Weather locations</h1>
 	<p><a href="/settings">Back to Settings</a> · <a href="/docs/weather">How weather works</a></p>
 	<p>
-		Route points take priority, then immediate sector/crag points. Country centres are excluded when
-		the original payload identifies them. Without a usable point, choose a nearby town as an
-		approximate weather location. It will not move route maps or unlock weather badges. Existing
-		weather stays cached, but only the current location's key is used.
+		Route points take priority, then crag points, then immediate sector points. Validated small area
+		polygons supply an approximate boundary coordinate when these points are missing. Country
+		centres are excluded when the original payload identifies them. Without a usable point, choose a
+		nearby town as an approximate weather location. Polygon and town fallbacks do not move route
+		maps or unlock weather badges. Existing weather stays cached, but only the current location's
+		key is used.
 	</p>
 	<p>
 		Search sends only the place name and country code you enter to Open-Meteo/GeoNames when you

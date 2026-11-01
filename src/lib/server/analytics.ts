@@ -1,3 +1,4 @@
+import { soloKind, parseSoloKind } from '#lib/soloKind';
 import {
 	loadWeatherLocations,
 	attachWeatherLocation,
@@ -1143,6 +1144,7 @@ export function listLogbook(filters?: {
 	styles?: string[];
 	tick?: string;
 	ticks?: string[];
+	solo?: string;
 	crag?: string;
 	sector?: string;
 	/** Exact path beneath the crag, including descendants. */
@@ -1300,6 +1302,8 @@ export function listLogbook(filters?: {
 			);
 		});
 	}
+	const solo = parseSoloKind(filters?.solo);
+	if (solo) rows = rows.filter((r) => soloKind(r) === solo);
 	if (tickList.length) {
 		rows = rows.filter((r) => tickList.includes((r.tickType || '').toLowerCase()));
 	}

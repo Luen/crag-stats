@@ -30,7 +30,11 @@ export function isSunFacingSummer(row: {
 }): boolean {
 	const day = weatherAscentDay(row.ascentDate);
 	if (!day || day.startsWith('0000-') || row.weatherLocation === null) return false;
-	if (row.weatherLocation?.source === 'place' || row.weatherLocation?.source === 'cached')
+	if (
+		row.weatherLocation?.source === 'place' ||
+		row.weatherLocation?.source === 'cached' ||
+		row.weatherLocation?.source === 'polygon'
+	)
 		return false;
 	const lat = row.weatherLocation?.lat ?? row.lat;
 	if (

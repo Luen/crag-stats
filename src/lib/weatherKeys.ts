@@ -6,7 +6,7 @@
 export type WeatherLocation = {
 	lat: number;
 	lon: number;
-	source: 'route' | 'sector' | 'crag' | 'cached' | 'place';
+	source: 'route' | 'sector' | 'crag' | 'polygon' | 'cached' | 'place';
 	name: string;
 	areaId: string | null;
 	precision: string;

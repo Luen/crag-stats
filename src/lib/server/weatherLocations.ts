@@ -8,6 +8,7 @@ import {
 	weatherPlaceOverrides,
 	weatherPlaceSearches
 } from './db/schema';
+import { weatherPolygonPoint } from './weatherPolygon';
 import { extractLatLon } from './providers/thecrag/api';
 import { isLikelyIndoorRoute } from './venue';
 import type { WeatherLocation } from '#lib/weatherKeys';
@@ -63,7 +64,7 @@ function point(raw: unknown): { lat: number; lon: number } | null {
 	return extractLatLon({ geometry: [c[0], c[1]] });
 }
 
-/** Only explicit route / immediate parent / TLC points. Broad and arbitrary ancestors are excluded. */
+/** Route point, crag point, sector point, then a coordinate from a small area polygon. Never broad ancestors. */
 export function resolveWeatherLocation(raw: unknown, at: string): WeatherLocation | null {
 	const route = object(raw);
 	if (!route) return null;
@@ -80,9 +81,10 @@ export function resolveWeatherLocation(raw: unknown, at: string): WeatherLocatio
 	const ancestors = object(route.ancestors);
 	if (!ancestors) return null;
 	const country = object(ancestors.country);
+	const polygonCandidates: { node: Record<string, unknown>; source: string }[] = [];
 	for (const [key, source] of [
-		['parent', 'sector'],
-		['TLC', 'crag']
+		['TLC', 'crag'],
+		['parent', 'sector']
 	] as const) {
 		const node = object(ancestors[key]);
 		if (!node) continue;
@@ -91,6 +93,11 @@ export function resolveWeatherLocation(raw: unknown, at: string): WeatherLocatio
 			/^(country|continent|state|province|region)$/i.test(String(node.type ?? node.areaType ?? ''))
 		)
 			continue;
+		if (
+			(typeof node.id === 'string' && node.id.trim()) ||
+			(typeof node.id === 'number' && Number.isFinite(node.id))
+		)
+			polygonCandidates.push({ node, source });
 		const p = point(node);
 		if (p)
 			return {
@@ -99,6 +106,20 @@ export function resolveWeatherLocation(raw: unknown, at: string): WeatherLocatio
 				name: String(node.name ?? (key === 'TLC' ? 'Crag' : 'Sector')),
 				areaId: node.id == null ? null : String(node.id),
 				precision: 'area point',
+				resolvedAt: at
+			};
+	}
+	for (const { node, source } of polygonCandidates) {
+		// Only an explicitly typed GeoJSON geometry establishes coordinate order.
+		// Undocumented Fence fields and untyped nested arrays remain unsupported.
+		const p = weatherPolygonPoint(node.geometry);
+		if (p)
+			return {
+				...p,
+				source: 'polygon',
+				name: String(node.name ?? 'Climbing area'),
+				areaId: node.id == null ? null : String(node.id),
+				precision: `${source} polygon boundary coordinate (approximate)`,
 				resolvedAt: at
 			};
 	}
@@ -139,6 +160,7 @@ export function loadWeatherLocations(): Map<number, WeatherLocation | null> {
 			const signature = createHash('sha256')
 				.update(
 					JSON.stringify([
+						'weather-location-v2-crag-first-geojson-boundary',
 						route.updatedAt,
 						route.name,
 						route.gearStyle,
@@ -174,7 +196,7 @@ export function loadWeatherLocations(): Map<number, WeatherLocation | null> {
 				const ascentRoute = object(object(parse(raw))?.route);
 				// Compare both caches before falling back: an enriched route point must beat
 				// a logbook payload that only carries its crag/sector point.
-				const priority = { route: 0, sector: 1, crag: 2, cached: 3, place: 4 };
+				const priority = { route: 0, crag: 1, sector: 2, polygon: 3, cached: 4, place: 5 };
 				location =
 					[resolveWeatherLocation(ascentRoute, at), resolveWeatherLocation(api, at)]
 						.filter((p): p is WeatherLocation => p != null)
