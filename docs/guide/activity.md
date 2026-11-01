@@ -24,3 +24,15 @@ record dates. Days come from valid written ascent dates; attempts and sends,
 indoors and outdoors, count equally, and several climbs on one day count once.
 The current day/week/month counters retain their existing behavior. See
 [Badges](/docs/badges) for the 7-, 10- and 30-day milestones.
+
+## Recent activities
+
+The dashboard lists the newest **climbing day** first. Within each day, the most
+recently **logged** ascent comes first, using the provider’s log creation timestamp.
+The displayed date remains the climbing date: logging an older climb today does
+not move it above climbs from a later climbing day. Logging order is a proxy for
+climbing order when you enter climbs in sequence, not a recorded ascent time.
+
+Entries with missing or invalid log times follow timed entries on the same day.
+Equal or unavailable log times use the stored ascent ID, newest first, to keep the
+order stable. Edit/sync timestamps are not used as log creation times.
