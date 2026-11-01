@@ -197,31 +197,38 @@ Every release, including the automated nightly one, gets pulled straight onto ru
 pnpm install
 pnpm dev
 pnpm test           # Vitest unit tests (grade fixes, URLs, mapAscent)
+pnpm test:related src/lib/foo.ts   # only the unit tests that import the given files
+pnpm test:changed   # unit tests affected by changes vs origin/main (falls back to all on config/dep changes)
 pnpm check          # svelte-check
-pnpm lint           # Prettier --check + ESLint (run `pnpm format` to fix)
+pnpm lint           # Prettier --check + ESLint, cached in node_modules/.cache (run `pnpm format` to fix)
 pnpm build
 pnpm test:e2e       # Playwright + axe against the production build (run `pnpm build` first)
+pnpm exec playwright test e2e/foo.spec.ts   # one browser spec (after `pnpm build`)
 ```
 
 ### Before push / finishing a PR (required for agents)
 
-Do **not** push a branch, open/update a PR, or claim the task done until these have been run **locally** on the changed code and pass:
+Do **not** push a branch, open/update a PR, or claim the task done until the checks for your change type below pass **locally**. Do not rely on CI as the first formatter or typecheck. `pnpm lint` is always required; when unsure which row applies, use the stricter one. Timings, the full matrix and what runs on PRs vs releases: `docs/dev/TESTING.md`.
 
-1. `pnpm lint` — Prettier + ESLint. If it fails, run `pnpm format` (and fix any ESLint issues), then lint again.
-2. `pnpm check` — svelte-check / types.
-3. `pnpm test` — unit tests (or at least the suites that cover what you touched).
+| Change                                                                                           | Local checks                                                                                     |
+| ------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------ |
+| Docs / comments only                                                                             | `pnpm lint`                                                                                      |
+| Simple copy, styling or markup in `.svelte` (no logic)                                           | `pnpm lint`, `pnpm check`, Svelte autofixer, plus the one browser spec covering that page if any |
+| Logic in `src/lib` / routes                                                                      | `pnpm lint`, `pnpm check`, `pnpm test:related <files>` (or `pnpm test`)                          |
+| New page/route, e2e fixtures, shared components or tokens (`app.css`)                            | all of the above + `pnpm build` + `pnpm test:e2e`                                                |
+| Auth/CSRF, private notes, sync/pruning, migrations, grades, dates/time zones, build/Docker, deps | `pnpm lint`, `pnpm check`, full `pnpm test`, `pnpm build`, `pnpm test:e2e`                       |
 
-Also run `pnpm build` when the change affects the production build or SvelteKit routes, and `pnpm test:e2e` when you touch UI, e2e fixtures, auth, or accessibility. Fix failures before pushing — do not rely on CI as the first formatter or typecheck.
+If `pnpm lint` fails, run `pnpm format` (and fix any ESLint issues), then lint again. The lint caches are content-keyed; delete `node_modules/.cache` to force a cold run (CI is always cold).
 
 When editing `.svelte` files, use the Svelte MCP autofixer until clean (see Stack & tooling above) **in addition to** `pnpm lint` / `pnpm check`.
 
-CI (`.github/workflows/ci.yml`) runs `pnpm lint`, `pnpm check`, `pnpm test`, `pnpm build` and `pnpm test:e2e` on push/PR. The same workflow’s `docker` job builds the production image on PRs (no push). Local runs above are still mandatory so PRs do not burn a red check on Prettier-only or trivial type slips.
+CI (`.github/workflows/ci.yml`) always runs the full set on push/PR: the `check` job (`pnpm lint`, `pnpm check`, `pnpm test`) in parallel with the `e2e` job (`pnpm build`, `pnpm test:e2e`), plus the `docker` image build and smoke test on both architectures (no push). A newer push to the same PR cancels the older run. The nightly release repeats the full set. Local runs above are still mandatory so PRs do not burn a red check on Prettier-only or trivial type slips.
 
 - **CodeQL (default setup):** Security scanning uses GitHub’s [default code scanning setup](https://docs.github.com/en/code-security/code-scanning/enabling-code-scanning/configuring-default-setup-for-code-scanning) (`dynamic/github-code-scanning/codeql`), not a repo workflow. It runs on PRs **targeting `main` only**. Do not add a duplicate CodeQL workflow unless you explicitly dedupe against default setup.
 - **Stacked PRs:** PRs whose base is a feature branch (not `main`) still get CI `check` / `docker` (and third-party checks such as Socket). Missing CodeQL there is expected — not “incomplete” checks. CodeQL runs when the stack merges to `main`. Merge stacked PRs bottom-up into their stack base, then open or retarget the final PR to `main`.
 
 - **Unit tests** get `DATABASE_PATH=:memory:` from `vitest.config.ts`, so each test file has its own empty SQLite. Never point tests at a shared file DB: parallel workers on one WAL file fail with `disk I/O error` (#57).
-- **E2E** (`e2e/`, `playwright.config.ts`): three `node build` servers on 4301–4303 (open, `AUTH_SCOPE=settings`, `AUTH_SCOPE=all`) with throwaway DBs in `e2e/.tmp`; the `setup` project imports `samples/thecrag-logbook-sample.csv`. The axe test fails on serious/critical violations in light **and** dark — fix contrast with tokens, don't weaken the test. Set the scheme before load (`test.use({ colorScheme })`), or `page.reload()` after `emulateMedia`; otherwise axe can sample nav colour transitions mid-fade (#167).
+- **E2E** (`e2e/`, `playwright.config.ts`): three `node build` servers on 4301–4303 (open, `AUTH_SCOPE=settings`, `AUTH_SCOPE=all`) with throwaway DBs in `e2e/.tmp`; the `setup` project imports `samples/thecrag-logbook-sample.csv`. The axe test fails on serious/critical violations in light **and** dark — fix contrast with tokens, don't weaken the test. Feature specs run their flow **once** and call `expectAxeClean(page, { include })` from `e2e/axe.ts` at each state worth auditing: it scans both themes in place with transitions disabled, so axe never samples colours mid-fade (#167). Don't wrap a whole feature flow in a light/dark loop. Add a browser test only for user-visible flows or states a unit test can't reach (populated badges, pills, weather states, keyboard/focus); put logic regressions in Vitest. Guidance: `docs/dev/TESTING.md`.
 - **Start the app with `node scripts/server.mjs`** (Docker `CMD`, `pnpm start`, e2e), not `node build`. adapter-node assumes https for CSRF origin checks and ignores `ORIGIN` in this version; `server.mjs` fills in `X-Forwarded-Proto` from the real connection when no proxy sent one, or pins protocol/host from `ORIGIN` (#47). Pure logic in `scripts/serverOrigin.mjs` (unit-tested).
 - **CSP** is configured in `vite.config.ts` (`csp`, nonce mode). Inline scripts need `nonce="%sveltekit.nonce%"`; images allow `https:`/`data:`; no third-party scripts.
 - **Dates/numbers:** use `formatDateTime` / `formatNumber` from `#lib/dates` with `data.dateDisplay` (layout) — never bare `toLocaleString()` (SSR/hydration mismatch, #36).
@@ -435,6 +442,8 @@ You'll often notice things outside the task at hand. **Don't silently fix them i
 - First ascents attribution follows saved mark source (plus cached setter credits), not `ROUTE_HISTORY_IMPORT`: manual/imported credits coexist and imported marks survive disabling import.
 
 - Node 26 LTS is the runtime baseline. Install the exact `packageManager` with npm (Corepack is not bundled); the distroless image also needs the build-stage libatomic shared library. Validate native SQLite and importer on amd64 and arm64 after runtime updates.
+
+- #325: proportionate local checks by change type (table above); cached `pnpm lint`; `test:related` / `test:changed`; CI splits `check` and `e2e` jobs, cancels superseded PR runs, caches Playwright browsers. Feature e2e specs run once and scan both themes via `e2e/axe.ts`. Evidence and inventory in `docs/dev/TESTING.md`.
 
 _Add a row when you change behaviour agents must know about._
 
