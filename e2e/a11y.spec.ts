@@ -5,6 +5,20 @@ import { expect, test } from '@playwright/test';
 for (const scheme of ['light', 'dark'] as const) {
 	test.describe(`${scheme} theme`, () => {
 		test.use({ colorScheme: scheme });
+
+		test('axe: mobile Settings including the shared header', async ({ page }) => {
+			await page.setViewportSize({ width: 390, height: 844 });
+			await page.goto('/settings');
+			const results = await new AxeBuilder({ page }).analyze();
+			const serious = results.violations.filter(
+				(v) => v.impact === 'serious' || v.impact === 'critical'
+			);
+			expect(serious.map((v) => ({ id: v.id, targets: v.nodes.map((n) => n.target) }))).toEqual([]);
+			await expect(page.getByRole('link', { name: 'Crag Stats', exact: true })).toBeVisible();
+			expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
+				true
+			);
+		});
 		for (const path of [
 			'/',
 			'/logbook',

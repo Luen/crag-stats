@@ -1,3 +1,4 @@
+import { parseSoloKind } from '#lib/soloKind';
 import { fail } from '@sveltejs/kit';
 import { listLogbook } from '#lib/server/analytics';
 import { getPreferredGradeSystem, getShowNotes } from '#lib/server/appSettings';
@@ -90,10 +91,17 @@ export const actions: Actions = {
 
 export const load: PageServerLoad = async ({ url, locals }) => {
 	const q = url.searchParams.get('q') ?? '';
+	const routeRaw = url.searchParams.get('route') ?? '';
+	const routeNumber = Number(routeRaw);
+	const route =
+		/^\d+$/.test(routeRaw) && Number.isSafeInteger(routeNumber) && routeNumber > 0
+			? routeNumber
+			: undefined;
 	const place = (url.searchParams.get('place') ?? '').slice(0, 2000);
 	const mapVenue = url.searchParams.get('mapVenue') ?? '';
 	const styles = multiParams(url, 'style');
 	const ticks = multiParams(url, 'tick');
+	const solo = parseSoloKind(url.searchParams.get('solo'));
 	const qualities = multiParams(url, 'quality');
 	const crag = url.searchParams.get('crag') ?? '';
 	const sector = url.searchParams.get('sector') ?? '';
@@ -150,10 +158,12 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 	const gradeSystem = getPreferredGradeSystem();
 	const { total, rows, weatherAvailable } = listLogbook({
 		q: q || undefined,
+		route,
 		place,
 		mapVenue,
 		styles: styles.length ? styles : undefined,
 		ticks: ticks.length ? ticks : undefined,
+		solo,
 		qualities: qualities.length ? qualities : undefined,
 		crag: crag || undefined,
 		sector: sector || undefined,
@@ -191,6 +201,7 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 	});
 	return {
 		total,
+		route: route ?? '',
 		rows,
 		notesShown,
 		canMarkFirstAscents: locals.authed,
@@ -199,6 +210,7 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 		mapVenue,
 		styles,
 		ticks,
+		solo,
 		qualities,
 		crag,
 		sector,

@@ -1,12 +1,25 @@
 <script lang="ts">
+	import { DEFAULT_DATE_DISPLAY, formatCalendarDate, type DateDisplay } from '#lib/dates';
 	type Props = {
 		currentDays: number;
 		currentWeeks: number;
 		currentMonths: number;
 		longestDays: number;
+		longestStartDate: string | null;
+		longestEndDate: string | null;
+		dateDisplay?: DateDisplay;
 		lastActiveDate: string | null;
 	};
-	let { currentDays, currentWeeks, currentMonths, longestDays, lastActiveDate }: Props = $props();
+	let {
+		currentDays,
+		currentWeeks,
+		currentMonths,
+		longestDays,
+		longestStartDate,
+		longestEndDate,
+		lastActiveDate,
+		dateDisplay = DEFAULT_DATE_DISPLAY
+	}: Props = $props();
 </script>
 
 <article class="panel">
@@ -28,9 +41,18 @@
 	<p class="foot">
 		Longest streak <strong>{longestDays} day{longestDays === 1 ? '' : 's'}</strong>
 		{#if lastActiveDate}
-			· Last ascent <strong>{lastActiveDate}</strong>
+			· Last ascent <strong>{formatCalendarDate(lastActiveDate, dateDisplay)}</strong>
 		{/if}
 	</p>
+	{#if longestStartDate && longestEndDate}
+		<p class="foot record-range">
+			{#if longestStartDate === longestEndDate}On{:else}From{/if}
+			<time datetime={longestStartDate}>{formatCalendarDate(longestStartDate, dateDisplay)}</time>
+			{#if longestStartDate !== longestEndDate}
+				to <time datetime={longestEndDate}>{formatCalendarDate(longestEndDate, dateDisplay)}</time>
+			{/if}
+		</p>
+	{/if}
 </article>
 
 <style>

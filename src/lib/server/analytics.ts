@@ -1,3 +1,5 @@
+import { consecutiveDayRuns, longestDayRun } from '#lib/dayStreaks';
+import { soloKind, parseSoloKind } from '#lib/soloKind';
 import {
 	loadWeatherLocations,
 	attachWeatherLocation,
@@ -234,6 +236,16 @@ function displayRouteName(
 	return `${base} (${pitchLabel})`;
 }
 
+/** Log creation time, never sync/update time. Unzoned provider clocks default to UTC. */
+function loggedTimestamp(raw: string | null): number {
+	const value = raw?.trim();
+	if (!value || !validDay(value) || !/^\d{4}-\d{2}-\d{2}[Tt ]\d{2}:\d{2}/.test(value))
+		return -Infinity;
+	const zoned = /[zZ]$|[+-]\d{2}:?\d{2}$/.test(value) ? value : `${value}Z`;
+	const timestamp = Date.parse(zoned);
+	return Number.isFinite(timestamp) ? timestamp : -Infinity;
+}
+
 function relativeTime(iso: string | null): string | null {
 	if (!iso) return null;
 	const then = new Date(iso);
@@ -309,6 +321,7 @@ export function getDashboardStats(
 		.select({
 			id: ascents.id,
 			ascentDate: ascents.ascentDate,
+			logDate: ascents.logDate,
 			tickType: ascents.tickType,
 			isSend: ascents.isSend,
 			isAttempt: ascents.isAttempt,
@@ -826,10 +839,20 @@ export function getDashboardStats(
 		};
 	});
 
-	const recent = [...all]
-		.sort((a, b) => (b.ascentDate || '').localeCompare(a.ascentDate || ''))
+	const recent = all
+		.map((row) => ({
+			row,
+			day: validDay(row.ascentDate) ?? '',
+			loggedAt: loggedTimestamp(row.logDate)
+		}))
+		.sort(
+			(a, b) =>
+				b.day.localeCompare(a.day) ||
+				(a.loggedAt === b.loggedAt ? 0 : b.loggedAt - a.loggedAt) ||
+				b.row.id - a.row.id
+		)
 		.slice(0, 20)
-		.map((r) => {
+		.map(({ row: r }) => {
 			const isBoulder = vScale(r);
 			const score = effectiveScore(r);
 			const raw = effectiveRaw(r);
@@ -1136,12 +1159,14 @@ function normalizeList(single: string | undefined, many: string[] | undefined): 
 }
 
 export function listLogbook(filters?: {
+	route?: number;
 	q?: string;
 	/** Single style (legacy / deep links); prefer `styles` for multi-select */
 	style?: string;
 	styles?: string[];
 	tick?: string;
 	ticks?: string[];
+	solo?: string;
 	crag?: string;
 	sector?: string;
 	/** Exact path beneath the crag, including descendants. */
@@ -1281,6 +1306,7 @@ export function listLogbook(filters?: {
 		.all()
 		.map((r) => attachWeatherLocation(r, weatherLocations));
 
+	if (filters?.route != null) rows = rows.filter((r) => r.routeId === filters.route);
 	if (filters?.place)
 		rows = rows.filter((r) => validMapCoords(r.lat, r.lon) && mapPlaceKey(r) === filters.place);
 	if (filters?.mapVenue === 'outdoor' || filters?.mapVenue === 'indoor')
@@ -1298,6 +1324,8 @@ export function listLogbook(filters?: {
 			);
 		});
 	}
+	const solo = parseSoloKind(filters?.solo);
+	if (solo) rows = rows.filter((r) => soloKind(r) === solo);
 	if (tickList.length) {
 		rows = rows.filter((r) => tickList.includes((r.tickType || '').toLowerCase()));
 	}
@@ -1563,6 +1591,8 @@ function buildStreaks(dayMap: Map<string, { count: number; sends: number }>): {
 	currentWeeks: number;
 	currentMonths: number;
 	longestDays: number;
+	longestStartDate: string | null;
+	longestEndDate: string | null;
 	lastActiveDate: string | null;
 } {
 	const days = [...dayMap.keys()].sort();
@@ -1572,24 +1602,14 @@ function buildStreaks(dayMap: Map<string, { count: number; sends: number }>): {
 			currentWeeks: 0,
 			currentMonths: 0,
 			longestDays: 0,
+			longestStartDate: null,
+			longestEndDate: null,
 			lastActiveDate: null
 		};
 	}
 
 	const daySet = new Set(days);
-	let longest = 1;
-	let run = 1;
-	for (let i = 1; i < days.length; i++) {
-		const prev = new Date(`${days[i - 1]}T12:00:00`);
-		const cur = new Date(`${days[i]}T12:00:00`);
-		const diff = Math.round((cur.getTime() - prev.getTime()) / 86400000);
-		if (diff === 1) {
-			run += 1;
-			longest = Math.max(longest, run);
-		} else {
-			run = 1;
-		}
-	}
+	const longest = longestDayRun(consecutiveDayRuns(days));
 
 	const last = days[days.length - 1];
 	const today = new Date();
@@ -1676,7 +1696,9 @@ function buildStreaks(dayMap: Map<string, { count: number; sends: number }>): {
 		currentDays,
 		currentWeeks,
 		currentMonths,
-		longestDays: longest,
+		longestDays: longest?.length ?? 0,
+		longestStartDate: longest?.start ?? null,
+		longestEndDate: longest?.end ?? null,
 		lastActiveDate: last
 	};
 }

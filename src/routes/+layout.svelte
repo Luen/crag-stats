@@ -595,5 +595,9 @@
 		.wordmark {
 			font-size: 1.1rem;
 		}
+		.wordmark span {
+			/* Small bold text needs 4.5:1; the bright logo orange is for larger text. */
+			color: var(--accent);
+		}
 	}
 </style>
