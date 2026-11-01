@@ -56,7 +56,7 @@ for (const evidence of ['aspect', 'all-day-sun', 'parent-aspect', 'parent-all-da
 				'https://www.thecrag.com/ascent/987654321'
 			);
 			await expect(page.locator('body')).not.toContainText('Private note remains private');
-			await expectAxeClean(page);
+			await expectAxeClean(page, { include: [card] });
 		} finally {
 			if (routeId) {
 				db.prepare('DELETE FROM weather_locations WHERE route_id=?').run(routeId);

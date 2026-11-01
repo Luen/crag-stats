@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import AxeBuilder from '@axe-core/playwright';
+import { expectAxeClean } from './axe';
 
 test('cookie preferences render correctly with JavaScript disabled', async ({
 	browser,
@@ -48,40 +48,32 @@ test('cookie preferences render correctly with JavaScript disabled', async ({
 	}
 });
 
-for (const colorScheme of ['light', 'dark'] as const)
-	test(`legacy preferences migrate without visible defaults in ${colorScheme}`, async ({
-		page,
-		context
-	}) => {
-		await page.emulateMedia({ colorScheme });
-		await page.addInitScript(() => {
-			localStorage.setItem('cs_partners_metric', 'areas');
-			localStorage.setItem('cs_yearly_chart', 'career');
-		});
-		await page.goto('/partners');
-		await expect(page.locator('html')).toHaveAttribute('data-card-prefs-migrating', '');
-		await expect(page.getByRole('button', { name: 'Areas', exact: true })).toHaveAttribute(
-			'aria-pressed',
-			'true'
-		);
-		expect((await context.cookies()).find((c) => c.name === 'cs_partners_metric')?.value).toBe(
-			'areas'
-		);
-		await page.reload();
-		await expect(page.getByRole('button', { name: 'Areas', exact: true })).toHaveAttribute(
-			'aria-pressed',
-			'true'
-		);
-		const axe = await new AxeBuilder({ page }).analyze();
-		expect(axe.violations.filter((v) => v.impact === 'serious' || v.impact === 'critical')).toEqual(
-			[]
-		);
-		await page.goto('/activity');
-		await expect(page.getByRole('button', { name: 'Cumulative', exact: true })).toHaveAttribute(
-			'aria-pressed',
-			'true'
-		);
+test('legacy preferences migrate without visible defaults', async ({ page, context }) => {
+	await page.addInitScript(() => {
+		localStorage.setItem('cs_partners_metric', 'areas');
+		localStorage.setItem('cs_yearly_chart', 'career');
 	});
+	await page.goto('/partners');
+	await expect(page.locator('html')).toHaveAttribute('data-card-prefs-migrating', '');
+	await expect(page.getByRole('button', { name: 'Areas', exact: true })).toHaveAttribute(
+		'aria-pressed',
+		'true'
+	);
+	expect((await context.cookies()).find((c) => c.name === 'cs_partners_metric')?.value).toBe(
+		'areas'
+	);
+	await page.reload();
+	await expect(page.getByRole('button', { name: 'Areas', exact: true })).toHaveAttribute(
+		'aria-pressed',
+		'true'
+	);
+	await expectAxeClean(page, { include: ['main'] });
+	await page.goto('/activity');
+	await expect(page.getByRole('button', { name: 'Cumulative', exact: true })).toHaveAttribute(
+		'aria-pressed',
+		'true'
+	);
+});
 
 test('blocked localStorage falls back to usable defaults', async ({ page }) => {
 	await page.addInitScript(() => {

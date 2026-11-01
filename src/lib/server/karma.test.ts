@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest';
-import { wipeAllData } from './analytics';
+import { wipeAllData } from './wipe';
 import { db } from './db';
 import { ascents, profiles, routes } from './db/schema';
 import { upsertAscents } from './ingest';

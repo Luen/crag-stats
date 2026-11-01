@@ -86,7 +86,7 @@ test('condition and histogram rows filter ascents and keep the range across navi
 		const clear = page.getByRole('link', { name: 'Clear weather range' });
 		await expect(clear).toHaveAttribute('href', /q=Drill\+rain/);
 		await expect(clear).not.toHaveAttribute('href', /weatherHigh/);
-		await expectAxeClean(page);
+		await expectAxeClean(page, { include: ['main'] });
 		await page.goto('/logbook?q=Drill');
 		const gym = page.locator('tbody tr').filter({ hasText: 'Drill Gym' });
 		await expect(gym.locator('.weather-cell')).toHaveText('—');

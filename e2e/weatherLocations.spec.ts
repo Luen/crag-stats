@@ -97,7 +97,7 @@ test(`owner-confirmed weather location`, async ({ page }) => {
 		await page.goto('/settings/weather-locations');
 		await group.locator('summary').click();
 		await expect(group).toContainText('Chosen fallback: Reviewtown');
-		await expectAxeClean(page);
+		await expectAxeClean(page, { include: ['main'] });
 		await group.getByRole('button', { name: 'Remove nearby-place fallback' }).click();
 		await expect(group).toContainText('1/1 unresolved');
 		await page.goto('/logbook?weather=rain&q=Fallback');

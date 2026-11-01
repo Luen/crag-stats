@@ -3,7 +3,7 @@ import { eq } from 'drizzle-orm';
 import { db } from './db';
 import { profiles, routeHistory, routes } from './db/schema';
 import { countOwnerSetRoutes, listOwnerSetRoutes, setterBadgeHits } from './routeSetters';
-import { wipeAllData } from './analytics';
+import { wipeAllData } from './wipe';
 
 beforeEach(() => {
 	wipeAllData();

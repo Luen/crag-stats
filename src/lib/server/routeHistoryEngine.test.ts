@@ -4,7 +4,7 @@
  */
 import { beforeEach, describe, expect, it } from 'vitest';
 import { randomBytes } from 'node:crypto';
-import { wipeAllData } from './analytics';
+import { wipeAllData } from './wipe';
 import { db } from './db';
 import { eq } from 'drizzle-orm';
 import {

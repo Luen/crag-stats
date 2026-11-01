@@ -1,5 +1,5 @@
 import { beforeEach, expect, it } from 'vitest';
-import { wipeAllData } from './analytics';
+import { wipeAllData } from './wipe';
 import { db } from './db';
 import { theCragWebSessions } from './db/schema';
 import { forgetTheCragSession, theCragSessionStore } from './theCragWebSession';
