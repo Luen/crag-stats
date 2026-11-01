@@ -1,4 +1,10 @@
-# Weather polygon preparation (#309)
+# Weather polygons and provider verification (#344)
+
+The weather-location feature in [#309](https://github.com/Luen/crag-stats/issues/309)
+was completed by [#317](https://github.com/Luen/crag-stats/pull/317) and
+[#328](https://github.com/Luen/crag-stats/pull/328). Remaining real-provider
+verification and additional format support are tracked in
+[#344](https://github.com/Luen/crag-stats/issues/344).
 
 **Typed GeoJSON fallback is enabled at the owner’s subsequent request.** The
 weather resolver uses route point → crag point → sector point → validated area
@@ -58,5 +64,7 @@ Before adding any other provider-specific boundary format:
    resolved key; wipe already clears these resolutions.
 
 Synthetic pipeline and browser regressions cover the enabled typed path, but do
-not establish that theCrag currently supplies that shape. Keep #309 open for real
-provider evidence and any additional format adapter.
+not establish that theCrag currently supplies that shape. Closing #309 does not
+verify provider compatibility. #344 remains open until a sanitized real provider
+fixture and regression establish the observed contract, with any necessary
+adapter and shared-pipeline verification.
