@@ -6,6 +6,8 @@ A **completed project** is a route sent after work across at least two days, or 
 
 When both an attempt and the first send include timestamps, attempts after that send are excluded from the classification. Date-only entries on the send day are treated as work leading to it because their within-day order is unknown. Multiple sends tied on a date without usable times use their stored ascent order, so a later repeat does not replace the first recorded send. Session totals on cards and the dashboard use the same valid calendar days as the classifier.
 
+For date-only sends, **Recently sent** includes today from midnight UTC through the end of the 31st calendar day after the send. Future calendar dates are excluded. Sends with timestamps retain an exact 31-day elapsed-time window. The dashboard uses the same rule when filling spare project slots with recent sends.
+
 ## New route?
 
 When a project has **no grade** on theCrag (or is literally graded “Project” / “Proj”), cards show a **New route?** badge — usually a new line you are bolting or still working. The same badge also appears for **wide provisional spans** such as `21-23` or `V1-3`, which often mean the grade is still being dialled in. Adjacent half-grades like `V1/2` stay ordinary published grades and do not get the badge. The grade chip still shows the parsed midpoint when one exists; only the badge changes. A definite theCrag **Project** flag (from route-info import) shows the separate Project badge instead.

@@ -26,6 +26,19 @@ export function parseSeasonalityJson(raw: string | null | undefined): number[] |
 	}
 }
 
+/** Shared ascent-weighted mean; missing curves do not enter the denominator. */
+export function weightedSeasonality(
+	rows: Iterable<{ weight: number; seasonality: number[] }>
+): number[] | null {
+	const weighted = Array.from({ length: 12 }, () => 0);
+	let total = 0;
+	for (const { weight, seasonality } of rows) {
+		total += weight;
+		for (let i = 0; i < 12; i++) weighted[i] += seasonality[i] * weight;
+	}
+	return total > 0 ? weighted.map((v) => v / total) : null;
+}
+
 function emptyMonths(): number[] {
 	return Array.from({ length: 12 }, () => 0);
 }
@@ -96,19 +109,8 @@ export function buildBestMonthsView(rows: BestMonthsAscentRow[], topN = 6): Best
 	const ranked: BestMonthsCrag[] = [];
 
 	for (const acc of crags.values()) {
-		let totalWeight = 0;
-		const weighted = emptyMonths();
-		for (const { weight, seasonality } of acc.routes.values()) {
-			totalWeight += weight;
-			for (let i = 0; i < 12; i++) {
-				weighted[i] += seasonality[i] * weight;
-			}
-		}
-		if (totalWeight === 0) continue;
-
-		for (let i = 0; i < 12; i++) {
-			weighted[i] /= totalWeight;
-		}
+		const weighted = weightedSeasonality(acc.routes.values());
+		if (!weighted) continue;
 
 		ranked.push({
 			crag: acc.crag,

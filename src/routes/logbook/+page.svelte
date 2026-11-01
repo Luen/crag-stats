@@ -23,7 +23,9 @@
 		// Query builder for hrefs, rebuilt when called.
 		const p = new SvelteURLSearchParams();
 		if (data.q) p.set('q', data.q);
+		if (data.route) p.set('route', String(data.route));
 		if (data.solo) p.set('solo', data.solo);
+
 		if (data.place) p.set('place', data.place);
 		if (data.mapVenue) p.set('mapVenue', data.mapVenue);
 		for (const s of data.styles) p.append('style', s);
@@ -110,6 +112,8 @@
 		</p>{/if}
 	<p>
 		{data.total} ascent{data.total === 1 ? '' : 's'}
+		{#if data.route}
+			· selected climb · <a href="/logbook">Clear climb</a>{/if}
 		{#if data.score !== ''}
 			· grade score {data.score}
 		{/if}
@@ -153,6 +157,7 @@
 </section>
 
 <form class="panel filters" method="GET">
+	{#if data.route}<input type="hidden" name="route" value={data.route} />{/if}
 	{#if data.place}<input type="hidden" name="place" value={data.place} />{/if}
 	{#if data.mapVenue}<input type="hidden" name="mapVenue" value={data.mapVenue} />{/if}
 

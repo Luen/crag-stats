@@ -8,5 +8,7 @@ setup('seed open server from the sample CSV', async ({ page }) => {
 	await page.goto('/settings');
 	await page.setInputFiles('input[name="file"]', 'samples/thecrag-logbook-sample.csv');
 	await page.getByRole('button', { name: 'Import CSV' }).click();
-	await expect(page.getByText(/Parsed \d+ ascents/)).toBeVisible();
+	await expect(page.getByRole('status', { name: 'Import summary' })).toContainText(
+		/Processed \d+ ascents/
+	);
 });

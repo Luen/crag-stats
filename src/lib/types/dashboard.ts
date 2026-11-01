@@ -289,6 +289,8 @@ export type DashboardStats = {
 		currentWeeks: number;
 		currentMonths: number;
 		longestDays: number;
+		longestStartDate: string | null;
+		longestEndDate: string | null;
 		lastActiveDate: string | null;
 	};
 	athleteProfile: {

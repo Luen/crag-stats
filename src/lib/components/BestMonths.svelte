@@ -12,6 +12,7 @@
 <article class="panel">
 	<header>
 		<h2>Best months</h2>
+		<a class="how" href="/seasonality">Search seasonality</a>
 		<a class="how" href="/docs/best-months">How it works</a>
 	</header>
 	<p class="lead">
@@ -95,6 +96,7 @@
 	}
 	header {
 		display: flex;
+		flex-wrap: wrap;
 		justify-content: space-between;
 		align-items: baseline;
 		gap: 1rem;

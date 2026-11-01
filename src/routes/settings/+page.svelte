@@ -1,11 +1,21 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import DashboardLayoutEditor from '#lib/components/DashboardLayoutEditor.svelte';
-	import { formatDateTime } from '#lib/dates';
+	import { formatDateTime, formatNumber } from '#lib/dates';
 	import type { PageProps } from './$types';
 
 	let { data, form }: PageProps = $props();
 
+	const importResult = $derived(
+		form?.result?.skipped === false
+			? form.result
+			: form?.imported != null
+				? { count: form.imported, created: form.created, pruned: null }
+				: null
+	);
+	function countLabel(n: number, singular: string, plural = `${singular}s`): string {
+		return `${formatNumber(n, data.dateDisplay)} ${n === 1 ? singular : plural}`;
+	}
 	const rh = $derived(data.routeHistory);
 	const wx = $derived(data.weatherImport);
 	let elapsed = $state(0);
@@ -79,6 +89,35 @@
 	<p class="banner ok">{form.routeHistoryMessage}</p>
 {:else if form?.weatherMessage}
 	<p class="banner ok">{form.weatherMessage}</p>
+{:else if form?.result?.skipped}
+	<p class="banner hint" role="status">{form.result.reason}</p>
+{:else if importResult}
+	<div class="banner ok" role="status" aria-label="Import summary">
+		<strong>{importResult.pruned ? 'Logbook sync complete.' : 'CSV import complete.'}</strong>
+		<p>Processed {countLabel(importResult.count, 'ascent')}.</p>
+		<ul>
+			<li>{countLabel(importResult.created.routes, 'new route')}</li>
+			<li>{countLabel(importResult.created.ascents, 'new ascent')}</li>
+			<li>
+				{countLabel(
+					importResult.count - importResult.created.ascents,
+					'existing ascent refreshed',
+					'existing ascents refreshed'
+				)}
+			</li>
+			{#if importResult.pruned}
+				<li>
+					{countLabel(importResult.pruned.deletedAscents, 'ascent removed', 'ascents removed')}
+				</li>
+				<li>{countLabel(importResult.pruned.deletedRoutes, 'route removed', 'routes removed')}</li>
+			{/if}
+		</ul>
+		<p class="summary-note">
+			{importResult.pruned
+				? 'Route history and weather imports run separately when enabled.'
+				: 'Manual CSV uploads do not remove missing entries.'}
+		</p>
+	</div>
 {:else if form?.ok}
 	<p class="banner ok">Done.</p>
 {/if}
@@ -173,9 +212,6 @@
 			/>
 			<button type="submit">Import CSV</button>
 		</form>
-		{#if form?.imported != null}
-			<p class="ok">Parsed {form.imported} ascents.</p>
-		{/if}
 	</article>
 
 	<article class="panel">
@@ -657,6 +693,9 @@
 	}
 	.backup .hint {
 		margin: 0;
+	}
+	.summary-note {
+		font-size: 0.85rem;
 	}
 	.banner {
 		padding: 0.7rem 1rem;
