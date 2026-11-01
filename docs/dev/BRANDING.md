@@ -19,7 +19,7 @@ File: `src/lib/assets/favicon.svg`. It is both the favicon and the header mark.
 - A solid **rope-orange (`#ea580c`) two-peaked crag**. Three **rising bars** (a grade pyramid / bar chart) are cut out of the rock face and are **transparent**: they're done with an SVG `<mask>`, not painted white, so the page background shows through in light and dark mode.
 - The bars run **through the base** of the mountain (the mask rects extend past y=56), so there's no orange sliver under them and they merge into the background. Their tops sit a little below the slopes (y = 43 / 35 / 27) to give them room to breathe.
 - No circle, no gradient, no outline. Keep it flat and single-colour.
-- Wordmark: **"Crag Stats"** in Plus Jakarta Sans 800, tight tracking. "Crag" is in `--ink` and "Stats" in `--brand`. Use this same lockup everywhere the name appears as a logo (header, login card). Never write the whole name in orange.
+- Wordmark: **"Crag Stats"** in Plus Jakarta Sans 800, tight tracking. "Crag" is in `--ink` and "Stats" in `--brand` (the smaller mobile header uses `--accent` to meet normal-text contrast). Use this same lockup everywhere the name appears as a logo (header, login card). Never write the whole name in orange.
 - Minimum size: about 16px (favicon). Below about 20px the bars blur, which is acceptable.
 
 ## Typography
@@ -194,3 +194,5 @@ Solo climbing cards use a full-card link to the matching logbook solo type with 
 Project status pills use `--ink` text over their semantic tinted backgrounds so the small Open label meets contrast requirements in both themes. Projects browser coverage includes desktop/mobile cards in light and dark.
 
 Seasonality search (#331): responsive result cards with orange annual month strips, selected-month underline and expandable numeric tables. Native labelled month/search/view/sort controls submit shareable URLs. Display data coverage and seasonal score in text; no colour-only meaning. Best months links to the search page.
+
+Streaks (#339): retain the three current-counter tiles and longest-length footer; show the all-time record's formatted start/end dates on a wrapping text line below it. Use one date for a single-day record and no dates for an empty record. Streak badges reuse the calendar icon with green/blue/purple tones for 7/10/30 days.

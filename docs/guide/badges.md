@@ -57,3 +57,16 @@ Generic Tick/Send/Clean entries, attempts, top-rope and seconding don't count fo
 Classification matches the Solo climbing card. The [provider API](https://www.thecrag.com/en/article/api) documents `leadsolo` and `ropedsolo`; display labels and their case/spacing/separator variants are recognized without changing the original tick text. A cached-data upgrade repairs old completion flags only when the stored provider payload confirms the same explicit solo method. Route discipline and ascent style remain separate.
 
 Attempts, hangdogs, retreats, free solos, deep-water solos, aid solos, ordinary top-rope ascents and entries with unknown completion do not qualify. An ascent explicitly recorded as Boulder or Second also contradicts either rope-solo method and cannot unlock these badges. Missing partners alone do not establish solo climbing. These milestones apply to indoor and outdoor climbs and need neither coordinates nor weather imports.
+
+## Consecutive-day streaks
+
+**7-Day Streak**, **10-Day Streak** and **30-Day Streak** celebrate logging at
+least one climb on every consecutive calendar day. Attempts count, and indoor
+and outdoor climbs both count, matching the Streaks card. Multiple ascents on one
+day count once; missing or invalid dates do not establish a day. Climbing dates,
+not logging times, determine the streak without shifting their written dates
+between time zones.
+
+Each badge is dated to the earliest day its threshold was reached. Taking a break
+does not erase a milestone in your recorded history. These are one-shot awards
+and do not appear in Almost there.

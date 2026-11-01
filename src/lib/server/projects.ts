@@ -38,15 +38,25 @@ function parseAscentDay(raw: string | null | undefined): number | null {
 	return Number.isNaN(parsed) ? null : parsed;
 }
 
-/** Sent shelf window (~1 month). Keep DB row; drop from "recently sent" UI after. */
+/** Date-only sends use UTC calendar days; timestamps retain the elapsed-time window. */
 export function isRecentlySent(
 	sentAt: string | null | undefined,
 	now: Date = new Date(),
 	windowDays = 31
 ): boolean {
-	const parsed = parseAscentDay(sentAt);
+	const raw = sentAt?.trim();
+	let parsed: number | null;
+	let reference = now.getTime();
+	if (raw?.length === 10) {
+		const day = calendarDay(raw);
+		if (!day) return false;
+		parsed = Date.parse(`${day}T00:00:00Z`);
+		reference = new Date(reference).setUTCHours(0, 0, 0, 0);
+	} else {
+		parsed = parseAscentDay(raw);
+	}
 	if (parsed == null) return false;
-	const delta = now.getTime() - parsed;
+	const delta = reference - parsed;
 	if (delta < 0) return false;
 	return delta <= windowDays * 24 * 60 * 60 * 1000;
 }
