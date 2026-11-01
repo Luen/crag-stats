@@ -20,7 +20,11 @@
 			{#each data.kinds as k (k.kind)}
 				<li>
 					<div class="head">
-						<strong>{k.label}</strong>
+						<a
+							class="kind-link"
+							href={`/logbook?solo=${k.kind}`}
+							aria-label={`View ${k.label} climbs in the logbook`}><strong>{k.label}</strong></a
+						>
 						<span class="count">{k.count}</span>
 					</div>
 					<p class="meta">
@@ -77,11 +81,37 @@
 		gap: 0.55rem;
 	}
 	.kinds li {
+		position: relative;
 		border: 1px solid var(--line);
 		border-top: 3px solid var(--accent-2);
 		border-radius: 0.65rem;
 		padding: 0.7rem 0.75rem;
 		background: var(--paper);
+	}
+	.kind-link {
+		color: inherit;
+		text-decoration: none;
+	}
+	.kind-link::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		border-radius: 0.65rem;
+	}
+	.kind-link:focus-visible {
+		outline: none;
+	}
+	.kind-link:focus-visible::after {
+		outline: 2px solid var(--accent);
+		outline-offset: 3px;
+	}
+	.kinds li:hover {
+		border-color: var(--accent-2);
+		background: var(--surface-2);
+	}
+	.hardest a {
+		position: relative;
+		z-index: 1;
 	}
 	.head {
 		display: flex;

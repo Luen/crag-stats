@@ -189,4 +189,6 @@ Dashboard Partners (#298) shares the Ascents/Sessions/Areas preference with the 
 
 First rope-solo badges (#319) reuse the existing blue carabiner for First Lead Rope Solo and purple knot for First Top-Rope Solo. Each has a distinct text title and first-completion detail; meaning never depends on colour alone.
 
+Solo climbing cards use a full-card link to the matching logbook solo type with theme-token hover and visible keyboard focus. Hardest-send links remain separate and sit above the card link.
+
 Project status pills use `--ink` text over their semantic tinted backgrounds so the small Open label meets contrast requirements in both themes. Projects browser coverage includes desktop/mobile cards in light and dark.
