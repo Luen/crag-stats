@@ -81,7 +81,7 @@ Inspired by [Dreeve](https://dreeve.app/) (Stats for Strava) and [RoxClimbs](htt
 - **Optional password gate** (`APP_PASSWORD` / `AUTH_SCOPE`), a search-engine visibility toggle, and a one-click wipe.
 - **Private notes are hidden by default.** You can opt in to see them yourself; visitors never see them.
 - **Docker / GHCR:** multi-arch images (`amd64` + `arm64`), with database migrations applied automatically on start. Upgrading straight from any older release is tested.
-- **Nightly dependency updates:** in-major upgrades with a 3-day cooldown, the full test suite, then a patch release.
+- **Nightly dependency updates:** in-major upgrades with a 3-day cooldown and the full test suite; a patch release (and image) only when something that ships in the image moved. Lint, format, typecheck and test tooling updates are committed without releasing.
 - **Dreeve-style UI:** light and dark themes, a collapsible sidebar and a mobile drawer.
 - Provider-shaped architecture, ready for Mountain Project later.
 
