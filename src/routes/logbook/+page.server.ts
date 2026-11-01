@@ -1,3 +1,4 @@
+import { parseSoloKind } from '#lib/soloKind';
 import { fail } from '@sveltejs/kit';
 import { listLogbook } from '#lib/server/analytics';
 import { getPreferredGradeSystem, getShowNotes } from '#lib/server/appSettings';
@@ -94,6 +95,7 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 	const mapVenue = url.searchParams.get('mapVenue') ?? '';
 	const styles = multiParams(url, 'style');
 	const ticks = multiParams(url, 'tick');
+	const solo = parseSoloKind(url.searchParams.get('solo'));
 	const qualities = multiParams(url, 'quality');
 	const crag = url.searchParams.get('crag') ?? '';
 	const sector = url.searchParams.get('sector') ?? '';
@@ -154,6 +156,7 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 		mapVenue,
 		styles: styles.length ? styles : undefined,
 		ticks: ticks.length ? ticks : undefined,
+		solo,
 		qualities: qualities.length ? qualities : undefined,
 		crag: crag || undefined,
 		sector: sector || undefined,
@@ -199,6 +202,7 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 		mapVenue,
 		styles,
 		ticks,
+		solo,
 		qualities,
 		crag,
 		sector,

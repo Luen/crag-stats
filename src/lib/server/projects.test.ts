@@ -1,6 +1,11 @@
 import { upsertAscents } from './ingest';
 import { wipeAllData } from './analytics';
-import { refreshProjects, listProjects, listDashboardProjects } from './projects';
+import {
+	refreshProjects,
+	listProjects,
+	listDashboardProjects,
+	listActiveProjects
+} from './projects';
 import { beforeEach, describe, expect, it } from 'vitest';
 import {
 	classifyRouteProject,
@@ -71,10 +76,36 @@ describe('isRecentlySent', () => {
 		expect(isRecentlySent('2025-10-27', now)).toBe(false);
 	});
 
+	it('includes today throughout the UTC day and excludes future calendar days', () => {
+		for (const time of ['00:00:00.000', '08:00:00.000', '23:59:59.999']) {
+			const current = new Date(`2026-10-31T${time}Z`);
+			expect(isRecentlySent('2026-10-31', current)).toBe(true);
+			expect(isRecentlySent('2026-11-01', current)).toBe(false);
+		}
+	});
+	it('includes the whole 31st calendar day, but not the 32nd, and honors custom windows', () => {
+		for (const time of ['00:00:00.000', '23:59:59.999']) {
+			const current = new Date(`2026-10-31T${time}Z`);
+			expect(isRecentlySent('2026-09-30', current)).toBe(true);
+			expect(isRecentlySent('2026-09-29', current)).toBe(false);
+			expect(isRecentlySent(' 2026-10-31 ', current, 0)).toBe(true);
+			expect(isRecentlySent('2026-10-30', current, 0)).toBe(false);
+		}
+	});
+	it('preserves exact elapsed-time boundaries and future rejection for timestamps', () => {
+		const current = new Date('2026-10-31T08:00:00Z');
+		expect(isRecentlySent('2026-09-30T08:00:00Z', current)).toBe(true);
+		expect(isRecentlySent('2026-09-30T07:59:59.999Z', current)).toBe(false);
+		expect(isRecentlySent('2026-10-31T08:00:00Z', current)).toBe(true);
+		expect(isRecentlySent('2026-10-31T08:00:00.001Z', current)).toBe(false);
+		expect(isRecentlySent('2026-09-30T10:00:00+02:00', current)).toBe(true);
+	});
 	it('rejects missing or invalid dates', () => {
 		expect(isRecentlySent(null, now)).toBe(false);
 		expect(isRecentlySent('', now)).toBe(false);
 		expect(isRecentlySent('not-a-date', now)).toBe(false);
+		for (const day of ['2026-02-30', '2025-02-29', '2018-00-00', '0000-01-01'])
+			expect(isRecentlySent(day, now)).toBe(false);
 	});
 });
 
@@ -390,4 +421,33 @@ it('orders different date-only send days before stored ascent IDs', () => {
 	const later = { ...first, ascentId: 1, ascentDate: '2026-01-02', numberAttempts: 5 };
 	expect(classifyRouteProject(summarizeRouteAscents([later, first]))).toBe('none');
 	expect(summarizeRouteAscents([later, first]).sentAt).toBe(first.ascentDate);
+});
+
+describe('same-day completed project visibility', () => {
+	beforeEach(() => wipeAllData());
+	it('includes a date-only send in the shelf and dashboard before noon UTC', () => {
+		const now = new Date('2026-10-31T08:00:00Z');
+		upsertAscents(
+			['2026-10-30', '2026-10-31'].map((ascentDate, i) => ({
+				provider: 'thecrag',
+				externalId: `recent-day-${i}`,
+				ascentDate,
+				isSend: i === 1,
+				isAttempt: i === 0,
+				route: {
+					provider: 'thecrag',
+					externalId: 'recent-day-route',
+					name: 'Synthetic completed project',
+					gearStyle: 'Sport'
+				}
+			}))
+		);
+		refreshProjects(now);
+		expect(listActiveProjects(now).recentlySent.map((p) => p.routeExternalId)).toEqual([
+			'recent-day-route'
+		]);
+		expect(listDashboardProjects(3, now).map((p) => p.routeExternalId)).toEqual([
+			'recent-day-route'
+		]);
+	});
 });
