@@ -192,3 +192,5 @@ First rope-solo badges (#319) reuse the existing blue carabiner for First Lead R
 Solo climbing cards use a full-card link to the matching logbook solo type with theme-token hover and visible keyboard focus. Hardest-send links remain separate and sit above the card link.
 
 Project status pills use `--ink` text over their semantic tinted backgrounds so the small Open label meets contrast requirements in both themes. Projects browser coverage includes desktop/mobile cards in light and dark.
+
+Streaks (#339): retain the three current-counter tiles and longest-length footer; show the all-time record's formatted start/end dates on a wrapping text line below it. Use one date for a single-day record and no dates for an empty record. Streak badges reuse the calendar icon with green/blue/purple tones for 7/10/30 days.

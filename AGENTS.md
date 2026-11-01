@@ -503,3 +503,5 @@ World map (#313): `/map` uses bundled public-domain Natural Earth outlines, serv
 - Recent activities (#333): order by valid written climbing day descending, then provider logDate instant descending, then stored ascent ID descending. Missing/invalid log times follow known times; unzoned log clocks default to UTC. Never use epoch/updated_at (edits/sync) as log creation time. Sort the full set before the twenty-row limit, and keep the displayed ascent date unchanged.
 
 - Solo card drill-down uses `/logbook?solo=toprope|lead|free|dws|aid` and shared `#lib/soloKind` classification (explicit tick wins over ascent style). Preserve the filter through sort/page/form navigation; hardest-send links remain separate.
+
+- Daily streak records/badges (#339) share `#lib/dayStreaks`: unique strict written calendar days, UTC adjacency, earliest longest-run tie. Card exposes longestStartDate/longestEndDate and formats them as calendar dates. One-shot streak_days_7/10/30 badges use the first threshold-reaching day, include attempts/indoor climbs and have no Almost there counter. Current day/week/month logic is unchanged; do not infer streaks from log timestamps.

@@ -1,3 +1,4 @@
+import { consecutiveDayRuns, STREAK_DAY_THRESHOLDS } from '#lib/dayStreaks';
 /**
  * RoxClimbs-inspired badges: real milestones from logged data.
  * Taking a break does not erase a milestone — recognition when something genuinely happened.
@@ -260,6 +261,13 @@ export const BADGE_CATALOG: readonly BadgeDef[] = [
 		icon: 'sun',
 		tone: 'green'
 	},
+	...STREAK_DAY_THRESHOLDS.map((n): BadgeDef => ({
+		id: `streak_days_${n}`,
+		title: `${n}-Day Streak`,
+		hint: `Log a climb on ${n} consecutive days (attempts count)`,
+		icon: 'calendar',
+		tone: n === 30 ? 'purple' : n === 10 ? 'blue' : 'green'
+	})),
 	{
 		id: 'holiday_christmas',
 		title: 'Christmas Day',
@@ -948,6 +956,18 @@ export function buildBadges(
 	const mark = (id: string, hit: Hit) => {
 		if (!earned.has(id)) earned.set(id, hit);
 	};
+
+	// Historical runs keep milestones earned after a break; no current-streak counter.
+	const runs = consecutiveDayRuns(dated.map(({ day }) => day));
+	for (const threshold of STREAK_DAY_THRESHOLDS) {
+		const run = runs.find((r) => r.length >= threshold);
+		if (!run) continue;
+		const day = new Date(Date.parse(`${run.start}T00:00:00Z`) + (threshold - 1) * 86400000)
+			.toISOString()
+			.slice(0, 10);
+		const hit = dated.find((r) => r.day === day)!;
+		mark(`streak_days_${threshold}`, hitAt(hit.row, `Climbed on ${threshold} consecutive days`));
+	}
 
 	let ascentCount = 0;
 	let sendCount = 0;

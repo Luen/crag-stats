@@ -106,6 +106,9 @@
 			currentWeeks={s.streaks.currentWeeks}
 			currentMonths={s.streaks.currentMonths}
 			longestDays={s.streaks.longestDays}
+			longestStartDate={s.streaks.longestStartDate}
+			longestEndDate={s.streaks.longestEndDate}
+			dateDisplay={data.dateDisplay}
 			lastActiveDate={s.streaks.lastActiveDate}
 		/>
 	{:else if id === 'eddington'}
