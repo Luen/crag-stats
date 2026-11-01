@@ -19,7 +19,7 @@ File: `src/lib/assets/favicon.svg`. It is both the favicon and the header mark.
 - A solid **rope-orange (`#ea580c`) two-peaked crag**. Three **rising bars** (a grade pyramid / bar chart) are cut out of the rock face and are **transparent**: they're done with an SVG `<mask>`, not painted white, so the page background shows through in light and dark mode.
 - The bars run **through the base** of the mountain (the mask rects extend past y=56), so there's no orange sliver under them and they merge into the background. Their tops sit a little below the slopes (y = 43 / 35 / 27) to give them room to breathe.
 - No circle, no gradient, no outline. Keep it flat and single-colour.
-- Wordmark: **"Crag Stats"** in Plus Jakarta Sans 800, tight tracking. "Crag" is in `--ink` and "Stats" in `--brand`. Use this same lockup everywhere the name appears as a logo (header, login card). Never write the whole name in orange.
+- Wordmark: **"Crag Stats"** in Plus Jakarta Sans 800, tight tracking. "Crag" is in `--ink` and "Stats" in `--brand` (the smaller mobile header uses `--accent` to meet normal-text contrast). Use this same lockup everywhere the name appears as a logo (header, login card). Never write the whole name in orange.
 - Minimum size: about 16px (favicon). Below about 20px the bars blur, which is acceptable.
 
 ## Typography
@@ -182,11 +182,13 @@ World map (#313): `/map` uses bundled public-domain Natural Earth outlines, serv
 
 Weather drill-downs (#307): the Weather conditions card links each condition row and entire daily-high bar to the logbook. Temperature ranges use `weatherHighMin` (inclusive) and `weatherHighMax` (exclusive), in Celsius, and persist through filtering, sorting and pagination. Card counts are outdoor location-days; the logbook shows every matching ascent, so counts can differ. The logbook Weather column shows cached daily high/low and precipitation plus notable condition chips on screens at least 1280px wide; smaller screens hide its header and cells and show the condition chips in the route cell instead. Indoor or uncached rows show a dash. No weather requests are made while viewing pages.
 
-Weather source labels (#309): logbook desktop Weather cells and recent activity name approximate crag/sector or owner-confirmed nearby-place locations. The owner-only Weather locations settings page uses native details/forms for qualified search, explicit selection and removal; no map or route-coordinate edit is implied. Conditions cards disclose that aggregate weather can include approximate locations.
+Weather source labels (#309): logbook desktop Weather cells and recent activity name approximate crag/sector, area polygon or owner-confirmed nearby-place locations. The owner-only Weather locations settings page uses native details/forms for qualified search, explicit selection and removal; no map or route-coordinate edit is implied. Conditions cards disclose that aggregate weather can include approximate locations.
 Card display preferences (#296) use whitelisted cookies for SSR; legacy localStorage choices migrate on mount. The pre-paint script in `app.html` sets `html[data-card-prefs-migrating]` only when a whitelisted key exists in localStorage without its cookie, and only then do cookie-less cards reserve their layout (hidden) until migration completes. New visitors and no-JS clients see default cards immediately. Keep the key list in `app.html` in sync with `CARD_PREFERENCE_KEYS`. Cookie and storage failures remain nonfatal.
 
 Dashboard Partners (#298) shares the Ascents/Sessions/Areas preference with the Partners page. Rank the full partner set by the chosen metric before applying the dashboard seven-row limit; keep the title link to the full leaderboard. Compact toggle buttons wrap within quarter-width cards.
 
 First rope-solo badges (#319) reuse the existing blue carabiner for First Lead Rope Solo and purple knot for First Top-Rope Solo. Each has a distinct text title and first-completion detail; meaning never depends on colour alone.
+
+Solo climbing cards use a full-card link to the matching logbook solo type with theme-token hover and visible keyboard focus. Hardest-send links remain separate and sit above the card link.
 
 Project status pills use `--ink` text over their semantic tinted backgrounds so the small Open label meets contrast requirements in both themes. Projects browser coverage includes desktop/mobile cards in light and dark.
