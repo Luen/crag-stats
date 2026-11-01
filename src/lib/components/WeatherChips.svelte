@@ -27,9 +27,11 @@
 {#if location && location.source !== 'route'}<p class="location">
 		Weather location: {location.source === 'place'
 			? 'Approximate nearby place'
-			: location.source === 'cached'
-				? 'Cached point'
-				: 'Approximate crag/sector'} · {location.name}
+			: location.source === 'polygon'
+				? 'Approximate area polygon'
+				: location.source === 'cached'
+					? 'Cached point'
+					: 'Approximate crag/sector'} · {location.name}
 	</p>{/if}
 
 <style>
