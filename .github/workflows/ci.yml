@@ -8,7 +8,13 @@ on:
 permissions:
   contents: read
 
+# A newer push to the same PR makes the older run obsolete. Runs on main always finish.
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.sha }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
 jobs:
+  # Lint, types and unit tests run beside the browser job so a failure in either reports sooner.
   check:
     runs-on: ubuntu-latest
     steps:
@@ -36,9 +42,42 @@ jobs:
       - run: pnpm check
       - name: Unit tests
         run: pnpm test
+
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 26
+
+      # Same pinned pnpm setup as the check job.
+      - name: Install pinned pnpm
+        run: |
+          npm install --global "$(node -p "require('./package.json').packageManager")"
+          pnpm --version
+
+      - name: Install build deps for better-sqlite3
+        run: sudo apt-get update && sudo apt-get install -y python3 make g++
+
+      - run: pnpm install --frozen-lockfile
       - run: pnpm build
+      - name: Playwright version
+        id: playwright
+        run: echo "version=$(pnpm exec playwright --version | awk '{print $2}')" >> "$GITHUB_OUTPUT"
+      - name: Cache Playwright browsers
+        id: playwright-cache
+        uses: actions/cache@v6
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}-chromium
       - name: Install Playwright Chromium
+        if: steps.playwright-cache.outputs.cache-hit != 'true'
         run: pnpm exec playwright install --with-deps chromium
+      - name: Install Playwright system dependencies
+        if: steps.playwright-cache.outputs.cache-hit == 'true'
+        run: pnpm exec playwright install-deps chromium
       - name: E2E tests (Playwright + axe)
         run: pnpm test:e2e
       - name: Upload Playwright traces
