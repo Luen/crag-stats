@@ -1,3 +1,4 @@
+import { consecutiveDayRuns, longestDayRun } from '#lib/dayStreaks';
 import { soloKind, parseSoloKind } from '#lib/soloKind';
 import {
 	loadWeatherLocations,
@@ -1567,6 +1568,8 @@ function buildStreaks(dayMap: Map<string, { count: number; sends: number }>): {
 	currentWeeks: number;
 	currentMonths: number;
 	longestDays: number;
+	longestStartDate: string | null;
+	longestEndDate: string | null;
 	lastActiveDate: string | null;
 } {
 	const days = [...dayMap.keys()].sort();
@@ -1576,24 +1579,14 @@ function buildStreaks(dayMap: Map<string, { count: number; sends: number }>): {
 			currentWeeks: 0,
 			currentMonths: 0,
 			longestDays: 0,
+			longestStartDate: null,
+			longestEndDate: null,
 			lastActiveDate: null
 		};
 	}
 
 	const daySet = new Set(days);
-	let longest = 1;
-	let run = 1;
-	for (let i = 1; i < days.length; i++) {
-		const prev = new Date(`${days[i - 1]}T12:00:00`);
-		const cur = new Date(`${days[i]}T12:00:00`);
-		const diff = Math.round((cur.getTime() - prev.getTime()) / 86400000);
-		if (diff === 1) {
-			run += 1;
-			longest = Math.max(longest, run);
-		} else {
-			run = 1;
-		}
-	}
+	const longest = longestDayRun(consecutiveDayRuns(days));
 
 	const last = days[days.length - 1];
 	const today = new Date();
@@ -1680,7 +1673,9 @@ function buildStreaks(dayMap: Map<string, { count: number; sends: number }>): {
 		currentDays,
 		currentWeeks,
 		currentMonths,
-		longestDays: longest,
+		longestDays: longest?.length ?? 0,
+		longestStartDate: longest?.start ?? null,
+		longestEndDate: longest?.end ?? null,
 		lastActiveDate: last
 	};
 }
