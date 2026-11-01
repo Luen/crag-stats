@@ -19,7 +19,7 @@ File: `src/lib/assets/favicon.svg`. It is both the favicon and the header mark.
 - A solid **rope-orange (`#ea580c`) two-peaked crag**. Three **rising bars** (a grade pyramid / bar chart) are cut out of the rock face and are **transparent**: they're done with an SVG `<mask>`, not painted white, so the page background shows through in light and dark mode.
 - The bars run **through the base** of the mountain (the mask rects extend past y=56), so there's no orange sliver under them and they merge into the background. Their tops sit a little below the slopes (y = 43 / 35 / 27) to give them room to breathe.
 - No circle, no gradient, no outline. Keep it flat and single-colour.
-- Wordmark: **"Crag Stats"** in Plus Jakarta Sans 800, tight tracking. "Crag" is in `--ink` and "Stats" in `--brand`. Use this same lockup everywhere the name appears as a logo (header, login card). Never write the whole name in orange.
+- Wordmark: **"Crag Stats"** in Plus Jakarta Sans 800, tight tracking. "Crag" is in `--ink` and "Stats" in `--brand` (the smaller mobile header uses `--accent` to meet normal-text contrast). Use this same lockup everywhere the name appears as a logo (header, login card). Never write the whole name in orange.
 - Minimum size: about 16px (favicon). Below about 20px the bars blur, which is acceptable.
 
 ## Typography
