@@ -92,7 +92,7 @@ The real gain is that lint, type and unit failures now report in about a minute 
 
 ## Consolidated tests (#325)
 
-No test was deleted and no assertion dropped. Seven feature specs ran their entire flow (seeding, navigation, filters, keyboard checks) once per theme just to scan dark mode. Navigation behaviour does not depend on the theme, so each flow now runs once and calls `expectAxeClean()` (`e2e/axe.ts`) at the same states. It scans light and dark in place, keeping open details, pressed toggles and the viewport.
+No test was deleted and no assertion dropped. Ten feature specs (seven in #340, three more added later the same day) ran their entire flow (seeding, navigation, filters, keyboard checks) once per theme just to scan dark mode. Navigation behaviour does not depend on the theme, so each flow now runs once and calls `expectAxeClean()` (`e2e/axe.ts`) at the same states. It scans light and dark in place, keeping open details, pressed toggles and the viewport.
 
 | Spec                           | Before                   | After                       | Still covered                                                                            |
 | ------------------------------ | ------------------------ | --------------------------- | ---------------------------------------------------------------------------------------- |
@@ -103,6 +103,9 @@ No test was deleted and no assertion dropped. Seven feature specs ran their enti
 | `trainingLoadContrast.spec.ts` | 2                        | 1                           | Spike pill and multi-digit sidebar counts in both themes                                 |
 | `worldMap.spec.ts`             | 2                        | 1, scans at 1440 and 390 px | dateline markers, controls, values table links                                           |
 | `weatherLocations.spec.ts`     | 2                        | 1                           | settings page with the area details open, fallback search/selection/removal              |
+| `seasonality.spec.ts`          | 2                        | 1, scans at 1440 and 390 px | search, month/scope URLs, exact-route logbook links, private-note exclusion              |
+| `streaks.spec.ts`              | 2                        | 1                           | record date range at mobile width, streak badges                                         |
+| `syncSummary.spec.ts`          | 2                        | 1                           | CSV import summary counts on first and repeat upload                                     |
 
 `a11y.spec.ts` is unchanged: it is the representative full-page audit of the main pages in each theme, loaded fresh with `test.use({ colorScheme })`.
 
