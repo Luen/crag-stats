@@ -1,4 +1,7 @@
-import { describe, expect, it } from 'vitest';
+import { upsertAscents } from './ingest';
+import { wipeAllData } from './analytics';
+import { refreshProjects, listProjects, listDashboardProjects } from './projects';
+import { beforeEach, describe, expect, it } from 'vitest';
 import {
 	classifyRouteProject,
 	countTouched,
@@ -52,38 +55,6 @@ describe('isUngradedRoute', () => {
 		expect(isUngradedRoute(22, '21-23')).toBe(true);
 		expect(isUngradedRoute(2, 'V1-3')).toBe(true);
 		expect(isUngradedRoute(1.5, 'V1/2')).toBe(false);
-	});
-});
-
-describe('classifyRouteProject', () => {
-	it('marks open when there are unsent attempts and no sends', () => {
-		expect(
-			classifyRouteProject({ nonSendCount: 1, sendCount: 0, hadAttemptsBeforeSend: false })
-		).toBe('open');
-		expect(
-			classifyRouteProject({ nonSendCount: 3, sendCount: 0, hadAttemptsBeforeSend: false })
-		).toBe('open');
-	});
-
-	it('marks sent when fought then sent', () => {
-		expect(
-			classifyRouteProject({ nonSendCount: 2, sendCount: 1, hadAttemptsBeforeSend: true })
-		).toBe('sent');
-	});
-
-	it('never treats first-go onsight/flash as a project', () => {
-		expect(
-			classifyRouteProject({ nonSendCount: 0, sendCount: 1, hadAttemptsBeforeSend: false })
-		).toBe('none');
-		expect(
-			classifyRouteProject({ nonSendCount: 0, sendCount: 2, hadAttemptsBeforeSend: false })
-		).toBe('none');
-	});
-
-	it('still rejects first-go sends even if fight flag is wrongly set', () => {
-		expect(
-			classifyRouteProject({ nonSendCount: 0, sendCount: 1, hadAttemptsBeforeSend: true })
-		).toBe('none');
 	});
 });
 
@@ -163,11 +134,11 @@ describe('summarizeRouteAscents', () => {
 		expect(classifyRouteProject(stats)).toBe('none');
 	});
 
-	it('opens a project from a single attempt', () => {
+	it('waits after a single attempt', () => {
 		const stats = summarizeRouteAscents([
 			{ ascentDate: '2026-04-01', isSend: false, isAttempt: true, numberAttempts: null }
 		]);
-		expect(classifyRouteProject(stats)).toBe('open');
+		expect(classifyRouteProject(stats)).toBe('none');
 		expect(stats.tryCount).toBe(1);
 		expect(stats.sessionCount).toBe(1);
 	});
@@ -222,4 +193,201 @@ describe('countTouched', () => {
 			rows.filter((r) => isTouchedWithin(r.lastAttemptAt, now)).length
 		);
 	});
+});
+
+describe('project thresholds', () => {
+	const attempt = (ascentDate: string | null, numberAttempts: number | null = null) => ({
+		ascentDate,
+		numberAttempts,
+		isSend: false,
+		isAttempt: true
+	});
+	const send = (ascentDate: string, numberAttempts = 1) => ({
+		ascentDate,
+		numberAttempts,
+		isSend: true,
+		isAttempt: false
+	});
+	const classify = (rows: Parameters<typeof summarizeRouteAscents>[0]) =>
+		classifyRouteProject(summarizeRouteAscents(rows));
+	it('requires two valid days for an open project', () => {
+		expect(classify([attempt('2026-01-01', 10), attempt('2026-01-01')])).toBe('none');
+		expect(classify([attempt('2026-01-01'), attempt('2026-01-02')])).toBe('open');
+		expect(classify([attempt('2026-01-01'), attempt('2026-02-30'), attempt(null)])).toBe('none');
+	});
+	it('recognises a send on the second session', () => {
+		expect(classify([send('2026-01-02'), attempt('2026-01-01')])).toBe('sent');
+	});
+	it('requires two failed tries for a same-day completed project', () => {
+		expect(classify([attempt('2026-01-01'), send('2026-01-01')])).toBe('none');
+		expect(classify([attempt('2026-01-01', 2), send('2026-01-01')])).toBe('sent');
+		expect(classify([attempt('2026-01-01'), attempt('2026-01-01'), send('2026-01-01')])).toBe(
+			'sent'
+		);
+		expect(classify([send('2026-01-01', 3)])).toBe('sent');
+		expect(classify([send('2026-01-01', 2)])).toBe('none');
+		expect(classify([attempt('2026-01-01'), send('2026-01-01', 2)])).toBe('none');
+	});
+	it('ignores later attempts and repeats when classifying the first send', () => {
+		expect(classify([send('2026-01-01'), attempt('2026-01-02', 4), send('2026-01-03', 5)])).toBe(
+			'none'
+		);
+		expect(classify([attempt(null, 10), send('2026-01-01')])).toBe('none');
+	});
+	it('keeps timestamps on their written calendar day', () => {
+		expect(
+			classify([attempt('2026-01-01T01:00:00+14:00'), attempt('2026-01-01T23:00:00-10:00')])
+		).toBe('none');
+	});
+});
+
+it('does not count timestamped work after the first same-day send', () => {
+	const stats = summarizeRouteAscents([
+		{ ascentDate: '2026-01-01T09:00:00Z', isSend: true, isAttempt: false, numberAttempts: 1 },
+		{ ascentDate: '2026-01-01T10:00:00Z', isSend: false, isAttempt: true, numberAttempts: 3 }
+	]);
+	expect(classifyRouteProject(stats)).toBe('none');
+	expect(stats.triesBeforeSend).toBe(0);
+});
+
+describe('project session counts in list and dashboard', () => {
+	beforeEach(() => wipeAllData());
+	it('counts only valid written calendar days in project cards and ranking', () => {
+		upsertAscents(
+			['2026-10-29', '2026-10-30', '2026-02-30', '0000-01-01', null].map((ascentDate, i) => ({
+				provider: 'thecrag',
+				externalId: `valid-project-${i}`,
+				ascentDate,
+				isSend: false,
+				isAttempt: true,
+				route: {
+					provider: 'thecrag',
+					externalId: 'valid-project-route',
+					name: 'Synthetic project',
+					gearStyle: 'Sport'
+				}
+			}))
+		);
+		refreshProjects(new Date('2026-10-31T12:00:00Z'));
+		expect(listProjects('open')[0]?.sessionCount).toBe(2);
+		expect(listDashboardProjects(3, new Date('2026-10-31T12:00:00Z'))[0]?.sessionCount).toBe(2);
+	});
+});
+
+it('uses known times before stored ascent order for the first send on a written day', () => {
+	const rows = [
+		{
+			ascentId: 1,
+			ascentDate: '2026-01-01T08:00:00Z',
+			isSend: true,
+			isAttempt: false,
+			numberAttempts: 1
+		},
+		{
+			ascentId: 2,
+			ascentDate: '2026-01-01T09:00:00+02:00',
+			isSend: true,
+			isAttempt: false,
+			numberAttempts: 3
+		}
+	];
+	const stats = summarizeRouteAscents(rows);
+	expect(stats.sentAt).toBe('2026-01-01T09:00:00+02:00');
+	expect(classifyRouteProject(stats)).toBe('sent');
+	expect(classifyRouteProject(summarizeRouteAscents([...rows].reverse()))).toBe('sent');
+});
+
+it('uses stable ascent IDs for date-only send ties and keeps ambiguous same-day work', () => {
+	const first = {
+		ascentId: 1,
+		ascentDate: '2026-01-01',
+		isSend: true,
+		isAttempt: false,
+		numberAttempts: 1
+	};
+	const repeat = { ...first, ascentId: 2, numberAttempts: 5 };
+	expect(classifyRouteProject(summarizeRouteAscents([repeat, first]))).toBe('none');
+	const attempt = { ascentDate: '2026-01-01', isSend: false, isAttempt: true, numberAttempts: 2 };
+	expect(
+		classifyRouteProject(
+			summarizeRouteAscents([attempt, { ...first, ascentDate: '2026-01-01T09:00:00Z' }])
+		)
+	).toBe('sent');
+	const before = { ...attempt, ascentDate: '2026-01-01T08:00:00Z' };
+	expect(
+		classifyRouteProject(
+			summarizeRouteAscents([before, { ...first, ascentDate: '2026-01-01T09:00:00Z' }])
+		)
+	).toBe('sent');
+});
+
+it('keeps mixed timed and date-only send ordering independent of input order', () => {
+	const timedFirst = {
+		ascentId: 3,
+		ascentDate: '2026-01-01T08:00:00Z',
+		isSend: true,
+		isAttempt: false,
+		numberAttempts: 1
+	};
+	const dateOnly = {
+		ascentId: 2,
+		ascentDate: '2026-01-01',
+		isSend: true,
+		isAttempt: false,
+		numberAttempts: 3
+	};
+	const timedLater = {
+		ascentId: 1,
+		ascentDate: '2026-01-01T09:00:00Z',
+		isSend: true,
+		isAttempt: false,
+		numberAttempts: 1
+	};
+	for (const rows of [
+		[timedFirst, dateOnly, timedLater],
+		[timedLater, timedFirst, dateOnly],
+		[dateOnly, timedLater, timedFirst]
+	]) {
+		const stats = summarizeRouteAscents(rows);
+		expect(stats.sentAt).toBe('2026-01-01');
+		expect(classifyRouteProject(stats)).toBe('sent');
+	}
+});
+
+it('orders known send and attempt timestamps across different written dates and offsets', () => {
+	const first = {
+		ascentId: 2,
+		ascentDate: '2026-01-02T08:00:00+02:00',
+		isSend: true,
+		isAttempt: false,
+		numberAttempts: 1
+	};
+	const later = {
+		ascentId: 1,
+		ascentDate: '2026-01-01T23:00:00-10:00',
+		isSend: false,
+		isAttempt: true,
+		numberAttempts: 3
+	};
+	expect(classifyRouteProject(summarizeRouteAscents([later, first]))).toBe('none');
+	expect(summarizeRouteAscents([later, first]).triesBeforeSend).toBe(0);
+	const result = summarizeRouteAscents([
+		{ ...later, isSend: true, isAttempt: false, numberAttempts: 1 },
+		{ ...first, numberAttempts: 3 }
+	]);
+	expect(result.sentAt).toBe(first.ascentDate);
+	expect(classifyRouteProject(result)).toBe('sent');
+});
+
+it('orders different date-only send days before stored ascent IDs', () => {
+	const first = {
+		ascentId: 2,
+		ascentDate: '2026-01-01',
+		isSend: true,
+		isAttempt: false,
+		numberAttempts: 1
+	};
+	const later = { ...first, ascentId: 1, ascentDate: '2026-01-02', numberAttempts: 5 };
+	expect(classifyRouteProject(summarizeRouteAscents([later, first]))).toBe('none');
+	expect(summarizeRouteAscents([later, first]).sentAt).toBe(first.ascentDate);
 });

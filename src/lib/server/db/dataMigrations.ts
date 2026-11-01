@@ -90,7 +90,8 @@ const MIGRATIONS = [
 			repairSoloTickFlags();
 			refreshProjects();
 		}
-	}
+	},
+	{ id: 'data:0010_project_session_threshold', apply: () => refreshProjects() }
 ];
 
 /**

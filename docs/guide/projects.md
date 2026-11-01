@@ -1,6 +1,10 @@
 # Projects
 
-Crag Stats lists **projects** the same way RoxClimbs does: outdoor routes where you logged at least one **unsent** attempt in the last year, plus routes you **sent after a fight** (shown on the “Recently sent” shelf for about a month). A route you onsighted or flashed first go is never a project.
+Crag Stats lists outdoor routes as **open projects** after unsent attempts on **at least two separate climbing days** in the logbook. Multiple tries on one day alone do not create an open project. Open projects disappear after a year without activity.
+
+A **completed project** is a route sent after work across at least two days, or after **at least two unsuccessful tries on the send day** (three or more tries including the send). Attempts can be separate log entries or recorded in the send’s attempt count. Separate entries and the send count are not added together, to avoid counting the same tries twice. First-go sends and one failed try followed by a same-day send are not projects. Only work up to the first send counts; later repeats do not turn an earlier send into a project. Missing or invalid dates do not establish sessions. Completed projects appear on the **Recently sent** shelf for about a month.
+
+When both an attempt and the first send include timestamps, attempts after that send are excluded from the classification. Date-only entries on the send day are treated as work leading to it because their within-day order is unknown. Multiple sends tied on a date without usable times use their stored ascent order, so a later repeat does not replace the first recorded send. Session totals on cards and the dashboard use the same valid calendar days as the classifier.
 
 ## New route?
 
