@@ -90,6 +90,12 @@ export const actions: Actions = {
 
 export const load: PageServerLoad = async ({ url, locals }) => {
 	const q = url.searchParams.get('q') ?? '';
+	const routeRaw = url.searchParams.get('route') ?? '';
+	const routeNumber = Number(routeRaw);
+	const route =
+		/^\d+$/.test(routeRaw) && Number.isSafeInteger(routeNumber) && routeNumber > 0
+			? routeNumber
+			: undefined;
 	const place = (url.searchParams.get('place') ?? '').slice(0, 2000);
 	const mapVenue = url.searchParams.get('mapVenue') ?? '';
 	const styles = multiParams(url, 'style');
@@ -150,6 +156,7 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 	const gradeSystem = getPreferredGradeSystem();
 	const { total, rows, weatherAvailable } = listLogbook({
 		q: q || undefined,
+		route,
 		place,
 		mapVenue,
 		styles: styles.length ? styles : undefined,
@@ -191,6 +198,7 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 	});
 	return {
 		total,
+		route: route ?? '',
 		rows,
 		notesShown,
 		canMarkFirstAscents: locals.authed,

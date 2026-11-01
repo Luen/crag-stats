@@ -190,3 +190,5 @@ Dashboard Partners (#298) shares the Ascents/Sessions/Areas preference with the 
 First rope-solo badges (#319) reuse the existing blue carabiner for First Lead Rope Solo and purple knot for First Top-Rope Solo. Each has a distinct text title and first-completion detail; meaning never depends on colour alone.
 
 Project status pills use `--ink` text over their semantic tinted backgrounds so the small Open label meets contrast requirements in both themes. Projects browser coverage includes desktop/mobile cards in light and dark.
+
+Seasonality search (#331): responsive result cards with orange annual month strips, selected-month underline and expandable numeric tables. Native labelled month/search/view/sort controls submit shareable URLs. Display data coverage and seasonal score in text; no colour-only meaning. Best months links to the search page.
