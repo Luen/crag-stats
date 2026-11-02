@@ -306,7 +306,7 @@
 		</main>
 		<footer>
 			<p>
-				Self-hosted climbing analytics · MIT · Data from
+				Self-hosted climbing analytics · AGPL-3.0 · Data from
 				<a href="https://www.thecrag.com/" target="_blank" rel="noreferrer">theCrag</a>
 				·
 				<a href={data.githubUrl} target="_blank" rel="noreferrer">{data.appVersion}</a>
