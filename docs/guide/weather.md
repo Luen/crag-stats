@@ -1,6 +1,6 @@
 # Weather
 
-Crag Stats can cache **daily outdoor weather** for climbs that have route coordinates, then use it for badges and (when enabled) dashboard / logbook surfaces. Conditions-vs-performance charts are not built yet.
+Crag Stats can cache **daily outdoor weather** for climbs that have route coordinates, then use it for badges, dashboard and logbook surfaces, and a comparison of how your climbing went in different weather.
 
 ## Opt-in
 
@@ -46,6 +46,32 @@ The dashboard **Weather conditions** card appears once at least one outdoor clim
 - **Daily high** is a small histogram of each day's maximum temperature in 5° bins.
 
 These are model values for the nearest grid cell, not official climate normals or a measurement at the wall.
+
+## Weather & performance card
+
+Once **20 or more** outdoor location-days have cached weather, the **Weather & performance** card compares how your outdoor climbing went in different weather. Before that it shows how many days are cached so far. Like the Weather conditions card it stays hidden while no weather is cached, and can be moved or hidden from Settings → Dashboard.
+
+**What is counted.** Outdoor sends and attempts (the same tick classification as everywhere else) whose location-day has cached weather. Gym routes, ticks that are neither a send nor an attempt, and ascents without a weather location are left out. Ascents whose weather comes from an approximate nearby place or area polygon are included, and the card says how many there are.
+
+**Group by:**
+
+- **Daily high:** under 10°, 10–17°, 18–24°, 25–29° and 30°+. Each band includes its lower edge and stops just below the next one, like the logbook temperature range.
+- **Conditions:** Fair, Dry (measured precipitation under 1 mm and no snow; missing rain is unknown, not dry), Rainy, Snowy, Hot, Freezing and Windy, using the badge rules above. One day can be in several conditions.
+
+**Measures:**
+
+- **Send rate:** sends as a share of sends and attempts.
+- **Near-limit:** the share of graded sends within 2 grades (1 V-grade on the V-scale) of your hardest outdoor send of the **same style and grade scale** in the 365 days before that day. Trad is compared with trad and sport with sport, and V-scale and route grades are never mixed. Using your recent best rather than your all-time best means getting stronger over the years does not make recent weather look better. Sends with no earlier same-style send in that year, and ungraded sends, are left out of this measure.
+- **Onsight/flash:** onsights and flashes as a share of sends.
+
+**Reading it honestly.**
+
+- Each bar shows the band's rate; the line marks your overall rate. A band needs at least **10** ascents (for that measure's denominator) over at least **3** days before it shows a rate. Smaller bands show "Not enough data".
+- A band is marked **Higher** or **Lower** only when it differs from all your _other_ weather days by more than day-to-day variation explains (a two-sided test at about 95%), with at least 5 days on each side. Ascents on the same day share the same weather and usually the same crag and partner, so the test treats each location-day as one unit rather than each ascent. One big day out cannot create a pattern by itself.
+- The one-line summary names the band that stands out most for the selected measure, or says that nothing stands out yet.
+- This is a **correlation, not a cause**. Season, crag, partners and where you are in a project all change with the weather. With many bands and measures, an occasional "Higher" or "Lower" can appear by chance.
+
+Each daily-high band and each condition with a logbook filter (fair, rain, snow, heat and freeze) links to the logbook filtered to those ascents. Dry and Windy have no logbook filter yet. A values table under the bars lists every band with counts for all three measures. Viewing the card never triggers a weather request, and private notes are never used.
 
 ## Logbook filters and chips
 

@@ -25,6 +25,8 @@ export type DashboardExtraRow = {
 	ascentId?: number | null;
 	gearStyle?: string | null;
 	isSend?: boolean | null;
+	/** Classified attempt (classifyTick); sends + attempts are the weather-performance base. */
+	isAttempt?: boolean | null;
 	heightM?: number | null;
 	routeHeightM?: number | null;
 	tickType?: string | null;

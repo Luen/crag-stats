@@ -96,6 +96,7 @@ import {
 	type WeatherFilterKey
 } from '#lib/weatherKeys';
 import { buildWeatherConditionsView } from '#lib/weatherStats';
+import { buildWeatherPerformanceView } from '#lib/weatherPerformance';
 import { buildTrainingLoadView, hasPersonalAscentGrade } from './trainingLoad';
 import { buildKarmaStats } from './karma';
 import { buildRoutePopularityStats } from './routePopularity';
@@ -724,6 +725,7 @@ export function getDashboardStats(
 		gearStyle: a.gearStyle,
 		ascentGearStyle: a.ascentGearStyle,
 		isSend: a.isSend,
+		isAttempt: a.isAttempt,
 		heightM: a.heightM,
 		routeHeightM: a.routeHeightM,
 		tickType: a.tickType,
@@ -757,6 +759,7 @@ export function getDashboardStats(
 		})
 	}));
 	const weatherConditions = buildWeatherConditionsView(extraRows, weatherByKey);
+	const weatherPerformance = buildWeatherPerformanceView(extraRows, weatherByKey);
 	const monthly = buildMonthlyStats(extraRows);
 	const yearly = buildYearlyStats(extraRows);
 	const milestones = buildMilestones(extraRows);
@@ -1122,7 +1125,8 @@ export function getDashboardStats(
 		routePopularity,
 		karma,
 		bestMonths,
-		weatherConditions
+		weatherConditions,
+		weatherPerformance
 	};
 }
 
