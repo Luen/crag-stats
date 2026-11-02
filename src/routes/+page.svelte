@@ -32,6 +32,7 @@
 	import SessionsPerWeek from '#lib/components/SessionsPerWeek.svelte';
 	import WeatherChips from '#lib/components/WeatherChips.svelte';
 	import WeatherConditions from '#lib/components/WeatherConditions.svelte';
+	import WeatherPerformance from '#lib/components/WeatherPerformance.svelte';
 	import WeekdayStats from '#lib/components/WeekdayStats.svelte';
 	import VolumeChart from '#lib/components/VolumeChart.svelte';
 	import YearlyStats from '#lib/components/YearlyStats.svelte';
@@ -66,6 +67,9 @@
 					return { ...i, enabled: false };
 				}
 				if (i.id === 'weatherConditions' && s.weatherConditions == null) {
+					return { ...i, enabled: false };
+				}
+				if (i.id === 'weatherPerformance' && s.weatherPerformance == null) {
 					return { ...i, enabled: false };
 				}
 				return i;
@@ -207,6 +211,8 @@
 		/>
 	{:else if id === 'weatherConditions' && s.weatherConditions}
 		<WeatherConditions data={s.weatherConditions} dateDisplay={data.dateDisplay} />
+	{:else if id === 'weatherPerformance' && s.weatherPerformance}
+		<WeatherPerformance data={s.weatherPerformance} dateDisplay={data.dateDisplay} />
 	{:else if id === 'milestones'}
 		<Milestones items={s.milestones.items} limit={6} />
 	{:else if id === 'styleMix'}

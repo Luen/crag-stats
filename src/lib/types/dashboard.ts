@@ -1,5 +1,6 @@
 import type { GradeSystem } from '#lib/grades';
 import type { WeatherConditionsView } from '#lib/weatherStats';
+import type { WeatherPerformanceView } from '#lib/weatherPerformance';
 import type { CalendarWeather, WeatherChip } from '#lib/weatherKeys';
 import type { WeekdayStatsView } from '#lib/weekdayStats';
 import type { KarmaStats } from './karma';
@@ -392,6 +393,8 @@ export type DashboardStats = {
 	bestMonths: BestMonthsView;
 	/** Open-Meteo conditions on outdoor days; null (card hidden) until any day is cached (#272). */
 	weatherConditions: WeatherConditionsView | null;
+	/** Send rate / near-limit / onsight share by weather band; null (hidden) like conditions (#365). */
+	weatherPerformance: WeatherPerformanceView | null;
 };
 
 export type BestMonthsCrag = {

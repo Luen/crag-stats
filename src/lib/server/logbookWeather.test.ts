@@ -197,6 +197,27 @@ describe('dashboard weather surfaces (#272 / #274)', () => {
 		expect(getDashboardStats().weatherConditions).toBeNull();
 		expect(getDashboardStats().recent.every((r) => r.weatherChips.length === 0)).toBe(true);
 	});
+
+	it('passes outdoor sends and attempts to the weather performance card (#365)', () => {
+		upsertAscents([
+			{
+				provider: 'thecrag',
+				externalId: 'a-hot-attempt',
+				ascentDate: '2025-03-01',
+				isSend: false,
+				isAttempt: true,
+				route: { provider: 'thecrag', externalId: 'hot', name: 'Route hot', gearStyle: 'Sport' }
+			}
+		]);
+		// Upstream route data wins on upsert, so restore the fixture's coordinates.
+		db.update(routes).set({ lat: -33.6, lon: 150.3 }).where(eq(routes.externalId, 'hot')).run();
+		const perf = getDashboardStats().weatherPerformance;
+		// Seven locatable outdoor ascents (gym and no-coords excluded); six on cached days.
+		expect(perf).toMatchObject({ ready: false, outdoorAscents: 7, ascents: 6, days: 5 });
+		expect(perf?.overall.sendRate).toBe(83.3);
+		db.delete(weatherDays).run();
+		expect(getDashboardStats().weatherPerformance).toBeNull();
+	});
 });
 
 it('returns cached snapshots and composes exact temperature ranges with weather facets', () => {
