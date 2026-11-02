@@ -72,11 +72,28 @@ describe('logbook weather facets (#273)', () => {
 	});
 
 	it('never matches indoor routes, uncached days or routes without coordinates', () => {
-		for (const weather of ['heat', 'freeze', 'rain', 'snow', 'fair'] as const) {
+		for (const weather of ['heat', 'freeze', 'rain', 'snow', 'fair', 'wind', 'calm'] as const) {
 			expect(names(listLogbook({ weather }).rows)).not.toContain('Gym Route');
 			expect(names(listLogbook({ weather }).rows)).not.toContain('Route none');
 			expect(names(listLogbook({ weather }).rows)).not.toContain('Route nocoords');
 		}
+	});
+
+	it('filters windy and calm outdoor days using measured max wind, before pagination', () => {
+		for (const [day, windMaxKmh] of [
+			['2025-03-01', 50],
+			['2025-03-02', 25],
+			['2025-03-03', 24.9],
+			['2025-03-05', 0],
+			['2025-03-06', 50]
+		] as const)
+			db.update(weatherDays).set({ windMaxKmh }).where(eq(weatherDays.day, day)).run();
+		expect(names(listLogbook({ weather: 'wind' }).rows)).toEqual(['Route hot']);
+		db.update(weatherDays).set({ windMaxKmh: 0 }).where(eq(weatherDays.day, '2025-03-06')).run();
+		expect(names(listLogbook({ weather: 'calm' }).rows)).toEqual(['Route fair', 'Route rain']);
+		const page = listLogbook({ weather: 'calm', limit: 1, offset: 1 });
+		expect(page.total).toBe(2);
+		expect(page.rows).toHaveLength(1);
 	});
 
 	it('lists outdoor ascents with coordinates and no cached weather as missing', () => {

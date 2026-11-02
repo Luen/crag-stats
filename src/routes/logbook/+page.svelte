@@ -97,7 +97,9 @@
 		rain: 'rainy',
 		snow: 'snowy',
 		fair: 'fair-weather',
-		perfect: 'perfect-weather'
+		perfect: 'perfect-weather',
+		wind: 'windy',
+		calm: 'calm/still'
 	} as const;
 
 	function checked(list: string[], value: string) {
@@ -280,6 +282,8 @@
 				<option value="freeze">Freezing (low 0°C or below)</option>
 				<option value="rain">Rainy day</option>
 				<option value="snow">Snowy day</option>
+				<option value="wind">Windy day (50 km/h+)</option>
+				<option value="calm">Calm / still day (under 25 km/h)</option>
 			</select>
 		{/if}
 		<select name="partners" aria-label="Partners" value={data.partners}>

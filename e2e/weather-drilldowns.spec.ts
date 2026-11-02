@@ -23,14 +23,14 @@ test('condition and histogram rows filter ascents and keep the range across navi
 					`INSERT INTO ascents (provider,external_id,route_id,ascent_date,is_send,tick_type,updated_at) VALUES ('thecrag',?,?,?,1,'Red point','2026-10-28')`
 				).run(`drill-${i}-${n}`, id, `2026-09-${i === 3 ? '01' : String(i + 1).padStart(2, '0')}`);
 		}
-		for (const [day, high, rain] of [
-			['2026-09-01', 24.9, 6],
-			['2026-09-02', 25, 0],
-			['2026-09-03', -1, 0]
+		for (const [day, high, rain, wind] of [
+			['2026-09-01', 24.9, 6, 50],
+			['2026-09-02', 25, 0, 24.9],
+			['2026-09-03', -1, 0, null]
 		] as const)
 			db.prepare(
-				`INSERT INTO weather_days (lat_key,lon_key,day,temp_max_c,temp_min_c,precip_mm,weather_code,status,fetched_at) VALUES (45,67,?,?, -2,?,0,'ok','2026-10-28')`
-			).run(day, high, rain);
+				`INSERT INTO weather_days (lat_key,lon_key,day,temp_max_c,temp_min_c,precip_mm,wind_max_kmh,weather_code,status,fetched_at) VALUES (45,67,?,?, -2,?,?,0,'ok','2026-10-28')`
+			).run(day, high, rain, wind);
 		await page.setViewportSize({ width: 1440, height: 1000 });
 		await page.goto('/');
 		const card = page
@@ -92,6 +92,31 @@ test('condition and histogram rows filter ascents and keep the range across navi
 		await expect(gym.locator('.weather-cell')).toHaveText('—');
 		const ordinary = page.locator('tbody tr').filter({ hasText: 'Drill boundary' });
 		await expect(ordinary.locator('.weather-cell')).toContainText('High 25°C');
+		const weatherFilter = page.getByRole('combobox', { name: 'Weather on the day', exact: true });
+		await weatherFilter.selectOption({ label: 'Windy day (50 km/h+)' });
+		await page.getByRole('button', { name: 'Apply filters', exact: true }).click();
+		await expect(page).toHaveURL(/weather=wind/);
+		await expect(weatherFilter).toHaveValue('wind');
+		await expect(page.locator('.head')).toContainText('52 ascents');
+		await expect(page.locator('tbody')).not.toContainText('Drill Gym');
+		await expect(page.locator('tbody')).not.toContainText('Drill boundary');
+		await expect(page.locator('tbody')).not.toContainText('Drill cold');
+		await page.getByRole('link', { name: 'Grade', exact: true }).click();
+		await expect(page).toHaveURL(/weather=wind/);
+		await page.getByRole('link', { name: /Next/ }).click();
+		await expect(page).toHaveURL(/weather=wind/);
+		await expect(page.locator('tbody tr')).toHaveCount(2);
+		await page.reload();
+		await expect(weatherFilter).toHaveValue('wind');
+		await expectAxeClean(page, { include: ['.filters', '.head'] });
+		await weatherFilter.selectOption({ label: 'Calm / still day (under 25 km/h)' });
+		await page.getByRole('button', { name: 'Apply filters', exact: true }).click();
+		await expect(page).toHaveURL(/weather=calm/);
+		await expect(weatherFilter).toHaveValue('calm');
+		await expect(page.locator('tbody tr')).toHaveCount(1);
+		await expect(page.locator('tbody')).toContainText('Drill boundary');
+		await expect(page.locator('.head')).toContainText('calm/still days');
+		await expectAxeClean(page, { include: ['.filters', '.head'] });
 		await page.goto('/');
 		await expectAxeClean(page, { include: ['.shares', '.whole-row'] });
 	} finally {

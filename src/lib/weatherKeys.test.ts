@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+	isCalmWeather,
 	isFairWeather,
 	isFreezeWeather,
 	isHeatWeather,
@@ -207,13 +208,30 @@ describe('ascent weather lookup', () => {
 
 	it('maps filter keys onto the shared predicates', () => {
 		expect(isWeatherFilterKey('heat')).toBe(true);
-		expect(isWeatherFilterKey('wind')).toBe(false);
+		expect(isWeatherFilterKey('wind')).toBe(true);
+		expect(isWeatherFilterKey('calm')).toBe(true);
+		expect(isWeatherFilterKey('unknown')).toBe(false);
 		expect(isWeatherFilterKey(null)).toBe(false);
 		expect(matchesWeatherFilter(w, 'heat')).toBe(true);
 		expect(matchesWeatherFilter(w, 'fair')).toBe(false);
+		expect(matchesWeatherFilter({ ...w, windMaxKmh: 50 }, 'wind')).toBe(true);
+		expect(matchesWeatherFilter({ ...w, windMaxKmh: 49.9 }, 'wind')).toBe(false);
+		expect(matchesWeatherFilter({ ...w, windMaxKmh: null }, 'wind')).toBe(false);
 		expect(
 			matchesWeatherFilter({ tempMaxC: 20, tempMinC: 10, precipMm: 0, weatherCode: 0 }, 'fair')
 		).toBe(true);
+	});
+});
+
+describe('calm/still weather', () => {
+	it('matches measured nonnegative max wind below 25 km/h, independent of other conditions', () => {
+		const rainy = { tempMaxC: 38, tempMinC: -2, precipMm: 6, weatherCode: 61 };
+		for (const windMaxKmh of [0, 24.9]) {
+			expect(isCalmWeather({ ...rainy, windMaxKmh })).toBe(true);
+			expect(matchesWeatherFilter({ ...rainy, windMaxKmh }, 'calm')).toBe(true);
+		}
+		for (const windMaxKmh of [25, 50, null, undefined, NaN, Infinity, -1])
+			expect(matchesWeatherFilter({ ...rainy, windMaxKmh }, 'calm')).toBe(false);
 	});
 });
 

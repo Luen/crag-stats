@@ -83,6 +83,12 @@ export function isWindyWeather(w: WeatherSnapshot): boolean {
 	return wind != null && wind >= WINDY_MAX_KMH;
 }
 
+/** Calm/still uses the same max-wind threshold as perfect days; missing readings are unknown. */
+export function isCalmWeather(w: WeatherSnapshot): boolean {
+	const wind = w.windMaxKmh;
+	return wind != null && Number.isFinite(wind) && wind >= 0 && wind < PERFECT_WIND_MAX_KMH;
+}
+
 /** Thunderstorm / severe WMO code. */
 export function isStormCode(w: WeatherSnapshot): boolean {
 	return w.weatherCode != null && STORM_CODES.has(w.weatherCode);
@@ -194,7 +200,16 @@ export function lookupAscentWeather(
 }
 
 /** Logbook / chip facets backed by the weather cache. */
-export const WEATHER_FILTER_KEYS = ['heat', 'freeze', 'rain', 'snow', 'fair', 'perfect'] as const;
+export const WEATHER_FILTER_KEYS = [
+	'heat',
+	'freeze',
+	'rain',
+	'snow',
+	'fair',
+	'perfect',
+	'wind',
+	'calm'
+] as const;
 export type WeatherFilterKey = (typeof WEATHER_FILTER_KEYS)[number];
 
 export function isWeatherFilterKey(v: string | null | undefined): v is WeatherFilterKey {
@@ -216,6 +231,10 @@ export function matchesWeatherFilter(w: WeatherSnapshot, key: WeatherFilterKey):
 			return isFairWeather(w);
 		case 'perfect':
 			return isPerfectWeather(w);
+		case 'wind':
+			return isWindyWeather(w);
+		case 'calm':
+			return isCalmWeather(w);
 	}
 }
 
