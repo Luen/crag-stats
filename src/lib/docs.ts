@@ -15,6 +15,11 @@ export const DOC_PAGES: readonly DocPage[] = [
 		summary: 'For the server owner: API sync or automatic CSV downloads with a saved theCrag login.'
 	},
 	{
+		slug: 'offline',
+		title: 'Offline mode',
+		summary: 'Download a read-only public stats and logbook snapshot for this browser.'
+	},
+	{
 		slug: 'badges',
 		title: 'Badges',
 		summary: 'Logbook milestones and the automatic First Moves import date.'

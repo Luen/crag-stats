@@ -10,7 +10,8 @@ import { resolveSearchIndexing, type SearchIndexing } from './seo';
 export type { SearchIndexing };
 
 /** Keys stored in `app_settings` (migration 0008). */
-export type AppSettingKey = 'search_indexing' | 'grade_system' | 'dashboard_layout' | 'show_notes';
+export type AppSettingKey =
+	'search_indexing' | 'grade_system' | 'dashboard_layout' | 'show_notes' | 'offline_revision';
 
 export function getAppSetting(key: AppSettingKey): string | null {
 	ensureSchema();

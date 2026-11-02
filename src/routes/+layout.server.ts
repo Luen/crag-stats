@@ -40,6 +40,19 @@ function navCounts(): { ascents: number; projects: number } {
 }
 
 export const load: LayoutServerLoad = async ({ locals, url, cookies }) => {
+	if (url.pathname === '/offline')
+		return {
+			appVersion: readAppVersion(),
+			cardPreferences: readCardPreferences(() => undefined),
+			githubUrl: 'https://github.com/Luen/crag-stats',
+			authed: false,
+			authEnabled: true,
+			authScope: 'all' as const,
+			showSettings: false,
+			navCounts: null,
+			dateDisplay: resolveDateDisplay('en-AU', 'UTC'),
+			noindex: true
+		};
 	const authOn = isAuthEnabled();
 	const scope = authScope();
 	const showSettings = !authOn || locals.authed;

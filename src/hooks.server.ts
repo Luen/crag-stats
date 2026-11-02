@@ -13,6 +13,7 @@ import { runDataMigrations } from '#lib/server/db/dataMigrations';
 import { env } from '#lib/server/env';
 import { startScheduler } from '#lib/server/scheduler';
 import { isNoindexPath } from '#lib/server/seo';
+import { offlineAllowed } from '#lib/server/offline';
 
 ensureSchema();
 
@@ -41,6 +42,7 @@ const SECURITY_HEADERS: Record<string, string> = {
 };
 
 function finish(res: Response, path: string): Response {
+	res.headers.set('x-crag-offline', offlineAllowed() ? 'public' : 'disabled');
 	for (const [k, v] of Object.entries(SECURITY_HEADERS)) res.headers.set(k, v);
 	// Search-engine visibility (Settings toggle; always off behind AUTH_SCOPE=all and on admin paths).
 	if (isNoindexPath(path) || !getSearchIndexing().allowed) {
@@ -51,6 +53,8 @@ function finish(res: Response, path: string): Response {
 
 export const handle: Handle = async ({ event, resolve }) => {
 	const path = event.url.pathname;
+	// Public, data-free offline shell; no logbook or authenticated layout data is embedded.
+	if (path === '/offline') return finish(await resolve(event), path);
 
 	if (path === '/health' || path.startsWith('/health/')) {
 		return finish(await resolve(event), path);
