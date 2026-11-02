@@ -10,14 +10,14 @@ export type RenderedDoc = { slug: string; title: string; segments: DocSegment[] 
 
 export const DOC_PAGES: readonly DocPage[] = [
 	{
-		slug: 'offline',
-		title: 'Offline mode',
-		summary: 'Download a read-only public stats and logbook snapshot for this browser.'
-	},
-	{
 		slug: 'logbook-sync',
 		title: 'Logbook sync',
 		summary: 'For the server owner: API sync or automatic CSV downloads with a saved theCrag login.'
+	},
+	{
+		slug: 'offline',
+		title: 'Offline mode',
+		summary: 'Download a read-only public stats and logbook snapshot for this browser.'
 	},
 	{
 		slug: 'badges',

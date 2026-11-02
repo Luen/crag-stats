@@ -14,6 +14,8 @@ const assets = [
 		.map((asset) => '/' + asset.path)
 		.filter((f) => /\/(icon[^/]*\.png|apple-touch-icon\.png|manifest.webmanifest)$/.test(f))
 ];
+/** Proxy/tunnel answers when the homeserver behind it is down. */
+const UNREACHABLE = new Set([502, 503, 504]);
 let generation = 0;
 let pending = Promise.resolve();
 
@@ -177,9 +179,11 @@ worker.addEventListener('fetch', (event) => {
 		event.respondWith(
 			(async () => {
 				try {
-					const response = await fetch(request, { signal: AbortSignal.timeout(5000) });
+					// Generous timeout: a big dashboard on a small homeserver can take several seconds.
+					const response = await fetch(request, { signal: AbortSignal.timeout(30000) });
 					if (response.headers.get('x-crag-offline') === 'disabled') await clear();
-					if (response.status < 500) return response;
+					// Only gateway errors mean the homeserver is unreachable; show app errors as-is.
+					if (!UNREACHABLE.has(response.status)) return response;
 				} catch {
 					/* Fall back to the data-free shell. */
 				}
