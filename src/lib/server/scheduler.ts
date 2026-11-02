@@ -1,6 +1,8 @@
 import cron from 'node-cron';
 import { env, getTheCragSyncConfiguration } from './env';
+import { triggerRouteHistoryImport } from './routeHistoryImport';
 import { getSyncStatus, runTheCragSync } from './sync';
+import { triggerWeatherImport } from './weatherImport';
 
 let started = false;
 
@@ -36,7 +38,10 @@ export function startScheduler() {
  */
 function runInitialSyncIfNeeded() {
 	const state = getSyncStatus();
-	if (state.lastSuccessAt) return;
+	if (state.lastSuccessAt) {
+		resumePendingImports();
+		return;
+	}
 	console.log('[crag-stats] no successful sync yet, starting initial sync');
 	runTheCragSync()
 		.then((result) => {
@@ -45,4 +50,14 @@ function runInitialSyncIfNeeded() {
 		.catch((err) => {
 			console.error('[crag-stats] initial sync failed:', err instanceof Error ? err.message : err);
 		});
+}
+
+/**
+ * Existing install: pick up opted-in background work an upgrade queued (e.g. new weather area
+ * lookups) instead of waiting for the next sync. Both engines return without a request when
+ * nothing is pending, and keep their persisted run gap and back-off across restarts.
+ */
+function resumePendingImports() {
+	triggerRouteHistoryImport('startup');
+	triggerWeatherImport('startup');
 }
