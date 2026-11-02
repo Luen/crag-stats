@@ -49,6 +49,61 @@ function parseRetryAfterMs(header: string | null): number | undefined {
 	return undefined;
 }
 
+/** Open-Meteo signals usage limits in the body (`reason`), sometimes without a 429. */
+const RATE_LIMIT_TEXT = /\b(rate|request|api|usage)[\s-]*limit|too many requests|limit exceeded/i;
+
+type JsonBody = { ok: true; value: unknown } | { ok: false };
+
+function parseJsonBody(text: string): JsonBody {
+	if (!text.trim()) return { ok: false };
+	try {
+		return { ok: true, value: JSON.parse(text) };
+	} catch {
+		return { ok: false };
+	}
+}
+
+function isErrorPayload(value: unknown): boolean {
+	return !!value && typeof value === 'object' && (value as { error?: unknown }).error === true;
+}
+
+/** One short line of provider text; never the raw parser error. */
+function snippet(text: string): string {
+	return text
+		.replace(/<[^>]*>/g, ' ')
+		.replace(/\s+/g, ' ')
+		.trim()
+		.slice(0, 160);
+}
+
+function describeFailure(
+	httpStatus: number,
+	httpOk: boolean,
+	text: string,
+	body: JsonBody,
+	retryAfterMs: number | undefined
+): OpenMeteoFetchResult {
+	const reason =
+		body.ok && body.value && typeof body.value === 'object'
+			? (body.value as { reason?: unknown }).reason
+			: undefined;
+	const detail = typeof reason === 'string' && reason.trim() ? snippet(reason) : snippet(text);
+	const rateLimited = httpStatus === 429 || RATE_LIMIT_TEXT.test(detail);
+	// A 2xx with a non-JSON or error body is still a failed request: report it as a
+	// gateway problem (or a rate limit) so the import backs off instead of caching it.
+	const status = rateLimited ? 429 : httpOk ? 502 : httpStatus;
+	let message: string;
+	if (rateLimited) {
+		message = 'Open-Meteo rate limit reached; weather import will retry later.';
+	} else if (!body.ok && httpOk) {
+		message = 'Open-Meteo returned an unexpected (non-JSON) response.';
+	} else {
+		message = `Open-Meteo HTTP ${httpStatus}.`;
+	}
+	if (detail) message += ` Provider said: ${detail}`;
+	return { ok: false, status, message, ...(retryAfterMs != null ? { retryAfterMs } : {}) };
+}
+
 /** Parse the Open-Meteo archive JSON body into daily rows. */
 export function parseOpenMeteoArchive(body: unknown): OpenMeteoDaily[] {
 	if (!body || typeof body !== 'object') return [];
@@ -113,30 +168,20 @@ export function createOpenMeteoClient(
 				};
 			}
 
-			if (!res.ok) {
-				const retryAfterMs = parseRetryAfterMs(res.headers.get('retry-after'));
-				let message = `Open-Meteo HTTP ${res.status}`;
-				try {
-					const text = await res.text();
-					if (text.trim()) message = text.slice(0, 200);
-				} catch {
-					/* ignore */
-				}
-				return { ok: false, status: res.status, message, retryAfterMs };
-			}
-
-			let json: unknown;
+			const retryAfterMs = parseRetryAfterMs(res.headers.get('retry-after'));
+			let text = '';
 			try {
-				json = await res.json();
-			} catch (err) {
-				return {
-					ok: false,
-					status: res.status,
-					message: err instanceof Error ? err.message : 'Invalid JSON'
-				};
+				text = await res.text();
+			} catch {
+				/* ignore */
+			}
+			const body = parseJsonBody(text);
+
+			if (!res.ok || !body.ok || isErrorPayload(body.value)) {
+				return describeFailure(res.status, res.ok, text, body, retryAfterMs);
 			}
 
-			return { ok: true, days: parseOpenMeteoArchive(json) };
+			return { ok: true, days: parseOpenMeteoArchive(body.value) };
 		}
 	};
 }

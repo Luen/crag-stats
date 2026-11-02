@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { wipeAllData } from './analytics';
 import { db, ensureSchema } from './db';
 import { ascents, routes, weatherDays } from './db/schema';
-import type { OpenMeteoClient } from './providers/openMeteo';
+import { createOpenMeteoClient, type OpenMeteoClient } from './providers/openMeteo';
 import {
 	DAYS_PER_RUN,
 	listPendingWeatherDays,
@@ -154,6 +154,33 @@ describe('weatherEngine', () => {
 		expect(row?.status).toBe('ok');
 		expect(listPendingWeatherDays(10, now)).toEqual([]);
 		expect(weatherImportStatus({ enabled: true }, now).cachedOk).toBe(1);
+	});
+
+	it('backs off without caching the day when Open-Meteo sends a non-JSON body', async () => {
+		const now = Date.parse('2024-06-15T12:00:00.000Z');
+		seedRouteAscent({
+			routeExternalId: 'r1',
+			ascentExternalId: 'a1',
+			ascentDate: '2024-01-10',
+			lat: -33.87,
+			lon: 151.21
+		});
+		const client = createOpenMeteoClient(
+			(async () => new Response('Unexpected error. Too many requests.')) as unknown as typeof fetch
+		);
+
+		const result = await runWeatherImportOnce(
+			{ enabled: true },
+			{ client, sleep: async () => {}, now: () => now }
+		);
+		expect(result.outcome).toBe('blocked');
+		expect(result.message).not.toMatch(/is not valid JSON/);
+		expect(db.select().from(weatherDays).all()).toEqual([]);
+		const status = weatherImportStatus({ enabled: true }, now);
+		expect(status.status).toBe('blocked');
+		expect(status.lastError).toMatch(/rate limit/);
+		expect(Date.parse(status.nextAllowedAt!)).toBeGreaterThan(now);
+		expect(listPendingWeatherDays(10, now)).toHaveLength(1);
 	});
 
 	it('refuses when disabled', async () => {
