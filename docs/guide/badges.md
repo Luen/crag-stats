@@ -8,6 +8,10 @@ If an older database has no saved import date, the next successful non-empty imp
 
 Wiping local data resets this milestone along with the logbook; the next successful non-empty import starts a new one.
 
+## Order
+
+Earned badges are listed by the climb that earned them, most recent first. The dashboard card shows the latest eight. Badges earned on the same day keep their gallery order. First Moves and the community-ascent estimates are not tied to a climb, so they come after every climb-dated badge.
+
 ## Weather
 
 **Heat Wave**, **Freeze Frame**, **Rain Check**, **Climbing in the Snow**, **Blown Away**, **Bluebird**, **Sticky**, **Storm Send**, and **Four Seasons** need the optional outdoor weather cache (`WEATHER_IMPORT`). See [Weather](/docs/weather). Until those days are fetched, the badges stay locked. **Storm Send** requires a successful send on a heavy-rain day; attempts alone do not count.

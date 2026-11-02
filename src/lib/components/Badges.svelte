@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { sortEarnedBadges } from '#lib/badgeOrder';
+
 	type Badge = {
 		id: string;
 		title: string;
@@ -35,9 +37,7 @@
 		layout
 	}: Props = $props();
 
-	const earnedSorted = $derived(
-		[...earned].sort((a, b) => String(b.date ?? '').localeCompare(String(a.date ?? '')))
-	);
+	const earnedSorted = $derived(sortEarnedBadges(earned));
 
 	const compact = $derived(recentLimit != null);
 	const resolvedLayout = $derived(layout ?? (compact ? 'rail' : 'grid'));
