@@ -14,8 +14,8 @@ const sessionSecret = (process.env.CRAG_STATS_E2E_SESSION_SECRET ||=
 	randomBytes(32).toString('hex'));
 
 const server = (name: keyof typeof PORTS, env: Record<string, string>) => ({
-	// Same entry as Docker; plain HTTP like a LAN install (#47).
-	command: 'node scripts/server.mjs',
+	// Reset this named throwaway DB before importing the same server entry as Docker (#350).
+	command: `node scripts/e2e-server.mjs ${name}`,
 	port: PORTS[name],
 	reuseExistingServer: false,
 	timeout: 60_000,
