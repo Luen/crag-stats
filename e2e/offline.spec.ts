@@ -1,6 +1,174 @@
-import { expect, test } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
+import type { OfflineSnapshot } from '../src/lib/offline';
 import { expectAxeClean } from './axe';
 import { PORTS, TEST_PASSWORD } from '../playwright.config';
+
+async function savedCopy(page: Page): Promise<OfflineSnapshot | null> {
+	return page.evaluate(async () => {
+		const name = (await caches.keys()).find((key) => key.startsWith('crag-offline-data-'));
+		if (!name) return null;
+		const response = await (await caches.open(name)).match('/__offline_snapshot');
+		return response ? response.json() : null;
+	});
+}
+
+async function ageCopy(page: Page) {
+	await page.evaluate(async () => {
+		const name = (await caches.keys()).find((key) => key.startsWith('crag-offline-data-'))!;
+		const cache = await caches.open(name);
+		const response = (await cache.match('/__offline_snapshot'))!;
+		const snapshot = await response.json();
+		snapshot.savedAt = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
+		await cache.put('/__offline_snapshot', new Response(JSON.stringify(snapshot)));
+		const preferences = await caches.open('crag-offline-preferences');
+		await preferences.put(
+			'/__offline_refresh',
+			new Response(JSON.stringify({ enabled: true, lastAttempt: 0 }))
+		);
+	});
+}
+
+async function standalone(page: Page) {
+	await page.addInitScript(() => {
+		const original = window.matchMedia.bind(window);
+		window.matchMedia = (query) => {
+			const result = original(query);
+			if (query === '(display-mode: standalone)')
+				Object.defineProperty(result, 'matches', { value: true });
+			return result;
+		};
+	});
+}
+
+test('installing from a normal tab downloads the logbook without opening the offline viewer', async ({
+	page,
+	context
+}) => {
+	await page.goto('/logbook');
+	await page.waitForFunction(() => !!navigator.serviceWorker.controller);
+	expect(await savedCopy(page)).toBeNull();
+	await page.evaluate(() => window.dispatchEvent(new Event('appinstalled')));
+	await expect.poll(async () => (await savedCopy(page))?.rows.length ?? 0).toBeGreaterThan(0);
+	await context.setOffline(true);
+	await page.goto('/logbook');
+	await expect(page).toHaveURL(/\/offline$/);
+	await expect(page.getByRole('heading', { name: 'Dashboard summary' })).toBeVisible();
+	await expect(page.getByRole('table')).toContainText((await savedCopy(page))!.rows[0].name);
+	await expectAxeClean(page, { include: ['main'] });
+});
+
+test('standalone launch, online reconnect and the foreground timer refresh automatically', async ({
+	page,
+	context
+}) => {
+	await page.clock.install();
+	await standalone(page);
+	await page.goto('/logbook');
+	await expect.poll(async () => (await savedCopy(page))?.rows.length ?? 0).toBeGreaterThan(0);
+	const initial = (await savedCopy(page))!.savedAt;
+	await page.evaluate(() => window.dispatchEvent(new Event('online')));
+	// A worker round trip is a barrier: a fresh copy must survive an automatic check unchanged.
+	await page.evaluate(
+		() =>
+			new Promise<void>((resolve) => {
+				const channel = new MessageChannel();
+				channel.port1.onmessage = () => {
+					channel.port1.close();
+					resolve();
+				};
+				navigator.serviceWorker.controller!.postMessage({ type: 'AUTO_REFRESH' }, [channel.port2]);
+			})
+	);
+	expect((await savedCopy(page))!.savedAt).toBe(initial);
+	await ageCopy(page);
+	await context.setOffline(true);
+	await context.setOffline(false);
+	await expect
+		.poll(async () => Date.now() - Date.parse((await savedCopy(page))!.savedAt))
+		.toBeLessThan(60000);
+	await ageCopy(page);
+	await page.clock.runFor(61000);
+	await expect
+		.poll(async () => Date.now() - Date.parse((await savedCopy(page))!.savedAt))
+		.toBeLessThan(60000);
+});
+
+test('background refresh works without a viewer and clear stays paused after a new launch', async ({
+	page,
+	context
+}) => {
+	await standalone(page);
+	await page.goto('/logbook');
+	await expect.poll(async () => !!(await savedCopy(page))).toBe(true);
+	await ageCopy(page);
+	const worker = context.serviceWorkers()[0];
+	const periodicRefresh = () =>
+		worker.evaluate(async () => {
+			let work: Promise<unknown> | undefined;
+			self.dispatchEvent(
+				Object.assign(new Event('periodicsync'), {
+					tag: 'crag-offline-refresh',
+					waitUntil(promise: Promise<unknown>) {
+						work = promise;
+					}
+				})
+			);
+			await work;
+		});
+	await periodicRefresh();
+	await expect
+		.poll(async () => Date.now() - Date.parse((await savedCopy(page))!.savedAt))
+		.toBeLessThan(60000);
+	await page.goto('/offline');
+	await expect(page.getByRole('heading', { name: 'Dashboard summary' })).toBeVisible();
+	await page.getByRole('button', { name: 'Clear offline copy' }).click();
+	await expect(page.getByRole('status')).toContainText('Automatic downloads paused');
+	await page.goto('/logbook');
+	await page.waitForFunction(() => !!navigator.serviceWorker.controller);
+	await periodicRefresh();
+	expect(await savedCopy(page)).toBeNull();
+	await page.goto('/offline');
+	await page.getByRole('button', { name: 'Download or refresh copy' }).click();
+	await expect(page.getByRole('heading', { name: 'Dashboard summary' })).toBeVisible();
+});
+
+test('automatic refresh retains a usable copy during server outages and backs off', async ({
+	page,
+	context
+}) => {
+	await standalone(page);
+	await page.goto('/logbook');
+	await expect.poll(async () => !!(await savedCopy(page))).toBe(true);
+	await ageCopy(page);
+	const previous = (await savedCopy(page))!.savedAt;
+	let attempts = 0;
+	await context.route('**/api/offline', (route) => {
+		attempts++;
+		return route.fulfill({ status: 503, body: 'Temporarily unavailable' });
+	});
+	const refresh = () =>
+		page.evaluate(
+			() =>
+				new Promise<void>((resolve) => {
+					const channel = new MessageChannel();
+					channel.port1.onmessage = () => {
+						channel.port1.close();
+						resolve();
+					};
+					navigator.serviceWorker.controller!.postMessage({ type: 'AUTO_REFRESH' }, [
+						channel.port2
+					]);
+				})
+		);
+	await refresh();
+	expect(attempts).toBe(1);
+	expect((await savedCopy(page))!.savedAt).toBe(previous);
+	await refresh();
+	expect(attempts).toBe(1);
+	await context.setOffline(true);
+	await page.goto('/offline');
+	await expect(page.getByRole('heading', { name: 'Dashboard summary' })).toBeVisible();
+});
 
 test('downloaded public snapshot reopens offline, searches, reconnects and clears', async ({
 	page,
@@ -50,12 +218,14 @@ test('downloaded public snapshot reopens offline, searches, reconnects and clear
 test('protected sites expose only the empty shell and never download authenticated data', async ({
 	page
 }) => {
+	await standalone(page);
 	await page.goto(`http://localhost:${PORTS.all}/offline`);
 	await expect(page.getByRole('button', { name: 'Download or refresh copy' })).toBeEnabled({
 		timeout: 30000
 	});
 	await page.getByRole('button', { name: 'Download or refresh copy' }).click();
 	await expect(page.getByRole('status')).toContainText('Protected sites require a connection');
+	expect(await savedCopy(page)).toBeNull();
 	await expect(page.getByRole('heading', { name: 'Dashboard summary' })).toHaveCount(0);
 	await expect(page.getByRole('button', { name: 'Log out' })).toHaveCount(0);
 	await page.goto(`http://localhost:${PORTS.all}/login?next=/offline`);
@@ -66,6 +236,61 @@ test('protected sites expose only the empty shell and never download authenticat
 	await page.getByRole('button', { name: 'Download or refresh copy' }).click();
 	await expect(page.getByRole('status')).toContainText('Protected sites require a connection');
 	expect((await page.request.get(`http://localhost:${PORTS.all}/api/offline`)).status()).toBe(403);
+});
+
+test('clearing cancels an automatic download and queued refreshes before they can restore data', async ({
+	page,
+	context
+}) => {
+	let release!: () => void;
+	const blocked = new Promise<void>((resolve) => {
+		release = resolve;
+	});
+	let started!: () => void;
+	const downloading = new Promise<void>((resolve) => {
+		started = resolve;
+	});
+	await context.route('**/api/offline', async (route) => {
+		started();
+		await blocked;
+		await route.continue();
+	});
+	await standalone(page);
+	await page.goto('/logbook');
+	await downloading;
+	await page.evaluate(() => {
+		const channel = new MessageChannel();
+		channel.port1.onmessage = () => channel.port1.close();
+		navigator.serviceWorker.controller!.postMessage({ type: 'AUTO_REFRESH' }, [channel.port2]);
+	});
+	try {
+		await page.evaluate(
+			() =>
+				new Promise<void>((resolve) => {
+					const channel = new MessageChannel();
+					channel.port1.onmessage = () => {
+						channel.port1.close();
+						resolve();
+					};
+					navigator.serviceWorker.controller!.postMessage({ type: 'CLEAR' }, [channel.port2]);
+				})
+		);
+	} finally {
+		release();
+	}
+	// READ queues behind both cancelled refreshes, proving neither re-populated the cache.
+	await page.evaluate(
+		() =>
+			new Promise<void>((resolve) => {
+				const channel = new MessageChannel();
+				channel.port1.onmessage = () => {
+					channel.port1.close();
+					resolve();
+				};
+				navigator.serviceWorker.controller!.postMessage({ type: 'READ' }, [channel.port2]);
+			})
+	);
+	expect(await savedCopy(page)).toBeNull();
 });
 
 test('expired downloads, logout and denied refreshes clear the viewer', async ({

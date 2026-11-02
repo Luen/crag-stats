@@ -1,12 +1,22 @@
 /// <reference lib="webworker" />
 import { version } from '$app/env';
 import { immutable, assets as staticAssets } from '$app/manifest';
-import { OFFLINE_MAX_BYTES, snapshotIsFresh, type OfflineSnapshot } from '../lib/offline';
+import {
+	OFFLINE_MAX_BYTES,
+	OFFLINE_SYNC_TAG,
+	offlineRefreshDue,
+	snapshotIsFresh,
+	type OfflineRefreshState,
+	type OfflineSnapshot
+} from '../lib/offline';
 
 const worker = self as unknown as ServiceWorkerGlobalScope;
 const PREFIX = 'crag-offline-';
 const SHELL = `${PREFIX}shell-${version}`;
 const DATA = `${PREFIX}data-${version}`;
+// Preserve a user's pause choice across worker upgrades, even though snapshots are versioned.
+const PREFERENCES = `${PREFIX}preferences`;
+const REFRESH_STATE = new URL('/__offline_refresh', worker.location.origin).href;
 const SNAPSHOT = new URL('/__offline_snapshot', worker.location.origin).href;
 const assets = [
 	...immutable.map((asset) => '/' + asset.path),
@@ -18,9 +28,36 @@ const assets = [
 const UNREACHABLE = new Set([502, 503, 504]);
 let generation = 0;
 let pending = Promise.resolve();
+let preferenceWrites = Promise.resolve();
 
-async function clear(excludeClient?: string) {
+function writeRefreshState(state: OfflineRefreshState): Promise<void> {
+	preferenceWrites = preferenceWrites
+		.catch(() => {})
+		.then(async () => {
+			await (
+				await caches.open(PREFERENCES)
+			).put(REFRESH_STATE, new Response(JSON.stringify(state)));
+		});
+	return preferenceWrites;
+}
+
+async function refreshState(): Promise<OfflineRefreshState | null> {
+	await preferenceWrites;
+	const response = await (await caches.open(PREFERENCES)).match(REFRESH_STATE);
+	return response ? response.json() : null;
+}
+
+async function clear(excludeClient?: string, pause = false) {
 	generation++;
+	if (pause) {
+		await writeRefreshState({ enabled: false, lastAttempt: 0 });
+		const periodic = (
+			worker.registration as ServiceWorkerRegistration & {
+				periodicSync?: { unregister(tag: string): Promise<void> };
+			}
+		).periodicSync;
+		await periodic?.unregister(OFFLINE_SYNC_TAG).catch(() => {});
+	}
 	await caches.delete(DATA);
 	for (const client of await worker.clients.matchAll()) {
 		if (client.id !== excludeClient) client.postMessage({ type: 'OFFLINE_CLEARED' });
@@ -67,7 +104,7 @@ worker.addEventListener('activate', (event) => {
 		(async () => {
 			await Promise.all(
 				(await caches.keys())
-					.filter((key) => key.startsWith(PREFIX) && key !== SHELL && key !== DATA)
+					.filter((key) => key.startsWith(PREFIX) && ![SHELL, DATA, PREFERENCES].includes(key))
 					.map((key) => caches.delete(key))
 			);
 			await worker.clients.claim();
@@ -86,6 +123,7 @@ async function read(sourceId?: string): Promise<OfflineSnapshot | null> {
 	}
 	try {
 		const policy = await network('/api/offline?policy');
+		if (policy.status >= 500) throw new Error('Server unavailable');
 		if (!policy.ok || policy.redirected || policy.headers.get('x-crag-offline') !== 'public') {
 			await clear(sourceId);
 			return null;
@@ -95,7 +133,7 @@ async function read(sourceId?: string): Promise<OfflineSnapshot | null> {
 			return null;
 		}
 	} catch {
-		/* Server unreachable: the explicitly downloaded public copy remains usable until expiry. */
+		/* Server unreachable: the public copy remains usable until expiry. */
 	}
 	return generation === before ? snapshot : null;
 }
@@ -103,6 +141,9 @@ async function read(sourceId?: string): Promise<OfflineSnapshot | null> {
 async function save(sourceId?: string): Promise<OfflineSnapshot> {
 	const before = generation;
 	const response = await network('/api/offline');
+	// A temporary server outage must not destroy the last usable offline copy.
+	if (response.status >= 500)
+		throw new Error('Server unavailable. Keeping the saved offline copy.');
 	if (
 		!response.ok ||
 		response.redirected ||
@@ -129,26 +170,72 @@ async function save(sourceId?: string): Promise<OfflineSnapshot> {
 	return snapshot;
 }
 
+async function refreshAutomatically() {
+	const before = generation;
+	const state = await refreshState();
+	if (state && !state.enabled) return { automatic: false };
+	const response = await (await caches.open(DATA)).match(SNAPSHOT);
+	const snapshot: OfflineSnapshot | null = response ? await response.json() : null;
+	if (generation !== before) return { automatic: false };
+	if (!state) {
+		await writeRefreshState({ enabled: true, lastAttempt: 0 });
+		if (generation !== before) return { automatic: false };
+	}
+	if (!offlineRefreshDue(snapshot, state)) return { automatic: true };
+	await writeRefreshState({ enabled: true, lastAttempt: Date.now() });
+	if (generation !== before) return { automatic: false };
+	await save();
+	for (const client of await worker.clients.matchAll())
+		client.postMessage({ type: 'OFFLINE_SAVED' });
+	return { automatic: true };
+}
+
 worker.addEventListener('message', (event) => {
 	const port = event.ports[0];
-	if (!port || !['READ', 'SAVE', 'CLEAR'].includes(event.data?.type)) return;
+	if (!port || !['READ', 'SAVE', 'CLEAR', 'AUTO_REFRESH'].includes(event.data?.type)) return;
 	const sourceId = event.source && 'id' in event.source ? event.source.id : undefined;
 	// Serialize downloads and reads; clear immediately invalidates any in-flight save.
 	if (event.data.type === 'CLEAR') {
-		event.waitUntil(clear(sourceId).then(() => port.postMessage({ snapshot: null })));
+		event.waitUntil(clear(sourceId, true).then(() => port.postMessage({ snapshot: null })));
 		return;
 	}
+	const queuedGeneration = generation;
 	pending = pending.then(async () => {
 		const before = generation;
 		try {
-			port.postMessage({
-				snapshot: event.data.type === 'SAVE' ? await save(sourceId) : await read(sourceId)
-			});
+			if (generation !== queuedGeneration) throw new Error('Download cancelled.');
+			if (event.data.type === 'AUTO_REFRESH') {
+				port.postMessage(await refreshAutomatically());
+			} else {
+				if (event.data.type === 'SAVE') {
+					await writeRefreshState({ enabled: true, lastAttempt: Date.now() });
+					if (generation !== before) throw new Error('Download cancelled.');
+				}
+				port.postMessage({
+					snapshot: event.data.type === 'SAVE' ? await save(sourceId) : await read(sourceId)
+				});
+			}
 		} catch (error) {
 			port.postMessage({
 				error: error instanceof Error ? error.message : 'Offline storage is unavailable.',
 				cleared: generation !== before
 			});
+		}
+	});
+	event.waitUntil(pending);
+});
+
+// Unsupported browsers use the installed app's launch/reconnect/foreground timer instead.
+worker.addEventListener('periodicsync', (rawEvent) => {
+	const event = rawEvent as ExtendableEvent & { tag: string };
+	if (event.tag !== OFFLINE_SYNC_TAG) return;
+	const before = generation;
+	pending = pending.then(async () => {
+		try {
+			if (generation !== before || !(await refreshState())?.enabled) return;
+			await refreshAutomatically();
+		} catch {
+			// Keep a usable saved copy and retry on the next online foreground/background check.
 		}
 	});
 	event.waitUntil(pending);
@@ -162,7 +249,7 @@ worker.addEventListener('fetch', (event) => {
 	if (request.method !== 'GET' || url.pathname === '/logout') {
 		event.respondWith(
 			(async () => {
-				await clear();
+				await clear(undefined, true);
 				return fetch(request);
 			})()
 		);
