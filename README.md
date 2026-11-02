@@ -16,7 +16,7 @@
 </p>
 
 <p align="center">
-  <em>Grade pyramids, CPR, training load, projects, first ascents, badges and shareable stat cards. Your data stays on your machine.</em>
+  <em>Grade pyramids, CPR, training load, projects, first ascents, badges, weather, a world map and shareable stat cards. Your data stays on your machine.</em>
 </p>
 
 <p align="center">
@@ -55,32 +55,51 @@ Inspired by [Dreeve](https://dreeve.app/) (Stats for Strava) and [RoxClimbs](htt
 
 - **theCrag API sync:** uses your personal Logbook Read API key. Every sync is a full reconcile (new and edited ticks are updated, deleted ones removed), on a daily schedule. A fresh install syncs as soon as it starts. theCrag stays the source of truth.
 - **CSV import and automatic downloads** for climbers without supporter API access. Optional password login reuses encrypted session cookies across runs. Automatic downloads reconcile deletions with empty-export and large-drop guards; manual uploads only add and update. See [setup](docs/guide/logbook-sync.md).
-- **Logbook:** search and filter by style, tick, crag, sector, grade, year and season, with theCrag-style tick icons.
+- **Sync summaries:** Settings reports how many ascents were processed, added, refreshed and removed after each run. You can also export your local logbook as CSV.
+- **Logbook:** search, sort and filter by style, tick type, crag, sector, grade range, dates and season, partners, quality and stars, rock type, tags, FA/FFA, solo type, weather and more, with theCrag-style tick icons. Most dashboard cards link straight to the matching ascents.
 
 ### Dashboard
 
-- **Climber type, grade pyramids** per discipline, **notable ascents**, **hardest sends** (routes and boulders ranked separately), volume, height, top crags and tick types.
+- **Climber type, climber profile radar, grade pyramids** per discipline, grade bands, **notable ascents**, **hardest sends** (routes and boulders ranked separately), volume, height, top crags and tick types.
+- **Ascent calendar** (intensity or weather), **sessions per week**, **weekday** split, **best months**, monthly and yearly stats, style mix, stars and quality, rock types.
 - **CPR timelines:** an approximation of theCrag's Climber Performance Rating.
 - **Training load:** an intensity-weighted fatigue/fitness model that flags spikes. Working an ungraded route counts as climbing at your max.
 - **Eddington numbers:** send days, vertical days, and route and boulder grade indexes.
-- **First ascents:** mark your FAs and FFAs in the logbook to get a card with counts, grade ranges and styles, plus badges and milestones dated by your first send.
+- **First ascents:** mark your FAs and FFAs in the logbook (or import them from public route history) to get a card with counts, grade ranges, styles, routes you set and community ascents on your routes.
 - **Solo climbing:** top-rope solo, lead solo, free solo, deep water solo and aid solo, plus ascents with no partner tagged.
-- **Badges & milestones**, streaks, a climbing-story blurb, monthly and yearly stats, style mix, partners, stars and quality, rock types.
-- **Projects** auto-detected from unsent attempts. Ungraded routes get a "New route?" badge.
-- **Goals** with progress bars that fill from your logbook. Only the owner can add or change them.
-- **Rewind:** your year at a glance.
+- **Badges & milestones:** 90+ badges dated by the climb that earned them (newest first), including distance climbed up to 150 km, streaks, holidays, weather and first ascents. Badges and ascent cards name the partners you climbed with.
+- **Route popularity** (busy vs quiet crags, hidden gems), **karma**, **partners**, streaks and a **climbing story** written from your logbook.
+- **Weather conditions** (optional): heat, freeze, rain, snow, wind, fair and perfect days, and whether you climb in fair or tough weather.
 - **Customize the dashboard** (which cards and in what order) from Settings. Grade system is site-wide.
-- **How it works** pages at `/docs` for every analytic.
+- **How it works** pages at `/docs` for every analytic, linked from each card.
+
+### More pages
+
+- **Projects** auto-detected from unsent attempts and recently sent projects. Ungraded routes get a "New route?" badge.
+- **Goals** with progress bars that fill from your logbook. Only the owner can add or change them.
+- **Badges** gallery with locked badges and an "Almost there" list, plus **Milestones**, **Eddington**, **Training load** and **Activity** (monthly and yearly tables) detail pages.
+- **Partners** leaderboard by ascents, sessions or areas.
+- **Sectors** grouped by crag and area, with visit-day weather.
+- **World map** of everywhere you've climbed, drawn from bundled map data with no third-party requests.
+- **Seasonality** search: which of your logged crags and routes are in season in a given month.
+- **Rewind:** your year at a glance.
+
+### Optional route data and weather
+
+- **Route data import** (`ROUTE_DATA_IMPORT`): fetches route details (popularity, ascent counts, quality, seasonality, pitches) and public history for FA/FFA marks, slowly and politely in the background.
+- **Weather import** (`WEATHER_IMPORT`): caches daily weather from [Open-Meteo](https://open-meteo.com/) for your outdoor climbing days. You can pick a nearby town in Settings when a crag has no usable location.
+- Settings shows live progress while either import runs.
 
 ### Share
 
 - **Share & embed:** live SVG stat cards (summary, Eddington numbers, hardest sends) for blogs and forum profiles, in light or dark, with copyable HTML or Markdown. The page warns you when the site is only reachable on your local network.
+- **Installable app with offline copy:** download a read-only snapshot of your public dashboard totals and logbook to view without a connection.
 
 ### Privacy & self-hosting
 
 - **Optional password gate** (`APP_PASSWORD` / `AUTH_SCOPE`), a search-engine visibility toggle, and a one-click wipe.
-- **Private notes are hidden by default.** You can opt in to see them yourself; visitors never see them.
-- **Docker / GHCR:** multi-arch images (`amd64` + `arm64`), with database migrations applied automatically on start. Upgrading straight from any older release is tested.
+- **Private notes are hidden by default.** You can opt in to see them yourself; visitors never see them, and they never reach offline copies, embeds or share cards.
+- **Docker / GHCR:** multi-arch images (`amd64` + `arm64`) on a minimal distroless runtime, with database migrations applied automatically on start. Upgrading straight from any older release is tested.
 - **Nightly dependency updates:** in-major upgrades with a 3-day cooldown and the full test suite; a patch release (and image) only when something that ships in the image moved. Lint, format, typecheck and test tooling updates are committed without releasing.
 - **Dreeve-style UI:** light and dark themes, a collapsible sidebar and a mobile drawer.
 - Provider-shaped architecture, ready for Mountain Project later.
@@ -96,7 +115,7 @@ cp .env.example .env
 # optional: set THECRAG_API_KEY and APP_PASSWORD
 
 pnpm install
-pnpm test   # grade / URL / ascent mapping unit tests (also runs in CI)
+pnpm test   # unit tests (also run in CI)
 pnpm check
 pnpm dev
 ```
@@ -173,10 +192,6 @@ Grade system and private ascent notes are configured in **Settings** (stored in 
 ## Privacy
 
 theCrag API keys expose **private notes**. Do not commit `.env`. Revoking a key does not delete data already synced locally — use **Settings → Wipe**. See [docs/PRIVACY.md](docs/PRIVACY.md).
-
-## Roadmap / epics
-
-Tracked as GitHub issues on this repo (`Epic:` prefix): foundation, providers, API sync, CSV import, dashboard, analytics, projects, Mountain Project, training/wearables, docs/privacy, i18n/Crowdin.
 
 ## License
 
