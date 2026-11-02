@@ -45,6 +45,8 @@ Self-hosted climbing analytics for [theCrag](https://www.thecrag.com/), inspired
 
 ---
 
+- Offline (#348): service worker caches only build assets, a data-free `/offline` shell and an explicit field-whitelisted public snapshot. Never add SSR/data-response runtime caching. Whole-app protection disables downloads. Any mutation/logout clears this browser; wipe rotates `offline_revision` for other browsers on reconnect. Seven-day expiry, 5,000 newest rows, 10 MB; updates clear old build caches.
+
 ## Repository map
 
 ```
@@ -518,5 +520,3 @@ World map (#313): `/map` uses bundled public-domain Natural Earth outlines, serv
 - Solo card drill-down uses `/logbook?solo=toprope|lead|free|dws|aid` and shared `#lib/soloKind` classification (explicit tick wins over ascent style). Preserve the filter through sort/page/form navigation; hardest-send links remain separate.
 
 - Daily streak records/badges (#339) share `#lib/dayStreaks`: unique strict written calendar days, UTC adjacency, earliest longest-run tie. Card exposes longestStartDate/longestEndDate and formats them as calendar dates. One-shot streak_days_7/10/30 badges use the first threshold-reaching day, include attempts/indoor climbs and have no Almost there counter. Current day/week/month logic is unchanged; do not infer streaks from log timestamps.
-
-- Offline (#348): service worker caches only build assets, a data-free `/offline` shell and an explicit field-whitelisted public snapshot. Never add SSR/data-response runtime caching. Whole-app protection disables downloads. Any mutation/logout clears this browser; wipe rotates `offline_revision` for other browsers on reconnect. Seven-day expiry, 5,000 newest rows, 10 MB; updates clear old build caches.

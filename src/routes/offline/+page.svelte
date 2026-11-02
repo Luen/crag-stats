@@ -25,22 +25,25 @@
 			const controller = navigator.serviceWorker.controller;
 			if (!controller)
 				throw new Error('Offline mode is still preparing. Reload this page while connected.');
-			const result = await new Promise<{ snapshot?: OfflineSnapshot | null; error?: string }>(
-				(resolve, reject) => {
-					const channel = new MessageChannel();
-					const timeout = setTimeout(() => {
-						channel.port1.close();
-						reject(new Error('The server or offline storage did not respond. Try again.'));
-					}, 20000);
-					channel.port1.onmessage = (event) => {
-						clearTimeout(timeout);
-						channel.port1.close();
-						resolve(event.data);
-					};
-					controller.postMessage({ type }, [channel.port2]);
-				}
-			);
+			const result = await new Promise<{
+				snapshot?: OfflineSnapshot | null;
+				error?: string;
+				cleared?: boolean;
+			}>((resolve, reject) => {
+				const channel = new MessageChannel();
+				const timeout = setTimeout(() => {
+					channel.port1.close();
+					reject(new Error('The server or offline storage did not respond. Try again.'));
+				}, 20000);
+				channel.port1.onmessage = (event) => {
+					clearTimeout(timeout);
+					channel.port1.close();
+					resolve(event.data);
+				};
+				controller.postMessage({ type }, [channel.port2]);
+			});
 			if (result.error) {
+				if (result.cleared) snapshot = null;
 				throw new Error(result.error);
 			}
 			snapshot = result.snapshot ?? null;
@@ -91,14 +94,20 @@
 			}
 			try {
 				await navigator.serviceWorker.register('/service-worker.js', { type: 'module' });
-				await navigator.serviceWorker.ready;
-				if (!alive) return;
 				if (!navigator.serviceWorker.controller)
-					await new Promise<void>((resolve) =>
-						navigator.serviceWorker.addEventListener('controllerchange', () => resolve(), {
+					await new Promise<void>((resolve, reject) => {
+						const controlled = () => {
+							clearTimeout(timeout);
+							resolve();
+						};
+						const timeout = setTimeout(() => {
+							navigator.serviceWorker.removeEventListener('controllerchange', controlled);
+							reject(new Error('Offline preparation timed out.'));
+						}, 20000);
+						navigator.serviceWorker.addEventListener('controllerchange', controlled, {
 							once: true
-						})
-					);
+						});
+					});
 				if (!alive) return;
 				ready = true;
 				await command('READ');

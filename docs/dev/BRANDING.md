@@ -12,6 +12,8 @@ Logbook Project and Route setter selects use the standard filter controls. Proje
 
 ---
 
+Offline copy (#348) is a read-only summary and searchable table using existing theme tokens, native buttons and a live status paragraph. Always show saved-time/stale-data wording. Shell layout has no account counts or authenticated controls. The footer link forces a document load so it remains usable after a failed client navigation.
+
 ## Logo
 
 File: `src/lib/assets/favicon.svg`. It is both the favicon and the header mark.
@@ -198,5 +200,3 @@ Settings sync completion (#335) uses the existing success-banner tokens with a t
 Seasonality search (#331): responsive result cards with orange annual month strips, selected-month underline and expandable numeric tables. Native labelled month/search/view/sort controls submit shareable URLs. Display data coverage and seasonal score in text; no colour-only meaning. Best months links to the search page.
 
 Streaks (#339): retain the three current-counter tiles and longest-length footer; show the all-time record's formatted start/end dates on a wrapping text line below it. Use one date for a single-day record and no dates for an empty record. Streak badges reuse the calendar icon with green/blue/purple tones for 7/10/30 days.
-
-Offline copy (#348) is a read-only summary and searchable table using existing theme tokens, native buttons and a live status paragraph. Always show saved-time/stale-data wording. Shell layout has no account counts or authenticated controls. The footer link forces a document load so it remains usable after a failed client navigation.

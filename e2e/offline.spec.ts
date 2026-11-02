@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { expectAxeClean } from './axe';
-import { PORTS } from '../playwright.config';
+import { PORTS, TEST_PASSWORD } from '../playwright.config';
 
 test('downloaded public snapshot reopens offline, searches, reconnects and clears', async ({
 	page,
@@ -58,9 +58,20 @@ test('protected sites expose only the empty shell and never download authenticat
 	await expect(page.getByRole('status')).toContainText('Protected sites require a connection');
 	await expect(page.getByRole('heading', { name: 'Dashboard summary' })).toHaveCount(0);
 	await expect(page.getByRole('button', { name: 'Log out' })).toHaveCount(0);
+	await page.goto(`http://localhost:${PORTS.all}/login?next=/offline`);
+	await page.getByPlaceholder('Password').fill(TEST_PASSWORD);
+	await page.getByRole('button', { name: 'Unlock' }).click();
+	await expect(page).toHaveURL(/\/offline$/);
+	await expect(page.getByRole('button', { name: 'Download or refresh copy' })).toBeEnabled();
+	await page.getByRole('button', { name: 'Download or refresh copy' }).click();
+	await expect(page.getByRole('status')).toContainText('Protected sites require a connection');
+	expect((await page.request.get(`http://localhost:${PORTS.all}/api/offline`)).status()).toBe(403);
 });
 
-test('expired downloads and logout are cleared rather than replayed', async ({ page }) => {
+test('expired downloads, logout and denied refreshes clear the viewer', async ({
+	page,
+	context
+}) => {
 	await page.goto('/offline');
 	const download = page.getByRole('button', { name: 'Download or refresh copy' });
 	await expect(download).toBeEnabled({ timeout: 30000 });
@@ -80,4 +91,17 @@ test('expired downloads and logout are cleared rather than replayed', async ({ p
 	await expect(page.getByRole('heading', { name: 'Dashboard summary' })).toBeVisible();
 	await page.evaluate(() => fetch('/logout'));
 	await expect(page.getByRole('heading', { name: 'Dashboard summary' })).toHaveCount(0);
+	await download.click();
+	await expect(page.getByRole('heading', { name: 'Dashboard summary' })).toBeVisible();
+	await context.route('**/api/offline', (route) =>
+		route.fulfill({
+			status: 403,
+			contentType: 'application/json',
+			headers: { 'x-crag-offline': 'disabled' },
+			body: '{}'
+		})
+	);
+	await download.click();
+	await expect(page.getByRole('heading', { name: 'Dashboard summary' })).toHaveCount(0);
+	await expect(page.getByRole('status')).toContainText('Protected sites require a connection');
 });

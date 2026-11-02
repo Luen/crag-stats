@@ -17,19 +17,29 @@ const assets = [
 let generation = 0;
 let pending = Promise.resolve();
 
-async function clear() {
+async function clear(excludeClient?: string) {
 	generation++;
 	await caches.delete(DATA);
-	for (const client of await worker.clients.matchAll())
-		client.postMessage({ type: 'OFFLINE_CLEARED' });
+	for (const client of await worker.clients.matchAll()) {
+		if (client.id !== excludeClient) client.postMessage({ type: 'OFFLINE_CLEARED' });
+	}
 }
 
 async function network(input: RequestInfo | URL): Promise<Response> {
-	return fetch(input, {
-		credentials: 'omit',
-		cache: 'no-store',
-		signal: AbortSignal.timeout(8000)
-	});
+	// Online events can precede connectivity in the worker (for example after waking a PWA).
+	// Retry one failed transport request; HTTP/auth failures are handled without retrying.
+	for (let attempt = 0; ; attempt++) {
+		try {
+			return await fetch(input, {
+				credentials: 'omit',
+				cache: 'no-store',
+				signal: AbortSignal.timeout(8000)
+			});
+		} catch (error) {
+			if (attempt === 1) throw error;
+			await new Promise((resolve) => setTimeout(resolve, 500));
+		}
+	}
 }
 
 worker.addEventListener('install', (event) => {
@@ -63,23 +73,23 @@ worker.addEventListener('activate', (event) => {
 	);
 });
 
-async function read(): Promise<OfflineSnapshot | null> {
+async function read(sourceId?: string): Promise<OfflineSnapshot | null> {
 	const before = generation;
 	const response = await (await caches.open(DATA)).match(SNAPSHOT);
 	if (!response) return null;
 	const snapshot: OfflineSnapshot = await response.json();
 	if (!snapshotIsFresh(snapshot)) {
-		await clear();
+		await clear(sourceId);
 		return null;
 	}
 	try {
 		const policy = await network('/api/offline?policy');
 		if (!policy.ok || policy.redirected || policy.headers.get('x-crag-offline') !== 'public') {
-			await clear();
+			await clear(sourceId);
 			return null;
 		}
 		if ((await policy.json()).revision !== snapshot.revision) {
-			await clear();
+			await clear(sourceId);
 			return null;
 		}
 	} catch {
@@ -88,7 +98,7 @@ async function read(): Promise<OfflineSnapshot | null> {
 	return generation === before ? snapshot : null;
 }
 
-async function save(): Promise<OfflineSnapshot> {
+async function save(sourceId?: string): Promise<OfflineSnapshot> {
 	const before = generation;
 	const response = await network('/api/offline');
 	if (
@@ -97,7 +107,7 @@ async function save(): Promise<OfflineSnapshot> {
 		response.headers.get('x-crag-offline') !== 'public' ||
 		!response.headers.get('content-type')?.includes('application/json')
 	) {
-		await clear();
+		await clear(sourceId);
 		throw new Error('Offline downloads are unavailable. Protected sites require a connection.');
 	}
 	const body = await response.text();
@@ -111,7 +121,7 @@ async function save(): Promise<OfflineSnapshot> {
 	).put(SNAPSHOT, new Response(body, { headers: { 'content-type': 'application/json' } }));
 	// A wipe/logout can arrive while Cache.put is pending.
 	if (generation !== before) {
-		await clear();
+		await clear(sourceId);
 		throw new Error('Download cancelled.');
 	}
 	return snapshot;
@@ -120,17 +130,22 @@ async function save(): Promise<OfflineSnapshot> {
 worker.addEventListener('message', (event) => {
 	const port = event.ports[0];
 	if (!port || !['READ', 'SAVE', 'CLEAR'].includes(event.data?.type)) return;
+	const sourceId = event.source && 'id' in event.source ? event.source.id : undefined;
 	// Serialize downloads and reads; clear immediately invalidates any in-flight save.
 	if (event.data.type === 'CLEAR') {
-		event.waitUntil(clear().then(() => port.postMessage({ snapshot: null })));
+		event.waitUntil(clear(sourceId).then(() => port.postMessage({ snapshot: null })));
 		return;
 	}
 	pending = pending.then(async () => {
+		const before = generation;
 		try {
-			port.postMessage({ snapshot: event.data.type === 'SAVE' ? await save() : await read() });
+			port.postMessage({
+				snapshot: event.data.type === 'SAVE' ? await save(sourceId) : await read(sourceId)
+			});
 		} catch (error) {
 			port.postMessage({
-				error: error instanceof Error ? error.message : 'Offline storage is unavailable.'
+				error: error instanceof Error ? error.message : 'Offline storage is unavailable.',
+				cleared: generation !== before
 			});
 		}
 	});
