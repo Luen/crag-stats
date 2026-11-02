@@ -1,4 +1,4 @@
-# Weather polygon preparation (#309)
+# Weather polygon preparation (#309, follow-up #344)
 
 **Typed GeoJSON fallback is enabled at the owner’s subsequent request.** The
 weather resolver uses route point → crag point → sector point → validated area
@@ -58,5 +58,27 @@ Before adding any other provider-specific boundary format:
    resolved key; wipe already clears these resolutions.
 
 Synthetic pipeline and browser regressions cover the enabled typed path, but do
-not establish that theCrag currently supplies that shape. Keep #309 open for real
-provider evidence and any additional format adapter.
+not establish that theCrag currently supplies that shape. #309 shipped in #317
+and #328; [#344](https://github.com/Luen/crag-stats/issues/344) tracks the real
+provider evidence and any additional format adapter. Close #344 only with a
+sanitized provider-backed fixture regression, not with more synthetic coverage.
+
+### Existing synthetic coverage (not provider evidence)
+
+These regressions already cover the checklist's verification items for the typed
+GeoJSON path. A real fixture must be run through the same cases:
+
+- `weatherPolygon.test.ts`: first exterior coordinate in longitude/latitude order,
+  holes/other components ignored, malformed/open/collapsed/nonnumeric rejection,
+  and broad/dateline/polar/oversized rejection.
+- `weatherLocations.test.ts`: route → crag → sector point precedence across both
+  caches, country exclusion, polygons only after all points, the shared polygon
+  pipeline (keys, labels, unchanged route coordinates, no badges), signature
+  invalidation of pre-polygon results, and wipe.
+
+### Evidence status (2026-11)
+
+No polygon-bearing provider payload or official fixture is available yet. An
+unauthenticated read of the API guide returned HTTP 403, so its Fence/BoundedBox
+contract could not be rechecked. The next step stays the same as step 1 above:
+capture a sanitized response from an authorized, already paced import.
