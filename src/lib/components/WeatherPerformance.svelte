@@ -41,6 +41,17 @@
 	const standout = $derived(group ? strongestSignal(group, metric) : null);
 
 	const fmt = (n: number) => formatNumber(n, dateDisplay);
+	// Leading spaces live in the strings: Svelte trims whitespace at the start of {#if} blocks.
+	const uncachedNote = $derived(
+		data.outdoorAscents > data.ascents
+			? ` (${fmt(data.outdoorAscents - data.ascents)} more outdoor ascents have no weather yet)`
+			: ''
+	);
+	const approximateNote = $derived(
+		data.approximateAscents > 0
+			? ` ${fmt(data.approximateAscents)} use weather from an approximate nearby place or area.`
+			: ''
+	);
 
 	function daysPhrase(band: WeatherPerformanceBand): string {
 		if (dimension === 'conditions') return `${band.label.toLowerCase()} days`;
@@ -71,9 +82,7 @@
 		</p>
 	{:else}
 		<p class="lead">
-			{fmt(data.ascents)} outdoor sends and attempts on {fmt(data.days)} days with cached weather{#if data.outdoorAscents > data.ascents}
-				({fmt(data.outdoorAscents - data.ascents)} more outdoor ascents have no weather yet){/if}.{#if data.approximateAscents > 0}
-				{fmt(data.approximateAscents)} use weather from an approximate nearby place or area.{/if}
+			{fmt(data.ascents)} outdoor sends and attempts on {fmt(data.days)} days with cached weather{uncachedNote}.{approximateNote}
 		</p>
 
 		<div class="controls">
