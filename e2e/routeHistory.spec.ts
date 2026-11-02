@@ -93,7 +93,7 @@ test('counts down, survives reload, respects back-off and enables without a refr
 		await page
 			.locator('form[action="?/fetchRouteHistory"]')
 			.evaluate((form) => (form as HTMLFormElement).submit());
-		await expect(page.getByText(/Route history can be checked again in/)).toBeVisible();
+		await expect(page.getByText(/Route data can be checked again in/)).toBeVisible();
 		await expect(button).toBeDisabled();
 		const label = await button.textContent();
 		await page.clock.fastForward(2000);
@@ -102,7 +102,7 @@ test('counts down, survives reload, respects back-off and enables without a refr
 		await page.clock.fastForward(60_000);
 		await expect(button).toBeEnabled();
 		await expect(button).toHaveText('Check next 100 routes now');
-		await expect(page.getByText('Route history is ready to check again.')).toBeVisible();
+		await expect(page.getByText('Route data is ready to check again.')).toBeVisible();
 		writeState(new Date(Date.now() + 120_000).toISOString());
 		await page.reload();
 		await expect(button).toBeDisabled();
