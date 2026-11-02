@@ -9,6 +9,7 @@ import {
 	isFairWeather,
 	isFreezeWeather,
 	isHeatWeather,
+	isPerfectWeather,
 	isRainWeather,
 	isSnowWeather,
 	isWindyWeather,
@@ -41,7 +42,7 @@ export type WeatherExtreme = {
 	href: string | null;
 };
 
-export type WeatherShareKey = 'rain' | 'snow' | 'freeze' | 'heat';
+export type WeatherShareKey = 'perfect' | 'rain' | 'snow' | 'freeze' | 'heat';
 
 export type WeatherShare = {
 	key: WeatherShareKey;
@@ -257,6 +258,7 @@ export function buildWeatherConditionsView(
 			(a, b) => a < b
 		),
 		shares: [
+			shareOf('perfect', 'Perfect', count(isPerfectWeather)),
 			shareOf('rain', 'Rainy', count(isRainWeather)),
 			shareOf('snow', 'Snowy', count(isSnowWeather)),
 			shareOf('freeze', 'Freezing', count(isFreezeWeather)),

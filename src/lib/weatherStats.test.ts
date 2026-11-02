@@ -105,6 +105,33 @@ describe('buildWeatherConditionsView', () => {
 		expect(share.snow?.days).toBe(1);
 		expect(share.rain?.days).toBe(1);
 		expect(share.rain?.pct).toBeCloseTo(33.3, 1);
+		expect(share.perfect?.days).toBe(0);
+	});
+
+	it('lists Perfect first and counts only calm, comfortable fair days', () => {
+		const calm = { windMaxKmh: 10, humidityMean: 50 };
+		const map = mapOf([
+			[-33.6, 150.3, '2025-03-01', snap(calm)],
+			[-33.6, 150.3, '2025-03-02', snap({ ...calm, windMaxKmh: 40 })],
+			[-33.6, 150.3, '2025-03-03', snap()]
+		]);
+		const view = buildWeatherConditionsView(
+			[
+				row({ ascentDate: '2025-03-01' }),
+				row({ ascentDate: '2025-03-02' }),
+				row({ ascentDate: '2025-03-03' })
+			],
+			map
+		)!;
+		expect(view.shares.map((s) => s.label)).toEqual([
+			'Perfect',
+			'Rainy',
+			'Snowy',
+			'Freezing',
+			'Hot'
+		]);
+		expect(view.shares[0]).toMatchObject({ key: 'perfect', days: 1 });
+		expect(view.shares[0]!.pct).toBeCloseTo(33.3, 1);
 	});
 
 	it('bins daily highs into 5° steps with open ends', () => {

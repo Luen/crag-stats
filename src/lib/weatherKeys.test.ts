@@ -3,6 +3,7 @@ import {
 	isFairWeather,
 	isFreezeWeather,
 	isHeatWeather,
+	isPerfectWeather,
 	isRainWeather,
 	isSnowWeather,
 	isStickyHumidity,
@@ -115,6 +116,40 @@ describe('weather conditions', () => {
 		expect(isFairWeather({ tempMaxC: 20, tempMinC: 12, precipMm: null, weatherCode: 1 })).toBe(
 			false
 		);
+	});
+
+	it('detects perfect days: fair, calm, not humid, low above freezing', () => {
+		const perfect = {
+			tempMaxC: 21,
+			tempMinC: 11,
+			precipMm: 0,
+			weatherCode: 1,
+			windMaxKmh: 15,
+			humidityMean: 55
+		};
+		expect(isPerfectWeather(perfect)).toBe(true);
+		expect(matchesWeatherFilter(perfect, 'perfect')).toBe(true);
+		expect(isWeatherFilterKey('perfect')).toBe(true);
+		// Fair but breezy, sticky, freezing overnight or wet → not perfect.
+		expect(isPerfectWeather({ ...perfect, windMaxKmh: 25 })).toBe(false);
+		expect(isPerfectWeather({ ...perfect, humidityMean: 85 })).toBe(false);
+		expect(isPerfectWeather({ ...perfect, tempMinC: 0 })).toBe(false);
+		expect(isPerfectWeather({ ...perfect, precipMm: 0.2 })).toBe(false);
+		expect(isPerfectWeather({ ...perfect, tempMaxC: 26 })).toBe(false);
+	});
+
+	it('does not infer a perfect day from missing wind, humidity or low', () => {
+		const perfect = {
+			tempMaxC: 21,
+			tempMinC: 11,
+			precipMm: 0,
+			weatherCode: 1,
+			windMaxKmh: 15,
+			humidityMean: 55
+		};
+		expect(isPerfectWeather({ ...perfect, windMaxKmh: null })).toBe(false);
+		expect(isPerfectWeather({ ...perfect, humidityMean: undefined })).toBe(false);
+		expect(isPerfectWeather({ ...perfect, tempMinC: null })).toBe(false);
 	});
 
 	it('detects sticky humidity and storm precip', () => {
