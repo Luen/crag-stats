@@ -2,6 +2,12 @@
 	import { onMount } from 'svelte';
 	import DashboardLayoutEditor from '#lib/components/DashboardLayoutEditor.svelte';
 	import { formatDateTime, formatNumber } from '#lib/dates';
+	import {
+		freshestSnapshot,
+		IMPORT_PROGRESS_POLL_MS,
+		importsRunning,
+		type ImportProgressSnapshot
+	} from '#lib/importProgress';
 	import type { PageProps } from './$types';
 
 	let { data, form }: PageProps = $props();
@@ -16,15 +22,54 @@
 	function countLabel(n: number, singular: string, plural = `${singular}s`): string {
 		return `${formatNumber(n, data.dateDisplay)} ${n === 1 ? singular : plural}`;
 	}
-	const rh = $derived(data.routeHistory);
-	const wx = $derived(data.weatherImport);
+	type ImportSnapshot = ImportProgressSnapshot<
+		PageProps['data']['routeHistory'],
+		PageProps['data']['weatherImport']
+	>;
+	let polled = $state<ImportSnapshot | null>(null);
+	const progress = $derived(
+		freshestSnapshot(
+			{
+				serverNow: data.serverNow,
+				routeHistory: data.routeHistory,
+				weatherImport: data.weatherImport
+			},
+			polled
+		)
+	);
+	const rh = $derived(progress.routeHistory);
+	const wx = $derived(progress.weatherImport);
+	const polling = $derived(importsRunning(progress));
 	let elapsed = $state(0);
 	const retrySeconds = $derived(
-		Math.max(0, Math.ceil((rh.retryAt - data.serverNow - elapsed) / 1000))
+		Math.max(0, Math.ceil((rh.retryAt - progress.serverNow - elapsed) / 1000))
 	);
 	const weatherRetrySeconds = $derived(
-		Math.max(0, Math.ceil((wx.retryAt - data.serverNow - elapsed) / 1000))
+		Math.max(0, Math.ceil((wx.retryAt - progress.serverNow - elapsed) / 1000))
 	);
+
+	// While a run is active, re-read the local counts so they climb as each item is saved.
+	$effect(() => {
+		if (!polling) return;
+		let stopped = false;
+		const timer = setInterval(async () => {
+			if (document.hidden) return;
+			try {
+				const res = await fetch('/settings/import-status', {
+					headers: { accept: 'application/json' }
+				});
+				if (!res.ok || stopped) return;
+				const next = (await res.json()) as ImportSnapshot;
+				if (!stopped) polled = next;
+			} catch {
+				// Keep the last counts; the next tick tries again.
+			}
+		}, IMPORT_PROGRESS_POLL_MS);
+		return () => {
+			stopped = true;
+			clearInterval(timer);
+		};
+	});
 	function formatRetry(seconds: number): string {
 		if (seconds >= 3600)
 			return `${Math.floor(seconds / 3600)}h ${Math.floor((seconds % 3600) / 60)}m ${seconds % 60}s`;
@@ -37,11 +82,11 @@
 	onMount(() => {
 		// Anchor to the server's clock so a skewed device clock cannot skip the cooldown.
 		// Tick once per second so the accessible name does not chatter.
-		let serverNow = data.serverNow;
+		let serverNow = progress.serverNow;
 		let started = performance.now();
 		const timer = setInterval(() => {
-			if (serverNow !== data.serverNow) {
-				serverNow = data.serverNow;
+			if (serverNow !== progress.serverNow) {
+				serverNow = progress.serverNow;
 				started = performance.now();
 			}
 			elapsed = performance.now() - started;
@@ -319,7 +364,8 @@
 							ok: rh.status === 'idle' || rh.status === 'running',
 							err: rh.status === 'error' || rh.status === 'blocked'
 						}
-					]}>{rh.status}</span
+					]}
+					aria-live="polite">{rh.status}</span
 				>
 				<span>
 					{rh.fetchedRoutes} of {rh.totalRoutes} routes checked · {rh.importedMarks} FA/FFA imported
@@ -416,7 +462,8 @@
 							ok: wx.status === 'idle' || wx.status === 'running',
 							err: wx.status === 'error' || wx.status === 'blocked'
 						}
-					]}>{wx.status}</span
+					]}
+					aria-live="polite">{wx.status}</span
 				>
 				<span>
 					{wx.cachedOk} days cached · {wx.totalPending} pending
