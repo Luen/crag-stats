@@ -37,6 +37,12 @@ pnpm build && pnpm exec playwright test e2e/soloCards.spec.ts   # one browser sp
 
 `pnpm test:changed` falls back to the whole suite when Vitest can't tell what is affected (for example a `package.json` or config change), so it is safe to use as a default. The lint caches live in `node_modules/.cache` and are keyed on file content. ESLint's type-aware Svelte rule can, in principle, keep a stale result for an unchanged file whose imports changed. CI is always cold, so delete `node_modules/.cache` locally if a result looks wrong.
 
+## Disposable browser databases
+
+Every Playwright invocation starts each server through `scripts/e2e-server.mjs <open|settings|all>`. Before importing the normal production server entry, it resets only that server’s SQLite file and its `-wal` / `-shm` sidecars under `e2e/.tmp`. This happens once per server startup, before migrations and sample seeding, so an interrupted previous run cannot leave conflicting fixture IDs or old settings. The wrapper pins `DATABASE_PATH` to that disposable location; linked directories are rejected.
+
+Do not delete databases from config evaluation (workers reload it) or the setup project (servers already have SQLite open). The reset preserves other files, screenshots and traces. Tests still need `finally` cleanup because tests and retries within one invocation share those running servers. Concurrent suites in the same checkout/ports remain unsupported.
+
 ## Measurements
 
 ### Baseline (before #325)
