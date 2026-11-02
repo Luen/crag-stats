@@ -2,6 +2,8 @@
 
 Developer reference for the look and feel. **Keep it current:** if you change a colour, token, icon or shell behaviour, update this file (and the short summary in `AGENTS.md`).
 
+Logbook weather options include Windy day (50 km/h+) and Calm / still day (under 25 km/h), labelled with their daily maximum wind thresholds; both use the existing native select.
+
 Visual direction: a clean, card-based analytics dashboard in the style of [Dreeve](https://dreeve.app/) (Stats for Strava). It uses neutral surfaces, one warm accent, and dense but readable data. Data colours (grade bands, disciplines) follow [theCrag](https://www.thecrag.com/) so climbers recognise them right away.
 
 The app footer and social preview identify the project license as AGPL-3.0.

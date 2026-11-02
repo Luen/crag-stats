@@ -72,11 +72,11 @@ Once **20 or more** outdoor location-days have cached weather, the **Weather & p
 - The one-line summary names the band that stands out most for the selected measure, or says that nothing stands out yet.
 - This is a **correlation, not a cause**. Season, crag, partners and where you are in a project all change with the weather. With many bands and measures, an occasional "Higher" or "Lower" can appear by chance.
 
-Each daily-high band and each condition with a logbook filter (fair, rain, snow, heat and freeze) links to the logbook filtered to those ascents. Dry and Windy have no logbook filter yet. A values table under the bars lists every band with counts for all three measures. Viewing the card never triggers a weather request, and private notes are never used.
+Each daily-high band and the fair, rain, snow, heat and freeze conditions link to the logbook filtered to those ascents. Windy days can also be selected in the logbook's weather filter; Dry has no logbook filter. A values table under the bars lists every band with counts for all three measures. Viewing the card never triggers a weather request, and private notes are never used.
 
 ## Logbook filters and chips
 
-When any weather is cached, the logbook gains a **Weather on the day** filter (`?weather=`): `fair`, `perfect`, `heat`, `freeze`, `rain` or `snow`, using the same rules as the badges. It only matches **outdoor** ascents with route coordinates and a cached day for that location; gym routes, ascents without coordinates and days that have not been fetched never match.
+When any weather is cached, the logbook gains a **Weather on the day** filter (`?weather=`): `fair`, `perfect`, `heat`, `freeze`, `rain`, `snow`, `wind` or `calm`. **Windy day** matches daily max 10 m wind **≥ 50 km/h**, the same threshold as **Blown Away**. **Calm / still day** matches measured max wind **under 25 km/h**, the calm threshold used by **Perfect day**, without requiring fair temperatures, dry weather or low humidity. Missing wind readings match neither option; days from 25 to under 50 km/h match neither wind filter. The other options use the same rules as the badges. It only matches **outdoor** ascents with route coordinates and a cached day for that location; gym routes, ascents without coordinates and days that have not been fetched never match.
 
 Rows on cached days also show small text chips (for example "Hot 36°C", "Freezing -2°C", "Rain 4 mm", "Snow", "Windy 55 km/h", "Fair 21°C"). Ordinary days show nothing.
 
