@@ -96,7 +96,8 @@
 		freeze: 'freezing',
 		rain: 'rainy',
 		snow: 'snowy',
-		fair: 'fair-weather'
+		fair: 'fair-weather',
+		perfect: 'perfect-weather'
 	} as const;
 
 	function checked(list: string[], value: string) {
@@ -274,6 +275,7 @@
 			<select name="weather" aria-label="Weather on the day" value={data.weather}>
 				<option value="">Any weather</option>
 				<option value="fair">Fair day (15–25°C, dry)</option>
+				<option value="perfect">Perfect day (fair, calm, not humid)</option>
 				<option value="heat">Hot day (35°C+)</option>
 				<option value="freeze">Freezing (low 0°C or below)</option>
 				<option value="rain">Rainy day</option>

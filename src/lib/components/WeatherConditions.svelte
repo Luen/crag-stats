@@ -16,6 +16,7 @@
 	let { data, dateDisplay = DEFAULT_DATE_DISPLAY }: Props = $props();
 
 	const SHARE_COLORS: Record<string, string> = {
+		perfect: 'var(--accent-2)',
 		rain: 'var(--style-sport)',
 		snow: 'var(--ink-muted)',
 		freeze: 'var(--style-boulder)',
@@ -67,8 +68,9 @@
 
 	<p class="lead">
 		Weather is cached for {formatNumber(data.withWeather, dateDisplay)} of
-		{formatNumber(data.outdoorDays, dateDisplay)} outdoor climbing days{#if data.withoutWeather > 0}
-			({formatNumber(data.withoutWeather, dateDisplay)} not cached yet){/if}.
+		{formatNumber(data.outdoorDays, dateDisplay)} outdoor climbing days{data.withoutWeather > 0
+			? ` (${formatNumber(data.withoutWeather, dateDisplay)} not cached yet)`
+			: ''}.
 	</p>
 
 	<div class="extremes">

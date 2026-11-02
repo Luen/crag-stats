@@ -47,6 +47,9 @@ export const WINDY_MAX_KMH = 50;
 export const FAIR_TEMP_MIN_C = 15;
 export const FAIR_TEMP_MAX_C = 25;
 
+/** A perfect day needs max 10 m wind below this (km/h). */
+export const PERFECT_WIND_MAX_KMH = 25;
+
 /** Mean humidity at or above this % counts as sticky. */
 export const STICKY_HUMIDITY_PCT = 85;
 
@@ -96,6 +99,21 @@ export function isFairWeather(w: WeatherSnapshot): boolean {
 	if (precip == null || !Number.isFinite(precip) || precip < 0 || precip >= 0.1) return false;
 	if (isSnowWeather(w) || isStormCode(w)) return false;
 	return true;
+}
+
+/**
+ * Perfect day: a fair day that is also calm (wind < {@link PERFECT_WIND_MAX_KMH} km/h),
+ * not sticky (humidity < {@link STICKY_HUMIDITY_PCT}%) and with a low above freezing.
+ * Missing wind, humidity or low is unknown, not perfect.
+ */
+export function isPerfectWeather(w: WeatherSnapshot): boolean {
+	if (!isFairWeather(w)) return false;
+	const wind = w.windMaxKmh;
+	if (wind == null || !Number.isFinite(wind) || wind >= PERFECT_WIND_MAX_KMH) return false;
+	const h = w.humidityMean;
+	if (h == null || !Number.isFinite(h) || h >= STICKY_HUMIDITY_PCT) return false;
+	const tmin = w.tempMinC;
+	return tmin != null && Number.isFinite(tmin) && tmin > 0;
 }
 
 /** High mean humidity (≥ {@link STICKY_HUMIDITY_PCT}%). */
@@ -176,7 +194,7 @@ export function lookupAscentWeather(
 }
 
 /** Logbook / chip facets backed by the weather cache. */
-export const WEATHER_FILTER_KEYS = ['heat', 'freeze', 'rain', 'snow', 'fair'] as const;
+export const WEATHER_FILTER_KEYS = ['heat', 'freeze', 'rain', 'snow', 'fair', 'perfect'] as const;
 export type WeatherFilterKey = (typeof WEATHER_FILTER_KEYS)[number];
 
 export function isWeatherFilterKey(v: string | null | undefined): v is WeatherFilterKey {
@@ -196,6 +214,8 @@ export function matchesWeatherFilter(w: WeatherSnapshot, key: WeatherFilterKey):
 			return isSnowWeather(w);
 		case 'fair':
 			return isFairWeather(w);
+		case 'perfect':
+			return isPerfectWeather(w);
 	}
 }
 
