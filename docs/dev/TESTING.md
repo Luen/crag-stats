@@ -102,25 +102,43 @@ Targets, checked against the median of at least five green CI runs (not a single
 
 To re-measure, list green runs with `gh run list --workflow ci.yml --status success` and read job and step times from `gh api repos/Luen/crag-stats/actions/runs/<id>/jobs`. When a stage goes over budget, find the cause before adding hardware or retries: usually a new full-page scan or a new spec that seeds its own data.
 
+### After scoped scans (#346): first CI runs
+
+Only three green `CI` runs include #346 so far, so these are not yet medians. The suite also grew from 71 to 78 browser tests on the day #346 merged (offline mode, weather & performance, partner context, weather area checks).
+
+| Run                           | Browser tests | `check` job | ↳ Unit tests | E2E step | Summed test time | `e2e` job | `docker (arm64)` |
+| ----------------------------- | ------------- | ----------- | ------------ | -------- | ---------------- | --------- | ---------------- |
+| 41353946109 (#346 PR)         | 71            | 50 s        | 13 s         | 133 s    | 126 s            | 169 s     | 178 s            |
+| 41384634197 (main, 13 merges) | 78            | 79 s        | 24 s         | 160 s    | 153 s            | 198 s     | 185 s            |
+| 41385717024 (#369)            | 78            | 76 s        | 23 s         | 157 s    | 151 s            | 197 s     | 204 s            |
+
+The E2E step is still above its ≤ 120 s budget, and the `e2e` job now takes about as long as `docker (arm64)`. On main, `a11y.spec` (28 s, the intended full-page audit), `soloCards` (12 s), `weather` (11 s), `weather-drilldowns` (10 s) and `seasonality` (8 s) are the largest specs. Two specs still scanned far more than they changed: `soloCards` scanned the whole dashboard at two widths and `partnerContext` the whole `/badges` page and dashboard. Scoping them to their cards cut them locally from 10.5–14.2 s to 5.9–6.9 s and from 6.4–7.1 s to 3.9–5.3 s (two runs each). A mutation check (dark `--ink-muted` set to the dark line colour) still failed both specs in the dark theme only.
+
+The `check` job and unit step were also above budget in the two latest runs, while the #346 run was well under. Lint took 24–25 s in those runs against 15 s in the #346 run with the same lint config, so runner variance is likely; confirm with five runs before acting.
+
 ### Scoped axe scans
 
 Most feature scans audited the whole page, re-checking the header, sidebar and every dashboard card that `a11y.spec.ts` already audits in both themes. Full-page dashboard scans were the slowest steps in the suite. Feature specs now pass `include` for the region the feature changed. `expectAxeClean()` accepts CSS selectors or Playwright locators (for example one dashboard card). Six specs that still repeated their whole flow per theme now run once and use the helper.
 
-| Spec                                                                      | Scope                                                                                          | Why                                                        |
-| ------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
-| `a11y.spec.ts`                                                            | full page, fresh load per theme                                                                | the representative audit of shared chrome and main pages   |
-| `trainingLoadContrast.spec.ts`                                            | **full page**                                                                                  | the regression is the sidebar count badges (shared chrome) |
-| `weather.spec.ts`                                                         | Weather conditions, Ascent calendar and Recent activities cards; `main` on logbook and sectors | the weather surfaces the spec populates                    |
-| `weather-drilldowns.spec.ts`                                              | `main` (filtered logbook); `.shares`, `.whole-row`                                             | logbook filters and card rows                              |
-| `weatherLocations.spec.ts`                                                | `main`                                                                                         | settings subpage with the area details open                |
-| `sunFacingBadge.spec.ts`                                                  | the Summer Sun Face badge card                                                                 | the evidence and link on that card                         |
-| `firstAscents.spec.ts`                                                    | the First ascents card                                                                         | setter-only card layout (#150)                             |
-| `cardPreferences.spec.ts`                                                 | `main`; one flow (was one per theme)                                                           | migrated card toggles                                      |
-| `partnerMetrics.spec.ts`                                                  | `article.compact`; one flow (was one per theme)                                                | the dashboard Partners card                                |
-| `projects.spec.ts`                                                        | `main` at 1440 and 390 px; one flow (was one per theme)                                        | project cards                                              |
-| `ropeSoloBadges.spec.ts`                                                  | `main` at 1440 and 390 px; one flow (was one per theme)                                        | badge cards                                                |
-| `routeHistory.spec.ts`                                                    | `main`; one cooldown flow (was one per theme)                                                  | the Settings countdown button and status                   |
-| others (`soloCards`, `seasonality`, `worldMap`, `streaks`, `syncSummary`) | already scoped                                                                                 | —                                                          |
+| Spec                                                         | Scope                                                                                          | Why                                                        |
+| ------------------------------------------------------------ | ---------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| `a11y.spec.ts`                                               | full page, fresh load per theme                                                                | the representative audit of shared chrome and main pages   |
+| `trainingLoadContrast.spec.ts`                               | **full page**                                                                                  | the regression is the sidebar count badges (shared chrome) |
+| `weather.spec.ts`                                            | Weather conditions, Ascent calendar and Recent activities cards; `main` on logbook and sectors | the weather surfaces the spec populates                    |
+| `weather-drilldowns.spec.ts`                                 | `main` (filtered logbook); `.shares`, `.whole-row`                                             | logbook filters and card rows                              |
+| `weatherLocations.spec.ts`                                   | `main`                                                                                         | settings subpage with the area details open                |
+| `sunFacingBadge.spec.ts`                                     | the Summer Sun Face badge card                                                                 | the evidence and link on that card                         |
+| `firstAscents.spec.ts`                                       | the First ascents card                                                                         | setter-only card layout (#150)                             |
+| `cardPreferences.spec.ts`                                    | `main`; one flow (was one per theme)                                                           | migrated card toggles                                      |
+| `partnerMetrics.spec.ts`                                     | `article.compact`; one flow (was one per theme)                                                | the dashboard Partners card                                |
+| `projects.spec.ts`                                           | `main` at 1440 and 390 px; one flow (was one per theme)                                        | project cards                                              |
+| `ropeSoloBadges.spec.ts`                                     | `main` at 1440 and 390 px; one flow (was one per theme)                                        | badge cards                                                |
+| `routeHistory.spec.ts`                                       | `main`; one cooldown flow (was one per theme)                                                  | the Settings countdown button and status                   |
+| `soloCards.spec.ts`                                          | the Solo climbing card at 1440 and 390 px (was all of `main` on the dashboard)                 | the solo card and its links                                |
+| `partnerContext.spec.ts`                                     | the Crowded Belay badge card; the Hardest sends, Notable ascents and Recent activities cards   | companion text wrapping on those cards (#349)              |
+| `weatherPerformance.spec.ts`                                 | the Weather & performance card                                                                 | the card's bands, toggles and values table                 |
+| `offline.spec.ts`                                            | `main` on `/offline`                                                                           | the offline viewer is the whole page                       |
+| others (`seasonality`, `worldMap`, `streaks`, `syncSummary`) | already scoped                                                                                 | —                                                          |
 
 Local, same build, back to back (Apple silicon, quiet machine): 76 tests in 2.6 min (148.0 s summed) → 71 tests in 2.0 min (114.9 s summed), −22%. The largest drops: `weather.spec` 18.5 → 5.3 s, `sunFacingBadge` 10.5 → 3.2 s, `weather-drilldowns` 10.1 → 5.0 s, `firstAscents` 7.1 → 3.5 s. This is one paired local run; confirm against the CI budget with medians once a few runs have landed.
 
@@ -138,7 +156,7 @@ Local, same build, back to back (Apple silicon, quiet machine): 76 tests in 2.6 
 - **Vitest `pool: 'threads'` vs the default `forks`:** alternating runs gave forks 14–20 s and threads 17–24 s. No consistent win, so the default stays.
 - **Vitest `isolate: false`:** Vitest suggests it would save ~8–9 s, but each test file relies on a fresh module graph for its own `:memory:` SQLite (#57). Not changed.
 - **`eslint --concurrency auto`:** no gain (63 s), because the TypeScript project service is shared.
-- **Playwright workers / sharding:** tests share three mutable seeded databases and run serially by design. Parallel workers would race. Sharding across CI runners would give each shard its own servers and DB, but files are not proven independent of each other's leftover state, and the `docker (arm64)` job already sets PR wall time. Revisit if e2e outgrows the Docker job.
+- **Playwright workers / sharding:** tests share three mutable seeded databases and run serially by design. Parallel workers would race. Sharding across CI runners would give each shard its own servers and DB, but files are not proven independent of each other's leftover state, and the `docker (arm64)` job already sets PR wall time. Revisit if e2e outgrows the Docker job. As of November 2026 the two are level (about 200 s each), so sharding would not yet shorten PR wall time; it becomes worthwhile once the `e2e` job is clearly the slowest, and needs each spec file proven to pass on its own first (#366 resets the databases per invocation, which makes that check possible).
 - **pnpm store cache:** `pnpm install` takes under 5 s on CI already.
 
 ## Consolidated tests (#325)

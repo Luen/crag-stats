@@ -75,8 +75,8 @@ test('solo cards open matching logbook ascents', async ({ page }) => {
 			.filter({ has: page.getByRole('heading', { name: 'Solo climbing', exact: true }) });
 		for (const width of [1440, 390]) {
 			await page.setViewportSize({ width, height: 1000 });
-			await expectAxeClean(page, { include: ['main'] });
 			await expect(card).toBeVisible();
+			await expectAxeClean(page, { include: [card] });
 		}
 	} finally {
 		for (const id of ids) {

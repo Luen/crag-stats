@@ -26,17 +26,19 @@ test('badge and dashboard climb companions wrap and remain readable on mobile', 
 			.filter({ has: page.getByRole('heading', { name: 'Crowded Belay', exact: true }) });
 		await expect(badge).toContainText(`Partners on this ascent: ${partners}`);
 		await page.setViewportSize({ width: 390, height: 844 });
-		await expectAxeClean(page, { include: ['main'] });
+		await expectAxeClean(page, { include: [badge] });
 		await page.goto('/');
+		const cards = [];
 		for (const title of ['Hardest sends', 'Notable ascents', 'Recent activities']) {
 			const card = page
 				.locator('article')
 				.filter({ has: page.getByRole('heading', { name: title, exact: true }) })
 				.first();
 			await expect(card).toContainText(`Partners on this ascent: ${partners}`);
+			cards.push(card);
 		}
 		await expect(page.locator('body')).not.toContainText('PRIVATE NOTE MUST STAY HIDDEN');
-		await expectAxeClean(page, { include: ['main'] });
+		await expectAxeClean(page, { include: cards });
 	} finally {
 		db.prepare('DELETE FROM ascents WHERE route_id=?').run(id);
 		db.prepare('DELETE FROM routes WHERE id=?').run(id);
