@@ -287,10 +287,11 @@
 	</article>
 
 	<article class="panel">
-		<h2>Import route history</h2>
+		<h2>Import route data</h2>
 		<p class="hint">
-			Reads the public FA / FFA history of routes in your logbook from theCrag and marks the ones
-			that name your <code>@login</code>.
+			Caches route details for routes in your logbook from theCrag (popularity, ascent counts,
+			quality, seasonality, beta, location, pitches and flags) along with their public history. FA /
+			FFA entries that name your <code>@login</code> are marked as yours.
 			{#if rh.refreshDays}
 				Route data is queued for refresh after {rh.refreshDays} days.
 			{:else}
@@ -301,10 +302,11 @@
 		</p>
 		{#if !rh.enabled}
 			<p class="hint">
-				Off. To turn it on, set <code>ROUTE_HISTORY_IMPORT=true</code> in <code>.env</code> and
+				Off. To turn it on, set <code>ROUTE_DATA_IMPORT=true</code> in <code>.env</code> and
 				restart. theCrag blocks plain server requests to its route API, so this uses browser
 				impersonation (<code>impers</code>). It's at your own risk under theCrag's terms; manual FA
-				marks always work.
+				marks always work. Renamed from <code>ROUTE_HISTORY_IMPORT</code>, which no longer has any
+				effect.
 			</p>
 		{:else if !rh.hasApiKey}
 			<p class="hint">Needs <code>THECRAG_API_KEY</code> (the same key as API sync).</p>

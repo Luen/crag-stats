@@ -1,5 +1,5 @@
 /**
- * Fetch route history from theCrag's `/api/route/ids?show=info,ancestors` (opt-in, ROUTE_HISTORY_IMPORT).
+ * Fetch route history from theCrag's `/api/route/ids?show=info,ancestors` (opt-in, ROUTE_DATA_IMPORT).
  *
  * Plain Node `fetch` is blocked by Cloudflare on these paths (the logbook API is not), so this
  * uses `impers`, which presents a browser-like TLS/HTTP2 fingerprint. It is loaded lazily, only

@@ -395,11 +395,7 @@ export async function runRouteHistoryImportOnce(
 	});
 
 	if (!config.enabled) {
-		return result(
-			false,
-			'disabled',
-			'Route history import is off (set ROUTE_HISTORY_IMPORT=true).'
-		);
+		return result(false, 'disabled', 'Route history import is off (set ROUTE_DATA_IMPORT=true).');
 	}
 	if (!config.apiKey) return result(false, 'no-key', 'THECRAG_API_KEY is not set.');
 	if (running) return result(false, 'busy', 'A route history run is already in progress.');
