@@ -5,7 +5,7 @@
 <h1 align="center">Crag Stats</h1>
 
 <p align="center">
-  <a href="./LICENSE"><img alt="License: MIT" src="https://img.shields.io/github/license/Luen/crag-stats?color=ea580c" /></a>
+  <a href="./LICENSE"><img alt="License: AGPL-3.0" src="https://img.shields.io/github/license/Luen/crag-stats?color=ea580c" /></a>
   <a href="https://github.com/Luen/crag-stats/releases"><img alt="Latest release" src="https://img.shields.io/github/v/release/Luen/crag-stats?color=ea580c" /></a>
   <a href="https://github.com/Luen/crag-stats/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/Luen/crag-stats/actions/workflows/ci.yml/badge.svg" /></a>
   <a href="https://github.com/Luen/crag-stats/pkgs/container/crag-stats"><img alt="Docker image on GHCR" src="https://img.shields.io/badge/ghcr.io-luen%2Fcrag--stats-1d6fa5?logo=docker&logoColor=white" /></a>
@@ -26,7 +26,7 @@
   <a href="./docs/dev/BRANDING.md">Design guide</a>
 </p>
 
-Inspired by [Dreeve](https://dreeve.app/) (Stats for Strava) and [RoxClimbs](https://roxclimbs.com/). **MIT licensed.**
+Inspired by [Dreeve](https://dreeve.app/) (Stats for Strava) and [RoxClimbs](https://roxclimbs.com/). **AGPL-3.0 licensed.**
 
 ## 📸 Showcase
 
@@ -195,4 +195,6 @@ theCrag API keys expose **private notes**. Do not commit `.env`. Revoking a key 
 
 ## License
 
-[MIT](./LICENSE)
+Copyright (c) 2026 Crag Stats contributors.
+
+Licensed under the [GNU Affero General Public License v3.0 (AGPL-3.0)](./LICENSE).
