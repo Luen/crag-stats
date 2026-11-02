@@ -33,6 +33,16 @@ export function splitPartners(raw: string | null | undefined): string[] {
 		.filter(Boolean);
 }
 
+/** Readable attribution for one ascent, never an inferred day/route companion list. */
+export function ascentPartners(raw: string | null | undefined): string | null {
+	const names = new Map<string, string>();
+	for (const name of splitPartners(raw)) {
+		const key = name.toLowerCase();
+		if (!names.has(key)) names.set(key, name);
+	}
+	return names.size ? `Partners on this ascent: ${[...names.values()].join(', ')}` : null;
+}
+
 /** Crag grain for “areas” — skip blank / Unknown so they don’t dominate the ranking. */
 export function partnerAreaKey(cragName: string | null | undefined): string | null {
 	const n = (cragName ?? '').trim();

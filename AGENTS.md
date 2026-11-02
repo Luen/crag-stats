@@ -530,3 +530,5 @@ World map (#313): `/map` uses bundled public-domain Natural Earth outlines, serv
 - Height badges: `HEIGHT_BADGES` covers 1/5/10/20/50/100/150 km (`height_*km`, Almost there included); keep one id per threshold.
 
 - Settings live import progress: while route-data or weather `running` is true, Settings polls `GET /settings/import-status` (local counts only, `no-store`, gated with `/settings`) every 2.5 s skips ticks while the tab is hidden and stops once both are idle. `freshestSnapshot` (`#lib/importProgress`) lets a newer page reload win over an older poll; the retry countdown anchors to the chosen snapshot's `serverNow`. Never make the endpoint trigger a run or contact a provider.
+
+- Partner context (#349): `ascentPartners` formats case-insensitive distinct upstream names. Badge details (including day/cumulative achievements) refer only to the linked qualifying ascent. Hardest/notable/recent cards and grade/FA milestones retain that ascent attribution; never infer companions from private notes or route-level aggregates.

@@ -21,3 +21,5 @@ Your choice is stored in the browser (`cs_partners_metric`).
 The dashboard preview and full page use the same logged ascents, including legacy ascents whose route record is unavailable. Missing route details do not erase partner ascents or valid session days; they contribute no area without a known venue. Other route-based dashboard analytics still require a route record.
 
 The dashboard card shares your selected metric with this page and shows the top seven partners for that metric. Click its Partners title to see the full list.
+
+Badges, hardest sends, notable ascents, recent activities and climb-specific grade/FA milestones also show recorded companions. Attribution follows the selected ascent, not every repeat of the route. Route-level development/community cards and aggregate milestones do not infer companions. Names are deduplicated ignoring case; missing names are omitted, never treated as proof of solo climbing.

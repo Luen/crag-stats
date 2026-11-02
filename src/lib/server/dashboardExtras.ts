@@ -7,6 +7,7 @@ import { calendarDay as dayKey } from '#lib/calendarDay';
 import { formatVScaleLabel, usesVScale } from '#lib/grades';
 import {
 	buildPartnerStats,
+	ascentPartners,
 	sortPartners,
 	splitPartners,
 	type PartnerStat
@@ -327,7 +328,7 @@ export function buildMilestones(rows: DashboardExtraRow[]): { items: MilestoneIt
 			kind: 'grade',
 			label: `First ${label}`,
 			date: dayKey(row.ascentDate),
-			detail: name
+			detail: [name, ascentPartners(row.partners)].filter(Boolean).join(' · ')
 		});
 	}
 	items.push(...gradeItems.slice(-MAX_GRADE_BREAKTHROUGHS));
@@ -392,7 +393,7 @@ export function buildMilestones(rows: DashboardExtraRow[]): { items: MilestoneIt
 					id: 'fa:first',
 					label: 'First ascent',
 					date: fa.day,
-					detail: name
+					detail: [name, ascentPartners(fa.row.partners)].filter(Boolean).join(' · ')
 				});
 			}
 		} else {
@@ -403,7 +404,7 @@ export function buildMilestones(rows: DashboardExtraRow[]): { items: MilestoneIt
 					id: 'ffa:first',
 					label: 'First free ascent',
 					date: fa.day,
-					detail: name
+					detail: [name, ascentPartners(fa.row.partners)].filter(Boolean).join(' · ')
 				});
 			}
 			for (const mark of FFA_COUNT_LANDMARKS) {
@@ -413,7 +414,7 @@ export function buildMilestones(rows: DashboardExtraRow[]): { items: MilestoneIt
 						id: `ffa:${mark}`,
 						label: `${mark} first free ascents`,
 						date: fa.day,
-						detail: name
+						detail: [name, ascentPartners(fa.row.partners)].filter(Boolean).join(' · ')
 					});
 				}
 			}
@@ -425,7 +426,7 @@ export function buildMilestones(rows: DashboardExtraRow[]): { items: MilestoneIt
 					id: `fa:${mark}`,
 					label: `${mark} first ascents`,
 					date: fa.day,
-					detail: name
+					detail: [name, ascentPartners(fa.row.partners)].filter(Boolean).join(' · ')
 				});
 			}
 		}
@@ -440,7 +441,7 @@ export function buildMilestones(rows: DashboardExtraRow[]): { items: MilestoneIt
 						id: `fa:${key.toLowerCase()}:${mark}`,
 						label: `${mark} ${key.toLowerCase()} first ascents`,
 						date: fa.day,
-						detail: name
+						detail: [name, ascentPartners(fa.row.partners)].filter(Boolean).join(' · ')
 					});
 				}
 			}

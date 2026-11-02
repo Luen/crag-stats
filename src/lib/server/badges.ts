@@ -5,6 +5,7 @@ import { consecutiveDayRuns, STREAK_DAY_THRESHOLDS } from '#lib/dayStreaks';
  */
 
 import { climbStyleLabel } from '#lib/climbStyle';
+import { ascentPartners } from '#lib/partnerStats';
 import { soloKind } from './solo';
 import { isSunFacingSummer } from '#lib/sunFacing';
 
@@ -938,7 +939,12 @@ function hitAt(row: DashboardExtraRow, prefix: string): Hit {
 		date,
 		routeName,
 		href,
-		detail: tail ? `${prefix} · ${tail}` : `${prefix} · ${formatBadgeDate(date)}`
+		detail: [
+			tail ? `${prefix} · ${tail}` : `${prefix} · ${formatBadgeDate(date)}`,
+			ascentPartners(row.partners)
+		]
+			.filter(Boolean)
+			.join(' · ')
 	};
 }
 
