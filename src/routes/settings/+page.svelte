@@ -113,8 +113,8 @@
 {#if form?.routeHistoryWaiting}
 	<p class="banner hint">
 		{retrySeconds > 0
-			? `Route history can be checked again in ${retryLabel}.`
-			: 'Route history is ready to check again.'}
+			? `Route data can be checked again in ${retryLabel}.`
+			: 'Route data is ready to check again.'}
 	</p>
 {:else if form?.weatherWaiting}
 	<p class="banner hint">
@@ -159,7 +159,7 @@
 		</ul>
 		<p class="summary-note">
 			{importResult.pruned
-				? 'Route history and weather imports run separately when enabled.'
+				? 'Route data and weather imports run separately when enabled.'
 				: 'Manual CSV uploads do not remove missing entries.'}
 		</p>
 	</div>
@@ -403,7 +403,7 @@
 				</form>
 			</div>
 			<noscript>
-				<p class="hint">Reload this page to update route-history availability.</p>
+				<p class="hint">Reload this page to update route data availability.</p>
 			</noscript>
 			<details>
 				<summary>Re-apply or refresh</summary>

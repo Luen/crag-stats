@@ -68,12 +68,12 @@ export function triggerRouteHistoryImport(reason: string): boolean {
 		.then((r) => {
 			if (r.outcome === 'ran') triggerWeatherImport('route locations');
 			if (r.outcome === 'ran' || r.outcome === 'blocked' || r.outcome === 'error') {
-				console.log(`[crag-stats] route history (${reason}): ${r.message}`);
+				console.log(`[crag-stats] route data (${reason}): ${r.message}`);
 			}
 		})
 		.catch((err) => {
 			console.error(
-				'[crag-stats] route history run failed:',
+				'[crag-stats] route data import run failed:',
 				err instanceof Error ? err.message : err
 			);
 		});

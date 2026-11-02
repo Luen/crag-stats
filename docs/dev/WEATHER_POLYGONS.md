@@ -58,8 +58,8 @@ Before adding any other provider-specific boundary format:
    resolved key; wipe already clears these resolutions.
 
 Synthetic pipeline and browser regressions cover the enabled typed path, but do
-not establish that theCrag currently supplies that shape. #309 shipped in #317
-and #328; [#344](https://github.com/Luen/crag-stats/issues/344) tracks the real
+not establish that theCrag currently supplies that shape. [#309](https://github.com/Luen/crag-stats/issues/309) shipped in
+[#317](https://github.com/Luen/crag-stats/pull/317) and [#328](https://github.com/Luen/crag-stats/pull/328); [#344](https://github.com/Luen/crag-stats/issues/344) tracks the real
 provider evidence and any additional format adapter. Close #344 only with a
 sanitized provider-backed fixture regression, not with more synthetic coverage.
 

@@ -318,7 +318,7 @@ export async function openRouteHistoryClient(apiKey: string): Promise<RouteHisto
 		}) as ImpersSession;
 	} catch (err) {
 		throw new RouteHistoryUnavailableError(
-			'Route history import needs impers (and its native libcurl), which failed to load on ' +
+			'Route data import needs impers (and its native libcurl), which failed to load on ' +
 				'this platform. Manual FA/FFA marks still work.',
 			{ cause: err }
 		);

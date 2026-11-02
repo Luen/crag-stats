@@ -9,7 +9,7 @@ vi.mock('./env', () => ({
 	getTheCragSyncConfiguration: () => ({ mode: 'api', configured: true })
 }));
 
-const { isRouteHistoryImportEnabled } = await import('./routeHistoryImport');
+const { isRouteHistoryImportEnabled, getRouteHistoryStatus } = await import('./routeHistoryImport');
 
 afterEach(() => {
 	for (const key of Object.keys(vars)) delete vars[key];
@@ -29,4 +29,22 @@ describe('route data import flag (#353)', () => {
 		vars.ROUTE_HISTORY_IMPORT = 'true';
 		expect(isRouteHistoryImportEnabled()).toBe(false);
 	});
+
+	it.each([
+		{ current: '', legacy: 'true', enabled: false },
+		{ current: 'false', legacy: 'true', enabled: false },
+		{ current: '0', legacy: 'true', enabled: false },
+		{ current: 'off', legacy: 'true', enabled: false },
+		{ current: 'invalid', legacy: 'true', enabled: false },
+		{ current: 'true', legacy: 'false', enabled: true },
+		{ current: 'yes', legacy: 'false', enabled: true }
+	])(
+		'ROUTE_DATA_IMPORT=$current wins over ROUTE_HISTORY_IMPORT=$legacy, Settings included',
+		({ current, legacy, enabled }) => {
+			vars.ROUTE_DATA_IMPORT = current;
+			vars.ROUTE_HISTORY_IMPORT = legacy;
+			expect(isRouteHistoryImportEnabled()).toBe(enabled);
+			expect(getRouteHistoryStatus().enabled).toBe(enabled);
+		}
+	);
 });
