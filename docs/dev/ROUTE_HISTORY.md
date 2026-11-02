@@ -4,9 +4,9 @@ User-facing explanations: [`docs/guide/first-ascents.md`](../guide/first-ascents
 
 ## Turning it on
 
-`ROUTE_HISTORY_IMPORT=true` in `.env` (default **off**). When it's off, nothing below runs, `impers` is never imported, and its native library is never downloaded.
+`ROUTE_DATA_IMPORT=true` in `.env` (default **off**). This was `ROUTE_HISTORY_IMPORT` before #353; the old name is no longer read, so existing deployments must rename it and restart. When it's off, nothing below runs, `impers` is never imported, and its native library is never downloaded.
 
-Set `ROUTE_DATA_REFRESH_DAYS` to a whole number of days from 30 through 3650 (~10 years) for rolling refreshes (fixed days, not calendar months) — e.g. `90` (recommended), `30`, or `180` (~half a year). Unset, `0`, under 30, over 3650, or non-digit values keep the default fetch-once behavior. This still requires `ROUTE_HISTORY_IMPORT=true` and an API key. No separate timer runs: successful logbook syncs and manual runs process eligible routes within the same 100-route budget, so a large backlog may take several syncs to refresh.
+Set `ROUTE_DATA_REFRESH_DAYS` to a whole number of days from 30 through 3650 (~10 years) for rolling refreshes (fixed days, not calendar months) — e.g. `90` (recommended), `30`, or `180` (~half a year). Unset, `0`, under 30, over 3650, or non-digit values keep the default fetch-once behavior. This still requires `ROUTE_DATA_IMPORT=true` and an API key. No separate timer runs: successful logbook syncs and manual runs process eligible routes within the same 100-route budget, so a large backlog may take several syncs to refresh.
 
 ## Household / shared supporter key with CSV mode
 
@@ -15,7 +15,7 @@ Route history uses `THECRAG_API_KEY` against `/api/route/ids`. That key is a **s
 When one person in a household has a supporter account and the other does not, a workable homeserver layout is:
 
 1. **Paid partner** — `THECRAG_SYNC_MODE=api` with their own `THECRAG_API_KEY` (full logbook sync + optional route history on their instance).
-2. **Unpaid partner** — `THECRAG_SYNC_MODE=csv` with _their_ `THECRAG_USERNAME` / `THECRAG_PASSWORD` / `SESSION_SECRET` for the logbook, plus the **paid partner’s** `THECRAG_API_KEY` only for `ROUTE_HISTORY_IMPORT` (and optional `ROUTE_DATA_REFRESH_DAYS`).
+2. **Unpaid partner** — `THECRAG_SYNC_MODE=csv` with _their_ `THECRAG_USERNAME` / `THECRAG_PASSWORD` / `SESSION_SECRET` for the logbook, plus the **paid partner’s** `THECRAG_API_KEY` only for `ROUTE_DATA_IMPORT` (and optional `ROUTE_DATA_REFRESH_DAYS`).
 
 Crag Stats treats CSV identity as the configured username: sync sets `profiles.login` / `name` from `THECRAG_USERNAME`, clears API-only profile fields (`routesTicked`, outdoor/indoor counts, avatar, `raw_json`, …), and FA/setter matching prefers that username in CSV mode. That keeps the key owner’s account stats and FA credits from bleeding onto the CSV instance. Still: the shared key can read the key owner’s private logbook notes if misused — keep `.env` private, one key per trusted household, and prefer the unpaid partner getting their own supporter key when they can.
 

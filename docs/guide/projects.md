@@ -14,7 +14,7 @@ When a project has **no grade** on theCrag (or is literally graded “Project”
 
 ## Guidebook text on project cards
 
-When **route history import** has cached public guidebook data for a route, project cards can show:
+When **route data import** has cached public guidebook data for a route, project cards can show:
 
 - A short **description** excerpt
 - An **access** warning when the guidebook lists access issues (for example closed or tolerated crags)
@@ -30,4 +30,4 @@ That text comes from theCrag’s public route pages (`beta` fields such as Descr
 
 theCrag guidebook content may be licensed under terms such as [Creative Commons BY-SA](https://creativecommons.org/licenses/by-sa/4.0/). Route pages often credit contributors (for example local clubs). Crag Stats shows **short excerpts** only, links back to the **route page on theCrag**, and labels the source (CC BY-SA). For the full description, ethics, approach and current access status, use the link on the card.
 
-Route import is **off by default** (`ROUTE_HISTORY_IMPORT`). Turn it on in Settings if you want guidebook excerpts and automatic FA hints; see [First ascents](/docs/first-ascents) for the privacy and pacing limits.
+Route import is **off by default** (`ROUTE_DATA_IMPORT`). Turn it on in Settings if you want guidebook excerpts and automatic FA hints; see [First ascents](/docs/first-ascents) for the privacy and pacing limits.

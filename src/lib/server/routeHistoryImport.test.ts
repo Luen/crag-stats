@@ -1,0 +1,32 @@
+import { afterEach, describe, expect, it, vi } from 'vitest';
+
+// Only the flags these tests set; everything else reads as unset.
+const vars: Record<string, string> = {};
+
+vi.mock('./env', () => ({
+	env: (name: string, fallback = '') => vars[name] ?? fallback,
+	envFlag: (name: string) => ['1', 'true', 'yes', 'on'].includes((vars[name] ?? '').toLowerCase()),
+	getTheCragSyncConfiguration: () => ({ mode: 'api', configured: true })
+}));
+
+const { isRouteHistoryImportEnabled } = await import('./routeHistoryImport');
+
+afterEach(() => {
+	for (const key of Object.keys(vars)) delete vars[key];
+});
+
+describe('route data import flag (#353)', () => {
+	it('is off by default', () => {
+		expect(isRouteHistoryImportEnabled()).toBe(false);
+	});
+
+	it('is enabled by ROUTE_DATA_IMPORT', () => {
+		vars.ROUTE_DATA_IMPORT = 'true';
+		expect(isRouteHistoryImportEnabled()).toBe(true);
+	});
+
+	it('ignores the removed ROUTE_HISTORY_IMPORT variable', () => {
+		vars.ROUTE_HISTORY_IMPORT = 'true';
+		expect(isRouteHistoryImportEnabled()).toBe(false);
+	});
+});

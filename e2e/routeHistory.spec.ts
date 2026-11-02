@@ -3,18 +3,19 @@ import Database from 'better-sqlite3';
 import AxeBuilder from '@axe-core/playwright';
 import { PORTS, TEST_PASSWORD } from '../playwright.config';
 
-// The open server doesn't set ROUTE_HISTORY_IMPORT, so the import must be off: an explanation,
+// The open server doesn't set ROUTE_DATA_IMPORT, so the import must be off: an explanation,
 // no button that would contact theCrag, and the action refuses.
 test('route history import is off by default', async ({ page, request }) => {
 	await page.goto('/settings');
-	await expect(page.getByText('ROUTE_HISTORY_IMPORT=true')).toBeVisible();
+	await expect(page.getByRole('heading', { name: 'Import route data' })).toBeVisible();
+	await expect(page.getByText('ROUTE_DATA_IMPORT=true')).toBeVisible();
 	await expect(page.getByRole('button', { name: /Check next/ })).toHaveCount(0);
 
 	const res = await request.post('/settings?/fetchRouteHistory', {
 		headers: { origin: new URL(page.url()).origin, accept: 'application/json' },
 		form: {}
 	});
-	expect(await res.text()).toContain('ROUTE_HISTORY_IMPORT=true');
+	expect(await res.text()).toContain('ROUTE_DATA_IMPORT=true');
 });
 
 for (const colorScheme of ['light', 'dark'] as const) {
