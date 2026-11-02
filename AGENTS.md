@@ -525,3 +525,6 @@ World map (#313): `/map` uses bundled public-domain Natural Earth outlines, serv
 - Open-Meteo archive client reads the body as text and parses it safely: non-JSON or `{error:true}` bodies (even on 2xx) are failures, never cached days. A 429 status or rate-limit wording counts as `429` (blocked back-off, honours Retry-After). Other bad 2xx bodies are reported as `502` (error back-off). Messages quote one trimmed line from the provider, never a raw `JSON.parse` error.
 
 - Earned badge order (dashboard rail + `/badges`) comes from `sortEarnedBadges` (`#lib/badgeOrder`): newest earning-climb day first, catalog order within a day, then badges without a climb day (First Moves import time, community estimates). Don't sort by raw `date` strings — First Moves' import timestamp would pin it first.
+
+- Card help links: use `HelpLink.svelte` (round "?" beside the card title, named by `label`) rather than inline "About …" text links. Climber profile and Grade bands use it.
+- Height badges: `HEIGHT_BADGES` covers 1/5/10/20/50/100/150 km (`height_*km`, Almost there included); keep one id per threshold.

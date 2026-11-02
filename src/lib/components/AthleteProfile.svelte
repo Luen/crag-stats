@@ -1,4 +1,6 @@
 <script lang="ts">
+	import HelpLink from '#lib/components/HelpLink.svelte';
+
 	type Axis = { key: string; label: string; last30: number; last90: number };
 	type Props = { axes: Axis[] };
 	let { axes }: Props = $props();
@@ -45,12 +47,7 @@
 	<header>
 		<div class="title">
 			<h2>Climber profile</h2>
-			<a
-				class="help"
-				href="/docs/climber-profile"
-				aria-label="How climber profile works"
-				title="How climber profile works">?</a
-			>
+			<HelpLink href="/docs/climber-profile" label="How climber profile works" />
 		</div>
 		<div class="legend">
 			<span class="l90">last 90 days</span>
@@ -109,26 +106,6 @@
 	h2 {
 		margin: 0;
 		font-size: 1.05rem;
-	}
-	.help {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		width: 1.25rem;
-		height: 1.25rem;
-		border-radius: 999px;
-		border: 1px solid var(--line);
-		background: var(--surface-2);
-		color: var(--ink-muted);
-		font-size: 0.78rem;
-		font-weight: 700;
-		line-height: 1;
-		text-decoration: none;
-		flex: 0 0 auto;
-	}
-	.help:hover {
-		color: var(--ink);
-		border-color: color-mix(in srgb, var(--accent) 45%, var(--line));
 	}
 	.legend {
 		display: flex;

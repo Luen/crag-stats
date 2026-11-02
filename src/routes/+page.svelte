@@ -5,6 +5,7 @@
 	import ClimberBlurb from '#lib/components/ClimberBlurb.svelte';
 	import ClimberTypeBar from '#lib/components/ClimberTypeBar.svelte';
 	import CprTimeline from '#lib/components/CprTimeline.svelte';
+	import HelpLink from '#lib/components/HelpLink.svelte';
 	import GradeChip from '#lib/components/GradeChip.svelte';
 	import Badges from '#lib/components/Badges.svelte';
 	import BestMonths from '#lib/components/BestMonths.svelte';
@@ -136,10 +137,11 @@
 		</article>
 	{:else if id === 'gradeBands'}
 		<article class="panel">
-			<h2>Grade bands</h2>
-			<p class="hint">
-				Colours match theCrag: Beginner → Elite · <a href="/docs/grades">About grade bands</a>
-			</p>
+			<div class="card-title">
+				<h2>Grade bands</h2>
+				<HelpLink href="/docs/grades" label="About grade bands" />
+			</div>
+			<p class="hint">Colours match theCrag: Beginner → Elite</p>
 			<BarList
 				items={s.bandBreakdown.map((b) => ({
 					id: `band:${b.band}`,
@@ -585,6 +587,15 @@
 	h2 {
 		margin: 0 0 0.85rem;
 		font-size: 1.1rem;
+	}
+	.card-title {
+		display: flex;
+		align-items: center;
+		gap: 0.4rem;
+		margin-bottom: 0.85rem;
+	}
+	.card-title h2 {
+		margin: 0;
 	}
 	.hint {
 		margin: -0.4rem 0 0.8rem;
