@@ -128,8 +128,81 @@ describe('createOpenMeteoClient', () => {
 		expect(result).toEqual({
 			ok: false,
 			status: 429,
-			message: 'slow down',
+			message:
+				'Open-Meteo rate limit reached; weather import will retry later. Provider said: slow down',
 			retryAfterMs: 120_000
 		});
+	});
+
+	const fetchWith = (response: Response) =>
+		createOpenMeteoClient((async () => response) as unknown as typeof fetch).fetchDaily({
+			latitude: 0,
+			longitude: 0,
+			startDate: '2020-01-01',
+			endDate: '2020-01-01'
+		});
+
+	it('reports a non-JSON 200 body instead of a JSON parser error', async () => {
+		const result = await fetchWith(
+			new Response('Unexpected error while processing request', { status: 200 })
+		);
+		expect(result.ok).toBe(false);
+		if (result.ok) return;
+		expect(result.status).toBe(502);
+		expect(result.message).toBe(
+			'Open-Meteo returned an unexpected (non-JSON) response. Provider said: Unexpected error while processing request'
+		);
+		expect(result.message).not.toMatch(/is not valid JSON/);
+	});
+
+	it('treats rate-limit text in a non-JSON body as a block', async () => {
+		const result = await fetchWith(
+			new Response('<html><body>Too Many Requests</body></html>', { status: 200 })
+		);
+		expect(result).toMatchObject({ ok: false, status: 429 });
+	});
+
+	it('uses the JSON reason from Open-Meteo error payloads', async () => {
+		const result = await fetchWith(
+			new Response(
+				JSON.stringify({
+					error: true,
+					reason: 'Hourly API request limit exceeded. Please try again in the next hour.'
+				}),
+				{ status: 429 }
+			)
+		);
+		expect(result).toEqual({
+			ok: false,
+			status: 429,
+			message:
+				'Open-Meteo rate limit reached; weather import will retry later. Provider said: Hourly API request limit exceeded. Please try again in the next hour.'
+		});
+	});
+
+	it('treats a 200 error payload as a failure, not an empty day', async () => {
+		const result = await fetchWith(
+			new Response(JSON.stringify({ error: true, reason: 'Parameter mismatch' }), { status: 200 })
+		);
+		expect(result).toEqual({
+			ok: false,
+			status: 502,
+			message: 'Open-Meteo HTTP 200. Provider said: Parameter mismatch'
+		});
+	});
+
+	it('keeps other HTTP errors and trims long bodies to one line', async () => {
+		const result = await fetchWith(
+			new Response(
+				`bad
+${'x'.repeat(500)}`,
+				{ status: 500 }
+			)
+		);
+		expect(result.ok).toBe(false);
+		if (result.ok) return;
+		expect(result.status).toBe(500);
+		expect(result.message.startsWith('Open-Meteo HTTP 500. Provider said: bad x')).toBe(true);
+		expect(result.message.length).toBeLessThan(220);
 	});
 });
