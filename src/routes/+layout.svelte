@@ -5,6 +5,7 @@
 	import { afterNavigate } from '$app/navigation';
 	import { page } from '$app/state';
 	import { formatNumber } from '#lib/dates';
+	import { startOfflineRefresh } from '#lib/offlineClient';
 	import NavIcon, { type NavIconName } from '#lib/components/NavIcon.svelte';
 	import type { LayoutProps } from './$types';
 
@@ -65,6 +66,8 @@
 
 	let toggleBtn: HTMLButtonElement | undefined = $state();
 	let sideEl: HTMLElement | undefined = $state();
+
+	onMount(startOfflineRefresh);
 
 	onMount(() => {
 		const root = document.documentElement;

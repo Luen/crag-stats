@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import { formatDateTime, formatNumber, DEFAULT_DATE_DISPLAY } from '#lib/dates';
 	import { snapshotIsFresh, type OfflineSnapshot } from '#lib/offline';
+	import { offlineCommand } from '#lib/offlineClient';
 
 	let snapshot = $state<OfflineSnapshot | null>(null);
 	let message = $state('Preparing offline storage…');
@@ -22,26 +23,7 @@
 	async function command(type: 'READ' | 'SAVE' | 'CLEAR'): Promise<void> {
 		busy = true;
 		try {
-			const controller = navigator.serviceWorker.controller;
-			if (!controller)
-				throw new Error('Offline mode is still preparing. Reload this page while connected.');
-			const result = await new Promise<{
-				snapshot?: OfflineSnapshot | null;
-				error?: string;
-				cleared?: boolean;
-			}>((resolve, reject) => {
-				const channel = new MessageChannel();
-				const timeout = setTimeout(() => {
-					channel.port1.close();
-					reject(new Error('The server or offline storage did not respond. Try again.'));
-				}, 20000);
-				channel.port1.onmessage = (event) => {
-					clearTimeout(timeout);
-					channel.port1.close();
-					resolve(event.data);
-				};
-				controller.postMessage({ type }, [channel.port2]);
-			});
+			const result = await offlineCommand(type);
 			if (result.error) {
 				if (result.cleared) snapshot = null;
 				throw new Error(result.error);
@@ -49,7 +31,7 @@
 			snapshot = result.snapshot ?? null;
 			message =
 				type === 'CLEAR'
-					? 'Offline copy cleared.'
+					? 'Offline copy cleared. Automatic downloads paused until you download again.'
 					: snapshot
 						? 'Saved copy ready. Sync and editing require a connection.'
 						: 'No offline copy. Download while connected; expired copies are removed after seven days.';
@@ -80,9 +62,10 @@
 				snapshot = null;
 				message = 'Offline copy cleared. Download again while connected.';
 			}
+			if (event.data?.type === 'OFFLINE_SAVED' && ready) void command('READ');
 		};
 		const expiry = setInterval(() => {
-			if (snapshot && !snapshotIsFresh(snapshot)) void command('CLEAR');
+			if (snapshot && !snapshotIsFresh(snapshot)) void command('READ');
 		}, 30000);
 		navigator.serviceWorker?.addEventListener('message', cleared);
 		void (async () => {
@@ -133,6 +116,11 @@
 <p>
 	Download public climbing stats and your latest logbook rows for this browser. Private notes are
 	excluded. Sites protected by a whole-app password stay online-only.
+</p>
+<p>
+	Installing or opening the installed app downloads a copy automatically. While connected, the app
+	checks for updates hourly while open and requests daily background updates where supported.
+	Clearing the copy pauses automatic downloads until you download again.
 </p>
 <p>
 	<a href="/" data-sveltekit-reload>Return to live dashboard</a> ·

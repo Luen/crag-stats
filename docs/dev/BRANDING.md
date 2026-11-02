@@ -16,6 +16,8 @@ Logbook Project and Route setter selects use the standard filter controls. Proje
 
 Offline copy (#348) is a read-only summary and searchable table using existing theme tokens, native buttons and a live status paragraph. Always show saved-time/stale-data wording. Shell layout has no account counts or authenticated controls. The footer link forces a document load so it remains usable after a failed client navigation.
 
+Offline copy explains automatic installation downloads, hourly foreground refreshes and best-effort daily background updates. Clear pauses automatic downloads until the user chooses Download or refresh copy again.
+
 ## Logo
 
 File: `src/lib/assets/favicon.svg`. It is both the favicon and the header mark.
