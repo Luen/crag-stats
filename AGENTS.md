@@ -528,3 +528,5 @@ World map (#313): `/map` uses bundled public-domain Natural Earth outlines, serv
 
 - Card help links: use `HelpLink.svelte` (round "?" beside the card title, named by `label`) rather than inline "About …" text links. Climber profile and Grade bands use it.
 - Height badges: `HEIGHT_BADGES` covers 1/5/10/20/50/100/150 km (`height_*km`, Almost there included); keep one id per threshold.
+
+- Settings live import progress: while route-data or weather `running` is true, Settings polls `GET /settings/import-status` (local counts only, `no-store`, gated with `/settings`) every 2.5 s skips ticks while the tab is hidden and stops once both are idle. `freshestSnapshot` (`#lib/importProgress`) lets a newer page reload win over an older poll; the retry countdown anchors to the chosen snapshot's `serverNow`. Never make the endpoint trigger a run or contact a provider.

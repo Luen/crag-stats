@@ -15,6 +15,27 @@ test.describe('AUTH_SCOPE=settings', () => {
 		await expect(page.getByRole('button', { name: 'Log out' })).toHaveCount(0);
 	});
 
+	test('import progress counts need a session, then return JSON', async ({ page, request }) => {
+		const anon = await request.get(`${settingsOrigin}/settings/import-status`, {
+			maxRedirects: 0
+		});
+		expect(anon.status()).toBeGreaterThanOrEqual(300);
+		expect(anon.status()).toBeLessThan(400);
+		expect(anon.headers()['location']).toMatch(/\/login/);
+
+		await page.goto(`${settingsOrigin}/login?next=/settings`);
+		await page.getByPlaceholder('Password').fill(TEST_PASSWORD);
+		await page.getByRole('button', { name: 'Unlock' }).click();
+		await expect(page).toHaveURL(`${settingsOrigin}/settings`);
+		const res = await page.request.get(`${settingsOrigin}/settings/import-status`);
+		expect(res.ok()).toBe(true);
+		expect(res.headers()['cache-control']).toContain('no-store');
+		const body = await res.json();
+		expect(typeof body.serverNow).toBe('number');
+		expect(typeof body.routeHistory.running).toBe('boolean');
+		expect(typeof body.weatherImport.running).toBe('boolean');
+	});
+
 	test('login shows the header log-out button, which signs out', async ({ page }) => {
 		await page.goto(`${settingsOrigin}/login?next=/settings`);
 		await page.getByPlaceholder('Password').fill(TEST_PASSWORD);
