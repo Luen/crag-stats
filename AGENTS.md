@@ -520,3 +520,6 @@ World map (#313): `/map` uses bundled public-domain Natural Earth outlines, serv
 - #353: the route import flag is `ROUTE_DATA_IMPORT` (Settings → **Import route data**); `ROUTE_HISTORY_IMPORT` is ignored with no fallback. Older notes above that name `ROUTE_HISTORY_IMPORT` mean this flag. Tables, migrations, module names and pacing are unchanged.
 
 - Daily streak records/badges (#339) share `#lib/dayStreaks`: unique strict written calendar days, UTC adjacency, earliest longest-run tie. Card exposes longestStartDate/longestEndDate and formats them as calendar dates. One-shot streak_days_7/10/30 badges use the first threshold-reaching day, include attempts/indoor climbs and have no Almost there counter. Current day/week/month logic is unchanged; do not infer streaks from log timestamps.
+
+- Card help links: use `HelpLink.svelte` (round "?" beside the card title, named by `label`) rather than inline "About …" text links. Climber profile and Grade bands use it.
+- Height badges: `HEIGHT_BADGES` covers 1/5/10/20/50/100/150 km (`height_*km`, Almost there included); keep one id per threshold.

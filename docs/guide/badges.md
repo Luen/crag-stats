@@ -8,6 +8,10 @@ If an older database has no saved import date, the next successful non-empty imp
 
 Wiping local data resets this milestone along with the logbook; the next successful non-empty import starts a new one.
 
+## Distance climbed
+
+Height badges count the total height of your logged climbs: 1, 5, 10, 20, 50, 100 and 150 km. Each one is dated by the climb that takes your running total past the mark. **250m Day** instead sums the height climbed on a single calendar day.
+
 ## Weather
 
 **Heat Wave**, **Freeze Frame**, **Rain Check**, **Climbing in the Snow**, **Blown Away**, **Bluebird**, **Sticky**, **Storm Send**, and **Four Seasons** need the optional outdoor weather cache (`WEATHER_IMPORT`). See [Weather](/docs/weather). Until those days are fetched, the badges stay locked. **Storm Send** requires a successful send on a heavy-rain day; attempts alone do not count.

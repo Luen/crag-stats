@@ -485,6 +485,27 @@ describe('buildBadges', () => {
 		expect(badge?.routeName).toBe('Pitch B');
 	});
 
+	it('earns 50, 100 and 150 km badges on the climb that crosses each total', () => {
+		// 30 big days of 5 km each = 150 km by the 30th day.
+		const rows = Array.from({ length: 30 }, (_, i) =>
+			row({
+				ascentDate: `2022-01-${String(i + 1).padStart(2, '0')}`,
+				tickType: 'Tick',
+				isSend: true,
+				routeName: `Wall ${i + 1}`,
+				heightM: 5000,
+				ascentId: i + 1
+			})
+		);
+		const earned = buildBadges(rows).earned;
+		const byId = (id: string) => earned.find((b) => b.id === id);
+		expect(byId('height_50km')?.date).toBe('2022-01-10');
+		expect(byId('height_50km')?.detail).toMatch(/50 km climbed/);
+		expect(byId('height_100km')?.date).toBe('2022-01-20');
+		expect(byId('height_150km')?.date).toBe('2022-01-30');
+		expect(byId('height_150km')?.routeName).toBe('Wall 30');
+	});
+
 	it('keeps a single Ten K Vertical badge id (no duplicate 10 km)', () => {
 		const tenK = BADGE_CATALOG.filter((b) => b.id === 'height_10km');
 		expect(tenK).toHaveLength(1);
@@ -496,7 +517,10 @@ describe('buildBadges', () => {
 			'height_1km',
 			'height_5km',
 			'height_10km',
-			'height_20km'
+			'height_20km',
+			'height_50km',
+			'height_100km',
+			'height_150km'
 		]);
 	});
 });

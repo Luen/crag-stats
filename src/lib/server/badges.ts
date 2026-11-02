@@ -451,6 +451,27 @@ export const BADGE_CATALOG: readonly BadgeDef[] = [
 		tone: 'purple'
 	},
 	{
+		id: 'height_50km',
+		title: 'Fifty K Vertical',
+		hint: 'Climb a cumulative 50 km',
+		icon: 'mountain',
+		tone: 'warm'
+	},
+	{
+		id: 'height_100km',
+		title: 'Hundred K Vertical',
+		hint: 'Climb a cumulative 100 km',
+		icon: 'mountain',
+		tone: 'green'
+	},
+	{
+		id: 'height_150km',
+		title: 'One-Fifty K Vertical',
+		hint: 'Climb a cumulative 150 km',
+		icon: 'mountain',
+		tone: 'blue'
+	},
+	{
 		id: 'day_height_250',
 		title: '250m Day',
 		hint: 'Climb 250 m in a single day',
@@ -807,7 +828,10 @@ const HEIGHT_BADGES = [
 	{ id: 'height_1km', m: 1000, label: '1 km climbed' },
 	{ id: 'height_5km', m: 5000, label: '5 km climbed' },
 	{ id: 'height_10km', m: 10000, label: '10 km climbed' },
-	{ id: 'height_20km', m: 20000, label: '20 km climbed' }
+	{ id: 'height_20km', m: 20000, label: '20 km climbed' },
+	{ id: 'height_50km', m: 50000, label: '50 km climbed' },
+	{ id: 'height_100km', m: 100000, label: '100 km climbed' },
+	{ id: 'height_150km', m: 150000, label: '150 km climbed' }
 ];
 
 const COUNTRY_BADGES = [
