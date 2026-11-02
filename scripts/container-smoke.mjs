@@ -107,6 +107,7 @@ if (process.argv.includes('--importer')) {
 		await new Promise((resolve) => fixture.close(resolve));
 	}
 }
+
 /**
  * impers downloads libcurl-impersonate on first use through the unauthenticated GitHub API and
  * swallows download errors, so a rate limit later surfaces as an opaque koffi.load failure (#371).
@@ -115,7 +116,15 @@ if (process.argv.includes('--importer')) {
 async function ensureImpersonateLibrary() {
 	// Importing 'impers' itself loads the library immediately, so reach its loader by path.
 	const loader = join(dirname(runtimeRequire.resolve('impers')), 'ffi', 'loader.js');
-	const { resolveLibrary } = await import(pathToFileURL(loader).href);
+	// A private path: if an impers update moves it, skip the pre-check and keep the real check running.
+	const resolveLibrary = await import(pathToFileURL(loader).href).then(
+		(module) => module.resolveLibrary,
+		() => undefined
+	);
+	if (typeof resolveLibrary !== 'function') {
+		console.warn(`Skipping libcurl-impersonate pre-check: no resolveLibrary in ${loader}.`);
+		return;
+	}
 	const delays = [0, 10_000, 30_000];
 	for (const [attempt, delay] of delays.entries()) {
 		if (delay) await new Promise((resolve) => setTimeout(resolve, delay));
