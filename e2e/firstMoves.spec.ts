@@ -3,7 +3,8 @@ import { expect, test } from '@playwright/test';
 test('First Moves is dated by the seed import with no climb link and survives reimports', async ({
 	page
 }) => {
-	await page.goto('/');
+	// Full gallery: First Moves sorts after climb-dated badges, so it can fall off the dashboard rail.
+	await page.goto('/badges');
 	const card = page
 		.locator('article.card')
 		.filter({ has: page.getByRole('heading', { name: 'First Moves', exact: true }) });
@@ -16,6 +17,6 @@ test('First Moves is dated by the seed import with no climb link and survives re
 	await expect(page.getByRole('heading', { name: 'First Moves badge' })).toHaveCount(0);
 	await page.setInputFiles('input[name="file"]', 'samples/thecrag-logbook-sample.csv');
 	await page.getByRole('button', { name: 'Import CSV' }).click();
-	await page.goto('/');
+	await page.goto('/badges');
 	await expect(card).toHaveText(original);
 });
