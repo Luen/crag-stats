@@ -73,20 +73,65 @@ Local, Apple silicon, 8 cores. The machine was shared with other agents, so the 
 
 ESLint time is almost all type-aware parsing of `.svelte` files (`projectService`); rules account for ~13 s, 60% of which is `svelte/require-store-reactive-access`.
 
-### After
+### After the CI split (#340, #343): medians of 7 runs
 
-E2E, same build and similar machine load, run back to back: 81 tests in 2.7 min (159.8 s summed) → 71 tests in 2.6 min (151.4 s summed). Per spec: weather drill-downs −5.0 s, solo cards −3.0 s, world map −2.6 s, sun-facing badge −2.2 s, weather locations −2.1 s. The saving is small because the axe scans themselves dominate, and every scanned state is kept.
+Single CI runs vary by 35% or more, so budgets come from medians. These are all seven green `CI` runs with the split `check` / `e2e` layout (41301051083, 41301350665, 41302294748, 41302304766, 41303199072, 41303492168, 41304060780; 1 November 2026):
 
-First CI run after the change (PR #340, cold Playwright cache):
+| Job / step                    | Median | Range     |
+| ----------------------------- | ------ | --------- |
+| `check` job                   | 66 s   | 53–75 s   |
+| ↳ Lint (Prettier + ESLint)    | 17 s   | 14–23 s   |
+| ↳ `pnpm check`                | 9 s    | 7–11 s    |
+| ↳ Unit tests                  | 17 s   | 12–21 s   |
+| `e2e` job                     | 196 s  | 142–213 s |
+| ↳ E2E step (Playwright + axe) | 161 s  | 109–167 s |
+| `docker (amd64)` job          | 73 s   | 57–91 s   |
+| `docker (arm64)` job (QEMU)   | 195 s  | 150–241 s |
 
-| Job / step                  | Before                         | After                                               |
-| --------------------------- | ------------------------------ | --------------------------------------------------- |
-| Lint + types + unit result  | after the whole job, 180–242 s | `check` job: 53 s (lint 14 s, check 8 s, unit 12 s) |
-| Browser path                | inside `check`                 | `e2e` job: 190 s (E2E step 143 s)                   |
-| Install Playwright Chromium | 13–17 s                        | 16 s (cache miss); skipped on later hits            |
-| `docker (amd64)`            | 67–131 s                       | 91 s                                                |
+The split made lint, type and unit failures report in about a minute instead of after the browser suite. It did not shorten the browser path: the E2E step grew from 109–147 s, partly because new specs merged the same day (about +25 s) and partly because a dual-theme scan costs about as much as two single-theme flows on CI. `docker (arm64)` sets PR wall time.
 
-The real gain is that lint, type and unit failures now report in about a minute instead of waiting behind the browser suite. The browser path itself is about as long as before: the E2E step's runtime is within the old range, and runner variance is larger than the consolidation saving. `docker (arm64)` still sets PR wall time.
+### Budget
+
+Targets, checked against the median of at least five green CI runs (not a single run):
+
+| Stage                | Budget  | Median at the time it was set |
+| -------------------- | ------- | ----------------------------- |
+| `check` job          | ≤ 75 s  | 66 s                          |
+| E2E step (`e2e` job) | ≤ 120 s | 161 s, before scoped scans    |
+| Unit tests (CI step) | ≤ 20 s  | 17 s                          |
+
+To re-measure, list green runs with `gh run list --workflow ci.yml --status success` and read job and step times from `gh api repos/Luen/crag-stats/actions/runs/<id>/jobs`. When a stage goes over budget, find the cause before adding hardware or retries: usually a new full-page scan or a new spec that seeds its own data.
+
+### Scoped axe scans
+
+Most feature scans audited the whole page, re-checking the header, sidebar and every dashboard card that `a11y.spec.ts` already audits in both themes. Full-page dashboard scans were the slowest steps in the suite. Feature specs now pass `include` for the region the feature changed. `expectAxeClean()` accepts CSS selectors or Playwright locators (for example one dashboard card). Six specs that still repeated their whole flow per theme now run once and use the helper.
+
+| Spec                                                                      | Scope                                                                                          | Why                                                        |
+| ------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- | ---------------------------------------------------------- |
+| `a11y.spec.ts`                                                            | full page, fresh load per theme                                                                | the representative audit of shared chrome and main pages   |
+| `trainingLoadContrast.spec.ts`                                            | **full page**                                                                                  | the regression is the sidebar count badges (shared chrome) |
+| `weather.spec.ts`                                                         | Weather conditions, Ascent calendar and Recent activities cards; `main` on logbook and sectors | the weather surfaces the spec populates                    |
+| `weather-drilldowns.spec.ts`                                              | `main` (filtered logbook); `.shares`, `.whole-row`                                             | logbook filters and card rows                              |
+| `weatherLocations.spec.ts`                                                | `main`                                                                                         | settings subpage with the area details open                |
+| `sunFacingBadge.spec.ts`                                                  | the Summer Sun Face badge card                                                                 | the evidence and link on that card                         |
+| `firstAscents.spec.ts`                                                    | the First ascents card                                                                         | setter-only card layout (#150)                             |
+| `cardPreferences.spec.ts`                                                 | `main`; one flow (was one per theme)                                                           | migrated card toggles                                      |
+| `partnerMetrics.spec.ts`                                                  | `article.compact`; one flow (was one per theme)                                                | the dashboard Partners card                                |
+| `projects.spec.ts`                                                        | `main` at 1440 and 390 px; one flow (was one per theme)                                        | project cards                                              |
+| `ropeSoloBadges.spec.ts`                                                  | `main` at 1440 and 390 px; one flow (was one per theme)                                        | badge cards                                                |
+| `routeHistory.spec.ts`                                                    | `main`; one cooldown flow (was one per theme)                                                  | the Settings countdown button and status                   |
+| others (`soloCards`, `seasonality`, `worldMap`, `streaks`, `syncSummary`) | already scoped                                                                                 | —                                                          |
+
+Local, same build, back to back (Apple silicon, quiet machine): 76 tests in 2.6 min (148.0 s summed) → 71 tests in 2.0 min (114.9 s summed), −22%. The largest drops: `weather.spec` 18.5 → 5.3 s, `sunFacingBadge` 10.5 → 3.2 s, `weather-drilldowns` 10.1 → 5.0 s, `firstAscents` 7.1 → 3.5 s. This is one paired local run; confirm against the CI budget with medians once a few runs have landed.
+
+### Unit test audit
+
+`pnpm test` on a quiet machine: 101 files, 683 tests, about 6 s wall. Vitest reports import as 56–59% of summed worker time.
+
+- **Critical path.** Files run in parallel, so wall time is roughly the slowest file. `routeHistoryEngine.test.ts` takes about 4.6 s of test time on its own (24 tests at 150–210 ms). It is real SQLite work: each test seeds 105 routes (about 40 ms via `upsertAscents`) and runs 100-route imports. The pacing sleeps are already faked. The 105-route fixture is what proves the 100-route cap, so it stays. Splitting the file only to parallelise it was not done.
+- **Import graph.** 13 test files imported all of `analytics.ts` only for `wipeAllData`. It now lives in `src/lib/server/wipe.ts` (re-exported from `analytics.ts`), and those tests import it directly. Measured over three runs each: 6.2–6.4 s → 5.8–5.9 s wall.
+- **Duplicates.** `dashboardExtras.test.ts` repeated the two `splitPartners` cases from `partnerStats.test.ts` word for word. `dashboardExtras` only re-exports the `partnerStats` function, so the copy was removed. The other repeated test names (`rejects missing or invalid dates` in `projects.test.ts`) cover different functions and stay.
+- **Kept:** per-file `:memory:` isolation (#57); `isolate: false` and a pool change were measured and rejected (below).
 
 ### Investigated and not changed
 
@@ -121,6 +166,6 @@ No test was deleted and no assertion dropped. Ten feature specs (seven in #340, 
 
 - **Logic** (grades, analytics, sync, filters, dates): a focused Vitest test next to the module. Use synthetic data and the per-file `:memory:` DB.
 - **Browser** tests are for user-visible flows or states a unit test can't reach: populated badges, pills, weather states, keyboard and focus, auth gates, layout at mobile width. Extend the nearest existing spec rather than adding a new one with its own seeding.
-- **Accessibility:** call `expectAxeClean(page, { include })` at the new state. Don't wrap a flow in a light/dark loop, and don't add another full-page scan of a page that `a11y.spec.ts` already audits in the same state.
+- **Accessibility:** call `expectAxeClean(page, { include })` at the new state, scoped to the region the feature changed (a selector or a locator). Don't wrap a flow in a light/dark loop, and scan the whole page only when the regression is in shared chrome; record that choice in the scoped-scan table above.
 - **Skip** tests that mirror the implementation, assert incidental markup or class names, or re-check behaviour already covered at the same layer. A trivial, reversible copy or styling change usually needs no new test.
 - **Never** skip tests, raise retries or loosen isolation to make checks faster.

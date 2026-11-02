@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { eq } from 'drizzle-orm';
-import { wipeAllData } from './analytics';
+import { wipeAllData } from './wipe';
 import { db } from './db';
 import { profiles, routeHistory, routes } from './db/schema';
 import { setFirstAscent } from './firstAscents';

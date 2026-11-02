@@ -82,7 +82,10 @@ test('outdoor cache drives the card and logbook; indoor rows stay excluded', asy
 					'Hot 38°C'
 				);
 			}
-			await expectAxeClean(page);
+			// The dashboard's weather surfaces, or the filtered logbook; a11y.spec audits the chrome.
+			await expectAxeClean(page, {
+				include: path === '/' ? [card, calendar, recent] : ['main']
+			});
 		}
 
 		await page.goto('/sectors');
@@ -113,7 +116,7 @@ test('outdoor cache drives the card and logbook; indoor rows stay excluded', asy
 		});
 		await cragLink.focus();
 		await expect(cragLink).toBeFocused();
-		await expectAxeClean(page);
+		await expectAxeClean(page, { include: ['main'] });
 
 		await page.goto('/');
 		await expect(card.locator('.fair')).toHaveCount(0);
@@ -132,7 +135,7 @@ test('outdoor cache drives the card and logbook; indoor rows stay excluded', asy
 		await expect(card.locator('.fair')).toContainText('All-weather climber');
 		await expect(card.locator('.fair')).toContainText('95%');
 		await expect(card.locator('.fair')).toContainText('80%');
-		await expectAxeClean(page);
+		await expectAxeClean(page, { include: [card] });
 		await card.getByRole('link', { name: 'Fair days in the logbook' }).click();
 		await expect(page).toHaveURL(/weather=fair/);
 		await page.goto('/logbook?weather=fair');

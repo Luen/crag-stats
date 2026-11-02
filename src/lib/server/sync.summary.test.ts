@@ -1,5 +1,5 @@
 import { beforeEach, expect, it, vi } from 'vitest';
-import { wipeAllData } from './analytics';
+import { wipeAllData } from './wipe';
 import { upsertAscents } from './ingest';
 import { syncTheCragAll } from './providers/thecrag';
 import { runTheCragSync } from './sync';

@@ -1,5 +1,5 @@
 import { upsertAscents } from './ingest';
-import { wipeAllData } from './analytics';
+import { wipeAllData } from './wipe';
 import {
 	refreshProjects,
 	listProjects,

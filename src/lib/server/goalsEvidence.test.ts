@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { beforeEach, expect, it } from 'vitest';
-import { wipeAllData } from './analytics';
+import { wipeAllData } from './wipe';
 import { upsertAscents } from './ingest';
 import { createGoal, listGoals } from './goals';
 import { parseTheCragCsv } from './providers/thecrag/csv';

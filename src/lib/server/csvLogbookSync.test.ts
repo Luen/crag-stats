@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { beforeEach, expect, it, vi } from 'vitest';
 import { sql } from 'drizzle-orm';
-import { wipeAllData } from './analytics';
+import { wipeAllData } from './wipe';
 import { db } from './db';
 import { ascents, profiles, routes, theCragWebSessions } from './db/schema';
 import { upsertAscents } from './ingest';

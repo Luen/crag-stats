@@ -4,7 +4,7 @@ import { db } from './db';
 import { routes, weatherDays } from './db/schema';
 import { upsertAscents } from './ingest';
 import { listSectors } from './sectors';
-import { wipeAllData } from './analytics';
+import { wipeAllData } from './wipe';
 
 describe('visit climate on sectors (#278)', () => {
 	beforeEach(() => wipeAllData());

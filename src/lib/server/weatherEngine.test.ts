@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { wipeAllData } from './analytics';
+import { wipeAllData } from './wipe';
 import { db, ensureSchema } from './db';
 import { ascents, routes, weatherDays } from './db/schema';
 import { createOpenMeteoClient, type OpenMeteoClient } from './providers/openMeteo';

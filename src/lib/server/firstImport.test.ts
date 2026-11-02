@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { beforeEach, expect, it } from 'vitest';
 import { eq } from 'drizzle-orm';
-import { wipeAllData } from './analytics';
+import { wipeAllData } from './wipe';
 import { db } from './db';
 import { appSettings } from './db/schema';
 import { updateSyncState, upsertAscents } from './ingest';

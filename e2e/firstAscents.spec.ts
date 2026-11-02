@@ -1,6 +1,6 @@
 import Database from 'better-sqlite3';
-import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
+import { expectAxeClean } from './axe';
 
 // Open server (no APP_PASSWORD), so the visitor is the owner and can mark FAs.
 test('mark a first ascent from the logbook and see it on the dashboard', async ({ page }) => {
@@ -80,15 +80,7 @@ test('setter-only First ascents card omits empty style chart (#150)', async ({ p
 		await expect(card).toContainText('Includes credits imported from theCrag route history.');
 		await expect(card.locator('[role="img"]')).toHaveCount(0);
 		await expect(card.getByRole('heading', { name: 'Latest' })).toHaveCount(0);
-		for (const colorScheme of ['light', 'dark'] as const) {
-			await page.emulateMedia({ colorScheme });
-			// Reload so axe never samples the nav's 0.15s colour transition mid-fade (#167).
-			await page.reload();
-			const results = await new AxeBuilder({ page }).analyze();
-			expect(
-				results.violations.filter((v) => v.impact === 'serious' || v.impact === 'critical')
-			).toEqual([]);
-		}
+		await expectAxeClean(page, { include: [card] });
 	} finally {
 		db.prepare(
 			"DELETE FROM route_history WHERE provider = 'thecrag' AND route_external_id = 'setter-only-route'"

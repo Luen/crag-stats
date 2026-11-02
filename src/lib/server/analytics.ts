@@ -1,10 +1,6 @@
 import { consecutiveDayRuns, longestDayRun } from '#lib/dayStreaks';
 import { soloKind, parseSoloKind } from '#lib/soloKind';
-import {
-	loadWeatherLocations,
-	attachWeatherLocation,
-	invalidateWeatherLocations
-} from './weatherLocations';
+import { loadWeatherLocations, attachWeatherLocation } from './weatherLocations';
 
 import { validMapCoords, mapPlaceKey } from '#lib/climbingMap';
 
@@ -12,7 +8,6 @@ import { calendarDay as validDay } from '#lib/calendarDay';
 import { listPartners } from './partners';
 import { topPartnersPerMetric } from '#lib/partnerStats';
 import { matchesClimbStyle } from '#lib/climbStyle';
-import { forgetTheCragSession } from './theCragWebSession';
 
 import { classifyRoutePitches, hasRouteInfoFetched, isMissingPitchData } from './routePitches';
 import { ancestorAreaNames, parseAncestorsJson, sectorPathUnderCrag } from './sectorsTree';
@@ -44,7 +39,7 @@ import {
 } from './logbookSort';
 import { buildCprTimeline } from './cpr';
 import { sentPitchNumbersFromRaw, buildBadges } from './badges';
-import { getFirstImport, resetFirstImport } from './firstImport';
+import { getFirstImport } from './firstImport';
 import { communityAscentBadgeHits } from './communityBadges';
 import type { DateDisplay } from '#lib/dates';
 import { buildClimberBlurb } from './climberBlurb';
@@ -65,6 +60,7 @@ import {
 
 export { describeSendPreference } from './climberBlurb';
 import { db, ensureSchema } from './db';
+export { wipeAllData } from './wipe';
 import { buildEddington } from './eddington';
 import { buildSoloStats } from './solo';
 import {
@@ -75,12 +71,7 @@ import {
 } from './firstAscents';
 import { ascents, profiles, routeHistoryFetches, routes } from './db/schema';
 import { pickHardestSends } from './hardestSends';
-import { invalidateRouteHistoryRuns } from './routeHistoryEngine';
-import {
-	invalidateWeatherRuns,
-	loadWeatherSnapshotMap,
-	loadWeatherCachedKeys
-} from './weatherEngine';
+import { loadWeatherSnapshotMap, loadWeatherCachedKeys } from './weatherEngine';
 import { isLikelyIndoorRoute } from './venue';
 import {
 	isMissingLogbookWeather,
@@ -1560,32 +1551,6 @@ export function listLogbook(filters?: {
 			routePopularity: routePopularity(r)
 		}))
 	};
-}
-
-export function wipeAllData() {
-	ensureSchema();
-	forgetTheCragSession();
-	resetFirstImport();
-	// Abandon any in-flight route-history import before clearing tables (#74).
-	invalidateRouteHistoryRuns();
-	invalidateWeatherRuns();
-	invalidateWeatherLocations();
-	db.run(sql`DELETE FROM projects`);
-	db.run(sql`DELETE FROM goals`);
-	db.run(sql`DELETE FROM first_ascents`);
-	db.run(sql`DELETE FROM first_ascent_import_skips`);
-	db.run(sql`DELETE FROM route_history`);
-	db.run(sql`DELETE FROM route_history_fetches`);
-	db.run(sql`DELETE FROM route_history_import_state`);
-	db.run(sql`DELETE FROM weather_locations`);
-	db.run(sql`DELETE FROM weather_place_overrides`);
-	db.run(sql`DELETE FROM weather_place_searches`);
-	db.run(sql`DELETE FROM weather_days`);
-	db.run(sql`DELETE FROM weather_import_state`);
-	db.run(sql`DELETE FROM ascents`);
-	db.run(sql`DELETE FROM routes`);
-	db.run(sql`DELETE FROM profiles`);
-	db.run(sql`DELETE FROM sync_state`);
 }
 
 function buildStreaks(dayMap: Map<string, { count: number; sends: number }>): {

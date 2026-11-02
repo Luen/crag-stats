@@ -4,21 +4,8 @@ import {
 	buildPartnerLeaderboard,
 	buildRockTypeStats,
 	buildStarsScatter,
-	splitPartners,
 	type DashboardExtraRow
 } from './dashboardExtras';
-
-describe('splitPartners', () => {
-	it('splits on commas, and, semicolons, and strips @handles', () => {
-		expect(splitPartners('@alice, Bob and carol;@dave')).toEqual(['alice', 'Bob', 'carol', 'dave']);
-	});
-
-	it('handles slash separators and empty input', () => {
-		expect(splitPartners('Sam / @kim')).toEqual(['Sam', 'kim']);
-		expect(splitPartners(null)).toEqual([]);
-		expect(splitPartners('  ')).toEqual([]);
-	});
-});
 
 describe('buildPartnerLeaderboard', () => {
 	it('aggregates and ranks top partners', () => {
