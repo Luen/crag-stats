@@ -70,6 +70,13 @@ function point(raw: unknown): { lat: number; lon: number } | null {
 	if (direct) return direct;
 	const g = object(o.geometry);
 	if (g && g.type != null && g.type !== 'Point') return null;
+	// The area location API returns an envelope with explicit geometry.lat/long,
+	// plus bbox/boundary/center metadata. Use its supplied point; never calculate
+	// a centre or infer coordinates from the untyped boundary/point arrays.
+	if (g && g.type == null && primitive(g.lat) && primitive(g.long)) {
+		const supplied = extractLatLon({ lat: g.lat, long: g.long });
+		if (supplied) return supplied;
+	}
 	const c = Array.isArray(o.geometry) ? o.geometry : g?.coordinates;
 	if (!Array.isArray(c) || c.length < 2 || !primitive(c[0]) || !primitive(c[1])) return null;
 	return extractLatLon({ geometry: [c[0], c[1]] });
@@ -182,7 +189,7 @@ export function loadWeatherLocations(): Map<number, WeatherLocation | null> {
 			const signature = createHash('sha256')
 				.update(
 					JSON.stringify([
-						'weather-location-v3-array-ancestors-area-cache',
+						'weather-location-v4-area-envelope-point',
 						route.updatedAt,
 						route.name,
 						route.gearStyle,

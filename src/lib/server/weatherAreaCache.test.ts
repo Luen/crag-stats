@@ -17,6 +17,7 @@ import {
 	type RouteWithHistory
 } from './providers/thecrag/routeHistoryApi';
 import fixture from './providers/thecrag/fixtures/area-ancestors.synthetic.json';
+import areaLocationFixture from './providers/thecrag/fixtures/area-location.sanitized.json';
 import { routeAreas } from './providers/thecrag/areaAncestors';
 import {
 	loadWeatherLocations,
@@ -72,7 +73,7 @@ function harness() {
 		readRouteResponse({
 			status: 200,
 			text: JSON.stringify({
-				data: ids.map((id) => ({ id, type: 'area', geometry: [150.3, -33.6] }))
+				data: ids.map((id) => ({ ...areaLocationFixture, id }))
 			})
 		})
 	);
@@ -133,6 +134,33 @@ it('normalizes the observed array shape by isTLC and parentID, never array posit
 		lat: 0,
 		lon: 0
 	});
+});
+
+it('reads the observed area geometry envelope without guessing from its boundary or centre arrays', () => {
+	const route = (geometry: unknown) => ({
+		ancestors: { TLC: { ...areaLocationFixture, geometry } }
+	});
+	expect(resolveWeatherLocation(route(areaLocationFixture.geometry), 'now')).toMatchObject({
+		source: 'crag',
+		lat: -33.6,
+		lon: 150.3
+	});
+	expect(resolveWeatherLocation(route({ lat: 0, long: 0 }), 'now')).toMatchObject({
+		lat: 0,
+		lon: 0
+	});
+	for (const geometry of [
+		{
+			center: [150.3, -33.6],
+			point: ['150.3', '-33.6'],
+			boundary: areaLocationFixture.geometry.boundary
+		},
+		{ lat: '', long: 150.3 },
+		{ lat: [], long: [] },
+		{ lat: 91, long: 150.3 },
+		{ type: 'Polygon', lat: -33.6, long: 150.3 }
+	])
+		expect(resolveWeatherLocation(route(geometry), 'now')).toBeNull();
 });
 
 it('enriches CSV routes into one shared weather day without changing route coords or logbook identity', async () => {
