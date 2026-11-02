@@ -32,7 +32,7 @@ If your server owner turns it on (`ROUTE_DATA_IMPORT=true`; older versions calle
 
 - **Only entries naming your theCrag username** (`@yourlogin`) count. Plain-text names are ignored because they're too easy to mix up.
 - **Your choices win.** Marks you set stay as they are, and routes you unmarked stay unmarked. **Settings → Import route data → Re-apply** can override either, using history already saved, without asking theCrag again.
-- **Gentle on theCrag.** Each route is checked **once** by default (optional periodic data refreshes are described below), at most **100 routes per run** and one request a second. A run happens after each logbook sync, or when you press **Check next 100 routes now**. If theCrag pushes back, the import pauses for at least a day.
+- **Gentle on theCrag.** Each route is checked **once** by default (optional periodic data refreshes are described below), at most **100 routes per run** and one request a second. A run happens after each logbook sync, when the app restarts with routes still waiting (for example after an upgrade), or when you press **Check next 100 routes now**. If theCrag pushes back, the import pauses for at least a day.
 - Settings shows how many of your routes have been checked so far. With the daily sync, a few hundred routes take a few weeks; pressing the button speeds that up.
 
 Only public route history is saved, never your private ascent notes. **Settings → Wipe** removes it along with your marks.

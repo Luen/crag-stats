@@ -87,6 +87,7 @@ Entry: `runTheCragSync()` in `src/lib/server/sync.ts`.
 5. `refreshProjects()` after sync.
 6. Scheduler (`SYNC_CRON`, default daily) calls the same reconcile path. It starts from the `init` hook in `src/hooks.server.ts` at server boot, not on the first request.
 7. **Fresh install:** if no sync has ever succeeded (`sync_state.last_success_at` is null), the scheduler runs one sync straight away at boot. A failed first sync is retried on the next boot or cron tick.
+8. **Existing install:** at boot the scheduler instead triggers the opted-in route-data and weather imports once (`resumePendingImports`), so work an upgrade queued (e.g. weather area lookups) starts without waiting for the next sync. They make no request when nothing is pending and keep their persisted pacing/back-off.
 
 Cursor/`maxEpoch` is still stored for diagnostics; it is **not** used to skip a full pull.
 
