@@ -110,10 +110,21 @@ jobs:
             type=gha,scope=docker-${{ matrix.arch }}
             type=gha
           cache-to: type=gha,mode=max,scope=docker-${{ matrix.arch }}
+      # impers fetches libcurl-impersonate via the unauthenticated GitHub API on first use; keep it
+      # between runs so shared-runner rate limits rarely matter (#371). The cache dir is versioned.
+      - name: Cache libcurl-impersonate
+        uses: actions/cache@v6
+        with:
+          path: ${{ runner.temp }}/impers-cache
+          key: impers-libcurl-${{ matrix.arch }}-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: impers-libcurl-${{ matrix.arch }}-
       - name: Native SQLite, migrations, HTTP and importer smoke test
         run: |
+          mkdir -p "$RUNNER_TEMP/impers-cache"
           docker run --rm --platform linux/${{ matrix.arch }} --entrypoint node \
             --mount type=bind,src="$PWD/scripts/container-smoke.mjs",dst=/app/scripts/container-smoke.mjs,readonly \
             --mount type=bind,src="$PWD/samples/thecrag-logbook-sample.csv",dst=/fixtures/logbook.csv,readonly \
+            --mount type=bind,src="$RUNNER_TEMP/impers-cache",dst=/impers-cache \
+            -e IMPER_CACHE_DIR=/impers-cache \
             -e CRAG_STATS_CONTAINER_SMOKE=1 \
             crag-stats:ci-${{ matrix.arch }} scripts/container-smoke.mjs --importer

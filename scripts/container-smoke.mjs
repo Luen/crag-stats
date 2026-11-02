@@ -6,6 +6,8 @@ import { once } from 'node:events';
 import { readFileSync } from 'node:fs';
 import { createServer } from 'node:http';
 import { createRequire } from 'node:module';
+import { dirname, join } from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { gzipSync } from 'node:zlib';
 
 assert.equal(process.env.CRAG_STATS_CONTAINER_SMOKE, '1', 'Use a disposable smoke-test container');
@@ -89,6 +91,7 @@ if (process.argv.includes('--importer')) {
 	});
 	await new Promise((resolve) => fixture.listen(0, '127.0.0.1', resolve));
 	try {
+		await ensureImpersonateLibrary();
 		const { Session } = await import('impers');
 		const session = new Session({ impersonate: 'chrome', timeout: 20 });
 		try {
@@ -104,6 +107,41 @@ if (process.argv.includes('--importer')) {
 		await new Promise((resolve) => fixture.close(resolve));
 	}
 }
+/**
+ * impers downloads libcurl-impersonate on first use through the unauthenticated GitHub API and
+ * swallows download errors, so a rate limit later surfaces as an opaque koffi.load failure (#371).
+ * Resolve it up front with a few retries, and name the download step when it still fails.
+ */
+async function ensureImpersonateLibrary() {
+	// Importing 'impers' itself loads the library immediately, so reach its loader by path.
+	const loader = join(dirname(runtimeRequire.resolve('impers')), 'ffi', 'loader.js');
+	const { resolveLibrary } = await import(pathToFileURL(loader).href);
+	const delays = [0, 10_000, 30_000];
+	for (const [attempt, delay] of delays.entries()) {
+		if (delay) await new Promise((resolve) => setTimeout(resolve, delay));
+		const library = await resolveLibrary();
+		if (library.isImpersonate) return;
+		console.warn(
+			`libcurl-impersonate download attempt ${attempt + 1}/${delays.length} failed; impers would fall back to ${library.path || 'no library'}.`
+		);
+	}
+	let probe;
+	try {
+		const response = await fetch(
+			'https://api.github.com/repos/lexiforest/curl-impersonate/releases/latest',
+			{ headers: { 'User-Agent': 'crag-stats-smoke' }, signal: AbortSignal.timeout(15_000) }
+		);
+		const reset = Number(response.headers.get('x-ratelimit-reset'));
+		probe = `HTTP ${response.status}, rate limit remaining ${response.headers.get('x-ratelimit-remaining') ?? '?'}${reset ? `, resets ${new Date(reset * 1000).toISOString()}` : ''}`;
+	} catch (error) {
+		probe = `request failed: ${error instanceof Error ? error.message : error}`;
+	}
+	throw new Error(
+		`impers could not download libcurl-impersonate (GitHub API probe: ${probe}). ` +
+			'This is a download problem (rate limit or network), not a native-loading regression.'
+	);
+}
+
 console.log(
 	`Container smoke checks passed (${process.arch}${process.argv.includes('--importer') ? ', importer + HTTPS' : ''}).`
 );
