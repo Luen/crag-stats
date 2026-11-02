@@ -248,7 +248,7 @@ Prefer fixing type errors over `@ts-ignore`. Do not switch the package manager.
 - Don’t commit secrets, sample private notes, or real API keys.
 - Don’t expand scope into wearables / Mountain Project until the matching epic is in play — keep PRs focused.
 - Don’t claim CPR is identical to theCrag’s proprietary score.
-- Don’t HTML-scrape theCrag route pages, and don’t loosen the route-history limits (fetch once unless `ROUTE_DATA_REFRESH_DAYS` ≥ 30 is explicitly enabled, 100 per run, ≥1 s gap, stop on block). `impers` is allowed only for two explicit opt-ins: the `/api/route` history import (`ROUTE_HISTORY_IMPORT=true`) and the CSV logbook download (`THECRAG_SYNC_MODE=csv`, with its saved-session pacing and back-off). Never use it for the default API logbook sync. The one documented HTML parse is the login form's hidden CSRF fields in CSV mode; nothing else on theCrag pages may be scraped. Prefer negotiated theCrag API access.
+- Don’t HTML-scrape theCrag route pages, and don’t loosen the route-history limits (fetch once unless `ROUTE_DATA_REFRESH_DAYS` ≥ 30 is explicitly enabled, 100 per run, ≥1 s gap, stop on block). `impers` is allowed only for two explicit opt-ins: the `/api/route` history import (`ROUTE_DATA_IMPORT=true`, including identified `/api/area` location lookups when `WEATHER_IMPORT=true`, within the same ten-request budget) and the CSV logbook download (`THECRAG_SYNC_MODE=csv`, with its saved-session pacing and back-off). Never use it for the default API logbook sync. The one documented HTML parse is the login form's hidden CSRF fields in CSV mode; nothing else on theCrag pages may be scraped. Prefer negotiated theCrag API access.
 
 ---
 
@@ -449,6 +449,10 @@ You'll often notice things outside the task at hand. **Don't silently fix them i
 - #325 follow-up: CI budgets come from medians of ≥5 green runs (`check` ≤ 75 s, E2E step ≤ 120 s), recorded in `docs/dev/TESTING.md`. Feature axe scans are scoped; no spec loops its flow per theme. `wipeAllData` lives in `src/lib/server/wipe.ts` (re-exported by `analytics.ts`); tests that only need a clean DB import it from there to skip the analytics graph.
 
 _Add a row when you change behaviour agents must know about._
+
+- CSV weather (#352): route API ancestors are arrays (`isTLC`, `parentID`), while logbook ancestors are keyed. Normalize via `areaAncestors.ts`, excluding administrative subTypes. Opted-in route imports use remaining requests in their existing ten-request budget for area locations when weather is enabled. `weather_area_cache` (0019) is provider/area scoped, includes negative answers, obeys route refresh age, and is cleared/cancelled by Wipe. Existing route caches queue missing area checks without a history reset. Never overwrite authoritative route coordinates or use the enrichment key to sync another logbook. Location signatures include referenced area payloads; raw caches stay server-only.
+
+- Area location verification (#352): `/api/area/ids?show=info,location` can return an envelope with scalar `geometry.lat` / `geometry.long`. Use those supplied coordinates as an area point, not a calculated centre or guessed boundary/point-array adapter. Sanitized shape evidence is in `fixtures/area-location.sanitized.json` with provenance notes. Resolver signature v4 invalidates earlier unresolved envelope caches. Credential access was checked with a read-only request; automated tests stay offline.
 
 - Settings CSV import keeps the file picker and submit action stacked and left-aligned; avoid a growing file input that pushes the action to the card's far edge.
 - Route-history status exposes `retryAt` from the existing minimum run interval and upstream back-off. Settings counts down from server time and enables the action when due; retain the server pacing guards.

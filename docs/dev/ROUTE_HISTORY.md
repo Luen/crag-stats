@@ -29,6 +29,18 @@ That works around theCrag's bot protection. theCrag says broader API access is n
 
 ## Pacing and caching (`src/lib/server/routeHistoryEngine.ts`)
 
+### Weather area locations (#352)
+
+When `WEATHER_IMPORT=true` as well as `ROUTE_DATA_IMPORT=true`, the same session may request `/api/area/ids?id=<ids>&show=info,location` for identified crag/sector ancestors without usable inline geometry. This uses the same header credential, request pacing, ten-request budget, cancellation and stop-on-error/backoff as route history; route requests consume the budget first. It never reads the key owner's logbook. Area access is not guaranteed by successful route access.
+
+`weather_area_cache` (0019) stores area responses and negative answers by provider/area ID, separately from authoritative route coordinates. It uses the configured route refresh age; Refresh all invalidates fetch timestamps, and Wipe deletes the cache and cancels in-flight writes. Existing complete route caches queue area checks automatically without refetching history. Weather resolution signatures include the relevant cached area responses.
+
+The observed route API `ancestors` shape is an array: `isTLC: 1` identifies the top-level crag and the route's `parentID` matches its immediate parent (IDs may be strings or numbers). This differs from keyed logbook `ancestors.TLC` / `.parent`. `areaAncestors.ts` handles both, rejecting region/country ancestors using `subType`, `type`, `areaType` and `isCountry`. Never select an arbitrary array position or globally match crag names. `fixtures/area-ancestors.synthetic.json` reproduces the reported structure using synthetic identities.
+
+A read-only live verification confirmed area endpoint access and an area geometry envelope with scalar `geometry.lat` / `geometry.long` alongside boundary/bbox metadata. The resolver uses those supplied coordinates without calculating a centre or guessing from untyped arrays. `fixtures/area-location.sanitized.json` preserves the observed structure with synthetic identities/coordinates; its README records provenance. Automated tests remain offline; endpoint access can still vary by credential.
+
+API request reference: [theCrag API](https://www.thecrag.com/en/article/api) documents area/node ID access and `show=location`. No authenticated upstream calls are made in automated tests.
+
 | Rule                                              | Constant / table                                                                          |
 | ------------------------------------------------- | ----------------------------------------------------------------------------------------- |
 | Fetch once by default; optional 30/90-day refresh | `route_history_fetches` (`ok` or `missing`)                                               |

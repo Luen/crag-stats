@@ -27,6 +27,7 @@ export function wipeAllData() {
 	db.run(sql`DELETE FROM route_history_fetches`);
 	db.run(sql`DELETE FROM route_history_import_state`);
 	db.run(sql`DELETE FROM weather_locations`);
+	db.run(sql`DELETE FROM weather_area_cache`);
 	db.run(sql`DELETE FROM weather_place_overrides`);
 	db.run(sql`DELETE FROM weather_place_searches`);
 	db.run(sql`DELETE FROM weather_days`);

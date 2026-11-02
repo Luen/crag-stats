@@ -1,0 +1,13 @@
+{
+	"id": 9001,
+	"name": "Synthetic outdoor route",
+	"type": "route",
+	"parentID": "300",
+	"ancestors": [
+		{ "id": 1, "name": "World", "type": "area", "subType": "Region" },
+		{ "id": 2, "name": "Country", "type": "area", "subType": "Region", "isCountry": 1 },
+		{ "id": 100, "name": "Synthetic region", "type": "area", "subType": "Region" },
+		{ "id": "200", "name": "Synthetic crag", "type": "area", "subType": "Crag", "isTLC": 1 },
+		{ "id": 300, "name": "Synthetic sector", "type": "area", "subType": "Cliff" }
+	]
+}

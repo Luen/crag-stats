@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import {
 	parseRouteBeta,
 	parseRouteInfoFields,
@@ -7,6 +7,40 @@ import {
 	readRouteResponse,
 	RouteHistoryBlockedError
 } from './routeHistoryApi';
+import { openRouteHistoryClient } from './routeHistoryApi';
+
+const session = vi.hoisted(() => ({ get: vi.fn(), close: vi.fn(async () => {}) }));
+vi.mock('impers', () => ({
+	Session: class {
+		get = session.get;
+		close = session.close;
+	}
+}));
+
+it('requests only identified area IDs with location fields using the existing session and header credential', async () => {
+	session.get.mockResolvedValue({
+		status: 200,
+		text: JSON.stringify({ data: [{ id: 200, type: 'area', geometry: [150, -30] }] })
+	});
+	const client = await openRouteHistoryClient('synthetic-header-key');
+	try {
+		expect(await client.fetchAreas!(['200', '200', '../invalid'])).toMatchObject([
+			{ id: '200', rawJson: expect.stringContaining('geometry') }
+		]);
+		const [url, options] = session.get.mock.calls.at(-1)!;
+		const request = new URL(url);
+		expect(request.pathname).toBe('/api/area/ids');
+		expect(request.searchParams.get('id')).toBe('200');
+		expect(request.searchParams.get('show')).toBe('info,location');
+		expect(request.searchParams.has('key')).toBe(false);
+		expect(options.headers['X-CData-Key']).toBe('key=synthetic-header-key');
+		session.get.mockResolvedValue({ status: 403, text: 'denied' });
+		await expect(client.fetchAreas!(['200'])).rejects.toBeInstanceOf(RouteHistoryBlockedError);
+	} finally {
+		await client.close();
+	}
+	expect(session.close).toHaveBeenCalled();
+});
 
 const ok = (body: unknown) => ({ status: 200, text: JSON.stringify(body) });
 

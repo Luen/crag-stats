@@ -324,6 +324,17 @@ export const weatherLocations = sqliteTable('weather_locations', {
 	locationJson: text('location_json'),
 	resolvedAt: text('resolved_at').notNull()
 });
+/** Paced area-location lookups, including empty/missing answers; server-only (#352). */
+export const weatherAreaCache = sqliteTable(
+	'weather_area_cache',
+	{
+		provider: text('provider').notNull(),
+		areaExternalId: text('area_external_id').notNull(),
+		rawJson: text('raw_json'),
+		fetchedAt: text('fetched_at')
+	},
+	(t) => [primaryKey({ columns: [t.provider, t.areaExternalId] })]
+);
 export const weatherPlaceOverrides = sqliteTable('weather_place_overrides', {
 	areaKey: text('area_key').primaryKey().notNull(),
 	locationJson: text('location_json').notNull(),

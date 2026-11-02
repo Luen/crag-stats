@@ -2,6 +2,7 @@ import { expect, test } from '@playwright/test';
 import Database from 'better-sqlite3';
 import { expectAxeClean } from './axe';
 import { PORTS, TEST_PASSWORD } from '../playwright.config';
+import areaFixture from '../src/lib/server/providers/thecrag/fixtures/area-ancestors.synthetic.json' with { type: 'json' };
 
 // The open server doesn't set ROUTE_DATA_IMPORT, so the import must be off: an explanation,
 // no button that would contact theCrag, and the action refuses.
@@ -16,6 +17,40 @@ test('route history import is off by default', async ({ page, request }) => {
 		form: {}
 	});
 	expect(await res.text()).toContain('ROUTE_DATA_IMPORT=true');
+});
+
+test('completed CSV route history still offers pending weather area checks', async ({ page }) => {
+	const db = new Database('e2e/.tmp/settings.sqlite');
+	const origin = `http://localhost:${PORTS.settings}`;
+	const externalId = 'area-weather-regression';
+	try {
+		const id = db
+			.prepare(
+				`INSERT INTO routes (provider,external_id,name,gear_style,route_api_json,updated_at) VALUES ('thecrag',?,'Synthetic weather area route','Sport',?,'now')`
+			)
+			.run(externalId, JSON.stringify(areaFixture)).lastInsertRowid;
+		db.prepare(
+			`INSERT INTO ascents (provider,external_id,route_id,ascent_date,is_send,updated_at) VALUES ('thecrag',?,?,'2025-01-01',1,'now')`
+		).run(externalId, id);
+		db.prepare(
+			`INSERT INTO route_history_fetches (provider,route_external_id,status,fetched_at) VALUES ('thecrag',?,'ok','2026-01-01')`
+		).run(externalId);
+		await page.goto(`${origin}/login`);
+		await page.getByLabel('Password').fill(TEST_PASSWORD);
+		await page.getByRole('button', { name: 'Unlock' }).click();
+		await page.goto(`${origin}/settings`);
+		await expect(page.getByText('2 weather areas pending')).toBeVisible();
+		await expect(page.getByRole('button', { name: 'Check weather locations now' })).toBeEnabled();
+		await expect(page.getByText('1 outdoor routes without locations')).toBeVisible();
+		await expect(page.getByRole('button', { name: 'No eligible days pending' })).toBeDisabled();
+		// Do not click: live provider requests are never part of browser regressions.
+		await expectAxeClean(page, { include: ['main'] });
+	} finally {
+		db.prepare('DELETE FROM ascents WHERE external_id = ?').run(externalId);
+		db.prepare('DELETE FROM route_history_fetches WHERE route_external_id = ?').run(externalId);
+		db.prepare('DELETE FROM routes WHERE external_id = ?').run(externalId);
+		db.close();
+	}
 });
 
 test('counts down, survives reload, respects back-off and enables without a refresh', async ({

@@ -119,6 +119,12 @@ The card counts outdoor _days_ at each location, while the logbook lists every m
 
 ## Weather locations when route coordinates are missing
 
+CSV exports do not include coordinates. With both weather import and route-data import enabled (`WEATHER_IMPORT=true` and `ROUTE_DATA_IMPORT=true`), the configured supporter API key can also look up locations for the crag/sector IDs found in cached route data. This does not import that key owner's logbook or profile. Both keyed logbook ancestors and route API ancestor arrays are supported.
+
+Area lookups share the route import's ten-request budget and one-second pacing. Route checks use the budget first; remaining requests check up to ten areas each. Settings shows **weather areas pending** and offers **Check weather locations now** when all routes are checked. Existing CSV installations can fill missing area locations without **Refresh all routes**. The next successful logbook sync also checks the backlog. Once location checks finish, a background weather batch starts when eligible days exist.
+
+Area responses (including missing locations) are cached once by provider area ID. `ROUTE_DATA_REFRESH_DAYS` also controls their optional refresh age, and **Refresh all routes** makes area lookups eligible again. Access failures stop the import and use its existing backoff; a key that can read route history is not guaranteed access to area locations. If the API supplies no supported location, use the explicit nearby-place fallback below. No API calls run while viewing weather pages.
+
 Weather prefers an explicit route point, then its top-level crag (TLC) point, then its immediate sector point from cached provider data. It ignores country-only and arbitrary ancestor geometry. Older cached points without original provider geometry remain usable and are labelled “Cached point”; their original precision cannot be recovered from that point alone. Indoor routes remain excluded.
 
 Settings → Import weather → **Review weather locations** lists outdoor areas and unresolved route counts. For a missing location, search a nearby town using its name/region and a two-letter country code, then explicitly choose the correct result. The search submits only that entered text and country code to [Open-Meteo geocoding](https://open-meteo.com/en/docs/geocoding-api), whose location data comes from GeoNames. It does not send routes, ascent dates, private notes or API keys. Searches happen only after submitting the form, are cached for 30 days, paced, and back off on errors.

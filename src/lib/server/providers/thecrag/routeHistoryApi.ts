@@ -38,6 +38,8 @@ export type RouteWithHistory = {
 /** One import run's connection to theCrag; `close()` it when the run ends. */
 export type RouteHistoryClient = {
 	fetchRoutes: (routeIds: readonly string[]) => Promise<RouteWithHistory[]>;
+	/** Same response envelope; only area identity and location are requested. */
+	fetchAreas?: (areaIds: readonly string[]) => Promise<RouteWithHistory[]>;
 	close: () => Promise<void>;
 };
 
@@ -323,6 +325,18 @@ export async function openRouteHistoryClient(apiKey: string): Promise<RouteHisto
 	}
 
 	return {
+		async fetchAreas(areaIds) {
+			const ids = [...new Set(areaIds)].filter((id) => /^[1-9]\d*$/.test(id));
+			if (!ids.length) return [];
+			const url = new URL('https://www.thecrag.com/api/area/ids');
+			url.searchParams.set('id', ids.join(','));
+			url.searchParams.set('show', 'info,location');
+			const res = await session.get(url.toString(), {
+				headers: { Accept: 'application/json', 'X-CData-Key': `key=${apiKey}` },
+				timeout: 45
+			});
+			return readRouteResponse(res);
+		},
 		async fetchRoutes(routeIds) {
 			const ids = [...new Set(routeIds.map(String).filter(Boolean))];
 			if (!ids.length) return [];
