@@ -40,14 +40,14 @@ export const variables = defineEnvVars({
 		description: 'node-cron expression for daily sync',
 		schema: optionalString
 	},
-	ROUTE_HISTORY_IMPORT: {
+	ROUTE_DATA_IMPORT: {
 		description:
-			'Opt-in: fetch public FA/FFA route history from theCrag in the background, 100 routes per run (default false)',
+			'Opt-in: fetch route details and public history from theCrag in the background, 100 routes per run (default false)',
 		schema: optionalString
 	},
 	ROUTE_DATA_REFRESH_DAYS: {
 		description:
-			'Opt-in route data refresh: whole days 30–3650 (e.g. 90, 180); unset/0/<30/>3650 disables (requires ROUTE_HISTORY_IMPORT)',
+			'Opt-in route data refresh: whole days 30–3650 (e.g. 90, 180); unset/0/<30/>3650 disables (requires ROUTE_DATA_IMPORT)',
 		schema: optionalString
 	},
 	WEATHER_IMPORT: {

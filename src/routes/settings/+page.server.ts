@@ -151,12 +151,12 @@ export const actions: Actions = {
 		wipeAllData();
 		return { ok: true, wiped: true };
 	},
-	// Route history (#68), opt-in via ROUTE_HISTORY_IMPORT. /settings is already owner-gated.
+	// Route history (#68), opt-in via ROUTE_DATA_IMPORT. /settings is already owner-gated.
 	/** Check the next 100 unchecked routes and report the real engine outcome (busy/waiting/done/ran). */
 	fetchRouteHistory: async ({ locals }) => {
 		if (!locals.authed) return fail(403);
 		if (!isRouteHistoryImportEnabled()) {
-			return fail(400, { ok: false, message: 'Set ROUTE_HISTORY_IMPORT=true to enable this.' });
+			return fail(400, { ok: false, message: 'Set ROUTE_DATA_IMPORT=true to enable this.' });
 		}
 		const result = await runRouteHistoryImport();
 		if (!result.ok) {
@@ -171,7 +171,7 @@ export const actions: Actions = {
 	reapplyRouteHistory: async ({ request, locals }) => {
 		if (!locals.authed) return fail(403);
 		if (!isRouteHistoryImportEnabled()) {
-			return fail(400, { ok: false, message: 'Set ROUTE_HISTORY_IMPORT=true to enable this.' });
+			return fail(400, { ok: false, message: 'Set ROUTE_DATA_IMPORT=true to enable this.' });
 		}
 		const form = await request.formData();
 		const { marked, routes } = reapplyRouteHistoryMarks({
@@ -187,7 +187,7 @@ export const actions: Actions = {
 	refreshRouteHistory: async ({ request, locals }) => {
 		if (!locals.authed) return fail(403);
 		if (!isRouteHistoryImportEnabled()) {
-			return fail(400, { ok: false, message: 'Set ROUTE_HISTORY_IMPORT=true to enable this.' });
+			return fail(400, { ok: false, message: 'Set ROUTE_DATA_IMPORT=true to enable this.' });
 		}
 		const form = await request.formData();
 		if (String(form.get('confirm') || '') !== 'REFRESH') {

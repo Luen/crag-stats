@@ -1,5 +1,5 @@
 /**
- * Fetch route history from theCrag's `/api/route/ids?show=info,ancestors` (opt-in, ROUTE_HISTORY_IMPORT).
+ * Fetch route details and public history from theCrag's `/api/route/ids?show=info,ancestors` (opt-in, ROUTE_DATA_IMPORT).
  *
  * Plain Node `fetch` is blocked by Cloudflare on these paths (the logbook API is not), so this
  * uses `impers`, which presents a browser-like TLS/HTTP2 fingerprint. It is loaded lazily, only
@@ -316,7 +316,7 @@ export async function openRouteHistoryClient(apiKey: string): Promise<RouteHisto
 		}) as ImpersSession;
 	} catch (err) {
 		throw new RouteHistoryUnavailableError(
-			'Route history import needs impers (and its native libcurl), which failed to load on ' +
+			'Route data import needs impers (and its native libcurl), which failed to load on ' +
 				'this platform. Manual FA/FFA marks still work.',
 			{ cause: err }
 		);

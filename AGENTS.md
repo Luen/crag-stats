@@ -128,7 +128,7 @@ Height quirk: theCrag may return height as `[value, unit]` arrays — parse in t
 - **Climber type:** if one of Sport / Trad / Boulder is ≥ **40%** of ascents → “Sport climber” (etc.); else “Rock climber”.
 - **CPR timelines:** approximate model in `cpr.ts` (power factor P=5, tick shifts, ~0.7 grade/year decay). Link/docs: theCrag CPR articles. Label UI as approximate — not a byte-for-byte clone.
 - **Notable ascents:** by style + by area; use `StyleBadge` + `TickTypeIcon` (theCrag-like SVGs).
-- **First ascents:** theCrag has no FA tick type; FAs live in route history, which the logbook API doesn't return. The owner marks FA/FFA in the logbook (`first_ascents`, 0009). Optionally (`ROUTE_HISTORY_IMPORT=true`, **off by default**) `routeHistoryEngine.ts` imports public history in the background after each sync: each route **once** by default (`route_history_fetches`), or opt-in rolling refresh via `ROUTE_DATA_REFRESH_DAYS` (whole days ≥ 30, e.g. 90 or 180), **100 routes per run**, ≥1.1 s between requests, one `impers` session per run, stop + back off (≥24 h, honours Retry-After) on any block. Auto-marks only on an exact `@login` match and never overrides manual marks/unmarks. Details: `docs/dev/ROUTE_HISTORY.md`. Mark/unmark and import actions require `locals.authed`.
+- **First ascents:** theCrag has no FA tick type; FAs live in route history, which the logbook API doesn't return. The owner marks FA/FFA in the logbook (`first_ascents`, 0009). Optionally (`ROUTE_DATA_IMPORT=true`, **off by default**) `routeHistoryEngine.ts` imports public history in the background after each sync: each route **once** by default (`route_history_fetches`), or opt-in rolling refresh via `ROUTE_DATA_REFRESH_DAYS` (whole days ≥ 30, e.g. 90 or 180), **100 routes per run**, ≥1.1 s between requests, one `impers` session per run, stop + back off (≥24 h, honours Retry-After) on any block. Auto-marks only on an exact `@login` match and never overrides manual marks/unmarks. Details: `docs/dev/ROUTE_HISTORY.md`. Mark/unmark and import actions require `locals.authed`.
 - Summary metrics: onsights, successful ascents, distance climbed (km).
 - **Weather (#268):** opt-in `WEATHER_IMPORT=true` (off by default). After sync (and Settings, background), caches Open-Meteo archive days for outdoor ascents with route lat/lon (rounded to 1 decimal), **50 days per run** oldest-first, ≥1.1 s between requests, back-off on errors. Badges skip indoor rows even when a shared cache key exists: `weather_heat` (≥35°C max), `weather_freeze` (≤0°C min), `weather_rain` (≥1 mm, not snow), `weather_snow` (WMO 71–77/85–86 or precip + max ≤1°C), `weather_wind` (max 10 m wind ≥50 km/h). Wipe clears `weather_days` / `weather_import_state`. Docs: `/docs/weather`.
 
@@ -247,7 +247,7 @@ Prefer fixing type errors over `@ts-ignore`. Do not switch the package manager.
 - Don’t commit secrets, sample private notes, or real API keys.
 - Don’t expand scope into wearables / Mountain Project until the matching epic is in play — keep PRs focused.
 - Don’t claim CPR is identical to theCrag’s proprietary score.
-- Don’t HTML-scrape theCrag route pages, and don’t loosen the route-history limits (fetch once unless `ROUTE_DATA_REFRESH_DAYS` ≥ 30 is explicitly enabled, 100 per run, ≥1 s gap, stop on block). `impers` is allowed only for two explicit opt-ins: the `/api/route` history import (`ROUTE_HISTORY_IMPORT=true`) and the CSV logbook download (`THECRAG_SYNC_MODE=csv`, with its saved-session pacing and back-off). Never use it for the default API logbook sync. The one documented HTML parse is the login form's hidden CSRF fields in CSV mode; nothing else on theCrag pages may be scraped. Prefer negotiated theCrag API access.
+- Don’t HTML-scrape theCrag route pages, and don’t loosen the route-history limits (fetch once unless `ROUTE_DATA_REFRESH_DAYS` ≥ 30 is explicitly enabled, 100 per run, ≥1 s gap, stop on block). `impers` is allowed only for two explicit opt-ins: the `/api/route` history import (`ROUTE_DATA_IMPORT=true`) and the CSV logbook download (`THECRAG_SYNC_MODE=csv`, with its saved-session pacing and back-off). Never use it for the default API logbook sync. The one documented HTML parse is the login form's hidden CSRF fields in CSV mode; nothing else on theCrag pages may be scraped. Prefer negotiated theCrag API access.
 
 ---
 
@@ -313,7 +313,7 @@ You'll often notice things outside the task at hand. **Don't silently fix them i
 
 | 2026-10 | Customize dashboard moved to Settings (`/settings#dashboard`, actions `saveDashboardLayout` / `resetDashboardLayout`); the dashboard keeps an owner-only "Customize dashboard" link. |
 
-| 2026-10 | #68: opt-in route-history import (`ROUTE_HISTORY_IMPORT`, off by default). Runs in the background after sync: each route once, 100 per run, ≥1 s between requests, back-off on blocks. Migration 0010: `route_history`, `route_history_fetches`, import state, FA import skips. Dev notes in `docs/dev/ROUTE_HISTORY.md`. |
+| 2026-10 | #68: opt-in route-history import (`ROUTE_DATA_IMPORT`, off by default). Runs in the background after sync: each route once, 100 per run, ≥1 s between requests, back-off on blocks. Migration 0010: `route_history`, `route_history_fetches`, import state, FA import skips. Dev notes in `docs/dev/ROUTE_HISTORY.md`. |
 | 2026-10 | #68 follow-up: migration `0011` upgrades DBs that applied the first draft of 0010 (offset/total cursor) to the fetch-once `last_run_at` shape. |
 | 2026-10 | Route history import caches route API fields on `routes` (migration `0012`, #77–#82): project flag, seasonality, popularity, qualityScore, beta, ancestors, pitches, flags. Request `show=info,ancestors`. `#80`: scatter + logbook quality sort use `routes.quality_score` when present (`#lib/qualityScore.ts`). `/sectors` nests areas when `ancestors_json` has depth (#82); pitch/flag hints when import filled `pitches_json` / `flags_json`. |
 | 2026-10 | Logbook filters: `fa=FA|FFA|any|none`, `history=pending` (owner + import on only), plus `quality`, `minStars`, `with`, `from`/`to`. Marks load before filter/page in `listLogbook`. |
@@ -349,7 +349,7 @@ You'll often notice things outside the task at hand. **Don't silently fix them i
 | 2026-10 | #117 / #123: cached grade repairs run as versioned TypeScript data migrations in `src/lib/server/db/dataMigrations.ts` at server startup, after SQL migrations and before the scheduler. IDs use `data:` in `schema_migrations`; append new migrations instead of editing applied ones. Repair + marker commit atomically; a failure rolls back, is logged, the server still starts, and it retries next boot. No Settings repair action or dashboard-triggered repair. Image builds skip data migrations. |
 | 2026-10 | #112: AU boulder route grade bare `9` with ascent `gradeSystem=AU` maps via Ewbank→V (VB), not fake V9. FA cards and repairs use provider grade-system evidence, never country alone. |
 | 2026-10 | #124: grade repair preserves API grade-system evidence and never infers AU from country; FA labels use repaired canonical scores. |
-| 2026-10 | #104: `/docs/first-ascents` “What you need” — FA card/badges need owner marks or `ROUTE_HISTORY_IMPORT`, not `SHOW_PRIVATE_NOTES`. |
+| 2026-10 | #104: `/docs/first-ascents` “What you need” — FA card/badges need owner marks or `ROUTE_DATA_IMPORT`, not `SHOW_PRIVATE_NOTES`. |
 | 2026-10 | #107: Document CodeQL default setup (PRs to `main` only) and stacked-PR check expectations; minimal PR template. |
 | 2026-10 | `data:0002_legacy_env_settings` copies the removed `PREFERRED_GRADE_SYSTEM` / `SHOW_PRIVATE_NOTES` env values into `app_settings` once, when Settings has no value yet. A failed data migration is logged and the server still starts. |
 
@@ -440,7 +440,7 @@ You'll often notice things outside the task at hand. **Don't silently fix them i
 | 2026-10 | Weather follow-up: Settings fetch is background (avoid ~55s proxy timeouts); pending queue is oldest-day-first; badge eval skips indoor via `isLikelyIndoorRoute` + `cragName` on extra rows. |
 | 2026-10 | `extractLatLon` accepts theCrag TLC bare `[lon, lat]` geometry arrays (not only GeoJSON Points). `data:0005_repair_tlc_bare_geometry_coords` re-maps cached logbook `raw_json` so weather import can queue outdoor days. |
 
-- First ascents attribution follows saved mark source (plus cached setter credits), not `ROUTE_HISTORY_IMPORT`: manual/imported credits coexist and imported marks survive disabling import.
+- First ascents attribution follows saved mark source (plus cached setter credits), not `ROUTE_DATA_IMPORT`: manual/imported credits coexist and imported marks survive disabling import.
 
 - Node 26 LTS is the runtime baseline. Install the exact `packageManager` with npm (Corepack is not bundled); the distroless image also needs the build-stage libatomic shared library. Validate native SQLite and importer on amd64 and arm64 after runtime updates.
 
@@ -518,3 +518,5 @@ World map (#313): `/map` uses bundled public-domain Natural Earth outlines, serv
 - Solo card drill-down uses `/logbook?solo=toprope|lead|free|dws|aid` and shared `#lib/soloKind` classification (explicit tick wins over ascent style). Preserve the filter through sort/page/form navigation; hardest-send links remain separate.
 
 - Daily streak records/badges (#339) share `#lib/dayStreaks`: unique strict written calendar days, UTC adjacency, earliest longest-run tie. Card exposes longestStartDate/longestEndDate and formats them as calendar dates. One-shot streak_days_7/10/30 badges use the first threshold-reaching day, include attempts/indoor climbs and have no Almost there counter. Current day/week/month logic is unchanged; do not infer streaks from log timestamps.
+
+- Route data import uses only `ROUTE_DATA_IMPORT` (off by default); the old `ROUTE_HISTORY_IMPORT` is no longer read. Upgrades must rename their environment variable. Keep internal routeHistory names and historical migrations stable.

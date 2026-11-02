@@ -1,7 +1,7 @@
 /**
- * Route-history import wiring (#68): reads `.env`, plugs the impers client into the engine, and
+ * Route data import wiring (#68): reads `.env`, plugs the impers client into the engine, and
  * starts runs in the background (after each logbook sync, or from Settings). Off unless
- * ROUTE_HISTORY_IMPORT=true. All pacing and caching rules live in `routeHistoryEngine.ts`.
+ * ROUTE_DATA_IMPORT=true. All pacing and caching rules live in `routeHistoryEngine.ts`.
  */
 import { env, envFlag, getTheCragSyncConfiguration } from './env';
 import { openRouteHistoryClient } from './providers/thecrag/routeHistoryApi';
@@ -27,7 +27,7 @@ function configuredOwnerLogin(): string | null {
 
 function config(): RouteHistoryConfig {
 	return {
-		enabled: envFlag('ROUTE_HISTORY_IMPORT'),
+		enabled: envFlag('ROUTE_DATA_IMPORT'),
 		apiKey: env('THECRAG_API_KEY').trim(),
 		refreshDays: parseRouteDataRefreshDays(env('ROUTE_DATA_REFRESH_DAYS')),
 		ownerLogin: configuredOwnerLogin()
@@ -63,12 +63,12 @@ export function triggerRouteHistoryImport(reason: string): boolean {
 	void runRouteHistoryImportOnce(c, deps)
 		.then((r) => {
 			if (r.outcome === 'ran' || r.outcome === 'blocked' || r.outcome === 'error') {
-				console.log(`[crag-stats] route history (${reason}): ${r.message}`);
+				console.log(`[crag-stats] route data (${reason}): ${r.message}`);
 			}
 		})
 		.catch((err) => {
 			console.error(
-				'[crag-stats] route history run failed:',
+				'[crag-stats] route data import run failed:',
 				err instanceof Error ? err.message : err
 			);
 		});

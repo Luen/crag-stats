@@ -4,7 +4,7 @@ The **Best months** card compares [theCrag seasonality](https://www.thecrag.com/
 
 ## Where the data comes from
 
-theCrag stores a **12-value seasonality curve** per route (one value per calendar month). Crag Stats caches it on each route during the optional route-history import (`ROUTE_HISTORY_IMPORT`, off by default). Until a route has been fetched at least once, there is no seasonality to show.
+theCrag stores a **12-value seasonality curve** per route (one value per calendar month). Crag Stats caches it on each route during the optional route data import (`ROUTE_DATA_IMPORT`, off by default). Until a route has been fetched at least once, there is no seasonality to show.
 
 ## How we aggregate it
 
@@ -24,7 +24,7 @@ When the grey bars peak in different months than the orange strip, you may be cl
 
 ## Refreshing seasonality
 
-Run **Sync** from Settings. With route-history import enabled, seasonality backfills in the background (rate-limited, up to 100 routes per run).
+Run **Sync** from Settings. With route data import enabled, seasonality backfills in the background (rate-limited, up to 100 routes per run).
 
 The Sectors page can also show [weather on your cached visit days](/docs/weather). This describes conditions on your logged days, separately from the route seasonality used here.
 
@@ -36,6 +36,6 @@ Results are ranked by the selected month’s value divided by the highest value 
 
 Crag curves use the same ascent-weighted mean as the dashboard: routes with more of your logged ascents have more influence; missing route curves do not enter the mean. Searching a climb name can find its crag, but does not change that crag’s full curve. Crags are kept separate by provider area identity where available. Each crag shows how many of its logged climbs have data; the page also reports coverage among matching climbs. Missing or malformed curves stay unknown and are omitted from ranked results.
 
-Climb results link to all your logbook entries for that exact climb and to its guidebook page on theCrag. Your browser’s Back button returns to the search. Searching reads the local cache only and does not trigger a provider fetch or search the whole theCrag catalogue. Enable the optional route-history import and sync to build coverage.
+Climb results link to all your logbook entries for that exact climb and to its guidebook page on theCrag. Your browser’s Back button returns to the search. Searching reads the local cache only and does not trigger a provider fetch or search the whole theCrag catalogue. Enable the optional route data import and sync to build coverage.
 
 Seasonality describes **community climbing patterns**, not forecast weather or measured conditions on your logged visits. See [Weather](/docs/weather) for those visit-day observations.

@@ -101,7 +101,7 @@ export async function runTheCragSync(opts?: { full?: boolean }) {
 			lastError: null
 		});
 
-		// Opt-in (ROUTE_HISTORY_IMPORT): check the next 100 routes' history in the background.
+		// Opt-in (ROUTE_DATA_IMPORT): check the next 100 routes' history in the background.
 		triggerRouteHistoryImport('after sync');
 		// Opt-in (WEATHER_IMPORT): cache Open-Meteo daily weather for outdoor days (#268).
 		triggerWeatherImport('after sync');

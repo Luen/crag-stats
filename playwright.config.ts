@@ -55,7 +55,7 @@ export default defineConfig({
 			THECRAG_USERNAME: 'synthetic-account',
 			// Cooldown UI needs import on; tests seed state, abort theCrag hosts, and
 			// never click Check once enabled (CSV ownerLogin still needs a matching profile).
-			ROUTE_HISTORY_IMPORT: 'true',
+			ROUTE_DATA_IMPORT: 'true',
 			THECRAG_API_KEY: 'synthetic-cooldown-test-key'
 		}),
 		// Also covers the explicit ORIGIN override path.

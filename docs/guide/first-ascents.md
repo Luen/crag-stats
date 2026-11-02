@@ -5,8 +5,8 @@ The **First ascents** card counts the routes and boulders where you did the firs
 ## What you need
 
 - **Owner login** — If `APP_PASSWORD` is set, sign in so you can open Settings and use **Mark FA** / **FFA** in the logbook. Visitors see the card and badges once at least one route is marked, but cannot add marks themselves.
-- **Optional route-history import** — Set `ROUTE_HISTORY_IMPORT=true` on the server if you want Crag Stats to auto-mark FAs and FFAs from public theCrag route history (see below). Manual marks and import both write to the same `first_ascents` table; neither depends on private notes.
-- **Private notes are unrelated** — **Settings → Show private notes** only controls whether your **ascent comments** appear on `/logbook` (and in search). It does not gate the First ascents card, FA/FFA badges, milestones, or route-history import.
+- **Optional route data import** — Set `ROUTE_DATA_IMPORT=true` on the server if you want Crag Stats to auto-mark FAs and FFAs from public theCrag route history (see below). Manual marks and import both write to the same `first_ascents` table; neither depends on private notes.
+- **Private notes are unrelated** — **Settings → Show private notes** only controls whether your **ascent comments** appear on `/logbook` (and in search). It does not gate the First ascents card, FA/FFA badges, milestones, or route data import.
 
 ## Marking a first ascent
 
@@ -24,25 +24,25 @@ The mark is stored against theCrag's route ID, so it survives re-syncs. It disap
 
 ### Filter the logbook
 
-On **Logbook**, use the **First ascent mark** control to show only your FAs, FFAs, either, or climbs with no mark yet (`?fa=FA|FFA|any|none`). If route-history import is enabled, the owner also gets **History not checked yet** (`?history=pending`), which lists climbs the importer has not fetched.
+On **Logbook**, use the **First ascent mark** control to show only your FAs, FFAs, either, or climbs with no mark yet (`?fa=FA|FFA|any|none`). If route data import is enabled, the owner also gets **History not checked yet** (`?history=pending`), which lists climbs the importer has not fetched.
 
 ### Import them from route history (optional, off by default)
 
-If your server owner turns it on (`ROUTE_HISTORY_IMPORT=true`), Crag Stats reads each logbook route's public history from theCrag in the background and marks the FAs and FFAs that name you.
+If your server owner turns it on (`ROUTE_DATA_IMPORT=true`), Crag Stats reads each logbook route's public history from theCrag in the background and marks the FAs and FFAs that name you.
 
 - **Only entries naming your theCrag username** (`@yourlogin`) count. Plain-text names are ignored because they're too easy to mix up.
-- **Your choices win.** Marks you set stay as they are, and routes you unmarked stay unmarked. **Settings → Route history → Re-apply** can override either, using history already saved, without asking theCrag again.
+- **Your choices win.** Marks you set stay as they are, and routes you unmarked stay unmarked. **Settings → Import route data → Re-apply** can override either, using history already saved, without asking theCrag again.
 - **Gentle on theCrag.** Each route is checked **once** by default (optional periodic data refreshes are described below), at most **100 routes per run** and one request a second. A run happens after each logbook sync, or when you press **Check next 100 routes now**. If theCrag pushes back, the import pauses for at least a day.
 - Settings shows how many of your routes have been checked so far. With the daily sync, a few hundred routes take a few weeks; pressing the button speeds that up.
 
-Only public route history is saved, never your private ascent notes. **Settings → Wipe** removes it along with your marks.
+The import saves route details and public route history, never your private ascent notes. **Settings → Wipe** removes it along with your marks.
 
 ## What the card shows
 
 When the card includes imported FA/FFA or setter credits, its footer credits theCrag route history. This follows the saved credits, even if import is later disabled. Manual marks need no attribution label; mixed collections retain the route-history credit.
 
-- **Count:** how many routes are credited as FA or FFA, from manual marks or public route-history import. When you have FFAs, it also shows the FA / FFA split.
-- **Routes set:** distinct routes whose cached history lists you as route setter (`@yourlogin`). Same `@login` rule as FA import; free-text names don't count. Needs route-history import (`ROUTE_HISTORY_IMPORT=true`) so those rows are saved locally.
+- **Count:** how many routes are credited as FA or FFA, from manual marks or public route data import. When you have FFAs, it also shows the FA / FFA split.
+- **Routes set:** distinct routes whose cached history lists you as route setter (`@yourlogin`). Same `@login` rule as FA import; free-text names don't count. Needs route data import (`ROUTE_DATA_IMPORT=true`) so those rows are saved locally.
 - **Community ascents (estimate):** cached ticks on routes you put up (FA/FFA marks **or** setter credits), minus your own logbook ticks recorded at the same fetch. A second tile splits out **sport / bolted** routes (Sport gear style, or any route with bolts recorded). Later owner repeats or deletions do not change the old snapshot. These are estimates of ascent totals, not unique climbers or live counters; visibility differences and an incomplete owner logbook can affect them.
 - **Community coverage:** the card shows how many credited logbook routes have paired count snapshots, out of all eligible routes. Known zero totals are displayed as zero; unavailable counts are excluded rather than treated as zero. Partial coverage is labelled explicitly. An entirely missing cache shows an unavailable message.
 - **Years:** from the year of your first FA to your latest. Each FA is dated by your **first logged send** of the route (see below).
@@ -54,7 +54,7 @@ When the card includes imported FA/FFA or setter credits, its footer credits the
 
 The card only appears for visitors once at least one FA is marked. Until then, the owner sees a short how-to instead.
 
-Route-history import must be enabled (`ROUTE_HISTORY_IMPORT=true`) to fill count snapshots. Community totals and owner-count snapshots come from the route API during background import (100 routes per run, pacing and back-off apply). To keep totals and other route data fresh automatically, set `ROUTE_DATA_REFRESH_DAYS` to a whole number of days from 30 through 3650 (e.g. `90` recommended, or `180` for about half a year) alongside `ROUTE_HISTORY_IMPORT=true`. Routes become eligible after that many days and refresh after a successful logbook sync, sharing the 100-route budget with new routes. New routes go first, then the oldest stale data; large backlogs can take multiple syncs. Unset, `0`, under 30, or over 3650 retains fetch-once behavior; **Refresh all** in Settings remains an optional manual reset. Manual marks and unmarks stay protected.
+Route data import must be enabled (`ROUTE_DATA_IMPORT=true`) to fill count snapshots. Community totals and owner-count snapshots come from the route API during background import (100 routes per run, pacing and back-off apply). To keep totals and other route data fresh automatically, set `ROUTE_DATA_REFRESH_DAYS` to a whole number of days from 30 through 3650 (e.g. `90` recommended, or `180` for about half a year) alongside `ROUTE_DATA_IMPORT=true`. Routes become eligible after that many days and refresh after a successful logbook sync, sharing the 100-route budget with new routes. New routes go first, then the oldest stale data; large backlogs can take multiple syncs. Unset, `0`, under 30, or over 3650 retains fetch-once behavior; **Refresh all** in Settings remains an optional manual reset. Manual marks and unmarks stay protected.
 
 In Settings, the route-history check button counts down until the next run is allowed and becomes available automatically. Runs have a one-minute minimum interval; a block or error can require a longer wait. Without JavaScript, reload Settings to update availability.
 
