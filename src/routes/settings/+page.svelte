@@ -297,7 +297,8 @@
 			{:else}
 				Each route is checked once unless you request a refresh.
 			{/if}
-			Up to {rh.perRun} routes per run, at most one request a second, after each logbook sync.
+			Up to {rh.perRun} routes per run, at most one request a second, after each logbook sync. When weather
+			import is on, remaining requests also check crag/sector locations, including for CSV imports.
 			<a href="/docs/first-ascents">How first ascents work</a>
 		</p>
 		{#if !rh.enabled}
@@ -323,6 +324,8 @@
 				>
 				<span>
 					{rh.fetchedRoutes} of {rh.totalRoutes} routes checked · {rh.importedMarks} FA/FFA imported
+					{#if rh.pendingAreas > 0}
+						· {rh.pendingAreas} weather areas pending{/if}
 					{#if rh.lastRunAt}
 						· last run {formatDateTime(rh.lastRunAt, data.dateDisplay)} ({rh.lastFetched} checked)
 					{/if}
@@ -335,14 +338,21 @@
 			{/if}
 			<div class="actions">
 				<form method="POST" action="?/fetchRouteHistory">
-					<button type="submit" disabled={rh.running || rh.pendingRoutes === 0 || retrySeconds > 0}>
-						{rh.pendingRoutes === 0
+					<button
+						type="submit"
+						disabled={rh.running ||
+							(rh.pendingRoutes === 0 && rh.pendingAreas === 0) ||
+							retrySeconds > 0}
+					>
+						{rh.pendingRoutes === 0 && rh.pendingAreas === 0
 							? 'All routes checked'
 							: rh.running
 								? 'Checking routes…'
 								: retrySeconds > 0
 									? `Check again in ${retryLabel}`
-									: `Check next ${rh.perRun} routes now`}
+									: rh.pendingRoutes === 0
+										? 'Check weather locations now'
+										: `Check next ${rh.perRun} routes now`}
 					</button>
 				</form>
 			</div>
@@ -420,6 +430,8 @@
 				>
 				<span>
 					{wx.cachedOk} days cached · {wx.totalPending} pending
+					{#if wx.unresolvedRoutes > 0}
+						· {wx.unresolvedRoutes} outdoor routes without locations{/if}
 					{#if wx.lastRunAt}
 						· last run {formatDateTime(wx.lastRunAt, data.dateDisplay)} ({wx.lastFetched} fetched)
 					{/if}
@@ -432,9 +444,14 @@
 			{/if}
 			{#if wx.totalPending === 0 && wx.cachedOk === 0}
 				<p class="hint">
-					No outdoor days with route coordinates yet. Weather needs lat/lon from theCrag (usually
-					the crag TLC on each ascent). Sync the logbook again after upgrading, then try this
-					action.
+					No weather days ready to fetch. Weather needs a usable route/crag location and a valid
+					past climbing date.
+					{#if wx.unresolvedRoutes > 0}
+						Check pending route data and weather locations above, then <a
+							href="/settings/weather-locations">review missing locations</a
+						>. CSV imports can use the configured supporter key for crag/sector lookups when route
+						data import is enabled.
+					{/if}
 				</p>
 			{/if}
 			<div class="actions">
@@ -445,7 +462,7 @@
 					>
 						{wx.totalPending === 0
 							? wx.cachedOk === 0
-								? 'No days with coordinates'
+								? 'No eligible days pending'
 								: 'All outdoor days cached'
 							: wx.running
 								? 'Fetching weather…'

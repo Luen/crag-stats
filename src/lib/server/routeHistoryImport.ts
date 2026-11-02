@@ -5,6 +5,7 @@
  */
 import { env, envFlag, getTheCragSyncConfiguration } from './env';
 import { openRouteHistoryClient } from './providers/thecrag/routeHistoryApi';
+import { triggerWeatherImport } from './weatherImport';
 import {
 	applyCachedHistoryMarks,
 	parseRouteDataRefreshDays,
@@ -30,6 +31,7 @@ function config(): RouteHistoryConfig {
 		enabled: envFlag('ROUTE_DATA_IMPORT'),
 		apiKey: env('THECRAG_API_KEY').trim(),
 		refreshDays: parseRouteDataRefreshDays(env('ROUTE_DATA_REFRESH_DAYS')),
+		weatherEnabled: envFlag('WEATHER_IMPORT'),
 		ownerLogin: configuredOwnerLogin()
 	};
 }
@@ -49,8 +51,10 @@ export function getRouteHistoryStatus(): RouteHistoryStatus {
 }
 
 /** Run one batch of up to 100 routes now and wait for it (tests / scripts). */
-export function runRouteHistoryImport(): Promise<RouteHistoryRunResult> {
-	return runRouteHistoryImportOnce(config(), deps);
+export async function runRouteHistoryImport(): Promise<RouteHistoryRunResult> {
+	const result = await runRouteHistoryImportOnce(config(), deps);
+	if (result.outcome === 'ran') triggerWeatherImport('route locations');
+	return result;
 }
 
 /**
@@ -62,6 +66,7 @@ export function triggerRouteHistoryImport(reason: string): boolean {
 	if (!c.enabled || !c.apiKey) return false;
 	void runRouteHistoryImportOnce(c, deps)
 		.then((r) => {
+			if (r.outcome === 'ran') triggerWeatherImport('route locations');
 			if (r.outcome === 'ran' || r.outcome === 'blocked' || r.outcome === 'error') {
 				console.log(`[crag-stats] route history (${reason}): ${r.message}`);
 			}

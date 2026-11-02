@@ -56,6 +56,7 @@ export default defineConfig({
 			// Cooldown UI needs import on; tests seed state, abort theCrag hosts, and
 			// never click Check once enabled (CSV ownerLogin still needs a matching profile).
 			ROUTE_DATA_IMPORT: 'true',
+			WEATHER_IMPORT: 'true',
 			THECRAG_API_KEY: 'synthetic-cooldown-test-key'
 		}),
 		// Also covers the explicit ORIGIN override path.

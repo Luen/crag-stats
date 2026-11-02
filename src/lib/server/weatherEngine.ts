@@ -1,4 +1,8 @@
-import { loadWeatherLocations, attachWeatherLocation } from './weatherLocations';
+import {
+	loadWeatherLocations,
+	attachWeatherLocation,
+	listWeatherLocationGroups
+} from './weatherLocations';
 /**
  * Outdoor weather-day import engine (#268). Free of env wiring so tests can inject a client.
  * Opt-in via WEATHER_IMPORT; paced Open-Meteo archive fetches for outdoor logbook days with
@@ -58,6 +62,7 @@ export type WeatherImportStatus = {
 	retryAt: number;
 	totalPending: number;
 	cachedOk: number;
+	unresolvedRoutes: number;
 	perRun: number;
 };
 
@@ -284,6 +289,9 @@ export function weatherImportStatus(
 		retryAt,
 		totalPending: config.enabled ? countPending(now) : 0,
 		cachedOk: countCachedOk(),
+		unresolvedRoutes: config.enabled
+			? listWeatherLocationGroups().reduce((n, group) => n + group.unresolved, 0)
+			: 0,
 		perRun: DAYS_PER_RUN
 	};
 }

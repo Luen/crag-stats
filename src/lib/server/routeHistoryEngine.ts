@@ -19,6 +19,8 @@ import {
 	routeHistoryImportState,
 	routes
 } from './db/schema';
+import { weatherAreaCache } from './db/schema';
+import { pendingWeatherAreaIds, storeWeatherAreas } from './weatherAreaCache';
 import { isFirstAscentImportSkipped, setFirstAscent, type FirstAscentKind } from './firstAscents';
 import {
 	RouteHistoryBlockedError,
@@ -56,6 +58,8 @@ export type RouteHistoryConfig = {
 	apiKey: string;
 	/** 0 = fetch once; otherwise a whole number of days from 30 through 3650. */
 	refreshDays?: number;
+	/** Fetch missing crag/sector geometry only when weather import is opted in too. */
+	weatherEnabled?: boolean;
 	/**
 	 * CSV mode passes THECRAG_USERNAME. It must match the saved logbook login;
 	 * an empty or mismatched value blocks import until the owner syncs or wipes.
@@ -118,6 +122,7 @@ export type RouteHistoryStatus = {
 	totalRoutes: number;
 	fetchedRoutes: number;
 	pendingRoutes: number;
+	pendingAreas: number;
 	historyRows: number;
 	importedMarks: number;
 	perRun: number;
@@ -420,7 +425,10 @@ export async function runRouteHistoryImportOnce(
 		);
 	}
 	const pending = pendingRouteIds(ROUTES_PER_RUN, config.refreshDays, now);
-	if (!pending.length) {
+	if (
+		!pending.length &&
+		!(config.weatherEnabled && pendingWeatherAreaIds(1, config.refreshDays, now).length)
+	) {
 		return result(true, 'done', 'Every route in your logbook has been checked.');
 	}
 
@@ -465,6 +473,38 @@ export async function runRouteHistoryImportOnce(
 			marked += storeBatch(batch, payload, login, new Date(deps.now()).toISOString());
 			fetched += batch.length;
 		}
+		// Keep the existing ten-request budget across route and area requests. Old CSV
+		// caches can reach this path without resetting their route-history fetch ledger.
+		let areasFetched = 0;
+		if (config.weatherEnabled && client.fetchAreas) {
+			const areaIds = pendingWeatherAreaIds(ROUTES_PER_RUN, config.refreshDays, deps.now());
+			for (
+				let i = 0;
+				i < areaIds.length && requests < ROUTES_PER_RUN / BATCH_SIZE;
+				i += BATCH_SIZE
+			) {
+				const wait = lastRequestAt + MIN_REQUEST_GAP_MS - deps.now();
+				if (wait > 0) await deps.sleep(wait);
+				if (!stillCurrent())
+					return result(false, 'cancelled', 'Import cancelled because local data was wiped.', {
+						fetched,
+						marked,
+						requests
+					});
+				lastRequestAt = deps.now();
+				requests++;
+				const batch = areaIds.slice(i, i + BATCH_SIZE);
+				const payload = await client.fetchAreas(batch);
+				if (!stillCurrent())
+					return result(false, 'cancelled', 'Import cancelled because local data was wiped.', {
+						fetched,
+						marked,
+						requests
+					});
+				storeWeatherAreas(batch, payload, new Date(deps.now()).toISOString());
+				areasFetched += batch.length;
+			}
+		}
 		writeState(deps.now(), {
 			status: 'idle',
 			lastFetched: fetched,
@@ -473,11 +513,16 @@ export async function runRouteHistoryImportOnce(
 			consecutiveFailures: 0,
 			nextAllowedAt: null
 		});
-		return result(true, 'ran', `Checked ${fetched} routes, marked ${marked} FA/FFA.`, {
-			fetched,
-			marked,
-			requests
-		});
+		return result(
+			true,
+			'ran',
+			`Checked ${fetched} routes, marked ${marked} FA/FFA.${areasFetched ? ` Checked ${areasFetched} weather areas.` : ''}`,
+			{
+				fetched,
+				marked,
+				requests
+			}
+		);
 	} catch (err) {
 		if (!stillCurrent()) {
 			return result(false, 'cancelled', 'Import cancelled because local data was wiped.', {
@@ -551,6 +596,10 @@ export function applyCachedHistoryMarks(
 /** Forget which routes were checked so they're fetched again, 100 per run. Keeps history rows. */
 export function resetRouteHistoryFetches(): number {
 	ensureSchema();
+	db.update(weatherAreaCache)
+		.set({ fetchedAt: null })
+		.where(eq(weatherAreaCache.provider, PROVIDER))
+		.run();
 	return db.delete(routeHistoryFetches).where(eq(routeHistoryFetches.provider, PROVIDER)).run()
 		.changes;
 }
@@ -598,6 +647,9 @@ export function routeHistoryStatus(
 		totalRoutes,
 		fetchedRoutes,
 		pendingRoutes,
+		pendingAreas: config.weatherEnabled
+			? pendingWeatherAreaIds(10_000, config.refreshDays, now).length
+			: 0,
 		historyRows: count(sql`SELECT count(*) AS n FROM route_history WHERE provider = ${PROVIDER}`),
 		importedMarks: count(
 			sql`SELECT count(*) AS n FROM first_ascents WHERE provider = ${PROVIDER} AND source = 'import'`

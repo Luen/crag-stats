@@ -5,11 +5,13 @@ import {
 	routes,
 	ascents,
 	weatherLocations,
+	weatherAreaCache,
 	weatherPlaceOverrides,
 	weatherPlaceSearches
 } from './db/schema';
 import { weatherPolygonPoint } from './weatherPolygon';
 import { extractLatLon } from './providers/thecrag/api';
+import { areaId, routeAreas } from './providers/thecrag/areaAncestors';
 import { isLikelyIndoorRoute } from './venue';
 import type { WeatherLocation } from '#lib/weatherKeys';
 
@@ -27,13 +29,22 @@ function parse(raw: string | null): unknown {
 	}
 }
 export function weatherAreaKey(
-	route: Pick<Route, 'provider' | 'externalId' | 'areaExternalId' | 'parentExternalId'>
+	route: Pick<Route, 'provider' | 'externalId' | 'areaExternalId' | 'parentExternalId'> & {
+		routeApiJson?: string | null;
+	},
+	legacyOverrides?: { has(key: string): boolean }
 ): string {
-	return JSON.stringify([
-		route.provider,
-		route.areaExternalId || route.parentExternalId ? 'area' : 'route',
-		route.areaExternalId || route.parentExternalId || route.externalId
-	]);
+	const legacyKey = JSON.stringify([route.provider, 'route', route.externalId]);
+	// Keep existing per-route CSV choices separate until the owner removes them.
+	if (!route.areaExternalId && !route.parentExternalId && legacyOverrides?.has(legacyKey))
+		return legacyKey;
+	const areas = routeAreas(parse(route.routeApiJson ?? null));
+	const id =
+		route.areaExternalId ||
+		areaId(areas.TLC?.id) ||
+		route.parentExternalId ||
+		areaId(areas.parent?.id);
+	return JSON.stringify([route.provider, id ? 'area' : 'route', id || route.externalId]);
 }
 /** Reject non-point and malformed geometry rather than coercing arrays to zero. */
 function point(raw: unknown): { lat: number; lon: number } | null {
@@ -65,7 +76,11 @@ function point(raw: unknown): { lat: number; lon: number } | null {
 }
 
 /** Route point, crag point, sector point, then a coordinate from a small area polygon. Never broad ancestors. */
-export function resolveWeatherLocation(raw: unknown, at: string): WeatherLocation | null {
+export function resolveWeatherLocation(
+	raw: unknown,
+	at: string,
+	areaCache: ReadonlyMap<string, unknown> = new Map()
+): WeatherLocation | null {
 	const route = object(raw);
 	if (!route) return null;
 	const directPoint = point(route);
@@ -78,36 +93,36 @@ export function resolveWeatherLocation(raw: unknown, at: string): WeatherLocatio
 			precision: 'route point',
 			resolvedAt: at
 		};
-	const ancestors = object(route.ancestors);
-	if (!ancestors) return null;
-	const country = object(ancestors.country);
+	const ancestors = routeAreas(route);
 	const polygonCandidates: { node: Record<string, unknown>; source: string }[] = [];
 	for (const [key, source] of [
 		['TLC', 'crag'],
 		['parent', 'sector']
 	] as const) {
-		const node = object(ancestors[key]);
+		const node = ancestors[key];
 		if (!node) continue;
-		if (country && node.id != null && String(node.id) === String(country.id)) continue;
-		if (
-			/^(country|continent|state|province|region)$/i.test(String(node.type ?? node.areaType ?? ''))
-		)
-			continue;
-		if (
-			(typeof node.id === 'string' && node.id.trim()) ||
-			(typeof node.id === 'number' && Number.isFinite(node.id))
-		)
-			polygonCandidates.push({ node, source });
-		const p = point(node);
-		if (p)
-			return {
-				...p,
-				source,
-				name: String(node.name ?? (key === 'TLC' ? 'Crag' : 'Sector')),
-				areaId: node.id == null ? null : String(node.id),
-				precision: 'area point',
-				resolvedAt: at
-			};
+		const cached = object(areaCache.get(areaId(node.id) ?? ''));
+		// Location responses may put supported point/geometry fields inside `location`.
+		const candidates = [node, object(node.location), cached, object(cached?.location)].filter(
+			(n) => n != null
+		);
+		for (const candidate of candidates) {
+			if (
+				(typeof node.id === 'string' && node.id.trim()) ||
+				(typeof node.id === 'number' && Number.isFinite(node.id))
+			)
+				polygonCandidates.push({ node: { ...candidate, id: node.id, name: node.name }, source });
+			const p = point(candidate);
+			if (p)
+				return {
+					...p,
+					source,
+					name: String(node.name ?? (key === 'TLC' ? 'Crag' : 'Sector')),
+					areaId: node.id == null ? null : String(node.id),
+					precision: 'area point',
+					resolvedAt: at
+				};
+		}
 	}
 	for (const { node, source } of polygonCandidates) {
 		// Only an explicitly typed GeoJSON geometry establishes coordinate order.
@@ -129,6 +144,13 @@ export function resolveWeatherLocation(raw: unknown, at: string): WeatherLocatio
 export function loadWeatherLocations(): Map<number, WeatherLocation | null> {
 	ensureSchema();
 	const list = db.select().from(routes).all();
+	const areaRows = db.select().from(weatherAreaCache).all();
+	const areaCaches = new Map<string, Map<string, unknown>>();
+	for (const row of areaRows) {
+		const cache = areaCaches.get(row.provider) ?? new Map<string, unknown>();
+		cache.set(row.areaExternalId, parse(row.rawJson));
+		areaCaches.set(row.provider, cache);
+	}
 	const result = new Map<number, WeatherLocation | null>();
 	const raws = db
 		.select({ routeId: ascents.routeId, raw: ascents.rawJson })
@@ -156,11 +178,11 @@ export function loadWeatherLocations(): Map<number, WeatherLocation | null> {
 	db.transaction(() => {
 		for (const route of list) {
 			const raw = rawByRoute.get(route.id) ?? null;
-			const override = overrides.get(weatherAreaKey(route));
+			const override = overrides.get(weatherAreaKey(route, overrides));
 			const signature = createHash('sha256')
 				.update(
 					JSON.stringify([
-						'weather-location-v2-crag-first-geojson-boundary',
+						'weather-location-v3-array-ancestors-area-cache',
 						route.updatedAt,
 						route.name,
 						route.gearStyle,
@@ -171,6 +193,11 @@ export function loadWeatherLocations(): Map<number, WeatherLocation | null> {
 						route.lat,
 						route.lon,
 						route.routeApiJson,
+						[parse(route.routeApiJson), object(parse(raw))?.route].flatMap((r) =>
+							Object.values(routeAreas(r)).map((node) =>
+								areaCaches.get(route.provider)?.get(areaId(node?.id) ?? '')
+							)
+						),
 						raw,
 						override?.updatedAt,
 						override?.locationJson
@@ -198,7 +225,10 @@ export function loadWeatherLocations(): Map<number, WeatherLocation | null> {
 				// a logbook payload that only carries its crag/sector point.
 				const priority = { route: 0, crag: 1, sector: 2, polygon: 3, cached: 4, place: 5 };
 				location =
-					[resolveWeatherLocation(ascentRoute, at), resolveWeatherLocation(api, at)]
+					[
+						resolveWeatherLocation(ascentRoute, at, areaCaches.get(route.provider)),
+						resolveWeatherLocation(api, at, areaCaches.get(route.provider))
+					]
 						.filter((p): p is WeatherLocation => p != null)
 						.sort((a, b) => priority[a.source] - priority[b.source])[0] ?? null;
 				// A known upstream payload with country-only geometry must not fall back to a flattened legacy country point.
@@ -275,7 +305,7 @@ export function listWeatherLocationGroups() {
 			})
 		)
 			continue;
-		const key = weatherAreaKey(r);
+		const key = weatherAreaKey(r, overrides);
 		const location = locations.get(r.id);
 		const g = groups.get(key) ?? {
 			key,
