@@ -2,6 +2,7 @@
 	"name": "crag-stats",
 	"private": true,
 	"version": "0.10.3",
+	"description": "Self-hosted climbing analytics for theCrag",
 	"type": "module",
 	"packageManager": "pnpm@12.15.0",
 	"engines": {
