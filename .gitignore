@@ -35,6 +35,8 @@ vite.config.ts.timestamp-*
 /e2e/.tmp
 /test-results
 /playwright-report
+/blob-report
+/all-blob-reports
 
 # Local agent / review worktrees
 .worktrees/
