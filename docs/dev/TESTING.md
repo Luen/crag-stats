@@ -9,8 +9,8 @@ How the checks are organised, which ones to run for a given change, and the meas
 | `pnpm lint` (Prettier + ESLint)      | always (cached)              | `check` job (cold)             | yes                        |
 | `pnpm check` (svelte-check)          | for any code change          | `check` job                    | yes                        |
 | `pnpm test` (Vitest)                 | related or full, see below   | `check` job, full              | yes                        |
-| `pnpm build`                         | routes, build, deps, release | `e2e` job                      | yes                        |
-| `pnpm test:e2e` (Playwright + axe)   | see below                    | `e2e` job, full                | yes                        |
+| `pnpm build`                         | routes, build, deps, release | each `e2e` shard               | yes                        |
+| `pnpm test:e2e` (Playwright + axe)   | see below                    | two `e2e` shards, full suite   | yes                        |
 | Docker image + native/importer smoke | Docker/runtime changes       | `docker` job, amd64 + arm64    | `docker-release.yml` build |
 | CodeQL (default setup)               | —                            | PRs targeting `main`           | —                          |
 
@@ -42,6 +42,20 @@ pnpm build && pnpm exec playwright test e2e/soloCards.spec.ts   # one browser sp
 Every Playwright invocation starts each server through `scripts/e2e-server.mjs <open|settings|all>`. Before importing the normal production server entry, it resets only that server’s SQLite file and its `-wal` / `-shm` sidecars under `e2e/.tmp`. This happens once per server startup, before migrations and sample seeding, so an interrupted previous run cannot leave conflicting fixture IDs or old settings. The wrapper pins `DATABASE_PATH` to that disposable location; linked directories are rejected.
 
 Do not delete databases from config evaluation (workers reload it) or the setup project (servers already have SQLite open). The reset preserves other files, screenshots and traces. Tests still need `finally` cleanup because tests and retries within one invocation share those running servers. Concurrent suites in the same checkout/ports remain unsupported.
+
+## Browser sharding (#378)
+
+PR/main CI runs `--shard=1/2` and `--shard=2/2` on separate runners. Each builds the app and runs the dependent `setup` project against its own three disposable databases. `workers: 1`, `fullyParallel: false` and retries are unchanged: whole spec files stay together and run serially within a shard. Local and nightly runs still run the full suite in one invocation.
+
+Both shards upload blob reports even after test failures, and `e2e-report` merges them into the single `playwright-report` HTML artifact (seven-day retention). Failure traces also remain available as `playwright-traces-1` / `playwright-traces-2`. Matrix fail-fast is disabled so a failure on one runner does not cancel the other runner's tests or report.
+
+Before changing this split, verify spec independence after building by running `pnpm exec playwright test e2e/<file>.spec.ts` once for every spec, sequentially. Each invocation runs setup and resets its servers; do not use `--no-deps` or run these invocations concurrently in one checkout. Then run both shards and merge their blob reports, following [Playwright's sharding guide](https://playwright.dev/docs/test-sharding).
+
+Independence verified on 3 November 2026 (Windows, Node 26.7.0, pinned pnpm/Playwright): all 36 `e2e/*.spec.ts` files passed separately after the production build, each with the setup dependency and fresh databases. No spec needed changes.
+
+The same build passed both CI-mode shards locally: 48 tests in 77.7 s and 36 tests in 106.5 s (command wall time, run sequentially). The merged HTML/JSON reports contain all 83 unique listed tests, with setup executed once per shard (84 executions), no skips, failures or retries. For a sequential local check, copy each shard's blob report out before starting the next invocation: Playwright clears its output directory. Separate CI runners upload their reports independently.
+
+Post-sharding CI timings are pending. Collect at least five green CI runs and record their IDs, each shard's job/E2E-step duration, the report job duration and `docker (arm64)` from those same runs. Compare the median of the slower shard in each run with the same-run arm64 median; also record the elapsed browser path through report completion so report overhead remains visible. Target: slower-shard median at or below arm64. The pre-sharding baseline remains the 16-run table below; local timings do not establish this CI acceptance criterion.
 
 ## Measurements
 
@@ -177,7 +191,7 @@ Local, same build, back to back (Apple silicon, quiet machine): 76 tests in 2.6 
 - **Vitest `pool: 'threads'` vs the default `forks`:** alternating runs gave forks 14–20 s and threads 17–24 s. No consistent win, so the default stays.
 - **Vitest `isolate: false`:** Vitest suggests it would save ~8–9 s, but each test file relies on a fresh module graph for its own `:memory:` SQLite (#57). Not changed.
 - **`eslint --concurrency auto`:** no gain (63 s), because the TypeScript project service is shared.
-- **Playwright workers / sharding:** tests share three mutable seeded databases and run serially by design. Parallel workers would race. Sharding across CI runners would give each shard its own servers and DB, but files are not yet proven independent of each other's leftover state. After #370 the `e2e` job (median 187 s) overtook `docker (arm64)` (169 s), so sharding would now shorten PR wall time. It is tracked in #378, which first requires each spec file to pass on its own (#366 resets the databases per invocation, which makes that check possible).
+- **Playwright workers:** tests share three mutable seeded databases per runner and run serially by design. Parallel workers would race. CI instead shards whole files across two isolated runners (see Browser sharding above).
 - **pnpm store cache:** `pnpm install` takes under 5 s on CI already.
 
 ## Consolidated tests (#325)
