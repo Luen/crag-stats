@@ -92,13 +92,15 @@ The split made lint, type and unit failures report in about a minute instead of 
 
 ### Budget
 
-Targets, checked against the median of at least five green CI runs (not a single run):
+Checked against the median of at least five green CI runs (not a single run). The first targets were set from the seven-run medians above. They were re-based in November 2026 from the 16 runs after #370 (below), because the first targets could only be met on GitHub's faster runners.
 
-| Stage                | Budget  | Median at the time it was set |
-| -------------------- | ------- | ----------------------------- |
-| `check` job          | ≤ 75 s  | 66 s                          |
-| E2E step (`e2e` job) | ≤ 120 s | 161 s, before scoped scans    |
-| Unit tests (CI step) | ≤ 20 s  | 17 s                          |
+| Stage                | Budget  | Median (16 runs after #370) | First target |
+| -------------------- | ------- | --------------------------- | ------------ |
+| `check` job          | ≤ 85 s  | 75.5 s                      | ≤ 75 s       |
+| E2E step (`e2e` job) | ≤ 170 s | 152.5 s                     | ≤ 120 s      |
+| Unit tests (CI step) | ≤ 25 s  | 22 s                        | ≤ 20 s       |
+
+Each budget sits just above the slowest run in that baseline, so a median over budget means the suite really got slower, not that a run landed on a slow runner.
 
 To re-measure, list green runs with `gh run list --workflow ci.yml --status success` and read job and step times from `gh api repos/Luen/crag-stats/actions/runs/<id>/jobs`. When a stage goes over budget, find the cause before adding hardware or retries: usually a new full-page scan or a new spec that seeds its own data.
 
@@ -115,6 +117,25 @@ Only three green `CI` runs include #346 so far, so these are not yet medians. Th
 The E2E step is still above its ≤ 120 s budget, and the `e2e` job now takes about as long as `docker (arm64)`. On main, `a11y.spec` (28 s, the intended full-page audit), `soloCards` (12 s), `weather` (11 s), `weather-drilldowns` (10 s) and `seasonality` (8 s) are the largest specs. Two specs still scanned far more than they changed: `soloCards` scanned the whole dashboard at two widths and `partnerContext` the whole `/badges` page and dashboard. Scoping them to their cards cut them locally from 10.5–14.2 s to 5.9–6.9 s and from 6.4–7.1 s to 3.9–5.3 s (two runs each). A mutation check (dark `--ink-muted` set to the dark line colour) still failed both specs in the dark theme only.
 
 The `check` job and unit step were also above budget in the two latest runs, while the #346 run was well under. Lint took 24–25 s in those runs against 15 s in the #346 run with the same lint config, so runner variance is likely; confirm with five runs before acting.
+
+### After #370: medians of 16 runs
+
+All 16 green `CI` runs from #370's merge through `af461c5` (2–3 November 2026; 8 on `main`, 8 on PRs). The browser suite was 78 tests in most runs and 83 in the latest three.
+
+| Job / step                    | Median  | Range     |
+| ----------------------------- | ------- | --------- |
+| `check` job                   | 75.5 s  | 50–81 s   |
+| ↳ Lint (Prettier + ESLint)    | 24 s    | 15–26 s   |
+| ↳ Unit tests                  | 22 s    | 13–24 s   |
+| `e2e` job                     | 187 s   | 127–337 s |
+| ↳ E2E step (Playwright + axe) | 152.5 s | 98–166 s  |
+| `docker (arm64)` job (QEMU)   | 169 s   | 55–243 s  |
+
+Runs (`gh run view <id>`): 41387218723, 41387282448, 41388543206, 41389619390, 41389841234, 41389874535, 41390162845, 41390778225, 41391053371, 41391073045, 41395771265, 41398653306, 41400106649, 41401170157, 41549347872, 41549367302.
+
+**Runner speed, not the suite, splits the E2E step into two groups.** Six runs took 98–121 s and ten took 150–166 s, with no values in between. Within the 78-test runs, the same runner image (`ubuntu-26.04` 20261021.618) finished Playwright in 1.6–1.7 min on the fast group and 2.5–2.6 min on the slow one. Two `main` runs started a minute apart, where the second commit only bumped the version, took 102 s (`2108c9b`) and 154 s (`9ea630f`). The `check` job splits the same way (50–64 s vs 70–81 s). That is why the first ≤ 120 s E2E target was met only on fast runners. It is also why budgets are re-based above the slow group, not tightened further by trimming tests.
+
+**Compared with the baseline:** lint, type and unit failures now report at a median of 75.5 s, against a single 180–242 s job that ran the browser suite first. The browser step itself is about where it was (109–147 s for 81 tests then; 98–166 s for 78–83 tests now). It now runs each flow once with scoped dual-theme scans, and covers features added since. The `e2e` job median (187 s) is now above `docker (arm64)` (169 s), so the browser suite sets PR wall time. Sharding is tracked separately (see below).
 
 ### Scoped axe scans
 
@@ -156,7 +177,7 @@ Local, same build, back to back (Apple silicon, quiet machine): 76 tests in 2.6 
 - **Vitest `pool: 'threads'` vs the default `forks`:** alternating runs gave forks 14–20 s and threads 17–24 s. No consistent win, so the default stays.
 - **Vitest `isolate: false`:** Vitest suggests it would save ~8–9 s, but each test file relies on a fresh module graph for its own `:memory:` SQLite (#57). Not changed.
 - **`eslint --concurrency auto`:** no gain (63 s), because the TypeScript project service is shared.
-- **Playwright workers / sharding:** tests share three mutable seeded databases and run serially by design. Parallel workers would race. Sharding across CI runners would give each shard its own servers and DB, but files are not proven independent of each other's leftover state, and the `docker (arm64)` job already sets PR wall time. Revisit if e2e outgrows the Docker job. As of November 2026 the two are level (about 200 s each), so sharding would not yet shorten PR wall time; it becomes worthwhile once the `e2e` job is clearly the slowest, and needs each spec file proven to pass on its own first (#366 resets the databases per invocation, which makes that check possible).
+- **Playwright workers / sharding:** tests share three mutable seeded databases and run serially by design. Parallel workers would race. Sharding across CI runners would give each shard its own servers and DB, but files are not yet proven independent of each other's leftover state. After #370 the `e2e` job (median 187 s) overtook `docker (arm64)` (169 s), so sharding would now shorten PR wall time. It is tracked in #378, which first requires each spec file to pass on its own (#366 resets the databases per invocation, which makes that check possible).
 - **pnpm store cache:** `pnpm install` takes under 5 s on CI already.
 
 ## Consolidated tests (#325)

@@ -451,7 +451,7 @@ You'll often notice things outside the task at hand. **Don't silently fix them i
 - Node 26 LTS is the runtime baseline. Install the exact `packageManager` with npm (Corepack is not bundled); the distroless image also needs the build-stage libatomic shared library. Validate native SQLite and importer on amd64 and arm64 after runtime updates.
 
 - #325: proportionate local checks by change type (table above); cached `pnpm lint`; `test:related` / `test:changed`; CI splits `check` and `e2e` jobs, cancels superseded PR runs, caches Playwright browsers. Feature e2e specs run once and scan both themes via `e2e/axe.ts`. Evidence and inventory in `docs/dev/TESTING.md`.
-- #325 follow-up: CI budgets come from medians of ≥5 green runs (`check` ≤ 75 s, E2E step ≤ 120 s), recorded in `docs/dev/TESTING.md`. Feature axe scans are scoped; no spec loops its flow per theme. `wipeAllData` lives in `src/lib/server/wipe.ts` (re-exported by `analytics.ts`); tests that only need a clean DB import it from there to skip the analytics graph.
+- #325 follow-up: CI budgets come from medians of ≥5 green runs, recorded in `docs/dev/TESTING.md`. They were re-based from 16 runs after #370 to `check` ≤ 85 s, unit ≤ 25 s and E2E step ≤ 170 s. GitHub runners fall into a fast and a slow group (E2E 98–121 s vs 150–166 s on the same suite), so never judge a change by a single run. E2E sharding: #378. Feature axe scans are scoped; no spec loops its flow per theme. `wipeAllData` lives in `src/lib/server/wipe.ts` (re-exported by `analytics.ts`); tests that only need a clean DB import it from there to skip the analytics graph.
 
 _Add a row when you change behaviour agents must know about._
 
