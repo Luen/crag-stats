@@ -61,7 +61,8 @@
 	--weather-rain: #2563eb;
 	--weather-snow: #a78bfa;
 	--weather-fair: #34d399;
-	--weather-mild: #cbd5e1;
+	/* Amber — distinct from muted "no weather data" grey cells */
+	--weather-mild: #eab308;
 	--shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.18);
 	--scrim: rgba(10, 12, 16, 0.35);
 
@@ -98,7 +99,7 @@
 	--weather-rain: #3b82f6;
 	--weather-snow: #c4b5fd;
 	--weather-fair: #10b981;
-	--weather-mild: #475569;
+	--weather-mild: #facc15;
 	color-scheme: dark;
 }
 
@@ -129,7 +130,7 @@
 		--weather-rain: #3b82f6;
 		--weather-snow: #c4b5fd;
 		--weather-fair: #10b981;
-		--weather-mild: #475569;
+		--weather-mild: #facc15;
 		color-scheme: dark;
 	}
 }
