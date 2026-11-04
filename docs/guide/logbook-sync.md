@@ -2,13 +2,13 @@
 
 Crag Stats can sync through theCrag's supporter API or download your CSV export with a saved login. Choose one mode on the server. Both use the existing schedule (`SYNC_CRON`, daily by default), **Settings → Sync now** (open **`/settings`**, or **`/login`** first when `APP_PASSWORD` is set), and Docker worker. A new installation syncs on startup when configured.
 
-## Backup: export your local logbook
+## Backup: keep a local copy
 
-Your theCrag account remains the source of truth. Crag Stats only keeps a local cache. To save a copy of what is stored here, open **Settings → Privacy & data control** and use **Download logbook CSV** (same action as `/settings/export`).
+Your theCrag account remains the source of truth for the live logbook. Crag Stats stores a full local copy in **SQLite** (`DATABASE_PATH`, typically `./data/crag-stats.sqlite` or `/data/crag-stats.sqlite` in Docker). That file (and its `-wal` / `-shm` sidecars if present) holds synced ascents, settings, goals, route-history cache, weather days and related state. Back up the Docker **data volume** (or the host directory you mount at `/data`) with the rest of your homelab backups so you still have your analytics and cache if the container is rebuilt, the host dies, or theCrag is briefly unreachable. Compose already persists that volume across image upgrades.
 
-The file is a theCrag-like CSV of the local logbook: routes, ticks, partners, quality, dates and comments/notes. Notes are always included in this download because it is your backup; treat the file like personal data. You can re-import it later with **Settings → CSV import** (upsert only — it does not remove ascents that are missing from the file). Download a backup before **Wipe all local data** if you want a fallback while rebuilding from theCrag.
+For a portable spreadsheet-style copy, open **Settings → Privacy & data control** and use **Download logbook CSV** (same action as `/settings/export`). The file is a theCrag-like CSV of the local logbook: routes, ticks, partners, quality, dates and comments/notes. Notes are always included in this download because it is your backup; treat the file like personal data. You can re-import it later with **Settings → CSV import** (upsert only — it does not remove ascents that are missing from the file). Download a CSV before **Wipe all local data** if you want a fallback while rebuilding from theCrag — a volume backup is still the complete restore path.
 
-This export is from Crag Stats, not a live pull from theCrag. For an upstream backup, use theCrag’s own **Action → Export logbook as CSV** in your online logbook as well.
+The Settings CSV is from Crag Stats, not a live pull from theCrag. For an upstream backup of the logbook itself, use theCrag’s own **Action → Export logbook as CSV** in your online logbook as well.
 
 ## What a manual sync imported
 
