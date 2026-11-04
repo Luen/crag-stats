@@ -14,7 +14,10 @@
 </script>
 
 <article class="panel">
-	<h2>Rock types</h2>
+	<header>
+		<h2>Rock types</h2>
+		<a class="how" href="/docs/rock-types">How it works</a>
+	</header>
 
 	{#if types.length === 0}
 		<p class="empty">No rock type data yet.</p>
@@ -55,9 +58,20 @@
 		padding: 1.1rem 1.2rem;
 		border-radius: 1rem;
 	}
+	header {
+		display: flex;
+		justify-content: space-between;
+		align-items: baseline;
+		gap: 1rem;
+		margin-bottom: 0.75rem;
+	}
 	h2 {
-		margin: 0 0 0.75rem;
+		margin: 0;
 		font-size: 1.05rem;
+	}
+	.how {
+		font-size: 0.85rem;
+		color: var(--ink-muted);
 	}
 	.bars {
 		list-style: none;

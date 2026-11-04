@@ -87,6 +87,7 @@ import {
 	type WeatherFilterKey
 } from '#lib/weatherKeys';
 import { buildWeatherConditionsView } from '#lib/weatherStats';
+import { buildRockPerformanceView } from '#lib/rockPerformance';
 import { buildWeatherPerformanceView } from '#lib/weatherPerformance';
 import { buildTrainingLoadView, hasPersonalAscentGrade } from './trainingLoad';
 import { buildKarmaStats } from './karma';
@@ -752,6 +753,7 @@ export function getDashboardStats(
 	}));
 	const weatherConditions = buildWeatherConditionsView(extraRows, weatherByKey);
 	const weatherPerformance = buildWeatherPerformanceView(extraRows, weatherByKey);
+	const rockPerformance = buildRockPerformanceView(extraRows);
 	const monthly = buildMonthlyStats(extraRows);
 	const yearly = buildYearlyStats(extraRows);
 	const milestones = buildMilestones(extraRows);
@@ -1119,7 +1121,8 @@ export function getDashboardStats(
 		karma,
 		bestMonths,
 		weatherConditions,
-		weatherPerformance
+		weatherPerformance,
+		rockPerformance
 	};
 }
 
