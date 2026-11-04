@@ -55,7 +55,7 @@ Independence verified on 3 November 2026 (Windows, Node 26.7.0, pinned pnpm/Play
 
 The same build passed both CI-mode shards locally: 48 tests in 77.7 s and 36 tests in 106.5 s (command wall time, run sequentially). The merged HTML/JSON reports contain all 83 unique listed tests, with setup executed once per shard (84 executions), no skips, failures or retries. For a sequential local check, copy each shard's blob report out before starting the next invocation: Playwright clears its output directory. Separate CI runners upload their reports independently.
 
-Post-sharding CI timings are pending. Collect at least five green CI runs and record their IDs, each shard's job/E2E-step duration, the report job duration and `docker (arm64)` from those same runs. Compare the median of the slower shard in each run with the same-run arm64 median; also record the elapsed browser path through report completion so report overhead remains visible. Target: slower-shard median at or below arm64. The pre-sharding baseline remains the 16-run table below; local timings do not establish this CI acceptance criterion.
+Post-sharding CI timings are recorded under _After #378_ below. Acceptance compares the median of each run's slower shard with the median of `docker (arm64)` from those same runs; the browser path through `e2e-report` is kept so report overhead stays visible. The pre-sharding baseline remains the 16-run table after #370; local timings do not establish the CI criterion.
 
 ## Measurements
 
@@ -149,7 +149,24 @@ Runs (`gh run view <id>`): 41387218723, 41387282448, 41388543206, 41389619390, 4
 
 **Runner speed, not the suite, splits the E2E step into two groups.** Six runs took 98–121 s and ten took 150–166 s, with no values in between. Within the 78-test runs, the same runner image (`ubuntu-26.04` 20261021.618) finished Playwright in 1.6–1.7 min on the fast group and 2.5–2.6 min on the slow one. Two `main` runs started a minute apart, where the second commit only bumped the version, took 102 s (`2108c9b`) and 154 s (`9ea630f`). The `check` job splits the same way (50–64 s vs 70–81 s). That is why the first ≤ 120 s E2E target was met only on fast runners. It is also why budgets are re-based above the slow group, not tightened further by trimming tests.
 
-**Compared with the baseline:** lint, type and unit failures now report at a median of 75.5 s, against a single 180–242 s job that ran the browser suite first. The browser step itself is about where it was (109–147 s for 81 tests then; 98–166 s for 78–83 tests now). It now runs each flow once with scoped dual-theme scans, and covers features added since. The `e2e` job median (187 s) is now above `docker (arm64)` (169 s), so the browser suite sets PR wall time. Sharding is tracked separately (see below).
+**Compared with the baseline:** lint, type and unit failures now report at a median of 75.5 s, against a single 180–242 s job that ran the browser suite first. The browser step itself is about where it was (109–147 s for 81 tests then; 98–166 s for 78–83 tests now). It now runs each flow once with scoped dual-theme scans, and covers features added since. The `e2e` job median (187 s) is now above `docker (arm64)` (169 s), so the browser suite sets PR wall time. Sharding (#378) addresses that; see the next section.
+
+### After #378: medians of 5 runs
+
+Five green sharded `CI` runs (3–4 November 2026): the two #382 PR attempts, the #382 merge on `main` (first attempt), and two empty-commit sample PRs opened only to complete the five-run sample. For runs that were later re-queued, timings below are from attempt 1 (`gh api .../actions/runs/<id>/attempts/1/jobs`).
+
+| Run                       | `e2e (1)` job / step | `e2e (2)` job / step | Slower shard | `e2e-report` | Browser path | `docker (arm64)` |
+| ------------------------- | -------------------- | -------------------- | ------------ | ------------ | ------------ | ---------------- |
+| 41570912018 (#382 PR)     | 101 / 55 s           | 151 / 108 s          | 151 s        | 18 s         | 172 s        | 178 s            |
+| 41571658906 (#382 PR)     | 106 / 67 s           | 126 / 90 s           | 126 s        | 18 s         | 146 s        | 187 s            |
+| 41572028470 (#382 main)   | 101 / 65 s           | 142 / 103 s          | 142 s        | 15 s         | 162 s        | 170 s            |
+| 41743588401 (#383 sample) | 76 / 47 s            | 130 / 93 s           | 130 s        | 21 s         | 154 s        | 41 s             |
+| 41743627281 (#384 sample) | 99 / 66 s            | 140 / 104 s          | 140 s        | 14 s         | 156 s        | 43 s             |
+| **Median**                | **101 / 65 s**       | **140 / 103 s**      | **140 s**    | **18 s**     | **156 s**    | **170 s**        |
+
+Browser path is from the earlier shard start through `e2e-report` completion (includes the ~15–21 s merge job after both shards finish). Shard 2 carries the heavier file set (36 vs 48 listed tests; longer wall time).
+
+**Acceptance:** slower-shard median **140 s** is at or below `docker (arm64)` median **170 s** for the same runs (pre-sharding the single `e2e` job median was 187 s vs arm64 169 s). Individual runs still vary: arm64 landed at 41–43 s on the two sample PRs (warm build cache) and 170–187 s on the #382 runs, so wall time can still be set by either job depending on the runner. Report overhead stays small relative to the slower shard.
 
 ### Scoped axe scans
 
