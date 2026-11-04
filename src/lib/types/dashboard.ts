@@ -295,6 +295,10 @@ export type DashboardStats = {
 		longestStartDate: string | null;
 		longestEndDate: string | null;
 		lastActiveDate: string | null;
+		/** Distinct climbing days (valid written calendar dates). */
+		activeDays: number;
+		/** Whole UTC days from last climb to today when the current day streak is 0. */
+		daysSinceLastActive: number | null;
 	};
 	athleteProfile: {
 		axes: { key: string; label: string; last30: number; last90: number }[];

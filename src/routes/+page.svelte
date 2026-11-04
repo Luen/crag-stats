@@ -116,6 +116,8 @@
 			longestEndDate={s.streaks.longestEndDate}
 			dateDisplay={data.dateDisplay}
 			lastActiveDate={s.streaks.lastActiveDate}
+			activeDays={s.streaks.activeDays}
+			daysSinceLastActive={s.streaks.daysSinceLastActive}
 		/>
 	{:else if id === 'eddington'}
 		<Eddington data={s.eddington} />
