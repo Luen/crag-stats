@@ -270,12 +270,16 @@ describe('buildWeatherPerformanceView', () => {
 			'cond:heat': 1,
 			'cond:freeze': 1,
 			'cond:wind': 1,
+			// Default fixture wind is calm; only the ≥50 km/h day is excluded.
+			'cond:calm': WEATHER_PERFORMANCE_MIN_DAYS - 1,
 			'cond:dry': WEATHER_PERFORMANCE_MIN_DAYS - 3,
 			// Windy days can still be fair (dry 20°C); the hot and null-precip days are not.
 			'cond:fair': WEATHER_PERFORMANCE_MIN_DAYS - 4
 		});
 		expect(cond.bands.find((b) => b.id === 'cond:dry')!.href).toBeNull();
 		expect(cond.bands.find((b) => b.id === 'cond:rain')!.href).toBe('/logbook?weather=rain');
+		expect(cond.bands.find((b) => b.id === 'cond:calm')!.href).toBe('/logbook?weather=calm');
+		expect(cond.bands.find((b) => b.id === 'cond:wind')!.href).toBe('/logbook?weather=wind');
 	});
 });
 
