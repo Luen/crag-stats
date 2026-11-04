@@ -317,7 +317,7 @@ describe('describeWeatherPersonality (#275)', () => {
 		).toBe("I've climbed in everything from -3°C to 38°C.");
 	});
 
-	it('names the cached-day denominator when half the weather is unknown', () => {
+	it('names the weather-day denominator when half the outdoor days are unknown', () => {
 		expect(
 			describeWeatherPersonality(
 				view({
@@ -328,7 +328,7 @@ describe('describeWeatherPersonality (#275)', () => {
 				})
 			)
 		).toBe(
-			"I'm happy climbing in the cold: 50% of my cached outdoor days dipped to freezing or below."
+			"I'm happy climbing in the cold: 50% of my outdoor days with weather dipped to freezing or below."
 		);
 	});
 
