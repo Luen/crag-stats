@@ -5,6 +5,7 @@ import {
 	describeDeveloperPreference,
 	describeHardest,
 	describeHomeCrag,
+	describeMostPopularPutUp,
 	describePartners,
 	describePopularity,
 	describeProjects,
@@ -14,6 +15,7 @@ import {
 	describeTravel,
 	describeWanderer,
 	describeWeatherPersonality,
+	putUpCharacter,
 	seasonNameForMonth
 } from './climberBlurb';
 import type { WeatherConditionsView } from '#lib/weatherStats';
@@ -108,6 +110,7 @@ describe('describeDeveloperPreference (#186)', () => {
 			routes: [
 				route({
 					routeExternalId: 't1',
+					routeName: 'Crack A',
 					gearStyle: 'Trad',
 					sportOrBolted: false,
 					bolts: null,
@@ -115,6 +118,7 @@ describe('describeDeveloperPreference (#186)', () => {
 				}),
 				route({
 					routeExternalId: 't2',
+					routeName: 'Crack B',
 					gearStyle: 'Trad',
 					sportOrBolted: false,
 					bolts: null,
@@ -124,16 +128,61 @@ describe('describeDeveloperPreference (#186)', () => {
 			firstAscentCount: 2
 		});
 		expect(text).toBe(
-			"I like to put up trad routes that other people have climbed over 55 times. I've put up 2 first ascents."
+			"I like to put up trad routes that other people have climbed over 55 times. I've put up 2 first ascents. The most popular route I've put up is Crack A."
 		);
 	});
 
-	it('describes large community totals as hedged ascent counts, not people', () => {
+	it('describes mixed community totals as hedged ascent counts, not people', () => {
 		const text = describeDeveloperPreference({
-			routes: [route({ othersAscents: 80 }), route({ routeExternalId: 's2', othersAscents: 40 })]
+			routes: [
+				route({ routeName: 'Busy', othersAscents: 40 }),
+				route({ routeExternalId: 's2', routeName: 'Quieter', othersAscents: 20 })
+			]
 		});
-		expect(text).toMatch(/climbed over 120 times/i);
-		expect(text).not.toMatch(/more than|people climbing/i);
+		expect(text).toMatch(/climbed over 60 times/i);
+		expect(text).toMatch(/most popular route I've put up is Busy/i);
+		expect(text).not.toMatch(/more than|people climbing|mega classic/i);
+	});
+
+	it('uses obscure adventure wording when most put-ups have little community traffic', () => {
+		const text = describeDeveloperPreference({
+			routes: [
+				route({ routeExternalId: 'a', routeName: 'Hidden', othersAscents: 0 }),
+				route({ routeExternalId: 'b', routeName: 'Quiet', othersAscents: 3 }),
+				route({ routeExternalId: 'c', routeName: 'Sparse', othersAscents: 5 })
+			],
+			firstAscentCount: 3
+		});
+		expect(text).toBe(
+			"I like to bolt sport routes — mostly obscure and adventure lines few others have logged. I've put up 3 first ascents. The most popular route I've put up is Sparse."
+		);
+		expect(text).not.toMatch(/climbed over/i);
+	});
+
+	it('uses mega classics wording when most put-ups are busy', () => {
+		const text = describeDeveloperPreference({
+			routes: [
+				route({ routeExternalId: 'a', routeName: 'Crowd Pleaser', othersAscents: 120 }),
+				route({ routeExternalId: 'b', routeName: 'Also Busy', othersAscents: 55 }),
+				route({ routeExternalId: 'c', routeName: 'Mid', othersAscents: 20 })
+			]
+		});
+		expect(text).toBe(
+			"I like to bolt sport routes — mega classics other people keep climbing. The most popular route I've put up is Crowd Pleaser, and it's a mega classic!"
+		);
+		expect(text).not.toMatch(/climbed over/i);
+	});
+
+	it('skips character when fewer than two put-ups have community data', () => {
+		const text = describeDeveloperPreference({
+			routes: [
+				route({ routeExternalId: 'a', routeName: 'Only One', othersAscents: 80 }),
+				route({ routeExternalId: 'b', routeName: 'Unknown', othersAscents: null })
+			]
+		});
+		expect(text).toMatch(/climbed over 80 times/i);
+		expect(text).not.toMatch(/obscure|mega classics other people keep climbing/i);
+		expect(text).toMatch(/most popular route I've put up is Only One/i);
 	});
 
 	it('falls back to FA-only copy without a style majority', () => {
@@ -145,6 +194,41 @@ describe('describeDeveloperPreference (#186)', () => {
 				firstAscentCount: 3
 			})
 		).toBe("I've put up 3 first ascents.");
+	});
+});
+
+describe('putUpCharacter / describeMostPopularPutUp (#395)', () => {
+	it('classifies obscure and classic majorities', () => {
+		expect(
+			putUpCharacter([
+				route({ routeExternalId: 'a', othersAscents: 1 }),
+				route({ routeExternalId: 'b', othersAscents: 4 })
+			])
+		).toBe('obscure');
+		expect(
+			putUpCharacter([
+				route({ routeExternalId: 'a', othersAscents: 50 }),
+				route({ routeExternalId: 'b', othersAscents: 90 })
+			])
+		).toBe('classic');
+		expect(
+			putUpCharacter([
+				route({ routeExternalId: 'a', othersAscents: 20 }),
+				route({ routeExternalId: 'b', othersAscents: 30 })
+			])
+		).toBeNull();
+	});
+
+	it('adds a mega classic flourish only at ≥100 community others', () => {
+		expect(
+			describeMostPopularPutUp([
+				route({ routeName: 'Almost', othersAscents: 99 }),
+				route({ routeExternalId: 'b', routeName: 'Lower', othersAscents: 40 })
+			])
+		).toBe("The most popular route I've put up is Almost.");
+		expect(describeMostPopularPutUp([route({ routeName: 'Hit', othersAscents: 100 })])).toBe(
+			"The most popular route I've put up is Hit, and it's a mega classic!"
+		);
 	});
 });
 
