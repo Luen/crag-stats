@@ -2,6 +2,14 @@
 
 Crag Stats can sync through theCrag's supporter API or download your CSV export with a saved login. Choose one mode on the server. Both use the existing schedule (`SYNC_CRON`, daily by default), **Settings → Sync now** (open **`/settings`**, or **`/login`** first when `APP_PASSWORD` is set), and Docker worker. A new installation syncs on startup when configured.
 
+## Backup: export your local logbook
+
+Your theCrag account remains the source of truth. Crag Stats only keeps a local cache. To save a copy of what is stored here, open **Settings → Privacy & data control** and use **Download logbook CSV** (same action as `/settings/export`).
+
+The file is a theCrag-like CSV of the local logbook: routes, ticks, partners, quality, dates and comments/notes. Notes are always included in this download because it is your backup; treat the file like personal data. You can re-import it later with **Settings → CSV import** (upsert only — it does not remove ascents that are missing from the file). Download a backup before **Wipe all local data** if you want a fallback while rebuilding from theCrag.
+
+This export is from Crag Stats, not a live pull from theCrag. For an upstream backup, use theCrag’s own **Action → Export logbook as CSV** in your online logbook as well.
+
 ## What a manual sync imported
 
 After **Sync now** or **Full re-sync** succeeds, Settings shows processed ascents,
