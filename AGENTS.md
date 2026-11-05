@@ -533,7 +533,7 @@ World map (#313): `/map` uses bundled public-domain Natural Earth outlines, serv
 
 - #353: the route import flag is `ROUTE_DATA_IMPORT` (Settings → **Import route data**); `ROUTE_HISTORY_IMPORT` is ignored with no fallback. Older notes above that name `ROUTE_HISTORY_IMPORT` mean this flag. Tables, migrations, module names and pacing are unchanged.
 
-- Daily streak records/badges (#339) share `#lib/dayStreaks`: unique strict written calendar days, UTC adjacency, earliest longest-run tie. Card exposes longestStartDate/longestEndDate and formats them as calendar dates. One-shot streak_days_7/10/30 badges use the first threshold-reaching day, include attempts/indoor climbs and have no Almost there counter. Current day/week/month logic is unchanged; do not infer streaks from log timestamps.
+- Daily streak records/badges (#339) share `#lib/dayStreaks`: unique strict written calendar days, UTC adjacency, earliest longest-run tie. Card exposes longestStartDate/longestEndDate and formats them as calendar dates. One-shot streak_days_7/10/30 badges use the first threshold-reaching day, include attempts/indoor climbs and have no Almost there counter. Do not infer streaks from log timestamps.
 - Streaks card (#387): 2×2 tiles (days/weeks/months/longest); footer has record range, last ascent, days-since-last when the day streak is 0, and lifetime `activeDays`; title links to `/docs/activity`.
 - Rock & performance (#388): `#lib/rockPerformance` compares send rate / near-limit / onsight-flash by Rock type tag (cluster = rock+day); hidden until a tagged send/attempt exists; rates after ≥20 tagged days; top rocks + Other; `/docs/rock-types`.
 
@@ -558,3 +558,5 @@ World map (#313): `/map` uses bundled public-domain Natural Earth outlines, serv
 - Current day streak (#398) uses currentDayStreak with strict written dates and UTC adjacency; today or yesterday anchors it, and future logs cannot extend it. Keep timezone/DST regressions alongside historical streak tests.
 
 - Current week/month streaks (#399) share currentPeriodStreak: anchor to the current or immediately preceding period, ignore future days, and expire after a whole empty period. Weeks start Monday; integer UTC week indices handle ISO week 53 without guessing 52-week years.
+
+- Performance baseline (#400): performanceBaseline owns effective scores, style/scale keys and the prior-365-day range maximum (lower edge included, ascent day excluded). Callers supply reference eligibility: weather excludes indoor, rock includes untagged sends. Build once per view; indexed queries avoid full historical scans per ascent.

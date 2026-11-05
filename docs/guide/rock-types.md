@@ -28,3 +28,9 @@ Once **20 or more** climbing days include at least one send or attempt on a Rock
 - When you have many distinct rock names, the least frequent fold into **Other** (no logbook link). Named bands link to `/logbook?rock=…` with the same case-insensitive match as the Rock types card.
 
 Viewing the card never triggers a provider request, and private notes are never used.
+
+The near-limit reference includes your same-style, same-scale sends even when
+those reference routes have no rock tag. It uses the hardest climbed-pitch grade
+when available, includes the 365th prior day, and excludes all sends on the day
+being compared. Rock and weather performance share this reference calculation;
+weather additionally restricts its reference sends to outdoor climbs.

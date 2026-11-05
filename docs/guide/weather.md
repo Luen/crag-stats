@@ -88,6 +88,11 @@ Each daily-high band and the fair, rain, snow, heat, freeze, calm and windy cond
 
 ## Logbook filters and chips
 
+Near-limit references use the same style-and-grade-scale calculation as
+[Rock & performance](/docs/rock-types), using climbed-pitch grades when available.
+The weather reference includes outdoor sends without cached weather, includes
+the 365th prior day, and excludes sends on the day being compared.
+
 When any weather is cached, the logbook gains a **Weather on the day** filter (`?weather=`): `fair`, `perfect`, `heat`, `freeze`, `rain`, `snow`, `wind` or `calm`. **Windy day** matches daily max 10 m wind **≥ 50 km/h**, the same threshold as **Blown Away**. **Calm / still day** matches measured max wind **under 25 km/h**, the calm threshold used by **Perfect day**, without requiring fair temperatures, dry weather or low humidity. Missing wind readings match neither option; days from 25 to under 50 km/h match neither wind filter. The other options use the same rules as the badges. It only matches **outdoor** ascents with route coordinates and a cached day for that location; gym routes, ascents without coordinates and days that have not been fetched never match.
 
 Rows on cached days also show small text chips (for example "Hot 36°C", "Freezing -2°C", "Rain 4 mm", "Snow", "Windy 55 km/h", "Fair 21°C"). Ordinary days show nothing.
