@@ -7,6 +7,9 @@ allowBuilds:
 overrides:
   esbuild: '>=0.25.0'
   tinypool: '>=2.1.2'
+  # GHSA-g3hv-75wg-m249: the current ESLint/typescript-estree callers use
+  # Minimatch.match/minimatch, retained by v11; scope this to their v10 range.
+  'minimatch@>=10.2.0 <11.0.0': '11.0.4'
 
 engineStrict: true
 shamefullyHoist: true

@@ -54,3 +54,9 @@ The boot graph at v0.6.2 was scanned separately on 28 October 2026: **15 depende
 For source analysis, use `snyk code test --remote-repo-url=https://github.com/Luen/crag-stats`. Scan reports and temporary manifests should remain outside Git; do not commit full reports containing source context or local paths.
 
 The dependency scan also reported that the organisation had reached its monthly private-test allowance. Findings above were returned, but further dependency rescans may require the allowance to reset or an account change by its owner. The original application scan alone did not cover the boot graph; the separate boot result above closes that inventory gap. Do not claim all dependencies are vulnerability-free.
+
+## Dependabot recheck — 5 November 2026
+
+Alert #11 (GHSA-g3hv-75wg-m249): minimatch 10.2.6 is replaced by 11.0.4 through a range-scoped pnpm override for the current ESLint/config-array/typescript-estree callers. Upstream v11 removes makeRe, AST and RegExp-based set entries; these callers use the retained minimatch function and Minimatch.match API. The installed-package regression exercises those APIs and bounds the advisory's globstar-parent preprocessing reproducer in a subprocess. Remove the override when the owning tools adopt a fixed release. Full lint/type/unit/build/browser checks validate this override; this is not a blanket override of older majors.
+
+Alert #10 (GHSA-gcqx-w48m-w2h4 / CVE-2026-93753) names the same deepmerge flaw already addressed by the version-pinned patch in #227. npm still has no upstream fixed release. Installed CJS/UMD exploit tests cover null-prototype targets, malicious source and target inputs, nested merges and arrays. Keep #174 and the version-level alert open; no advisory dismissal or scanner ignore is added. The affected package remains build-only and excluded by the container smoke test.
