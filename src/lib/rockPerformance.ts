@@ -205,7 +205,7 @@ export function buildRockPerformanceView(
 
 	if (ascents === 0) return null;
 
-	type RockBucket = { key: string; label: string; tallies: DayTally[]; ascents: number };
+	type RockBucket = { key: string | null; label: string; tallies: DayTally[]; ascents: number };
 	const byRock = new Map<string, RockBucket>();
 	for (const [clusterKey, tally] of clusters) {
 		const rockKey = clusterKey.slice(0, clusterKey.indexOf('::'));
@@ -231,7 +231,7 @@ export function buildRockPerformanceView(
 		const head = sorted.slice(0, ROCK_PERFORMANCE_MAX_BANDS - 1);
 		const rest = sorted.slice(ROCK_PERFORMANCE_MAX_BANDS - 1);
 		const other: RockBucket = {
-			key: 'other',
+			key: null,
 			label: 'Other',
 			tallies: rest.flatMap((b) => b.tallies),
 			ascents: rest.reduce((s, b) => s + b.ascents, 0)
@@ -256,9 +256,9 @@ export function buildRockPerformanceView(
 				const inSet = new Set(inBand);
 				const rest = allTallies.filter((t) => !inSet.has(t));
 				return {
-					id: `rock:${bucket.key}`,
+					id: bucket.key == null ? 'aggregate:other' : `rock:${bucket.key}`,
 					label: bucket.label,
-					href: bucket.key === 'other' ? null : rockHref(bucket.label),
+					href: bucket.key == null ? null : rockHref(bucket.label),
 					ascents: bucket.ascents,
 					days: inBand.length,
 					sendRate: compareRates(sendClusters(inBand), sendClusters(rest)),

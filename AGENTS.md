@@ -548,3 +548,5 @@ World map (#313): `/map` uses bundled public-domain Natural Earth outlines, serv
 - Partner context (#349): `ascentPartners` formats case-insensitive distinct upstream names. Badge details (including day/cumulative achievements) refer only to the linked qualifying ascent. Hardest/notable/recent cards and grade/FA milestones retain that ascent attribution; never infer companions from private notes or route-level aggregates.
 
 - Offline (#348): service worker caches only build assets, a data-free `/offline` shell and an explicit field-whitelisted public snapshot. Never add SSR/data-response runtime caching. Whole-app protection disables downloads. Navigations fall back to the shell only on network failure or 502/503/504 (30 s timeout), never on app errors. Any mutation/logout clears this browser; wipe rotates `offline_revision` for other browsers on reconnect. Seven-day expiry, 5,000 newest rows, 10 MB; updates clear old build caches.
+
+- Rock performance aggregate bands use a separate ID namespace from real rock tags, including a real tag named Other; only the aggregate has no drill-down link.

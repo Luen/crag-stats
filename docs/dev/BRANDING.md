@@ -210,3 +210,5 @@ Seasonality search (#331): responsive result cards with orange annual month stri
 Streaks (#339): retain the three current-counter tiles and longest-length footer; show the all-time record's formatted start/end dates on a wrapping text line below it. Use one date for a single-day record and no dates for an empty record. Streak badges reuse the calendar icon with green/blue/purple tones for 7/10/30 days.
 
 Partner attribution (#349) uses wrapping text in the existing muted detail style, labelled “Partners on this ascent”. Display every name without hover-only truncation; break long unspaced names within narrow cards.
+
+Rock & performance (#388): half-width dashboard card with wrapping measure controls, linked rock bands, ink-coloured signal pills and an expandable values table. Keep the geology card quarter-width and link both cards to /docs/rock-types.

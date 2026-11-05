@@ -128,9 +128,24 @@ describe('buildRockPerformanceView', () => {
 		const view = buildRockPerformanceView(rows)!;
 		expect(view.rockCount).toBe(ROCK_PERFORMANCE_MAX_BANDS + 2);
 		expect(view.bands).toHaveLength(ROCK_PERFORMANCE_MAX_BANDS);
-		const other = view.bands.find((b) => b.id === 'rock:other')!;
+		const other = view.bands.find((b) => b.id === 'aggregate:other')!;
 		expect(other.label).toBe('Other');
 		expect(other.href).toBeNull();
 		expect(other.ascents).toBeGreaterThan(0);
+	});
+
+	it('keeps a real Other rock tag distinct from the surplus aggregate', () => {
+		const rows: RockPerformanceRow[] = [];
+		for (let i = 0; i < ROCK_PERFORMANCE_MIN_DAYS; i++) {
+			rows.push(row({ ascentDate: day(i), tagsJson: tags('Other') }));
+			rows.push(row({ ascentDate: day(i), tagsJson: tags('Other') }));
+			for (let r = 0; r < ROCK_PERFORMANCE_MAX_BANDS; r++) {
+				rows.push(row({ ascentDate: day(i), tagsJson: tags(`Rock${r}`) }));
+			}
+		}
+		const bands = buildRockPerformanceView(rows)!.bands;
+		expect(bands.find((b) => b.id === 'rock:other')?.href).toBe('/logbook?rock=Other');
+		expect(bands.find((b) => b.id === 'aggregate:other')?.href).toBeNull();
+		expect(new Set(bands.map((b) => b.id)).size).toBe(bands.length);
 	});
 });
