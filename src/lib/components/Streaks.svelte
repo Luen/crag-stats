@@ -9,6 +9,8 @@
 		longestEndDate: string | null;
 		dateDisplay?: DateDisplay;
 		lastActiveDate: string | null;
+		activeDays: number;
+		daysSinceLastActive: number | null;
 	};
 	let {
 		currentDays,
@@ -18,12 +20,17 @@
 		longestStartDate,
 		longestEndDate,
 		lastActiveDate,
+		activeDays,
+		daysSinceLastActive,
 		dateDisplay = DEFAULT_DATE_DISPLAY
 	}: Props = $props();
 </script>
 
 <article class="panel">
-	<h2>Streaks</h2>
+	<header>
+		<h2>Streaks</h2>
+		<a class="how" href="/docs/activity">How it works</a>
+	</header>
 	<div class="cards">
 		<div class="card">
 			<strong>{currentDays}</strong>
@@ -37,13 +44,11 @@
 			<strong>{currentMonths}</strong>
 			<span>months</span>
 		</div>
+		<div class="card">
+			<strong>{longestDays}</strong>
+			<span>longest</span>
+		</div>
 	</div>
-	<p class="foot">
-		Longest streak <strong>{longestDays} day{longestDays === 1 ? '' : 's'}</strong>
-		{#if lastActiveDate}
-			· Last ascent <strong>{formatCalendarDate(lastActiveDate, dateDisplay)}</strong>
-		{/if}
-	</p>
 	{#if longestStartDate && longestEndDate}
 		<p class="foot record-range">
 			{#if longestStartDate === longestEndDate}On{:else}From{/if}
@@ -53,6 +58,16 @@
 			{/if}
 		</p>
 	{/if}
+	<p class="foot">
+		{#if lastActiveDate}
+			Last ascent <strong>{formatCalendarDate(lastActiveDate, dateDisplay)}</strong>
+			{#if daysSinceLastActive != null}
+				· <strong>{daysSinceLastActive}</strong> day{daysSinceLastActive === 1 ? '' : 's'} since
+			{/if}
+			·
+		{/if}
+		<strong>{activeDays}</strong> active day{activeDays === 1 ? '' : 's'}
+	</p>
 </article>
 
 <style>
@@ -60,13 +75,24 @@
 		padding: 1.1rem 1.2rem;
 		border-radius: 1rem;
 	}
+	header {
+		display: flex;
+		justify-content: space-between;
+		align-items: baseline;
+		gap: 1rem;
+		margin-bottom: 0.75rem;
+	}
 	h2 {
-		margin: 0 0 0.75rem;
+		margin: 0;
 		font-size: 1.05rem;
+	}
+	.how {
+		font-size: 0.85rem;
+		color: var(--ink-muted);
 	}
 	.cards {
 		display: grid;
-		grid-template-columns: repeat(3, 1fr);
+		grid-template-columns: repeat(2, 1fr);
 		gap: 0.55rem;
 	}
 	.card {

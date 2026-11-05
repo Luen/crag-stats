@@ -207,6 +207,6 @@ Settings sync completion (#335) uses the existing success-banner tokens with a t
 
 Seasonality search (#331): responsive result cards with orange annual month strips, selected-month underline and expandable numeric tables. Native labelled month/search/view/sort controls submit shareable URLs. Display data coverage and seasonal score in text; no colour-only meaning. Best months links to the search page.
 
-Streaks (#339): retain the three current-counter tiles and longest-length footer; show the all-time record's formatted start/end dates on a wrapping text line below it. Use one date for a single-day record and no dates for an empty record. Streak badges reuse the calendar icon with green/blue/purple tones for 7/10/30 days.
+Streaks (#339 / #387): four metric tiles in a 2×2 grid (current days / weeks / months / longest). Show the all-time record's formatted start/end dates on a wrapping text line below the tiles, then last ascent, days-since-last when the day streak is 0, and lifetime active days. Use one date for a single-day record and no dates for an empty record. Title links to `/docs/activity`. Streak badges reuse the calendar icon with green/blue/purple tones for 7/10/30 days.
 
 Partner attribution (#349) uses wrapping text in the existing muted detail style, labelled “Partners on this ascent”. Display every name without hover-only truncation; break long unspaced names within narrow cards.
