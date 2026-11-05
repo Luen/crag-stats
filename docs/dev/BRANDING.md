@@ -214,3 +214,5 @@ Partner attribution (#349) uses wrapping text in the existing muted detail style
 Rock & performance (#388): half-width dashboard card with wrapping measure controls, linked rock bands, ink-coloured signal pills and an expandable values table. Keep the geology card quarter-width and link both cards to /docs/rock-types.
 
 Climbing story: the most-popular put-up route name is an underlined --accent link that wraps within the paragraph and opens its theCrag page in a new tab. Keep the surrounding story text and localized ascent count inline.
+
+Weather performance fallback: when the dashboard has no daily-high/send-rate signal, show the existing detailed bands, controls and values table rather than a mostly empty summary. Keep the heading and Explore link to /weather; dashboard controls stay local.

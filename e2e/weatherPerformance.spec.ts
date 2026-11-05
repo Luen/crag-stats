@@ -92,6 +92,28 @@ test('weather summary opens shareable performance views and logbook drill-downs'
 		await card.locator('a[href="/logbook?weatherHighMax=10"]').click();
 		await expect(page).toHaveURL(/weatherHighMax=10/);
 		await expect(page.locator('tbody')).toContainText('Perf Arete');
+
+		// Equal performance in both temperature bands has no signal: retain useful detail.
+		db.prepare(
+			`UPDATE ascents SET
+			is_send = CASE WHEN external_id LIKE '%-0' OR external_id LIKE '%-1' THEN 1 ELSE 0 END,
+			is_attempt = CASE WHEN external_id LIKE '%-0' OR external_id LIKE '%-1' THEN 0 ELSE 1 END,
+			tick_type = CASE WHEN external_id LIKE '%-0' OR external_id LIKE '%-1' THEN 'Red point' ELSE 'Attempt' END
+			WHERE route_id = ?`
+		).run(routeId);
+		await page.goto('/');
+		await expect(card.getByRole('button', { name: 'Conditions', exact: true })).toBeVisible();
+		await expect(card.locator('a[href="/logbook?weatherHighMax=10"]')).toContainText('50%');
+		await expect(card.locator('.summary')).toContainText('No weather band stands out');
+		await card.getByRole('button', { name: 'Conditions', exact: true }).click();
+		await card.getByRole('button', { name: 'Onsight/flash', exact: true }).click();
+		await expect(page).toHaveURL('http://localhost:4301/');
+		await card.getByText('View values').click();
+		await expect(card.getByRole('table')).toContainText('Fair');
+		await expectAxeClean(page, { include: [card] });
+		await expect(
+			card.getByRole('link', { name: 'Explore weather & performance', exact: true })
+		).toHaveAttribute('href', '/weather#performance');
 	} finally {
 		db.prepare('DELETE FROM ascents WHERE route_id = ?').run(routeId);
 		db.prepare('DELETE FROM routes WHERE id = ?').run(routeId);

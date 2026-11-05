@@ -34,17 +34,40 @@
 		}
 	];
 
+	let dashboardDimension = $state<WeatherPerformanceDimension>('temperature');
+	let dashboardMetric = $state<WeatherPerformanceMetric>('sendRate');
+	const summaryGroup = $derived(data.groups.find((g) => g.key === 'temperature'));
+	const summarySignal = $derived(summaryGroup ? strongestSignal(summaryGroup, 'sendRate') : null);
+	const showDetails = $derived(!compact || !summarySignal);
 	const dimension = $derived<WeatherPerformanceDimension>(
-		!compact && page.url.searchParams.get('group') === 'conditions' ? 'conditions' : 'temperature'
+		compact
+			? showDetails
+				? dashboardDimension
+				: 'temperature'
+			: page.url.searchParams.get('group') === 'conditions'
+				? 'conditions'
+				: 'temperature'
 	);
 	const metric = $derived<WeatherPerformanceMetric>(
-		!compact && page.url.searchParams.get('measure') === 'nearLimit'
-			? 'nearLimit'
-			: !compact && page.url.searchParams.get('measure') === 'onsightFlash'
-				? 'onsightFlash'
+		compact
+			? showDetails
+				? dashboardMetric
 				: 'sendRate'
+			: page.url.searchParams.get('measure') === 'nearLimit'
+				? 'nearLimit'
+				: page.url.searchParams.get('measure') === 'onsightFlash'
+					? 'onsightFlash'
+					: 'sendRate'
 	);
-	function select(key: 'group' | 'measure', value: string) {
+	function select(
+		key: 'group' | 'measure',
+		value: WeatherPerformanceDimension | WeatherPerformanceMetric
+	) {
+		if (compact) {
+			if (key === 'group') dashboardDimension = value as WeatherPerformanceDimension;
+			else dashboardMetric = value as WeatherPerformanceMetric;
+			return;
+		}
 		const url = new URL(page.url.href);
 		url.searchParams.set(key, value);
 		void goto(url, { reset: false });
@@ -103,7 +126,7 @@
 			{fmt(data.ascents)} outdoor sends and attempts on {fmt(data.days)} location-days with cached weather{uncachedNote}.{approximateNote}
 		</p>
 
-		{#if !compact}
+		{#if showDetails}
 			<div class="controls">
 				<div class="toggles" role="group" aria-label="Weather grouping">
 					{#each data.groups as g (g.key)}
@@ -140,7 +163,7 @@
 				{daysPhrase(standout)}: {fmt(r.pct!)}% vs {fmt(
 					Math.round((r.pct! - r.diffPts!) * 10) / 10
 				)}% on your other days.
-			{:else if compact}
+			{:else if !showDetails}
 				No clear weather pattern yet for daily-high/send rate.
 			{:else}
 				No weather band stands out from your other days yet; the differences below are within normal
@@ -148,7 +171,7 @@
 			{/if}
 		</p>
 
-		{#if !compact}
+		{#if showDetails}
 			{#snippet bandBody(band: WeatherPerformanceBand)}
 				{@const r = band[metric]}
 				<span class="label">{band.label}</span>
@@ -165,7 +188,7 @@
 				</span>
 				<div class="track" aria-hidden="true">
 					{#if r.pct != null}
-						<div class="fill" class:faded={!r.signal} style:width="{r.pct}%"></div>
+						<div class={['fill', { faded: !r.signal }]} style:width="{r.pct}%"></div>
 					{/if}
 					{#if overall != null}
 						<div class="overall" style:left="{overall}%"></div>

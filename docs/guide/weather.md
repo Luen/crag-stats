@@ -37,7 +37,7 @@ Without `WEATHER_IMPORT` (or before the backlog is fetched), these badges stay l
 
 ## Weather detail page
 
-Open [Weather](/weather) from the analytics sidebar or either dashboard weather card title. The dashboard keeps compact conditions and daily-high/send-rate summaries; the detail page holds the full condition shares, temperature histogram, performance controls and values tables. Saved dashboard card visibility and positions still apply.
+Open [Weather](/weather) from the analytics sidebar or either dashboard weather card title. The dashboard keeps compact conditions and a daily-high/send-rate summary when a clear signal exists. With no clear signal, performance keeps its detailed bands and controls; the detail page always offers the full view. Saved dashboard card visibility and positions still apply.
 
 On the detail page, performance grouping and measure are saved in the URL (`group=temperature|conditions`, `measure=sendRate|nearLimit|onsightFlash`), so you can bookmark a view and use Back/Forward. Weather patterns describe correlations, not recommendations or causes.
 
@@ -64,7 +64,7 @@ Once **20 or more** outdoor location-days have cached weather, the **Weather & p
 
 **What is counted.** Outdoor sends and attempts (the same tick classification as everywhere else) whose location-day has cached weather. Gym routes, ticks that are neither a send nor an attempt, and ascents without a weather location are left out. Ascents whose weather comes from an approximate nearby place or area polygon are included, and the view says how many there are.
 
-The dashboard shows daily-high/send rate; the detail page offers both controls below.
+The compact dashboard summary shows daily-high/send rate. Its no-signal fallback and the detail page offer both controls below.
 
 **Group by:**
 
@@ -85,6 +85,8 @@ The dashboard shows daily-high/send rate; the detail page offers both controls b
 - This is a **correlation, not a cause**. Season, crag, partners and where you are in a project all change with the weather. With many bands and measures, an occasional "Higher" or "Lower" can appear by chance.
 
 Each daily-high band and the fair, rain, snow, heat, freeze, calm and windy conditions link to the logbook filtered to those ascents. Dry has no logbook filter. A values table under the detail-page bars lists every band with counts for all three measures. Viewing the card never triggers a weather request, and private notes are never used.
+
+When the dashboard's daily-high/send-rate comparison has no clear signal, the Weather & performance card keeps its detailed bands, local grouping/measure controls and values table. These controls leave the dashboard URL unchanged. A clear signal retains the compact summary; both versions link to the weather page. Minimum sample thresholds are unchanged.
 
 ## Logbook filters and chips
 

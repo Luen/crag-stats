@@ -562,3 +562,5 @@ World map (#313): `/map` uses bundled public-domain Natural Earth outlines, serv
 - Performance baseline (#400): performanceBaseline owns effective scores, style/scale keys and the prior-365-day range maximum (lower edge included, ascent day excluded). Callers supply reference eligibility: weather excludes indoor, rock includes untagged sends. Build once per view; indexed queries avoid full historical scans per ascent.
 
 - Climbing story put-up links: preserve plain-text paragraphs for metadata, with a separate typed route-name span rendered as a native escaped anchor. Mega-classic counts use the paired community-others estimate and the display locale; cached links must be HTTPS theCrag route pages, with a numeric provider-ID fallback.
+
+- Dashboard weather performance falls back to detail when the default daily-high/send-rate comparison has no signal. Keep that decision independent of local fallback controls, so selecting another measure does not collapse the card. Detail-page controls remain URL-backed.
