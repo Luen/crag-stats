@@ -198,6 +198,8 @@ Every release, including the automated nightly one, gets pulled straight onto ru
 
 ## Commands
 
+GitHub YAML is covered by Prettier too; format Dependabot/workflow edits with the repository config (single quotes) before running `pnpm lint` (#418).
+
 ```bash
 pnpm install
 pnpm dev
