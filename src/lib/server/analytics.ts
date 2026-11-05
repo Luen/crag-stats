@@ -1565,6 +1565,8 @@ function buildStreaks(dayMap: Map<string, { count: number; sends: number }>): {
 	longestStartDate: string | null;
 	longestEndDate: string | null;
 	lastActiveDate: string | null;
+	activeDays: number;
+	daysSinceLastActive: number | null;
 } {
 	const days = [...dayMap.keys()].sort();
 	if (!days.length) {
@@ -1575,7 +1577,9 @@ function buildStreaks(dayMap: Map<string, { count: number; sends: number }>): {
 			longestDays: 0,
 			longestStartDate: null,
 			longestEndDate: null,
-			lastActiveDate: null
+			lastActiveDate: null,
+			activeDays: 0,
+			daysSinceLastActive: null
 		};
 	}
 
@@ -1663,6 +1667,15 @@ function buildStreaks(dayMap: Map<string, { count: number; sends: number }>): {
 		}
 	}
 
+	let daysSinceLastActive: number | null = null;
+	if (currentDays === 0) {
+		const lastMs = Date.parse(`${last}T00:00:00Z`);
+		const todayMs = Date.parse(`${todayIso}T00:00:00Z`);
+		if (Number.isFinite(lastMs) && Number.isFinite(todayMs) && todayMs >= lastMs) {
+			daysSinceLastActive = Math.round((todayMs - lastMs) / 86_400_000);
+		}
+	}
+
 	return {
 		currentDays,
 		currentWeeks,
@@ -1670,7 +1683,9 @@ function buildStreaks(dayMap: Map<string, { count: number; sends: number }>): {
 		longestDays: longest?.length ?? 0,
 		longestStartDate: longest?.start ?? null,
 		longestEndDate: longest?.end ?? null,
-		lastActiveDate: last
+		lastActiveDate: last,
+		activeDays: days.length,
+		daysSinceLastActive
 	};
 }
 

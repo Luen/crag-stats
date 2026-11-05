@@ -61,8 +61,11 @@ it('returns the all-time longest range through the real dashboard, choosing the 
 	expect(getDashboardStats().streaks).toMatchObject({
 		longestDays: 10,
 		longestStartDate: day(0),
-		longestEndDate: day(9)
+		longestEndDate: day(9),
+		activeDays: 20,
+		daysSinceLastActive: expect.any(Number)
 	});
+	expect(getDashboardStats().streaks.daysSinceLastActive).toBeGreaterThan(0);
 	expect(getDashboardStats().badges.earned.find((b) => b.id === 'streak_days_10')?.date).toBe(
 		day(9)
 	);

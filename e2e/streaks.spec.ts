@@ -22,11 +22,16 @@ test('streak record and badges', async ({ page }) => {
 		const card = page
 			.locator('article')
 			.filter({ has: page.getByRole('heading', { name: 'Streaks', exact: true }) });
-		await expect(card).toContainText('Longest streak 30 days');
+		await expect(card.locator('.card').filter({ hasText: 'longest' })).toContainText('30');
 		await expect(card.locator('time').first()).toHaveAttribute('datetime', '2024-02-01');
 		await expect(card.locator('time').last()).toHaveAttribute('datetime', '2024-03-01');
+		await expect(card).toContainText('active days');
+		await expect(card.getByRole('link', { name: 'How it works' })).toHaveAttribute(
+			'href',
+			'/docs/activity'
+		);
 		await expect(card).not.toContainText('2024-02-01');
-		await expectAxeClean(page, { include: ['.record-range'] });
+		await expectAxeClean(page, { include: [card] });
 		expect(await card.evaluate((e) => e.scrollWidth <= e.clientWidth)).toBe(true);
 		await page.goto('/badges');
 		for (const n of [7, 10, 30])
