@@ -40,6 +40,7 @@ export const SITEMAP_PATHS = [
 	'/projects',
 	'/sectors',
 	'/seasonality',
+	'/weather',
 	'/partners',
 	'/goals',
 	'/rewind',
