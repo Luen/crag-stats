@@ -566,3 +566,5 @@ World map (#313): `/map` uses bundled public-domain Natural Earth outlines, serv
 - Dashboard weather performance falls back to detail when the default daily-high/send-rate comparison has no signal. Keep that decision independent of local fallback controls, so selecting another measure does not collapse the card. Detail-page controls remain URL-backed.
 
 - Settings has one navigation entry in the top-right header, with no duplicate sidebar/drawer link. Keep Settings route title/breadcrumb resolution independent of the sidebar groups.
+
+- Recent activity styleLabels come from the shared logbookStyleLabels helper, preserving route discipline, ascent protection and explicit solo ticks. Render existing StyleBadge components in a wrapping group; never infer solo from absent partners.

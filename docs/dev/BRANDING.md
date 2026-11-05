@@ -218,3 +218,5 @@ Climbing story: the most-popular put-up route name is an underlined --accent lin
 Weather performance fallback: when the dashboard has no daily-high/send-rate signal, show the existing detailed bands, controls and values table rather than a mostly empty summary. Keep the heading and Explore link to /weather; dashboard controls stay local.
 
 Settings navigation is header-only: use the Settings & sync gear at top right on desktop and mobile; the sidebar utility group contains Docs. Settings pages retain their Settings breadcrumb/title.
+
+Recent activities show existing StyleBadge chips in a wrapping Climb styles group below the date/tick metadata. Preserve discipline colours and explicit solo labels; keep partner and weather lines readable on mobile.

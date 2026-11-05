@@ -29,6 +29,7 @@
 	import StylePyramid from '#lib/components/StylePyramid.svelte';
 	import TagChips from '#lib/components/TagChips.svelte';
 	import TickTypeIcon from '#lib/components/TickTypeIcon.svelte';
+	import StyleBadge from '#lib/components/StyleBadge.svelte';
 	import TrainingLoad from '#lib/components/TrainingLoad.svelte';
 	import SessionsPerWeek from '#lib/components/SessionsPerWeek.svelte';
 	import WeatherChips from '#lib/components/WeatherChips.svelte';
@@ -339,6 +340,9 @@
 									· {climb.quality}
 								{/if}
 							</div>
+							<div class="recent-styles" role="group" aria-label="Climb styles">
+								{#each climb.styleLabels as style (style)}<StyleBadge {style} />{/each}
+							</div>
 							{#if ascentPartners(climb.partners)}
 								<div class="sub companions">{ascentPartners(climb.partners)}</div>
 							{/if}
@@ -450,6 +454,12 @@
 {/if}
 
 <style>
+	.recent-styles {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.3rem;
+		margin: 0.25rem 0;
+	}
 	.companions {
 		overflow-wrap: anywhere;
 	}
