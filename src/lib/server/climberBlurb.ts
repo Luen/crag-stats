@@ -18,6 +18,13 @@ const POP_SHARE = 0.55;
 const POP_MIN_WITH_DATA = 20;
 const DEVELOPER_ROUTES_MIN = 2;
 const DEVELOPER_IMPACT_MIN = 10;
+/** Put-up character (#395): quiet community traffic on a developed route. */
+const PUT_UP_OBSCURE_MAX_OTHERS = 5;
+/** Put-up character: busy community traffic (aligned with popularity busy ≈ 50). */
+const PUT_UP_CLASSIC_MIN_OTHERS = 50;
+/** Flourish on the single most-climbed put-up (aligned with community_100). */
+const PUT_UP_MEGA_ROUTE_OTHERS = 100;
+const PUT_UP_CHARACTER_MIN_WITH_DATA = 2;
 const MAX_OPTIONAL = 3;
 /** Weather lines need enough cached outdoor days, and most of them covered (#275). */
 export const WEATHER_STORY_MIN_DAYS = 20;
@@ -113,6 +120,52 @@ export function classifyPutUpStyle(
 	return sportOrBolted || isSportOrBolted(gearStyle, bolts) ? 'Sport' : null;
 }
 
+export type PutUpCharacter = 'obscure' | 'classic';
+
+/**
+ * Majority character of put-up routes from community othersAscents (#395).
+ * Needs ≥2 routes with data; obscure ≤5 others, classic ≥50. When both clear the
+ * majority bar, the higher share wins; a tie prefers classic (obscure must win outright).
+ */
+export function putUpCharacter(routes: readonly DeveloperImpactRoute[]): PutUpCharacter | null {
+	const withData: number[] = [];
+	for (const r of routes) {
+		if (r.othersAscents == null || !Number.isFinite(r.othersAscents)) continue;
+		withData.push(Math.max(0, Math.floor(r.othersAscents)));
+	}
+	if (withData.length < PUT_UP_CHARACTER_MIN_WITH_DATA) return null;
+
+	let obscure = 0;
+	let classic = 0;
+	for (const n of withData) {
+		if (n <= PUT_UP_OBSCURE_MAX_OTHERS) obscure += 1;
+		if (n >= PUT_UP_CLASSIC_MIN_OTHERS) classic += 1;
+	}
+	const obscureShare = obscure / withData.length;
+	const classicShare = classic / withData.length;
+	if (obscureShare >= MAJORITY && obscureShare > classicShare) return 'obscure';
+	if (classicShare >= MAJORITY) return 'classic';
+	if (obscureShare >= MAJORITY) return 'obscure';
+	return null;
+}
+
+/** Named top put-up by othersAscents; mega flourish at ≥100 community others. */
+export function describeMostPopularPutUp(routes: readonly DeveloperImpactRoute[]): string | null {
+	let best: { name: string; others: number } | null = null;
+	for (const r of routes) {
+		if (r.othersAscents == null || !Number.isFinite(r.othersAscents)) continue;
+		const name = (r.routeName ?? '').trim();
+		if (!name) continue;
+		const others = Math.max(0, Math.floor(r.othersAscents));
+		if (!best || others > best.others) best = { name, others };
+	}
+	if (!best) return null;
+	if (best.others >= PUT_UP_MEGA_ROUTE_OTHERS) {
+		return `The most popular route I've put up is ${best.name}, and it's a mega classic!`;
+	}
+	return `The most popular route I've put up is ${best.name}.`;
+}
+
 export function describeDeveloperPreference(input: {
 	routes: readonly DeveloperImpactRoute[];
 	firstAscentCount?: number;
@@ -157,14 +210,26 @@ export function describeDeveloperPreference(input: {
 				? 'I like to put up trad routes'
 				: 'I like to put up boulders';
 
-	// Counts are cached route ascents (estimates), not distinct people.
-	let impact = '';
-	if (others >= DEVELOPER_IMPACT_MIN) {
-		impact = ` that other people have climbed over ${fmt(others)} times`;
+	const character = putUpCharacter(input.routes);
+	let styleSentence: string;
+	if (character === 'obscure') {
+		styleSentence = `${lead} — mostly obscure and adventure lines few others have logged.`;
+	} else if (character === 'classic') {
+		styleSentence = `${lead} — mega classics other people keep climbing.`;
+	} else {
+		// Counts are cached route ascents (estimates), not distinct people.
+		let impact = '';
+		if (others >= DEVELOPER_IMPACT_MIN) {
+			impact = ` that other people have climbed over ${fmt(others)} times`;
+		}
+		styleSentence = `${lead}${impact}.`;
 	}
 
-	const styleSentence = `${lead}${impact}.`;
-	return faSentence ? `${styleSentence} ${faSentence}` : styleSentence;
+	const parts = [styleSentence];
+	if (faSentence) parts.push(faSentence);
+	const popular = describeMostPopularPutUp(input.routes);
+	if (popular) parts.push(popular);
+	return parts.join(' ');
 }
 
 export function describeHomeCrag(input: {
