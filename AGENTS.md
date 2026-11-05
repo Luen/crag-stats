@@ -556,3 +556,5 @@ World map (#313): `/map` uses bundled public-domain Natural Earth outlines, serv
 - Minimatch security override (#11): v10-range ESLint tooling uses verified v11.0.4 APIs; keep the bounded installed-package regression and remove the override once callers adopt an upstream fixed release. Deepmerge alert #10 is covered by the existing pnpm patch; its unchanged upstream version remains flagged, with #174 tracking removal.
 
 - Current day streak (#398) uses currentDayStreak with strict written dates and UTC adjacency; today or yesterday anchors it, and future logs cannot extend it. Keep timezone/DST regressions alongside historical streak tests.
+
+- Current week/month streaks (#399) share currentPeriodStreak: anchor to the current or immediately preceding period, ignore future days, and expire after a whole empty period. Weeks start Monday; integer UTC week indices handle ISO week 53 without guessing 52-week years.

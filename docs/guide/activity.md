@@ -32,6 +32,12 @@ The current day streak ends today, or yesterday while you have not climbed today
 Calendar-day comparisons use UTC, so the server time zone and daylight-saving
 changes cannot shift a logged day. Future-dated entries do not extend the current streak.
 
+Current week and month streaks follow the same grace rule: count consecutive
+periods ending in the current period, or the immediately preceding one if there
+has been no climb this period yet. After a whole empty week or month, that counter
+is zero. Weeks start on Monday and calendar boundaries use UTC, including across
+ISO week 53 and the new year. Future-dated entries do not count toward these counters.
+
 ## Recent activities
 
 The dashboard lists the newest **climbing day** first. Within each day, the most
