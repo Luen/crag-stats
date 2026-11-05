@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { page } from '$app/state';
+	import { goto } from '$app/navigation';
 	import { DEFAULT_DATE_DISPLAY, formatNumber, type DateDisplay } from '#lib/dates';
 	import {
 		MIN_RATE_ASCENTS,
@@ -11,8 +13,8 @@
 		type WeatherRate
 	} from '#lib/weatherPerformance';
 
-	type Props = { data: WeatherPerformanceView; dateDisplay?: DateDisplay };
-	let { data, dateDisplay = DEFAULT_DATE_DISPLAY }: Props = $props();
+	type Props = { data: WeatherPerformanceView; dateDisplay?: DateDisplay; compact?: boolean };
+	let { data, dateDisplay = DEFAULT_DATE_DISPLAY, compact = true }: Props = $props();
 
 	const METRICS: { key: WeatherPerformanceMetric; label: string; help: string }[] = [
 		{
@@ -32,8 +34,21 @@
 		}
 	];
 
-	let dimension = $state<WeatherPerformanceDimension>('temperature');
-	let metric = $state<WeatherPerformanceMetric>('sendRate');
+	const dimension = $derived<WeatherPerformanceDimension>(
+		!compact && page.url.searchParams.get('group') === 'conditions' ? 'conditions' : 'temperature'
+	);
+	const metric = $derived<WeatherPerformanceMetric>(
+		!compact && page.url.searchParams.get('measure') === 'nearLimit'
+			? 'nearLimit'
+			: !compact && page.url.searchParams.get('measure') === 'onsightFlash'
+				? 'onsightFlash'
+				: 'sendRate'
+	);
+	function select(key: 'group' | 'measure', value: string) {
+		const url = new URL(page.url.href);
+		url.searchParams.set(key, value);
+		void goto(url, { reset: false });
+	}
 
 	const group = $derived(data.groups.find((g) => g.key === dimension) ?? data.groups[0]);
 	const metricDef = $derived(METRICS.find((m) => m.key === metric)!);
@@ -44,12 +59,12 @@
 	// Leading spaces live in the strings: Svelte trims whitespace at the start of {#if} blocks.
 	const uncachedNote = $derived(
 		data.outdoorAscents > data.ascents
-			? ` (${fmt(data.outdoorAscents - data.ascents)} more outdoor ascents have no weather yet)`
+			? ` (${fmt(data.outdoorAscents - data.ascents)} more outdoor sends and attempts with resolved locations have no usable weather)`
 			: ''
 	);
 	const approximateNote = $derived(
 		data.approximateAscents > 0
-			? ` ${fmt(data.approximateAscents)} use weather from an approximate nearby place or area.`
+			? ` ${fmt(data.approximateAscents)} ${data.approximateAscents === 1 ? 'ascent uses' : 'ascents use'} weather from an approximate nearby place or area.`
 			: ''
 	);
 
@@ -71,43 +86,52 @@
 
 <article class="panel weather-performance">
 	<header>
-		<h2>Weather &amp; performance</h2>
+		<h2>
+			{#if compact}<a href="/weather#performance">Weather &amp; performance</a>{:else}Weather &amp;
+				performance{/if}
+		</h2>
 		<a class="how" href="/docs/weather">How it works</a>
 	</header>
 
 	{#if !data.ready || !group}
 		<p class="lead">
-			This card compares your sends across weather once {fmt(data.minDays)} outdoor climbing days have
-			cached weather. So far: {fmt(data.days)}.
+			Compare your sends across weather once {fmt(data.minDays)} outdoor location-days have cached weather.
+			So far: {fmt(data.days)}.{approximateNote}
 		</p>
 	{:else}
 		<p class="lead">
-			{fmt(data.ascents)} outdoor sends and attempts on {fmt(data.days)} days with cached weather{uncachedNote}.{approximateNote}
+			{fmt(data.ascents)} outdoor sends and attempts on {fmt(data.days)} location-days with cached weather{uncachedNote}.{approximateNote}
 		</p>
 
-		<div class="controls">
-			<div class="toggles" role="group" aria-label="Weather grouping">
-				{#each data.groups as g (g.key)}
-					<button
-						type="button"
-						class={{ active: dimension === g.key }}
-						aria-pressed={dimension === g.key}
-						onclick={() => (dimension = g.key)}>{g.label}</button
-					>
-				{/each}
+		{#if !compact}
+			<div class="controls">
+				<div class="toggles" role="group" aria-label="Weather grouping">
+					{#each data.groups as g (g.key)}
+						<button
+							type="button"
+							class={{ active: dimension === g.key }}
+							aria-pressed={dimension === g.key}
+							onclick={() => select('group', g.key)}>{g.label}</button
+						>
+					{/each}
+				</div>
+				<div class="toggles" role="group" aria-label="Performance measure">
+					{#each METRICS as m (m.key)}
+						<button
+							type="button"
+							class={{ active: metric === m.key }}
+							aria-pressed={metric === m.key}
+							onclick={() => select('measure', m.key)}>{m.label}</button
+						>
+					{/each}
+				</div>
 			</div>
-			<div class="toggles" role="group" aria-label="Performance measure">
-				{#each METRICS as m (m.key)}
-					<button
-						type="button"
-						class={{ active: metric === m.key }}
-						aria-pressed={metric === m.key}
-						onclick={() => (metric = m.key)}>{m.label}</button
-					>
-				{/each}
-			</div>
-		</div>
-		<p class="hint">{metricDef.help}</p>
+			<p class="hint">{metricDef.help}</p>
+		{:else}
+			<p class="hint">
+				Daily high · Send rate{overall != null ? ` · Overall ${fmt(overall)}%` : ''}
+			</p>
+		{/if}
 
 		<p class="summary" aria-live="polite">
 			{#if standout}
@@ -116,97 +140,107 @@
 				{daysPhrase(standout)}: {fmt(r.pct!)}% vs {fmt(
 					Math.round((r.pct! - r.diffPts!) * 10) / 10
 				)}% on your other days.
+			{:else if compact}
+				No clear weather pattern yet for daily-high/send rate.
 			{:else}
 				No weather band stands out from your other days yet; the differences below are within normal
 				day-to-day variation.
 			{/if}
 		</p>
 
-		{#snippet bandBody(band: WeatherPerformanceBand)}
-			{@const r = band[metric]}
-			<span class="label">{band.label}</span>
-			<span class="value">
-				{#if r.pct == null}
-					Not enough data · {fmt(band.ascents)}
-					{band.ascents === 1 ? 'ascent' : 'ascents'}
-				{:else}
-					{fmt(r.pct)}% · {sampleText(r)}
-				{/if}
-				{#if r.signal}
-					<span class="signal {r.signal}">{r.signal === 'higher' ? '↑ Higher' : '↓ Lower'}</span>
-				{/if}
-			</span>
-			<div class="track" aria-hidden="true">
-				{#if r.pct != null}
-					<div class="fill" class:faded={!r.signal} style:width="{r.pct}%"></div>
-				{/if}
-				{#if overall != null}
-					<div class="overall" style:left="{overall}%"></div>
-				{/if}
-			</div>
-		{/snippet}
-
-		<ul class="bands">
-			{#each group.bands as band (band.id)}
-				<li>
-					{#if band.href}
-						<a class="row" href={band.href}>{@render bandBody(band)}</a>
+		{#if !compact}
+			{#snippet bandBody(band: WeatherPerformanceBand)}
+				{@const r = band[metric]}
+				<span class="label">{band.label}</span>
+				<span class="value">
+					{#if r.pct == null}
+						Not enough data · {fmt(band.ascents)}
+						{band.ascents === 1 ? 'ascent' : 'ascents'}
 					{:else}
-						<div class="row">{@render bandBody(band)}</div>
+						{fmt(r.pct)}% · {sampleText(r)}
 					{/if}
-				</li>
-			{/each}
-		</ul>
+					{#if r.signal}
+						<span class="signal {r.signal}">{r.signal === 'higher' ? '↑ Higher' : '↓ Lower'}</span>
+					{/if}
+				</span>
+				<div class="track" aria-hidden="true">
+					{#if r.pct != null}
+						<div class="fill" class:faded={!r.signal} style:width="{r.pct}%"></div>
+					{/if}
+					{#if overall != null}
+						<div class="overall" style:left="{overall}%"></div>
+					{/if}
+				</div>
+			{/snippet}
 
-		<p class="hint">
-			{#if overall != null}
-				Overall {metricDef.label.toLowerCase()}: {fmt(overall)}% (the line on each bar).
-			{/if}
-			“Higher” or “Lower” marks a band that differs from your other weather days by more than day-to-day
-			variation explains, with at least {fmt(MIN_RATE_ASCENTS)} ascents over
-			{fmt(MIN_SIGNAL_DAYS)} days on each side.
-			{#if group.overlapping}One day can count in several conditions.{/if}
-			Season, crag and project choice also change with the weather, so treat this as a pattern, not a
-			cause.
-		</p>
+			<ul class="bands">
+				{#each group.bands as band (band.id)}
+					<li>
+						{#if band.href}
+							<a class="row" href={band.href}>{@render bandBody(band)}</a>
+						{:else}
+							<div class="row">{@render bandBody(band)}</div>
+						{/if}
+					</li>
+				{/each}
+			</ul>
 
-		<details class="values">
-			<summary>View values</summary>
-			<!-- Scrollable region: focusable so keyboard users can scroll it (axe). -->
-			<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-			<div class="table-wrap" tabindex="0" role="region" aria-label="{group.label} values">
-				<table>
-					<caption>{group.label}: sends by weather (count of total)</caption>
-					<thead>
-						<tr>
-							<th scope="col">Band</th>
-							<th scope="col">Days</th>
-							{#each METRICS as m (m.key)}
-								<th scope="col">{m.label}</th>
-							{/each}
-						</tr>
-					</thead>
-					<tbody>
-						{#each group.bands as band (band.id)}
+			<p class="hint">
+				{#if overall != null}
+					Overall {metricDef.label.toLowerCase()}: {fmt(overall)}% (the line on each bar).
+				{/if}
+				“Higher” or “Lower” marks a band that differs from your other weather days by more than day-to-day
+				variation explains, with at least {fmt(MIN_RATE_ASCENTS)} ascents over
+				{fmt(MIN_SIGNAL_DAYS)} days on each side.
+				{#if group.overlapping}One day can count in several conditions.{/if}
+				Season, crag and project choice also change with the weather, so treat this as a pattern, not
+				a cause.
+			</p>
+
+			<details class="values">
+				<summary>View values</summary>
+				<!-- Scrollable region: focusable so keyboard users can scroll it (axe). -->
+				<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+				<div class="table-wrap" tabindex="0" role="region" aria-label="{group.label} values">
+					<table>
+						<caption>{group.label}: sends by weather (count of total)</caption>
+						<thead>
 							<tr>
-								<th scope="row">{band.label}</th>
-								<td>{fmt(band.days)}</td>
+								<th scope="col">Band</th>
+								<th scope="col">Days</th>
 								{#each METRICS as m (m.key)}
-									{@const r = band[m.key]}
-									<td>
-										{rateText(r)}
-										<span class="n">({sampleText(r)})</span>
-										{#if r.signal}<span class="visually-hidden">, {r.signal} than other days</span
-											>{/if}
-									</td>
+									<th scope="col">{m.label}</th>
 								{/each}
 							</tr>
-						{/each}
-					</tbody>
-				</table>
-			</div>
-		</details>
+						</thead>
+						<tbody>
+							{#each group.bands as band (band.id)}
+								<tr>
+									<th scope="row">{band.label}</th>
+									<td>{fmt(band.days)}</td>
+									{#each METRICS as m (m.key)}
+										{@const r = band[m.key]}
+										<td>
+											{rateText(r)}
+											<span class="n">({sampleText(r)})</span>
+											{#if r.signal}<span class="visually-hidden">, {r.signal} than other days</span
+												>{/if}
+										</td>
+									{/each}
+								</tr>
+							{/each}
+						</tbody>
+					</table>
+				</div>
+			</details>
+		{:else}
+			<p class="hint">
+				Weather patterns are correlations. Season, crag and project choice also matter.
+			</p>
+			{#if standout?.href}<p><a href={standout.href}>View the qualifying ascents</a></p>{/if}
+		{/if}
 	{/if}
+	{#if compact}<p><a href="/weather#performance">Explore weather &amp; performance</a></p>{/if}
 </article>
 
 <style>
@@ -220,6 +254,13 @@
 		align-items: baseline;
 		gap: 1rem;
 		margin-bottom: 0.5rem;
+	}
+	h2 a {
+		color: inherit;
+		text-decoration: none;
+	}
+	h2 a:hover {
+		text-decoration: underline;
 	}
 	h2 {
 		margin: 0;

@@ -32,7 +32,7 @@ test('condition and histogram rows filter ascents and keep the range across navi
 				`INSERT INTO weather_days (lat_key,lon_key,day,temp_max_c,temp_min_c,precip_mm,wind_max_kmh,weather_code,status,fetched_at) VALUES (45,67,?,?, -2,?,?,0,'ok','2026-10-28')`
 			).run(day, high, rain, wind);
 		await page.setViewportSize({ width: 1440, height: 1000 });
-		await page.goto('/');
+		await page.goto('/weather');
 		const card = page
 			.locator('article')
 			.filter({ has: page.getByRole('heading', { name: 'Weather conditions', exact: true }) });
@@ -67,7 +67,7 @@ test('condition and histogram rows filter ascents and keep the range across navi
 			).toBeVisible();
 		}
 		await page.setViewportSize({ width: 1440, height: 1000 });
-		await page.goto('/');
+		await page.goto('/weather');
 		const range = card.locator('a[href="/logbook?weatherHighMin=20&weatherHighMax=25"]');
 		await range.locator('.track').click();
 		await expect(page).toHaveURL(/weatherHighMin=20&weatherHighMax=25/);
@@ -117,7 +117,7 @@ test('condition and histogram rows filter ascents and keep the range across navi
 		await expect(page.locator('tbody')).toContainText('Drill boundary');
 		await expect(page.locator('.head')).toContainText('calm/still days');
 		await expectAxeClean(page, { include: ['.filters', '.head'] });
-		await page.goto('/');
+		await page.goto('/weather');
 		await expectAxeClean(page, { include: ['.shares', '.whole-row'] });
 	} finally {
 		for (const id of ids) {

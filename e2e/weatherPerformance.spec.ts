@@ -2,7 +2,7 @@ import Database from 'better-sqlite3';
 import { expect, test } from '@playwright/test';
 import { expectAxeClean } from './axe';
 
-test('weather & performance card flags a band, switches views and drills into the logbook', async ({
+test('weather summary opens shareable performance views and logbook drill-downs', async ({
 	page
 }) => {
 	const db = new Database('e2e/.tmp/open.sqlite');
@@ -47,6 +47,10 @@ test('weather & performance card flags a band, switches views and drills into th
 		const card = page.locator('article.weather-performance');
 		await expect(card.getByRole('heading', { name: 'Weather & performance' })).toBeVisible();
 		await expect(card.locator('.summary')).toContainText('Send rate is lower on days under 10°');
+		await expect(card.getByRole('button')).toHaveCount(0);
+		await expectAxeClean(page, { include: [card] });
+		await card.getByRole('link', { name: 'Weather & performance', exact: true }).click();
+		await expect(page).toHaveURL(/\/weather#performance/);
 		const cold = card.locator('a[href="/logbook?weatherHighMax=10"]');
 		await expect(cold).toContainText('12.5%');
 		await expect(cold).toContainText('↓ Lower');
@@ -62,9 +66,27 @@ test('weather & performance card flags a band, switches views and drills into th
 		await expect(card.locator('a[href="/logbook?weather=freeze"]')).toBeVisible();
 		await card.getByRole('button', { name: 'Onsight/flash', exact: true }).click();
 		await expect(card.locator('.summary')).toContainText('No weather band stands out');
+		await expect(page).toHaveURL(/group=conditions.*measure=onsightFlash/);
+		await page.reload();
+		await expect(card.getByRole('button', { name: 'Conditions', exact: true })).toHaveAttribute(
+			'aria-pressed',
+			'true'
+		);
+		await expect(card.getByRole('button', { name: 'Onsight/flash', exact: true })).toHaveAttribute(
+			'aria-pressed',
+			'true'
+		);
+		await page.goBack();
+		await expect(card.getByRole('button', { name: 'Send rate', exact: true })).toHaveAttribute(
+			'aria-pressed',
+			'true'
+		);
+		await page.goForward();
 		await card.getByText('View values').click();
 		await expect(card.getByRole('table')).toContainText('Freezing');
-		await expectAxeClean(page, { include: ['article.weather-performance'] });
+		await page.setViewportSize({ width: 390, height: 844 });
+		await expectAxeClean(page, { include: ['main'] });
+		await expect(page.locator('html')).toHaveJSProperty('scrollWidth', 390);
 
 		await card.getByRole('button', { name: 'Daily high', exact: true }).click();
 		await card.locator('a[href="/logbook?weatherHighMax=10"]').click();
