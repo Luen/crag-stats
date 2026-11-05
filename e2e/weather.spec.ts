@@ -46,10 +46,18 @@ test('outdoor cache drives the card and logbook; indoor rows stay excluded', asy
 		await expect(card).toContainText('38°C');
 		await expect(card).toContainText('Review hot weather');
 		await expect(card).not.toContainText('Review Gym');
+		await expect(
+			card.getByRole('link', { name: 'Weather conditions', exact: true })
+		).toHaveAttribute('href', '/weather#conditions');
+		await expect(card.locator('.shares')).toHaveCount(0);
+		await page.goto('/weather');
 		await expect(card.getByRole('link', { name: /^Perfect/ })).toHaveAttribute(
 			'href',
 			'/logbook?weather=perfect'
 		);
+		await expect(page.locator('article.weather-performance')).toContainText('So far: 2');
+		await expectAxeClean(page, { include: ['main'] });
+		await page.goto('/');
 		const calendar = page
 			.locator('article')
 			.filter({ has: page.getByRole('heading', { name: 'Ascent calendar', exact: true }) });

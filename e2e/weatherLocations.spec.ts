@@ -94,6 +94,12 @@ test(`owner-confirmed weather location`, async ({ page }) => {
 		await expect(page.locator('.weather-cell').last()).toContainText('Approximate nearby place');
 		await expect(page.locator('.weather-cell').last()).toContainText('Reviewtown');
 		await expect(page.locator('.weather-cell').last()).toContainText('High 38°C');
+		await page.goto('/weather');
+		await expect(page.locator('article.weather-performance')).toContainText(
+			'1 ascent uses weather from an approximate nearby place or area'
+		);
+		await expect(page.locator('#coverage')).toContainText('does not unlock weather badges');
+		await expectAxeClean(page, { include: ['main'] });
 		await page.goto('/settings/weather-locations');
 		await group.locator('summary').click();
 		await expect(group).toContainText('Chosen fallback: Reviewtown');

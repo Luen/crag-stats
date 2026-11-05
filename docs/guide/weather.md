@@ -35,12 +35,22 @@ Once a day is cached, these badges can unlock from any **outdoor** logged ascent
 
 Without `WEATHER_IMPORT` (or before the backlog is fetched), these badges stay locked even if you climbed in those conditions. A “scorcher streak” (many heat days in one week) is deferred.
 
-## Weather conditions card
+## Weather detail page
+
+Open [Weather](/weather) from the analytics sidebar or either dashboard weather card title. The dashboard keeps compact conditions and daily-high/send-rate summaries; the detail page holds the full condition shares, temperature histogram, performance controls and values tables. Saved dashboard card visibility and positions still apply.
+
+On the detail page, performance grouping and measure are saved in the URL (`group=temperature|conditions`, `measure=sendRate|nearLimit|onsightFlash`), so you can bookmark a view and use Back/Forward. Weather patterns describe correlations, not recommendations or causes.
+
+**Coverage & location quality** separates usable cached location-days, checked days with unavailable weather, and days not checked yet (including today and future dates). Outdoor ascents with valid dates but no resolved location are counted separately: they cannot be assigned a location-day and are excluded from that denominator. Conditions count all outdoor ticks; performance counts sends and attempts only. Import and location controls remain in Settings, linked from Weather for the signed-in owner.
+
+Without cached outdoor weather the page explains how import works. Thin caches still show conditions while performance waits for its existing minimum sample. Viewing Weather never requests provider data.
+
+## Weather conditions
 
 The dashboard **Weather conditions** card appears once at least one outdoor climbing day has a cached weather row; without `WEATHER_IMPORT` (or before the first fetch finishes) it stays hidden. It can be shown, hidden or moved from Settings → Dashboard like any other card.
 
 - **Days** are _location-days_: one calendar day at one cached location (lat/lon rounded to one decimal). A day split across two crags counts twice; gym and other likely-indoor routes never count.
-- **Coverage** compares days that have a cached weather row with all outdoor days that have route coordinates. Days not fetched yet (including today) are listed as "not cached yet" and left out of every other number on the card.
+- **Coverage** compares days that have a cached weather row with all outdoor days that have route coordinates. Days without a usable cached row (including unchecked and checked-but-unavailable days) are listed as "without usable weather" and left out of every other number in the conditions view.
 - **Hottest / coldest climb** use the day's maximum and minimum temperature. The link goes to the earliest-logged ascent that day on theCrag.
 - **Share of days** shows perfect, rainy, snowy, freezing and hot days as a share of days with cached weather, using the same rules as the badges above (rain ≥ 1 mm and not snow, snow codes, low ≤ 0°C, high ≥ 35°C). A day can appear in more than one row, for example a freezing, snowy day.
 - A **Perfect** day is a fair day (high 15–25°C, dry, no snow or thunderstorm) that is also calm (max wind under 25 km/h), not humid (mean humidity under 85%) and stayed above freezing overnight. If the wind, humidity or low is missing for a day, it is not counted as perfect.
@@ -48,11 +58,13 @@ The dashboard **Weather conditions** card appears once at least one outdoor clim
 
 These are model values for the nearest grid cell, not official climate normals or a measurement at the wall.
 
-## Weather & performance card
+## Weather & performance
 
-Once **20 or more** outdoor location-days have cached weather, the **Weather & performance** card compares how your outdoor climbing went in different weather. Before that it shows how many days are cached so far. Like the Weather conditions card it stays hidden while no weather is cached, and can be moved or hidden from Settings → Dashboard.
+Once **20 or more** outdoor location-days have cached weather, the **Weather & performance** detail view compares how your outdoor climbing went in different weather. Before that it shows how many eligible location-days are cached so far. The dashboard summary stays hidden while no weather is cached and can be moved or hidden from Settings → Dashboard; the detail page remains accessible with an empty-state explanation.
 
-**What is counted.** Outdoor sends and attempts (the same tick classification as everywhere else) whose location-day has cached weather. Gym routes, ticks that are neither a send nor an attempt, and ascents without a weather location are left out. Ascents whose weather comes from an approximate nearby place or area polygon are included, and the card says how many there are.
+**What is counted.** Outdoor sends and attempts (the same tick classification as everywhere else) whose location-day has cached weather. Gym routes, ticks that are neither a send nor an attempt, and ascents without a weather location are left out. Ascents whose weather comes from an approximate nearby place or area polygon are included, and the view says how many there are.
+
+The dashboard shows daily-high/send rate; the detail page offers both controls below.
 
 **Group by:**
 
@@ -72,7 +84,7 @@ Once **20 or more** outdoor location-days have cached weather, the **Weather & p
 - The one-line summary names the band that stands out most for the selected measure, or says that nothing stands out yet.
 - This is a **correlation, not a cause**. Season, crag, partners and where you are in a project all change with the weather. With many bands and measures, an occasional "Higher" or "Lower" can appear by chance.
 
-Each daily-high band and the fair, rain, snow, heat, freeze, calm and windy conditions link to the logbook filtered to those ascents. Dry has no logbook filter. A values table under the bars lists every band with counts for all three measures. Viewing the card never triggers a weather request, and private notes are never used.
+Each daily-high band and the fair, rain, snow, heat, freeze, calm and windy conditions link to the logbook filtered to those ascents. Dry has no logbook filter. A values table under the detail-page bars lists every band with counts for all three measures. Viewing the card never triggers a weather request, and private notes are never used.
 
 ## Logbook filters and chips
 
@@ -111,9 +123,9 @@ For seasonal recommendations from route metadata, see [Best months](/docs/best-m
 
 Fair-weather labels use the exact day counts for their thresholds; displayed rates are rounded to one decimal place. Display rounding alone never changes your label.
 
-### From the card to your logbook
+### From weather details to your logbook
 
-Each condition row and each daily-high bar on the **Weather conditions** card opens the logbook filtered to those days. A temperature bar includes its lower bound and stops just below the next bar (for example 20–24° covers 20.0 °C up to, but not including, 25 °C). The range stays applied while you sort, page or add other filters; use **Clear weather range** to remove only that range.
+Each condition row and each daily-high bar in the **Weather conditions** detail view opens the logbook filtered to those days. A temperature bar includes its lower bound and stops just below the next bar (for example 20–24° covers 20.0 °C up to, but not including, 25 °C). The range stays applied while you sort, page or add other filters; use **Clear weather range** to remove only that range.
 
 The card counts outdoor _days_ at each location, while the logbook lists every matching _ascent_, so the two numbers can differ. On wide screens the logbook shows a Weather column with the cached daily high, low and rain; on smaller screens the condition chips appear next to the route instead. Indoor or uncached ascents show a dash. Viewing these pages never triggers a weather request.
 

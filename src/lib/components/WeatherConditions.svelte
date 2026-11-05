@@ -12,8 +12,8 @@
 	} from '#lib/weatherStats';
 	import BarList from './BarList.svelte';
 
-	type Props = { data: WeatherConditionsView; dateDisplay?: DateDisplay };
-	let { data, dateDisplay = DEFAULT_DATE_DISPLAY }: Props = $props();
+	type Props = { data: WeatherConditionsView; dateDisplay?: DateDisplay; compact?: boolean };
+	let { data, dateDisplay = DEFAULT_DATE_DISPLAY, compact = true }: Props = $props();
 
 	const SHARE_COLORS: Record<string, string> = {
 		perfect: 'var(--accent-2)',
@@ -62,14 +62,17 @@
 
 <article class="panel">
 	<header>
-		<h2>Weather conditions</h2>
+		<h2>
+			{#if compact}<a href="/weather#conditions">Weather conditions</a>{:else}Weather conditions{/if}
+		</h2>
 		<a class="how" href="/docs/weather">How it works</a>
 	</header>
 
 	<p class="lead">
 		Weather is cached for {formatNumber(data.withWeather, dateDisplay)} of
-		{formatNumber(data.outdoorDays, dateDisplay)} outdoor climbing days{data.withoutWeather > 0
-			? ` (${formatNumber(data.withoutWeather, dateDisplay)} not cached yet)`
+		{formatNumber(data.outdoorDays, dateDisplay)} outdoor location-days with a resolved location{data.withoutWeather >
+		0
+			? ` (${formatNumber(data.withoutWeather, dateDisplay)} without usable weather)`
 			: ''}.
 	</p>
 
@@ -96,37 +99,41 @@
 	{/if}
 
 	<p class="hint">
-		Weather can use an approximate crag or owner-selected nearby place. The logbook shows each
-		location source.
+		Weather can use an approximate crag, area polygon or owner-selected nearby place. The logbook
+		shows each location source.
 	</p>
-	<h3>Share of days</h3>
-	<ul class="shares">
-		{#each data.shares as share (share.key)}
-			<li>
-				<a href={`/logbook?weather=${share.key}`}>
-					<span class="label">{share.label}</span>
-					<span class="value">
-						{formatNumber(share.pct, dateDisplay)}% · {formatNumber(share.days, dateDisplay)}
-						{share.days === 1 ? 'day' : 'days'}
-					</span>
-					<div class="track" aria-hidden="true">
-						<div
-							class="fill"
-							style:width="{share.pct}%"
-							style:background={SHARE_COLORS[share.key]}
-						></div>
-					</div>
-				</a>
-			</li>
-		{/each}
-	</ul>
+	{#if !compact}
+		<h3>Share of days</h3>
+		<ul class="shares">
+			{#each data.shares as share (share.key)}
+				<li>
+					<a href={`/logbook?weather=${share.key}`}>
+						<span class="label">{share.label}</span>
+						<span class="value">
+							{formatNumber(share.pct, dateDisplay)}% · {formatNumber(share.days, dateDisplay)}
+							{share.days === 1 ? 'day' : 'days'}
+						</span>
+						<div class="track" aria-hidden="true">
+							<div
+								class="fill"
+								style:width="{share.pct}%"
+								style:background={SHARE_COLORS[share.key]}
+							></div>
+						</div>
+					</a>
+				</li>
+			{/each}
+		</ul>
 
-	<h3>Daily high (°C)</h3>
-	<BarList items={histogram} maxBars={histogram.length} wholeRowLinks />
-	<p class="hint">
-		Days per bin · open-meteo.com daily maximum at your crag's cached location (not official climate
-		normals).
-	</p>
+		<h3>Daily high (°C)</h3>
+		<BarList items={histogram} maxBars={histogram.length} wholeRowLinks />
+		<p class="hint">
+			Days per bin · open-meteo.com daily maximum at your crag's cached location (not official
+			climate normals).
+		</p>
+	{:else}
+		<a href="/weather#conditions">Explore weather conditions</a>
+	{/if}
 </article>
 
 <style>
@@ -140,6 +147,13 @@
 		align-items: baseline;
 		gap: 1rem;
 		margin-bottom: 0.5rem;
+	}
+	h2 a {
+		color: inherit;
+		text-decoration: none;
+	}
+	h2 a:hover {
+		text-decoration: underline;
 	}
 	h2 {
 		margin: 0;
