@@ -1,5 +1,6 @@
 import type { GradeSystem } from '#lib/grades';
 import type { WeatherConditionsView } from '#lib/weatherStats';
+import type { RockPerformanceView } from '#lib/rockPerformance';
 import type { WeatherPerformanceView } from '#lib/weatherPerformance';
 import type { CalendarWeather, WeatherChip } from '#lib/weatherKeys';
 import type { WeekdayStatsView } from '#lib/weekdayStats';
@@ -399,6 +400,8 @@ export type DashboardStats = {
 	weatherConditions: WeatherConditionsView | null;
 	/** Send rate / near-limit / onsight share by weather band; null (hidden) like conditions (#365). */
 	weatherPerformance: WeatherPerformanceView | null;
+	/** Send rate / near-limit / onsight by Rock type tag; null when no tagged sends/attempts (#388). */
+	rockPerformance: RockPerformanceView | null;
 };
 
 export type BestMonthsCrag = {

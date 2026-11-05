@@ -535,6 +535,7 @@ World map (#313): `/map` uses bundled public-domain Natural Earth outlines, serv
 
 - Daily streak records/badges (#339) share `#lib/dayStreaks`: unique strict written calendar days, UTC adjacency, earliest longest-run tie. Card exposes longestStartDate/longestEndDate and formats them as calendar dates. One-shot streak_days_7/10/30 badges use the first threshold-reaching day, include attempts/indoor climbs and have no Almost there counter. Current day/week/month logic is unchanged; do not infer streaks from log timestamps.
 - Streaks card (#387): 2×2 tiles (days/weeks/months/longest); footer has record range, last ascent, days-since-last when the day streak is 0, and lifetime `activeDays`; title links to `/docs/activity`.
+- Rock & performance (#388): `#lib/rockPerformance` compares send rate / near-limit / onsight-flash by Rock type tag (cluster = rock+day); hidden until a tagged send/attempt exists; rates after ≥20 tagged days; top rocks + Other; `/docs/rock-types`.
 
 - Open-Meteo archive client reads the body as text and parses it safely: non-JSON or `{error:true}` bodies (even on 2xx) are failures, never cached days. A 429 status or rate-limit wording counts as `429` (blocked back-off, honours Retry-After). Other bad 2xx bodies are reported as `502` (error back-off). Messages quote one trimmed line from the provider, never a raw `JSON.parse` error.
 
@@ -548,3 +549,5 @@ World map (#313): `/map` uses bundled public-domain Natural Earth outlines, serv
 - Partner context (#349): `ascentPartners` formats case-insensitive distinct upstream names. Badge details (including day/cumulative achievements) refer only to the linked qualifying ascent. Hardest/notable/recent cards and grade/FA milestones retain that ascent attribution; never infer companions from private notes or route-level aggregates.
 
 - Offline (#348): service worker caches only build assets, a data-free `/offline` shell and an explicit field-whitelisted public snapshot. Never add SSR/data-response runtime caching. Whole-app protection disables downloads. Navigations fall back to the shell only on network failure or 502/503/504 (30 s timeout), never on app errors. Any mutation/logout clears this browser; wipe rotates `offline_revision` for other browsers on reconnect. Seven-day expiry, 5,000 newest rows, 10 MB; updates clear old build caches.
+
+- Rock performance aggregate bands use a separate ID namespace from real rock tags, including a real tag named Other; only the aggregate has no drill-down link.
