@@ -1,3 +1,4 @@
+import { logbookStyleLabels } from '#lib/logbookStyle';
 import { currentPeriodStreak } from '#lib/periodStreaks';
 import { consecutiveDayRuns, currentDayStreak, longestDayRun } from '#lib/dayStreaks';
 import { soloKind, parseSoloKind } from '#lib/soloKind';
@@ -863,6 +864,7 @@ export function getDashboardStats(
 				gradeBand: effectiveBand(r),
 				pitchLabel: r.pitchLabel,
 				tickType: r.tickType,
+				styleLabels: logbookStyleLabels(r),
 				ascentDate: r.ascentDate,
 				cragName: r.cragName,
 				cragUrl: r.cragUrl,

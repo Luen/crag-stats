@@ -3,6 +3,31 @@ import { getDashboardStats, wipeAllData } from './analytics';
 import { upsertAscents } from './ingest';
 
 beforeEach(() => wipeAllData());
+
+it('carries the logbook discipline and explicit solo labels into recent activities', () => {
+	for (const [name, gearStyle, ascentGearStyle, tickType, expected] of [
+		['Sport climb', 'Sport', null, 'Red point', ['Sport']],
+		['Trad climb', 'Trad', null, 'Red point', ['Trad']],
+		['Different protection', 'Sport', 'Trad', 'Red point', ['Sport', 'Trad']],
+		['Solo climb', 'Trad', null, 'Lead solo', ['Trad', 'Lead solo']]
+	] as const) {
+		upsertAscents([
+			{
+				provider: 'thecrag',
+				externalId: name,
+				ascentDate: '2026-11-01',
+				isSend: true,
+				isAttempt: false,
+				tickType,
+				ascentGearStyle,
+				route: { provider: 'thecrag', externalId: `style-${name}`, name, gearStyle }
+			}
+		]);
+		expect(getDashboardStats().recent.find((r) => r.routeName === name)?.styleLabels).toEqual(
+			expected
+		);
+	}
+});
 function add(name: string, ascentDate: string | null, logDate: string | null) {
 	upsertAscents([
 		{

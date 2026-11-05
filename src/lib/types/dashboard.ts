@@ -262,6 +262,7 @@ export type DashboardStats = {
 	recent: {
 		id: number;
 		routeName: string;
+		styleLabels: string[];
 		gradeRaw: string | null;
 		gradeLabel: string | null;
 		gradeBand: number | null;
@@ -284,6 +285,7 @@ export type DashboardStats = {
 		startedOn: string | null;
 		durationLabel: string | null;
 		paragraphs: string[];
+		routeLink: import('./climbingStory').StoryRouteLink | null;
 	};
 	eddington: EddingtonStats;
 	firstAscents: FirstAscentStats;

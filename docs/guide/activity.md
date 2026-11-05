@@ -49,3 +49,5 @@ climbing order when you enter climbs in sequence, not a recorded ascent time.
 Entries with missing or invalid log times follow timed entries on the same day.
 Equal or unavailable log times use the stored ascent ID, newest first, to keep the
 order stable. Edit/sync timestamps are not used as log creation times.
+
+Recent activities also show the same climb-style badges as the logbook: route discipline, a different recorded ascent protection style when applicable, and explicit solo variants such as Lead solo or Top-rope solo. Missing partners never imply a solo.

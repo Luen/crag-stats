@@ -2,6 +2,26 @@ import { expect, test } from '@playwright/test';
 import { DOC_PAGES } from '../src/lib/docs';
 
 test.describe('app shell', () => {
+	test('Settings remains in the header without a duplicate sidebar entry', async ({ page }) => {
+		await page.goto('/');
+		await expect(
+			page.locator('#side-nav').getByRole('link', { name: 'Settings', exact: true })
+		).toHaveCount(0);
+		const settings = page.getByRole('link', { name: 'Settings & sync', exact: true });
+		await expect(settings).toBeVisible();
+		await settings.click();
+		await expect(page).toHaveURL(/\/settings$/);
+		await expect(page).toHaveTitle('Settings · Crag Stats');
+		await page.setViewportSize({ width: 390, height: 844 });
+		await expect(settings).toBeVisible();
+		await page.locator('button[aria-controls="side-nav"]').click();
+		await expect(
+			page.locator('#side-nav').getByRole('link', { name: 'Settings', exact: true })
+		).toHaveCount(0);
+		await page.keyboard.press('Escape');
+		await expect(settings).toBeVisible();
+	});
+
 	test('sidebar collapses to the mini rail and persists across reloads', async ({ page }) => {
 		await page.goto('/');
 		await page.getByRole('button', { name: 'Collapse sidebar' }).click();
