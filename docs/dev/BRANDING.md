@@ -111,7 +111,7 @@ Because the brand accent is orange, it sits close to _Trad_ and _Experienced_. T
 
 - **Top bar** (fixed, `--header-h` 3.75rem): sidebar toggle · logo plus wordmark · then GitHub, theme toggle, settings and (when signed in with `APP_PASSWORD` set) a log-out icon on the right. Log out is also in Settings → Admin session.
 - **Sidebar** (`--side-w` 15rem): Dreeve-style groups separated by `<hr>`:
-  Dashboard | Logbook, Projects, Sectors | Goals, Rewind | Settings.
+  Dashboard | Logbook, Projects, Sectors, Map, Partners | Goals, Activity, Badges, Eddington, Training load, Weather, Milestones, Rewind, Share | Docs.
   - Icons come from `src/lib/components/NavIcon.svelte` (Lucide-style outline, 24px grid, 1.8 stroke). Projects uses a quickdraw.
   - Count badges (orange pill) come from `navCounts` in `+layout.server.ts`: total ascents and active projects (the same "working on" rule as `/projects`). They're hidden for logged-out visitors when `AUTH_SCOPE=all`.
   - The active item gets an `--accent-soft` background with accent text and icon.
@@ -216,3 +216,5 @@ Rock & performance (#388): half-width dashboard card with wrapping measure contr
 Climbing story: the most-popular put-up route name is an underlined --accent link that wraps within the paragraph and opens its theCrag page in a new tab. Keep the surrounding story text and localized ascent count inline.
 
 Weather performance fallback: when the dashboard has no daily-high/send-rate signal, show the existing detailed bands, controls and values table rather than a mostly empty summary. Keep the heading and Explore link to /weather; dashboard controls stay local.
+
+Settings navigation is header-only: use the Settings & sync gear at top right on desktop and mobile; the sidebar utility group contains Docs. Settings pages retain their Settings breadcrumb/title.

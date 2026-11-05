@@ -35,10 +35,7 @@
 				{ href: '/rewind', label: 'Rewind', icon: 'rewind' },
 				{ href: '/share', label: 'Share', icon: 'share' }
 			],
-			[
-				{ href: '/docs', label: 'Docs', icon: 'docs' },
-				...(data.showSettings ? [{ href: '/settings', label: 'Settings', icon: 'settings' }] : [])
-			]
+			[{ href: '/docs', label: 'Docs', icon: 'docs' }]
 		].filter((g) => g.length > 0) as NavLink[][]
 	);
 
@@ -48,7 +45,11 @@
 
 	const current = $derived(
 		groups.flat().find((l) => isActive(l.href)) ??
-			(page.url.pathname === '/login' ? { label: 'Sign in' } : null)
+			(isActive('/settings')
+				? { label: 'Settings' }
+				: page.url.pathname === '/login'
+					? { label: 'Sign in' }
+					: null)
 	);
 
 	// Sidebar: "mini" (icon rail) on desktop, off-canvas drawer on mobile.
@@ -192,7 +193,7 @@
 	}}
 />
 
-<div class="app" class:drawer-open={drawerOpen}>
+<div class={['app', { 'drawer-open': drawerOpen }]}>
 	<header class="topbar">
 		<button
 			{@attach (node) => {

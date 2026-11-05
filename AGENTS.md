@@ -564,3 +564,5 @@ World map (#313): `/map` uses bundled public-domain Natural Earth outlines, serv
 - Climbing story put-up links: preserve plain-text paragraphs for metadata, with a separate typed route-name span rendered as a native escaped anchor. Mega-classic counts use the paired community-others estimate and the display locale; cached links must be HTTPS theCrag route pages, with a numeric provider-ID fallback.
 
 - Dashboard weather performance falls back to detail when the default daily-high/send-rate comparison has no signal. Keep that decision independent of local fallback controls, so selecting another measure does not collapse the card. Detail-page controls remain URL-backed.
+
+- Settings has one navigation entry in the top-right header, with no duplicate sidebar/drawer link. Keep Settings route title/breadcrumb resolution independent of the sidebar groups.
