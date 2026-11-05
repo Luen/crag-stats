@@ -1,5 +1,5 @@
 import { expect, it } from 'vitest';
-import { consecutiveDayRuns, longestDayRun } from './dayStreaks';
+import { consecutiveDayRuns, currentDayStreak, longestDayRun } from './dayStreaks';
 it('uses unique valid written days, including leap/year transitions and timestamp dates', () => {
 	expect(
 		consecutiveDayRuns([
@@ -40,6 +40,13 @@ it('is independent of host timezone and DST', () => {
 	try {
 		for (const zone of ['Pacific/Kiritimati', 'America/New_York', 'Australia/Brisbane']) {
 			process.env.TZ = zone;
+			for (const [today, dates] of [
+				['2026-03-09', ['2026-03-07', '2026-03-08', '2026-03-09']],
+				['2026-11-02', ['2026-10-31', '2026-11-01', '2026-11-02']]
+			] as const) {
+				expect(currentDayStreak(dates, today)).toBe(3);
+				expect(currentDayStreak([today], today)).toBe(1);
+			}
 			expect(consecutiveDayRuns(['2026-03-07', '2026-03-08', '2026-03-09'])).toEqual([
 				{ start: '2026-03-07', end: '2026-03-09', length: 3 }
 			]);
@@ -48,4 +55,11 @@ it('is independent of host timezone and DST', () => {
 		if (original === undefined) delete process.env.TZ;
 		else process.env.TZ = original;
 	}
+});
+
+it('allows yesterday, ignores future and invalid logs, and expires after a missed day', () => {
+	expect(currentDayStreak(['2026-01-01', '2026-01-02'], '2026-01-03')).toBe(2);
+	expect(currentDayStreak(['2026-01-01', '2026-01-02'], '2026-01-04')).toBe(0);
+	expect(currentDayStreak(['2026-01-03', '2026-01-04', '2026-02-30'], '2026-01-03')).toBe(1);
+	expect(currentDayStreak([], '2026-01-03')).toBe(0);
 });

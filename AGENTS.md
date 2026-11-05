@@ -554,3 +554,5 @@ World map (#313): `/map` uses bundled public-domain Natural Earth outlines, serv
 - Weather details (#389): `/weather` reuses the conditions/performance builders through `server/weatherPage.ts`; dashboard cards default to compact summaries (`compact=false` renders detail). Performance URL state uses `group` / `measure`; preserve thresholds and saved dashboard card IDs. Coverage distinguishes resolved location-days from unresolved ascent counts, checked-unavailable and unchecked days. Import/location controls stay in Settings; page reads cached data only.
 
 - Minimatch security override (#11): v10-range ESLint tooling uses verified v11.0.4 APIs; keep the bounded installed-package regression and remove the override once callers adopt an upstream fixed release. Deepmerge alert #10 is covered by the existing pnpm patch; its unchanged upstream version remains flagged, with #174 tracking removal.
+
+- Current day streak (#398) uses currentDayStreak with strict written dates and UTC adjacency; today or yesterday anchors it, and future logs cannot extend it. Keep timezone/DST regressions alongside historical streak tests.

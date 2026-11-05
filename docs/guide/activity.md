@@ -28,6 +28,10 @@ since then when the current day streak is broken, and lifetime **active days**
 sends, indoors and outdoors, count equally, and several climbs on one day count
 once. See [Badges](/docs/badges) for the 7-, 10- and 30-day milestones.
 
+The current day streak ends today, or yesterday while you have not climbed today.
+Calendar-day comparisons use UTC, so the server time zone and daylight-saving
+changes cannot shift a logged day. Future-dated entries do not extend the current streak.
+
 ## Recent activities
 
 The dashboard lists the newest **climbing day** first. Within each day, the most

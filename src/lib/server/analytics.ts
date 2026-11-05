@@ -1,4 +1,4 @@
-import { consecutiveDayRuns, longestDayRun } from '#lib/dayStreaks';
+import { consecutiveDayRuns, currentDayStreak, longestDayRun } from '#lib/dayStreaks';
 import { soloKind, parseSoloKind } from '#lib/soloKind';
 import { loadWeatherLocations, attachWeatherLocation } from './weatherLocations';
 
@@ -1586,28 +1586,12 @@ function buildStreaks(dayMap: Map<string, { count: number; sends: number }>): {
 		};
 	}
 
-	const daySet = new Set(days);
 	const longest = longestDayRun(consecutiveDayRuns(days));
 
 	const last = days[days.length - 1];
 	const today = new Date();
 	const todayIso = today.toISOString().slice(0, 10);
-	const yesterday = new Date(today);
-	yesterday.setDate(yesterday.getDate() - 1);
-	const yIso = yesterday.toISOString().slice(0, 10);
-
-	let currentDays = 0;
-	if (daySet.has(todayIso) || daySet.has(yIso)) {
-		const cursor = daySet.has(todayIso)
-			? new Date(`${todayIso}T12:00:00`)
-			: new Date(`${yIso}T12:00:00`);
-		let guard = 0;
-		while (daySet.has(cursor.toISOString().slice(0, 10)) && guard < 4000) {
-			currentDays += 1;
-			guard += 1;
-			cursor.setDate(cursor.getDate() - 1);
-		}
-	}
+	const currentDays = currentDayStreak(days, todayIso);
 
 	const weekKey = (iso: string): string | null => {
 		const d = new Date(`${iso}T12:00:00`);
