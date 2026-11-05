@@ -12,6 +12,7 @@ import { displayStyle } from './logbookStyle';
 import { tickKind } from './ticks';
 import {
 	ascentWeatherKey,
+	isCalmWeather,
 	isFairWeather,
 	isFreezeWeather,
 	isHeatWeather,
@@ -185,7 +186,8 @@ const CONDITION_BANDS: BandDef[] = [
 	{ id: 'cond:snow', label: 'Snowy', href: '/logbook?weather=snow', test: isSnowWeather },
 	{ id: 'cond:heat', label: 'Hot', href: '/logbook?weather=heat', test: isHeatWeather },
 	{ id: 'cond:freeze', label: 'Freezing', href: '/logbook?weather=freeze', test: isFreezeWeather },
-	{ id: 'cond:wind', label: 'Windy', href: null, test: isWindyWeather }
+	{ id: 'cond:calm', label: 'Calm', href: '/logbook?weather=calm', test: isCalmWeather },
+	{ id: 'cond:wind', label: 'Windy', href: '/logbook?weather=wind', test: isWindyWeather }
 ];
 
 /** Per location-day tallies; one cluster in the robust variance. */
