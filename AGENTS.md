@@ -562,3 +562,5 @@ World map (#313): `/map` uses bundled public-domain Natural Earth outlines, serv
 - Current week/month streaks (#399) share currentPeriodStreak: anchor to the current or immediately preceding period, ignore future days, and expire after a whole empty period. Weeks start Monday; integer UTC week indices handle ISO week 53 without guessing 52-week years.
 
 - Performance baseline (#400): performanceBaseline owns effective scores, style/scale keys and the prior-365-day range maximum (lower edge included, ascent day excluded). Callers supply reference eligibility: weather excludes indoor, rock includes untagged sends. Build once per view; indexed queries avoid full historical scans per ascent.
+
+- Seasonality browser history (#403): wait for exact sort/filter state before navigating back. Capture the route-results URL and stop there within a bounded history walk, then assert route view/month/search before pagination; fixed blind back counts can overshoot into the crag list.
