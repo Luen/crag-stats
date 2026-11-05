@@ -45,6 +45,7 @@ test('seasonality search and exact logbook navigation', async ({ page }) => {
 		await expect(page.getByRole('searchbox', { name: 'Crag, area or climb' })).toHaveValue(
 			'Season test crag'
 		);
+		const seasonalityRoutesUrl = page.url();
 		const first = page.locator('.results > li').first();
 		await expect(first).toContainText('Season climb same name');
 		await expect(first).toContainText('100% of annual peak');
@@ -61,18 +62,34 @@ test('seasonality search and exact logbook navigation', async ({ page }) => {
 		await page.getByRole('link', { name: 'Next →', exact: true }).click();
 		await expect(page).toHaveURL(new RegExp(`route=${ids[0]}.*page=2`));
 		await expect(page.locator('tbody tr')).toHaveCount(2);
-		await page
-			.getByRole('link', { name: /^Grade/ })
-			.first()
-			.click();
-		await expect(page).toHaveURL(new RegExp(`route=${ids[0]}`));
+		const gradeSort = page.getByRole('link', { name: /^Grade/ }).first();
+		const gradeSortUrl = new URL((await gradeSort.getAttribute('href'))!, page.url()).href;
+		await gradeSort.click();
+		await expect(page).toHaveURL(gradeSortUrl);
+		await expect(page.getByRole('combobox', { name: 'Sort by', exact: true })).toHaveValue('grade');
+		// Make this a distinct navigation, so the URL assertion waits for submission.
+		await page.getByRole('combobox', { name: 'Sort order', exact: true }).selectOption('asc');
 		await page.getByRole('button', { name: 'Apply filters', exact: true }).click();
-		await expect(page).toHaveURL(new RegExp(`route=${ids[0]}`));
-		await page.goBack();
-		await page.goBack();
-		await page.goBack();
-		await page.goBack();
-		await expect(page).toHaveURL(/\/seasonality\?/);
+		await expect(page).toHaveURL(
+			(url) =>
+				url.pathname === '/logbook' &&
+				url.searchParams.get('route') === String(ids[0]) &&
+				url.searchParams.get('sort') === 'grade' &&
+				url.searchParams.get('order') === 'asc'
+		);
+		await expect(page.getByRole('combobox', { name: 'Sort order', exact: true })).toHaveValue(
+			'asc'
+		);
+		// Stop at the captured view; never back past it into the unpaginated crag list.
+		for (let back = 0; page.url() !== seasonalityRoutesUrl && back < 4; back++) {
+			await page.goBack();
+		}
+		await expect(page).toHaveURL(seasonalityRoutesUrl);
+		await expect(page.getByRole('combobox', { name: 'Show', exact: true })).toHaveValue('routes');
+		await expect(page.getByRole('combobox', { name: 'Month', exact: true })).toHaveValue('11');
+		await expect(page.getByRole('searchbox', { name: 'Crag, area or climb' })).toHaveValue(
+			'Season test crag'
+		);
 		await page.getByRole('link', { name: 'Next →', exact: true }).click();
 		await expect(page).toHaveURL(/month=11.*view=routes.*page=2/);
 		await page.reload();
