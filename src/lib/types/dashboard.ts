@@ -284,6 +284,7 @@ export type DashboardStats = {
 		startedOn: string | null;
 		durationLabel: string | null;
 		paragraphs: string[];
+		routeLink: import('./climbingStory').StoryRouteLink | null;
 	};
 	eddington: EddingtonStats;
 	firstAscents: FirstAscentStats;

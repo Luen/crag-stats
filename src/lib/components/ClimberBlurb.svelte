@@ -1,12 +1,19 @@
 <script lang="ts">
-	type Props = { paragraphs: string[]; title?: string };
-	let { paragraphs, title = 'Climbing story' }: Props = $props();
+	import type { StoryRouteLink } from '#lib/types/climbingStory';
+	type Props = { paragraphs: string[]; routeLink?: StoryRouteLink | null; title?: string };
+	let { paragraphs, routeLink = null, title = 'Climbing story' }: Props = $props();
 </script>
 
 <article class="panel">
 	<h2>{title}</h2>
 	{#each paragraphs as p, i (i)}
-		<p class="blurb">{p}</p>
+		<p class="blurb">
+			{#if routeLink && routeLink.paragraph === i}{p.slice(0, routeLink.start)}<a
+					href={routeLink.href}
+					target="_blank"
+					rel="noreferrer">{p.slice(routeLink.start, routeLink.end)}</a
+				>{p.slice(routeLink.end)}{:else}{p}{/if}
+		</p>
 	{/each}
 	<p class="foot"><a href="/docs/climbing-story">How it works</a></p>
 </article>
@@ -28,6 +35,12 @@
 	}
 	.blurb:last-child {
 		margin-bottom: 0.65rem;
+	}
+	.blurb a {
+		color: var(--accent);
+		text-decoration: underline;
+		text-underline-offset: 0.15em;
+		overflow-wrap: anywhere;
 	}
 	.foot {
 		margin: 0.35rem 0 0;

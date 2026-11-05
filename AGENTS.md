@@ -560,3 +560,5 @@ World map (#313): `/map` uses bundled public-domain Natural Earth outlines, serv
 - Current week/month streaks (#399) share currentPeriodStreak: anchor to the current or immediately preceding period, ignore future days, and expire after a whole empty period. Weeks start Monday; integer UTC week indices handle ISO week 53 without guessing 52-week years.
 
 - Performance baseline (#400): performanceBaseline owns effective scores, style/scale keys and the prior-365-day range maximum (lower edge included, ascent day excluded). Callers supply reference eligibility: weather excludes indoor, rock includes untagged sends. Build once per view; indexed queries avoid full historical scans per ascent.
+
+- Climbing story put-up links: preserve plain-text paragraphs for metadata, with a separate typed route-name span rendered as a native escaped anchor. Mega-classic counts use the paired community-others estimate and the display locale; cached links must be HTTPS theCrag route pages, with a numeric provider-ID fallback.

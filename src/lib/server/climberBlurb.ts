@@ -5,6 +5,8 @@
 import { MONTH_LABELS } from '#lib/bestMonths';
 import { DEFAULT_DATE_DISPLAY, formatNumber, type DateDisplay } from '#lib/dates';
 import type { WeatherConditionsView } from '#lib/weatherStats';
+import type { StoryRouteLink } from '#lib/types/climbingStory';
+import { theCragRouteUrl } from '#lib/thecragUrls';
 import { isSportOrBolted, type DeveloperImpactRoute } from './routeDeveloperImpact';
 
 const MAJORITY = 0.55;
@@ -25,6 +27,7 @@ const PUT_UP_CLASSIC_MIN_OTHERS = 50;
 /** Flourish on the single most-climbed put-up (aligned with community_100). */
 const PUT_UP_MEGA_ROUTE_OTHERS = 100;
 const PUT_UP_CHARACTER_MIN_WITH_DATA = 2;
+const POPULAR_PUT_UP_PREFIX = "The most popular route I've put up is ";
 const MAX_OPTIONAL = 3;
 /** Weather lines need enough cached outdoor days, and most of them covered (#275). */
 export const WEATHER_STORY_MIN_DAYS = 20;
@@ -77,6 +80,7 @@ export type ClimberBlurb = {
 	startedOn: string | null;
 	durationLabel: string | null;
 	paragraphs: string[];
+	routeLink: StoryRouteLink | null;
 };
 
 /** First-go vs worked-route preference from tick mix. */
@@ -150,20 +154,59 @@ export function putUpCharacter(routes: readonly DeveloperImpactRoute[]): PutUpCh
 }
 
 /** Named top put-up by othersAscents; mega flourish at ≥100 community others. */
-export function describeMostPopularPutUp(routes: readonly DeveloperImpactRoute[]): string | null {
-	let best: { name: string; others: number } | null = null;
+function mostPopularPutUp(routes: readonly DeveloperImpactRoute[]): DeveloperImpactRoute | null {
+	let best: DeveloperImpactRoute | null = null;
 	for (const r of routes) {
 		if (r.othersAscents == null || !Number.isFinite(r.othersAscents)) continue;
 		const name = (r.routeName ?? '').trim();
 		if (!name) continue;
 		const others = Math.max(0, Math.floor(r.othersAscents));
-		if (!best || others > best.others) best = { name, others };
+		if (!best || others > Math.max(0, Math.floor(best.othersAscents!))) best = r;
 	}
+	return best;
+}
+
+export function describeMostPopularPutUp(
+	routes: readonly DeveloperImpactRoute[],
+	format: (n: number) => string = String
+): string | null {
+	const best = mostPopularPutUp(routes);
 	if (!best) return null;
-	if (best.others >= PUT_UP_MEGA_ROUTE_OTHERS) {
-		return `The most popular route I've put up is ${best.name}, and it's a mega classic!`;
+	const lead = `${POPULAR_PUT_UP_PREFIX}${best.routeName!.trim()}`;
+	const others = Math.max(0, Math.floor(best.othersAscents!));
+	if (others >= PUT_UP_MEGA_ROUTE_OTHERS) {
+		return `${lead}, and it's a mega classic with over ${format(others)} ascents!`;
 	}
-	return `The most popular route I've put up is ${best.name}.`;
+	return `${lead}.`;
+}
+
+function popularRouteLink(
+	paragraphs: readonly string[],
+	routes: readonly DeveloperImpactRoute[]
+): StoryRouteLink | null {
+	const best = mostPopularPutUp(routes);
+	if (!best) return null;
+	const name = best.routeName!.trim();
+	const phrase = `${POPULAR_PUT_UP_PREFIX}${name}`;
+	const paragraph = paragraphs.findIndex((text) => text.includes(phrase));
+	if (paragraph < 0) return null;
+	let href: string | null = null;
+	try {
+		const url = new URL(best.url ?? '');
+		if (
+			['https://www.thecrag.com', 'https://thecrag.com'].includes(url.origin) &&
+			!url.username &&
+			!url.password &&
+			/\/route\/\d+\/?$/.test(url.pathname)
+		)
+			href = url.href;
+	} catch {
+		/* A missing cache URL can use the canonical provider ID below. */
+	}
+	if (!href && /^\d+$/.test(best.routeExternalId)) href = theCragRouteUrl(best.routeExternalId);
+	if (!href) return null;
+	const start = paragraphs[paragraph].indexOf(phrase) + POPULAR_PUT_UP_PREFIX.length;
+	return { paragraph, start, end: start + name.length, href };
 }
 
 export function describeDeveloperPreference(input: {
@@ -227,7 +270,7 @@ export function describeDeveloperPreference(input: {
 
 	const parts = [styleSentence];
 	if (faSentence) parts.push(faSentence);
-	const popular = describeMostPopularPutUp(input.routes);
+	const popular = describeMostPopularPutUp(input.routes, fmt);
 	if (popular) parts.push(popular);
 	return parts.join(' ');
 }
@@ -475,14 +518,16 @@ export function buildClimberBlurb(input: ClimberBlurbInput): ClimberBlurb {
 	if (input.rockBlurb) push(input.rockBlurb);
 
 	if (!input.firstDate) {
+		const paragraphs = [
+			`You've logged ${fmt(input.totalAscents)} ascents across ${fmt(input.distinctCrags)} crags so far.`,
+			identity,
+			...optional
+		];
 		return {
 			startedOn: null,
 			durationLabel: null,
-			paragraphs: [
-				`You've logged ${fmt(input.totalAscents)} ascents across ${fmt(input.distinctCrags)} crags so far.`,
-				identity,
-				...optional
-			]
+			paragraphs,
+			routeLink: popularRouteLink(paragraphs, input.putUpRoutes ?? [])
 		};
 	}
 
@@ -504,5 +549,10 @@ export function buildClimberBlurb(input: ClimberBlurbInput): ClimberBlurb {
 		...optional
 	].filter((p): p is string => Boolean(p));
 
-	return { startedOn: input.firstDate, durationLabel: duration, paragraphs };
+	return {
+		startedOn: input.firstDate,
+		durationLabel: duration,
+		paragraphs,
+		routeLink: popularRouteLink(paragraphs, input.putUpRoutes ?? [])
+	};
 }

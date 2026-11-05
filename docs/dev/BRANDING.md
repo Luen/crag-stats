@@ -212,3 +212,5 @@ Streaks (#339 / #387): four metric tiles in a 2×2 grid (current days / weeks / 
 Partner attribution (#349) uses wrapping text in the existing muted detail style, labelled “Partners on this ascent”. Display every name without hover-only truncation; break long unspaced names within narrow cards.
 
 Rock & performance (#388): half-width dashboard card with wrapping measure controls, linked rock bands, ink-coloured signal pills and an expandable values table. Keep the geology card quarter-width and link both cards to /docs/rock-types.
+
+Climbing story: the most-popular put-up route name is an underlined --accent link that wraps within the paragraph and opens its theCrag page in a new tab. Keep the surrounding story text and localized ascent count inline.

@@ -20,6 +20,7 @@ import {
 } from './climberBlurb';
 import type { WeatherConditionsView } from '#lib/weatherStats';
 import type { DeveloperImpactRoute } from './routeDeveloperImpact';
+import { DEFAULT_DATE_DISPLAY } from '#lib/dates';
 
 const route = (p: Partial<DeveloperImpactRoute>): DeveloperImpactRoute => ({
 	routeExternalId: 'r1',
@@ -168,7 +169,7 @@ describe('describeDeveloperPreference (#186)', () => {
 			]
 		});
 		expect(text).toBe(
-			"I like to bolt sport routes — mega classics other people keep climbing. The most popular route I've put up is Crowd Pleaser, and it's a mega classic!"
+			"I like to bolt sport routes — mega classics other people keep climbing. The most popular route I've put up is Crowd Pleaser, and it's a mega classic with over 120 ascents!"
 		);
 		expect(text).not.toMatch(/climbed over/i);
 	});
@@ -227,7 +228,7 @@ describe('putUpCharacter / describeMostPopularPutUp (#395)', () => {
 			])
 		).toBe("The most popular route I've put up is Almost.");
 		expect(describeMostPopularPutUp([route({ routeName: 'Hit', othersAscents: 100 })])).toBe(
-			"The most popular route I've put up is Hit, and it's a mega classic!"
+			"The most popular route I've put up is Hit, and it's a mega classic with over 100 ascents!"
 		);
 	});
 });
@@ -272,6 +273,66 @@ describe('optional personality lines', () => {
 });
 
 describe('buildClimberBlurb', () => {
+	const story = (routes: DeveloperImpactRoute[], firstDate: string | null = '2020-01-01') =>
+		buildClimberBlurb({
+			firstDate,
+			activeDays: 1,
+			totalAscents: 1,
+			totalSends: 1,
+			onsightCount: 0,
+			flashCount: 0,
+			redpointCount: 1,
+			pinkpointCount: 0,
+			climberType: 'Sport climber',
+			heightM: 0,
+			distinctRoutes: 1,
+			distinctCrags: 1,
+			outdoorAscents: 1,
+			indoorAscents: 0,
+			putUpRoutes: routes,
+			dateDisplay: { ...DEFAULT_DATE_DISPLAY, locale: 'de-DE' }
+		});
+
+	it('formats the community estimate and links only the selected route-name span', () => {
+		for (const firstDate of ['2020-01-01', null]) {
+			const blurb = story(
+				[
+					route({ routeName: 'Quieter', othersAscents: 120 }),
+					route({
+						routeName: 'Insight <test> & friends',
+						othersAscents: 1234,
+						ascentCount: 1236,
+						url: 'https://www.thecrag.com/en/climbing/test/route/123',
+						routeExternalId: '123'
+					})
+				],
+				firstDate
+			);
+			const link = blurb.routeLink!;
+			const paragraph = blurb.paragraphs[link.paragraph];
+			expect(paragraph).toContain("it's a mega classic with over 1.234 ascents!");
+			expect(paragraph).not.toContain('1236');
+			expect(paragraph.slice(link.start, link.end)).toBe('Insight <test> & friends');
+			expect(link.href).toBe('https://www.thecrag.com/en/climbing/test/route/123');
+			expect(paragraph).not.toContain('<a');
+		}
+	});
+
+	it('uses safe canonical links and omits links when the name is not in the story', () => {
+		const blurb = story([
+			route({ routeExternalId: '123', url: 'javascript:alert(1)', othersAscents: 100 })
+		]);
+		expect(blurb.routeLink?.href).toBe('https://www.thecrag.com/en/route/123');
+		expect(
+			story([route({ routeExternalId: 'unknown', url: 'https://evil.example/route/123' })])
+				.routeLink
+		).toBeNull();
+		expect(story([route({ othersAscents: null })]).routeLink).toBeNull();
+		expect(
+			story([route({ gearStyle: 'Unknown', sportOrBolted: false, bolts: null })]).routeLink
+		).toBeNull();
+	});
+
 	it('keeps core paragraphs and caps optional lines', () => {
 		const blurb = buildClimberBlurb({
 			firstDate: '2010-01-01',

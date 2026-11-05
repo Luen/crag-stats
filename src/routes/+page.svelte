@@ -109,7 +109,7 @@
 	{#if id === 'climberType'}
 		<ClimberTypeBar shares={s.styleShare} climberType={s.climberType} />
 	{:else if id === 'blurb'}
-		<ClimberBlurb paragraphs={s.blurb.paragraphs} />
+		<ClimberBlurb paragraphs={s.blurb.paragraphs} routeLink={s.blurb.routeLink} />
 	{:else if id === 'streaks'}
 		<Streaks
 			currentDays={s.streaks.currentDays}
