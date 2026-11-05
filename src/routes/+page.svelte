@@ -18,6 +18,7 @@
 	import QualityBreakdown from '#lib/components/QualityBreakdown.svelte';
 	import Karma from '#lib/components/Karma.svelte';
 	import RoutePopularity from '#lib/components/RoutePopularity.svelte';
+	import RockPerformance from '#lib/components/RockPerformance.svelte';
 	import RockTypePanel from '#lib/components/RockTypePanel.svelte';
 	import StarsScatter from '#lib/components/StarsScatter.svelte';
 	import Streaks from '#lib/components/Streaks.svelte';
@@ -70,6 +71,9 @@
 					return { ...i, enabled: false };
 				}
 				if (i.id === 'weatherPerformance' && s.weatherPerformance == null) {
+					return { ...i, enabled: false };
+				}
+				if (i.id === 'rockPerformance' && s.rockPerformance == null) {
 					return { ...i, enabled: false };
 				}
 				return i;
@@ -234,6 +238,8 @@
 			dominant={s.rockTypes.dominant}
 			info={s.rockTypes.info}
 		/>
+	{:else if id === 'rockPerformance' && s.rockPerformance}
+		<RockPerformance data={s.rockPerformance} dateDisplay={data.dateDisplay} />
 	{:else if id === 'stars'}
 		<StarsScatter points={s.starsScatter} />
 	{:else if id === 'quality'}
