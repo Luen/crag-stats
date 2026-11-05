@@ -23,8 +23,8 @@ updates:
       interval: 'weekly'
 
   # Monthly checks for Docker base images
-  - package-ecosystem: "docker"
-    directory: "/"
+  - package-ecosystem: 'docker'
+    directory: '/'
     schedule:
-      interval: "monthly"
-    target-branch: "main"
+      interval: 'monthly'
+    target-branch: 'main'
