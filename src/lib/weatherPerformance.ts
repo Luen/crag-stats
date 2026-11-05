@@ -7,8 +7,12 @@
  * each location-day is one cluster. Everything here is a correlation, never a cause.
  */
 import { calendarDay } from './calendarDay';
-import { usesVScale } from './grades';
-import { displayStyle } from './logbookStyle';
+import {
+	buildPerformanceBaseline,
+	performanceGradeKind,
+	performanceGradeScore,
+	NEAR_LIMIT_STEP
+} from './performanceBaseline';
 import { tickKind } from './ticks';
 import {
 	ascentWeatherKey,
@@ -50,10 +54,7 @@ export const MIN_RATE_DAYS = 3;
 export const MIN_SIGNAL_DAYS = 5;
 /** Two-sided 95% threshold for the cluster-robust z statistic. */
 export const SIGNAL_Z = 1.96;
-/** Near-limit window: your hardest same-style send in this many days before the ascent. */
-export const NEAR_LIMIT_WINDOW_DAYS = 365;
-/** Grades below that reference that still count as near-limit (same steps as training load). */
-export const NEAR_LIMIT_STEP = { route: 2, boulder: 1 } as const;
+export { NEAR_LIMIT_STEP, NEAR_LIMIT_WINDOW_DAYS } from './performanceBaseline';
 
 export type WeatherPerformanceMetric = 'sendRate' | 'nearLimit' | 'onsightFlash';
 export type WeatherPerformanceDimension = 'temperature' | 'conditions';
@@ -119,8 +120,6 @@ export type WeatherPerformanceView = {
 	overall: WeatherPerformanceOverall;
 	groups: WeatherPerformanceGroup[];
 };
-
-type Kind = keyof typeof NEAR_LIMIT_STEP;
 
 type BandDef = {
 	id: string;
@@ -254,57 +253,6 @@ export function compareRates(band: readonly Cluster[], rest: readonly Cluster[])
 	return out;
 }
 
-function dayNumber(day: string): number {
-	return Date.parse(`${day}T00:00:00Z`) / 86_400_000;
-}
-
-function kindOf(row: WeatherPerformanceRow): Kind {
-	// Scores on the V-scale compare on V-grades, whatever the style (#72).
-	return usesVScale(row.gradeSystem, row.gearStyle) ? 'boulder' : 'route';
-}
-
-function scoreOf(row: WeatherPerformanceRow): number | null {
-	const s = row.effectiveGradeScore ?? row.gradeScore;
-	return s != null && Number.isFinite(s) ? s : null;
-}
-
-/** Baseline key: one grade scale and one discipline, so trad never compares with sport. */
-function baselineKey(row: WeatherPerformanceRow): string {
-	return `${kindOf(row)}|${displayStyle(row.gearStyle)}`;
-}
-
-type BaselineIndex = Map<string, { day: number; score: number }[]>;
-
-function buildBaseline(rows: readonly WeatherPerformanceRow[]): BaselineIndex {
-	const index: BaselineIndex = new Map();
-	for (const row of rows) {
-		if (row.outdoor === false || !row.isSend) continue;
-		const day = calendarDay(row.ascentDate);
-		const score = scoreOf(row);
-		if (!day || score == null) continue;
-		const key = baselineKey(row);
-		const list = index.get(key) ?? [];
-		list.push({ day: dayNumber(day), score });
-		index.set(key, list);
-	}
-	for (const list of index.values()) list.sort((a, b) => a.day - b.day);
-	return index;
-}
-
-/** Hardest same-key outdoor send in the window before `day` (that day itself excluded). */
-function referenceScore(
-	list: readonly { day: number; score: number }[],
-	day: number
-): number | null {
-	let ref: number | null = null;
-	for (const s of list) {
-		if (s.day >= day) break;
-		if (s.day < day - NEAR_LIMIT_WINDOW_DAYS) continue;
-		if (ref == null || s.score > ref) ref = s.score;
-	}
-	return ref;
-}
-
 /**
  * Null until at least one outdoor send/attempt has cached weather, so the card stays hidden
  * for owners who never enabled the import. Below {@link WEATHER_PERFORMANCE_MIN_DAYS}
@@ -316,7 +264,7 @@ export function buildWeatherPerformanceView(
 ): WeatherPerformanceView | null {
 	if (!weatherByKey || weatherByKey.size === 0) return null;
 
-	const baseline = buildBaseline(rows);
+	const baseline = buildPerformanceBaseline(rows, (row) => row.outdoor !== false);
 	const days = new Map<string, DayTally>();
 	let outdoorAscents = 0;
 	let ascents = 0;
@@ -347,12 +295,11 @@ export function buildWeatherPerformanceView(
 			tally.sends += 1;
 			const kind = tickKind(row.tickType);
 			if (kind === 'onsight' || kind === 'flash') tally.onsightFlash += 1;
-			const score = scoreOf(row);
-			const list = baseline.get(baselineKey(row));
-			const ref = score != null && list ? referenceScore(list, dayNumber(day)) : null;
+			const score = performanceGradeScore(row);
+			const ref = score != null ? baseline(row) : null;
 			if (score != null && ref != null) {
 				tally.baselineSends += 1;
-				if (score >= ref - NEAR_LIMIT_STEP[kindOf(row)]) tally.nearLimit += 1;
+				if (score >= ref - NEAR_LIMIT_STEP[performanceGradeKind(row)]) tally.nearLimit += 1;
 			}
 		}
 		days.set(key, tally);

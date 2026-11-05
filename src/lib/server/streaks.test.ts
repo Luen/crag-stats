@@ -63,6 +63,8 @@ it('returns the all-time longest range through the real dashboard, choosing the 
 		longestStartDate: day(0),
 		longestEndDate: day(9),
 		activeDays: 20,
+		currentWeeks: 0,
+		currentMonths: 0,
 		daysSinceLastActive: expect.any(Number)
 	});
 	expect(getDashboardStats().streaks.daysSinceLastActive).toBeGreaterThan(0);

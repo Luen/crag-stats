@@ -7,16 +7,18 @@
  * Correlation only — crag choice and trips confound rock type.
  */
 import { calendarDay } from './calendarDay';
-import { usesVScale } from './grades';
-import { displayStyle } from './logbookStyle';
+import {
+	buildPerformanceBaseline,
+	performanceGradeKind,
+	performanceGradeScore,
+	NEAR_LIMIT_STEP
+} from './performanceBaseline';
 import { parseTagsJson } from './routeTags';
 import { tickKind } from './ticks';
 import {
 	compareRates,
 	MIN_RATE_ASCENTS,
 	MIN_SIGNAL_DAYS,
-	NEAR_LIMIT_STEP,
-	NEAR_LIMIT_WINDOW_DAYS,
 	ratioStats,
 	SIGNAL_Z,
 	type WeatherPerformanceMetric,
@@ -77,8 +79,6 @@ export type RockPerformanceView = {
 	bands: RockPerformanceBand[];
 };
 
-type Kind = 'route' | 'boulder';
-
 type DayTally = {
 	ascents: number;
 	sends: number;
@@ -96,54 +96,6 @@ export function rockTypeName(tagsJson: string | null | undefined): string | null
 	return name ? name : null;
 }
 
-function dayNumber(day: string): number {
-	return Date.parse(`${day}T00:00:00Z`) / 86_400_000;
-}
-
-function kindOf(row: RockPerformanceRow): Kind {
-	return usesVScale(row.gradeSystem, row.gearStyle) ? 'boulder' : 'route';
-}
-
-function scoreOf(row: RockPerformanceRow): number | null {
-	const s = row.effectiveGradeScore ?? row.gradeScore;
-	return s != null && Number.isFinite(s) ? s : null;
-}
-
-function baselineKey(row: RockPerformanceRow): string {
-	return `${kindOf(row)}|${displayStyle(row.gearStyle)}`;
-}
-
-type BaselineIndex = Map<string, { day: number; score: number }[]>;
-
-function buildBaseline(rows: readonly RockPerformanceRow[]): BaselineIndex {
-	const index: BaselineIndex = new Map();
-	for (const row of rows) {
-		if (!row.isSend) continue;
-		const day = calendarDay(row.ascentDate);
-		const score = scoreOf(row);
-		if (!day || score == null) continue;
-		const key = baselineKey(row);
-		const list = index.get(key) ?? [];
-		list.push({ day: dayNumber(day), score });
-		index.set(key, list);
-	}
-	for (const list of index.values()) list.sort((a, b) => a.day - b.day);
-	return index;
-}
-
-function referenceScore(
-	list: readonly { day: number; score: number }[],
-	day: number
-): number | null {
-	let ref: number | null = null;
-	for (const s of list) {
-		if (s.day >= day) break;
-		if (s.day < day - NEAR_LIMIT_WINDOW_DAYS) continue;
-		if (ref == null || s.score > ref) ref = s.score;
-	}
-	return ref;
-}
-
 function round1(x: number): number {
 	return Math.round(x * 10) / 10;
 }
@@ -159,7 +111,7 @@ function rockHref(name: string): string {
 export function buildRockPerformanceView(
 	rows: readonly RockPerformanceRow[]
 ): RockPerformanceView | null {
-	const baseline = buildBaseline(rows);
+	const baseline = buildPerformanceBaseline(rows, () => true);
 	/** Canonical lower-case key → display label (first seen casing). */
 	const labels = new Map<string, string>();
 	/** `${rockKey}::${day}` → tallies. */
@@ -192,12 +144,11 @@ export function buildRockPerformanceView(
 			tally.sends += 1;
 			const kind = tickKind(row.tickType);
 			if (kind === 'onsight' || kind === 'flash') tally.onsightFlash += 1;
-			const score = scoreOf(row);
-			const list = baseline.get(baselineKey(row));
-			const ref = score != null && list ? referenceScore(list, dayNumber(day)) : null;
+			const score = performanceGradeScore(row);
+			const ref = score != null ? baseline(row) : null;
 			if (score != null && ref != null) {
 				tally.baselineSends += 1;
-				if (score >= ref - NEAR_LIMIT_STEP[kindOf(row)]) tally.nearLimit += 1;
+				if (score >= ref - NEAR_LIMIT_STEP[performanceGradeKind(row)]) tally.nearLimit += 1;
 			}
 		}
 		clusters.set(clusterKey, tally);

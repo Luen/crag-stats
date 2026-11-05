@@ -26,3 +26,21 @@ export function longestDayRun(runs: readonly DayStreak[]): DayStreak | null {
 		null
 	);
 }
+
+/** Current UTC day, or yesterday while today has no climb; future logs never extend it. */
+export function currentDayStreak(
+	values: Iterable<string | null | undefined>,
+	today: string
+): number {
+	const day = calendarDay(today);
+	if (!day) return 0;
+	const yesterday = new Date(Date.parse(`${day}T00:00:00Z`) - 86400000).toISOString().slice(0, 10);
+	const runs = consecutiveDayRuns(
+		[...values].filter((value) => {
+			const date = calendarDay(value);
+			return date != null && date <= day;
+		})
+	);
+	const latest = runs.at(-1);
+	return latest && (latest.end === day || latest.end === yesterday) ? latest.length : 0;
+}

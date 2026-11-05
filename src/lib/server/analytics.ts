@@ -1,4 +1,5 @@
-import { consecutiveDayRuns, longestDayRun } from '#lib/dayStreaks';
+import { currentPeriodStreak } from '#lib/periodStreaks';
+import { consecutiveDayRuns, currentDayStreak, longestDayRun } from '#lib/dayStreaks';
 import { soloKind, parseSoloKind } from '#lib/soloKind';
 import { loadWeatherLocations, attachWeatherLocation } from './weatherLocations';
 
@@ -1586,89 +1587,15 @@ function buildStreaks(dayMap: Map<string, { count: number; sends: number }>): {
 		};
 	}
 
-	const daySet = new Set(days);
 	const longest = longestDayRun(consecutiveDayRuns(days));
 
 	const last = days[days.length - 1];
 	const today = new Date();
 	const todayIso = today.toISOString().slice(0, 10);
-	const yesterday = new Date(today);
-	yesterday.setDate(yesterday.getDate() - 1);
-	const yIso = yesterday.toISOString().slice(0, 10);
+	const currentDays = currentDayStreak(days, todayIso);
 
-	let currentDays = 0;
-	if (daySet.has(todayIso) || daySet.has(yIso)) {
-		const cursor = daySet.has(todayIso)
-			? new Date(`${todayIso}T12:00:00`)
-			: new Date(`${yIso}T12:00:00`);
-		let guard = 0;
-		while (daySet.has(cursor.toISOString().slice(0, 10)) && guard < 4000) {
-			currentDays += 1;
-			guard += 1;
-			cursor.setDate(cursor.getDate() - 1);
-		}
-	}
-
-	const weekKey = (iso: string): string | null => {
-		const d = new Date(`${iso}T12:00:00`);
-		if (Number.isNaN(d.getTime())) return null;
-		const tmp = new Date(d);
-		tmp.setDate(tmp.getDate() + 3 - ((tmp.getDay() + 6) % 7));
-		const week1 = new Date(tmp.getFullYear(), 0, 4);
-		const week =
-			1 +
-			Math.round(
-				((tmp.getTime() - week1.getTime()) / 86400000 - 3 + ((week1.getDay() + 6) % 7)) / 7
-			);
-		if (!Number.isFinite(week) || week < 1 || week > 53) return null;
-		return `${tmp.getFullYear()}-W${String(week).padStart(2, '0')}`;
-	};
-	const weeks = [...new Set(days.map(weekKey).filter((k): k is string => Boolean(k)))].sort();
-	let currentWeeks = 0;
-	if (weeks.length) {
-		const lastWeek = weeks[weeks.length - 1];
-		const weekSet = new Set(weeks);
-		const [yStr, wStr] = lastWeek.split('-W');
-		let y = Number(yStr);
-		let w = Number(wStr);
-		let guard = 0;
-		while (
-			Number.isFinite(y) &&
-			Number.isFinite(w) &&
-			weekSet.has(`${y}-W${String(w).padStart(2, '0')}`) &&
-			guard < 3000
-		) {
-			currentWeeks += 1;
-			guard += 1;
-			w -= 1;
-			if (w < 1) {
-				y -= 1;
-				w = 52;
-			}
-		}
-	}
-
-	const months = [...new Set(days.map((d) => d.slice(0, 7)))].sort();
-	let currentMonths = 0;
-	if (months.length) {
-		const monthSet = new Set(months);
-		let [y, m] = months[months.length - 1].split('-').map(Number);
-		let guard = 0;
-		while (
-			Number.isFinite(y) &&
-			Number.isFinite(m) &&
-			monthSet.has(`${y}-${String(m).padStart(2, '0')}`) &&
-			guard < 600
-		) {
-			currentMonths += 1;
-			guard += 1;
-			m -= 1;
-			if (m < 1) {
-				y -= 1;
-				m = 12;
-			}
-		}
-	}
+	const currentWeeks = currentPeriodStreak(days, todayIso, 'week');
+	const currentMonths = currentPeriodStreak(days, todayIso, 'month');
 
 	let daysSinceLastActive: number | null = null;
 	if (currentDays === 0) {
