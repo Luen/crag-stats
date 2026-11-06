@@ -222,3 +222,5 @@ Weather performance fallback: when the dashboard has no daily-high/send-rate sig
 Settings navigation is header-only: use the Settings & sync gear at top right on desktop and mobile; the sidebar utility group contains Docs. Settings pages retain their Settings breadcrumb/title.
 
 Recent activities show existing StyleBadge chips in a wrapping Climb styles group below the date/tick metadata. Preserve discipline colours and explicit solo labels; keep partner and weather lines readable on mobile.
+
+Logbook comments longer than 140 characters show a 120-character preview with an ellipsis. Expanding the native disclosure replaces that preview with the full comment in place; the same summary remains the collapse control. Preserve line breaks and the muted note tokens in both states.

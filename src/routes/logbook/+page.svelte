@@ -514,8 +514,10 @@
 						{#if row.comment}
 							{#if row.comment.length > 140}
 								<details class="note">
-									<summary>{row.comment.slice(0, 120)}…</summary>
-									<p>{row.comment}</p>
+									<summary>
+										<span class="note-preview">{row.comment.slice(0, 120)}…</span>
+										<span class="note-full">{row.comment}</span>
+									</summary>
 								</details>
 							{:else}
 								<div class="note">{row.comment}</div>
@@ -817,8 +819,12 @@
 	.note summary {
 		cursor: pointer;
 	}
-	.note p {
-		margin: 0.25rem 0 0;
+	.note .note-full,
+	.note[open] .note-preview {
+		display: none;
+	}
+	.note[open] .note-full {
+		display: inline;
 	}
 	.chip {
 		display: inline-block;
