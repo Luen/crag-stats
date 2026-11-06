@@ -1,4 +1,5 @@
 import { detectAndParseGrade } from '#lib/grades';
+import { sessionReadiness } from '#lib/readiness';
 import type { VenueScope } from './venue';
 
 export type GoalKind = 'grade' | 'height_year' | 'days_month' | 'custom';
@@ -16,8 +17,6 @@ export const GRADE_GOAL_ATTEMPT_NEED: Record<GradeGoalHorizon, number> = {
 	'long-haul': 75
 };
 
-/** Max readiness without a send at N. */
-const GRADE_READY_CAP_WITHOUT_SEND = 95;
 /** Base when best send is already at N−1 (lands mid-band with a single supporting route). */
 const GRADE_READY_BASE_AT_N1 = 35;
 /** Small base when best is only at N−2. */
@@ -38,6 +37,8 @@ export type GradeGoalReadinessInput = {
 	routesAtNMinus2: number;
 	/** Non-send ticks with effective score ≥ N−1 (same year/venue as evidence). */
 	attemptsNearTarget?: number;
+	/** Distinct days of near-target working ticks in the goal year/venue. */
+	qualifyingSessions?: number;
 };
 
 export type GradeGoalReadiness = {
@@ -129,6 +130,7 @@ export function gradeGoalReadiness(input: GradeGoalReadinessInput): GradeGoalRea
 	const n1Count = Math.max(0, Math.floor(input.routesAtNMinus1));
 	const n2Count = Math.max(0, Math.floor(input.routesAtNMinus2));
 	const attemptCount = Math.max(0, Math.floor(input.attemptsNearTarget ?? 0));
+	const sessionCount = Math.max(0, Math.floor(input.qualifyingSessions ?? 0));
 	const best = input.bestSend != null && Number.isFinite(input.bestSend) ? input.bestSend : null;
 
 	const empty = (
@@ -166,6 +168,10 @@ export function gradeGoalReadiness(input: GradeGoalReadinessInput): GradeGoalRea
 			`${attemptCount} attempt${attemptCount === 1 ? '' : 's'} on ≥${formatGoalScore(n1Bucket)}`
 		);
 	}
+	if (sessionCount > 0)
+		pyramidBits.push(
+			`${sessionCount} qualifying sessions · +${Math.max(0, sessionCount - 1)} readiness points before the 99% cap`
+		);
 
 	if (best != null && best >= target) {
 		return empty(100, `Best send ${formatGoalScore(best)} · done`, 'short-term', attemptNeed);
@@ -181,7 +187,7 @@ export function gradeGoalReadiness(input: GradeGoalReadinessInput): GradeGoalRea
 	pct += GRADE_READY_N1_FILL * Math.min(n1Count / GRADE_GOAL_N1_NEED, 1);
 	pct += GRADE_READY_N2_FILL * Math.min(n2Count / GRADE_GOAL_N2_NEED, 1);
 	pct += GRADE_READY_ATTEMPT_FILL * Math.min(attemptCount / attemptNeed, 1);
-	pct = Math.min(GRADE_READY_CAP_WITHOUT_SEND, Math.round(pct * 10) / 10);
+	pct = sessionReadiness(pct, sessionCount);
 
 	const bestBit = best != null ? `Best send ${formatGoalScore(best)}` : 'No qualifying send yet';
 	return empty(pct, `${bestBit} · ${pyramidBits.join(' · ')}`, horizon, attemptNeed);

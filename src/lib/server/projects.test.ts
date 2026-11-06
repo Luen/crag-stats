@@ -66,13 +66,18 @@ describe('isUngradedRoute', () => {
 describe('isRecentlySent', () => {
 	const now = new Date('2026-10-27T12:00:00Z');
 
-	it('includes sends within ~31 days', () => {
+	it('clamps February correctly in leap and non-leap years', () => {
+		expect(isRecentlySent('2024-02-29', new Date('2024-08-31T10:00:00Z'))).toBe(true);
+		expect(isRecentlySent('2024-02-28', new Date('2024-08-31T10:00:00Z'))).toBe(false);
+		expect(isRecentlySent('2025-02-28', new Date('2025-08-31T10:00:00Z'))).toBe(true);
+	});
+	it('includes sends within six calendar months', () => {
 		expect(isRecentlySent('2026-10-01', now)).toBe(true);
 		expect(isRecentlySent('2026-09-26', now)).toBe(true);
 	});
 
 	it('excludes older sent projects from the shelf', () => {
-		expect(isRecentlySent('2026-09-01', now)).toBe(false);
+		expect(isRecentlySent('2026-04-26', now)).toBe(false);
 		expect(isRecentlySent('2025-10-27', now)).toBe(false);
 	});
 
@@ -83,22 +88,22 @@ describe('isRecentlySent', () => {
 			expect(isRecentlySent('2026-11-01', current)).toBe(false);
 		}
 	});
-	it('includes the whole 31st calendar day, but not the 32nd, and honors custom windows', () => {
+	it('clamps the six-month boundary at month ends and honors custom day windows', () => {
 		for (const time of ['00:00:00.000', '23:59:59.999']) {
 			const current = new Date(`2026-10-31T${time}Z`);
-			expect(isRecentlySent('2026-09-30', current)).toBe(true);
-			expect(isRecentlySent('2026-09-29', current)).toBe(false);
+			expect(isRecentlySent('2026-04-30', current)).toBe(true);
+			expect(isRecentlySent('2026-04-29', current)).toBe(false);
 			expect(isRecentlySent(' 2026-10-31 ', current, 0)).toBe(true);
 			expect(isRecentlySent('2026-10-30', current, 0)).toBe(false);
 		}
 	});
-	it('preserves exact elapsed-time boundaries and future rejection for timestamps', () => {
+	it('preserves the clock at the six-month boundary and rejects future timestamps', () => {
 		const current = new Date('2026-10-31T08:00:00Z');
-		expect(isRecentlySent('2026-09-30T08:00:00Z', current)).toBe(true);
-		expect(isRecentlySent('2026-09-30T07:59:59.999Z', current)).toBe(false);
+		expect(isRecentlySent('2026-04-30T08:00:00Z', current)).toBe(true);
+		expect(isRecentlySent('2026-04-30T07:59:59.999Z', current)).toBe(false);
 		expect(isRecentlySent('2026-10-31T08:00:00Z', current)).toBe(true);
 		expect(isRecentlySent('2026-10-31T08:00:00.001Z', current)).toBe(false);
-		expect(isRecentlySent('2026-09-30T10:00:00+02:00', current)).toBe(true);
+		expect(isRecentlySent('2026-04-30T10:00:00+02:00', current)).toBe(true);
 	});
 	it('rejects missing or invalid dates', () => {
 		expect(isRecentlySent(null, now)).toBe(false);

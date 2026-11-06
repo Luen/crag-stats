@@ -222,3 +222,5 @@ Weather performance fallback: when the dashboard has no daily-high/send-rate sig
 Settings navigation is header-only: use the Settings & sync gear at top right on desktop and mobile; the sidebar utility group contains Docs. Settings pages retain their Settings breadcrumb/title.
 
 Recent activities show existing StyleBadge chips in a wrapping Climb styles group below the date/tick metadata. Preserve discipline colours and explicit solo labels; keep partner and weather lines readable on mobile.
+
+Project names on cards/dashboard open an internal detail page; theCrag remains a separate external link. Project cards show a token-coloured native readiness progress bar with its approximate label. Detail panels pair readiness/pyramid evidence and historical remaining-work ranges, stacking on mobile; session history uses a focusable horizontal table region, followed by wrapped try rows, an expandable method and an exact-route logbook link. Never present readiness as a send probability or reveal private comments.

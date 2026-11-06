@@ -1,9 +1,11 @@
 <script lang="ts">
 	import NewRouteBadge from '#lib/components/NewRouteBadge.svelte';
+	import ProjectReadiness from '#lib/components/ProjectReadiness.svelte';
 	import ProjectRouteBadge from '#lib/components/ProjectRouteBadge.svelte';
 
 	type ProjectCard = {
 		id: number;
+		routeId: number;
 		status: string;
 		routeName: string;
 		gradeRaw: string | null;
@@ -14,6 +16,7 @@
 		tryCount: number;
 		href: string | null;
 		lastAttemptAt: string | null;
+		progress: { pct: number | null; horizon: string };
 	};
 
 	type Props = { projects: ProjectCard[] };
@@ -58,21 +61,15 @@
 			{#each projects as p (p.id)}
 				<li>
 					<div class="row">
-						{#if p.href}
-							<a class="name" href={p.href} target="_blank" rel="noreferrer">
-								{p.routeName}{#if p.gradeRaw}<span class="grade"> · {p.gradeRaw}</span>{/if}
-							</a>
-						{:else}
-							<strong class="name">
-								{p.routeName}{#if p.gradeRaw}<span class="grade"> · {p.gradeRaw}</span>{/if}
-							</strong>
-						{/if}
+						<a class="name" href={`/projects/${p.routeId}`}>
+							{p.routeName}{#if p.gradeRaw}<span class="grade"> · {p.gradeRaw}</span>{/if}
+						</a>
 						{#if p.isProject}
 							<ProjectRouteBadge />
 						{:else if p.ungraded}
 							<NewRouteBadge />
 						{/if}
-						<span class="badge" class:sent={p.status === 'sent'}>{p.status}</span>
+						<span class={['badge', { sent: p.status === 'sent' }]}>{p.status}</span>
 					</div>
 					{#if p.areaLabel}
 						<p class="meta">{p.areaLabel}</p>
@@ -81,6 +78,7 @@
 						{sessionsLabel(p.sessionCount)} · {triesLabel(p.tryCount)}{#if when(p.lastAttemptAt)}
 							· {when(p.lastAttemptAt)}{/if}
 					</p>
+					<ProjectReadiness pct={p.progress.pct} horizon={p.progress.horizon} />
 				</li>
 			{/each}
 		</ul>

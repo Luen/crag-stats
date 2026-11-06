@@ -45,6 +45,13 @@ test('shows two-day and same-day completed projects, with valid session totals a
 			[null, false, 1]
 		]);
 		add('Same-day completed project fixture', [[day, true, 3]]);
+		for (let i = 0; i < 3; i++) {
+			add(`Comparable completed project ${i}`, [
+				[new Date(Date.now() - 3 * 86400000).toISOString().slice(0, 10), false, 3],
+				[previous, false, 3],
+				[day, true, 1]
+			]);
+		}
 		add('After-send work fixture', [
 			[`${day}T09:00:00Z`, true, 1],
 			[`${day}T10:00:00Z`, false, 3]
@@ -77,6 +84,38 @@ test('shows two-day and same-day completed projects, with valid session totals a
 			await page.setViewportSize({ width, height: 1000 });
 			await expectAxeClean(page, { include: ['main'] });
 		}
+		await working.getByRole('link', { name: 'Two-day project threshold fixture' }).click();
+		await expect(page).toHaveURL(new RegExp(`/projects/${ids[1]}$`));
+		await expect(
+			page.getByRole('heading', { name: 'Session progression', exact: true })
+		).toBeVisible();
+		await expect(
+			page.getByRole('region', { name: 'Session progression table' }).locator('tbody tr')
+		).toHaveCount(2);
+		await expect(page.getByText('1 more session', { exact: true })).toBeVisible();
+		await expect(page.getByText(/more tries, including the send/)).toBeVisible();
+		expect(await page.content()).not.toContain('Projects private fixture note');
+		await expectAxeClean(page, { include: ['main'] });
+		await page.getByText('How approximate readiness and estimates work', { exact: true }).click();
+		await expectAxeClean(page, { include: ['#method'] });
+		const logbook = page.getByRole('link', {
+			name: 'View all logged climbs on Two-day project threshold fixture'
+		});
+		await expect(logbook).toHaveAttribute('href', `/logbook?route=${ids[1]}`);
+		await logbook.click();
+		await expect(page.locator('tbody tr')).toHaveCount(4);
+		await page.goto('/');
+		const dashboardCard = page
+			.locator('article')
+			.filter({ has: page.getByRole('heading', { name: 'Projects', exact: true }) });
+		await expect(dashboardCard.getByRole('progressbar').first()).toBeVisible();
+		await expectAxeClean(page, { include: [dashboardCard] });
+		await dashboardCard.getByRole('link', { name: 'Two-day project threshold fixture' }).click();
+		await expect(page).toHaveURL(new RegExp(`/projects/${ids[1]}$`));
+		await page.goto(`/projects/${ids[2]}`);
+		await expect(page.getByText('This project is sent.', { exact: false })).toBeVisible();
+		const invalid = await page.goto('/projects/not-a-route');
+		expect(invalid?.status()).toBe(404);
 		await page.goto(`http://localhost:${PORTS.settings}/projects`);
 		await expect(page.getByText('No open projects yet.')).toContainText(
 			'two different climbing days'

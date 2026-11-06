@@ -38,11 +38,11 @@ function parseAscentDay(raw: string | null | undefined): number | null {
 	return Number.isNaN(parsed) ? null : parsed;
 }
 
-/** Date-only sends use UTC calendar days; timestamps retain the elapsed-time window. */
+/** Past six calendar months in UTC, clamped at month ends. Optional days override for callers. */
 export function isRecentlySent(
 	sentAt: string | null | undefined,
 	now: Date = new Date(),
-	windowDays = 31
+	windowDays?: number
 ): boolean {
 	const raw = sentAt?.trim();
 	let parsed: number | null;
@@ -58,7 +58,16 @@ export function isRecentlySent(
 	if (parsed == null) return false;
 	const delta = reference - parsed;
 	if (delta < 0) return false;
-	return delta <= windowDays * 24 * 60 * 60 * 1000;
+	if (windowDays != null) return delta <= windowDays * 24 * 60 * 60 * 1000;
+	const cutoff = new Date(reference);
+	const day = cutoff.getUTCDate();
+	cutoff.setUTCDate(1);
+	cutoff.setUTCMonth(cutoff.getUTCMonth() - 6);
+	const lastDay = new Date(
+		Date.UTC(cutoff.getUTCFullYear(), cutoff.getUTCMonth() + 1, 0)
+	).getUTCDate();
+	cutoff.setUTCDate(Math.min(day, lastDay));
+	return parsed >= cutoff.getTime();
 }
 
 /** Drop open projects with no touch in this window (default 365 days). */
@@ -334,6 +343,7 @@ export type ProjectListItem = {
 	gradeRaw: string | null;
 	gradeBand: number | null;
 	gradeScore: number | null;
+	gradeSystem: string | null;
 	/** No grade on theCrag: likely a new route the climber bolted or is working. */
 	ungraded: boolean;
 	/** theCrag Project flag from route info import (#77). */
@@ -419,6 +429,7 @@ export function listProjects(status?: 'open' | 'sent' | 'archived'): ProjectList
 			gradeRaw: routes.gradeRaw,
 			gradeBand: routes.gradeBand,
 			gradeScore: routes.gradeScore,
+			gradeSystem: routes.gradeSystem,
 			isProject: routes.isProject,
 			stars: routes.stars,
 			cragName: routes.cragName,
@@ -494,7 +505,7 @@ export function countTouched(
 	return rows.filter((r) => isTouchedWithin(r.lastAttemptAt, now)).length;
 }
 
-/** Working-on (open, touched within a year) + recently-sent shelf (~31 days). */
+/** Working-on (open, touched within a year) + recently-sent shelf (six calendar months). */
 export function listActiveProjects(now: Date = new Date()) {
 	const all = listProjects();
 	const workingOn = all
