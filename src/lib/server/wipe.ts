@@ -20,6 +20,7 @@ export function wipeAllData() {
 	invalidateWeatherRuns();
 	invalidateWeatherLocations();
 	db.run(sql`DELETE FROM projects`);
+	db.run(sql`DELETE FROM project_overrides`);
 	db.run(sql`DELETE FROM goals`);
 	db.run(sql`DELETE FROM first_ascents`);
 	db.run(sql`DELETE FROM first_ascent_import_skips`);

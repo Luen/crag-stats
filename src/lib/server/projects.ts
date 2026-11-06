@@ -5,6 +5,7 @@ import { theCragBestLink, theCragRouteUrl } from '#lib/thecragUrls';
 import { db, ensureSchema } from './db';
 import { ascents, projects, routes } from './db/schema';
 import { isLikelyIndoorRoute } from './venue';
+import { getProjectOverrides, projectDecision, type ProjectDecision } from './projectOverrides';
 
 export { isLikelyIndoorRoute };
 
@@ -237,6 +238,7 @@ export function summarizeRouteAscents(rows: ProjectAscent[]): RouteAscentStats {
  */
 export function refreshProjects(now: Date = new Date()) {
 	ensureSchema();
+	const overrides = getProjectOverrides();
 
 	const ascentRows = db
 		.select({
@@ -254,6 +256,8 @@ export function refreshProjects(now: Date = new Date()) {
 		db
 			.select({
 				id: routes.id,
+				provider: routes.provider,
+				externalId: routes.externalId,
 				gearStyle: routes.gearStyle,
 				name: routes.name,
 				cragName: routes.cragName,
@@ -289,10 +293,18 @@ export function refreshProjects(now: Date = new Date()) {
 		}
 
 		const stats = summarizeRouteAscents(rows);
-		const status = classifyRouteProject(stats);
+		const decision = meta ? projectDecision(overrides, meta.provider, meta.externalId) : 'auto';
+		if (decision === 'exclude') continue;
+		const status =
+			decision === 'include'
+				? stats.sendCount > 0
+					? 'sent'
+					: 'open'
+				: classifyRouteProject(stats);
 		if (status === 'none') continue;
 		// Stale open projects (no touch in a year) fall off — not actively projecting.
-		if (status === 'open' && !isTouchedWithin(stats.lastAttemptAt, now)) continue;
+		if (status === 'open' && decision !== 'include' && !isTouchedWithin(stats.lastAttemptAt, now))
+			continue;
 
 		keepIds.add(routeId);
 		const existing = db.select().from(projects).where(eq(projects.routeId, routeId)).get();
@@ -338,6 +350,8 @@ export type ProjectListItem = {
 	lastAttemptAt: string | null;
 	sentAt: string | null;
 	routeId: number;
+	routeProvider: string;
+	selection: ProjectDecision;
 	routeExternalId: string;
 	routeName: string;
 	gradeRaw: string | null;
@@ -424,6 +438,7 @@ export function listProjects(status?: 'open' | 'sent' | 'archived'): ProjectList
 			lastAttemptAt: projects.lastAttemptAt,
 			sentAt: projects.sentAt,
 			routeId: routes.id,
+			routeProvider: routes.provider,
 			routeExternalId: routes.externalId,
 			routeName: routes.name,
 			gradeRaw: routes.gradeRaw,
@@ -461,8 +476,10 @@ export function listProjects(status?: 'open' | 'sent' | 'archived'): ProjectList
 		days.add(day);
 		sessionsByRoute.set(row.routeId, days);
 	}
+	const overrides = getProjectOverrides();
 	return rows.map((row) => ({
 		...row,
+		selection: projectDecision(overrides, row.routeProvider, row.routeExternalId),
 		tryCount: row.attemptCount,
 		sessionCount: sessionsByRoute.get(row.routeId)?.size ?? 0,
 		ungraded: isUngradedRoute(row.gradeScore, row.gradeRaw),
@@ -490,11 +507,21 @@ export function listProjects(status?: 'open' | 'sent' | 'archived'): ProjectList
 export function countActiveProjects(now: Date = new Date()): number {
 	ensureSchema();
 	const rows = db
-		.select({ lastAttemptAt: projects.lastAttemptAt })
+		.select({
+			lastAttemptAt: projects.lastAttemptAt,
+			provider: routes.provider,
+			externalId: routes.externalId
+		})
 		.from(projects)
+		.innerJoin(routes, eq(routes.id, projects.routeId))
 		.where(eq(projects.status, 'open'))
 		.all();
-	return countTouched(rows, now);
+	const overrides = getProjectOverrides();
+	return rows.filter(
+		(row) =>
+			projectDecision(overrides, row.provider, row.externalId) === 'include' ||
+			isTouchedWithin(row.lastAttemptAt, now)
+	).length;
 }
 
 /** Pure helper (unit-tested): how many open rows were touched within the stale window. */
@@ -509,12 +536,18 @@ export function countTouched(
 export function listActiveProjects(now: Date = new Date()) {
 	const all = listProjects();
 	const workingOn = all
-		.filter((p) => p.status === 'open' && isTouchedWithin(p.lastAttemptAt, now))
+		.filter(
+			(p) =>
+				p.status === 'open' && (p.selection === 'include' || isTouchedWithin(p.lastAttemptAt, now))
+		)
 		.sort((a, b) => String(b.lastAttemptAt ?? '').localeCompare(String(a.lastAttemptAt ?? '')));
 	const recentlySent = all
 		.filter((p) => p.status === 'sent' && isRecentlySent(p.sentAt, now))
 		.sort((a, b) => String(b.sentAt ?? '').localeCompare(String(a.sentAt ?? '')));
-	return { workingOn, recentlySent };
+	const earlierSelected = all.filter(
+		(p) => p.status === 'sent' && p.selection === 'include' && !isRecentlySent(p.sentAt, now)
+	);
+	return { workingOn, recentlySent, earlierSelected };
 }
 
 type RankableProject = Pick<ProjectListItem, 'id' | 'sessionCount' | 'tryCount' | 'lastAttemptAt'>;

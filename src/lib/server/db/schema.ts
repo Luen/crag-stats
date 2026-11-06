@@ -172,6 +172,18 @@ export const projects = sqliteTable(
 	(t) => [uniqueIndex('projects_route').on(t.routeId)]
 );
 
+/** Owner intent survives cache rebuilds and route pruning, like FA marks. */
+export const projectOverrides = sqliteTable(
+	'project_overrides',
+	{
+		provider: text('provider').notNull(),
+		routeExternalId: text('route_external_id').notNull(),
+		decision: text('decision').notNull(),
+		updatedAt: text('updated_at').notNull()
+	},
+	(t) => [primaryKey({ columns: [t.provider, t.routeExternalId] })]
+);
+
 export const goals = sqliteTable('goals', {
 	id: integer('id').primaryKey({ autoIncrement: true }),
 	kind: text('kind').notNull(), // grade | height_year | days_month | custom
