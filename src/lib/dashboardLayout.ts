@@ -1,6 +1,6 @@
 /**
  * Dreeve-style dashboard layout: which cards show and in what order.
- * Defaults match the current dashboard. Preferences live in cookie `cs_dash_layout`.
+ * Site-wide preferences live in app_settings; cs_dash_layout is a legacy fallback.
  */
 
 export const DASH_LAYOUT_COOKIE = 'cs_dash_layout';
@@ -50,6 +50,7 @@ export type DashCardDef = {
 	id: DashCardId;
 	label: string;
 	width: DashWidth;
+	defaultEnabled?: boolean;
 };
 
 export type DashLayoutItem = {
@@ -92,7 +93,7 @@ export const DEFAULT_DASH_CARDS: readonly DashCardDef[] = [
 	{ id: 'quality', label: 'Quality', width: 'quarter' },
 	{ id: 'rockPerformance', label: 'Rock & performance', width: 'half' },
 	{ id: 'routePopularity', label: 'Route popularity', width: 'half' },
-	{ id: 'karma', label: 'Karma', width: 'half' },
+	{ id: 'karma', label: 'Karma', width: 'half', defaultEnabled: false },
 	{ id: 'pyramids', label: 'Grade pyramids', width: 'full' },
 	{ id: 'notable', label: 'Notable ascents', width: 'full' },
 	{ id: 'cpr', label: 'CPR timelines', width: 'full' }
@@ -101,14 +102,14 @@ export const DEFAULT_DASH_CARDS: readonly DashCardDef[] = [
 const DEF_BY_ID = new Map(DEFAULT_DASH_CARDS.map((c) => [c.id, c]));
 
 export function defaultLayout(): DashLayoutItem[] {
-	return DEFAULT_DASH_CARDS.map((c) => ({ id: c.id, enabled: true }));
+	return DEFAULT_DASH_CARDS.map((c) => ({ id: c.id, enabled: c.defaultEnabled ?? true }));
 }
 
 export function cardDef(id: DashCardId): DashCardDef {
 	return DEF_BY_ID.get(id) ?? { id, label: id, width: 'full' };
 }
 
-/** Merge cookie/user layout with catalog (unknown ids dropped; missing ids appended disabled=false? keep enabled true for new cards at end). */
+/** Preserve saved choices, drop unknown IDs and append missing cards with catalog defaults. */
 export function normalizeLayout(raw: DashLayoutItem[] | null | undefined): DashLayoutItem[] {
 	const known = new Set(DEFAULT_DASH_CARDS.map((c) => c.id));
 	const seen = new Set<DashCardId>();
@@ -122,8 +123,7 @@ export function normalizeLayout(raw: DashLayoutItem[] | null | undefined): DashL
 
 	for (const def of DEFAULT_DASH_CARDS) {
 		if (seen.has(def.id)) continue;
-		// New cards added in a release appear enabled at the end (Dreeve-ish defaults).
-		out.push({ id: def.id, enabled: true });
+		out.push({ id: def.id, enabled: def.defaultEnabled ?? true });
 	}
 
 	return out;
