@@ -125,6 +125,8 @@ Height quirk: theCrag may return height as `[value, unit]` arrays — parse in t
 
 ## Analytics quirks
 
+- Owner project choices (#424) live in `project_overrides` keyed by provider/external route ID (no route FK), separate from derived `projects` and theCrag's route flag. Include bypasses automatic day/staleness thresholds; exclude suppresses detection; auto removes the override. Actual logged sends still determine sent status. Refresh/list/dashboard/sidebar share selection, and wipe clears it. Keep overrides across upstream route pruning, like FA marks.
+
 - Project progression (#423): `/projects/[routeId]` and cards use `server/projectProgress.ts`; same discipline + grade scale, distinct-route effective-grade sends in prior 365 days, own route excluded from support, historical snapshots never use later evidence. Readiness base caps at 94, then `sessionReadiness` adds one point per additional qualifying day (first establishes baseline), capped at 99 until a send; grade goals share this helper with near-target working days in their year/venue. Project readiness reaches 100 only when the target route sends; V0/negative V grades work. Remaining effort uses at least three longer completed comparable projects per metric, otherwise withheld. `projectDetails.ts` selects a whitelist with no comments/raw JSON; notes stay in the logbook.
 
 - Logbook wind filters use cached daily max 10 m wind: `weather=wind` ≥50 km/h (same as Blown Away), `weather=calm` measured 0–<25 km/h (same calm threshold as Perfect day). Missing readings and indoor rows never match; 25–<50 km/h is neither filter.

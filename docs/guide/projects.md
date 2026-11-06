@@ -8,6 +8,18 @@ When both an attempt and the first send include timestamps, attempts after that 
 
 **Recently sent** covers the past six calendar months in UTC, including the boundary day for date-only sends. At month ends the boundary clamps to the last valid day (31 October looks back to 30 April). Future dates are excluded. Timestamp sends preserve the reference clock at the boundary. The dashboard uses the same window when filling spare project slots with recent sends.
 
+## Choosing your own projects
+
+The owner sees compact project pills beside the FA/FFA controls in the logbook and on project cards/details:
+
+- **Mark project** selects a logged outdoor route even after just one session or a year without activity.
+- **Not a project** / **Unmark project** dismisses it from Projects, the dashboard and the active-project count until the owner marks it again or restores detection.
+- **Use automatic** removes the manual choice and restores the rules above.
+
+Each pill saves directly. Logbook pills keep you on the same filtered page; project-card/detail pills return to the project list. The Project / Not a project tag shows a manual choice without relying on colour.
+
+Selections are local metadata and survive syncs, cache rebuilds and even a route being removed upstream and later returning. They do not change theCrag's logbook or its public Project flag. Only a real logged send makes a selected project sent. Selected sends outside the six-month window appear under **Earlier selected sends** instead of Recently sent. Settings → Wipe clears selections. Visitors can read the resulting projects but cannot change the choices. Indoor and unlogged routes cannot be manually included.
+
 ## Project details, progression and estimates
 
 Click a project name on the Projects page or dashboard to open its detail page. It shows the route, public guidebook excerpts when cached, dated session progression, and previous tries/sends (including climbed pitch labels). The bottom link opens every logbook entry for that exact route, including older repeats. Private ascent notes stay in the logbook under the existing owner-only visibility setting.

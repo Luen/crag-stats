@@ -1,11 +1,12 @@
 <script lang="ts">
 	import NewRouteBadge from '#lib/components/NewRouteBadge.svelte';
 	import ProjectReadiness from '#lib/components/ProjectReadiness.svelte';
+	import ProjectSelection from '#lib/components/ProjectSelection.svelte';
 	import ProjectRouteBeta from '#lib/components/ProjectRouteBeta.svelte';
 	import ProjectRouteBadge from '#lib/components/ProjectRouteBadge.svelte';
 	import type { PageProps } from './$types';
 
-	let { data }: PageProps = $props();
+	let { data, form }: PageProps = $props();
 
 	type ProjectCard = (typeof data.workingOn)[number];
 
@@ -72,19 +73,33 @@
 		<p class="footer">{sessionsLabel(p.sessionCount)} · {triesLabel(p.tryCount)}</p>
 		<ProjectReadiness pct={p.progress.pct} horizon={p.progress.horizon} />
 		<a class="doc-link" href={`/logbook?route=${p.routeId}`}>All logged climbs →</a>
+		{#if p.selection === 'include'}<p class="selection-label">Selected by you</p>{/if}
+		{#if data.canManageProjects}
+			<ProjectSelection
+				provider={p.routeProvider}
+				route={p.routeExternalId}
+				name={p.routeName}
+				decision={p.selection}
+			/>
+		{/if}
 	</article>
 {/snippet}
 
 <section class="head">
 	<p class="eyebrow">Outdoor routes</p>
-	<h1>Auto-detected projects</h1>
+	<h1>Projects</h1>
 	<p class="blurb">
 		Auto-detected from theCrag: open projects need unsent attempts on two separate climbing days.
 		Completed projects include sends after work across days or at least two failed tries that day
 		(shown for six months). Routes untouched for a year drop off. First-try sends are not projects.
 		<a class="doc-link" href="/docs/projects">Guidebook text &amp; privacy</a>
+		{#if data.canManageProjects}
+			Include or dismiss routes with Project selection here or in the <a href="/logbook">logbook</a
+			>.{/if}
 	</p>
 </section>
+
+{#if form?.message}<p role="alert">{form.message}</p>{/if}
 
 <section class="block">
 	<div class="section-head">
@@ -103,6 +118,18 @@
 		</div>
 	{/if}
 </section>
+
+{#if data.earlierSelected.length}
+	<section class="block">
+		<div class="section-head"><h2>Earlier selected sends</h2></div>
+		<p class="empty">
+			Routes you selected whose send is outside the six-month window or has no valid date.
+		</p>
+		<div class="cards">
+			{#each data.earlierSelected as p (p.id)}{@render projectCard(p)}{/each}
+		</div>
+	</section>
+{/if}
 
 <section class="block">
 	<div class="section-head">
@@ -123,6 +150,11 @@
 </section>
 
 <style>
+	.selection-label {
+		margin: 0;
+		font-size: 0.75rem;
+		color: var(--ink-muted);
+	}
 	.head {
 		margin-bottom: 1.35rem;
 	}

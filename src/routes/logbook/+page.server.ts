@@ -4,6 +4,8 @@ import { listLogbook } from '#lib/server/analytics';
 import { getPreferredGradeSystem, getShowNotes } from '#lib/server/appSettings';
 import { parseFirstAscentKind, routeExists, setFirstAscent } from '#lib/server/firstAscents';
 import { notesVisible } from '#lib/server/notes';
+import { getProjectOverrides } from '#lib/server/projectOverrides';
+import { saveProjectSelection } from '#lib/server/projectSelectionAction';
 import { isRouteHistoryImportEnabled } from '#lib/server/routeHistoryImport';
 import { isWeatherImportEnabled } from '#lib/server/weatherImport';
 import { isWeatherFilterKey, parseWeatherHighBound, type WeatherFilterKey } from '#lib/weatherKeys';
@@ -77,6 +79,7 @@ function parseScoreBound(raw: string | null): number | undefined {
 }
 
 export const actions: Actions = {
+	projectSelection: (event) => saveProjectSelection(event, false),
 	/** Owner-only: mark (kind=FA|FFA) or unmark (kind empty) a route as a first ascent. */
 	firstAscent: async ({ request, locals }) => {
 		if (!locals.authed) return fail(403, { message: 'Log in to mark first ascents' });
@@ -205,6 +208,7 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 		rows,
 		notesShown,
 		canMarkFirstAscents: locals.authed,
+		projectSelections: locals.authed ? Object.fromEntries(getProjectOverrides()) : null,
 		q,
 		place,
 		mapVenue,

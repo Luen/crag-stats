@@ -1,5 +1,6 @@
 <script lang="ts">
 	import ProjectReadiness from '#lib/components/ProjectReadiness.svelte';
+	import ProjectSelection from '#lib/components/ProjectSelection.svelte';
 	import ProjectRouteBeta from '#lib/components/ProjectRouteBeta.svelte';
 	import StyleBadge from '#lib/components/StyleBadge.svelte';
 	import TickTypeIcon from '#lib/components/TickTypeIcon.svelte';
@@ -29,6 +30,15 @@
 	{#if p.gearStyle}<StyleBadge style={p.gearStyle} />{/if}
 	{#if p.href}<a href={p.href} target="_blank" rel="noreferrer">View on theCrag ↗</a>{/if}
 </header>
+
+{#if data.canManageProjects}
+	<ProjectSelection
+		provider={p.routeProvider}
+		route={p.routeExternalId}
+		name={p.routeName}
+		decision={p.selection}
+	/>
+{/if}
 
 <div class="overview">
 	<section class="panel" aria-labelledby="readiness-title">
@@ -207,6 +217,7 @@
 		display: grid;
 		grid-template-columns: repeat(2, minmax(0, 1fr));
 		gap: 1rem;
+		margin-top: 1rem;
 	}
 	.panel {
 		padding: 1.2rem;

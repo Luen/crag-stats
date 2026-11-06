@@ -55,6 +55,11 @@ function oldDatabase(path: string, applied: string[]) {
 		db.prepare(`INSERT INTO sync_state (provider, last_success_at) VALUES ('thecrag', ?)`).run(NOW);
 	}
 	// Local-only data from later releases, which must never be lost.
+	if (applied.includes('0020_project_overrides.sql')) {
+		db.prepare(
+			"INSERT INTO project_overrides (provider,route_external_id,decision,updated_at) VALUES ('thecrag','r1','exclude',?)"
+		).run(NOW);
+	}
 	if (applied.includes('0008_app_settings.sql')) {
 		db.prepare(
 			`INSERT INTO app_settings (key, value, updated_at) VALUES ('grade_system', 'french', ?)`
@@ -155,6 +160,11 @@ describe('migrations survive skipped releases', () => {
 				}
 				if (k >= FILES.indexOf('0009_first_ascents.sql') + 1) {
 					expect(db.prepare('SELECT kind FROM first_ascents').get()).toEqual({ kind: 'FFA' });
+				}
+				if (k >= FILES.indexOf('0020_project_overrides.sql') + 1) {
+					expect(db.prepare('SELECT decision FROM project_overrides').get()).toEqual({
+						decision: 'exclude'
+					});
 				}
 				if (k >= FILES.indexOf('0012_route_info.sql') + 1) {
 					expect(

@@ -2,6 +2,7 @@
 	import { SOLO_KINDS } from '#lib/soloKind';
 	import { SvelteURLSearchParams } from 'svelte/reactivity';
 	import GradeChip from '#lib/components/GradeChip.svelte';
+	import ProjectSelection from '#lib/components/ProjectSelection.svelte';
 	import StyleBadge from '#lib/components/StyleBadge.svelte';
 	import TagChips from '#lib/components/TagChips.svelte';
 	import TickTypeIcon from '#lib/components/TickTypeIcon.svelte';
@@ -17,7 +18,7 @@
 	import { enhance } from '$app/forms';
 	import type { PageProps } from './$types';
 
-	let { data }: PageProps = $props();
+	let { data, form }: PageProps = $props();
 
 	function filterParams() {
 		// Query builder for hrefs, rebuilt when called.
@@ -109,6 +110,7 @@
 
 <section class="panel head">
 	<h1>Logbook</h1>
+	{#if form?.message}<p role="alert">{form.message}</p>{/if}
 	{#if data.place}<p>
 			Climbing map place filter · <a href="/map">Back to map</a> ·
 			<a href="/logbook">Clear place</a>
@@ -542,6 +544,14 @@
 									>
 								{/if}
 							</form>
+							<ProjectSelection
+								action="?/projectSelection"
+								provider={row.routeProvider}
+								route={row.routeExternalId}
+								name={row.displayName}
+								decision={data.projectSelections?.[`${row.routeProvider}:${row.routeExternalId}`] ??
+									'auto'}
+							/>
 						{/if}
 					</td>
 					<td class="weather-cell">
