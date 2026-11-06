@@ -10,10 +10,10 @@ import {
 } from './dashboardLayout';
 
 describe('dashboardLayout', () => {
-	it('defaults to all enabled in catalog order', () => {
+	it('defaults to Karma hidden and other cards enabled in catalog order', () => {
 		const d = defaultLayout();
 		expect(d.length).toBeGreaterThan(10);
-		expect(d.every((i) => i.enabled)).toBe(true);
+		expect(d.filter((i) => !i.enabled).map((i) => i.id)).toEqual(['karma']);
 		expect(d[0]?.id).toBe('climberType');
 		// Dreeve-style hero pair: recent activities left, climbing story right (#235).
 		expect(d.slice(0, 3).map((i) => i.id)).toEqual(['climberType', 'recent', 'blurb']);
@@ -83,6 +83,22 @@ describe('dashboardLayout', () => {
 });
 
 describe('resolveDashLayout', () => {
+	it('hides Karma for default, missing-card and invalid layouts', () => {
+		for (const raw of [null, '[]', '[{"id":"recent","enabled":true}]', 'invalid']) {
+			expect(resolveDashLayout(raw).find((item) => item.id === 'karma')?.enabled).toBe(false);
+		}
+	});
+
+	it('preserves saved Karma visibility in site-wide and legacy layouts', () => {
+		for (const enabled of [true, false]) {
+			const saved = serializeLayout([{ id: 'karma', enabled }]);
+			expect(resolveDashLayout(saved).find((item) => item.id === 'karma')?.enabled).toBe(enabled);
+			expect(resolveDashLayout(null, saved).find((item) => item.id === 'karma')?.enabled).toBe(
+				enabled
+			);
+		}
+	});
+
 	it('prefers the site-wide stored layout over the legacy cookie', () => {
 		const stored = defaultLayout().map((item, i) => ({ ...item, enabled: i !== 0 }));
 		const cookie = defaultLayout().map((item, i) => ({ ...item, enabled: i !== 1 }));

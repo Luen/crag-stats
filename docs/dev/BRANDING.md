@@ -1,5 +1,7 @@
 # Branding & UI style — Crag Stats
 
+Karma is opt-in in the default dashboard layout. Keep its checkbox in Settings → Dashboard layout; saved visibility overrides the default, and clearing the saved layout hides the card again.
+
 Developer reference for the look and feel. **Keep it current:** if you change a colour, token, icon or shell behaviour, update this file (and the short summary in `AGENTS.md`).
 
 Logbook weather options include Windy day (50 km/h+) and Calm / still day (under 25 km/h), labelled with their daily maximum wind thresholds; both use the existing native select.
