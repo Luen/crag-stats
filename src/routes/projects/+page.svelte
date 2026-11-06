@@ -1,5 +1,6 @@
 <script lang="ts">
 	import NewRouteBadge from '#lib/components/NewRouteBadge.svelte';
+	import ProjectReadiness from '#lib/components/ProjectReadiness.svelte';
 	import ProjectRouteBeta from '#lib/components/ProjectRouteBeta.svelte';
 	import ProjectRouteBadge from '#lib/components/ProjectRouteBadge.svelte';
 	import type { PageProps } from './$types';
@@ -49,15 +50,9 @@
 		</div>
 
 		<div class="title-row">
-			{#if p.href}
-				<a class="name" href={p.href} target="_blank" rel="noreferrer">
-					{p.routeName}{#if p.gradeRaw}<span class="grade"> · {p.gradeRaw}</span>{/if}
-				</a>
-			{:else}
-				<span class="name">
-					{p.routeName}{#if p.gradeRaw}<span class="grade"> · {p.gradeRaw}</span>{/if}
-				</span>
-			{/if}
+			<a class="name" href={`/projects/${p.routeId}`}>
+				{p.routeName}{#if p.gradeRaw}<span class="grade"> · {p.gradeRaw}</span>{/if}
+			</a>
 		</div>
 
 		{#if p.areaLabel}
@@ -75,6 +70,8 @@
 		{/if}
 
 		<p class="footer">{sessionsLabel(p.sessionCount)} · {triesLabel(p.tryCount)}</p>
+		<ProjectReadiness pct={p.progress.pct} horizon={p.progress.horizon} />
+		<a class="doc-link" href={`/logbook?route=${p.routeId}`}>All logged climbs →</a>
 	</article>
 {/snippet}
 
@@ -84,7 +81,7 @@
 	<p class="blurb">
 		Auto-detected from theCrag: open projects need unsent attempts on two separate climbing days.
 		Completed projects include sends after work across days or at least two failed tries that day
-		(shown ~31 days). Routes untouched for a year drop off. First-try sends are not projects.
+		(shown for six months). Routes untouched for a year drop off. First-try sends are not projects.
 		<a class="doc-link" href="/docs/projects">Guidebook text &amp; privacy</a>
 	</p>
 </section>
@@ -115,7 +112,7 @@
 		>
 	</div>
 	{#if data.recentlySent.length === 0}
-		<p class="empty">No fought-then-sent projects in the last month.</p>
+		<p class="empty">No fought-then-sent projects in the past six months.</p>
 	{:else}
 		<div class="cards">
 			{#each data.recentlySent as p (p.id)}

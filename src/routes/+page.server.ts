@@ -3,6 +3,8 @@ import { getDashboardStats, parseGradeSystem, parsePyramidMode } from '#lib/serv
 import { getAppSetting, getPreferredGradeSystem } from '#lib/server/appSettings';
 import { listActiveGoals } from '#lib/server/goals';
 import { listDashboardProjects } from '#lib/server/projects';
+import { loadProjectProgressRows } from '#lib/server/projectDetails';
+import { projectProgress } from '#lib/server/projectProgress';
 import { getSyncStatus } from '#lib/server/sync';
 import type { PageServerLoad } from './$types';
 
@@ -14,6 +16,13 @@ export const load: PageServerLoad = async ({ cookies, url, parent }) => {
 
 	const { dateDisplay } = await parent();
 	const stats = getDashboardStats(preferred, { pyramidMode, dateDisplay });
+	const projects = listDashboardProjects(3);
+	const progressRows = projects.length ? loadProjectProgressRows() : [];
+	const today = new Date().toISOString().slice(0, 10);
+	const dashboardProjects = projects.map((project) => {
+		const { pct, horizon } = projectProgress(project, progressRows, today);
+		return { ...project, progress: { pct, horizon } };
+	});
 	return {
 		stats,
 		// Share-preview text (#44); the layout only emits it when indexing is allowed.
@@ -27,7 +36,7 @@ export const load: PageServerLoad = async ({ cookies, url, parent }) => {
 		gradeSystem: preferred,
 		pyramidMode,
 		activeGoals: listActiveGoals(3),
-		dashboardProjects: listDashboardProjects(3),
+		dashboardProjects,
 		// Site-wide so visitors see the owner's layout (#37); cookie is a legacy fallback.
 		dashLayout: resolveDashLayout(
 			getAppSetting('dashboard_layout'),
