@@ -145,8 +145,9 @@
 	<p>
 		Up to 15 points come from unsuccessful tries on this project, against a soft target of 15
 		(short-term), 35 (medium) or 75 (long-haul). The horizon follows the gap to your best recent
-		send: at most one step, two steps, or more. Readiness stays at or below 95% until a send is
-		logged on this route. An unknown grade has no readiness estimate.
+		send: at most one step, two steps, or more. The base model caps at 94%. The first session
+		establishes the baseline; each additional valid climbing day on this route adds one readiness
+		point, up to 99%. Only a logged send reaches 100%. An unknown grade has no readiness estimate.
 	</p>
 	<p>
 		Remaining-work ranges are the middle half of your comparable completed projects, after

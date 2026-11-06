@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs';
-import { beforeEach, expect, it } from 'vitest';
+import { beforeEach, expect, it, vi } from 'vitest';
 import { wipeAllData } from './wipe';
 import { upsertAscents } from './ingest';
 import { createGoal, listGoals } from './goals';
@@ -30,6 +30,49 @@ function tick(
 	};
 }
 beforeEach(() => wipeAllData());
+
+it('adds a point per additional qualifying day, deduplicating routes/ticks and excluding future days', () => {
+	vi.useFakeTimers();
+	vi.setSystemTime(new Date('2026-11-06T12:00:00Z'));
+	try {
+		upsertAscents([
+			...[1, 2].map((n) => tick(`n1-${n}`, `n1-route-${n}`, 22)),
+			...[1, 2, 3, 4].map((n) => tick(`n2-${n}`, `n2-route-${n}`, 21)),
+			...Array.from({ length: 15 }, (_, n) =>
+				tick(`effort-${n}`, `effort-route-${n}`, 23, { send: false, date: '2026-02-01' })
+			)
+		]);
+		const goal = createGoal({
+			kind: 'grade',
+			title: 'Session credit',
+			targetGradeScore: 23,
+			year: 2026,
+			venueScope: 'outdoor'
+		});
+		expect(goal.progressPct).toBe(94);
+		upsertAscents([
+			tick('day2', 'day2-route', 23, { send: false, date: '2026-02-02' }),
+			tick('day2-again', 'another-route', 23, { send: false, date: '2026-02-02' }),
+			tick('future', 'future-route', 23, { send: false, date: '2026-12-01' }),
+			tick('easy', 'easy-route', 20, { send: false, date: '2026-02-03' }),
+			tick('indoor', 'indoor-route', 23, { send: false, date: '2026-02-04', indoor: true })
+		]);
+		expect(listGoals()[0].progressPct).toBe(95);
+		expect(listGoals()[0].progressLabel).toContain('2 qualifying sessions');
+		upsertAscents(
+			[3, 4, 5, 6, 7].map((day) =>
+				tick(`day-${day}`, 'project-route', 23, { send: false, date: `2026-02-0${day}` })
+			)
+		);
+		expect(listGoals()[0].progressPct).toBe(99);
+		upsertAscents([tick('future-send-target', 'future-send-route', 23, { date: '2026-12-01' })]);
+		expect(listGoals()[0].progressPct).toBe(99);
+		upsertAscents([tick('send-target', 'target-route', 23, { date: '2026-02-08' })]);
+		expect(listGoals()[0].progressPct).toBe(100);
+	} finally {
+		vi.useRealTimers();
+	}
+});
 
 it('keeps fractional supporting sends in the target-relative bucket with scoped distinct-route evidence', () => {
 	upsertAscents([

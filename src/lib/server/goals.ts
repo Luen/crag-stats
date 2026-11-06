@@ -79,6 +79,7 @@ function gradeGoalSendEvidence(
 	routesAtNMinus1: number;
 	routesAtNMinus2: number;
 	attemptsNearTarget: number;
+	qualifyingSessions: number;
 } {
 	const y = g.year ?? currentYear;
 	const venue = asVenue(g);
@@ -89,6 +90,8 @@ function gradeGoalSendEvidence(
 	const n2Routes = new Set<number>();
 	let best: number | null = null;
 	let attemptsNearTarget = 0;
+	const qualifyingDays = new Set<string>();
+	const today = new Date().toISOString().slice(0, 10);
 
 	for (const a of ascentRows) {
 		if (
@@ -102,13 +105,16 @@ function gradeGoalSendEvidence(
 			continue;
 		}
 		const day = validDay(a.ascentDate);
-		if (!day || Number(day.slice(0, 4)) !== y) continue;
+		if (!day || day > today || Number(day.slice(0, 4)) !== y) continue;
 		const score = a.effectiveGradeScore;
 		if (score == null || !Number.isFinite(score)) continue;
 
 		if (!a.isSend) {
 			// Working / attempt ticks at or above N−1 (projecting the goal band).
-			if (a.isAttempt && score >= n1Bucket) attemptsNearTarget += 1;
+			if (a.isAttempt && score >= n1Bucket) {
+				attemptsNearTarget += 1;
+				qualifyingDays.add(day);
+			}
 			continue;
 		}
 
@@ -122,7 +128,8 @@ function gradeGoalSendEvidence(
 		best,
 		routesAtNMinus1: n1Routes.size,
 		routesAtNMinus2: n2Routes.size,
-		attemptsNearTarget
+		attemptsNearTarget,
+		qualifyingSessions: qualifyingDays.size
 	};
 }
 
@@ -142,7 +149,8 @@ function enrichGoal(g: Goal, ascentRows: AscentRouteRow[] = []): GoalView {
 			bestSend: evidence.best,
 			routesAtNMinus1: evidence.routesAtNMinus1,
 			routesAtNMinus2: evidence.routesAtNMinus2,
-			attemptsNearTarget: evidence.attemptsNearTarget
+			attemptsNearTarget: evidence.attemptsNearTarget,
+			qualifyingSessions: evidence.qualifyingSessions
 		});
 		pct = g.completed ? 100 : readiness.pct;
 		progressLabel = g.completed
@@ -329,17 +337,8 @@ export function updateGoalProgress(): void {
 			const target = Number(g.targetValue);
 			completed = Number.isFinite(target) && target > 0 && days.size >= target;
 		} else if (g.kind === 'grade') {
-			const y = g.year ?? currentYear;
 			const target = g.targetGradeScore;
-			let best: number | null = null;
-			for (const a of qualifying) {
-				if (!a.isSend) continue;
-				const day = validDay(a.ascentDate);
-				if (!day || Number(day.slice(0, 4)) !== y) continue;
-				const score = a.effectiveGradeScore;
-				if (score == null || !Number.isFinite(score)) continue;
-				best = best == null ? score : Math.max(best, score);
-			}
+			const { best } = gradeGoalSendEvidence(g, ascentRows, currentYear);
 			progressValue = best != null ? String(Math.round(best * 10) / 10) : '0';
 			completed = target != null && Number.isFinite(target) && best != null && best >= target;
 		}

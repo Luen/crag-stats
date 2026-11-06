@@ -23,7 +23,7 @@ Instead the model asks how built your pyramid is under the target **N**, then ho
 2. **Base** when you have a send at N−1 (~35%) or only at N−2 (~10%).
 3. **Pyramid fill** from distinct routes with a send in those buckets — soft need of about **2 routes at N−1** and **4 at N−2** (up to about +20% and +25%).
 4. **Attempt fill** from non-send (working) ticks with effective score **≥ N−1** — up to about +20%, with a **horizon-scaled** soft need so short-term projects move faster per attempt than long-haul ones.
-5. **Cap at 95%** until you actually send at N. Pyramid and attempts alone cannot complete the bar.
+5. **Cap the base model at 94%.** The first qualifying session establishes the baseline; each additional distinct climbing day with working ticks at ≥ N−1 adds one readiness point, up to 99%. Only a qualifying send reaches 100%. Multiple routes or attempts on the same day earn one session; missing, invalid and future dates earn none. Session credit follows the goal year and venue, and does not change height or climbing-day goal ratios.
 
 Send evidence uses the same year and venue filter as completion: **effective grade** (hardest climbed pitch on multipitch), and **distinct routes** per pyramid bucket (repeat sends on one route count once). Attempts count every qualifying working tick (repeats on the same route still nudge the bar).
 

@@ -1,4 +1,5 @@
 import { calendarDay } from '#lib/calendarDay';
+import { sessionReadiness } from '#lib/readiness';
 import { usesVScale } from '#lib/grades';
 import { climbStyleLabel } from '#lib/climbStyle';
 import { classifyRouteProject, summarizeRouteAscents } from './projects';
@@ -78,14 +79,14 @@ function readiness(
 	const effortNeed = gap <= 1 ? 15 : gap <= 2 ? 35 : 75;
 	const tries = summarizeRouteAscents(own).tryCount;
 	const base = gap <= 0 ? 60 : gap <= 1 ? 35 : gap <= 2 ? 10 : 0;
-	const pct = Math.min(
-		95,
+	const pct = sessionReadiness(
 		Math.round(
 			base +
 				20 * Math.min(support.n1 / 2, 1) +
 				25 * Math.min(support.n2 / 4, 1) +
 				15 * Math.min(tries / effortNeed, 1)
-		)
+		),
+		summarizeRouteAscents(own).sessionCount
 	);
 	return { pct, support, horizon };
 }

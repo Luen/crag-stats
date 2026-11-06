@@ -19,7 +19,7 @@ For each reference day, the model uses the preceding 365 days (including that da
 - Best recent send at/above target: 60 points; one step below: 35; two steps below: 10; otherwise zero.
 - Two distinct routes one step below add up to 20 points, and four two steps below add up to 25 points.
 - Unsuccessful tries on the target add up to 15 points, against a soft target of 15, 35 or 75 tries. The horizon is **Short-term** when the gap to your recent best is at most one step, **Medium** for two, otherwise **Long-haul** (also when no recent send is known).
-- The result is capped at 95% until this project has a logged send. Unknown grades have no estimate. V-scale zero/negative grades are supported and never mixed with route grades.
+- The base model caps at 94%, then gains one point per additional valid climbing day on this route (the first day establishes the baseline), up to 99% until this project has a logged send. Unknown grades have no estimate. V-scale zero/negative grades are supported and never mixed with route grades.
 
 Practice can raise this bar without proving that a particular move is solved. Grades and logged effort cannot reveal beta, conditions, injuries or confidence, so this is an explainable heuristic, not a scientifically validated model.
 

@@ -27,6 +27,24 @@ const row = (
 });
 
 describe('project progression', () => {
+	it('adds one point per additional project day after the 94-point base cap, with 100 reserved for a send', () => {
+		const support = [
+			row(2, '2026-09-01', true),
+			...[3, 4].map((id) => row(id, '2026-09-01', true, 1, 22)),
+			...[5, 6, 7, 8].map((id) => row(id, '2026-09-01', true, 1, 21))
+		];
+		const own = [1, 2, 3, 4, 5, 6].map((day) => row(1, `2026-10-0${day}`));
+		const result = projectProgress(
+			target,
+			[...support, ...own, row(1, '2026-10-06')],
+			'2026-11-06'
+		);
+		expect(result.sessions.map((s) => s.readiness)).toEqual([94, 95, 96, 97, 98, 99]);
+		expect(result.pct).toBe(99);
+		expect(
+			projectProgress(target, [...support, ...own, row(1, '2026-10-07', true)], '2026-11-06').pct
+		).toBe(100);
+	});
 	it('counts calendar-day sessions and deduplicates implied failed tries on a send', () => {
 		const result = projectProgress(
 			target,

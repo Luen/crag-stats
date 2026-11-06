@@ -29,6 +29,21 @@ describe('progressPct', () => {
 });
 
 describe('gradeGoalReadiness', () => {
+	it('adds session credit above a 94-point base, capped at 99 until a send', () => {
+		const input = {
+			target: 23,
+			bestSend: 22,
+			routesAtNMinus1: 2,
+			routesAtNMinus2: 4,
+			attemptsNearTarget: 50
+		};
+		expect(
+			[1, 2, 3, 4, 5, 6, 20].map(
+				(qualifyingSessions) => gradeGoalReadiness({ ...input, qualifyingSessions }).pct
+			)
+		).toEqual([94, 95, 96, 97, 98, 99, 99]);
+		expect(gradeGoalReadiness({ ...input, bestSend: 23, qualifyingSessions: 2 }).pct).toBe(100);
+	});
 	it('is 100% when best send meets the target', () => {
 		const r = gradeGoalReadiness({
 			target: 23,
