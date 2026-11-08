@@ -49,8 +49,6 @@ export default defineConfig({
 		server('settings', {
 			APP_PASSWORD: TEST_PASSWORD,
 			AUTH_SCOPE: 'settings',
-			// Leftover pre-removal setting: Settings must explain that automatic CSV sync is gone.
-			THECRAG_SYNC_MODE: 'csv',
 			// Cooldown UI needs import on; tests seed state, abort theCrag hosts, and
 			// never click Check once enabled (no profile login is seeded, so a run would refuse).
 			// SYNC_CRON=off keeps this placeholder key from triggering a boot-time logbook sync.

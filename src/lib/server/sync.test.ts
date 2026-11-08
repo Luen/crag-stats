@@ -9,7 +9,7 @@ import { invalidateLogbookSync } from './syncGeneration';
 
 vi.mock('./env', () => ({
 	env: () => 'synthetic-key',
-	getTheCragSyncConfiguration: vi.fn(() => ({ configured: true, csvModeRemoved: false }))
+	getTheCragSyncConfiguration: vi.fn(() => ({ configured: true }))
 }));
 vi.mock('./providers/thecrag', () => ({ syncTheCragAll: vi.fn() }));
 vi.mock('./ingest', () => ({
@@ -30,21 +30,8 @@ vi.mock('./weatherImport', () => ({ triggerWeatherImport: vi.fn() }));
 
 beforeEach(() => {
 	vi.clearAllMocks();
-	vi.mocked(getTheCragSyncConfiguration).mockReturnValue({
-		configured: true,
-		csvModeRemoved: false
-	});
+	vi.mocked(getTheCragSyncConfiguration).mockReturnValue({ configured: true });
 	vi.mocked(syncTheCragAll).mockResolvedValue({ count: 0, maxEpoch: null, profile: null });
-});
-
-it('refuses a leftover THECRAG_SYNC_MODE=csv without contacting theCrag', async () => {
-	vi.mocked(getTheCragSyncConfiguration).mockReturnValue({
-		configured: false,
-		csvModeRemoved: true
-	});
-	await expect(runTheCragSync()).rejects.toThrow('Automatic CSV sync has been removed');
-	expect(syncTheCragAll).not.toHaveBeenCalled();
-	expect(updateSyncState).not.toHaveBeenCalled();
 });
 
 it('does not record a successful sync or recreate state after a wipe', async () => {

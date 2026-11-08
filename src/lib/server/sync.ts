@@ -29,11 +29,7 @@ export async function runTheCragSync(opts?: { full?: boolean }) {
 	const configuration = getTheCragSyncConfiguration();
 	const apiKey = env('THECRAG_API_KEY').trim();
 	if (!configuration.configured) {
-		throw new Error(
-			configuration.csvModeRemoved
-				? 'Automatic CSV sync has been removed (theCrag requires API access for automated sync). Set THECRAG_API_KEY, or upload your CSV export in Settings.'
-				: 'THECRAG_API_KEY is not set'
-		);
+		throw new Error('THECRAG_API_KEY is not set');
 	}
 	if (syncing) {
 		return { skipped: true as const, reason: 'Sync already in progress' };

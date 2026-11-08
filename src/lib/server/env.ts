@@ -41,20 +41,9 @@ export function hasTheCragApiKey() {
 	return Boolean(env('THECRAG_API_KEY').trim());
 }
 
-/**
- * Safe for Settings: never expose the configured key. Logbook sync uses theCrag's API only.
- * `csvModeRemoved` flags a leftover `THECRAG_SYNC_MODE=csv` from older releases: automatic
- * CSV downloads were removed at theCrag's request (all programmatic access must use the API),
- * so Settings can point those owners at the manual CSV upload instead.
- */
-export function getTheCragSyncConfiguration(): {
-	configured: boolean;
-	csvModeRemoved: boolean;
-} {
-	return {
-		configured: hasTheCragApiKey(),
-		csvModeRemoved: env('THECRAG_SYNC_MODE').trim().toLowerCase() === 'csv'
-	};
+/** Safe for Settings: never expose the configured key. Logbook sync uses theCrag's API only. */
+export function getTheCragSyncConfiguration(): { configured: boolean } {
+	return { configured: hasTheCragApiKey() };
 }
 
 /** Boolean env flag: true / 1 / yes / on (any case). Anything else, or unset, is false. */

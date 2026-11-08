@@ -6,7 +6,7 @@ const vars: Record<string, string> = {};
 vi.mock('./env', () => ({
 	env: (name: string, fallback = '') => vars[name] ?? fallback,
 	envFlag: (name: string) => ['1', 'true', 'yes', 'on'].includes((vars[name] ?? '').toLowerCase()),
-	getTheCragSyncConfiguration: () => ({ configured: true, csvModeRemoved: false })
+	getTheCragSyncConfiguration: () => ({ configured: true })
 }));
 
 const { isRouteHistoryImportEnabled, getRouteHistoryStatus } = await import('./routeHistoryImport');

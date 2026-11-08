@@ -27,10 +27,7 @@ beforeEach(() => {
 });
 
 it('starts scheduled and initial sync when an API key is configured', async () => {
-	vi.mocked(getTheCragSyncConfiguration).mockReturnValue({
-		configured: true,
-		csvModeRemoved: false
-	});
+	vi.mocked(getTheCragSyncConfiguration).mockReturnValue({ configured: true });
 	vi.mocked(getSyncStatus).mockReturnValue({ lastSuccessAt: null } as ReturnType<
 		typeof getSyncStatus
 	>);
@@ -42,10 +39,7 @@ it('starts scheduled and initial sync when an API key is configured', async () =
 });
 
 it('resumes pending background imports at boot after an upgrade', async () => {
-	vi.mocked(getTheCragSyncConfiguration).mockReturnValue({
-		configured: true,
-		csvModeRemoved: false
-	});
+	vi.mocked(getTheCragSyncConfiguration).mockReturnValue({ configured: true });
 	vi.mocked(getSyncStatus).mockReturnValue({
 		lastSuccessAt: '2026-11-01T20:00:00.000Z'
 	} as ReturnType<typeof getSyncStatus>);
@@ -56,11 +50,8 @@ it('resumes pending background imports at boot after an upgrade', async () => {
 	expect(triggerWeatherImport).toHaveBeenCalledWith('startup');
 });
 
-it('does not schedule sync for a leftover CSV mode without an API key', async () => {
-	vi.mocked(getTheCragSyncConfiguration).mockReturnValue({
-		configured: false,
-		csvModeRemoved: true
-	});
+it('does not schedule sync without an API key', async () => {
+	vi.mocked(getTheCragSyncConfiguration).mockReturnValue({ configured: false });
 	const { startScheduler } = await import('./scheduler');
 	startScheduler();
 	expect(cron.schedule).not.toHaveBeenCalled();
@@ -70,10 +61,7 @@ it('does not schedule sync for a leftover CSV mode without an API key', async ()
 
 it('SYNC_CRON=off skips scheduled and boot-time sync even with a key', async () => {
 	cronExpr.value = 'OFF';
-	vi.mocked(getTheCragSyncConfiguration).mockReturnValue({
-		configured: true,
-		csvModeRemoved: false
-	});
+	vi.mocked(getTheCragSyncConfiguration).mockReturnValue({ configured: true });
 	vi.mocked(getSyncStatus).mockReturnValue({ lastSuccessAt: null } as ReturnType<
 		typeof getSyncStatus
 	>);

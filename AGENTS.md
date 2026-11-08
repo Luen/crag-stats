@@ -89,7 +89,7 @@ Cursor/`maxEpoch` is still stored for diagnostics; it is **not** used to skip a 
 
 ### Automatic CSV mode was removed
 
-Earlier releases had `THECRAG_SYNC_MODE=csv`: a saved website login (`THECRAG_USERNAME` / `THECRAG_PASSWORD`, cookies encrypted in `thecrag_web_sessions`) downloaded the CSV export on the sync schedule. theCrag asked us to remove it: daily full exports are costly for them, and their terms require all programmatic access to use the API. Migration 0021 drops the cookie table. `getTheCragSyncConfiguration()` returns `{ configured, csvModeRemoved }`; a leftover `THECRAG_SYNC_MODE=csv` without an API key keeps the scheduler off, makes **Sync now** explain the removal, and shows a Settings note. Manual CSV upload (Settings → CSV import, upsert-only) stays. Wipe still bumps `syncGeneration` so in-flight API syncs cannot write after a wipe.
+Earlier releases had `THECRAG_SYNC_MODE=csv`: a saved website login (`THECRAG_USERNAME` / `THECRAG_PASSWORD`, cookies encrypted in `thecrag_web_sessions`) downloaded the CSV export on the sync schedule. theCrag asked us to remove it: daily full exports are costly for them, and their terms require all programmatic access to use the API. Migration 0021 drops the cookie table. `getTheCragSyncConfiguration()` only reports whether an API key is set; the old env vars are ignored (owners delete them). Manual CSV upload (Settings → CSV import, upsert-only) stays. Wipe still bumps `syncGeneration` so in-flight API syncs cannot write after a wipe.
 
 User docs: `docs/guide/logbook-sync.md` (also `/docs/logbook-sync` in the app; keep it in `DOC_PAGES` — Settings links here).
 
@@ -566,4 +566,4 @@ World map (#313): `/map` uses bundled public-domain Natural Earth outlines, serv
 
 - Seasonality browser history (#403): wait for exact sort/filter state before navigating back. Capture the route-results URL and stop there within a bounded history walk, then assert route view/month/search before pagination; fixed blind back counts can overshoot into the crag list.
 
-- Automatic CSV sync removed at theCrag's request: no website login, export download, `THECRAG_SYNC_MODE=csv`, or `thecrag_web_sessions` (dropped by 0021). Manual CSV upload remains; a leftover `THECRAG_SYNC_MODE=csv` only triggers an explanatory Settings note and sync error.
+- Automatic CSV sync removed at theCrag's request: no website login, export download, `THECRAG_SYNC_MODE=csv`, or `thecrag_web_sessions` (dropped by 0021). Manual CSV upload remains; leftover CSV env vars are simply ignored.

@@ -6,7 +6,7 @@ import { runTheCragSync } from './sync';
 import type { CanonicalAscent } from './providers/types';
 vi.mock('./env', () => ({
 	env: () => 'synthetic-key',
-	getTheCragSyncConfiguration: () => ({ configured: true, csvModeRemoved: false })
+	getTheCragSyncConfiguration: () => ({ configured: true })
 }));
 vi.mock('./providers/thecrag', () => ({ syncTheCragAll: vi.fn() }));
 vi.mock('./routeHistoryImport', () => ({ triggerRouteHistoryImport: vi.fn() }));

@@ -285,15 +285,6 @@
 				<strong>CSV import</strong> above to upload your logbook export by hand.
 			</p>
 		{/if}
-		{#if data.syncConfiguration.csvModeRemoved}
-			<p class="hint" role="note">
-				<code>THECRAG_SYNC_MODE=csv</code> is no longer supported: theCrag asked that all automated
-				access use its API, so automatic CSV downloads were removed. Remove
-				<code>THECRAG_SYNC_MODE</code>, <code>THECRAG_USERNAME</code>, and
-				<code>THECRAG_PASSWORD</code> from your environment.
-				<a href="/docs/logbook-sync">Logbook sync options</a>
-			</p>
-		{/if}
 	</article>
 
 	<article class="panel">
