@@ -655,11 +655,14 @@
 		font-weight: 700;
 		text-transform: uppercase;
 	}
+	/* Ink text on tinted pills (#300–#302): the generic .ok/.err rules below must not recolour them (#429). */
 	.pill.ok {
 		background: color-mix(in srgb, var(--band-beginner) 20%, var(--paper));
+		color: var(--ink);
 	}
 	.pill.err {
 		background: color-mix(in srgb, var(--band-expert) 16%, var(--paper));
+		color: var(--ink);
 	}
 	.actions,
 	.stack {
