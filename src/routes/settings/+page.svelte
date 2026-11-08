@@ -776,7 +776,8 @@
 	}
 	.err {
 		background: color-mix(in srgb, var(--band-expert) 12%, var(--paper));
-		color: var(--band-expert);
+		/* Pure --band-expert is 2.78:1 on the dark tint; mixing with ink keeps it red and AA in both themes (#429). */
+		color: color-mix(in srgb, var(--band-expert) 45%, var(--ink));
 	}
 	.banner.hint {
 		background: var(--accent-soft);
