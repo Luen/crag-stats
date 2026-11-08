@@ -4,10 +4,21 @@
 	import type { LayoutProps } from './$types';
 
 	let { children }: LayoutProps = $props();
+
+	/**
+	 * On phones the tab strip scrolls sideways; bring the current page's tab into view
+	 * without moving the page itself. Re-runs when the path changes.
+	 */
+	function scrollActiveTab(toc: HTMLElement) {
+		void page.url.pathname;
+		const active = toc.querySelector<HTMLElement>('a.active');
+		if (!active || toc.scrollWidth <= toc.clientWidth) return;
+		toc.scrollLeft = active.offsetLeft - (toc.clientWidth - active.offsetWidth) / 2;
+	}
 </script>
 
 <div class="docs">
-	<nav class="toc panel" aria-label="Docs">
+	<nav class="toc panel" aria-label="Docs" {@attach scrollActiveTab}>
 		<a href="/docs" class={{ active: page.url.pathname === '/docs' }}>Overview</a>
 		{#each DOC_PAGES as d (d.slug)}
 			<a href="/docs/{d.slug}" class={{ active: page.url.pathname === `/docs/${d.slug}` }}
@@ -28,6 +39,7 @@
 		align-items: start;
 	}
 	.toc {
+		min-width: 0;
 		position: sticky;
 		top: calc(var(--header-h) + 1rem);
 		display: flex;
@@ -53,10 +65,13 @@
 	}
 	@media (max-width: 960px) {
 		.docs {
-			grid-template-columns: 1fr;
+			/* minmax(0, …) stops wide tables from stretching the column past the viewport. */
+			grid-template-columns: minmax(0, 1fr);
 		}
 		.toc {
-			position: static;
+			/* Positioned so tab offsets are measured from the strip itself. */
+			position: relative;
+			top: auto;
 			flex-direction: row;
 			overflow-x: auto;
 		}
