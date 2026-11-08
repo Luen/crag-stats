@@ -76,7 +76,10 @@ function oldDatabase(path: string, applied: string[]) {
 	if (applied.includes('0013_route_ascent_snapshot.sql')) {
 		db.prepare('UPDATE routes SET ascent_count_own = 2').run();
 	}
-	if (applied.includes('0016_thecrag_web_session.sql')) {
+	if (
+		applied.includes('0016_thecrag_web_session.sql') &&
+		!applied.includes('0021_drop_thecrag_web_sessions.sql')
+	) {
 		db.prepare(
 			`INSERT INTO thecrag_web_sessions (account_key, encrypted_cookies, next_allowed_at, failures) VALUES ('synthetic-account-key', 'synthetic-encrypted-payload', 42, 2)`
 		).run();
@@ -177,19 +180,14 @@ describe('migrations survive skipped releases', () => {
 						ascent_count_fetched_at: null
 					});
 				}
-				if (k >= FILES.indexOf('0016_thecrag_web_session.sql') + 1) {
-					expect(
-						db
-							.prepare(
-								'SELECT encrypted_cookies, next_allowed_at, failures FROM thecrag_web_sessions'
-							)
-							.get()
-					).toEqual({
-						encrypted_cookies: 'synthetic-encrypted-payload',
-						next_allowed_at: 42,
-						failures: 2
-					});
-				}
+				// 0021 drops the cookie store left by the removed automatic CSV download.
+				expect(
+					db
+						.prepare(
+							"SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'thecrag_web_sessions'"
+						)
+						.get()
+				).toBeUndefined();
 				if (k >= FILES.indexOf('0017_weather_days.sql') + 1) {
 					expect(db.prepare('SELECT day, temp_max_c, status FROM weather_days').get()).toEqual({
 						day: '2024-01-10',

@@ -25,10 +25,8 @@ const server = (name: keyof typeof PORTS, env: Record<string, string>) => ({
 		DATABASE_PATH: `e2e/.tmp/${name}.sqlite`,
 		SESSION_SECRET: sessionSecret,
 		THECRAG_API_KEY: '',
-		THECRAG_SYNC_MODE: 'api',
-		THECRAG_USERNAME: '',
-		THECRAG_PASSWORD: '',
-		SYNC_CRON: '',
+		// Never sync with theCrag from tests, even when a placeholder API key is set.
+		SYNC_CRON: 'off',
 		TZ: 'Australia/Brisbane',
 		APP_PASSWORD: '',
 		...env
@@ -51,10 +49,11 @@ export default defineConfig({
 		server('settings', {
 			APP_PASSWORD: TEST_PASSWORD,
 			AUTH_SCOPE: 'settings',
+			// Leftover pre-removal setting: Settings must explain that automatic CSV sync is gone.
 			THECRAG_SYNC_MODE: 'csv',
-			THECRAG_USERNAME: 'synthetic-account',
 			// Cooldown UI needs import on; tests seed state, abort theCrag hosts, and
-			// never click Check once enabled (CSV ownerLogin still needs a matching profile).
+			// never click Check once enabled (no profile login is seeded, so a run would refuse).
+			// SYNC_CRON=off keeps this placeholder key from triggering a boot-time logbook sync.
 			ROUTE_DATA_IMPORT: 'true',
 			WEATHER_IMPORT: 'true',
 			THECRAG_API_KEY: 'synthetic-cooldown-test-key'

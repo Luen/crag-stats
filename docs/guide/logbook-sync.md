@@ -1,6 +1,9 @@
 # Logbook sync
 
-Crag Stats can sync through theCrag's supporter API or download your CSV export with a saved login. Choose one mode on the server. Both use the existing schedule (`SYNC_CRON`, daily by default), **Settings → Sync now** (open **`/settings`**, or **`/login`** first when `APP_PASSWORD` is set), and Docker worker. A new installation syncs on startup when configured.
+Crag Stats gets your logbook in one of two ways:
+
+- **API sync** with a theCrag supporter API key. It runs on the existing schedule (`SYNC_CRON`, daily by default), from **Settings → Sync now** (open **`/settings`**, or **`/login`** first when `APP_PASSWORD` is set), and from the Docker worker. A new installation syncs on startup when a key is configured.
+- **Manual CSV upload**. Export your logbook on theCrag and upload the file in **Settings → CSV import** whenever you want to refresh.
 
 ## Backup: keep a local copy
 
@@ -24,39 +27,20 @@ missing entries. Route-history and weather enrichment are separate background
 imports and are not included in these logbook counts. The summary describes the
 completed button action; it is not a persistent sync history.
 
-## API sync (default)
+## API sync
 
-Set `THECRAG_API_KEY` to your supporter logbook read key. Leave `THECRAG_SYNC_MODE` unset or set it to `api`. Each sync reads the full logbook and reconciles local ascents, including deletions. This mode provides richer route, profile and multipitch data.
+Set `THECRAG_API_KEY` to your supporter logbook read key. Each sync reads the full logbook and reconciles local ascents, including deletions. This mode provides richer route, profile, and multipitch data, and it is the only way Crag Stats contacts theCrag for your logbook automatically.
 
-## Automatic CSV downloads
+## Manual CSV upload
 
-Set these server environment variables, then restart:
+No supporter key? On theCrag, open your logbook and choose **Action → Export logbook as CSV**, then upload the file in **Settings → CSV import**. Repeat whenever you want to bring in new ticks.
 
-```dotenv
-THECRAG_SYNC_MODE=csv
-THECRAG_USERNAME=your-thecrag-username
-THECRAG_PASSWORD=your-thecrag-password
-SESSION_SECRET=a-long-random-secret
-```
+Manual uploads add and update ascents but never remove ascents that are missing from the file. To drop deleted ticks, **Wipe all local data** and upload a fresh export. The CSV has fewer fields than the API, including less profile, route metadata, and multipitch information, and it does not include theCrag's private ascent notes (`privateMarkdown`); only the public Comment column is imported. Australian bare boulder digits use Country / path as an AU hint so they do not become fake V-grades.
 
-Generate `SESSION_SECRET` randomly (for example `openssl rand -hex 32`). CSV mode stays disabled if it is shorter than 16 characters or still a placeholder such as the `.env.example` value.
+Route data import needs a saved profile login to match FA/FFA credits, which comes from API sync. Manual CSV uploads do not set it, so mark first ascents by hand in the logbook.
 
-Use your username, not your email address. Keep `.env` private. You do not need a supporter API key for CSV downloads. This mode uses the existing `impers` HTTP client and its native library; it must be supported by your server platform. It accesses the same login form and CSV export as the website, so theCrag website changes or additional verification can interrupt it.
+## Automatic CSV downloads were removed
 
-Each run first tries the export with saved cookies. When the session has expired, Crag Stats obtains a fresh login form and CSRF token, signs in once, downloads the export and saves the updated cookies. A valid session is reused across daily runs and server restarts. Cookies are encrypted in SQLite using `SESSION_SECRET`; the password stays in server configuration. Protect the database, backups and environment together. Changing `SESSION_SECRET` requires a new theCrag login.
+Earlier releases could sign in to theCrag with your username and password and download the CSV export on a schedule (`THECRAG_SYNC_MODE=csv`). theCrag asked that this stop: each run is a full export that is costly for their servers, and their [terms](https://www.thecrag.com/terms#ownership-and-licenses) require all programmatic access to go through the API. Uploading the CSV by hand is fine.
 
-Failed logins, blocks and download errors pause further attempts for at least 24 hours; repeated failures increase the pause to seven days. A longer upstream Retry-After is respected. Check the status in Settings, fix credentials or complete verification on theCrag if necessary. **Forget saved theCrag login** clears the cookie jar and pause so the next sync starts fresh. This clears local authentication; it does not revoke the remote session on theCrag. **Wipe** also clears saved authentication and cancels in-flight imports. Environment variables remain configured, so remove them to stop future scheduled downloads.
-
-## CSV limitations
-
-CSV sync adds and updates ascents, then **removes** local theCrag ascents that are missing from the download (the export is treated as source of truth). Before writing, it refuses the whole sync when the export looks truncated: **0 rows** against a non-empty logbook, or more than a **50% drop** when you already have **100+** local ascents (for example 1000 → 230). Fix the download, or use **Settings → Wipe** if the smaller export is genuinely correct. Invalid exports, login pages and partial HTTP responses are also refused before ingestion.
-
-The guard checks the cache after the download finishes. Accepted exports update ascents, remove missing entries and update the profile together; a database error rolls those changes back. Manual CSV uploads remain upsert-only and never remove missing entries.
-
-The CSV has fewer fields than the API, including less profile, route metadata and multipitch information. Switching from API to CSV can replace richer ascent fields with the CSV values. Grade calculations use the CSV parser; Australian bare boulder digits use Country / path as an AU hint so they do not become fake V-grades. Profile identity comes from `THECRAG_USERNAME` only — CSV sync clears API-only account fields (`routesTicked`, outdoor/indoor counts, avatar, raw account JSON) so a shared supporter API key used for route history cannot leave the key owner's stats on the profile. Account-level CPR and other API-only profile information are not fetched by this mode. Switching accounts requires wiping local data first.
-
-CSV sync does not download theCrag's private ascent notes (`privateMarkdown`); only the public Comment column is imported. Settings disables turning **Show my private ascent notes** on while `THECRAG_SYNC_MODE=csv`, so the toggle is not mistaken for private-note access. If already enabled, you can always turn it off to hide stored comments and any private notes retained from an earlier API import. Stored comments and notes follow the usual owner-only visibility rules. Use API sync for privateMarkdown. Passwords, session cookies and login responses are never displayed or included in sync errors.
-
-The cached CSV grade repair updates grades only, preserving metadata from earlier API imports. Route data import and cached FA/FFA reapplication require `THECRAG_USERNAME` to match the saved logbook login in CSV mode. A mismatch blocks those actions too; wipe local data before switching accounts.
-
-Route-history enrichment is separate and still needs its existing opt-in configuration and a **supporter** API key. Free accounts do not expose a personal route API key in the browser, so an unpaid climber’s CSV instance can reuse a household supporter’s `THECRAG_API_KEY` for route history only — see the [household shared-key notes](https://github.com/Luen/crag-stats/blob/main/docs/dev/ROUTE_HISTORY.md#household--shared-supporter-key-with-csv-mode) on GitHub (developer detail; not bundled into `/docs`). CSV mode does not silently switch to API mode, and API failures do not trigger password login.
+If you used it, remove `THECRAG_SYNC_MODE`, `THECRAG_USERNAME`, and `THECRAG_PASSWORD` from your environment. The upgrade deletes the saved, encrypted theCrag login cookies from the database. Ascents you already imported stay in place until you wipe them or replace them with an API sync or a new upload. While `THECRAG_SYNC_MODE=csv` is still set without an API key, scheduled sync stays off and **Sync now** explains the change.

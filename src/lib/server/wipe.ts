@@ -1,8 +1,8 @@
 import { sql } from 'drizzle-orm';
 import { db, ensureSchema } from './db';
 import { resetFirstImport } from './firstImport';
+import { invalidateLogbookSync } from './syncGeneration';
 import { invalidateRouteHistoryRuns } from './routeHistoryEngine';
-import { forgetTheCragSession } from './theCragWebSession';
 import { invalidateWeatherRuns } from './weatherEngine';
 import { invalidateWeatherLocations } from './weatherLocations';
 
@@ -13,7 +13,8 @@ import { invalidateWeatherLocations } from './weatherLocations';
 export function wipeAllData() {
 	ensureSchema();
 	db.run(sql`DELETE FROM app_settings WHERE key = 'offline_revision'`);
-	forgetTheCragSession();
+	// Abandon any in-flight logbook sync so it cannot write rows back after the wipe.
+	invalidateLogbookSync();
 	resetFirstImport();
 	// Abandon any in-flight route-history import before clearing tables (#74).
 	invalidateRouteHistoryRuns();

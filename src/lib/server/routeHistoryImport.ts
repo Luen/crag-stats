@@ -3,7 +3,7 @@
  * starts runs in the background (after each logbook sync, or from Settings). Off unless
  * ROUTE_DATA_IMPORT=true. All pacing and caching rules live in `routeHistoryEngine.ts`.
  */
-import { env, envFlag, getTheCragSyncConfiguration } from './env';
+import { env, envFlag } from './env';
 import { openRouteHistoryClient } from './providers/thecrag/routeHistoryApi';
 import { triggerWeatherImport } from './weatherImport';
 import {
@@ -19,20 +19,12 @@ import {
 	type RouteHistoryStatus
 } from './routeHistoryEngine';
 
-/** CSV mode must match FA/setter credits to THECRAG_USERNAME, not a stale API profile login. */
-function configuredOwnerLogin(): string | null {
-	if (getTheCragSyncConfiguration().mode !== 'csv') return null;
-	const username = env('THECRAG_USERNAME').trim();
-	return username;
-}
-
 function config(): RouteHistoryConfig {
 	return {
 		enabled: envFlag('ROUTE_DATA_IMPORT'),
 		apiKey: env('THECRAG_API_KEY').trim(),
 		refreshDays: parseRouteDataRefreshDays(env('ROUTE_DATA_REFRESH_DAYS')),
-		weatherEnabled: envFlag('WEATHER_IMPORT'),
-		ownerLogin: configuredOwnerLogin()
+		weatherEnabled: envFlag('WEATHER_IMPORT')
 	};
 }
 
@@ -81,7 +73,7 @@ export function triggerRouteHistoryImport(reason: string): boolean {
 }
 
 export function reapplyRouteHistoryMarks(rules: MarkRules) {
-	return applyCachedHistoryMarks(rules, configuredOwnerLogin());
+	return applyCachedHistoryMarks(rules);
 }
 
 export function refreshAllRouteHistory(): number {

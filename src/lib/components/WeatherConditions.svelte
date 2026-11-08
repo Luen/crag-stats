@@ -92,7 +92,7 @@
 					dateDisplay
 				)}
 				days were fair (15–25°C and dry); {formatNumber(f.toughPct, dateDisplay)}% were hot,
-				freezing, wet or windy.
+				freezing, wet, or windy.
 				<a href="/logbook?weather=fair">Fair days in the logbook</a>
 			</span>
 		</div>

@@ -1,5 +1,4 @@
 import { env, getTheCragSyncConfiguration } from './env';
-import { syncTheCragCsv } from './csvLogbookSync';
 import { syncIsCurrent } from './syncGeneration';
 import { syncTheCragAll } from './providers/thecrag';
 import {
@@ -19,11 +18,11 @@ let syncing = false;
 /**
  * Sync theCrag → local SQLite.
  *
- * API mode pulls the full logbook, upserts creates/updates, then reconciles deletions.
- * Opt-in CSV mode uses the website export, upserts, then prunes missing IDs (with
- * empty-export and massive-drop guards — see `csvPruneGuard.ts`).
+ * Pulls the full logbook from theCrag's API, upserts creates/updates, then reconciles
+ * deletions. All programmatic access to theCrag goes through its API; the CSV export is
+ * only ever uploaded by hand in Settings (upsert-only).
  *
- * `opts.full` is retained for Settings UI compatibility; API mode always reconciles.
+ * `opts.full` is retained for Settings UI compatibility; every sync reconciles.
  */
 export async function runTheCragSync(opts?: { full?: boolean }) {
 	void opts;
@@ -31,11 +30,9 @@ export async function runTheCragSync(opts?: { full?: boolean }) {
 	const apiKey = env('THECRAG_API_KEY').trim();
 	if (!configuration.configured) {
 		throw new Error(
-			configuration.mode === 'api'
-				? 'THECRAG_API_KEY is not set'
-				: configuration.mode === 'csv'
-					? 'CSV sync requires THECRAG_USERNAME, THECRAG_PASSWORD and a non-placeholder SESSION_SECRET (16+ characters).'
-					: 'THECRAG_SYNC_MODE must be api or csv.'
+			configuration.csvModeRemoved
+				? 'Automatic CSV sync has been removed (theCrag requires API access for automated sync). Set THECRAG_API_KEY, or upload your CSV export in Settings.'
+				: 'THECRAG_API_KEY is not set'
 		);
 	}
 	if (syncing) {
@@ -45,8 +42,7 @@ export async function runTheCragSync(opts?: { full?: boolean }) {
 	syncing = true;
 	const stillCurrent = syncIsCurrent();
 	const assertCurrent = () => {
-		if (!stillCurrent())
-			throw new Error('Sync cancelled because local data or the saved login was cleared.');
+		if (!stillCurrent()) throw new Error('Sync cancelled because local data was cleared.');
 	};
 	const provider = 'thecrag';
 	getOrCreateSyncState(provider);
@@ -57,20 +53,6 @@ export async function runTheCragSync(opts?: { full?: boolean }) {
 	});
 
 	try {
-		if (configuration.mode === 'csv') {
-			const result = await syncTheCragCsv(stillCurrent);
-			assertCurrent();
-			refreshProjects();
-			updateSyncState(provider, {
-				status: 'idle',
-				cursor: null,
-				lastSuccessAt: new Date().toISOString(),
-				lastError: null
-			});
-			triggerRouteHistoryImport('after sync');
-			triggerWeatherImport('after sync');
-			return { skipped: false as const, ...result, maxEpoch: null };
-		}
 		const seen = new Set<string>();
 		const created = { routes: 0, ascents: 0 };
 
@@ -119,7 +101,7 @@ export async function runTheCragSync(opts?: { full?: boolean }) {
 		if (stillCurrent()) {
 			updateSyncState(provider, { status: 'error', lastError: message });
 		} else {
-			// Forget/Wipe cancelled this run — clear the running pill without recording success.
+			// Wipe cancelled this run — clear the running pill without recording success.
 			updateSyncState(provider, { status: 'idle', lastError: null });
 		}
 		throw err;
