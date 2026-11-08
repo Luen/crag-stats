@@ -39,6 +39,6 @@ Manual uploads add and update ascents but never remove ascents that are missing 
 
 Route data import needs a saved profile login to match FA/FFA credits, which comes from API sync. Manual CSV uploads do not set it, so mark first ascents by hand in the logbook.
 
-## Automatic CSV downloads were removed
+## Why there are no automatic CSV downloads
 
-Earlier releases could sign in to theCrag with your username and password and download the CSV export on a schedule (`THECRAG_SYNC_MODE=csv`). theCrag asked that this stop: each run is a full export that is costly for their servers, and their [terms](https://www.thecrag.com/terms#ownership-and-licenses) require all programmatic access to go through the API. Uploading the CSV by hand is fine.
+Crag Stats never signs in to the theCrag website or downloads exports for you. theCrag's [terms](https://www.thecrag.com/terms#ownership-and-licenses) require all programmatic access to go through the API, and every export is a full logbook dump that is costly for their servers. Exporting and uploading the CSV yourself is fine.
