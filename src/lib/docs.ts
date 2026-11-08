@@ -153,6 +153,12 @@ export const DOC_PAGES: readonly DocPage[] = [
 			'Busy vs quiet ticks from theCrag popularity, plus hidden gems (high quality, low traffic).'
 	},
 	{
+		slug: 'repeats',
+		title: 'Repeats vs new routes',
+		summary:
+			'First visits versus return days on the same route, with Explorer and Repeat climber labels.'
+	},
+	{
 		slug: 'karma',
 		title: 'Karma',
 		summary: 'Approximate ascent karma from routes logged; guide-edit points wait on a theCrag API.'

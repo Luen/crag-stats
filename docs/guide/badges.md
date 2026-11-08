@@ -37,6 +37,21 @@ These four badges use fields already in your logbook and are dated by the climb 
 
 They are one-shot badges, so they do not appear in **Almost there**.
 
+## Repeats and new routes
+
+These badges share the rules of the [Repeats vs new routes](/docs/repeats) card. Routes are matched by their theCrag route ID, attempts count, and each badge is dated by the climb that completes it.
+
+| Badge                  | Rule                                                                                                          |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------- |
+| **Explorer**           | Ascents logged on 50 different routes.                                                                        |
+| **Wanderer**           | Ascents logged on 100 different routes.                                                                       |
+| **Route Collector**    | Ascents logged on 250 different routes.                                                                       |
+| **Guidebook Explorer** | Ascents logged on 500 different routes.                                                                       |
+| **Old Faithful**       | One route climbed on 10 different days. Several ascents on one day count once.                                |
+| **Home Turf**          | 25 repeat ascents (any day after a route's first logged day) on routes at one crag. First visits don't count. |
+
+All six are countable, so they can appear in **Almost there**.
+
 ## Summer Sun Face
 
 Log an outdoor climb on an equator-facing route in local meteorological summer: N/NE/NW during December–February in the southern hemisphere, or S/SE/SW during June–August in the northern hemisphere. This conservative version covers absolute latitudes from 25° up to (but not including) 60°. Attempts count as logged climbs, as with weather-day badges. The badge unlocks once on the earliest qualifying day and has no Almost there counter.

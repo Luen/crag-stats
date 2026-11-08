@@ -39,6 +39,7 @@ export type DashCardId =
 	| 'stars'
 	| 'quality'
 	| 'routePopularity'
+	| 'routeRepeats'
 	| 'karma'
 	| 'pyramids'
 	| 'notable'
@@ -93,6 +94,7 @@ export const DEFAULT_DASH_CARDS: readonly DashCardDef[] = [
 	{ id: 'quality', label: 'Quality', width: 'quarter' },
 	{ id: 'rockPerformance', label: 'Rock & performance', width: 'half' },
 	{ id: 'routePopularity', label: 'Route popularity', width: 'half' },
+	{ id: 'routeRepeats', label: 'Repeats vs new routes', width: 'half' },
 	{ id: 'karma', label: 'Karma', width: 'half', defaultEnabled: false },
 	{ id: 'pyramids', label: 'Grade pyramids', width: 'full' },
 	{ id: 'notable', label: 'Notable ascents', width: 'full' },

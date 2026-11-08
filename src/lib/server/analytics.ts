@@ -97,6 +97,7 @@ import { buildRoutePopularityStats } from './routePopularity';
 import { buildBestMonthsView } from './bestMonths';
 import { buildSessionsPerWeek } from '#lib/sessionsPerWeek';
 import { buildWeekdayStats } from '#lib/weekdayStats';
+import { buildRouteRepeats, routeRepeatKey } from '#lib/routeRepeats';
 
 export type PyramidMode = 'all' | 'sends' | 'onsight';
 const PYRAMID_MODES: PyramidMode[] = ['all', 'sends', 'onsight'];
@@ -716,6 +717,7 @@ export function getDashboardStats(
 		ascentDate: a.ascentDate,
 		ascentId: a.id,
 		routeId: a.routeId,
+		routeKey: routeRepeatKey(a.routeProvider, a.routeExternalId),
 		firstAscent: firstAscentKindFor(faMarks, a.routeProvider, a.routeExternalId),
 		gearStyle: a.gearStyle,
 		ascentGearStyle: a.ascentGearStyle,
@@ -1125,7 +1127,19 @@ export function getDashboardStats(
 		bestMonths,
 		weatherConditions,
 		weatherPerformance,
-		rockPerformance
+		rockPerformance,
+		routeRepeats: buildRouteRepeats(
+			all.map((r) => ({
+				date: r.ascentDate,
+				routeProvider: r.routeProvider,
+				routeExternalId: r.routeExternalId,
+				routeId: r.routeId,
+				routeName: r.routeName,
+				cragName: r.cragName,
+				gearStyle: r.gearStyle,
+				ascentGearStyle: r.ascentGearStyle
+			}))
+		)
 	};
 }
 
