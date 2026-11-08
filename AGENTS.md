@@ -91,6 +91,8 @@ Entry: `runTheCragSync()` in `src/lib/server/sync.ts`.
 
 Cursor/`maxEpoch` is still stored for diagnostics; it is **not** used to skip a full pull.
 
+API sync errors must use fixed messages, never upstream response text or transport error details (these can echo API keys). Permission errors identify missing logbook access. A failed page keeps earlier upserts but never prunes or advances the successful-sync timestamp; the next scheduled/manual run starts at page 1. `data:0011` removes legacy saved API error bodies on upgrade; existing external logs still need owner cleanup/key rotation.
+
 ### Opt-in CSV mode (`THECRAG_SYNC_MODE=csv`)
 
 For owners without a supporter API key. The default is `api`; any value other than `api`/`csv` is invalid and sync refuses to run.

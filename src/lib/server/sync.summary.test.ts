@@ -1,6 +1,8 @@
 import { beforeEach, expect, it, vi } from 'vitest';
 import { wipeAllData } from './wipe';
-import { upsertAscents } from './ingest';
+import { getOrCreateSyncState, updateSyncState, upsertAscents } from './ingest';
+import { db } from './db';
+import { ascents } from './db/schema';
 import { syncTheCragAll } from './providers/thecrag';
 import { runTheCragSync } from './sync';
 import type { CanonicalAscent } from './providers/types';
@@ -22,6 +24,35 @@ const ascent = (id: string, route = id): CanonicalAscent => ({
 beforeEach(() => {
 	wipeAllData();
 	vi.clearAllMocks();
+});
+it('keeps cached ascents and the successful timestamp when a later API page fails', async () => {
+	upsertAscents([ascent('existing'), ascent('not-seen-yet')]);
+	getOrCreateSyncState('thecrag');
+	const lastSuccessAt = '2026-01-01T00:00:00.000Z';
+	updateSyncState('thecrag', { lastSuccessAt, cursor: '123' });
+	vi.mocked(syncTheCragAll).mockImplementation(async (_key, _cursor, onPage) => {
+		await onPage?.({
+			ascents: [ascent('existing'), ascent('new')],
+			done: false,
+			nextCursor: { page: 2 }
+		});
+		throw new Error('Logbook access was denied');
+	});
+	await expect(runTheCragSync()).rejects.toThrow('Logbook access was denied');
+	expect(
+		db
+			.select()
+			.from(ascents)
+			.all()
+			.map((a) => a.externalId)
+			.sort()
+	).toEqual(['existing', 'new', 'not-seen-yet']);
+	expect(getOrCreateSyncState('thecrag')).toMatchObject({
+		status: 'error',
+		lastSuccessAt,
+		cursor: '123',
+		lastError: 'Logbook access was denied'
+	});
 });
 it('reports inserts across API pages, real prune totals and zero additions on a repeat full pull', async () => {
 	upsertAscents([ascent('existing'), ascent('removed')]);

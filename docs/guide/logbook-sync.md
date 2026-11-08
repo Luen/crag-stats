@@ -28,6 +28,12 @@ completed button action; it is not a persistent sync history.
 
 Set `THECRAG_API_KEY` to your supporter logbook read key. Leave `THECRAG_SYNC_MODE` unset or set it to `api`. Each sync reads the full logbook and reconciles local ascents, including deletions. This mode provides richer route, profile and multipitch data.
 
+### If API sync fails
+
+Settings shows the failure and retains the time of the last successful sync. Permission errors mean theCrag denied logbook access: check that your supporter key has logbook read access, or configure CSV sync below. Crag Stats does not automatically switch modes.
+
+If a later page fails, updates from earlier pages remain cached, but no missing ascents are deleted and the run is not marked successful. The next scheduled run (daily by default) or **Sync now** retries the full logbook from page 1. API failures do not pause the schedule.
+
 ## Automatic CSV downloads
 
 Set these server environment variables, then restart:

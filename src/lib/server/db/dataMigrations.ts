@@ -91,7 +91,16 @@ const MIGRATIONS = [
 			refreshProjects();
 		}
 	},
-	{ id: 'data:0010_project_session_threshold', apply: () => refreshProjects() }
+	{ id: 'data:0010_project_session_threshold', apply: () => refreshProjects() },
+	{
+		id: 'data:0011_remove_unsafe_api_errors',
+		apply: () => {
+			// Older API errors stored raw upstream bodies, which may echo API keys.
+			db.run(sql`UPDATE sync_state
+				SET last_error = 'Previous theCrag API sync failed. Check your logbook API access and try syncing again.'
+				WHERE provider = 'thecrag' AND last_error LIKE 'theCrag API %'`);
+		}
+	}
 ];
 
 /**

@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { eq, sql } from 'drizzle-orm';
 import { db } from './index';
-import { appSettings, ascents, goals, projects as projectRows, routes } from './schema';
+import { appSettings, ascents, goals, projects as projectRows, routes, syncState } from './schema';
 import {
 	invalidateIncompleteRouteCache,
 	legacyEnvSettings,
@@ -25,7 +25,8 @@ const ALL = [
 	'data:0007_preserve_weather_tag_provenance',
 	'data:0008_verify_immediate_parent_exposure',
 	'data:0009_repair_explicit_solo_tick_flags',
-	'data:0010_project_session_threshold'
+	'data:0010_project_session_threshold',
+	'data:0011_remove_unsafe_api_errors'
 ];
 
 beforeEach(() => {
@@ -60,6 +61,36 @@ function seedOldGrades() {
 }
 
 describe('startup data migrations', () => {
+	it('removes legacy API response bodies without changing sync history or other errors', () => {
+		runDataMigrations();
+		db.run(sql`DELETE FROM schema_migrations WHERE id = 'data:0011_remove_unsafe_api_errors'`);
+		db.insert(syncState)
+			.values([
+				{
+					provider: 'thecrag',
+					status: 'error',
+					lastSuccessAt: '2026-01-01',
+					cursor: '123',
+					lastError: 'theCrag API 400: {"apiKey":"synthetic-secret"'
+				},
+				{ provider: 'other', status: 'error', lastError: 'Unrelated failure' }
+			])
+			.run();
+		expect(runDataMigrations()).toEqual(['data:0011_remove_unsafe_api_errors']);
+		expect(
+			db.select().from(syncState).where(eq(syncState.provider, 'thecrag')).get()
+		).toMatchObject({
+			status: 'error',
+			lastSuccessAt: '2026-01-01',
+			cursor: '123',
+			lastError:
+				'Previous theCrag API sync failed. Check your logbook API access and try syncing again.'
+		});
+		expect(
+			db.select().from(syncState).where(eq(syncState.provider, 'other')).get()?.lastError
+		).toBe('Unrelated failure');
+		expect(runDataMigrations()).toEqual([]);
+	});
 	it('rebuilds legacy single-session projects on upgrade', () => {
 		runDataMigrations();
 		db.run(sql`DELETE FROM schema_migrations WHERE id = 'data:0010_project_session_threshold'`);
