@@ -111,7 +111,7 @@ Because the brand accent is orange, it sits close to _Trad_ and _Experienced_. T
 
 ## App shell (`src/routes/+layout.svelte`)
 
-- **Top bar** (fixed, `--header-h` 3.75rem): sidebar toggle · logo plus wordmark · then GitHub, theme toggle, settings and (when signed in with `APP_PASSWORD` set) a log-out icon on the right. Log out is also in Settings → Admin session.
+- **Top bar** (fixed, `--header-h` 3.75rem): sidebar toggle · logo plus wordmark · then share, GitHub, theme toggle, settings and (when signed in with `APP_PASSWORD` set) a log-out icon on the right. Log out is also in Settings → Admin session.
 - **Sidebar** (`--side-w` 15rem): Dreeve-style groups separated by `<hr>`:
   Dashboard | Logbook, Projects, Sectors, Map, Partners | Goals, Activity, Badges, Eddington, Training load, Weather, Milestones, Rewind, Share | Docs.
   - Icons come from `src/lib/components/NavIcon.svelte` (Lucide-style outline, 24px grid, 1.8 stroke). Projects uses a quickdraw.
@@ -119,7 +119,7 @@ Because the brand accent is orange, it sits close to _Trad_ and _Experienced_. T
   - The active item gets an `--accent-soft` background with accent text and icon.
   - A version pill sits at the bottom and links to GitHub releases.
 - **Mini sidebar** (desktop): the toggle collapses the sidebar to an icon rail (`--side-mini-w` 4.5rem) with hover/focus tooltips. It's stored in `localStorage.cs_sidebar = 'mini'` and applied pre-paint as `html[data-sidebar='mini']`.
-- **Mobile (≤ 860px)**: the same toggle opens an off-canvas drawer with a backdrop. Esc, tapping the backdrop or navigating closes it. Mini mode doesn't apply on mobile.
+- **Mobile (≤ 860px)**: the same toggle opens an off-canvas drawer with a backdrop. Esc, tapping the backdrop or navigating closes it. Mini mode doesn't apply on mobile. The top bar tightens its spacing and buttons, and the GitHub icon moves to the drawer footer beside the version pill, so the bar fits at 375px. Below 340px only the logo mark shows (the wordmark stays as the link's accessible name).
 - **Breadcrumb** (home icon plus page label) above content. `<title>` is `Page · Crag Stats`.
 - **Dashboard hero** shows only the profile (avatar, name, climber type). Sync status and grade system live in **Settings**. Admins see a red "Last sync failed" pill on the hero only when a sync errors.
 - **Dashboard layout** lives in Settings (`/settings#dashboard`, `DashboardLayoutEditor`). The dashboard only shows a small "Customize dashboard" link, and only to admins (`showSettings`). The layout actions (`saveDashboardLayout` / `resetDashboardLayout`) also return 403 for logged-out visitors.

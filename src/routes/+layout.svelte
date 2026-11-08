@@ -221,7 +221,7 @@
 				<NavIcon name="share" />
 			</a>
 			<a
-				class="icon-btn"
+				class="icon-btn github"
 				href={data.githubUrl}
 				target="_blank"
 				rel="noreferrer"
@@ -287,6 +287,11 @@
 			{/each}
 		</nav>
 		<div class="side-foot">
+			<!-- The top bar drops its GitHub icon on narrow screens; keep the link reachable here. -->
+			<a class="gh-drawer" href={data.githubUrl} target="_blank" rel="noreferrer">
+				<NavIcon name="github" size={16} />
+				<span>GitHub</span>
+			</a>
 			<a
 				class="ver"
 				href="{data.githubUrl}/releases"
@@ -486,6 +491,9 @@
 	.ver:hover {
 		color: var(--ink);
 	}
+	.gh-drawer {
+		display: none;
+	}
 
 	/* Mini (icon rail) — desktop only */
 	@media (min-width: 861px) {
@@ -608,12 +616,60 @@
 			margin-left: 0;
 			padding: calc(var(--header-h) + 0.85rem) 0.85rem 2rem;
 		}
+		/* Fit the bar at 375px: tighter spacing, smaller buttons, GitHub moves to the drawer. */
+		.topbar {
+			gap: 0.4rem;
+			padding: 0 0.5rem;
+		}
+		.brand {
+			gap: 0.4rem;
+		}
+		.brand-mark {
+			width: 30px;
+			height: 30px;
+		}
+		.top-actions {
+			gap: 0;
+		}
+		.icon-btn {
+			width: 2.25rem;
+			height: 2.25rem;
+		}
+		.top-actions .github {
+			display: none;
+		}
+		.side-foot {
+			gap: 0.6rem;
+			align-items: center;
+		}
+		.gh-drawer {
+			display: inline-flex;
+			align-items: center;
+			gap: 0.35rem;
+			font-size: 0.8rem;
+			font-weight: 700;
+			color: var(--ink-muted);
+		}
+		.gh-drawer:hover {
+			color: var(--ink);
+		}
 		.wordmark {
 			font-size: 1.1rem;
 		}
 		.wordmark span {
 			/* Small bold text needs 4.5:1; the bright logo orange is for larger text. */
 			color: var(--accent);
+		}
+	}
+	/* Very narrow phones: keep the mark, hide the wordmark visually (still the link's name). */
+	@media (max-width: 339px) {
+		.wordmark {
+			position: absolute;
+			width: 1px;
+			height: 1px;
+			overflow: hidden;
+			clip-path: inset(50%);
+			white-space: nowrap;
 		}
 	}
 </style>

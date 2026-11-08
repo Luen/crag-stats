@@ -22,6 +22,16 @@ const marked = new Marked({
 	}
 });
 
+/** Wrap each Markdown table in a focusable scroll region so wide tables never widen the page. */
+export function wrapTables(html: string): string {
+	return html
+		.replace(
+			/<table>/g,
+			'<div class="table-scroll" tabindex="0" role="region" aria-label="Table"><table>'
+		)
+		.replace(/<\/table>/g, '</table></div>');
+}
+
 const COMPONENT = /<!--\s*component:([a-z-]+)\s*-->/;
 
 /** Split Markdown on component markers and render the prose parts to HTML. */
@@ -32,7 +42,8 @@ export function renderMarkdown(md: string): { title: string; segments: DocSegmen
 	const segments: DocSegment[] = [];
 	parts.forEach((part, i) => {
 		if (i % 2 === 1) segments.push({ kind: 'component', name: part });
-		else if (part.trim()) segments.push({ kind: 'html', html: marked.parse(part) as string });
+		else if (part.trim())
+			segments.push({ kind: 'html', html: wrapTables(marked.parse(part) as string) });
 	});
 	return { title, segments };
 }

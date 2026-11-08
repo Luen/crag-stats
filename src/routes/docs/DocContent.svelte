@@ -21,6 +21,7 @@
 <style>
 	.prose {
 		max-width: 52rem;
+		overflow-wrap: break-word;
 		line-height: 1.65;
 	}
 	.prose h1 {
@@ -69,10 +70,15 @@
 	.prose :global(blockquote p) {
 		margin: 0;
 	}
+	/* Markdown tables are wrapped (server/docs.ts) so they scroll inside the card on phones. */
+	.prose :global(.table-scroll) {
+		overflow-x: auto;
+		margin: 0.75rem 0 1.25rem;
+	}
 	.prose :global(table) {
 		width: 100%;
+		min-width: 40rem;
 		border-collapse: collapse;
-		margin: 0.75rem 0 1.25rem;
 		font-size: 0.9rem;
 	}
 	.prose :global(th) {
