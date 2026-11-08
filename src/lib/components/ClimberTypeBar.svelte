@@ -19,7 +19,10 @@
 						style:flex={s.pct}
 						style:background={s.color}
 						title="{s.style}: {s.pct}%"
-						>{#if s.pct >= 8}{s.style.toUpperCase()} {Math.round(s.pct)}%{/if}</span
+						>{#if s.pct >= 8}<span class="seg-label"
+								><span class="seg-name">{s.style.toUpperCase()}</span>
+								<span class="seg-pct">{Math.round(s.pct)}%</span></span
+							>{/if}</span
 					>
 				{/if}
 			{/each}
@@ -77,6 +80,26 @@
 		/* Intentional: keeps white labels legible on any discipline colour. */
 		text-shadow: 0 1px 1px rgba(0, 0, 0, 0.25);
 		min-width: 0;
+		overflow: hidden;
+		/* Each segment is a size container so narrow ones can drop label parts. */
+		container-type: inline-size;
+	}
+	/* Never wrap inside a segment; the legend below lists every style and share. */
+	.seg-label {
+		display: flex;
+		gap: 0.3em;
+		white-space: nowrap;
+		padding: 0 0.3rem;
+	}
+	@container (max-width: 6.5rem) {
+		.seg-name {
+			display: none;
+		}
+	}
+	@container (max-width: 2.4rem) {
+		.seg-pct {
+			display: none;
+		}
 	}
 	.legend {
 		list-style: none;

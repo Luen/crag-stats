@@ -1,4 +1,4 @@
-# Weather polygon preparation (#309, follow-up #344)
+# Weather polygon preparation (#309, follow-up #344, closed)
 
 **Typed GeoJSON fallback is enabled at the owner’s subsequent request.** The
 weather resolver uses route point → crag point → sector point → validated area
@@ -59,8 +59,8 @@ Before adding any other provider-specific boundary format:
 
 Synthetic pipeline and browser regressions cover the enabled typed path, but do
 not establish that theCrag currently supplies that shape. [#309](https://github.com/Luen/crag-stats/issues/309) shipped in
-[#317](https://github.com/Luen/crag-stats/pull/317) and [#328](https://github.com/Luen/crag-stats/pull/328); [#344](https://github.com/Luen/crag-stats/issues/344) tracks the real
-provider evidence and any additional format adapter. Close #344 only with a
+[#317](https://github.com/Luen/crag-stats/pull/317) and [#328](https://github.com/Luen/crag-stats/pull/328); the provider-evidence follow-up
+[#344](https://github.com/Luen/crag-stats/issues/344) is closed. Add a format adapter only with a
 sanitized provider-backed fixture regression, not with more synthetic coverage.
 
 ### Existing synthetic coverage (not provider evidence)
