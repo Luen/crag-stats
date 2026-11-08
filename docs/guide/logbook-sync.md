@@ -42,5 +42,3 @@ Route data import needs a saved profile login to match FA/FFA credits, which com
 ## Automatic CSV downloads were removed
 
 Earlier releases could sign in to theCrag with your username and password and download the CSV export on a schedule (`THECRAG_SYNC_MODE=csv`). theCrag asked that this stop: each run is a full export that is costly for their servers, and their [terms](https://www.thecrag.com/terms#ownership-and-licenses) require all programmatic access to go through the API. Uploading the CSV by hand is fine.
-
-If you used it, remove `THECRAG_SYNC_MODE`, `THECRAG_USERNAME`, and `THECRAG_PASSWORD` from your environment. The upgrade deletes the saved, encrypted theCrag login cookies from the database. Ascents you already imported stay in place until you wipe them or replace them with an API sync or a new upload.
