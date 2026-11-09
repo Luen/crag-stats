@@ -121,6 +121,14 @@ const YDS_TO_EWBANK: Record<string, number> = Object.fromEntries(
  * Ewbank ranges and V-scale already use fractional scores.
  */
 const FRENCH_BETWEEN_EWBANK: Record<string, number> = {
+	'1a+': 1.5,
+	'1b+': 2.5,
+	'1c+': 3.5,
+	'2a+': 4.5,
+	'2b+': 5.5,
+	'2c+': 6.5,
+	'3a+': 7.5,
+	'3b+': 8.5,
 	'4a+': 13.5,
 	'4b+': 14.5,
 	'4c+': 15.5,
