@@ -1,9 +1,6 @@
-import { listCragMapPoints, listSectors } from '#lib/server/sectors';
+import { redirect } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async () => {
-	return {
-		crags: listSectors(),
-		mapPoints: listCragMapPoints()
-	};
+export const load: PageServerLoad = ({ url }) => {
+	redirect(308, `/map${url.search}#sectors`);
 };

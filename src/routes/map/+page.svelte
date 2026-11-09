@@ -1,4 +1,5 @@
 <script lang="ts">
+	import CragSectors from '#lib/components/CragSectors.svelte';
 	import WorldClimbingMap from '#lib/components/WorldClimbingMap.svelte';
 	import { formatCalendarDate, formatNumber } from '#lib/dates';
 	import { LOGBOOK_STYLES, includeSelectedOptions } from '#lib/logbookFilters';
@@ -7,7 +8,7 @@
 </script>
 
 <svelte:head
-	><title>Climbing map · Crag Stats</title><meta
+	><title>Map &amp; sectors · Crag Stats</title><meta
 		name="description"
 		content="Your climbing places around the world, sized by logged ascents."
 	/></svelte:head
@@ -49,6 +50,9 @@
 			No places to map for these filters. Sync routes with usable coordinates to show them here.
 		</p>{/if}
 </section>
+<div id="sectors" class="values">
+	<CragSectors crags={data.crags} dateDisplay={data.dateDisplay} />
+</div>
 <section class="panel values">
 	<h2>All mapped places</h2>
 	<p>The same exact counts are available here without using the map.</p>

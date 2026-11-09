@@ -1,3 +1,4 @@
+import { isDeletedAreaPlaceholder } from '#lib/climbingMap';
 import { loadWeatherLocations, attachWeatherLocation } from './weatherLocations';
 import { ascentWeatherKey } from '#lib/weatherKeys';
 import { eq, sql } from 'drizzle-orm';
@@ -21,13 +22,6 @@ import {
 } from './sectorsTree';
 
 export type { CragSectorGroup, SectorNode } from '#lib/types/sectors';
-
-export type CragMapPoint = {
-	crag: string;
-	lat: number;
-	lon: number;
-	count: number;
-};
 
 /**
  * Cached weather on the distinct days (per rounded location) you climbed at each crag.
@@ -102,6 +96,7 @@ export function listSectors(): CragSectorGroup[] {
 
 	for (const r of rows) {
 		const crag = (r.cragName || 'Unknown').trim() || 'Unknown';
+		if (isDeletedAreaPlaceholder(crag)) continue;
 		const ascentsN = Number(r.ascentCount) || 0;
 		let agg = byCrag.get(crag);
 		if (!agg) {
@@ -169,43 +164,4 @@ function buildCragBreadcrumb(
 		if (idx > 0) return names.slice(0, idx).join(' → ');
 	}
 	return undefined;
-}
-
-/** Average lat/lon per crag weighted by route volume (ascent counts). */
-export function listCragMapPoints(): CragMapPoint[] {
-	ensureSchema();
-	const rows = db
-		.select({
-			cragName: routes.cragName,
-			lat: routes.lat,
-			lon: routes.lon,
-			ascentCount: sql<number>`count(${ascents.id})`
-		})
-		.from(routes)
-		.innerJoin(ascents, eq(ascents.routeId, routes.id))
-		.where(sql`${routes.lat} IS NOT NULL AND ${routes.lon} IS NOT NULL`)
-		.groupBy(routes.id)
-		.all();
-
-	const agg = new Map<string, { latSum: number; lonSum: number; weight: number; count: number }>();
-	for (const r of rows) {
-		if (r.lat == null || r.lon == null) continue;
-		const crag = (r.cragName || 'Unknown').trim() || 'Unknown';
-		const w = Math.max(1, Number(r.ascentCount) || 1);
-		const cur = agg.get(crag) ?? { latSum: 0, lonSum: 0, weight: 0, count: 0 };
-		cur.latSum += r.lat * w;
-		cur.lonSum += r.lon * w;
-		cur.weight += w;
-		cur.count += Number(r.ascentCount) || 0;
-		agg.set(crag, cur);
-	}
-
-	return [...agg.entries()]
-		.map(([crag, v]) => ({
-			crag,
-			lat: v.latSum / v.weight,
-			lon: v.lonSum / v.weight,
-			count: v.count
-		}))
-		.sort((a, b) => b.count - a.count);
 }

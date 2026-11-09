@@ -3,7 +3,13 @@ import { db, ensureSchema } from './db';
 import { ascents, routes } from './db/schema';
 import { isLikelyIndoorRoute } from './venue';
 import { matchesClimbStyle } from '#lib/climbStyle';
-import { mapDay, mapPlaceKey, validMapCoords, type ClimbingPlace } from '#lib/climbingMap';
+import {
+	isDeletedAreaPlaceholder,
+	mapDay,
+	mapPlaceKey,
+	validMapCoords,
+	type ClimbingPlace
+} from '#lib/climbingMap';
 export type MapFilters = {
 	from: string;
 	to: string;
@@ -73,7 +79,7 @@ export function listClimbingMap(filters: MapFilters) {
 		if ((filters.venue === 'outdoor' && indoor) || (filters.venue === 'indoor' && !indoor))
 			continue;
 		total++;
-		if (!validMapCoords(row.lat, row.lon)) {
+		if (isDeletedAreaPlaceholder(row.cragName) || !validMapCoords(row.lat, row.lon)) {
 			missing++;
 			continue;
 		}

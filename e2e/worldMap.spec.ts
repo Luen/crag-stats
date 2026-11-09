@@ -24,7 +24,18 @@ test(`world map and exact logbook links`, async ({ page }) => {
 					`INSERT INTO ascents (provider,external_id,route_id,ascent_date,is_send,updated_at) VALUES ('thecrag',?,?, '2026-09-01',1,'2026-10-30')`
 				).run(`world-${i}-${n}`, id);
 		}
-		await page.goto('/map?from=2026-09-01&to=2026-09-01');
+		await page.goto('/sectors?from=2026-09-01&to=2026-09-01');
+		await expect(page).toHaveURL('/map?from=2026-09-01&to=2026-09-01#sectors');
+		await expect(page.locator('#side-nav a[href="/sectors"]')).toHaveCount(0);
+		await expect(
+			page.locator('#sectors').getByRole('button', { name: /World same name/ })
+		).toBeVisible();
+		await page
+			.locator('#sectors')
+			.getByRole('button', { name: /World same name/ })
+			.click();
+		await expect(page.locator('#sectors .sectors')).toBeVisible();
+		await expect(page.locator('.world-map .land')).toHaveAttribute('d', /^M.+L/);
 		await expect(page.getByRole('heading', { name: 'Climbing around the world' })).toBeVisible();
 		await expect(page.getByRole('table')).toContainText('World same name');
 		await expect(page.getByRole('group', { name: 'Worldwide climbing places' })).toBeVisible();
