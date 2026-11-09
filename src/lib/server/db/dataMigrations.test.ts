@@ -26,7 +26,8 @@ const ALL = [
 	'data:0008_verify_immediate_parent_exposure',
 	'data:0009_repair_explicit_solo_tick_flags',
 	'data:0010_project_session_threshold',
-	'data:0011_remove_unsafe_api_errors'
+	'data:0011_remove_unsafe_api_errors',
+	'data:0012_french_between_grades'
 ];
 
 beforeEach(() => {

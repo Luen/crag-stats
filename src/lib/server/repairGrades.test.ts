@@ -63,3 +63,20 @@ describe('grade-system evidence survives repair (#124)', () => {
 		expect(db.select().from(routes).get()!.gradeScore).toBe(5);
 	});
 });
+
+describe('French in-between grades (#441)', () => {
+	it('repairs a cached band-midpoint 7a+ score from raw JSON', () => {
+		const mapped = mapAscent({
+			id: 99002,
+			date: '2026-01-01',
+			gradeSystem: 'FR',
+			tick: { name: 'Red point' },
+			route: { id: 99002, name: 'Synthetic sport', grade: '7a+', gradeBand: 3, style: 'Sport' }
+		})!;
+		upsertAscents([mapped]);
+		// Simulate the old parser's band-midpoint fallback (Ewbank 21 ≈ 6b+).
+		db.update(routes).set({ gradeScore: 21 }).where(eq(routes.externalId, '99002')).run();
+		repairGradesFromRawJson();
+		expect(db.select().from(routes).get()!.gradeScore).toBe(24.5);
+	});
+});

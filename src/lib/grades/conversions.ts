@@ -114,8 +114,33 @@ const YDS_TO_EWBANK: Record<string, number> = Object.fromEntries(
 	Object.entries(EWBANK_TO_YDS).map(([ew, yds]) => [yds.toLowerCase(), Number(ew)])
 );
 
-const FRENCH_TO_EWBANK: Record<string, number> = Object.fromEntries(
-	Object.entries(EWBANK_TO_FRENCH).map(([ew, fr]) => [fr.toLowerCase(), Number(ew)])
+/**
+ * French grades that no whole Ewbank number maps to (#441). Without these, `7a+`,
+ * `6a` or `5c+` fell back to the route's grade-band midpoint, so a 7a+ ranked below
+ * 6c. Fractional scores keep every French grade strictly between its neighbours;
+ * Ewbank ranges and V-scale already use fractional scores.
+ */
+const FRENCH_BETWEEN_EWBANK: Record<string, number> = {
+	'4a+': 13.5,
+	'4b+': 14.5,
+	'4c+': 15.5,
+	'5a+': 16.5,
+	'5b+': 17.5,
+	'5c+': 18.33,
+	'6a': 18.67,
+	'7a+': 24.5
+};
+
+const FRENCH_TO_EWBANK: Record<string, number> = {
+	...Object.fromEntries(
+		Object.entries(EWBANK_TO_FRENCH).map(([ew, fr]) => [fr.toLowerCase(), Number(ew)])
+	),
+	...FRENCH_BETWEEN_EWBANK
+};
+
+/** Exact fractional score → French label, so parsed in-between grades round-trip. */
+const BETWEEN_EWBANK_TO_FRENCH = new Map<number, string>(
+	Object.entries(FRENCH_BETWEEN_EWBANK).map(([fr, ew]) => [ew, fr])
 );
 
 /** V-scale → Font (approximate theCrag boulder table) */
@@ -146,7 +171,7 @@ export function ewbankToYds(ew: number): string | null {
 }
 
 export function ewbankToFrench(ew: number): string | null {
-	return EWBANK_TO_FRENCH[Math.round(ew)] ?? null;
+	return BETWEEN_EWBANK_TO_FRENCH.get(ew) ?? EWBANK_TO_FRENCH[Math.round(ew)] ?? null;
 }
 
 export function convertFromEwbank(ew: number, system: GradeSystem): string {
@@ -155,7 +180,7 @@ export function convertFromEwbank(ew: number, system: GradeSystem): string {
 		case 'yds':
 			return ewbankToYds(n) ?? String(n);
 		case 'french':
-			return ewbankToFrench(n) ?? String(n);
+			return ewbankToFrench(ew) ?? String(n);
 		case 'v_scale':
 		case 'font':
 			return convertFromVScale(ewbankToVScale(n), system);

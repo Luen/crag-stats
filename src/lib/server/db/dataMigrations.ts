@@ -101,6 +101,15 @@ const MIGRATIONS = [
 				SET last_error = 'An earlier sync failed. Its details were removed during an upgrade because they could include your API key. Run Sync now to see the current reason.'
 				WHERE provider = 'thecrag' AND last_error LIKE 'theCrag API %'`);
 		}
+	},
+	{
+		// French 7a+, 6a, 5c+ and other in-between grades used to fall back to the grade-band
+		// midpoint (#441). Re-derive cached scores from stored raw JSON.
+		id: 'data:0012_french_between_grades',
+		apply: () => {
+			repairGradesFromRawJson();
+			refreshProjects();
+		}
 	}
 ];
 

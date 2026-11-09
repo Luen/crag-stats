@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
 	ewbankToFrench,
+	convertFromEwbank,
 	convertFromVScale,
 	detectAndParseGrade,
 	ewbankToVScale,
@@ -165,5 +166,57 @@ describe('ewbankToFrench', () => {
 			expect(idx, `Ewbank ${ew} → ${fr}`).toBeGreaterThanOrEqual(prev);
 			prev = idx;
 		}
+	});
+});
+
+describe('French grades between Ewbank numbers (#441)', () => {
+	const LADDER = [
+		'4a',
+		'4a+',
+		'4b',
+		'4b+',
+		'4c',
+		'4c+',
+		'5a',
+		'5a+',
+		'5b',
+		'5b+',
+		'5c',
+		'5c+',
+		'6a',
+		'6a+',
+		'6b',
+		'6b+',
+		'6c',
+		'6c+',
+		'7a',
+		'7a+',
+		'7b',
+		'7b+',
+		'7c'
+	];
+	const parse = (g: string) =>
+		detectAndParseGrade(g, { gearStyle: 'Sport', gradeBand: 3, preferredSystem: 'french' });
+
+	it('parses every grade as French in strictly ascending order', () => {
+		let prev = -Infinity;
+		for (const g of LADDER) {
+			const p = parse(g);
+			expect(p.system, g).toBe('french');
+			expect(p.score!, g).toBeGreaterThan(prev);
+			prev = p.score!;
+		}
+	});
+
+	it('round-trips French labels, including in-between grades', () => {
+		for (const g of LADDER) expect(parse(g).label, g).toBe(g);
+		expect(convertFromEwbank(24.5, 'french')).toBe('7a+');
+		expect(ewbankToFrench(18.67)).toBe('6a');
+	});
+
+	it('is case-insensitive and ranks 7a+ between 7a and 7b', () => {
+		expect(parse('7A+').score).toBe(24.5);
+		expect(parse('7a').score!).toBeLessThan(parse('7a+').score!);
+		expect(parse('7a+').score!).toBeLessThan(parse('7b').score!);
 	});
 });

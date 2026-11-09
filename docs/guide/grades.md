@@ -17,6 +17,7 @@ These colours appear in every pyramid, grade chip, CPR chart and band breakdown.
 - **Multi-pitch:** the effective grade of an ascent is the hardest pitch _you_ climbed, not the hardest pitch on the route.
 - **Ambiguous boulder numbers:** provider grade-system context decides whether a bare number means V-scale or Ewbank. Country alone never changes a grade on API rows. Repairs preserve the original API evidence. CSV exports have no grade-system column, so Australian boulder rows with bare digits (`9`, `1`) get an AU hint from Country / Crag Path / australia URL stubs; explicit `V5` / `VB` stay V-scale. As with API imports, an inferred AU ascent grade does not override an explicit V-scale route grade.
 - **Ranges** such as `V1/2` count as the midpoint (V1.5).
+- **French grades between Ewbank numbers** such as `5c+`, `6a` and `7a+` get an in-between score, so they always rank between their neighbours (`7a` < `7a+` < `7b`). Pyramids and grade filters still group by whole Ewbank numbers, so `7a+` (24.5) shares a row with `7b`.
 
 ## Conversion tables
 
