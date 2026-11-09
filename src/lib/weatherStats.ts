@@ -68,7 +68,7 @@ export type FairWeatherMetric = {
 	days: number;
 	/** 15-25°C, dry, no snow/thunderstorm. */
 	fairDays: number;
-	/** Heat, freezing, rain, snow or very windy. */
+	/** Heat, freezing, rain, snow, or very windy. */
 	toughDays: number;
 	fairPct: number;
 	toughPct: number;

@@ -16,8 +16,6 @@ import {
 	setAppSetting
 } from '#lib/server/appSettings';
 import { hasTheCragApiKey, getTheCragSyncConfiguration } from '#lib/server/env';
-import { privateNotesSyncAvailable } from '#lib/server/notes';
-import { forgetTheCragSession } from '#lib/server/theCragWebSession';
 import { beginFirstImport, completeFirstImport } from '#lib/server/firstImport';
 import { db } from '#lib/server/db';
 import { upsertAscents } from '#lib/server/ingest';
@@ -57,11 +55,6 @@ export const load: PageServerLoad = async ({ cookies }) => {
 };
 
 export const actions: Actions = {
-	forgetTheCragSession: async ({ locals }) => {
-		if (!locals.authed) return fail(403);
-		forgetTheCragSession();
-		return { ok: true, sessionForgotten: true };
-	},
 	// Site-wide dashboard layout (#37). /settings is already gated; check again anyway.
 	saveDashboardLayout: async ({ request, cookies, locals }) => {
 		if (!locals.authed) return fail(403);
@@ -85,14 +78,7 @@ export const actions: Actions = {
 		if (!getSearchIndexing().forcedOff) {
 			setAppSetting('search_indexing', form.get('indexing') === 'on' ? 'on' : 'off');
 		}
-		// CSV cannot newly enable notes, but owners must always be able to hide
-		// comments/private notes retained from a previous import mode.
-		if (
-			privateNotesSyncAvailable(getTheCragSyncConfiguration().mode) ||
-			form.get('notes') !== 'on'
-		) {
-			setAppSetting('show_notes', form.get('notes') === 'on' ? 'on' : 'off');
-		}
+		setAppSetting('show_notes', form.get('notes') === 'on' ? 'on' : 'off');
 		return { ok: true, saved: true };
 	},
 	sync: async ({ locals }) => {

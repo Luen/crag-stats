@@ -419,7 +419,7 @@ export async function fetchTheCragPage(
 		const label = body && typeof body === 'object' && 'errorLabel' in body ? body.errorLabel : null;
 		const advice =
 			label === 'insufficient-api-permissions' || res.status === 401 || res.status === 403
-				? 'Logbook access was denied. Check that THECRAG_API_KEY is a supporter logbook read key with logbook access, or configure CSV sync. Then try syncing again.'
+				? 'Logbook access was denied. Check that THECRAG_API_KEY is a supporter logbook read key with logbook access and try syncing again, or upload your logbook CSV in Settings instead.'
 				: res.status === 429
 					? 'Request limit reached. Wait before trying to sync again.'
 					: 'Sync could not finish. Try again later; if it keeps failing, check your API access.';

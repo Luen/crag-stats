@@ -1,6 +1,6 @@
 let generation = 0;
 
-/** Capture before starting work; Wipe/Forget invalidate pending responses. */
+/** Capture before starting work; Wipe invalidates pending responses. */
 export function syncIsCurrent(): () => boolean {
 	const current = generation;
 	return () => current === generation;

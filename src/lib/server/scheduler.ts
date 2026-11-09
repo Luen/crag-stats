@@ -11,7 +11,12 @@ export function startScheduler() {
 	if (typeof process === 'undefined') return;
 	if (!getTheCragSyncConfiguration().configured) return;
 
-	const expr = env('SYNC_CRON', '0 6 * * *');
+	const expr = env('SYNC_CRON', '0 6 * * *').trim();
+	// Explicit opt-out: no scheduled or boot-time sync; Settings → Sync now still works.
+	if (expr.toLowerCase() === 'off') {
+		console.log('[crag-stats] SYNC_CRON=off, scheduler not started');
+		return;
+	}
 	if (!cron.validate(expr)) {
 		console.warn(`[crag-stats] Invalid SYNC_CRON "${expr}", scheduler not started`);
 		return;

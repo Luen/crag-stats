@@ -61,8 +61,9 @@ export type RouteHistoryConfig = {
 	/** Fetch missing crag/sector geometry only when weather import is opted in too. */
 	weatherEnabled?: boolean;
 	/**
-	 * CSV mode passes THECRAG_USERNAME. It must match the saved logbook login;
-	 * an empty or mismatched value blocks import until the owner syncs or wipes.
+	 * Optional login override. It must match the saved logbook login; an empty or
+	 * mismatched value blocks import until the owner syncs or wipes. Unset uses the
+	 * saved profile login.
 	 */
 	ownerLogin?: string | null;
 };

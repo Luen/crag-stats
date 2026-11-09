@@ -19,7 +19,9 @@ it('explains permission failures without echoing credentials or upstream message
 	await expect(fetchTheCragPage('synthetic-secret', { page: 4 })).rejects.toThrow(
 		'theCrag API 400 (page 4): Logbook access was denied.'
 	);
-	await expect(fetchTheCragPage('synthetic-secret')).rejects.toThrow('configure CSV sync');
+	await expect(fetchTheCragPage('synthetic-secret')).rejects.toThrow(
+		'upload your logbook CSV in Settings'
+	);
 	await expect(fetchTheCragPage('synthetic-secret')).rejects.not.toThrow('synthetic-secret');
 });
 

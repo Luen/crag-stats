@@ -32,14 +32,12 @@ The container serves plain HTTP on port 3000 and works whichever way you reach i
 
 Why: SvelteKit rejects form posts whose `Origin` doesn't match the server's idea of its own URL (CSRF protection). The adapter assumes `https` when nothing tells it otherwise, so `scripts/server.mjs` fills in the real protocol, or uses `ORIGIN` if you set it (#47). If a form says "Cross-site POST form submissions are forbidden", set `ORIGIN`.
 
-## Logbook sync (API or CSV)
+## Logbook sync (API or manual CSV)
 
-Configure sync in `.env` before or after the first start:
+- **API:** set `THECRAG_API_KEY` in `.env` before or after the first start — scheduled full reconcile, including deletes.
+- **Manual CSV:** no supporter key needed. Export your logbook on theCrag and upload it in **Settings → CSV import** (adds and updates only). Automatic CSV downloads were removed at theCrag's request.
 
-- **API (default):** `THECRAG_API_KEY` — full reconcile, including deletes.
-- **CSV:** `THECRAG_SYNC_MODE=csv` plus `THECRAG_USERNAME`, `THECRAG_PASSWORD`, and a real `SESSION_SECRET` — automatic CSV downloads with a saved login (no supporter key required for the logbook).
-
-Owner-facing setup, prune guards, private-notes limits, and CSV vs API trade-offs live in the in-app guide (`/docs/logbook-sync` once the container is up; same Markdown as [`docs/guide/logbook-sync.md`](guide/logbook-sync.md)). Route-history / `impers` pacing stays in [`docs/dev/ROUTE_HISTORY.md`](dev/ROUTE_HISTORY.md).
+Owner-facing setup, private-notes limits, and CSV vs API trade-offs live in the in-app guide (`/docs/logbook-sync` once the container is up; same Markdown as [`docs/guide/logbook-sync.md`](guide/logbook-sync.md)). Route-history / `impers` pacing stays in [`docs/dev/ROUTE_HISTORY.md`](dev/ROUTE_HISTORY.md).
 
 ## Upgrade path
 
