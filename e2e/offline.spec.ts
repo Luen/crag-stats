@@ -28,6 +28,19 @@ async function ageCopy(page: Page) {
 	});
 }
 
+/**
+ * Navigate while offline and wait for the worker's fallback redirect to /offline (#435).
+ * `context.setOffline` reaches the service worker asynchronously, so the first navigation
+ * can still be served from the network on a busy run. Retry the navigation itself; a worker
+ * that never falls back still fails after the timeout.
+ */
+async function gotoOfflineFallback(page: Page, path: string) {
+	await expect(async () => {
+		await page.goto(path);
+		await expect(page).toHaveURL(/\/offline$/, { timeout: 1000 });
+	}).toPass({ timeout: 15000 });
+}
+
 async function standalone(page: Page) {
 	await page.addInitScript(() => {
 		const original = window.matchMedia.bind(window);
@@ -50,8 +63,7 @@ test('installing from a normal tab downloads the logbook without opening the off
 	await page.evaluate(() => window.dispatchEvent(new Event('appinstalled')));
 	await expect.poll(async () => (await savedCopy(page))?.rows.length ?? 0).toBeGreaterThan(0);
 	await context.setOffline(true);
-	await page.goto('/logbook');
-	await expect(page).toHaveURL(/\/offline$/);
+	await gotoOfflineFallback(page, '/logbook');
 	await expect(page.getByRole('heading', { name: 'Dashboard summary' })).toBeVisible();
 	await expect(page.getByRole('table')).toContainText((await savedCopy(page))!.rows[0].name);
 	await expectAxeClean(page, { include: ['main'] });
@@ -195,8 +207,7 @@ test('downloaded public snapshot reopens offline, searches, reconnects and clear
 	expect(cacheInfo).not.toContain('/');
 	expect(cacheInfo).toContain('/offline');
 	await context.setOffline(true);
-	await page.goto('/logbook?not-downloaded=1');
-	await expect(page).toHaveURL(/\/offline$/);
+	await gotoOfflineFallback(page, '/logbook?not-downloaded=1');
 	await expect(page.getByRole('heading', { name: 'Dashboard summary' })).toBeVisible();
 	await expect(page.getByRole('status')).toContainText('Offline');
 	await page.getByRole('searchbox').fill('no such synthetic climb xyz');
