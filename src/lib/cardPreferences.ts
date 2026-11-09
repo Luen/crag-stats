@@ -5,7 +5,9 @@ const VALUES = {
 	cs_weekday_metric: ['sessions', 'ascents'],
 	cs_weekday_style: ['all', 'sport', 'trad', 'boulder'],
 	cs_yearly_chart: ['year', 'cumulative'],
-	cs_heatmap_mode: ['intensity', 'grade', 'weather']
+	cs_heatmap_mode: ['intensity', 'grade', 'weather'],
+	cs_repeats_range: ['all', 'last12'],
+	cs_repeats_style: ['all', 'sport', 'trad', 'boulder']
 } as const;
 export type CardPreferenceKey = keyof typeof VALUES;
 /** Keep in sync with the pre-paint migration check in src/app.html. */

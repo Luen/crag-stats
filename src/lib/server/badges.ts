@@ -507,6 +507,49 @@ export const BADGE_CATALOG: readonly BadgeDef[] = [
 		icon: 'globe',
 		tone: 'purple'
 	},
+	// Repeats vs new routes: distinct routes, one route on many days, repeats at one crag.
+	{
+		id: 'distinct_routes_50',
+		title: 'Explorer',
+		hint: 'Log ascents on 50 different routes (attempts count)',
+		icon: 'route',
+		tone: 'warm'
+	},
+	{
+		id: 'distinct_routes_100',
+		title: 'Wanderer',
+		hint: 'Log ascents on 100 different routes (attempts count)',
+		icon: 'route',
+		tone: 'green'
+	},
+	{
+		id: 'distinct_routes_250',
+		title: 'Route Collector',
+		hint: 'Log ascents on 250 different routes (attempts count)',
+		icon: 'route',
+		tone: 'blue'
+	},
+	{
+		id: 'distinct_routes_500',
+		title: 'Guidebook Explorer',
+		hint: 'Log ascents on 500 different routes (attempts count)',
+		icon: 'route',
+		tone: 'purple'
+	},
+	{
+		id: 'route_days_10',
+		title: 'Old Faithful',
+		hint: 'Climb the same route on 10 different days',
+		icon: 'knot',
+		tone: 'green'
+	},
+	{
+		id: 'home_turf_25',
+		title: 'Home Turf',
+		hint: 'Log 25 repeat ascents on routes at one crag',
+		icon: 'flag',
+		tone: 'blue'
+	},
 	{
 		id: 'style_sport',
 		title: 'Sport Starter',
@@ -835,6 +878,18 @@ const HEIGHT_BADGES = [
 	{ id: 'height_150km', m: 150000, label: '150 km climbed' }
 ];
 
+/** Distinct routes logged (sends or attempts), keyed by provider route id. */
+const DISTINCT_ROUTE_BADGES = [
+	{ id: 'distinct_routes_50', n: 50 },
+	{ id: 'distinct_routes_100', n: 100 },
+	{ id: 'distinct_routes_250', n: 250 },
+	{ id: 'distinct_routes_500', n: 500 }
+] as const;
+
+/** Days on one route for Old Faithful; repeat ascents at one crag for Home Turf. */
+const ROUTE_DAYS_TARGET = 10;
+const HOME_TURF_TARGET = 25;
+
 const COUNTRY_BADGES = [
 	{ id: 'country_1', n: 1 },
 	{ id: 'country_2', n: 2 },
@@ -1023,6 +1078,12 @@ export function buildBadges(
 	const cragEvents: { t: number; crag: string }[] = [];
 	const routeDays = new Map<number, Set<string>>();
 	const routeSent = new Set<number>();
+	// Repeats vs new routes: first logged day and distinct days per provider route key.
+	const routeFirstDay = new Map<string, string>();
+	const keyedRouteDays = new Map<string, Set<string>>();
+	const cragRepeats = new Map<string, number>();
+	let maxRouteDays = 0;
+	let maxCragRepeats = 0;
 
 	for (const { row, day } of dated) {
 		ascentCount += 1;
@@ -1181,6 +1242,35 @@ export function buildBadges(
 				routeSent.add(row.routeId);
 				if (days.size >= 4) {
 					mark('route_persistence', hitAt(row, `Sent after ${days.size} days on it`));
+				}
+			}
+		}
+
+		if (row.routeKey) {
+			const firstDay = routeFirstDay.get(row.routeKey);
+			if (!firstDay) {
+				routeFirstDay.set(row.routeKey, day);
+				for (const b of DISTINCT_ROUTE_BADGES) {
+					if (routeFirstDay.size === b.n) mark(b.id, hitAt(row, `Different route #${b.n}`));
+				}
+			}
+			const days = keyedRouteDays.get(row.routeKey) ?? new Set<string>();
+			days.add(day);
+			keyedRouteDays.set(row.routeKey, days);
+			maxRouteDays = Math.max(maxRouteDays, days.size);
+			if (days.size === ROUTE_DAYS_TARGET) {
+				mark('route_days_10', hitAt(row, `Day ${ROUTE_DAYS_TARGET} on the same route`));
+			}
+			// A repeat is any ascent on a later day than the route's first logged day.
+			if (firstDay && day > firstDay && crag && crag !== 'unknown') {
+				const n = (cragRepeats.get(crag) ?? 0) + 1;
+				cragRepeats.set(crag, n);
+				maxCragRepeats = Math.max(maxCragRepeats, n);
+				if (n === HOME_TURF_TARGET) {
+					mark(
+						'home_turf_25',
+						hitAt(row, `${HOME_TURF_TARGET} repeat ascents at ${row.cragName!.trim()}`)
+					);
 				}
 			}
 		}
@@ -1403,6 +1493,9 @@ export function buildBadges(
 	for (const b of HEIGHT_BADGES) addAlmost(b.id, cumHeight, b.m);
 	addAlmost('day_height_250', maxDayHeight, 250);
 	for (const b of COUNTRY_BADGES) addAlmost(b.id, countries.size, b.n);
+	for (const b of DISTINCT_ROUTE_BADGES) addAlmost(b.id, routeFirstDay.size, b.n);
+	addAlmost('route_days_10', maxRouteDays, ROUTE_DAYS_TARGET);
+	addAlmost('home_turf_25', maxCragRepeats, HOME_TURF_TARGET);
 	addAlmost('weekend_5', weekendSendCount, 5);
 	addAlmost('weekend_15', weekendSendCount, 15);
 	for (const b of FA_COUNT_BADGES) addAlmost(b.id, faRoutes.size, b.n);

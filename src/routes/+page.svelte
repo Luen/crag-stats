@@ -18,6 +18,7 @@
 	import QualityBreakdown from '#lib/components/QualityBreakdown.svelte';
 	import Karma from '#lib/components/Karma.svelte';
 	import RoutePopularity from '#lib/components/RoutePopularity.svelte';
+	import RouteRepeats from '#lib/components/RouteRepeats.svelte';
 	import RockPerformance from '#lib/components/RockPerformance.svelte';
 	import RockTypePanel from '#lib/components/RockTypePanel.svelte';
 	import StarsScatter from '#lib/components/StarsScatter.svelte';
@@ -75,6 +76,9 @@
 					return { ...i, enabled: false };
 				}
 				if (i.id === 'rockPerformance' && s.rockPerformance == null) {
+					return { ...i, enabled: false };
+				}
+				if (i.id === 'routeRepeats' && s.routeRepeats == null) {
 					return { ...i, enabled: false };
 				}
 				return i;
@@ -247,6 +251,12 @@
 		<QualityBreakdown ratings={s.qualityBreakdown} />
 	{:else if id === 'routePopularity' && s.routePopularity}
 		<RoutePopularity data={s.routePopularity} dateDisplay={data.dateDisplay} />
+	{:else if id === 'routeRepeats' && s.routeRepeats}
+		<RouteRepeats
+			preferences={data.cardPreferences}
+			data={s.routeRepeats}
+			dateDisplay={data.dateDisplay}
+		/>
 	{:else if id === 'karma'}
 		<Karma data={s.karma} dateDisplay={data.dateDisplay} />
 	{:else if id === 'pyramids'}

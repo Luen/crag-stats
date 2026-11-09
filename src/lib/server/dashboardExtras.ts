@@ -47,6 +47,8 @@ export type DashboardExtraRow = {
 	tagsJson?: string | null;
 	country?: string | null;
 	routeId?: number | null;
+	/** Provider-scoped route key (`routeRepeatKey`) for repeat/explorer badges. */
+	routeKey?: string | null;
 	/** theCrag route qualityScore (0–100), from route info import (#80) */
 	qualityScore?: number | null;
 	/** theCrag Project flag on the route (route info import, #77). */
