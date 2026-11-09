@@ -2,6 +2,34 @@ import { expect, it } from 'vitest';
 import { upsertAscents } from './ingest';
 import { listClimbingMap, readMapFilters } from './climbingMap';
 import { listLogbook, wipeAllData } from './analytics';
+import { listSectors } from './sectors';
+
+it('hides the upstream deletion holding area without deleting its logbook ascents', () => {
+	wipeAllData();
+	upsertAscents(
+		[' To Be Deleted ', 'Real crag'].map((cragName, i) => ({
+			provider: 'thecrag',
+			externalId: `placeholder-${i}`,
+			ascentDate: '2026-01-01',
+			isSend: true,
+			isAttempt: false,
+			route: {
+				provider: 'thecrag',
+				externalId: `placeholder-route-${i}`,
+				name: 'A route',
+				cragName,
+				lat: 10,
+				lon: 20
+			}
+		}))
+	);
+	const map = listClimbingMap(readMapFilters(new URLSearchParams()));
+	expect(map.total).toBe(2);
+	expect(map.missing).toBe(1);
+	expect(map.places.map((p) => p.name)).toEqual(['Real crag']);
+	expect(listSectors().map((c) => c.cragName)).toEqual(['Real crag']);
+	expect(listLogbook({}).total).toBe(2);
+});
 it('groups stable areas, keeps same-name crags separate and links exact filtered counts', () => {
 	wipeAllData();
 	upsertAscents(

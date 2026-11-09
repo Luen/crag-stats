@@ -123,3 +123,8 @@ export function clusterMapPlaces(points: ClimbingPlace[], view: MapView, centre:
 		places: g.places
 	}));
 }
+
+/** Upstream holding area, not a climbing destination. Keep its logbook data. */
+export function isDeletedAreaPlaceholder(name: string | null | undefined): boolean {
+	return name?.trim().toLowerCase() === 'to be deleted';
+}

@@ -1,4 +1,5 @@
 /// <reference lib="webworker" />
+import { networkOnlyResponse } from '../lib/offlineFetch';
 import { version } from '$app/env';
 import { immutable, assets as staticAssets } from '$app/manifest';
 import {
@@ -284,7 +285,7 @@ worker.addEventListener('fetch', (event) => {
 	} else {
 		event.respondWith(
 			(async () => {
-				const response = await fetch(request);
+				const response = await networkOnlyResponse(request);
 				if (response.headers.get('x-crag-offline') === 'disabled') await clear();
 				return response;
 			})()

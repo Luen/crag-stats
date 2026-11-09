@@ -3,6 +3,27 @@ import type { OfflineSnapshot } from '../src/lib/offline';
 import { expectAxeClean } from './axe';
 import { PORTS, TEST_PASSWORD } from '../playwright.config';
 
+test('failed sector preloads return an HTTP error without rejecting the worker response', async ({
+	page,
+	context
+}) => {
+	await page.goto('/map');
+	await page.waitForFunction(() => !!navigator.serviceWorker.controller);
+	await context.setOffline(true);
+	try {
+		await expect
+			.poll(() =>
+				page.evaluate(async () => {
+					const response = await fetch('/sectors', { cache: 'no-store' });
+					return { status: response.status, type: response.headers.get('content-type') };
+				})
+			)
+			.toEqual({ status: 503, type: 'text/plain; charset=utf-8' });
+	} finally {
+		await context.setOffline(false);
+	}
+});
+
 async function savedCopy(page: Page): Promise<OfflineSnapshot | null> {
 	return page.evaluate(async () => {
 		const name = (await caches.keys()).find((key) => key.startsWith('crag-offline-data-'));

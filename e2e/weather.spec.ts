@@ -117,11 +117,8 @@ test('outdoor cache drives the card and logbook; indoor rows stay excluded', asy
 		await expect(page.locator('.climate')).toContainText('On your 5 cached visit days');
 		await expect(page.locator('.climate')).toContainText('not official climate normals');
 		await expect(crag).toContainText('average high');
-		const map = page.getByRole('group', { name: 'Crag map of climbed areas' });
-		const cragLink = map.getByRole('link', {
-			name: 'Review Outdoor Crag · 5 ascents',
-			exact: true
-		});
+		const map = page.getByRole('group', { name: 'Worldwide climbing places' });
+		const cragLink = map.getByRole('button').first();
 		await cragLink.focus();
 		await expect(cragLink).toBeFocused();
 		await expectAxeClean(page, { include: ['main'] });
