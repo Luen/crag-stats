@@ -26,7 +26,8 @@ const ALL = [
 	'data:0008_verify_immediate_parent_exposure',
 	'data:0009_repair_explicit_solo_tick_flags',
 	'data:0010_project_session_threshold',
-	'data:0011_remove_unsafe_api_errors'
+	'data:0011_remove_unsafe_api_errors',
+	'data:0012_explain_redacted_api_error'
 ];
 
 beforeEach(() => {
@@ -89,6 +90,35 @@ describe('startup data migrations', () => {
 		expect(
 			db.select().from(syncState).where(eq(syncState.provider, 'other')).get()?.lastError
 		).toBe('Unrelated failure');
+		expect(runDataMigrations()).toEqual([]);
+	});
+	it('rewrites the redacted-error placeholder so it points at Sync now', () => {
+		runDataMigrations();
+		db.run(sql`DELETE FROM schema_migrations WHERE id = 'data:0012_explain_redacted_api_error'`);
+		const placeholder =
+			'Previous theCrag API sync failed. Check your logbook API access and try syncing again.';
+		db.insert(syncState)
+			.values([
+				{
+					provider: 'thecrag',
+					status: 'error',
+					lastSuccessAt: '2026-01-01',
+					lastError: placeholder
+				},
+				{ provider: 'other', status: 'error', lastError: placeholder }
+			])
+			.run();
+		expect(runDataMigrations()).toEqual(['data:0012_explain_redacted_api_error']);
+		expect(
+			db.select().from(syncState).where(eq(syncState.provider, 'thecrag')).get()
+		).toMatchObject({
+			status: 'error',
+			lastSuccessAt: '2026-01-01',
+			lastError: expect.stringContaining('Run Sync now to see the current reason')
+		});
+		expect(
+			db.select().from(syncState).where(eq(syncState.provider, 'other')).get()?.lastError
+		).toBe(placeholder);
 		expect(runDataMigrations()).toEqual([]);
 	});
 	it('rebuilds legacy single-session projects on upgrade', () => {

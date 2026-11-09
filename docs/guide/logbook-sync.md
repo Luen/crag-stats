@@ -33,7 +33,11 @@ Set `THECRAG_API_KEY` to your supporter logbook read key. Each sync reads the fu
 
 ### If API sync fails
 
-Settings shows the failure and retains the time of the last successful sync. Permission errors mean theCrag denied logbook access: check that your supporter key has logbook read access, or upload your CSV export by hand instead (below).
+Settings shows the failure and retains the time of the last successful sync. The message names the cause when theCrag reports one, followed by theCrag's short error code (for example `invalid-api-key`):
+
+- **Invalid key:** theCrag rejected `THECRAG_API_KEY`. Check it for typos, or replace it if it expired or was revoked, then restart the server.
+- **Access denied:** the key lacks logbook read access. Check your supporter key, or upload your CSV export by hand instead (below).
+- **Usage limit:** the key has hit theCrag's request limit. Wait for it to reset, then sync again.
 
 If a later page fails, updates from earlier pages remain cached, but no missing ascents are deleted and the run is not marked successful. The next scheduled run (daily by default) or **Sync now** retries the full logbook from page 1. API failures do not pause the schedule.
 
