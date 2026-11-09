@@ -93,8 +93,6 @@
 		}, 1000);
 		return () => clearInterval(timer);
 	});
-	const notesCsvOnly = $derived(data.syncConfiguration.mode === 'csv');
-	const notesDisabled = $derived(notesCsvOnly && !data.showNotes.enabled);
 
 	const systems = [
 		{ id: 'ewbank', label: 'Ewbanks (AU/NZ)' },
@@ -124,8 +122,6 @@
 	</p>
 {:else if form?.message}
 	<p class="banner err">{form.message}</p>
-{:else if form?.sessionForgotten}
-	<p class="banner ok">Saved theCrag login cleared. The next CSV sync will log in again.</p>
 {:else if form?.layoutSaved}
 	<p class="banner ok">Dashboard layout saved. <a href="/">View dashboard</a></p>
 {:else if form?.saved}
@@ -202,25 +198,13 @@
 					</small>
 				</span>
 			</label>
-			<label class={['check', { muted: notesDisabled }]}>
-				<input
-					type="checkbox"
-					name="notes"
-					checked={data.showNotes.enabled}
-					disabled={notesDisabled}
-					aria-describedby={notesCsvOnly ? 'notes-csv-hint' : undefined}
-				/>
+			<label class="check">
+				<input type="checkbox" name="notes" checked={data.showNotes.enabled} />
 				<span>
 					<strong>Show my private ascent notes</strong>
-					<small class="hint" id={notesCsvOnly ? 'notes-csv-hint' : undefined}>
-						{#if notesCsvOnly}
-							CSV sync imports public comments, but does not download private ascent notes. Use API
-							sync with a supporter key to enable this setting. If already enabled, untick it to
-							hide stored comments and notes.
-						{:else}
-							Shows the notes from your theCrag ticks in the logbook, and lets logbook search match
-							them.
-						{/if}
+					<small class="hint">
+						Shows the notes from your theCrag ticks in the logbook, and lets logbook search match
+						them.
 						{#if data.authEnabled}
 							Only shown while you're logged in. Visitors never see them.
 						{:else}
@@ -244,8 +228,9 @@
 		<h2>CSV import</h2>
 		<p class="hint">
 			For everyone without supporter API access. Export from theCrag:
-			<em>Action → Export logbook as CSV</em>. CSV import upserts rows but does
-			<strong>not</strong> remove missing entries. Automatic sync reconciles deletions.
+			<em>Action → Export logbook as CSV</em>, then upload the file here whenever you want to
+			refresh. CSV import upserts rows but does <strong>not</strong> remove missing entries. API
+			sync reconciles deletions. <a href="/docs/logbook-sync">Logbook sync options</a>
 		</p>
 		<form method="POST" action="?/importCsv" enctype="multipart/form-data" class="csv-import">
 			<input
@@ -261,31 +246,17 @@
 
 	<article class="panel">
 		<h2>theCrag logbook sync</h2>
-		{#if data.syncConfiguration.mode === 'csv'}
-			<p class="hint">
-				Downloads your CSV export using a saved theCrag login. Your password stays on the server;
-				cookies are encrypted locally and reused until theCrag requires a new login.
-			</p>
-			<p class="hint">
-				CSV sync updates and adds ascents, then removes entries missing from the export. Empty
-				exports against saved data and unusually large drops are refused before updating your
-				logbook. <a href="/docs/logbook-sync">How sync guards work</a>
-				Exports have fewer fields than API sync.
-				<a href="/docs/logbook-sync">Setup and limitations</a>
-			</p>
-		{:else}
-			<p class="hint">
-				Uses <code>THECRAG_API_KEY</code> from your environment. Keys grant read access to private
-				notes — treat them like passwords.
-				<a href="https://www.thecrag.com/en/article/logbookreadapi" target="_blank" rel="noreferrer"
-					>API docs</a
-				>
-			</p>
-			<p class="hint">
-				<strong>Upstream is source of truth.</strong> Each sync pulls the full logbook, updates changed
-				ascents (comments, grades, ticks), and deletes local rows that were removed on theCrag.
-			</p>
-		{/if}
+		<p class="hint">
+			Uses <code>THECRAG_API_KEY</code> from your environment. Keys grant read access to private
+			notes — treat them like passwords.
+			<a href="https://www.thecrag.com/en/article/logbookreadapi" target="_blank" rel="noreferrer"
+				>API docs</a
+			>
+		</p>
+		<p class="hint">
+			<strong>Upstream is source of truth.</strong> Each sync pulls the full logbook, updates changed
+			ascents (comments, grades, ticks), and deletes local rows that were removed on theCrag.
+		</p>
 		<p class="status">
 			<span class={['pill', { ok: data.sync.status === 'idle', err: data.sync.status === 'error' }]}
 				>{data.sync.status}</span
@@ -309,24 +280,9 @@
 				</form>
 			</div>
 		{:else}
-			{#if data.syncConfiguration.mode === 'api'}
-				<p class="hint">
-					No API key configured. Set <code>THECRAG_API_KEY</code> in <code>.env</code>.
-				</p>
-			{:else}
-				<p class="hint">
-					Check <code>THECRAG_SYNC_MODE</code> and your server configuration.
-					<a href="/docs/logbook-sync">Setup guide</a>
-				</p>
-			{/if}
-		{/if}
-		{#if data.syncConfiguration.mode === 'csv'}
-			<form method="POST" action="?/forgetTheCragSession">
-				<button type="submit" class="secondary">Forget saved theCrag login</button>
-			</form>
-		{:else}
 			<p class="hint">
-				No supporter API key? <a href="/docs/logbook-sync">Set up automatic CSV downloads</a>.
+				No API key configured. Set <code>THECRAG_API_KEY</code> in <code>.env</code>, or use
+				<strong>CSV import</strong> above to upload your logbook export by hand.
 			</p>
 		{/if}
 	</article>
@@ -632,13 +588,6 @@
 		display: grid;
 		gap: 0.15rem;
 	}
-	.check.muted {
-		color: var(--ink-muted);
-		cursor: not-allowed;
-	}
-	.check.muted strong {
-		color: var(--ink-muted);
-	}
 	.status {
 		display: flex;
 		flex-wrap: wrap;
@@ -655,11 +604,14 @@
 		font-weight: 700;
 		text-transform: uppercase;
 	}
+	/* Ink text on tinted pills (#300–#302): the generic .ok/.err rules below must not recolour them (#429). */
 	.pill.ok {
 		background: color-mix(in srgb, var(--band-beginner) 20%, var(--paper));
+		color: var(--ink);
 	}
 	.pill.err {
 		background: color-mix(in srgb, var(--band-expert) 16%, var(--paper));
+		color: var(--ink);
 	}
 	.actions,
 	.stack {
@@ -773,7 +725,8 @@
 	}
 	.err {
 		background: color-mix(in srgb, var(--band-expert) 12%, var(--paper));
-		color: var(--band-expert);
+		/* Pure --band-expert is 2.78:1 on the dark tint; mixing with ink keeps it red and AA in both themes (#429). */
+		color: color-mix(in srgb, var(--band-expert) 45%, var(--ink));
 	}
 	.banner.hint {
 		background: var(--accent-soft);

@@ -1,8 +1,5 @@
 import {
 	THECRAG_API_KEY,
-	THECRAG_SYNC_MODE,
-	THECRAG_USERNAME,
-	THECRAG_PASSWORD,
 	APP_PASSWORD,
 	AUTH_SCOPE,
 	SESSION_SECRET,
@@ -15,13 +12,9 @@ import {
 	TZ,
 	NODE_ENV
 } from '$app/env/private';
-import { isUsableSessionSecret } from './sessionSecret';
 
 const cache: Record<string, string | undefined> = {
 	THECRAG_API_KEY,
-	THECRAG_SYNC_MODE,
-	THECRAG_USERNAME,
-	THECRAG_PASSWORD,
 	APP_PASSWORD,
 	AUTH_SCOPE,
 	SESSION_SECRET,
@@ -48,23 +41,9 @@ export function hasTheCragApiKey() {
 	return Boolean(env('THECRAG_API_KEY').trim());
 }
 
-/** Safe for Settings: never expose the configured credentials. */
-export function getTheCragSyncConfiguration(): {
-	mode: 'api' | 'csv' | 'invalid';
-	configured: boolean;
-} {
-	const mode = env('THECRAG_SYNC_MODE', 'api').trim().toLowerCase();
-	if (mode === 'api') return { mode, configured: hasTheCragApiKey() };
-	if (mode === 'csv')
-		return {
-			mode,
-			configured: Boolean(
-				/^(?!\.{1,2}$)[\w.-]+$/.test(env('THECRAG_USERNAME').trim()) &&
-				env('THECRAG_PASSWORD').trim() &&
-				isUsableSessionSecret(env('SESSION_SECRET'))
-			)
-		};
-	return { mode: 'invalid', configured: false };
+/** Safe for Settings: never expose the configured key. Logbook sync uses theCrag's API only. */
+export function getTheCragSyncConfiguration(): { configured: boolean } {
+	return { configured: hasTheCragApiKey() };
 }
 
 /** Boolean env flag: true / 1 / yes / on (any case). Anything else, or unset, is false. */

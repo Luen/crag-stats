@@ -12,7 +12,7 @@ Self-hosted climbing analytics for [theCrag](https://www.thecrag.com/), inspired
    - API sync **upserts** creates/updates (comments, grades, ticks, heights, etc.).
    - API sync **deletes** local ascents that no longer exist upstream, then orphans routes/projects.
    - Do **not** invent a second editable logbook that drifts from theCrag.
-   - CSV sync upserts then prunes missing IDs (export as source of truth), but refuses the run on an empty export vs a non-empty cache or a >50% drop when local ≥ 100 ascents (`csvPruneGuard.ts`). Prefer API sync when the user has a supporter key.
+   - **All automated access to theCrag goes through its API** (theCrag terms; they asked us to remove automated CSV export downloads, which were also costly full exports). Owners without a supporter key upload the CSV export by hand in Settings; manual uploads upsert only and never prune. Never reintroduce scheduled/automated website logins, exports, or downloads.
 2. **Privacy.** API keys expose private notes. Never commit `.env`. Wipe must remain available in Settings.
    - Ascent notes (`ascents.comment`) are private and hidden by default. They reach a page only via `listLogbook({ includeNotes })` when `notesVisible(getShowNotes().enabled, locals.authed)` (`src/lib/server/notes.ts`; Settings toggle only, off when unset). When hidden they're nulled before filtering, so search can't probe them. Never put notes in dashboard stats, embeds, OG text or anything else visitors can load.
    - `APP_PASSWORD` + `AUTH_SCOPE=settings|all` gate admin (or whole UI). Login is rate-limited in-process (5 fails / 15 min + min gap).
@@ -56,15 +56,11 @@ src/lib/server/
   analytics.ts           # dashboard aggregations
   cpr.ts                 # approximate CPR (not a proprietary theCrag clone)
   ingest.ts              # upsert + reconcileProviderAscents
-  sync.ts                # runTheCragSync (API full pull + prune, or opt-in CSV mode)
-  csvLogbookSync.ts      # opt-in CSV logbook download + upsert + guarded prune (#217)
-  csvPruneGuard.ts       # empty-export / massive-drop refusal before CSV writes
-  theCragWebSession.ts   # AES-GCM encrypted cookie store (thecrag_web_sessions, 0016)
-  sessionSecret.ts       # rejects placeholder SESSION_SECRET for CSV mode
+  sync.ts                # runTheCragSync (API full pull + prune)
   routeHistoryEngine.ts  # opt-in FA/FFA route-history import: cache, pacing, marks (#68)
   routeHistoryImport.ts  # env + impers wiring, background trigger after sync
   weatherEngine.ts / weatherImport.ts  # opt-in Open-Meteo outdoor day cache + badges (#268)
-  providers/thecrag/     # API + CSV + logbookSession (CSV download) + routeHistoryApi/Parse
+  providers/thecrag/     # API + CSV parser (manual uploads) + routeHistoryApi/Parse
   providers/openMeteo.ts # Historical Weather API client
   db/schema.ts
 migrations/              # 0001_init.sql, … 0017_weather_days.sql
@@ -91,15 +87,13 @@ Entry: `runTheCragSync()` in `src/lib/server/sync.ts`.
 
 Cursor/`maxEpoch` is still stored for diagnostics; it is **not** used to skip a full pull.
 
-### Opt-in CSV mode (`THECRAG_SYNC_MODE=csv`)
+API sync errors must use fixed messages, never upstream response text or transport error details (these can echo API keys). Permission errors identify missing logbook access. A failed page keeps earlier upserts but never prunes or advances the successful-sync timestamp; the next scheduled/manual run starts at page 1. `data:0011` removes legacy saved API error bodies on upgrade; existing external logs still need owner cleanup/key rotation.
 
-For owners without a supporter API key. The default is `api`; any value other than `api`/`csv` is invalid and sync refuses to run.
+### Automatic CSV mode was removed
 
-- **Env:** `THECRAG_USERNAME` (username, not email), `THECRAG_PASSWORD` and `SESSION_SECRET`. `getTheCragSyncConfiguration()` reports CSV mode as unconfigured unless all three are set **and** `SESSION_SECRET` passes `isUsableSessionSecret()` (16+ characters, not a placeholder such as the `.env.example` value or the `dev-insecure-session-secret` fallback). Credentials stay in the environment; never store the password in the DB.
-- **Flow** (`providers/thecrag/logbookSession.ts`, `csvLogbookSync.ts`): try the CSV export with saved cookies; if the session expired, fetch the login page, read the hidden CSRF fields, sign in once, download the export and retry once. Uses `impers` (browser impersonation) at the owner's own risk.
-- **Cookie store:** `thecrag_web_sessions` (migration 0016) holds AES-256-GCM encrypted cookies keyed by a hash of the username, with the key derived from `SESSION_SECRET` (AAD = account key). Rotating `SESSION_SECRET` only forces a new login. `next_allowed_at` / `failures` persist so pacing and back-off survive restarts. Wiping data must clear it and invalidate in-flight syncs (`syncGeneration`).
-- **Semantics:** CSV upserts then calls `reconcileProviderAscents` so missing export IDs are deleted (orphans cleaned like API). Guards in `csvPruneGuard.ts` refuse the whole sync (no writes) on an empty export vs local data, or when local ≥ 100 and the export keeps under 50% of that count. API-only fields (pitches, partners, quality, route info) are still absent. A configured username that differs from the saved profile login aborts before any request, so accounts never mix.
-- User docs: `docs/guide/logbook-sync.md` (also `/docs/logbook-sync` in the app; keep it in `DOC_PAGES` — Settings links here). Deep `impers` / household-key notes stay in `docs/dev/ROUTE_HISTORY.md` with a GitHub URL from the guide.
+Earlier releases had `THECRAG_SYNC_MODE=csv`: a saved website login (`THECRAG_USERNAME` / `THECRAG_PASSWORD`, cookies encrypted in `thecrag_web_sessions`) downloaded the CSV export on the sync schedule. theCrag asked us to remove it: daily full exports are costly for them, and their terms require all programmatic access to use the API. Migration 0021 drops the cookie table. `getTheCragSyncConfiguration()` only reports whether an API key is set; the old env vars are ignored (owners delete them). Manual CSV upload (Settings → CSV import, upsert-only) stays. Wipe still bumps `syncGeneration` so in-flight API syncs cannot write after a wipe.
+
+User docs: `docs/guide/logbook-sync.md` (also `/docs/logbook-sync` in the app; keep it in `DOC_PAGES` — Settings links here).
 
 Height quirk: theCrag may return height as `[value, unit]` arrays — parse in the API mapper (`parseHeightMeters` / array handler).
 
@@ -177,6 +171,8 @@ Components: `TickTypeIcon.svelte`, `StyleBadge.svelte`. Keep icons SVG-inline so
 - `<!-- component:name -->` markers embed generated tables from `DocBlock.svelte` (grade bands, conversions, tick types) so docs never drift from code. `docs.test.ts` checks tick-type send/attempt labels against `classifyTick()`.
 - **When you change an analytic (climber type, CPR, training load, grades), update its doc page in the same PR.** Dashboard cards link to their page ("How it works").
 - Paraphrase theCrag articles and link the source; don't paste their text.
+- **User guides describe current behaviour only.** Keep upgrade steps, migration notes, removed-feature fallbacks, and env vars to delete out of `docs/guide/` (and README/DEPLOY). Put them in the PR's `## Release notes` section, which feeds the GitHub release, and in `docs/dev/*` or AGENTS.md when agents need them.
+- **Use the Oxford comma** in every list of three or more, in UI copy, docs, comments, and commit/PR text: "hot, freezing, wet, or windy", not "hot, freezing, wet or windy".
 
 ## Docker / release
 
@@ -264,7 +260,7 @@ Prefer fixing type errors over `@ts-ignore`. Do not switch the package manager.
 - Don’t commit secrets, sample private notes, or real API keys.
 - Don’t expand scope into wearables / Mountain Project until the matching epic is in play — keep PRs focused.
 - Don’t claim CPR is identical to theCrag’s proprietary score.
-- Don’t HTML-scrape theCrag route pages, and don’t loosen the route-history limits (fetch once unless `ROUTE_DATA_REFRESH_DAYS` ≥ 30 is explicitly enabled, 100 per run, ≥1 s gap, stop on block). `impers` is allowed only for two explicit opt-ins: the `/api/route` history import (`ROUTE_DATA_IMPORT=true`, including identified `/api/area` location lookups when `WEATHER_IMPORT=true`, within the same ten-request budget) and the CSV logbook download (`THECRAG_SYNC_MODE=csv`, with its saved-session pacing and back-off). Never use it for the default API logbook sync. The one documented HTML parse is the login form's hidden CSRF fields in CSV mode; nothing else on theCrag pages may be scraped. Prefer negotiated theCrag API access.
+- Don’t HTML-scrape theCrag route pages, and don’t loosen the route-history limits (fetch once unless `ROUTE_DATA_REFRESH_DAYS` ≥ 30 is explicitly enabled, 100 per run, ≥1 s gap, stop on block). `impers` is allowed only for one explicit opt-in: the `/api/route` history import (`ROUTE_DATA_IMPORT=true`, including identified `/api/area` location lookups when `WEATHER_IMPORT=true`, within the same ten-request budget). Never use it for the logbook sync. Never log in to theCrag's website or download its exports programmatically; nothing on theCrag pages may be scraped. Prefer negotiated theCrag API access.
 
 ---
 
@@ -428,10 +424,6 @@ You'll often notice things outside the task at hand. **Don't silently fix them i
 
 | 2026-10 | #194: FA/FFA milestones condense to thresholds (first FA/FFA, FFA counts 5–100, combined FA+FFA 5–100, style FA 10/20/50 for Sport/Trad/Boulder). Badges align (`fa_20`/`fa_50`/`fa_100`, `ffa_*`, `fa_{sport,trad,boulder}_*`). Stable ids like `fa:first` / `ffa:5` / `fa:boulder:10` — no per-route `fa:{routeId}`. |
 
-| 2026-10 | CSV logbook download (#204/#205): opt-in `THECRAG_SYNC_MODE=csv` with `THECRAG_USERNAME`/`THECRAG_PASSWORD`; cookies encrypted with `SESSION_SECRET` in `thecrag_web_sessions` (migration **0016**; 0015 belongs to route API JSON). A placeholder or short `SESSION_SECRET` disables CSV mode. The `impers` rule in "What not to do" now covers this opt-in. |
-
-| 2026-10 | #217: CSV sync prunes ascents missing from the export (source of truth) via `reconcileProviderAscents`. `csvPruneGuard` refuses the run before writes if the export is empty against a non-empty cache, or drops below 50% remaining when local ≥ 100 (e.g. 1000 → 230). Wipe remains the escape hatch for a genuinely smaller export. |
-
 | 2026-10 | #201: opt-in `ROUTE_DATA_REFRESH_DAYS=30` or `90` reuses post-sync imports; new routes first, then oldest stale fetches (including missing). Unset/0 keeps fetch-once. The shared 100-route cap, pacing, back-off and manual mark protections remain. |
 | 2026-10 | `ROUTE_DATA_REFRESH_DAYS` accepts whole digits 30–3650 (e.g. 180 ≈ half a year); under 30, over 3650, or non-digits still mean fetch-once. |
 
@@ -439,13 +431,9 @@ You'll often notice things outside the task at hand. **Don't silently fix them i
 | 2026-10 | #226: Grade readiness also fills from non-send ticks at ≥ N−1 (up to ~+20%), with horizon-scaled soft needs (short ~15 / medium ~35 / long-haul ~75). Still capped at 95% without a send at N. |
 
 | 2026-10 | #209: `data:0004_invalidate_incomplete_route_cache` deletes `status='ok'` `route_history_fetches` rows for routes missing post-0012/0015 cache evidence (`route_info_updated_at` or `route_api_json` null) so upgrades re-queue imports without manual Refresh all. Leaves `missing` rows alone. Future route-info SQL/data migrations must follow the same invalidation pattern (`docs/dev/ROUTE_HISTORY.md`). |
-| 2026-10 | CSV AU boulder grades: bare digits + Australia (Country / Crag Path / australia URL) pass `gradeSystem: 'AU'` in `csv.ts` so Upendi `9` → VB (not fake V9); explicit `V…` stays V-scale (#124). `repairGradesFromRawJson` remaps flat CSV `raw_json`; `data:0003_csv_au_boulder_grades` repairs existing DBs. CSV sync sets profile login/name from `THECRAG_USERNAME` and nulls API-only account fields; route-history `ownerLogin` prefers that username in CSV mode when a shared API key is used. |
+| 2026-10 | CSV AU boulder grades: bare digits + Australia (Country / Crag Path / australia URL) pass `gradeSystem: 'AU'` in `csv.ts` so Upendi `9` → VB (not fake V9); explicit `V…` stays V-scale (#124). `repairGradesFromRawJson` remaps flat CSV `raw_json`; `data:0003_csv_au_boulder_grades` repairs existing DBs. |
 
-| 2026-10 | #214 review: cached CSV grade repair changes grade columns only, preserving API-only metadata. Inferred AU ascent overlays cannot override explicit V route grades. CSV route-history imports and cached reapplication require the configured username to match the saved profile login (case-insensitive); empty/mismatched overrides never fall back to another identity. |
-
-| 2026-10 | #218 review: automatic CSV sync counts the current logbook after downloading, then guards/upserts/prunes/updates the profile in one immediate SQLite transaction. Guard refusals and later write failures leave the logbook unchanged. Manual CSV uploads remain upsert-only. |
-
-| 2026-10 | #215 review: CSV mode prevents newly enabling notes, but an existing opt-in must remain switchable off. The server accepts disabling in every mode, refuses CSV enablement, and retains the no-password visibility warning. Browser regression covers API notes retained in a CSV-mode DB and crafted preference POSTs. |
+| 2026-10 | #214 review: cached CSV grade repair changes grade columns only, preserving API-only metadata. Inferred AU ascent overlays cannot override explicit V route grades. |
 
 | 2026-10 | #219: Logbook sync stays in user `/docs` (`docs/guide/logbook-sync.md`); README/DEPLOY cross-link it; household-key detail stays in `docs/dev/ROUTE_HISTORY.md` via GitHub URL from the guide. |
 
@@ -515,7 +503,7 @@ World map (#313): `/map` uses bundled public-domain Natural Earth outlines, serv
 - Sun-facing badge (#283): verified route exposure tags win; only when no route sun/aspect metadata exists may `source: parent` fill in. Mapping must match the inherited tag ancestor ID to `route.ancestors.parent.id`, rejecting known country/continent/state/region sources. Higher/unknown ancestors and legacy tags never supply exposure. At the chosen level, Always shady vetoes, All day sun qualifies, else equator-facing Aspect is required; partial-day sun alone is insufficient. Preserve source `route|parent|ancestor` on Aspect/Weather tags. Append-only data migrations 0006/0007/0008 repair cached provenance without fetches. Keep outdoor, local-summer, 25≤|lat|<60 and reliable route/sector/crag-location guards; town/unknown-precision locations stay excluded. One-shot seasonal heuristic, no Almost there. Sanitized evidence lives in `providers/thecrag/fixtures/`.
 
 - Weather location precedence compares both cached logbook and route API payloads: route point beats crag point, then sector point, then validated area polygon, regardless of which cache supplied it.
-- Polygon preparation (#309): `weatherPolygon.ts` is a bounded, GeoJSON-only first-boundary-coordinate helper, now wired into the weather resolver at the owner’s explicit request. Tests are synthetic, not captured provider evidence. Only identified parent/TLC nodes with typed Polygon/MultiPolygon geometry qualify; no guessed Fence adapters. Persist source `polygon`, exclude it from weather/sun-facing badges, and version location signatures when resolver policy changes. Limits are in `docs/dev/WEATHER_POLYGONS.md`; #344 tracks the remaining real-provider fixture and any observed-format adapter (synthetic tests never close it). Do not reopen #309 for that follow-up.
+- Polygon preparation (#309): `weatherPolygon.ts` is a bounded, GeoJSON-only first-boundary-coordinate helper, now wired into the weather resolver at the owner’s explicit request. Tests are synthetic, not captured provider evidence. Only identified parent/TLC nodes with typed Polygon/MultiPolygon geometry qualify; no guessed Fence adapters. Persist source `polygon`, exclude it from weather/sun-facing badges, and version location signatures when resolver policy changes. Limits are in `docs/dev/WEATHER_POLYGONS.md`; follow-up #344 is closed. Add an observed-format adapter only with a sanitized real-provider fixture (synthetic tests never justify one). Do not reopen #309 for that.
 - Greenpoint (#303): one-shot green badge for a sent `greenpoint`, `greenpointonsight` or `greenpointflash` tick (spacing/hyphens normalized), or an original Sport route with ascent protection recorded as Trad and a confident clean lead (onsight, flash, red/pink point, ground-up redpoint or an explicit successful Lead tick). Generic Tick/Send/Clean, attempts, top-rope and seconding do not establish a lead for the inferred path. Route and ascent styles stay separate. This badge has no Almost there counter and sits after Persistence Pays in `BADGE_CATALOG`. Provider tick IDs are documented in [theCrag API](https://www.thecrag.com/en/article/api) and [tick types](https://www.thecrag.com/en/article/ticktypes); tests are synthetic representations of those documented IDs, not captured private payloads.
 
 - Partner dashboard aggregation uses `listPartners` and its left join, matching `/partners` even for legacy missing-route ascents. Keep other dashboard analytics on their intentional route join.
@@ -581,4 +569,5 @@ World map (#313): `/map` uses bundled public-domain Natural Earth outlines, serv
 
 - Seasonality browser history (#403): wait for exact sort/filter state before navigating back. Capture the route-results URL and stop there within a bounded history walk, then assert route view/month/search before pagination; fixed blind back counts can overshoot into the crag list.
 
+- Automatic CSV sync removed at theCrag's request: no website login, export download, `THECRAG_SYNC_MODE=csv`, or `thecrag_web_sessions` (dropped by 0021). Manual CSV upload remains; leftover CSV env vars are simply ignored.
 - Repeats vs new routes (`routeRepeats`): pure `#lib/routeRepeats` classifies every dated ascent as a first visit (the route's first logged day, from the whole history) or a repeat (a later day), keyed by `provider:externalId` via `routeRepeatKey`, never by name. Half card after Route popularity, hidden below 20 dated ascents; All time | Last 12 months (365 days) × All | Sport | Trad | Boulder (`cs_repeats_*`). Labels apply to exact shares at ≥20 ascents: Explorer ≥75% new, Repeat climber ≥50% repeats, else A bit of both. Badges `distinct_routes_{50,100,250,500}` (Explorer…Guidebook Explorer), `route_days_10` (Old Faithful) and `home_turf_25` (25 repeat ascents at one crag name) use `DashboardExtraRow.routeKey` and appear in Almost there. Docs: `/docs/repeats`, `/docs/badges`.

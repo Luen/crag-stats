@@ -6,12 +6,14 @@ import { getSyncStatus, runTheCragSync } from './sync';
 import { triggerWeatherImport } from './weatherImport';
 
 vi.mock('node-cron', () => ({ default: { validate: vi.fn(() => true), schedule: vi.fn() } }));
-vi.mock('./env', () => ({ env: () => '0 6 * * *', getTheCragSyncConfiguration: vi.fn() }));
+const cronExpr = vi.hoisted(() => ({ value: '0 6 * * *' }));
+vi.mock('./env', () => ({ env: () => cronExpr.value, getTheCragSyncConfiguration: vi.fn() }));
 vi.mock('./sync', () => ({ getSyncStatus: vi.fn(), runTheCragSync: vi.fn() }));
 vi.mock('./routeHistoryImport', () => ({ triggerRouteHistoryImport: vi.fn() }));
 vi.mock('./weatherImport', () => ({ triggerWeatherImport: vi.fn() }));
 
 beforeEach(() => {
+	cronExpr.value = '0 6 * * *';
 	vi.resetModules();
 	vi.clearAllMocks();
 	vi.mocked(runTheCragSync).mockResolvedValue({
@@ -24,8 +26,8 @@ beforeEach(() => {
 	});
 });
 
-it('starts scheduled and initial CSV sync without an API key', async () => {
-	vi.mocked(getTheCragSyncConfiguration).mockReturnValue({ mode: 'csv', configured: true });
+it('starts scheduled and initial sync when an API key is configured', async () => {
+	vi.mocked(getTheCragSyncConfiguration).mockReturnValue({ configured: true });
 	vi.mocked(getSyncStatus).mockReturnValue({ lastSuccessAt: null } as ReturnType<
 		typeof getSyncStatus
 	>);
@@ -37,7 +39,7 @@ it('starts scheduled and initial CSV sync without an API key', async () => {
 });
 
 it('resumes pending background imports at boot after an upgrade', async () => {
-	vi.mocked(getTheCragSyncConfiguration).mockReturnValue({ mode: 'csv', configured: true });
+	vi.mocked(getTheCragSyncConfiguration).mockReturnValue({ configured: true });
 	vi.mocked(getSyncStatus).mockReturnValue({
 		lastSuccessAt: '2026-11-01T20:00:00.000Z'
 	} as ReturnType<typeof getSyncStatus>);
@@ -48,11 +50,23 @@ it('resumes pending background imports at boot after an upgrade', async () => {
 	expect(triggerWeatherImport).toHaveBeenCalledWith('startup');
 });
 
-it('does not attempt automatic login with missing credentials', async () => {
-	vi.mocked(getTheCragSyncConfiguration).mockReturnValue({ mode: 'csv', configured: false });
+it('does not schedule sync without an API key', async () => {
+	vi.mocked(getTheCragSyncConfiguration).mockReturnValue({ configured: false });
 	const { startScheduler } = await import('./scheduler');
 	startScheduler();
 	expect(cron.schedule).not.toHaveBeenCalled();
 	expect(runTheCragSync).not.toHaveBeenCalled();
 	expect(triggerRouteHistoryImport).not.toHaveBeenCalled();
+});
+
+it('SYNC_CRON=off skips scheduled and boot-time sync even with a key', async () => {
+	cronExpr.value = 'OFF';
+	vi.mocked(getTheCragSyncConfiguration).mockReturnValue({ configured: true });
+	vi.mocked(getSyncStatus).mockReturnValue({ lastSuccessAt: null } as ReturnType<
+		typeof getSyncStatus
+	>);
+	const { startScheduler } = await import('./scheduler');
+	startScheduler();
+	expect(cron.schedule).not.toHaveBeenCalled();
+	expect(runTheCragSync).not.toHaveBeenCalled();
 });

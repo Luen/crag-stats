@@ -12,7 +12,7 @@ export const DOC_PAGES: readonly DocPage[] = [
 	{
 		slug: 'logbook-sync',
 		title: 'Logbook sync',
-		summary: 'For the server owner: API sync or automatic CSV downloads with a saved theCrag login.'
+		summary: 'For the server owner: scheduled API sync with a supporter key, or manual CSV uploads.'
 	},
 	{
 		slug: 'offline',

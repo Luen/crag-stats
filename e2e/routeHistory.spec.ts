@@ -19,7 +19,7 @@ test('route history import is off by default', async ({ page, request }) => {
 	expect(await res.text()).toContain('ROUTE_DATA_IMPORT=true');
 });
 
-test('completed CSV route history still offers pending weather area checks', async ({ page }) => {
+test('completed route history still offers pending weather area checks', async ({ page }) => {
 	const db = new Database('e2e/.tmp/settings.sqlite');
 	const origin = `http://localhost:${PORTS.settings}`;
 	const externalId = 'area-weather-regression';
@@ -66,13 +66,13 @@ test('counts down, survives reload, respects back-off and enables without a refr
 			VALUES ('thecrag', 'idle', ?, ?, ?)`
 		).run(new Date(now - 30_000).toISOString(), nextAllowedAt, new Date(now).toISOString());
 	};
-	// Enforce no upstream: abort theCrag hosts and keep login mismatched for CSV mode.
+	// Enforce no upstream: abort theCrag hosts and keep no saved login, so a run would refuse.
 	try {
 		await page.route(/thecrag\.com/i, (route) => route.abort());
 		const profileLogin = db
 			.prepare("SELECT login FROM profiles WHERE provider = 'thecrag'")
 			.get() as { login: string | null } | undefined;
-		expect(profileLogin?.login?.toLowerCase() ?? '').not.toBe('synthetic-account');
+		expect(profileLogin?.login ?? null).toBeNull();
 		db.prepare(
 			`INSERT INTO routes (provider, external_id, name, updated_at)
 			VALUES ('thecrag', 'cooldown-test-route', 'Cooldown test route', ?)`

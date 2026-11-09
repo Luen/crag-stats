@@ -408,14 +408,27 @@ export async function fetchTheCragPage(
 			Accept: 'application/json',
 			'X-CData-Key': `key=${apiKey}`
 		}
+	}).catch(() => {
+		// Transport errors can contain request details, including credentials.
+		throw new Error('Could not reach theCrag API. Check your connection and try syncing again.');
 	});
 
 	if (!res.ok) {
-		const body = await res.text().catch(() => '');
-		throw new Error(`theCrag API ${res.status}: ${body.slice(0, 200) || res.statusText}`);
+		// Never echo response bodies/statusText: theCrag can include the API key.
+		const body: unknown = await res.json().catch(() => null);
+		const label = body && typeof body === 'object' && 'errorLabel' in body ? body.errorLabel : null;
+		const advice =
+			label === 'insufficient-api-permissions' || res.status === 401 || res.status === 403
+				? 'Logbook access was denied. Check that THECRAG_API_KEY is a supporter logbook read key with logbook access and try syncing again, or upload your logbook CSV in Settings instead.'
+				: res.status === 429
+					? 'Request limit reached. Wait before trying to sync again.'
+					: 'Sync could not finish. Try again later; if it keeps failing, check your API access.';
+		throw new Error(`theCrag API ${res.status} (page ${page}): ${advice}`);
 	}
 
-	const json = (await res.json()) as ApiResponse;
+	const json = (await res.json().catch(() => {
+		throw new Error(`theCrag API returned invalid JSON (page ${page}). Try syncing again later.`);
+	})) as ApiResponse;
 	const data = json.data;
 	const ascents = (data?.ascents ?? [])
 		.map(mapAscent)
