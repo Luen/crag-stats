@@ -394,6 +394,35 @@ export function mapAscent(a: ApiAscent): CanonicalAscent | null {
 	};
 }
 
+/**
+ * theCrag's `errorLabel` is a short code such as `invalid-api-key`. Keep it only when it is
+ * lowercase words joined by hyphens and does not contain the key, so a body can never leak
+ * credentials through it; anything else is dropped.
+ */
+export function safeErrorLabel(body: unknown, apiKey = ''): string | null {
+	const raw =
+		body && typeof body === 'object' && 'errorLabel' in body
+			? (body as { errorLabel: unknown }).errorLabel
+			: null;
+	if (typeof raw !== 'string') return null;
+	const label = raw.trim().toLowerCase();
+	if (label.length > 60 || !/^[a-z]+(?:-[a-z]+)*$/.test(label)) return null;
+	const key = apiKey.trim().toLowerCase();
+	if (key && (label.includes(key) || key.includes(label))) return null;
+	return label;
+}
+
+/** Fixed, owner-facing advice for a failed logbook API request. */
+export function apiErrorAdvice(status: number, label: string | null): string {
+	if (label === 'invalid-api-key' || label === 'missing-api-key' || status === 401)
+		return 'theCrag rejected THECRAG_API_KEY as invalid. Check the key in your server environment (it may be mistyped, expired or revoked), restart, and sync again.';
+	if (label === 'insufficient-api-permissions' || status === 403)
+		return 'Logbook access was denied. Check that THECRAG_API_KEY is a supporter logbook read key with logbook access and try syncing again, or upload your logbook CSV in Settings instead.';
+	if (status === 429 || (label != null && /quota|limit|usage|rate|throttl/.test(label)))
+		return "This API key has hit theCrag's usage limit. Wait for the limit to reset, then sync again.";
+	return 'Sync could not finish. Try again later; if it keeps failing, check your API access.';
+}
+
 export async function fetchTheCragPage(
 	apiKey: string,
 	cursor: SyncCursor = {}
@@ -416,14 +445,10 @@ export async function fetchTheCragPage(
 	if (!res.ok) {
 		// Never echo response bodies/statusText: theCrag can include the API key.
 		const body: unknown = await res.json().catch(() => null);
-		const label = body && typeof body === 'object' && 'errorLabel' in body ? body.errorLabel : null;
-		const advice =
-			label === 'insufficient-api-permissions' || res.status === 401 || res.status === 403
-				? 'Logbook access was denied. Check that THECRAG_API_KEY is a supporter logbook read key with logbook access and try syncing again, or upload your logbook CSV in Settings instead.'
-				: res.status === 429
-					? 'Request limit reached. Wait before trying to sync again.'
-					: 'Sync could not finish. Try again later; if it keeps failing, check your API access.';
-		throw new Error(`theCrag API ${res.status} (page ${page}): ${advice}`);
+		const label = safeErrorLabel(body, apiKey);
+		throw new Error(
+			`theCrag API ${res.status} (page ${page}${label ? `, ${label}` : ''}): ${apiErrorAdvice(res.status, label)}`
+		);
 	}
 
 	const json = (await res.json().catch(() => {
