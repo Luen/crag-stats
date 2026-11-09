@@ -95,20 +95,11 @@ const MIGRATIONS = [
 	{
 		id: 'data:0011_remove_unsafe_api_errors',
 		apply: () => {
-			// Older API errors stored raw upstream bodies, which may echo API keys.
-			db.run(sql`UPDATE sync_state
-				SET last_error = 'Previous theCrag API sync failed. Check your logbook API access and try syncing again.'
-				WHERE provider = 'thecrag' AND last_error LIKE 'theCrag API %'`);
-		}
-	},
-	{
-		id: 'data:0012_explain_redacted_api_error',
-		apply: () => {
-			// 0011's placeholder read like a live diagnosis; say the reason was redacted instead.
+			// Older API errors stored raw upstream bodies, which may echo API keys. Say the
+			// reason was redacted rather than guessing at a diagnosis.
 			db.run(sql`UPDATE sync_state
 				SET last_error = 'An earlier sync failed. Its details were removed during an upgrade because they could include your API key. Run Sync now to see the current reason.'
-				WHERE provider = 'thecrag'
-					AND last_error = 'Previous theCrag API sync failed. Check your logbook API access and try syncing again.'`);
+				WHERE provider = 'thecrag' AND last_error LIKE 'theCrag API %'`);
 		}
 	}
 ];
