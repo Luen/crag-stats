@@ -176,9 +176,9 @@ The First ascents community list retains FA versus FFA credit, shows missing cou
 
 Setter-only First ascents cards omit the empty style chart and Latest section; keep setter and community totals visible. Validate this state with axe in light and dark themes.
 
-Settings mutes the notes checkbox when CSV sync prevents enabling it. An existing opt-in stays editable so the owner can turn it off; keep the password warning visible in either sync mode.
+The notes checkbox stays editable; keep the password warning visible whenever notes can be shown without `APP_PASSWORD`.
 
-Settings explains that automatic CSV sync removes missing entries with drop guards; distinguish it from manual CSV upload, which never prunes.
+Settings explains that API sync removes ascents deleted on theCrag, and that manual CSV upload never prunes.
 
 First Moves is dated automatically on the first successful non-empty import; Settings no longer has a First Moves date panel.
 

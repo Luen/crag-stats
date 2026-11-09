@@ -35,7 +35,7 @@ Why: SvelteKit rejects form posts whose `Origin` doesn't match the server's idea
 ## Logbook sync (API or manual CSV)
 
 - **API:** set `THECRAG_API_KEY` in `.env` before or after the first start — scheduled full reconcile, including deletes.
-- **Manual CSV:** no supporter key needed. Export your logbook on theCrag and upload it in **Settings → CSV import** (adds and updates only). Automatic CSV downloads were removed at theCrag's request.
+- **Manual CSV:** no supporter key needed. Export your logbook on theCrag and upload it in **Settings → CSV import** (adds and updates only). Crag Stats never downloads the export for you: theCrag's terms require programmatic access to use the API.
 
 Owner-facing setup, private-notes limits, and CSV vs API trade-offs live in the in-app guide (`/docs/logbook-sync` once the container is up; same Markdown as [`docs/guide/logbook-sync.md`](guide/logbook-sync.md)). Route-history / `impers` pacing stays in [`docs/dev/ROUTE_HISTORY.md`](dev/ROUTE_HISTORY.md).
 
