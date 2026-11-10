@@ -201,7 +201,11 @@ export function resolveEffectiveGrade(opts: {
 		});
 
 	if (climbed.length > 0) {
-		const allClimbed = climbed.length === pitches.length;
+		// A lone ticked P1 is treated as partial (the API may list only what was climbed), so it
+		// must not take the whole route's ascent score; keep this in step with `partial` below.
+		const loneFirstPitch =
+			pitches.length === 1 && climbed.length === 1 && (climbed[0].number ?? 1) === 1;
+		const allClimbed = climbed.length === pitches.length && !loneFirstPitch;
 		let best: ParsedGrade | null = null;
 		let heightSum = 0;
 		let heightAny = false;
@@ -240,9 +244,7 @@ export function resolveEffectiveGrade(opts: {
 		}
 
 		const pitchLabel = formatPitchLabel(numbers);
-		const partial =
-			climbed.length < pitches.length ||
-			(pitches.length === climbed.length && climbed.length === 1 && (numbers[0] ?? 1) === 1);
+		const partial = !allClimbed;
 
 		if (best) {
 			return {
