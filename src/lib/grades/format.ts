@@ -1,4 +1,5 @@
 import { convertFromEwbank, convertFromVScale, formatVScaleLabel } from './conversions';
+import { usesVScale } from './bands';
 
 /** Display systems for roped climbing (sport, trad, top rope, …). Scores stay Ewbank-equivalent. */
 export type RouteGradeSystem = 'ewbank' | 'french' | 'yds';
@@ -101,4 +102,28 @@ export function formatGradeLabel(
 		return formatVScaleLabel(score, raw);
 	}
 	return convertFromEwbank(score, systems.route);
+}
+
+/** An individual climb: selected-system grade first, original route text in parentheses. */
+export function formatClimbGrade(
+	climb: {
+		gradeScore: number | null;
+		gradeRaw: string | null;
+		gradeSystem?: string | null;
+		gearStyle?: string | null;
+		effectiveGradeScore?: number | null;
+		effectiveGradeRaw?: string | null;
+	},
+	systems: DisplayGradeSystems
+): string | null {
+	const score = climb.effectiveGradeScore ?? climb.gradeScore;
+	const original = climb.gradeRaw?.trim() || null;
+	if (score == null || !Number.isFinite(score)) return climb.effectiveGradeRaw || original;
+	const label = formatGradeLabel(
+		score,
+		usesVScale(climb.gradeSystem, climb.gearStyle),
+		systems,
+		climb.effectiveGradeRaw ?? original
+	);
+	return original && original !== label ? `${label} (${original})` : label;
 }

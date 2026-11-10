@@ -23,8 +23,8 @@
 <header class="head">
 	<p class="eyebrow">{p.status === 'sent' ? 'Sent project' : 'Working on'}</p>
 	<h1>
-		{p.routeName}{#if p.gradeRaw}
-			· {p.gradeRaw}{/if}
+		{p.routeName}{#if p.gradeLabel}
+			· {p.gradeLabel}{/if}
 	</h1>
 	<p class="muted">{p.areaLabel}</p>
 	{#if p.gearStyle}<StyleBadge style={p.gearStyle} />{/if}

@@ -204,7 +204,7 @@
 	{:else if id === 'projects'}
 		<ProjectsHighlight projects={data.dashboardProjects} />
 	{:else if id === 'trainingLoad'}
-		<TrainingLoad load={s.trainingLoad} />
+		<TrainingLoad load={s.trainingLoad} gradeSystems={data.gradeSystems} />
 	{:else if id === 'sessionsPerWeek'}
 		<SessionsPerWeek years={s.sessionsPerWeek.years} byYear={s.sessionsPerWeek.byYear} />
 	{:else if id === 'weekday'}
@@ -239,7 +239,7 @@
 	{:else if id === 'rockPerformance' && s.rockPerformance}
 		<RockPerformance data={s.rockPerformance} dateDisplay={data.dateDisplay} />
 	{:else if id === 'stars'}
-		<StarsScatter points={s.starsScatter} />
+		<StarsScatter points={s.starsScatter} gradeSystems={data.gradeSystems} />
 	{:else if id === 'quality'}
 		<QualityBreakdown ratings={s.qualityBreakdown} />
 	{:else if id === 'routePopularity' && s.routePopularity}
@@ -281,9 +281,9 @@
 			<h2>CPR timelines</h2>
 			<p>Sport · Trad · Boulder performance over time</p>
 		</header>
-		<CprTimeline title="Sport" data={s.cpr.sport} />
-		<CprTimeline title="Trad" data={s.cpr.trad} />
-		<CprTimeline title="Boulder" data={s.cpr.boulder} />
+		<CprTimeline title="Sport" data={s.cpr.sport} gradeSystems={data.gradeSystems} />
+		<CprTimeline title="Trad" data={s.cpr.trad} gradeSystems={data.gradeSystems} />
+		<CprTimeline title="Boulder" data={s.cpr.boulder} gradeSystems={data.gradeSystems} />
 	{:else if id === 'hardest'}
 		{@const mixed = new Set(s.hardestSends.map((c) => c.discipline)).size > 1}
 		<article class="panel">

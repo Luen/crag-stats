@@ -22,6 +22,7 @@ import {
 	DEFAULT_DISPLAY_SYSTEMS,
 	type DisplayGradeSystems,
 	formatGradeLabel as formatGrade,
+	formatClimbGrade,
 	ewbankToTheCragScore,
 	GRADE_BANDS,
 	type GradeSystem,
@@ -466,7 +467,8 @@ export function getDashboardStats(
 		const score = rowScore ?? -Infinity;
 		if (score > prev.maxScore) {
 			prev.maxScore = score;
-			prev.maxGrade = rowRaw;
+			prev.maxGrade =
+				rowScore == null ? rowRaw : formatGrade(rowScore, vScale(row), gradeSystems, rowRaw);
 			prev.maxBand = rowBand;
 		}
 		cragMap.set(crag, prev);
@@ -786,7 +788,7 @@ export function getDashboardStats(
 	const rockPerformance = buildRockPerformanceView(extraRows);
 	const monthly = buildMonthlyStats(extraRows);
 	const yearly = buildYearlyStats(extraRows);
-	const milestones = buildMilestones(extraRows);
+	const milestones = buildMilestones(extraRows, gradeSystems);
 	const developerImpact = buildRouteDeveloperImpact();
 	const badges = buildBadges(
 		extraRows,
@@ -794,6 +796,7 @@ export function getDashboardStats(
 		communityAscentBadgeHits(developerImpact, opts?.dateDisplay),
 		{
 			firstImport: getFirstImport(),
+			gradeSystems,
 			dateDisplay: opts?.dateDisplay,
 			weatherByKey
 		}
@@ -1279,6 +1282,7 @@ export function listLogbook(filters?: {
 	offset?: number;
 	/** Private ascent notes; only when the viewer may see them (see notes.ts). Default off. */
 	includeNotes?: boolean;
+	gradeSystems?: DisplayGradeSystems;
 }) {
 	ensureSchema();
 	const limit = filters?.limit ?? 100;
@@ -1620,6 +1624,7 @@ export function listLogbook(filters?: {
 			displayName: displayRouteName(r.routeName, r.pitchLabel, r.ascentLabel),
 			gradeBand: r.effectiveGradeBand ?? r.gradeBand,
 			gradeRaw: r.effectiveGradeRaw ?? r.gradeRaw,
+			gradeLabel: formatClimbGrade(r, filters?.gradeSystems ?? DEFAULT_DISPLAY_SYSTEMS),
 			tags: parseTagsJson(r.tagsJson),
 			url: r.ascentUrl || theCragAscentUrl(r.externalId) || r.routeUrl,
 			myAscentsOnRoute: routeAscentCounts.get(routeKey(r.routeProvider, r.routeExternalId)) ?? 1,

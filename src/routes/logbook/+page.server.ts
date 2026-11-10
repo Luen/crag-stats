@@ -1,7 +1,7 @@
 import { parseSoloKind } from '#lib/soloKind';
 import { fail } from '@sveltejs/kit';
 import { listLogbook } from '#lib/server/analytics';
-import { getRouteGradeSystem, getShowNotes } from '#lib/server/appSettings';
+import { getDisplayGradeSystems, getRouteGradeSystem, getShowNotes } from '#lib/server/appSettings';
 import { parseFirstAscentKind, routeExists, setFirstAscent } from '#lib/server/firstAscents';
 import { notesVisible } from '#lib/server/notes';
 import { getProjectOverrides } from '#lib/server/projectOverrides';
@@ -204,6 +204,7 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 		maxScore,
 		tcMin: tcRange?.tcMin,
 		tcMax: tcRange?.tcMax,
+		gradeSystems: getDisplayGradeSystems(),
 		gradeScale,
 		year: year != null && Number.isFinite(year) ? year : undefined,
 		score: score != null && Number.isFinite(score) ? score : undefined,

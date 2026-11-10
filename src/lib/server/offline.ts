@@ -16,12 +16,23 @@ export function offlineRevision(): string {
 		setAppSetting('offline_revision', revision);
 	}
 	return createHash('sha256')
-		.update(JSON.stringify([revision, getAppSetting('show_notes'), getDisplayGradeSystems()]))
+		.update(
+			JSON.stringify([
+				revision,
+				'display-grades-v1',
+				getAppSetting('show_notes'),
+				getDisplayGradeSystems()
+			])
+		)
 		.digest('hex');
 }
 
 export function buildOfflineSnapshot(): OfflineSnapshot {
-	const logbook = listLogbook({ limit: OFFLINE_MAX_ROWS, includeNotes: false });
+	const logbook = listLogbook({
+		limit: OFFLINE_MAX_ROWS,
+		includeNotes: false,
+		gradeSystems: getDisplayGradeSystems()
+	});
 	const stats = getDashboardStats(getDisplayGradeSystems());
 	// Whitelist fields, even though listLogbook already removes notes. Raw JSON stays server-side.
 	return {
@@ -34,7 +45,7 @@ export function buildOfflineSnapshot(): OfflineSnapshot {
 			id: r.id,
 			date: r.ascentDate,
 			name: r.displayName,
-			grade: r.gradeRaw,
+			grade: r.gradeLabel,
 			tick: r.tickType,
 			crag: r.cragName,
 			partners: r.partners

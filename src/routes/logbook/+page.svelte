@@ -604,7 +604,7 @@
 							<WeatherChips chips={row.weatherChips} dateDisplay={data.dateDisplay} />
 						{:else}—{/if}
 					</td>
-					<td class="nowrap"><GradeChip grade={row.gradeRaw} band={row.gradeBand} /></td>
+					<td class="nowrap"><GradeChip grade={row.gradeLabel} band={row.gradeBand} /></td>
 					<td class="tick-cell">
 						<div class="tick-meta">
 							<TickTypeIcon tick={row.tickType} />

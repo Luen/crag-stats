@@ -1,5 +1,5 @@
 import { DASH_LAYOUT_COOKIE, resolveDashLayout } from '#lib/dashboardLayout';
-import { applyDisplaySystemOverrides } from '#lib/grades';
+import { applyDisplaySystemOverrides, formatClimbGrade } from '#lib/grades';
 import { getDashboardStats, parsePyramidMode } from '#lib/server/analytics';
 import { getAppSetting, getDisplayGradeSystems } from '#lib/server/appSettings';
 import { listActiveGoals } from '#lib/server/goals';
@@ -22,7 +22,11 @@ export const load: PageServerLoad = async ({ cookies, url, parent }) => {
 	const today = new Date().toISOString().slice(0, 10);
 	const dashboardProjects = projects.map((project) => {
 		const { pct, horizon } = projectProgress(project, progressRows, today);
-		return { ...project, progress: { pct, horizon } };
+		return {
+			...project,
+			gradeLabel: formatClimbGrade(project, gradeSystems),
+			progress: { pct, horizon }
+		};
 	});
 	return {
 		stats,

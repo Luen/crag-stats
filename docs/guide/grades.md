@@ -14,6 +14,7 @@ These colours appear in every pyramid, grade chip, CPR chart and band breakdown.
 - **The grade decides the scale, not the style.** Deep water solos and highballs are often given V-grades even though they aren't boulders. Those stay on the V-scale: they're counted with boulders in hardest sends and grade indexes, and get their own pyramid (for example **DWS · V**), never an Ewbank one.
 - **Your display systems** are chosen in **Settings → Display & visibility**, one for each kind of climbing. **Route grades** (Ewbank, French, or YDS; Ewbank by default) cover sport, trad, top rope, and other roped climbing. **Boulder grades** (V-scale (Hueco) or Fontainebleau; V-scale by default) cover boulders and V-graded highballs. The two are independent, so you can show French routes with Font boulders. A shared link can override them once with `?system=` (a route or boulder system) and `?boulderSystem=`.
 - **Assigned vs your grade.** theCrag stores both the route's consensus grade and the grade you gave it. Crag Stats prefers the grade on the ascent when it's in the right system, and falls back to the route's grade.
+- **Reading individual climbs.** Projects, project history, and Logbook show your selected grade first. When the original theCrag route grade differs, it follows in parentheses, for example `6b (20)`. For a partial multi-pitch ascent, the first grade still describes the pitches you climbed; the parentheses show the route's original grade. Unscored grades keep their original text rather than guessing a conversion.
 - **Multi-pitch:** the effective grade of an ascent is the hardest pitch _you_ climbed, not the hardest pitch on the route. For systems the text parser cannot read, such as UIAA, a complete climb or a matching pitch grade uses the ascent's universal score. Other pitches use their difficulty band's midpoint when available.
 - **Ambiguous boulder numbers:** provider grade-system context decides whether a bare number means V-scale or Ewbank. Country alone never changes a grade on API rows. Repairs preserve the original API evidence. CSV exports have no grade-system column, so Australian boulder rows with bare digits (`9`, `1`) get an AU hint from Country / Crag Path / australia URL stubs; explicit `V5` / `VB` stay V-scale. As with API imports, an inferred AU ascent grade does not override an explicit V-scale route grade.
 - **Ranges** such as `V1/2` count as the midpoint (V1.5).
@@ -32,14 +33,6 @@ Conversions between systems are approximate: grades are cultural, and a "6c" at 
 ### Boulders (V-scale ↔ Fontainebleau)
 
 <!-- component:boulder-conversions -->
-
-## Repairing grades after an upgrade
-
-Parser fixes update how new syncs store scores. Crag Stats automatically repairs cached grades from stored `raw_json` / `grade_raw` when the upgraded server starts, after schema migrations and before scheduled syncs or page requests. No Settings action or dashboard visit is needed.
-
-Each versioned data migration runs once per database, with completion saved alongside schema migrations. A failed repair rolls back, is logged, and is retried on the next startup; the app keeps running meanwhile. Container startup applies the repair to your mounted database; building an image does not repair your running instance.
-
-A normal **Sync now** also re-derives grades as part of the pull. Private ascent notes are unrelated to this repair.
 
 ## Sources
 

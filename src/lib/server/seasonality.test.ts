@@ -1,4 +1,5 @@
-import { beforeEach, expect, it } from 'vitest';
+import { beforeEach, expect, it, vi } from 'vitest';
+vi.mock('./auth', () => ({ authScope: () => 'settings', isAuthEnabled: () => false }));
 import { eq } from 'drizzle-orm';
 import { db } from './db';
 import { routes } from './db/schema';

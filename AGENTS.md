@@ -581,3 +581,5 @@ World map (#313): `/map` uses bundled public-domain Natural Earth outlines, serv
 
 - Native pyramid rows (#453) use the selected route/boulder display system independently. Grade-bucket midpoint ties go to the upper grade; every bucket and logbook range uses inclusive minimum/exclusive maximum. Preserve tcMin/tcMax through filtering, sorting, and pagination.
 - Native row links also retain gradeScale=route|v, preventing universal-score ranges from mixing route- and V-graded DWS/highballs.
+
+- Grade display (#454): use formatClimbGrade for individual Projects/Logbook labels (selected-system effective grade, original route text in parentheses when different); use formatGradeLabel for aggregates, chart axes, milestones, and goals. Never change canonical scores to change presentation, and use usesVScale for DWS/highballs. User guides must not contain grade-repair/migration internals (#455); put upgrade behaviour in PR Release notes.

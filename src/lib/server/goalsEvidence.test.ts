@@ -1,11 +1,26 @@
 import { readFileSync } from 'node:fs';
 import { beforeEach, expect, it, vi } from 'vitest';
+vi.mock('./auth', () => ({ authScope: () => 'settings', isAuthEnabled: () => false }));
+import { setAppSetting } from './appSettings';
 import { wipeAllData } from './wipe';
 import { upsertAscents } from './ingest';
 import { createGoal, listGoals } from './goals';
 import { parseTheCragCsv } from './providers/thecrag/csv';
 
 const sample = parseTheCragCsv(readFileSync('samples/thecrag-logbook-sample.csv'))[0];
+
+it('formats saved goal targets and evidence in the selected route system', () => {
+	setAppSetting('route_grade_system', 'french');
+	upsertAscents([tick('display-goal', 'display-goal-route', 20)]);
+	const goal = createGoal({
+		kind: 'grade',
+		title: 'Display goal',
+		targetGradeScore: 21,
+		year: 2026
+	});
+	expect(goal.targetLabel).toContain('Send ≥ 6b+');
+	expect(goal.progressLabel).toContain('Best send 6b');
+});
 function tick(
 	id: string,
 	routeId: string,
@@ -29,7 +44,10 @@ function tick(
 		effectiveGradeScore: score
 	};
 }
-beforeEach(() => wipeAllData());
+beforeEach(() => {
+	wipeAllData();
+	setAppSetting('route_grade_system', 'ewbank');
+});
 
 it('adds a point per additional qualifying day, deduplicating routes/ticks and excluding future days', () => {
 	vi.useFakeTimers();
@@ -109,7 +127,7 @@ it('uses the same support ranges for fractional targets', () => {
 	});
 	expect(goal.completed).toBe(false);
 	expect(goal.progressPct).toBe(45);
-	expect(goal.progressLabel).toContain('1/2 at 22.5');
+	expect(goal.progressLabel).toContain('1/2 at 23');
 });
 
 it('raises readiness on each near-target attempt and steps faster for short-term goals', () => {

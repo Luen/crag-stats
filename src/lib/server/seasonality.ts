@@ -4,6 +4,8 @@ import { ascents, routes } from './db/schema';
 import { parseSeasonalityJson, weightedSeasonality } from './bestMonths';
 import { seasonalityAtMonth, type SeasonalityFilters } from '#lib/seasonality';
 import { theCragRouteUrl } from '#lib/thecragUrls';
+import { formatClimbGrade } from '#lib/grades';
+import { getDisplayGradeSystems } from './appSettings';
 
 export type SeasonalityRoute = {
 	id: number;
@@ -150,6 +152,9 @@ export function searchSeasonality(filters: SeasonalityFilters) {
 			parentName: routes.parentName,
 			country: routes.country,
 			gradeRaw: routes.gradeRaw,
+			gradeScore: routes.gradeScore,
+			gradeSystem: routes.gradeSystem,
+			gearStyle: routes.gearStyle,
 			url: routes.url,
 			seasonalityJson: routes.seasonalityJson,
 			ascentCount: sql<number>`count(*)`
@@ -158,5 +163,9 @@ export function searchSeasonality(filters: SeasonalityFilters) {
 		.innerJoin(ascents, eq(ascents.routeId, routes.id))
 		.groupBy(routes.id)
 		.all();
-	return buildSeasonalitySearch(rows, filters);
+	const systems = getDisplayGradeSystems();
+	return buildSeasonalitySearch(
+		rows.map((r) => ({ ...r, gradeRaw: formatClimbGrade(r, systems) })),
+		filters
+	);
 }

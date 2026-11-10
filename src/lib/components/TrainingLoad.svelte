@@ -1,15 +1,22 @@
 <script lang="ts">
-	import { formatVScaleLabel } from '#lib/grades';
+	import { DEFAULT_DISPLAY_SYSTEMS, formatGradeLabel, type DisplayGradeSystems } from '#lib/grades';
 	import type { LoadStatus, TrainingLoadView } from '#lib/types/trainingLoad';
 
 	type Props = {
 		load: TrainingLoadView;
+		gradeSystems?: DisplayGradeSystems;
 		/** Dashboard shows the newest N weeks; detail page can show all. */
 		weeksShown?: number;
 		titleHref?: string | null;
 		showDaily?: boolean;
 	};
-	let { load, weeksShown = 12, titleHref = '/training-load', showDaily = false }: Props = $props();
+	let {
+		load,
+		gradeSystems = DEFAULT_DISPLAY_SYSTEMS,
+		weeksShown = 12,
+		titleHref = '/training-load',
+		showDaily = false
+	}: Props = $props();
 
 	const STATUS: Record<LoadStatus, { label: string; hint: string }> = {
 		idle: { label: 'Resting', hint: 'Nothing logged in the last couple of weeks.' },
@@ -35,8 +42,12 @@
 
 	const refs = $derived(
 		[
-			load.refRoute != null ? `routes ${Math.round(load.refRoute)}` : null,
-			load.refBoulder != null ? `boulders ${formatVScaleLabel(load.refBoulder)}` : null
+			load.refRoute != null
+				? `routes ${formatGradeLabel(load.refRoute, false, gradeSystems)}`
+				: null,
+			load.refBoulder != null
+				? `boulders ${formatGradeLabel(load.refBoulder, true, gradeSystems)}`
+				: null
 		].filter(Boolean)
 	);
 </script>
@@ -88,8 +99,7 @@
 		<div class="days" aria-label="Daily load, last 28 days">
 			{#each load.daily28 as d (d.day)}
 				<span
-					class="day"
-					class:rest={d.load <= 0}
+					class={['day', { rest: d.load <= 0 }]}
 					style:height="{d.load <= 0 ? 4 : Math.max(4, (d.load / maxDay) * 100)}%"
 					title="{d.day}: load {d.load}"
 				></span>

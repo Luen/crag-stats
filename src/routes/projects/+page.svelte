@@ -52,7 +52,7 @@
 
 		<div class="title-row">
 			<a class="name" href={`/projects/${p.routeId}`}>
-				{p.routeName}{#if p.gradeRaw}<span class="grade"> · {p.gradeRaw}</span>{/if}
+				{p.routeName}{#if p.gradeLabel}<span class="grade"> · {p.gradeLabel}</span>{/if}
 			</a>
 		</div>
 
