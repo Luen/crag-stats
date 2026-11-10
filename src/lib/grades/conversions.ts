@@ -45,7 +45,8 @@ export function convertFromEwbank(ew: number, system: GradeSystem): string {
 	const n = Math.round(ew);
 	switch (system) {
 		case 'yds':
-			return ewbankToYds(ew) ?? String(n);
+			// Below 5.0 (Ewbank 1–3) YDS has no fifth-class grade; show 5.0, never a bare Ewbank number.
+			return ewbankToYds(ew) ?? (n <= 3 ? '5.0' : String(n));
 		case 'french':
 			return ewbankToFrench(ew) ?? String(n);
 		case 'v_scale':
