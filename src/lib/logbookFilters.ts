@@ -36,7 +36,9 @@ export const LOGBOOK_STYLES = [
 	'Deep water solo',
 	'Aid',
 	'Alpine',
-	'Solo'
+	'Solo',
+	'Unknown',
+	'Other'
 ] as const;
 
 export const LOGBOOK_QUALITIES = [

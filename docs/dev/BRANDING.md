@@ -239,3 +239,11 @@ Logbook comments longer than 140 characters show a 120-character preview with an
 
 - Goals offer a Routes/Boulders selector and per-goal native disclosure for grade preferences. Unknown scales show an explicit unavailable-progress message. Automatic titles follow display Settings; preserve custom title text.
 - Eddington share SVGs keep four numeric index tiles. Name grade tiles route/boulder grade index, then show four pairs of current-threshold and next-milestone explanations below them; grade text follows Settings without changing index values.
+
+### Logbook filters
+
+Logbook suggestions use labeled comboboxes with a themed popup, an outlined active option,
+keyboard arrows/Enter/Escape, and touch selection. Crag/sector/route options include cached
+area/provider context when names repeat. Rock type uses a native select with a cached-tag
+empty state. From/To use labeled native date inputs; the preset select fills those fields
+without creating a separate active filter. Controls wrap on narrow screens and use theme tokens.

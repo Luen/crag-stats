@@ -1,4 +1,6 @@
 <script lang="ts">
+	import LogbookAutocomplete from '#lib/components/LogbookAutocomplete.svelte';
+	import LogbookDateRange from '#lib/components/LogbookDateRange.svelte';
 	import { SOLO_KINDS } from '#lib/soloKind';
 	import { SvelteURLSearchParams } from 'svelte/reactivity';
 	import GradeChip from '#lib/components/GradeChip.svelte';
@@ -25,6 +27,9 @@
 		const p = new SvelteURLSearchParams();
 		if (data.q) p.set('q', data.q);
 		if (data.route) p.set('route', String(data.route));
+		if (data.routeName) p.set('routeName', data.routeName);
+		if (data.cragKey) p.set('cragKey', data.cragKey);
+		if (data.sectorKey) p.set('sectorKey', data.sectorKey);
 		if (data.solo) p.set('solo', data.solo);
 
 		if (data.place) p.set('place', data.place);
@@ -57,7 +62,6 @@
 		if (data.minStars !== '') p.set('minStars', String(data.minStars));
 		if (data.minScore !== '') p.set('minScore', String(data.minScore));
 		if (data.maxScore !== '') p.set('maxScore', String(data.maxScore));
-		if (data.year !== '') p.set('year', String(data.year));
 		if (data.score !== '') p.set('score', String(data.score));
 		if (data.gradeScale) p.set('gradeScale', data.gradeScale);
 		if (data.tcMin !== '' && data.tcMax !== '') {
@@ -170,7 +174,6 @@
 </section>
 
 <form class="panel filters" method="GET">
-	{#if data.route}<input type="hidden" name="route" value={data.route} />{/if}
 	{#if data.place}<input type="hidden" name="place" value={data.place} />{/if}
 	{#if data.mapVenue}<input type="hidden" name="mapVenue" value={data.mapVenue} />{/if}
 
@@ -192,50 +195,82 @@
 				? 'Search route, crag, partners, notes…'
 				: 'Search route, crag, partners…'}
 		/>
-		<input name="crag" value={data.crag} placeholder="Crag" />
+		{#key data}
+			<LogbookAutocomplete
+				name="routeName"
+				label="Route"
+				value={data.options.routes.find((r) => r.key === String(data.route))?.value ??
+					data.routeName}
+				keyName="route"
+				keyValue={String(data.route)}
+				options={data.options.routes}
+			/>
+			<LogbookAutocomplete
+				name="crag"
+				label="Crag"
+				value={data.crag}
+				keyName="cragKey"
+				keyValue={data.cragKey}
+				options={data.options.crags}
+			/>
+		{/key}
 		{#if data.sectorPath.length}<input
 				type="hidden"
 				name="sectorPath"
 				value={JSON.stringify(data.sectorPath)}
 			/>{/if}
-		<input name="sector" value={data.sector} placeholder="Sector / parent" />
-		<input name="with" value={data.with} placeholder="With (partner name)" />
+		{#key data}
+			<LogbookAutocomplete
+				name="sector"
+				label="Sector / parent"
+				value={data.sector}
+				keyName="sectorKey"
+				keyValue={data.sectorKey}
+				options={data.options.sectors}
+			/>
+			<LogbookAutocomplete
+				name="with"
+				label="With (partner name)"
+				value={data.with}
+				options={data.options.partners}
+			/>
+		{/key}
 		<select name="partnerMatch" aria-label="Partner match" value={data.partnerMatch}>
 			<option value="contains">Partner name contains</option>
 			<option value="exact">Exact partner name</option>
 		</select>
-		<input
-			name="rock"
-			value={data.rock}
-			placeholder="Rock type (Granite…)"
-			aria-label="Rock type"
-		/>
+		<label class="rock-filter"
+			>Rock type
+			<select name="rock" aria-label="Rock type" value={data.rock} aria-describedby="rock-help">
+				<option value="">Any rock type</option>
+				{#if data.rock && !data.options.rocks.some((r) => r.value === data.rock)}
+					<option value={data.rock}>{data.rock} (not in cached logbook)</option>
+				{/if}
+				{#each data.options.rocks as rock (rock.value)}<option value={rock.value}
+						>{rock.label}</option
+					>{/each}
+			</select>
+			<span id="rock-help"
+				>{data.options.rocks.length
+					? 'From cached logged routes.'
+					: 'No rock type tags cached for logged routes yet.'}</span
+			>
+		</label>
 	</div>
 
 	<div class="filter-row">
-		<input name="year" value={data.year} placeholder="Year" inputmode="numeric" />
-		<input
-			name="from"
-			value={data.from}
-			placeholder="From (YYYY-MM-DD)"
-			aria-label="From date (overrides year/season when set)"
-		/>
-		<input
-			name="to"
-			value={data.to}
-			placeholder="To (YYYY-MM-DD)"
-			aria-label="To date (overrides year/season when set)"
-		/>
+		{#key data}<LogbookDateRange
+				from={data.from}
+				to={data.to}
+				years={data.options.years}
+				today={data.today}
+				error={data.dateError}
+			/>{/key}
 		<select name="solo" aria-label="Solo type" value={data.solo}>
 			<option value="">Any solo type</option>
 			{#each SOLO_KINDS as kind (kind.kind)}
 				<option value={kind.kind}>{kind.label}</option>
 			{/each}
-		</select>
-		<select name="season" aria-label="Season" value={data.season}>
-			<option value="">Any season</option>
-			<option value="ytd">Year to date</option>
-			<option value="last_year">Last year</option>
 		</select>
 		<select name="band" aria-label="Grade band" value={String(data.band)}>
 			<option value="">Any band</option>
@@ -460,18 +495,19 @@
 		<button type="submit">Apply filters</button>
 	</div>
 	<p class="hint">
-		From/to dates override year and season. Route grade min/max use your display system and exclude
-		boulders (filter style for those). Missing route data finds routes without a recorded height,
-		bolt count, or cached pitch list after route info was fetched. No pitch list cached also matches
-		single-pitch and boulder routes when theCrag omits pitches, so it is not a list of multipitch
-		routes missing data. The pitch-list filter excludes routes whose route info was never fetched
-		(History not checked is a separate, route-history filter); Tag contains searches tag names;
-		Exact tag matches Category:Name (case-insensitive, repeat <code>tagExact</code> in the URL for AND).
-		Categories include Rock type, Steepness, Aspect, Style, Weather, Walk in time, Legality, and Condition
-		when shown on chips. Project filters exclude unknown flags. No setter credit found includes routes
-		whose history has not been imported. Weather filters use the opt-in Open-Meteo cache and only match
-		outdoor ascents with cached weather for that day; the owner can also list outdoor ascents with no
-		weather cached yet.
+		From/to dates are inclusive. Unknown style finds missing, blank, or literal Unknown route
+		styles, even with an ascent protection override; Other finds present, unsupported route styles.
+		Route grade min/max use your display system and exclude boulders (filter style for those).
+		Missing route data finds routes without a recorded height, bolt count, or cached pitch list
+		after route info was fetched. No pitch list cached also matches single-pitch and boulder routes
+		when theCrag omits pitches, so it is not a list of multipitch routes missing data. The
+		pitch-list filter excludes routes whose route info was never fetched (History not checked is a
+		separate, route-history filter); Tag contains searches tag names; Exact tag matches
+		Category:Name (case-insensitive, repeat <code>tagExact</code> in the URL for AND). Categories include
+		Rock type, Steepness, Aspect, Style, Weather, Walk in time, Legality, and Condition when shown on
+		chips. Project filters exclude unknown flags. No setter credit found includes routes whose history
+		has not been imported. Weather filters use the opt-in Open-Meteo cache and only match outdoor ascents
+		with cached weather for that day; the owner can also list outdoor ascents with no weather cached yet.
 	</p>
 </form>
 
@@ -657,6 +693,23 @@
 {/if}
 
 <style>
+	.rock-filter {
+		display: flex;
+		flex-direction: column;
+		gap: 0.25rem;
+		font-size: 0.8rem;
+		color: var(--ink-muted);
+		flex: 1 1 12rem;
+		min-width: 0;
+	}
+	.rock-filter select {
+		width: 100%;
+		min-width: 0;
+	}
+	.rock-filter span {
+		font-size: 0.75rem;
+	}
+
 	.weather-values {
 		display: grid;
 		gap: 0.15rem;
@@ -707,8 +760,8 @@
 		grid-template-columns: auto 1fr;
 		justify-items: start;
 	}
-	.filters input,
-	.filters select {
+	.filters :global(input),
+	.filters :global(select) {
 		width: 100%;
 		min-width: 0;
 		box-sizing: border-box;
