@@ -69,7 +69,8 @@ function bandMidpointGrade(
 	band: number | null | undefined,
 	style: string | null | undefined
 ): ParsedGrade | null {
-	if (band == null || band < 1 || band > 5 || isBoulderStyle(style)) return null;
+	if (band == null || !Number.isInteger(band) || band < 1 || band > 5 || isBoulderStyle(style))
+		return null;
 	const value = [6, 15, 21, 28, 35][band - 1];
 	return {
 		system: 'ewbank',
@@ -225,10 +226,13 @@ export function resolveEffectiveGrade(opts: {
 					allClimbed ||
 					(pitchText != null &&
 						opts.ascentGrade != null &&
+						(!opts.ascentGradeSystem ||
+							p.gradeSystem?.trim().toUpperCase() ===
+								opts.ascentGradeSystem.trim().toUpperCase()) &&
 						pitchText.trim() === opts.ascentGrade.trim());
 				parsed =
 					(matchesAscent
-						? gradeFromTheCragScore(opts.ascentGradeScore, gearStyle, pitchBand)
+						? gradeFromTheCragScore(opts.ascentGradeScore, gearStyle, opts.ascentGradeBand)
 						: null) ?? bandMidpointGrade(pitchBand, gearStyle);
 			}
 			if (!parsed || parsed.score == null) continue;
