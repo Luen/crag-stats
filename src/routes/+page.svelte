@@ -29,6 +29,7 @@
 	import StyleMixChart from '#lib/components/StyleMixChart.svelte';
 	import StylePyramid from '#lib/components/StylePyramid.svelte';
 	import TagChips from '#lib/components/TagChips.svelte';
+	import { describeDisplaySystems } from '#lib/grades';
 	import TickTypeIcon from '#lib/components/TickTypeIcon.svelte';
 	import StyleBadge from '#lib/components/StyleBadge.svelte';
 	import TrainingLoad from '#lib/components/TrainingLoad.svelte';
@@ -85,14 +86,6 @@
 			})
 		)
 	);
-
-	const systems = [
-		{ id: 'ewbank', label: 'Ewbanks' },
-		{ id: 'french', label: 'French' },
-		{ id: 'yds', label: 'YDS' },
-		{ id: 'v_scale', label: 'V-Scale' },
-		{ id: 'font', label: 'Fontainebleau' }
-	] as const;
 
 	const pyramidModes = [
 		{ id: 'all', label: 'All' },
@@ -263,8 +256,7 @@
 		<header class="section-head">
 			<h2>Grade pyramids</h2>
 			<p>
-				Split by style · grades shown in {systems.find((x) => x.id === data.gradeSystem)?.label ??
-					data.gradeSystem}
+				Split by style · {describeDisplaySystems(data.gradeSystems)}
 			</p>
 			<nav class="pyramid-toggles" aria-label="Pyramid filter">
 				{#each pyramidModes as mode (mode.id)}

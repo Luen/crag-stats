@@ -6,11 +6,12 @@ import {
 	resolveDashLayout,
 	serializeLayout
 } from '#lib/dashboardLayout';
-import { parseGradeSystem, wipeAllData } from '#lib/server/analytics';
+import { wipeAllData } from '#lib/server/analytics';
+import { parseBoulderGradeSystem, parseRouteGradeSystem } from '#lib/grades';
 import {
 	deleteAppSetting,
 	getAppSetting,
-	getPreferredGradeSystem,
+	getDisplayGradeSystems,
 	getSearchIndexing,
 	getShowNotes,
 	setAppSetting
@@ -42,7 +43,7 @@ export const load: PageServerLoad = async ({ cookies }) => {
 		sync: getSyncStatus(),
 		hasApiKey: hasTheCragApiKey(),
 		syncConfiguration: getTheCragSyncConfiguration(),
-		gradeSystem: getPreferredGradeSystem(),
+		gradeSystems: getDisplayGradeSystems(),
 		searchIndexing: getSearchIndexing(),
 		showNotes: getShowNotes(),
 		dashLayout: resolveDashLayout(
@@ -73,7 +74,16 @@ export const actions: Actions = {
 	},
 	savePreferences: async ({ request }) => {
 		const form = await request.formData();
-		setAppSetting('grade_system', parseGradeSystem(String(form.get('system') || 'ewbank')));
+		// Split keys; the legacy `grade_system` row stays as the fallback for older builds.
+		const current = getDisplayGradeSystems();
+		setAppSetting(
+			'route_grade_system',
+			parseRouteGradeSystem(String(form.get('routeSystem') ?? '')) ?? current.route
+		);
+		setAppSetting(
+			'boulder_grade_system',
+			parseBoulderGradeSystem(String(form.get('boulderSystem') ?? '')) ?? current.boulder
+		);
 		// Checkbox: absent when unticked. Ignored while AUTH_SCOPE=all forces it off.
 		if (!getSearchIndexing().forcedOff) {
 			setAppSetting('search_indexing', form.get('indexing') === 'on' ? 'on' : 'off');

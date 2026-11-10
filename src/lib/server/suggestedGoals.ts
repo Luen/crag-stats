@@ -7,7 +7,7 @@ import {
 	type SuggestedGoalAscent,
 	type SuggestedGradeGoal
 } from '#lib/suggestedGoals';
-import { getPreferredGradeSystem } from './appSettings';
+import { getDisplayGradeSystems } from './appSettings';
 import { db, ensureSchema } from './db';
 import { ascents, routes } from './db/schema';
 import { listGoals } from './goals';
@@ -37,7 +37,7 @@ export function listSuggestedGradeGoals(): SuggestedGradeGoal[] {
 	ensureSchema();
 	const goals = listGoals();
 	return buildSuggestedOutdoorGradeGoals(loadSuggestedAscentRows(), {
-		preferredSystem: getPreferredGradeSystem(),
+		gradeSystems: getDisplayGradeSystems(),
 		activeGoals: goals
 	});
 }

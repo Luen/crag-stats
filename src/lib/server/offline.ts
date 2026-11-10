@@ -1,6 +1,6 @@
 import { createHash, randomUUID } from 'node:crypto';
 import { authScope, isAuthEnabled } from './auth';
-import { getAppSetting, getPreferredGradeSystem, setAppSetting } from './appSettings';
+import { getAppSetting, getDisplayGradeSystems, setAppSetting } from './appSettings';
 import { getDashboardStats, listLogbook } from './analytics';
 import { OFFLINE_SCHEMA, OFFLINE_MAX_ROWS, type OfflineSnapshot } from '#lib/offline';
 
@@ -16,13 +16,13 @@ export function offlineRevision(): string {
 		setAppSetting('offline_revision', revision);
 	}
 	return createHash('sha256')
-		.update(JSON.stringify([revision, getAppSetting('show_notes'), getPreferredGradeSystem()]))
+		.update(JSON.stringify([revision, getAppSetting('show_notes'), getDisplayGradeSystems()]))
 		.digest('hex');
 }
 
 export function buildOfflineSnapshot(): OfflineSnapshot {
 	const logbook = listLogbook({ limit: OFFLINE_MAX_ROWS, includeNotes: false });
-	const stats = getDashboardStats(getPreferredGradeSystem());
+	const stats = getDashboardStats(getDisplayGradeSystems());
 	// Whitelist fields, even though listLogbook already removes notes. Raw JSON stays server-side.
 	return {
 		schema: OFFLINE_SCHEMA,

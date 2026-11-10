@@ -70,7 +70,7 @@ Inspired by [Dreeve](https://dreeve.app/) (Stats for Strava) and [RoxClimbs](htt
 - **Badges & milestones:** 90+ badges dated by the climb that earned them (newest first), including distance climbed up to 150 km, streaks, holidays, weather and first ascents. Badges and ascent cards name the partners you climbed with.
 - **Route popularity** (busy vs quiet crags, hidden gems), **karma**, **partners**, streaks and a **climbing story** written from your logbook.
 - **Weather conditions** (optional): heat, freeze, rain, snow, wind, fair and perfect days, and whether you climb in fair or tough weather.
-- **Customize the dashboard** (which cards and in what order) from Settings. Grade system is site-wide.
+- **Customize the dashboard** (which cards and in what order) from Settings. Route and boulder grade systems are site-wide.
 - **How it works** pages at `/docs` for every analytic, linked from each card.
 
 ### More pages
@@ -124,7 +124,7 @@ Open http://localhost:5173 — then **`/settings`** → sync API or upload CSV. 
 
 ### Admin access (`/settings` and `/login`)
 
-- **`/settings`** — sync, wipe, grade system, private notes, dashboard layout, and other owner controls.
+- **`/settings`** — sync, wipe, route and boulder grade systems, private notes, dashboard layout, and other owner controls.
 - **`/login`** — unlock with `APP_PASSWORD` when that env var is set. Visiting `/settings` (or any protected route) while logged out redirects here (`/login?next=…`).
 - With no `APP_PASSWORD`, `/settings` is open to anyone who can reach the host — fine on localhost or a private LAN; set a password (and prefer Cloudflare Access in front of public tunnels) before exposing the app.
 - `AUTH_SCOPE=settings` (default) only gates admin; `AUTH_SCOPE=all` requires login for the whole UI.
@@ -185,7 +185,7 @@ docker compose up --build -d
 | `ROUTE_DATA_REFRESH_DAYS` | Optional route-data refresh age: whole days 30–3650 (e.g. `90` recommended, `180` ≈ half a year); unset/`0`/`<30`/`>3650` keeps fetch-once behavior. Requires `ROUTE_DATA_IMPORT=true`. Runs after successful syncs within the same 100-route limit, prioritizing new routes then oldest stale data.     |
 | `WEATHER_IMPORT`          | `true` to cache outdoor daily weather from Open-Meteo after sync (default `false`): 50 days per run, ≤1 request/s, heat/freeze/rain/snow/wind badges. Free non-commercial tier for personal self-hosted installs; see [docs/guide/weather.md](docs/guide/weather.md).                                    |
 
-Grade system and private ascent notes are configured in **Settings** (stored in SQLite), not via environment variables. If an older install set `PREFERRED_GRADE_SYSTEM` or `SHOW_PRIVATE_NOTES`, the first start after upgrading copies them into Settings (unless Settings already has a value).
+Grade systems and private ascent notes are configured in **Settings** (stored in SQLite), not via environment variables. If an older install set `PREFERRED_GRADE_SYSTEM` or `SHOW_PRIVATE_NOTES`, the first start after upgrading copies them into Settings (unless Settings already has a value).
 
 ## Privacy
 

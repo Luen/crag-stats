@@ -1,6 +1,7 @@
 import { DASH_LAYOUT_COOKIE, resolveDashLayout } from '#lib/dashboardLayout';
-import { getDashboardStats, parseGradeSystem, parsePyramidMode } from '#lib/server/analytics';
-import { getAppSetting, getPreferredGradeSystem } from '#lib/server/appSettings';
+import { applyDisplaySystemOverrides } from '#lib/grades';
+import { getDashboardStats, parsePyramidMode } from '#lib/server/analytics';
+import { getAppSetting, getDisplayGradeSystems } from '#lib/server/appSettings';
 import { listActiveGoals } from '#lib/server/goals';
 import { listDashboardProjects } from '#lib/server/projects';
 import { loadProjectProgressRows } from '#lib/server/projectDetails';
@@ -9,13 +10,13 @@ import { getSyncStatus } from '#lib/server/sync';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ cookies, url, parent }) => {
-	// Site default from Settings; `?system=` is a one-off override for shared links.
-	const fromQuery = url.searchParams.get('system');
-	const preferred = fromQuery ? parseGradeSystem(fromQuery) : getPreferredGradeSystem();
+	// Site default from Settings; `?system=` (route or boulder system) and `?boulderSystem=`
+	// are one-off overrides for shared links.
+	const gradeSystems = applyDisplaySystemOverrides(getDisplayGradeSystems(), url.searchParams);
 	const pyramidMode = parsePyramidMode(url.searchParams.get('pyramid'));
 
 	const { dateDisplay } = await parent();
-	const stats = getDashboardStats(preferred, { pyramidMode, dateDisplay });
+	const stats = getDashboardStats(gradeSystems, { pyramidMode, dateDisplay });
 	const projects = listDashboardProjects(3);
 	const progressRows = projects.length ? loadProjectProgressRows() : [];
 	const today = new Date().toISOString().slice(0, 10);
@@ -33,7 +34,7 @@ export const load: PageServerLoad = async ({ cookies, url, parent }) => {
 				'Self-hosted climbing analytics for a theCrag logbook: grade pyramids, CPR, projects and goals.'
 		},
 		sync: getSyncStatus(),
-		gradeSystem: preferred,
+		gradeSystems,
 		pyramidMode,
 		activeGoals: listActiveGoals(3),
 		dashboardProjects,
