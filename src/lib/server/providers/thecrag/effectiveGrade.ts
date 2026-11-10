@@ -46,6 +46,41 @@ function pitchGradeText(p: ApiPitch): string | null {
 	return p.grade?.trim() || p.gradeAtom?.grade?.trim() || null;
 }
 
+const READABLE_PITCH_SYSTEMS = new Set([
+	'AU',
+	'EWBANK',
+	'FR',
+	'FRENCH',
+	'YDS',
+	'BLDV',
+	'V',
+	'FB',
+	'FONT'
+]);
+
+/** True when the text parser understands this grade system (or none is given). */
+function pitchSystemReadable(system: string | null | undefined): boolean {
+	const sys = (system || '').trim().toUpperCase();
+	return !sys || READABLE_PITCH_SYSTEMS.has(sys);
+}
+
+/** Ewbank-scale midpoint of a theCrag 1–5 grade band; routes only, never bare digits. */
+function bandMidpointGrade(
+	band: number | null | undefined,
+	style: string | null | undefined
+): ParsedGrade | null {
+	if (band == null || band < 1 || band > 5 || isBoulderStyle(style)) return null;
+	const value = [6, 15, 21, 28, 35][band - 1];
+	return {
+		system: 'ewbank',
+		raw: String(value),
+		score: value,
+		label: convertFromEwbank(value, 'ewbank'),
+		band: bandById(band),
+		isBoulder: false
+	};
+}
+
 function formatPitchLabel(numbers: number[]): string | null {
 	if (!numbers.length) return null;
 	const sorted = [...new Set(numbers)].sort((a, b) => a - b);
@@ -165,6 +200,7 @@ export function resolveEffectiveGrade(opts: {
 		});
 
 	if (climbed.length > 0) {
+		const allClimbed = climbed.length === pitches.length;
 		let best: ParsedGrade | null = null;
 		let heightSum = 0;
 		let heightAny = false;
@@ -177,13 +213,25 @@ export function resolveEffectiveGrade(opts: {
 				heightSum += h;
 				heightAny = true;
 			}
-			const parsed = parseWith(
-				pitchGradeText(p),
-				gearStyle,
-				p.gradeBand ?? p.gradeAtom?.gradeBand ?? null,
-				p.gradeSystem
-			);
-			if (parsed.score == null) continue;
+			const pitchText = pitchGradeText(p);
+			const pitchBand = p.gradeBand ?? p.gradeAtom?.gradeBand ?? null;
+			let parsed: ParsedGrade | null;
+			if (pitchSystemReadable(p.gradeSystem)) {
+				parsed = parseWith(pitchText, gearStyle, pitchBand, p.gradeSystem);
+			} else {
+				// UIAA, Saxon, Nordic, …: the text means a different scale (#451). Pitches carry no
+				// score, so use the ascent's when it is this pitch's grade, else the band midpoint.
+				const matchesAscent =
+					allClimbed ||
+					(pitchText != null &&
+						opts.ascentGrade != null &&
+						pitchText.trim() === opts.ascentGrade.trim());
+				parsed =
+					(matchesAscent
+						? gradeFromTheCragScore(opts.ascentGradeScore, gearStyle, pitchBand)
+						: null) ?? bandMidpointGrade(pitchBand, gearStyle);
+			}
+			if (!parsed || parsed.score == null) continue;
 			if (!best || (best.score ?? -Infinity) < parsed.score) best = parsed;
 		}
 
