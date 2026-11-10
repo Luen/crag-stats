@@ -20,9 +20,14 @@ import {
 	bandFromVScale,
 	boulderPyramidScoreKey,
 	formatGradeLabel as formatGrade,
+	ewbankToTheCragScore,
 	GRADE_BANDS,
 	type GradeSystem,
-	usesVScale
+	theCragGradeBucket,
+	theCragScoreToEwbank,
+	theCragScoreToVScale,
+	usesVScale,
+	vScaleToTheCragScore
 } from '#lib/grades';
 import type { DashboardStats, NotableRow, StylePyramid } from '#lib/types/dashboard';
 import { parseTagsJson, routeHasExactTag } from '#lib/routeTags';
@@ -177,6 +182,33 @@ function tickColor(tick: string): string {
 
 /** Pyramid key suffix for V-graded routes that aren't boulders (DWS, highball), #72. */
 const V_SUFFIX = ' · V';
+
+/**
+ * Pyramid row for French, YDS, or Font display (#450): the display system's own grade, since
+ * rounding to Ewbank/V files some grades under a neighbour. `key` stays in the stored score
+ * unit (Ewbank/V) so sorting and bands keep working. Null for Ewbank/V display or off-ladder.
+ */
+function nativePyramidBucket(
+	score: number,
+	isBoulder: boolean,
+	system: GradeSystem
+): { key: number; bucket: { label: string; min: number; max: number } } | null {
+	const scored = isBoulder
+		? system === 'font'
+			? 'FB'
+			: null
+		: system === 'french'
+			? 'FR'
+			: system === 'yds'
+				? 'YDS'
+				: null;
+	if (!scored) return null;
+	const tc = isBoulder ? vScaleToTheCragScore(score) : ewbankToTheCragScore(score);
+	const bucket = theCragGradeBucket(scored, tc);
+	if (!bucket) return null;
+	const key = isBoulder ? theCragScoreToVScale(bucket.score) : theCragScoreToEwbank(bucket.score);
+	return { key, bucket };
+}
 
 /** Score is V-scale, from the route's stored grade system (gear style only as fallback). */
 function vScale(row: { gradeSystem?: string | null; gearStyle: string | null }): boolean {
@@ -381,7 +413,15 @@ export function getDashboardStats(
 	// one pass so the dashboard can switch filters client-side, without a reload.
 	type PyramidAgg = Map<
 		string,
-		Map<number, { ticks: Map<string, number>; band: number | null; isBoulder: boolean }>
+		Map<
+			number,
+			{
+				ticks: Map<string, number>;
+				band: number | null;
+				isBoulder: boolean;
+				native?: { label: string; min: number; max: number };
+			}
+		>
 	>;
 	const pyramids: Record<PyramidMode, PyramidAgg> = {
 		all: new Map(),
@@ -468,11 +508,15 @@ export function getDashboardStats(
 			if (!pyramid.has(styleKey)) pyramid.set(styleKey, new Map());
 			const byGrade = pyramid.get(styleKey)!;
 			// Boulder: keep VB+ out of V0; merge V0-/V0/V0+. Routes: integer score.
-			const key = isBoulder ? boulderPyramidScoreKey(rowScore) : Math.round(rowScore);
+			// French, YDS, and Font rows are that system's own grades, not rounded Ewbank/V (#450).
+			const native = nativePyramidBucket(rowScore, isBoulder, preferredSystem);
+			const key =
+				native?.key ?? (isBoulder ? boulderPyramidScoreKey(rowScore) : Math.round(rowScore));
 			const slot = byGrade.get(key) ?? {
 				ticks: new Map<string, number>(),
 				band,
-				isBoulder
+				isBoulder,
+				native: native?.bucket
 			};
 			const tickKey = row.isAttempt ? 'Other' : tick;
 			slot.ticks.set(tickKey, (slot.ticks.get(tickKey) ?? 0) + 1);
@@ -584,12 +628,15 @@ export function getDashboardStats(
 						const total = [...v.ticks.values()].reduce((s, n) => s + n, 0);
 						const bandId = isBoulder ? (bandFromVScale(score)?.id ?? v.band) : v.band;
 						const band = bandById(bandId ?? 0);
-						const params = new URLSearchParams({
-							style: baseStyle,
-							score: String(score)
-						});
+						const params = new URLSearchParams({ style: baseStyle });
+						if (v.native) {
+							params.set('tcMin', String(v.native.min));
+							params.set('tcMax', String(v.native.max));
+						} else {
+							params.set('score', String(score));
+						}
 						return {
-							grade: formatGrade(score, isBoulder, preferredSystem, null),
+							grade: v.native?.label ?? formatGrade(score, isBoulder, preferredSystem, null),
 							score,
 							band: bandId,
 							color: band?.color ?? '#888',
@@ -1181,6 +1228,9 @@ export function listLogbook(filters?: {
 	to?: string;
 	/** Exact effective/route grade score bucket (from pyramid links) */
 	score?: number;
+	/** theCrag-score range [tcMin, tcMax): one French/YDS/Font pyramid row (#450) */
+	tcMin?: number;
+	tcMax?: number;
 	/** Inclusive route (non-boulder) score floor — Ewbank-canonical */
 	minScore?: number;
 	/** Inclusive route (non-boulder) score ceiling — Ewbank-canonical */
@@ -1384,6 +1434,22 @@ export function listLogbook(filters?: {
 		rows = rows.filter((r) => {
 			const score = r.effectiveGradeScore ?? r.gradeScore;
 			return score != null && Math.round(score) === target;
+		});
+	}
+	if (
+		filters?.tcMin != null &&
+		filters?.tcMax != null &&
+		Number.isFinite(filters.tcMin) &&
+		Number.isFinite(filters.tcMax)
+	) {
+		const { tcMin, tcMax } = filters;
+		rows = rows.filter((r) => {
+			const score = r.effectiveGradeScore ?? r.gradeScore;
+			if (score == null) return false;
+			const tc = usesVScale(r.gradeSystem, r.gearStyle)
+				? vScaleToTheCragScore(score)
+				: ewbankToTheCragScore(score);
+			return tc >= tcMin && tc < tcMax;
 		});
 	}
 	const minScore =
