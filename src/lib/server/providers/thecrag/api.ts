@@ -9,7 +9,12 @@ import {
 	type ProviderProfile,
 	type SyncCursor
 } from '../types';
-import { resolveEffectiveGrade, type ApiPitch } from './effectiveGrade';
+import {
+	gradeFromTheCragScore,
+	gradeSystemFitsStyle,
+	resolveEffectiveGrade,
+	type ApiPitch
+} from './effectiveGrade';
 
 const BASE = 'https://www.thecrag.com/api/logbook/ascents';
 
@@ -63,6 +68,8 @@ type ApiAscent = {
 	grade?: string;
 	gradeSystem?: string;
 	gradeBand?: number;
+	/** theCrag's universal difficulty score for `grade`, comparable across systems (#445). */
+	gradeScore?: number;
 	label?: string;
 	/** Climbing partners, often "@login" */
 	with?: string | string[] | null;
@@ -300,6 +307,17 @@ export function mapAscent(a: ApiAscent): CanonicalAscent | null {
 		gradeSystem: a.gradeSystem ?? null
 	});
 
+	// Route grades carry no score, but when the ascent's grade text is the route's grade the
+	// ascent's theCrag score scores the route too. This covers systems the text parser can't
+	// read (UIAA, Saxon, Nordic, …) and stops bare digits there being read as Ewbank (#445).
+	const routeFromScore =
+		route.grade?.trim() &&
+		a.grade?.trim().toLowerCase() === route.grade.trim().toLowerCase() &&
+		gradeSystemFitsStyle(a.gradeSystem, route.style)
+			? gradeFromTheCragScore(a.gradeScore, route.style, route.gradeBand)
+			: null;
+	const routeGrade = routeFromScore ?? routeParsed;
+
 	const routeHeightM = heightFromRoute(route);
 	const effective = resolveEffectiveGrade({
 		routeGrade: route.grade ?? null,
@@ -309,6 +327,7 @@ export function mapAscent(a: ApiAscent): CanonicalAscent | null {
 		ascentGrade: a.grade ?? null,
 		ascentGradeSystem: a.gradeSystem ?? null,
 		ascentGradeBand: a.gradeBand ?? null,
+		ascentGradeScore: a.gradeScore ?? null,
 		cprGrade: a.cpr?.base?.grade ?? null,
 		cprBand: a.cpr?.base?.band ?? null,
 		pitches: a.pitch ?? null,
@@ -342,9 +361,9 @@ export function mapAscent(a: ApiAscent): CanonicalAscent | null {
 			externalId: String(route.id),
 			name: route.name,
 			gradeRaw,
-			gradeScore: routeParsed.score,
-			gradeBand: routeParsed.band?.id ?? route.gradeBand ?? null,
-			gradeSystem: routeParsed.system,
+			gradeScore: routeGrade.score,
+			gradeBand: routeGrade.band?.id ?? route.gradeBand ?? null,
+			gradeSystem: routeGrade.system,
 			gearStyle: route.style ?? null,
 			heightM: routeHeightM,
 			stars: route.stars ?? null,

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
 	ewbankToFrench,
+	convertFromEwbank,
 	convertFromVScale,
 	detectAndParseGrade,
 	ewbankToVScale,
@@ -101,7 +102,9 @@ describe('detectAndParseGrade — French vs Font clash', () => {
 			gradeSystem: 'FONT'
 		});
 		expect(p.isBoulder).toBe(true);
-		expect(p.score).toBe(5);
+		// theCrag scores Font 6C (307) just below V5 (309).
+		expect(p.score).toBe(4.9);
+		expect(p.label).toBe('V5');
 	});
 });
 
@@ -114,48 +117,10 @@ describe('detectAndParseGrade — route Ewbank', () => {
 });
 
 describe('ewbankToFrench', () => {
-	// French grades in increasing order (subset used by the table).
-	const ORDER = [
-		'1a',
-		'1b',
-		'1c',
-		'2a',
-		'2b',
-		'2c',
-		'3a',
-		'3b',
-		'3c',
-		'3c+',
-		'4a',
-		'4b',
-		'4c',
-		'5a',
-		'5b',
-		'5c',
-		'6a',
-		'6a+',
-		'6b',
-		'6b+',
-		'6c',
-		'6c+',
-		'7a',
-		'7a+',
-		'7b',
-		'7b+',
-		'7c',
-		'7c+',
-		'8a',
-		'8a+',
-		'8b',
-		'8b+',
-		'8c',
-		'8c+',
-		'9a',
-		'9a+',
-		'9b',
-		'9b+',
-		'9c'
-	];
+	// theCrag's French column, easiest to hardest.
+	const ORDER = `1a 1a+ 1b 1b+ 1c 1c+ 2a 2a+ 2b 2b+ 2c 2c+ 3a 3a+ 3b 3b+ 3c 3c+
+		4a 4a+ 4b 4b+ 4c 4c+ 5a 5a+ 5b 5b+ 5c 5c+ 6a 6a+ 6b 6b+ 6c 6c+ 7a 7a+
+		7b 7b+ 7c 7c+ 8a 8a+ 8b 8b+ 8c 8c+ 9a 9a+ 9b 9b+ 9c`.split(/\s+/);
 	it('never goes down as Ewbank goes up', () => {
 		let prev = -1;
 		for (let ew = 1; ew <= 39; ew++) {
@@ -165,5 +130,105 @@ describe('ewbankToFrench', () => {
 			expect(idx, `Ewbank ${ew} → ${fr}`).toBeGreaterThanOrEqual(prev);
 			prev = idx;
 		}
+	});
+});
+
+describe('French grades between Ewbank numbers (#441)', () => {
+	it("matches theCrag's own French → AU conversions", () => {
+		// POST /api/grade, 2026-11-10: 7a → AU 23, 7a+ → 24, 7b → 25, 6a+ → 19, 5c → 17.
+		expect(Math.round(parse('7a').score!)).toBe(23);
+		expect(Math.round(parse('7a+').score!)).toBe(24);
+		expect(parse('7b').score).toBe(25);
+		expect(Math.round(parse('6a+').score!)).toBe(19);
+		expect(Math.round(parse('5c').score!)).toBe(17);
+	});
+
+	// theCrag's French column, easiest to hardest (thecrag.com/en/article/grades).
+	const LADDER = `1a 1a+ 1b 1b+ 1c 1c+ 2a 2a+ 2b 2b+ 2c 2c+ 3a 3a+ 3b 3b+ 3c 3c+
+		4a 4a+ 4b 4b+ 4c 4c+ 5a 5a+ 5b 5b+ 5c 5c+ 6a 6a+ 6b 6b+ 6c 6c+ 7a 7a+
+		7b 7b+ 7c 7c+ 8a 8a+ 8b 8b+ 8c 8c+ 9a 9a+ 9b 9b+ 9c`.split(/\s+/);
+	const parse = (g: string) =>
+		detectAndParseGrade(g, { gearStyle: 'Sport', gradeBand: 3, preferredSystem: 'french' });
+
+	it('parses every grade as French in strictly ascending order', () => {
+		let prev = -Infinity;
+		for (const g of LADDER) {
+			const p = parse(g);
+			expect(p.system, g).toBe('french');
+			expect(p.score!, g).toBeGreaterThan(prev);
+			prev = p.score!;
+		}
+	});
+
+	it('round-trips French labels, including in-between grades', () => {
+		for (const g of LADDER) expect(parse(g).label, g).toBe(g);
+		expect(convertFromEwbank(parse('7a+').score!, 'french')).toBe('7a+');
+		expect(ewbankToFrench(parse('6a').score!)).toBe('6a');
+	});
+
+	it('is case-insensitive and ranks 7a+ between 7a and 7b', () => {
+		expect(parse('7A+').score).toBe(parse('7a+').score);
+		expect(parse('7a').score!).toBeLessThan(parse('7a+').score!);
+		expect(parse('7a+').score!).toBeLessThan(parse('7b').score!);
+	});
+});
+
+describe('Fontainebleau boulder grades (#444)', () => {
+	const FONT = `1A 1A+ 1B 1B+ 1C 1C+ 2A 2A+ 2B 2B+ 2C 2C+ 3A 3A+ 3B 3B+ 3C 3C+
+		4A 4A+ 4B 4B+ 4C 4C+ 5A 5A+ 5B 5B+ 5C 5C+ 6A 6A+ 6B 6B+ 6C 6C+
+		7A 7A+ 7B 7B+ 7C 7C+ 8A 8A+ 8B 8B+ 8C 8C+ 9A`.split(/\s+/);
+	const parse = (g: string) =>
+		detectAndParseGrade(g, { gearStyle: 'Boulder', gradeSystem: 'FB', preferredSystem: 'font' });
+
+	it('scores every Font grade in strictly ascending order', () => {
+		let prev = -Infinity;
+		for (const g of FONT) {
+			const p = parse(g);
+			expect(p.system, g).toBe('font');
+			expect(p.isBoulder, g).toBe(true);
+			expect(p.score!, g).toBeGreaterThan(prev);
+			prev = p.score!;
+		}
+	});
+
+	it('round-trips Font labels and lines up with theCrag V grades', () => {
+		for (const g of FONT) expect(parse(g).label, g).toBe(g);
+		// theCrag scores Font 8A and V11 the same (409); 7C+ sits on V10 (395 vs 392).
+		expect(parse('8A').score).toBe(11);
+		expect(Math.round(parse('7C+').score!)).toBe(10);
+		expect(convertFromVScale(11, 'font')).toBe('8A');
+	});
+
+	it('accepts lowercase Font in boulder context', () => {
+		expect(parse('6a+').score).toBe(parse('6A+').score);
+	});
+});
+
+describe('YDS on theCrag scores (#445)', () => {
+	const parse = (g: string) =>
+		detectAndParseGrade(g, { gearStyle: 'Sport', preferredSystem: 'yds' });
+
+	it("matches theCrag's YDS ↔ AU alignment and round-trips labels", () => {
+		expect(parse('5.12b').score).toBe(25);
+		expect(Math.round(parse('5.11d').score!)).toBe(23);
+		for (const g of ['5.6', '5.9', '5.10a', '5.10d', '5.11c', '5.12a', '5.13b', '5.14d', '5.15d']) {
+			expect(parse(g).label, g).toBe(g);
+		}
+	});
+
+	it('places letterless and +/- YDS between the lettered grades', () => {
+		const a = parse('5.10a').score!;
+		const d = parse('5.10d').score!;
+		for (const g of ['5.10', '5.10-', '5.10+']) {
+			expect(parse(g).system, g).toBe('yds');
+			expect(parse(g).score!, g).toBeGreaterThan(a);
+			expect(parse(g).score!, g).toBeLessThan(d);
+		}
+		expect(parse('5.10-').score!).toBeLessThan(parse('5.10+').score!);
+	});
+
+	it('labels Ewbank grades below 5.0 as 5.0, never a bare Ewbank number', () => {
+		for (const ew of [1, 2, 3]) expect(convertFromEwbank(ew, 'yds'), `Ewbank ${ew}`).toBe('5.0');
+		expect(convertFromEwbank(4, 'yds')).toBe('5.0');
 	});
 });

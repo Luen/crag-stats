@@ -101,6 +101,16 @@ const MIGRATIONS = [
 				SET last_error = 'An earlier sync failed. Its details were removed during an upgrade because they could include your API key. Run Sync now to see the current reason.'
 				WHERE provider = 'thecrag' AND last_error LIKE 'theCrag API %'`);
 		}
+	},
+	{
+		// Re-derive cached grades on theCrag's universal score (#441, #444, #445): French
+		// in-between grades (7a+, 6a, 5c+, …), every Font grade, theCrag-aligned French/YDS
+		// conversions, and API ascents in systems the text parser can't read (UIAA, Saxon, …).
+		id: 'data:0012_thecrag_grade_scores',
+		apply: () => {
+			repairGradesFromRawJson();
+			refreshProjects();
+		}
 	}
 ];
 

@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import DashboardLayoutEditor from '#lib/components/DashboardLayoutEditor.svelte';
 	import { formatDateTime, formatNumber } from '#lib/dates';
+	import { BOULDER_GRADE_SYSTEMS, ROUTE_GRADE_SYSTEMS } from '#lib/grades';
 	import {
 		freshestSnapshot,
 		IMPORT_PROGRESS_POLL_MS,
@@ -93,14 +94,6 @@
 		}, 1000);
 		return () => clearInterval(timer);
 	});
-
-	const systems = [
-		{ id: 'ewbank', label: 'Ewbanks (AU/NZ)' },
-		{ id: 'french', label: 'French' },
-		{ id: 'yds', label: 'YDS' },
-		{ id: 'v_scale', label: 'V-Scale' },
-		{ id: 'font', label: 'Fontainebleau' }
-	] as const;
 </script>
 
 <section class="panel head">
@@ -168,14 +161,26 @@
 		<h2>Display & visibility</h2>
 		<form method="POST" action="?/savePreferences" class="prefs">
 			<label class="field">
-				<span>Grade system</span>
-				<select name="system">
-					{#each systems as opt (opt.id)}
-						<option value={opt.id} selected={data.gradeSystem === opt.id}>{opt.label}</option>
+				<span>Route grades</span>
+				<select name="routeSystem">
+					{#each ROUTE_GRADE_SYSTEMS as opt (opt.id)}
+						<option value={opt.id} selected={data.gradeSystems.route === opt.id}>{opt.label}</option
+						>
+					{/each}
+				</select>
+				<small class="hint">Sport, trad, top rope, and other roped climbing.</small>
+			</label>
+			<label class="field">
+				<span>Boulder grades</span>
+				<select name="boulderSystem">
+					{#each BOULDER_GRADE_SYSTEMS as opt (opt.id)}
+						<option value={opt.id} selected={data.gradeSystems.boulder === opt.id}
+							>{opt.label}</option
+						>
 					{/each}
 				</select>
 				<small class="hint"
-					>Used for the dashboard for every visitor. Boulders always show V-scale or Font.</small
+					>Boulders and V-graded highballs. Both choices apply for every visitor.</small
 				>
 			</label>
 			<label class="check">

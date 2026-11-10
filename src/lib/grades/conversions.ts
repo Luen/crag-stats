@@ -8,6 +8,14 @@
  */
 
 import { bandFromEwbank, bandFromVScale, type GradeBand } from './bands';
+import {
+	ewbankToTheCragScore,
+	nearestTheCragGrade,
+	theCragGradeScore,
+	theCragScoreToEwbank,
+	theCragScoreToVScale,
+	vScaleToTheCragScore
+} from './thecragScale';
 
 export type GradeSystem = 'ewbank' | 'yds' | 'french' | 'uiaa' | 'v_scale' | 'font' | 'unknown';
 
@@ -23,139 +31,24 @@ export type ParsedGrade = {
 	isBoulder: boolean;
 };
 
-/** Ewbanks → YDS (midpoint of theCrag mapping) */
-const EWBANK_TO_YDS: Record<number, string> = {
-	1: '5.0',
-	2: '5.0',
-	3: '5.0',
-	4: '5.1',
-	5: '5.1',
-	6: '5.2',
-	7: '5.2',
-	8: '5.3',
-	9: '5.4',
-	10: '5.4',
-	11: '5.5',
-	12: '5.5',
-	13: '5.6',
-	14: '5.7',
-	15: '5.8',
-	16: '5.9',
-	17: '5.10a',
-	18: '5.10a',
-	19: '5.10b',
-	20: '5.10c',
-	21: '5.10d',
-	22: '5.11b',
-	23: '5.11c',
-	24: '5.12a',
-	25: '5.12b',
-	26: '5.12c',
-	27: '5.12d',
-	28: '5.13a',
-	29: '5.13b',
-	30: '5.13c',
-	31: '5.13d',
-	32: '5.14a',
-	33: '5.14b',
-	34: '5.14c',
-	35: '5.14d',
-	36: '5.15a',
-	37: '5.15b',
-	38: '5.15c',
-	39: '5.15d'
-};
-
-/** Ewbanks → French */
-const EWBANK_TO_FRENCH: Record<number, string> = {
-	1: '1a',
-	2: '1b',
-	3: '1c',
-	4: '2a',
-	5: '2b',
-	6: '2c',
-	7: '3a',
-	8: '3b',
-	9: '3c',
-	// theCrag's table: Ewbank 12 ≈ 3c+, 13 ≈ 4a/4a+ (was non-monotonic: 12 → 4b, 13 → 4a).
-	10: '3c',
-	11: '3c+',
-	12: '3c+',
-	13: '4a',
-	14: '4b',
-	15: '4c',
-	16: '5a',
-	17: '5b',
-	18: '5c',
-	19: '6a+',
-	20: '6b',
-	21: '6b+',
-	22: '6c',
-	23: '6c+',
-	24: '7a',
-	25: '7b',
-	26: '7b+',
-	27: '7c',
-	28: '7c+',
-	29: '8a',
-	30: '8a+',
-	31: '8b',
-	32: '8b+',
-	33: '8c',
-	34: '8c+',
-	35: '9a',
-	36: '9a+',
-	37: '9b',
-	38: '9b+',
-	39: '9c'
-};
-
-const YDS_TO_EWBANK: Record<string, number> = Object.fromEntries(
-	Object.entries(EWBANK_TO_YDS).map(([ew, yds]) => [yds.toLowerCase(), Number(ew)])
-);
-
-const FRENCH_TO_EWBANK: Record<string, number> = Object.fromEntries(
-	Object.entries(EWBANK_TO_FRENCH).map(([ew, fr]) => [fr.toLowerCase(), Number(ew)])
-);
-
-/** V-scale → Font (approximate theCrag boulder table) */
-const V_TO_FONT: Record<number, string> = {
-	[-1]: '3C',
-	0: '4A',
-	1: '5A',
-	2: '5B',
-	3: '5C+',
-	4: '6B',
-	5: '6C',
-	6: '7A',
-	7: '7A+',
-	8: '7B',
-	9: '7B+',
-	10: '7C',
-	11: '8A',
-	12: '8A+',
-	13: '8B',
-	14: '8B+',
-	15: '8C',
-	16: '8C+',
-	17: '9A'
-};
-
+/** Nearest YDS grade by theCrag score (null below 5.0). */
 export function ewbankToYds(ew: number): string | null {
-	return EWBANK_TO_YDS[Math.round(ew)] ?? null;
+	return nearestTheCragGrade('YDS', ewbankToTheCragScore(ew));
 }
 
+/** Nearest French grade by theCrag score, so in-between grades like 7a+ round-trip. */
 export function ewbankToFrench(ew: number): string | null {
-	return EWBANK_TO_FRENCH[Math.round(ew)] ?? null;
+	return nearestTheCragGrade('FR', ewbankToTheCragScore(ew));
 }
 
 export function convertFromEwbank(ew: number, system: GradeSystem): string {
 	const n = Math.round(ew);
 	switch (system) {
 		case 'yds':
-			return ewbankToYds(n) ?? String(n);
+			// Below 5.0 (Ewbank 1–3) YDS has no fifth-class grade; show 5.0, never a bare Ewbank number.
+			return ewbankToYds(ew) ?? (n <= 3 ? '5.0' : String(n));
 		case 'french':
-			return ewbankToFrench(n) ?? String(n);
+			return ewbankToFrench(ew) ?? String(n);
 		case 'v_scale':
 		case 'font':
 			return convertFromVScale(ewbankToVScale(n), system);
@@ -200,8 +93,7 @@ export function ewbankToVScale(ew: number): number {
 
 export function convertFromVScale(v: number, system: GradeSystem): string {
 	if (system === 'font') {
-		const n = Math.round(v);
-		return V_TO_FONT[n] ?? (n < 0 ? '1A' : `V${n}`);
+		return nearestTheCragGrade('FB', vScaleToTheCragScore(v)) ?? `V${Math.round(v)}`;
 	}
 	// Preserve VB± / V0± nuance instead of Math.round(-0.5) → 0 → "V0"
 	if (v <= -1.25) return 'VB-';
@@ -228,30 +120,26 @@ function parseEwbank(raw: string): number | null {
 
 function parseYds(raw: string): number | null {
 	const key = raw.toLowerCase().replace(/\s+/g, '');
-	if (YDS_TO_EWBANK[key] != null) return YDS_TO_EWBANK[key];
-	const m = key.match(/^5\.(\d{1,2})([a-d])?$/);
+	const scored = theCragGradeScore('YDS', key);
+	if (scored != null) return theCragScoreToEwbank(scored);
+	// Letterless or +/- YDS (5.10, 5.10-, 5.11+): average the matching lettered grades.
+	const m = key.match(/^(5\.\d{1,2})([+-])?$/);
 	if (!m) return null;
-	const base = Number(m[1]);
-	const letter = m[2];
-	// coarse fallback
-	if (base <= 5) return 4 + base;
-	if (base === 6) return 13;
-	if (base === 7) return 14;
-	if (base === 8) return 15;
-	if (base === 9) return 16;
-	if (base === 10) return letter === 'a' ? 17 : letter === 'b' ? 19 : letter === 'c' ? 20 : 21;
-	if (base === 11) return letter === 'a' ? 21 : letter === 'b' ? 22 : letter === 'c' ? 23 : 23;
-	if (base === 12) return letter === 'a' ? 24 : letter === 'b' ? 25 : letter === 'c' ? 26 : 27;
-	if (base === 13) return letter === 'a' ? 28 : letter === 'b' ? 29 : letter === 'c' ? 30 : 31;
-	if (base === 14) return letter === 'a' ? 32 : letter === 'b' ? 33 : letter === 'c' ? 34 : 35;
-	if (base === 15) return letter === 'a' ? 36 : letter === 'b' ? 37 : letter === 'c' ? 38 : 39;
-	return null;
+	const letters = m[2] === '-' ? ['a', 'b'] : m[2] === '+' ? ['c', 'd'] : ['a', 'b', 'c', 'd'];
+	const scores = letters
+		.map((l) => theCragGradeScore('YDS', `${m[1]}${l}`))
+		.filter((n): n is number => n != null);
+	if (scores.length) {
+		return theCragScoreToEwbank(scores.reduce((a, b) => a + b, 0) / scores.length);
+	}
+	// 5.0–5.9 carry no letters; a +/- only nudges them within the grade.
+	const base = theCragGradeScore('YDS', m[1]);
+	return base != null ? theCragScoreToEwbank(base) : null;
 }
 
 function parseFrench(raw: string): number | null {
-	const key = raw.toLowerCase().replace(/\s+/g, '');
-	if (FRENCH_TO_EWBANK[key] != null) return FRENCH_TO_EWBANK[key];
-	return null;
+	const scored = theCragGradeScore('FR', raw);
+	return scored != null ? theCragScoreToEwbank(scored) : null;
 }
 
 /**
@@ -297,11 +185,10 @@ export function formatVScaleLabel(score: number, raw?: string | null): string {
 	return convertFromVScale(score, 'v_scale');
 }
 
+/** Every theCrag Font grade (1A … 9A, with +), via its score on the shared boulder scale (#444). */
 function parseFont(raw: string): number | null {
-	const key = raw.toUpperCase().replace(/\s+/g, '');
-	const entry = Object.entries(V_TO_FONT).find(([, font]) => font === key);
-	if (entry) return Number(entry[0]);
-	return null;
+	const scored = theCragGradeScore('FB', raw);
+	return scored != null ? theCragScoreToVScale(scored) : null;
 }
 
 export function detectAndParseGrade(
