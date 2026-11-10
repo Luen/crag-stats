@@ -78,7 +78,7 @@ export function applyDisplaySystemOverrides(
 	return out;
 }
 
-/** Short human label, e.g. "French · Font". */
+/** Human label, e.g. "French routes, Fontainebleau (Font) boulders". */
 export function describeDisplaySystems(systems: DisplayGradeSystems): string {
 	const route = ROUTE_GRADE_SYSTEMS.find((s) => s.id === systems.route)?.label ?? systems.route;
 	const boulder =
