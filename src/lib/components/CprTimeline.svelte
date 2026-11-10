@@ -282,7 +282,7 @@
 				{:else}
 					Approximate CPR: power factor 5, tick shifts, ~0.7 grade/year decay.
 				{/if}
-				<a href="/docs/cpr">How CPR works</a>
+				<a class="how" href="/docs/cpr">How CPR works</a>
 			</p>
 		</footer>
 	{/if}
@@ -569,10 +569,6 @@
 		margin: 0;
 		font-size: 0.75rem;
 		color: var(--ink-muted);
-	}
-	.footnote a {
-		color: var(--accent);
-		font-weight: 600;
 	}
 
 	@media (max-width: 640px) {

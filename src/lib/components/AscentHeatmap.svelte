@@ -373,11 +373,6 @@
 		margin: 0;
 		font-size: 1.05rem;
 	}
-	.how {
-		font-size: 0.8rem;
-		font-weight: 600;
-		color: var(--accent);
-	}
 	.controls {
 		display: flex;
 		align-items: center;

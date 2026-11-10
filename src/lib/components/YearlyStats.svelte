@@ -545,11 +545,6 @@
 	h2 a:hover {
 		color: var(--accent);
 	}
-	.how {
-		font-size: 0.8rem;
-		font-weight: 600;
-		color: var(--accent);
-	}
 	.controls {
 		display: flex;
 		flex-wrap: wrap;

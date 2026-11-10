@@ -62,13 +62,6 @@
 		margin: 0;
 		font-size: 1.05rem;
 	}
-	.how {
-		font-size: 0.82rem;
-		color: var(--ink-muted);
-		text-decoration: underline;
-		text-underline-offset: 0.15em;
-		white-space: nowrap;
-	}
 	.lead {
 		margin: 0 0 0.85rem;
 		color: var(--ink-muted);

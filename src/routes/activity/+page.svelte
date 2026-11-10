@@ -50,7 +50,7 @@
 	<p>
 		Deeper monthly and yearly volume than the dashboard cards — full per-month tables (ascents,
 		sends, height, styles) plus year-over-year deltas.
-		<a href="/docs/activity">How it works</a>
+		<a class="how" href="/docs/activity">How it works</a>
 	</p>
 </section>
 

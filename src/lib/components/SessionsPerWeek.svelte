@@ -88,11 +88,6 @@
 		margin: 0;
 		font-size: 1.05rem;
 	}
-	.how {
-		font-size: 0.8rem;
-		font-weight: 600;
-		color: var(--accent);
-	}
 	select {
 		font: inherit;
 		padding: 0.25rem 0.45rem;

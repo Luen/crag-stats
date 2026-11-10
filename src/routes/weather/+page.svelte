@@ -19,9 +19,8 @@
 	<h1>Weather</h1>
 	<p>
 		Historical weather on the days you climbed outdoors. These are modelled daily conditions at
-		cached locations, not measurements at the wall or a forecast. <a href="/docs/weather"
-			>How it works</a
-		>
+		cached locations, not measurements at the wall or a forecast.
+		<a class="how" href="/docs/weather">How it works</a>
 	</p>
 	<nav aria-label="Weather sections">
 		<a href="#conditions">Conditions</a><a href="#performance">Performance</a><a href="#coverage"

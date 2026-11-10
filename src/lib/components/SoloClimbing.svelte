@@ -54,7 +54,7 @@
 		<strong>{data.unpartnered}</strong> ascent{data.unpartnered === 1 ? '' : 's'}
 		({data.unpartneredSends} send{data.unpartneredSends === 1 ? '' : 's'}, {unpartneredPct}%) have
 		no partner tagged on theCrag.
-		<a href="/docs/solo">How it works</a>
+		<a class="how" href="/docs/solo">How it works</a>
 	</p>
 </article>
 

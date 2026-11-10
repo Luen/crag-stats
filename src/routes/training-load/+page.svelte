@@ -18,7 +18,7 @@
 	<p>
 		How hard you've been climbing lately versus what you're used to — the acute:chronic workload
 		ratio used in sports science and climbing coaching. Treat the bands as a nudge, not a diagnosis.
-		<a href="/docs/training-load">How it works</a>
+		<a class="how" href="/docs/training-load">How it works</a>
 	</p>
 </section>
 

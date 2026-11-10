@@ -227,13 +227,6 @@
 		align-items: flex-end;
 		gap: 0.2rem;
 	}
-	.how {
-		font-size: 0.82rem;
-		color: var(--ink-muted);
-		text-decoration: underline;
-		text-underline-offset: 0.15em;
-		white-space: nowrap;
-	}
 	.progress {
 		font-size: 0.9rem;
 		font-weight: 600;

@@ -163,10 +163,6 @@
 		margin: 1rem 0 0.5rem;
 		font-size: 0.9rem;
 	}
-	.how {
-		font-size: 0.85rem;
-		color: var(--ink-muted);
-	}
 	.lead {
 		margin: 0 0 0.9rem;
 		color: var(--ink-muted);

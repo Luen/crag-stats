@@ -177,11 +177,6 @@
 	.title-link:hover {
 		color: var(--accent);
 	}
-	.how {
-		font-size: 0.8rem;
-		font-weight: 600;
-		color: var(--accent);
-	}
 	.toggles {
 		display: flex;
 		gap: 0.35rem;

@@ -185,11 +185,6 @@
 	h2 a:hover {
 		color: var(--accent);
 	}
-	.how {
-		font-size: 0.8rem;
-		font-weight: 600;
-		color: var(--accent);
-	}
 	.top {
 		display: grid;
 		grid-template-columns: auto minmax(0, 1fr);

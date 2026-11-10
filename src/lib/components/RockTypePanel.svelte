@@ -69,10 +69,6 @@
 		margin: 0;
 		font-size: 1.05rem;
 	}
-	.how {
-		font-size: 0.85rem;
-		color: var(--ink-muted);
-	}
 	.bars {
 		list-style: none;
 		margin: 0;

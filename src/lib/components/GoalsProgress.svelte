@@ -80,13 +80,13 @@
 		align-items: baseline;
 		justify-content: flex-end;
 	}
-	header a {
+	header a:not(.how) {
 		font-size: 0.85rem;
 		font-weight: 600;
 		color: var(--accent);
 		text-decoration: none;
 	}
-	header a:hover {
+	header a:not(.how):hover {
 		text-decoration: underline;
 		text-underline-offset: 2px;
 	}

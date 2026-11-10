@@ -200,7 +200,7 @@
 			routes have a paired count snapshot.
 			{#if canEdit}<a href="/settings">Import or refresh route history in Settings</a>.{/if}
 		{/if}
-		<a href="/docs/first-ascents">How it works</a>
+		<a class="how" href="/docs/first-ascents">How it works</a>
 	</p>
 </article>
 
