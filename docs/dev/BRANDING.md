@@ -230,3 +230,5 @@ Owner-only project selection uses compact rounded pill buttons beside FA/FFA in 
 Logbook comments longer than 140 characters show a 120-character preview with an ellipsis. Expanding the native disclosure replaces that preview with the full comment in place; the same summary remains the collapse control. Preserve line breaks and the muted note tokens in both states.
 
 - Map & sectors uses a single sidebar entry at `/map`, pairing the existing bundled-outline, clustered world map with the expandable all-time crag/sector hierarchy below it. Map filters apply to markers and the values table; the hierarchy states its independent all-time scope.
+
+- French, YDS, and Font style-pyramid rows use their own grade labels and link to that grade's score range; Ewbank and V keep whole-grade rows. Logbook identifies a selected pyramid row and preserves its range through its existing controls.

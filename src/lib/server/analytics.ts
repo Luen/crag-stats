@@ -626,6 +626,7 @@ export function getDashboardStats(
 						if (v.native) {
 							params.set('tcMin', String(v.native.min));
 							params.set('tcMax', String(v.native.max));
+							params.set('gradeScale', isBoulder ? 'v' : 'route');
 						} else {
 							params.set('score', String(score));
 						}
@@ -1225,6 +1226,8 @@ export function listLogbook(filters?: {
 	/** theCrag-score range [tcMin, tcMax): one French/YDS/Font pyramid row (#450) */
 	tcMin?: number;
 	tcMax?: number;
+	/** Keep V-graded DWS/highballs separate from route-scaled climbs of the same style. */
+	gradeScale?: 'route' | 'v';
 	/** Inclusive route (non-boulder) score floor — Ewbank-canonical */
 	minScore?: number;
 	/** Inclusive route (non-boulder) score ceiling — Ewbank-canonical */
@@ -1429,6 +1432,10 @@ export function listLogbook(filters?: {
 			const score = r.effectiveGradeScore ?? r.gradeScore;
 			return score != null && Math.round(score) === target;
 		});
+	}
+	if (filters?.gradeScale === 'route' || filters?.gradeScale === 'v') {
+		const wantV = filters.gradeScale === 'v';
+		rows = rows.filter((r) => usesVScale(r.gradeSystem, r.gearStyle) === wantV);
 	}
 	if (
 		filters?.tcMin != null &&

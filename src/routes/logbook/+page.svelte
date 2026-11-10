@@ -59,6 +59,7 @@
 		if (data.maxScore !== '') p.set('maxScore', String(data.maxScore));
 		if (data.year !== '') p.set('year', String(data.year));
 		if (data.score !== '') p.set('score', String(data.score));
+		if (data.gradeScale) p.set('gradeScale', data.gradeScale);
 		if (data.tcMin !== '' && data.tcMax !== '') {
 			p.set('tcMin', String(data.tcMin));
 			p.set('tcMax', String(data.tcMax));
@@ -432,6 +433,9 @@
 		{#if data.tcMin !== '' && data.tcMax !== ''}
 			<input type="hidden" name="tcMin" value={data.tcMin} />
 			<input type="hidden" name="tcMax" value={data.tcMax} />
+		{/if}
+		{#if data.gradeScale}
+			<input type="hidden" name="gradeScale" value={data.gradeScale} />
 		{/if}
 		{#if data.score !== ''}
 			<input type="hidden" name="score" value={data.score} />

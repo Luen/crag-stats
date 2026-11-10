@@ -152,6 +152,8 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 	const tcMin = tcMinRaw ? Number(tcMinRaw) : NaN;
 	const tcMax = tcMaxRaw ? Number(tcMaxRaw) : NaN;
 	const tcRange = Number.isFinite(tcMin) && Number.isFinite(tcMax) ? { tcMin, tcMax } : null;
+	const scaleRaw = url.searchParams.get('gradeScale');
+	const gradeScale = scaleRaw === 'route' || scaleRaw === 'v' ? scaleRaw : undefined;
 	const minScore = parseScoreBound(url.searchParams.get('minScore'));
 	const maxScore = parseScoreBound(url.searchParams.get('maxScore'));
 	const minStarsRaw = url.searchParams.get('minStars');
@@ -202,6 +204,7 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 		maxScore,
 		tcMin: tcRange?.tcMin,
 		tcMax: tcRange?.tcMax,
+		gradeScale,
 		year: year != null && Number.isFinite(year) ? year : undefined,
 		score: score != null && Number.isFinite(score) ? score : undefined,
 		band: band != null && Number.isFinite(band) ? band : undefined,
@@ -255,6 +258,7 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 		maxScore: maxScore ?? '',
 		tcMin: tcRange?.tcMin ?? '',
 		tcMax: tcRange?.tcMax ?? '',
+		gradeScale: gradeScale ?? '',
 		gradeOptions: routeGradeOptions(gradeSystem),
 		year: year != null && Number.isFinite(year) ? year : '',
 		score: score != null && Number.isFinite(score) ? score : '',
