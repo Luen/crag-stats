@@ -137,10 +137,6 @@
 		max-width: 44rem;
 		line-height: 1.45;
 	}
-	.head a {
-		color: var(--accent);
-		font-weight: 600;
-	}
 	.charts {
 		display: grid;
 		grid-template-columns: repeat(2, minmax(0, 1fr));

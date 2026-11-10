@@ -131,7 +131,7 @@
 		border-bottom: 1px solid var(--line);
 		font-size: 0.88rem;
 	}
-	a {
+	a:not(.how) {
 		color: inherit;
 		text-decoration: underline;
 		text-underline-offset: 2px;

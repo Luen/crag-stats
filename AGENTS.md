@@ -43,6 +43,8 @@ Self-hosted climbing analytics for [theCrag](https://www.thecrag.com/), inspired
 
 **Svelte MCP:** When editing `.svelte` files, use the official Svelte MCP (`list-sections` / `get-documentation` / `svelte-autofixer`) per project rules. Re-run autofixer until clean.
 
+**Docs links:** Shared `a.how` styles must also survive Svelte's scoped selectors. Remove docs-only anchor rules or exclude `.how` from broader rules; check computed default and hover colours in both themes (`e2e/docsLinks.spec.ts`).
+
 ---
 
 ## Repository map

@@ -102,10 +102,6 @@
 	.climate strong {
 		color: var(--ink);
 	}
-	.climate a {
-		color: var(--accent);
-		font-weight: 600;
-	}
 	.crags {
 		list-style: none;
 		margin: 0.85rem 0 0;

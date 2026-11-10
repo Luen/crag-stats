@@ -157,7 +157,7 @@
 		color: var(--ink-muted);
 		font-weight: 400;
 	}
-	a:hover {
+	a:not(.how):hover {
 		color: var(--accent);
 	}
 </style>

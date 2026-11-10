@@ -59,9 +59,6 @@
 		font-size: 0.92rem;
 		max-width: 42rem;
 	}
-	.head a {
-		color: var(--accent);
-	}
 	.meta {
 		margin-top: 0.5rem !important;
 		font-size: 0.82rem !important;
