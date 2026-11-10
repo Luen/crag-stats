@@ -13,6 +13,8 @@ Goals turn a target in your theCrag logbook into a progress bar on the dashboard
 
 Venue scope (outdoor / indoor / any) filters which ascents count. Grade goals default to **outdoor**.
 
+Saved goal targets and progress use numeric scores. Suggested goals show their known route or boulder grade in your selected display system.
+
 ## Grade readiness
 
 A grade goal asks for a **send ≥ target** (canonical score, usually Ewbank for routes or V-scale for boulders) in the goal year. The bar is **not** `best send ÷ target` — that made 22→23 look like ~96% when you still needed the send at 23.
