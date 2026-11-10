@@ -80,10 +80,6 @@
 		margin: 0;
 		font-size: 1.05rem;
 	}
-	.how {
-		font-size: 0.85rem;
-		color: var(--ink-muted);
-	}
 	.lead {
 		margin: 0 0 1rem;
 		color: var(--ink-muted);
@@ -161,7 +157,7 @@
 		color: var(--ink-muted);
 		font-weight: 400;
 	}
-	a:hover {
+	a:not(.how):hover {
 		color: var(--accent);
 	}
 </style>

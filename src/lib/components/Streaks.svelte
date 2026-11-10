@@ -86,10 +86,6 @@
 		margin: 0;
 		font-size: 1.05rem;
 	}
-	.how {
-		font-size: 0.85rem;
-		color: var(--ink-muted);
-	}
 	.cards {
 		display: grid;
 		grid-template-columns: repeat(2, 1fr);

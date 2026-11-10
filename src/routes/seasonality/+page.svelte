@@ -19,7 +19,9 @@
 	<h1>Seasonality search</h1>
 	<p>
 		Explore theCrag’s community climbing patterns by month. These are seasonal patterns, not a
-		weather forecast or conditions on your visits. <a href="/docs/best-months">How it works</a>
+		weather forecast or conditions on your visits. <a class="how" href="/docs/best-months"
+			>How it works</a
+		>
 	</p>
 	<p>
 		Search covers only climbs in your synced logbook. {formatNumber(

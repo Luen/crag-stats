@@ -20,7 +20,7 @@
 		mapped across {formatNumber(data.places.length, data.dateDisplay)} places. {formatNumber(
 			data.missing,
 			data.dateDisplay
-		)} ascents have no usable location. <a href="/docs/climbing-map">How it works</a>
+		)} ascents have no usable location. <a class="how" href="/docs/climbing-map">How it works</a>
 	</p>
 	<form method="GET" class="filters">
 		<label>From <input type="date" name="from" value={data.filters.from} /></label><label
@@ -131,7 +131,7 @@
 		border-bottom: 1px solid var(--line);
 		font-size: 0.88rem;
 	}
-	a {
+	a:not(.how) {
 		color: inherit;
 		text-decoration: underline;
 		text-underline-offset: 2px;

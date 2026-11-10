@@ -105,11 +105,6 @@
 		margin: 0 0 0.75rem;
 		font-size: 1.05rem;
 	}
-	.how {
-		font-size: 0.8rem;
-		font-weight: 600;
-		color: var(--accent);
-	}
 	.lead {
 		margin: 0 0 1rem;
 		font-size: 0.88rem;

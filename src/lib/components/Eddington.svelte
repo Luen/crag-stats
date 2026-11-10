@@ -22,7 +22,7 @@
 	</div>
 	<p class="foot">
 		Like cycling's Eddington number: the biggest E you've hit E times.
-		<a href="/docs/eddington">How it works</a>
+		<a class="how" href="/docs/eddington">How it works</a>
 	</p>
 </article>
 

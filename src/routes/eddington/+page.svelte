@@ -22,7 +22,7 @@
 	<p>
 		Consistency metrics inspired by cycling's Eddington number — how your send days, vertical, and
 		grade indexes grew over time.
-		<a href="/docs/eddington">How it works</a>
+		<a class="how" href="/docs/eddington">How it works</a>
 	</p>
 	<p class="meta">
 		{formatNumber(data.stats.activeDays, data.dateDisplay)} active logbook days in total.
@@ -58,9 +58,6 @@
 		color: var(--ink-muted);
 		font-size: 0.92rem;
 		max-width: 42rem;
-	}
-	.head a {
-		color: var(--accent);
 	}
 	.meta {
 		margin-top: 0.5rem !important;

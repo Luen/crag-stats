@@ -55,7 +55,7 @@
 							<span class="note"
 								>Weather on the days you climbed here, not official climate normals.</span
 							>
-							<a href="/docs/weather">How it works</a>
+							<a class="how" href="/docs/weather">How it works</a>
 						</p>
 					{/if}
 					{#if open[crag.cragName]}
@@ -101,10 +101,6 @@
 	}
 	.climate strong {
 		color: var(--ink);
-	}
-	.climate a {
-		color: var(--accent);
-		font-weight: 600;
 	}
 	.crags {
 		list-style: none;

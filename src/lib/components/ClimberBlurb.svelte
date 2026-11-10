@@ -15,7 +15,7 @@
 				>{p.slice(routeLink.end)}{:else}{p}{/if}
 		</p>
 	{/each}
-	<p class="foot"><a href="/docs/climbing-story">How it works</a></p>
+	<p class="foot"><a class="how" href="/docs/climbing-story">How it works</a></p>
 </article>
 
 <style>
@@ -46,8 +46,5 @@
 		margin: 0.35rem 0 0;
 		color: var(--ink-muted);
 		font-size: 0.82rem;
-	}
-	.foot a {
-		text-decoration: underline;
 	}
 </style>

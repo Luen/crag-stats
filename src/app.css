@@ -173,6 +173,20 @@ a {
 	text-decoration: none;
 }
 
+/* Dashboard / panel docs links ("How it works") — always read as links */
+a.how {
+	color: var(--accent);
+	font-weight: 600;
+	font-size: 0.82rem;
+	text-decoration: underline;
+	text-underline-offset: 0.15em;
+	white-space: nowrap;
+}
+
+a.how:hover {
+	color: var(--accent-strong);
+}
+
 select,
 input,
 textarea {
