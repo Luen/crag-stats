@@ -16,7 +16,7 @@ test('CSRF still rejects a cross-site form POST', async ({ request }) => {
 			origin: 'http://evil.example',
 			'content-type': 'application/x-www-form-urlencoded'
 		},
-		data: 'system=ewbank&indexing=on'
+		data: 'routeSystem=ewbank&boulderSystem=v_scale&indexing=on'
 	});
 	expect(res.status()).toBe(403);
 });

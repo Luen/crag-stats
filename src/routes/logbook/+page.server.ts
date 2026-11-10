@@ -1,7 +1,7 @@
 import { parseSoloKind } from '#lib/soloKind';
 import { fail } from '@sveltejs/kit';
 import { listLogbook } from '#lib/server/analytics';
-import { getPreferredGradeSystem, getShowNotes } from '#lib/server/appSettings';
+import { getRouteGradeSystem, getShowNotes } from '#lib/server/appSettings';
 import { parseFirstAscentKind, routeExists, setFirstAscent } from '#lib/server/firstAscents';
 import { notesVisible } from '#lib/server/notes';
 import { getProjectOverrides } from '#lib/server/projectOverrides';
@@ -163,7 +163,7 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 	const page = Math.max(1, Number(url.searchParams.get('page') || '1'));
 	const limit = 50;
 	const notesShown = notesVisible(getShowNotes().enabled, locals.authed);
-	const gradeSystem = getPreferredGradeSystem();
+	const gradeSystem = getRouteGradeSystem();
 	const { total, rows, weatherAvailable } = listLogbook({
 		q: q || undefined,
 		route,

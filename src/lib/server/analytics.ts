@@ -19,6 +19,8 @@ import {
 	bandFromEwbank,
 	bandFromVScale,
 	boulderPyramidScoreKey,
+	DEFAULT_DISPLAY_SYSTEMS,
+	type DisplayGradeSystems,
 	formatGradeLabel as formatGrade,
 	ewbankToTheCragScore,
 	GRADE_BANDS,
@@ -269,14 +271,8 @@ function relativeTime(iso: string | null): string | null {
 	return `${Math.round(years)} years ago`;
 }
 
-export function parseGradeSystem(raw: string | null | undefined): GradeSystem {
-	const v = (raw || '').toLowerCase();
-	if (v === 'yds' || v === 'french' || v === 'ewbank' || v === 'v_scale' || v === 'font') return v;
-	return 'ewbank';
-}
-
 export function getDashboardStats(
-	preferredSystem: GradeSystem = 'ewbank',
+	gradeSystems: DisplayGradeSystems = DEFAULT_DISPLAY_SYSTEMS,
 	opts?: { pyramidMode?: PyramidMode; dateDisplay?: DateDisplay }
 ): DashboardStats {
 	const pyramidMode = opts?.pyramidMode ?? 'all';
@@ -509,7 +505,11 @@ export function getDashboardStats(
 			const byGrade = pyramid.get(styleKey)!;
 			// Boulder: keep VB+ out of V0; merge V0-/V0/V0+. Routes: integer score.
 			// French, YDS, and Font rows are that system's own grades, not rounded Ewbank/V (#450).
-			const native = nativePyramidBucket(rowScore, isBoulder, preferredSystem);
+			const native = nativePyramidBucket(
+				rowScore,
+				isBoulder,
+				isBoulder ? gradeSystems.boulder : gradeSystems.route
+			);
 			const key =
 				native?.key ?? (isBoulder ? boulderPyramidScoreKey(rowScore) : Math.round(rowScore));
 			const slot = byGrade.get(key) ?? {
@@ -615,13 +615,7 @@ export function getDashboardStats(
 			.map(([style, grades]) => {
 				const isBoulder = style === 'Boulder' || style.endsWith(V_SUFFIX);
 				const baseStyle = style.endsWith(V_SUFFIX) ? style.slice(0, -V_SUFFIX.length) : style;
-				const system: GradeSystem = isBoulder
-					? preferredSystem === 'font'
-						? 'font'
-						: 'v_scale'
-					: preferredSystem === 'v_scale' || preferredSystem === 'font'
-						? 'ewbank'
-						: preferredSystem;
+				const system: GradeSystem = isBoulder ? gradeSystems.boulder : gradeSystems.route;
 
 				const rows = [...grades.entries()]
 					.map(([score, v]) => {
@@ -636,7 +630,7 @@ export function getDashboardStats(
 							params.set('score', String(score));
 						}
 						return {
-							grade: v.native?.label ?? formatGrade(score, isBoulder, preferredSystem, null),
+							grade: v.native?.label ?? formatGrade(score, isBoulder, gradeSystems, null),
 							score,
 							band: bandId,
 							color: band?.color ?? '#888',
@@ -677,7 +671,7 @@ export function getDashboardStats(
 				groupUrl: hardest?.cragUrl && hardest.cragName === group ? hardest.cragUrl : null,
 				tickType,
 				count: agg.count,
-				hardestGrade: hScore != null ? formatGrade(hScore, isBoulder, preferredSystem, hRaw) : hRaw,
+				hardestGrade: hScore != null ? formatGrade(hScore, isBoulder, gradeSystems, hRaw) : hRaw,
 				hardestBand: hardest ? effectiveBand(hardest) : null,
 				hardestRoute: hardest
 					? displayRouteName(hardest.routeName, hardest.pitchLabel, hardest.ascentLabel)
@@ -825,7 +819,7 @@ export function getDashboardStats(
 				ascentCount: a.ascentCount,
 				popularity: a.popularity,
 				relativePopularity: a.relativePopularity,
-				gradeLabel: score != null ? formatGrade(score, isBoulder, preferredSystem, raw) : raw
+				gradeLabel: score != null ? formatGrade(score, isBoulder, gradeSystems, raw) : raw
 			};
 		})
 	);
@@ -857,7 +851,7 @@ export function getDashboardStats(
 			partners: r.partners,
 			routeName: displayRouteName(r.routeName, r.pitchLabel, r.ascentLabel),
 			gradeRaw: raw,
-			gradeLabel: score != null ? formatGrade(score, isBoulder, preferredSystem, raw) : raw,
+			gradeLabel: score != null ? formatGrade(score, isBoulder, gradeSystems, raw) : raw,
 			// Stored bands can be Ewbank-derived; boulder bands come from the V-score.
 			gradeBand:
 				isBoulder && score != null
@@ -893,7 +887,7 @@ export function getDashboardStats(
 				id: r.id,
 				routeName: displayRouteName(r.routeName, r.pitchLabel, r.ascentLabel),
 				gradeRaw: raw,
-				gradeLabel: score != null ? formatGrade(score, isBoulder, preferredSystem, raw) : raw,
+				gradeLabel: score != null ? formatGrade(score, isBoulder, gradeSystems, raw) : raw,
 				gradeBand: effectiveBand(r),
 				pitchLabel: r.pitchLabel,
 				tickType: r.tickType,
@@ -941,7 +935,7 @@ export function getDashboardStats(
 				isBoulder,
 				gradeLabel:
 					score != null
-						? formatGrade(score, isBoulder, preferredSystem, effectiveRaw(r))
+						? formatGrade(score, isBoulder, gradeSystems, effectiveRaw(r))
 						: effectiveRaw(r),
 				band:
 					isBoulder && score != null
@@ -1015,7 +1009,7 @@ export function getDashboardStats(
 		heightKm: Math.round(((accountHeightM ?? heightM) / 1000) * 10) / 10,
 		distinctRoutes: routeSet.size,
 		distinctCrags: cragMap.size,
-		preferredSystem,
+		gradeSystems,
 		heatmap,
 		styleShare,
 		tickBreakdown: [...tickMap.entries()]
@@ -1087,7 +1081,7 @@ export function getDashboardStats(
 				const isBoulder = vScale(r);
 				const score = r.gradeScore;
 				const gradeLabel =
-					score == null ? r.gradeRaw : formatGrade(score, isBoulder, preferredSystem, r.gradeRaw);
+					score == null ? r.gradeRaw : formatGrade(score, isBoulder, gradeSystems, r.gradeRaw);
 				byRoute.set(r.routeId, {
 					routeId: r.routeId,
 					source: firstAscentKindFor(importedMarks, r.routeProvider, r.routeExternalId)

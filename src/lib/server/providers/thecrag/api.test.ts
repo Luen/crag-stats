@@ -197,6 +197,51 @@ describe('mapAscent — multipitch', () => {
 	});
 });
 
+describe('mapAscent — multipitch in grade systems the parser cannot read (#451)', () => {
+	const route = {
+		id: 88,
+		name: 'Alpine Line',
+		grade: '7',
+		gradeSystem: 'UIAA',
+		style: 'Trad',
+		urlAncestorStub: 'austria/x'
+	};
+
+	it('uses the ascent gradeScore when the climbed UIAA pitch is the ascent grade', () => {
+		const mapped = mapAscent({
+			id: 88,
+			grade: '7',
+			gradeSystem: 'UIAA',
+			gradeScore: 200,
+			tick: { name: 'Red point' },
+			pitch: [
+				{ number: 1, grade: '7', gradeSystem: 'UIAA', tick: { label: 'Red point' } },
+				{ number: 2, grade: '5', gradeSystem: 'UIAA', tick: null }
+			],
+			route
+		});
+		expect(mapped!.effectiveGradeScore).toBeGreaterThan(15);
+		expect(mapped!.pitchLabel).toBe('P1');
+	});
+
+	it('falls back to the band midpoint for a different climbed UIAA pitch', () => {
+		const mapped = mapAscent({
+			id: 89,
+			grade: '9',
+			gradeSystem: 'UIAA',
+			gradeScore: 300,
+			tick: { name: 'Tick' },
+			pitch: [
+				{ number: 1, grade: '6-', gradeSystem: 'UIAA', gradeBand: 2, tick: { label: 'Tick' } },
+				{ number: 2, grade: '9', gradeSystem: 'UIAA', gradeBand: 4, tick: null }
+			],
+			route
+		});
+		expect(mapped!.effectiveGradeScore).toBe(15);
+		expect(mapped!.pitchLabel).toBe('P1');
+	});
+});
+
 describe('mapAscent — CPR / attempts / geo', () => {
 	it('maps numberAttempts and shifted/decayed CPR', () => {
 		const mapped = mapAscent({

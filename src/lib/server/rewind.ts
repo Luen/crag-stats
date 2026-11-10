@@ -1,6 +1,11 @@
 import { calendarDay as validDay } from '#lib/calendarDay';
 import { eq } from 'drizzle-orm';
-import { formatGradeLabel, usesVScale, type GradeSystem } from '#lib/grades';
+import {
+	DEFAULT_DISPLAY_SYSTEMS,
+	formatGradeLabel,
+	usesVScale,
+	type DisplayGradeSystems
+} from '#lib/grades';
 import { theCragAscentUrl } from '#lib/thecragUrls';
 import { tickKind } from '#lib/ticks';
 import { db, ensureSchema } from './db';
@@ -39,7 +44,7 @@ export function listRewindYears(): number[] {
 
 export function getRewindSummary(
 	year: number,
-	preferredSystem: GradeSystem = 'ewbank'
+	gradeSystems: DisplayGradeSystems = DEFAULT_DISPLAY_SYSTEMS
 ): RewindYearSummary {
 	ensureSchema();
 	const joined = db
@@ -90,7 +95,7 @@ export function getRewindSummary(
 					gradeRaw: formatGradeLabel(
 						score,
 						usesVScale(r.routeGradeSystem, r.gearStyle),
-						preferredSystem,
+						gradeSystems,
 						r.effectiveGradeRaw ?? r.routeGradeRaw
 					),
 					cragName: r.cragName,

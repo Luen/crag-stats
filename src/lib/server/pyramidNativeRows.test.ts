@@ -35,7 +35,7 @@ beforeAll(() => {
 
 describe('French pyramid rows', () => {
 	it('has one row per French grade, linking only its own ascents', () => {
-		const sport = getDashboardStats('french').stylePyramidsByMode.sends.find(
+		const sport = getDashboardStats({ route: 'french', boulder: 'v_scale' }).stylePyramidsByMode.sends.find(
 			(p) => p.style === 'Sport'
 		);
 		const rows = (sport?.rows ?? []).filter((r) => GRADES.includes(r.grade));
@@ -52,7 +52,7 @@ describe('French pyramid rows', () => {
 	});
 
 	it('keeps whole Ewbank rows for Ewbank display', () => {
-		const sport = getDashboardStats('ewbank').stylePyramidsByMode.sends.find(
+		const sport = getDashboardStats({ route: 'ewbank', boulder: 'v_scale' }).stylePyramidsByMode.sends.find(
 			(p) => p.style === 'Sport'
 		);
 		expect(sport?.rows.every((r) => new URL(r.href, 'http://x').searchParams.has('score'))).toBe(
