@@ -1,6 +1,5 @@
 import { eq } from 'drizzle-orm';
-import type { GradeSystem } from '#lib/grades';
-import { parseGradeSystem } from './analytics';
+import { resolveDisplaySystems, type DisplayGradeSystems } from '#lib/grades';
 import { authScope, isAuthEnabled } from './auth';
 import { db, ensureSchema } from './db';
 import { appSettings } from './db/schema';
@@ -11,7 +10,14 @@ export type { SearchIndexing };
 
 /** Keys stored in `app_settings` (migration 0008). */
 export type AppSettingKey =
-	'search_indexing' | 'grade_system' | 'dashboard_layout' | 'show_notes' | 'offline_revision';
+	| 'search_indexing'
+	/** Legacy single display system; still read as the fallback for the split keys below. */
+	| 'grade_system'
+	| 'route_grade_system'
+	| 'boulder_grade_system'
+	| 'dashboard_layout'
+	| 'show_notes'
+	| 'offline_revision';
 
 export function getAppSetting(key: AppSettingKey): string | null {
 	ensureSchema();
@@ -45,7 +51,23 @@ export function getShowNotes(): ShowNotes {
 	return resolveShowNotes({ stored: getAppSetting('show_notes') });
 }
 
-/** Site default grade system: Settings only; Ewbank when unset. */
-export function getPreferredGradeSystem(): GradeSystem {
-	return parseGradeSystem(getAppSetting('grade_system') || 'ewbank');
+/**
+ * Site display systems from Settings: one for routes (Ewbank when unset) and one for
+ * boulders (V-scale when unset). Installs that only saved the legacy `grade_system`
+ * keep showing what it showed.
+ */
+export function getDisplayGradeSystems(): DisplayGradeSystems {
+	return resolveDisplaySystems({
+		route: getAppSetting('route_grade_system'),
+		boulder: getAppSetting('boulder_grade_system'),
+		legacy: getAppSetting('grade_system')
+	});
+}
+
+export function getRouteGradeSystem() {
+	return getDisplayGradeSystems().route;
+}
+
+export function getBoulderGradeSystem() {
+	return getDisplayGradeSystems().boulder;
 }

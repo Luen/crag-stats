@@ -37,7 +37,7 @@ describe('buildSuggestedOutdoorGradeGoals', () => {
 		];
 		const suggestions = buildSuggestedOutdoorGradeGoals(rows, {
 			now,
-			preferredSystem: 'ewbank',
+			gradeSystems: { route: 'ewbank', boulder: 'v_scale' },
 			activeGoals: []
 		});
 		expect(suggestions).toHaveLength(1);
@@ -59,7 +59,7 @@ describe('buildSuggestedOutdoorGradeGoals', () => {
 		];
 		const suggestions = buildSuggestedOutdoorGradeGoals(rows, {
 			now,
-			preferredSystem: 'v_scale',
+			gradeSystems: { route: 'ewbank', boulder: 'v_scale' },
 			activeGoals: []
 		});
 		expect(suggestions).toHaveLength(1);
@@ -80,7 +80,7 @@ describe('buildSuggestedOutdoorGradeGoals', () => {
 		expect(
 			buildSuggestedOutdoorGradeGoals(rows, {
 				now,
-				preferredSystem: 'ewbank',
+				gradeSystems: { route: 'ewbank', boulder: 'v_scale' },
 				activeGoals: []
 			})
 		).toEqual([]);
@@ -90,7 +90,7 @@ describe('buildSuggestedOutdoorGradeGoals', () => {
 		const rows = [row({ ascentDate: '2025-03-01', effectiveGradeScore: 25 })];
 		const suggestions = buildSuggestedOutdoorGradeGoals(rows, {
 			now,
-			preferredSystem: 'ewbank',
+			gradeSystems: { route: 'ewbank', boulder: 'v_scale' },
 			activeGoals: [
 				{
 					kind: 'grade',

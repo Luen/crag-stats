@@ -50,7 +50,7 @@ beforeAll(() => {
 
 describe('a V-graded deep water solo', () => {
 	it('gets its own V-scale pyramid instead of an Ewbank "1"', () => {
-		const pyramids = getDashboardStats('ewbank').stylePyramidsByMode.sends;
+		const pyramids = getDashboardStats().stylePyramidsByMode.sends;
 		const dws = pyramids.find((p) => p.style.startsWith('DWS'));
 		expect(dws?.style).toBe('DWS · V');
 		expect(dws?.system).toBe('v_scale');
@@ -64,7 +64,7 @@ describe('a V-graded deep water solo', () => {
 	});
 
 	it('ranks with boulders in hardest sends and is labelled V1', () => {
-		const sends = getDashboardStats('ewbank').hardestSends;
+		const sends = getDashboardStats().hardestSends;
 		const dws = sends.find((s) => s.routeName === 'Synthetic DWS');
 		expect(dws?.discipline).toBe('boulder');
 		expect(dws?.gradeLabel).toBe('V1');

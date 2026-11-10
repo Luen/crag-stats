@@ -4,13 +4,7 @@
  */
 
 import { calendarDay as validDay } from '#lib/calendarDay';
-import {
-	convertFromEwbank,
-	convertFromVScale,
-	formatVScaleLabel,
-	usesVScale,
-	type GradeSystem
-} from '#lib/grades';
+import { formatGradeLabel, usesVScale, type DisplayGradeSystems } from '#lib/grades';
 
 /** Same indoor heuristics as `#lib/server/venue` (kept local so this module stays non-server). */
 function isOutdoorRow(row: {
@@ -61,15 +55,6 @@ export type SuggestedGoalAscent = {
 	tagsJson: string | null;
 };
 
-function formatScore(score: number, boulder: boolean, system: GradeSystem): string {
-	if (boulder) {
-		if (system === 'font') return convertFromVScale(score, 'font');
-		return formatVScaleLabel(score);
-	}
-	const routeSystem: GradeSystem = system === 'v_scale' || system === 'font' ? 'ewbank' : system;
-	return convertFromEwbank(score, routeSystem);
-}
-
 function windowStartIso(now: Date): string {
 	const start = new Date(now);
 	start.setFullYear(start.getFullYear() - 2);
@@ -107,7 +92,7 @@ export function buildSuggestedOutdoorGradeGoals(
 	rows: SuggestedGoalAscent[],
 	opts: {
 		now?: Date;
-		preferredSystem: GradeSystem;
+		gradeSystems: DisplayGradeSystems;
 		activeGoals?: SuggestedGoalActive[];
 	}
 ): SuggestedGradeGoal[] {
@@ -138,8 +123,8 @@ export function buildSuggestedOutdoorGradeGoals(
 	const push = (family: SuggestedGradeFamily, maxScore: number) => {
 		const boulder = family === 'boulder';
 		const targetScore = nextGradeStep(maxScore);
-		const maxLabel = formatScore(maxScore, boulder, opts.preferredSystem);
-		const targetLabel = formatScore(targetScore, boulder, opts.preferredSystem);
+		const maxLabel = formatGradeLabel(maxScore, boulder, opts.gradeSystems);
+		const targetLabel = formatGradeLabel(targetScore, boulder, opts.gradeSystems);
 		const alreadyTracking = trackingSame(active, targetScore, year, boulder);
 		out.push({
 			family,
