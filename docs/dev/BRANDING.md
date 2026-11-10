@@ -247,3 +247,8 @@ keyboard arrows/Enter/Escape, and touch selection. Crag/sector/route options inc
 area/provider context when names repeat. Rock type uses a native select with a cached-tag
 empty state. From/To use labeled native date inputs; the preset select fills those fields
 without creating a separate active filter. Controls wrap on narrow screens and use theme tokens.
+
+Logbook name filters use a four-column grid on wide screens (Search spans two columns),
+a two-column grid on tablets, and a single column on phones. Every name field has a label
+and the same control height; helper text sits outside the grid. Dates have a dedicated row,
+with Solo type and Grade band grouped beside the other select filters.

@@ -162,3 +162,30 @@ for (const mobile of [false, true]) {
 		}
 	});
 }
+
+test('filter controls align in rows and wrap without overflow', async ({ page }) => {
+	for (const width of [1920, 1024, 390]) {
+		await page.setViewportSize({ width, height: 1080 });
+		await page.goto('/logbook');
+		const fields = page.locator('.names-row').locator('input:not([type="hidden"]), select');
+		await expect(fields).toHaveCount(7);
+		const boxes = await fields.evaluateAll((elements) =>
+			elements.map((element) => {
+				const { x, y, width, height } = element.getBoundingClientRect();
+				return { x, y, width, height };
+			})
+		);
+		for (const box of boxes) {
+			expect(Math.abs(box.height - boxes[0].height)).toBeLessThanOrEqual(1);
+			expect(box.x + box.width).toBeLessThanOrEqual(width);
+		}
+		if (width === 1920) {
+			for (const box of boxes.slice(0, 3))
+				expect(Math.abs(box.y - boxes[0].y)).toBeLessThanOrEqual(1);
+			for (const box of boxes.slice(3)) expect(Math.abs(box.y - boxes[3].y)).toBeLessThanOrEqual(1);
+		} else if (width === 390) {
+			for (const box of boxes) expect(Math.abs(box.x - boxes[0].x)).toBeLessThanOrEqual(1);
+		}
+		await page.locator('.filters').screenshot({ path: `e2e/.tmp/logbook-layout-${width}.png` });
+	}
+});

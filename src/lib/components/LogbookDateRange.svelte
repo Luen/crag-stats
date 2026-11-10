@@ -55,8 +55,8 @@
 		</select></label
 	>
 	<p id={`${id}-help`}>
-		Both boundaries include that day. Leave either blank for a one-sided range. Presets fill these
-		dates; apply filters to search.
+		Leave either date blank for an open-ended range. Presets fill these dates; apply filters to
+		search.
 	</p>
 	{#if error}<p role="alert">{error}</p>{/if}
 </div>

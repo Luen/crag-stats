@@ -187,14 +187,17 @@
 			name="weatherHighMax"
 			value={data.weatherHighMax}
 		/>{/if}
-	<div class="filter-row">
-		<input
-			name="q"
-			value={data.q}
-			placeholder={data.notesShown
-				? 'Search route, crag, partners, notes…'
-				: 'Search route, crag, partners…'}
-		/>
+	<div class="filter-row names-row">
+		<label class="filter-field search-field"
+			>Search
+			<input
+				name="q"
+				value={data.q}
+				placeholder={data.notesShown
+					? 'Search route, crag, partners, notes…'
+					: 'Search route, crag, partners…'}
+			/>
+		</label>
 		{#key data}
 			<LogbookAutocomplete
 				name="routeName"
@@ -235,13 +238,21 @@
 				options={data.options.partners}
 			/>
 		{/key}
-		<select name="partnerMatch" aria-label="Partner match" value={data.partnerMatch}>
-			<option value="contains">Partner name contains</option>
-			<option value="exact">Exact partner name</option>
-		</select>
+		<label class="filter-field"
+			>Partner match
+			<select name="partnerMatch" aria-label="Partner match" value={data.partnerMatch}>
+				<option value="contains">Partner name contains</option>
+				<option value="exact">Exact partner name</option>
+			</select>
+		</label>
 		<label class="rock-filter"
 			>Rock type
-			<select name="rock" aria-label="Rock type" value={data.rock} aria-describedby="rock-help">
+			<select
+				name="rock"
+				aria-label="Rock type"
+				value={data.rock}
+				aria-describedby={data.options.rocks.length ? undefined : 'rock-help'}
+			>
 				<option value="">Any rock type</option>
 				{#if data.rock && !data.options.rocks.some((r) => r.value === data.rock)}
 					<option value={data.rock}>{data.rock} (not in cached logbook)</option>
@@ -250,13 +261,12 @@
 						>{rock.label}</option
 					>{/each}
 			</select>
-			<span id="rock-help"
-				>{data.options.rocks.length
-					? 'From cached logged routes.'
-					: 'No rock type tags cached for logged routes yet.'}</span
-			>
 		</label>
 	</div>
+
+	{#if !data.options.rocks.length}<p class="filter-help" id="rock-help">
+			No rock type tags cached for logged routes yet.
+		</p>{/if}
 
 	<div class="filter-row">
 		{#key data}<LogbookDateRange
@@ -266,6 +276,9 @@
 				today={data.today}
 				error={data.dateError}
 			/>{/key}
+	</div>
+
+	<div class="filter-row">
 		<select name="solo" aria-label="Solo type" value={data.solo}>
 			<option value="">Any solo type</option>
 			{#each SOLO_KINDS as kind (kind.kind)}
@@ -280,9 +293,6 @@
 			<option value="4">Expert</option>
 			<option value="5">Elite</option>
 		</select>
-	</div>
-
-	<div class="filter-row">
 		<select name="minScore" aria-label="Minimum route grade" value={String(data.minScore)}>
 			<option value="">Min route grade</option>
 			{#each data.gradeOptions as g (g.score)}
@@ -693,21 +703,9 @@
 {/if}
 
 <style>
-	.rock-filter {
-		display: flex;
-		flex-direction: column;
-		gap: 0.25rem;
-		font-size: 0.8rem;
-		color: var(--ink-muted);
-		flex: 1 1 12rem;
-		min-width: 0;
-	}
 	.rock-filter select {
 		width: 100%;
 		min-width: 0;
-	}
-	.rock-filter span {
-		font-size: 0.75rem;
 	}
 
 	.weather-values {
@@ -750,11 +748,31 @@
 		flex-direction: column;
 		gap: 0.75rem;
 	}
+	.filter-field,
+	.rock-filter {
+		display: flex;
+		flex-direction: column;
+		gap: 0.25rem;
+		font-size: 0.8rem;
+		color: var(--ink-muted);
+		min-width: 0;
+	}
+	.filter-help {
+		margin: 0;
+		font-size: 0.8rem;
+		color: var(--ink-muted);
+	}
+	.search-field {
+		grid-column: span 2;
+	}
 	.filter-row {
 		display: grid;
 		grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
 		gap: 0.5rem;
-		align-items: center;
+		align-items: start;
+	}
+	.names-row {
+		grid-template-columns: repeat(4, minmax(0, 1fr));
 	}
 	.filter-row.actions {
 		grid-template-columns: auto 1fr;
@@ -770,6 +788,25 @@
 		border-radius: 0.45rem;
 		border: 1px solid var(--line);
 		background: var(--paper);
+	}
+	.filters :global(input:not([type='checkbox']):not([type='hidden'])),
+	.filters :global(select) {
+		min-height: 2.6rem;
+		font-size: 0.9rem;
+		line-height: 1.3;
+	}
+	@media (max-width: 1100px) {
+		.names-row {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+	}
+	@media (max-width: 600px) {
+		.names-row {
+			grid-template-columns: minmax(0, 1fr);
+		}
+		.search-field {
+			grid-column: auto;
+		}
 	}
 	.filters button[type='submit'] {
 		font: inherit;
