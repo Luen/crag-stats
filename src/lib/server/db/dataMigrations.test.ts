@@ -62,6 +62,31 @@ function seedOldGrades() {
 }
 
 describe('startup data migrations', () => {
+	it('repairs cached UIAA pitches through the unreleased universal-score migration', () => {
+		runDataMigrations();
+		const mapped = mapAscent({
+			id: 81999,
+			grade: '7',
+			gradeSystem: 'UIAA',
+			gradeScore: 226,
+			gradeBand: 3,
+			tick: { name: 'Red point' },
+			pitch: [
+				{ number: 1, grade: '7', gradeSystem: 'UIAA', tick: { name: 'Red point' } },
+				{ number: 2, grade: '9', gradeSystem: 'UIAA', tick: null }
+			],
+			route: { id: 81999, name: 'Synthetic UIAA', grade: '9', style: 'Trad' }
+		})!;
+		upsertAscents([mapped]);
+		db.update(ascents).set({ effectiveGradeScore: 7 }).where(eq(ascents.externalId, '81999')).run();
+		db.run(sql`DELETE FROM schema_migrations WHERE id = 'data:0012_thecrag_grade_scores'`);
+		expect(runDataMigrations()).toEqual(['data:0012_thecrag_grade_scores']);
+		const repaired = db.select().from(ascents).where(eq(ascents.externalId, '81999')).get()!;
+		expect(repaired.effectiveGradeScore).toBe(20);
+		expect(repaired.pitchLabel).toBe('P1');
+		expect(runDataMigrations()).toEqual([]);
+	});
+
 	it('removes legacy API response bodies without changing sync history or other errors', () => {
 		runDataMigrations();
 		db.run(sql`DELETE FROM schema_migrations WHERE id = 'data:0011_remove_unsafe_api_errors'`);
