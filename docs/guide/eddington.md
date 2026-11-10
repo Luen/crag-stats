@@ -28,6 +28,8 @@ This is closer to an academic **h-index** than to Eddington: E sends at grade E 
 
 Same as the route index, on the V-scale. Split grades like V5/6 count as the lower grade. Because V-grades are coarse, this number is small. A boulder index of 4 (four problems at V4+) is already solid.
 
+The **Share & embed** card keeps these index values numeric. Its explanations show each current threshold and the next milestone, with route and boulder grade labels following Settings. A boulder index of **4** still means four problems at **V4 or harder**, even when the threshold is displayed in Font; changing display systems does not change any index or count.
+
 ## The "more for E+1" line
 
 Under each number the card shows how many more qualifying days or routes you need for the next one. With a send-days E of 8 and four days of 9+ sends already, you need **5 more** 9-send days to reach 9.

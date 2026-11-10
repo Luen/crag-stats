@@ -97,6 +97,7 @@ describe('buildSuggestedOutdoorGradeGoals', () => {
 					title: 'Send outdoor 26 in 2026',
 					targetValue: '26',
 					targetGradeScore: 26,
+					gradeScale: 'route',
 					year: 2026,
 					venueScope: 'outdoor',
 					completed: false
@@ -104,5 +105,33 @@ describe('buildSuggestedOutdoorGradeGoals', () => {
 			]
 		});
 		expect(suggestions[0]?.alreadyTracking).toBe(true);
+	});
+
+	it('uses stored scale rather than a custom title to identify tracked goals', () => {
+		const rows = [
+			row({
+				ascentDate: '2025-03-01',
+				effectiveGradeScore: 4,
+				gradeSystem: 'v_scale',
+				gearStyle: 'DWS'
+			})
+		];
+		const active = {
+			kind: 'grade',
+			completed: false,
+			targetGradeScore: 5,
+			year: 2026,
+			venueScope: 'outdoor',
+			title: 'Route title can say V5'
+		};
+		const build = (gradeScale: string | null) =>
+			buildSuggestedOutdoorGradeGoals(rows, {
+				now,
+				gradeSystems: { route: 'ewbank', boulder: 'v_scale' },
+				activeGoals: [{ ...active, gradeScale }]
+			})[0].alreadyTracking;
+		expect(build(null)).toBe(false);
+		expect(build('route')).toBe(false);
+		expect(build('boulder')).toBe(true);
 	});
 });

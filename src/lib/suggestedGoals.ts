@@ -5,6 +5,7 @@
 
 import { calendarDay as validDay } from '#lib/calendarDay';
 import { formatGradeLabel, usesVScale, type DisplayGradeSystems } from '#lib/grades';
+import { parseGoalGradeScale } from '#lib/goalGrades';
 
 /** Same indoor heuristics as `#lib/server/venue` (kept local so this module stays non-server). */
 function isOutdoorRow(row: {
@@ -38,6 +39,7 @@ export type SuggestedGoalActive = {
 	kind: string;
 	completed: boolean;
 	targetGradeScore: number | null;
+	gradeScale?: string | null;
 	year: number | null;
 	venueScope: string | null;
 	title?: string | null;
@@ -78,10 +80,7 @@ function trackingSame(
 		if ((g.venueScope || 'outdoor') !== 'outdoor') return false;
 		if (g.targetGradeScore == null) return false;
 		if (Math.abs(g.targetGradeScore - targetScore) > 0.01) return false;
-		const blob = `${g.title ?? ''} ${g.targetValue ?? ''}`.toLowerCase();
-		const looksBoulder = /\bv\d|font|boulder/.test(blob);
-		if (boulder) return looksBoulder || !/\b(sport|trad|route)\b/.test(blob);
-		return !looksBoulder;
+		return parseGoalGradeScale(g.gradeScale) === (boulder ? 'boulder' : 'route');
 	});
 }
 

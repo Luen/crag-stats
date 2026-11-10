@@ -1,4 +1,7 @@
 import { calendarDay as validDay } from '#lib/calendarDay';
+import { formatGradeLabel, usesVScale } from '#lib/grades';
+import { parseGoalGradeScale, parseScaledGoalGrade, type GoalGradeScale } from '#lib/goalGrades';
+import { getDisplayGradeSystems } from './appSettings';
 import { desc, eq } from 'drizzle-orm';
 import { db, ensureSchema } from './db';
 import { ascents, goals, routes, type Goal } from './db/schema';
@@ -6,7 +9,6 @@ import {
 	defaultVenueForKind,
 	gradeGoalReadiness,
 	kindLabel,
-	parseGoalGradeScore,
 	progressPct,
 	type GoalKind
 } from './goalsShared';
@@ -44,6 +46,7 @@ type AscentRouteRow = {
 	isSend: boolean;
 	isAttempt: boolean;
 	effectiveGradeScore: number | null;
+	gradeSystem: string | null;
 	gearStyle: string | null;
 	routeName: string | null;
 	cragName: string | null;
@@ -59,6 +62,7 @@ function loadAscentRouteRows(): AscentRouteRow[] {
 			isSend: ascents.isSend,
 			isAttempt: ascents.isAttempt,
 			effectiveGradeScore: ascents.effectiveGradeScore,
+			gradeSystem: routes.gradeSystem,
 			gearStyle: routes.gearStyle,
 			routeName: routes.name,
 			cragName: routes.cragName,
@@ -94,6 +98,8 @@ function gradeGoalSendEvidence(
 	const today = new Date().toISOString().slice(0, 10);
 
 	for (const a of ascentRows) {
+		const scale = parseGoalGradeScale(g.gradeScale);
+		if (!scale || usesVScale(a.gradeSystem, a.gearStyle) !== (scale === 'boulder')) continue;
 		if (
 			!matchesVenueScope(venue, {
 				gearStyle: a.gearStyle,
@@ -140,13 +146,16 @@ function enrichGoal(g: Goal, ascentRows: AscentRouteRow[] = []): GoalView {
 	let pct: number;
 	let progressLabel: string;
 	let targetLabel: string;
+	let title = g.title;
 
 	if (g.kind === 'grade') {
-		// Saved goals have no grade scale. Keep numeric labels until route/V identity is
-		// persisted; treating every target as Ewbank would mislabel boulder goals.
+		const scale = parseGoalGradeScale(g.gradeScale);
+		const systems = getDisplayGradeSystems();
+		const formatScore = (score: number) => formatGradeLabel(score, scale === 'boulder', systems);
 		const target = g.targetGradeScore ?? targetNum;
 		const evidence = gradeGoalSendEvidence(g, ascentRows, new Date().getFullYear());
 		const readiness = gradeGoalReadiness({
+			formatScore,
 			target,
 			bestSend: evidence.best,
 			routesAtNMinus1: evidence.routesAtNMinus1,
@@ -157,11 +166,18 @@ function enrichGoal(g: Goal, ascentRows: AscentRouteRow[] = []): GoalView {
 		pct = g.completed ? 100 : readiness.pct;
 		progressLabel = g.completed
 			? evidence.best != null
-				? `Best send ${evidence.best} · done`
+				? `Best send ${formatScore(evidence.best)} · done`
 				: 'Done'
 			: readiness.label;
-		targetLabel = Number.isFinite(target) ? `Send ≥ ${target}` : 'Grade goal';
+		targetLabel = Number.isFinite(target) ? `Send ≥ ${formatScore(target)}` : 'Grade goal';
 		if (g.year) targetLabel += ` · ${g.year}`;
+		if (!scale) {
+			pct = 0;
+			targetLabel = `Grade scale needed · target score ${target}${g.year ? ` · ${g.year}` : ''}`;
+			progressLabel = 'Choose route or boulder grades to calculate progress.';
+		} else if (g.suggested) {
+			title = `Send${venue === 'any' ? '' : ` ${venue}`} ${formatScore(target)}${g.year ? ` in ${g.year}` : ''}`;
+		}
 	} else if (g.kind === 'height_year') {
 		const metres = Number.isFinite(currentNum) ? currentNum : 0;
 		const target = Number.isFinite(targetNum) ? targetNum : 0;
@@ -186,6 +202,8 @@ function enrichGoal(g: Goal, ascentRows: AscentRouteRow[] = []): GoalView {
 
 	return {
 		...g,
+		title,
+		completed: g.kind === 'grade' && !parseGoalGradeScale(g.gradeScale) ? false : g.completed,
 		venueScope: venue,
 		progressPct: pct,
 		progressLabel,
@@ -217,6 +235,8 @@ export function createGoal(input: {
 	title: string;
 	targetValue?: string | null;
 	targetGradeScore?: number | null;
+	gradeScale?: GoalGradeScale;
+	suggested?: boolean;
 	year?: number | null;
 	venueScope?: string | null;
 }): GoalView {
@@ -239,7 +259,7 @@ export function createGoal(input: {
 			? input.targetGradeScore
 			: null;
 	if (kind === 'grade' && targetGradeScore == null && input.targetValue) {
-		targetGradeScore = parseGoalGradeScore(input.targetValue);
+		targetGradeScore = parseScaledGoalGrade(input.targetValue, input.gradeScale ?? 'route');
 	}
 
 	const inserted = db
@@ -249,6 +269,8 @@ export function createGoal(input: {
 			title,
 			targetValue: input.targetValue?.trim() || null,
 			targetGradeScore,
+			gradeScale: kind === 'grade' ? (input.gradeScale ?? 'route') : null,
+			suggested: kind === 'grade' && input.suggested === true,
 			year,
 			venueScope,
 			progressValue: null,
@@ -268,6 +290,19 @@ export function createGoal(input: {
 export function deleteGoal(id: number) {
 	ensureSchema();
 	db.delete(goals).where(eq(goals.id, id)).run();
+}
+
+/** Owner-selected identity for legacy goals; never infer a scale from free-text titles. */
+export function setGoalGradeScale(id: number, scale: GoalGradeScale, suggested: boolean): boolean {
+	ensureSchema();
+	const goal = db.select().from(goals).where(eq(goals.id, id)).get();
+	if (!goal || goal.kind !== 'grade') return false;
+	db.update(goals)
+		.set({ gradeScale: scale, suggested, updatedAt: nowIso() })
+		.where(eq(goals.id, id))
+		.run();
+	updateGoalProgress();
+	return true;
 }
 
 export function setGoalCompleted(id: number, completed: boolean) {
@@ -339,6 +374,8 @@ export function updateGoalProgress(): void {
 			const target = Number(g.targetValue);
 			completed = Number.isFinite(target) && target > 0 && days.size >= target;
 		} else if (g.kind === 'grade') {
+			// Preserve legacy local data until the owner supplies the missing scale.
+			if (!parseGoalGradeScale(g.gradeScale)) continue;
 			const target = g.targetGradeScore;
 			const { best } = gradeGoalSendEvidence(g, ascentRows, currentYear);
 			progressValue = best != null ? String(Math.round(best * 10) / 10) : '0';

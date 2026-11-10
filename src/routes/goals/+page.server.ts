@@ -1,10 +1,11 @@
 import { fail } from '@sveltejs/kit';
+import { parseGoalGradeScale, parseScaledGoalGrade } from '#lib/goalGrades';
 import {
 	createGoal,
 	deleteGoal,
 	listGoals,
-	parseGoalGradeScore,
 	setGoalCompleted,
+	setGoalGradeScale,
 	type GoalKind
 } from '#lib/server/goals';
 import { listSuggestedGradeGoals } from '#lib/server/suggestedGoals';
@@ -33,13 +34,17 @@ export const actions: Actions = {
 		const targetValue = String(form.get('targetValue') || '').trim() || null;
 		const yearRaw = String(form.get('year') || '').trim();
 		const gradeRaw = String(form.get('targetGradeScore') || form.get('grade') || '').trim();
+		const gradeScale = parseGoalGradeScale(form.get('gradeScale'));
 		const venueScope = String(form.get('venueScope') || '').trim() || null;
 		if (!title) return fail(400, { ok: false, message: 'Title is required' });
 
 		const year = yearRaw ? Number(yearRaw) : null;
-		let targetGradeScore = gradeRaw ? parseGoalGradeScore(gradeRaw) : null;
+		if (kind === 'grade' && !gradeScale)
+			return fail(400, { ok: false, message: 'Choose route or boulder grades' });
+		let targetGradeScore =
+			gradeRaw && gradeScale ? parseScaledGoalGrade(gradeRaw, gradeScale) : null;
 		if (kind === 'grade' && targetGradeScore == null && targetValue) {
-			targetGradeScore = parseGoalGradeScore(targetValue);
+			targetGradeScore = gradeScale ? parseScaledGoalGrade(targetValue, gradeScale) : null;
 		}
 		if (kind === 'grade' && (targetGradeScore == null || !Number.isFinite(targetGradeScore))) {
 			return fail(400, {
@@ -54,8 +59,21 @@ export const actions: Actions = {
 			targetValue: kind === 'grade' ? String(targetGradeScore) : targetValue,
 			year: year != null && Number.isFinite(year) ? year : null,
 			targetGradeScore,
+			gradeScale: gradeScale ?? undefined,
+			suggested: form.get('suggested') === '1',
 			venueScope
 		});
+		return { ok: true };
+	},
+	scale: async ({ request, locals }) => {
+		if (!locals.authed) return fail(403, NOT_OWNER);
+		const form = await request.formData();
+		const id = Number(form.get('id'));
+		const scale = parseGoalGradeScale(form.get('gradeScale'));
+		if (!Number.isInteger(id) || !scale)
+			return fail(400, { ok: false, message: 'Choose route or boulder grades' });
+		if (!setGoalGradeScale(id, scale, form.get('suggested') === '1'))
+			return fail(404, { ok: false, message: 'Grade goal not found' });
 		return { ok: true };
 	},
 	complete: async ({ request, locals }) => {

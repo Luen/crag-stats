@@ -183,6 +183,9 @@ export const goals = sqliteTable('goals', {
 	title: text('title').notNull(),
 	targetValue: text('target_value'),
 	targetGradeScore: real('target_grade_score'),
+	/** route | boulder; null on legacy goals until the owner chooses. */
+	gradeScale: text('grade_scale'),
+	suggested: integer('suggested', { mode: 'boolean' }).notNull().default(false),
 	year: integer('year'),
 	progressValue: text('progress_value'),
 	completed: integer('completed', { mode: 'boolean' }).notNull().default(false),

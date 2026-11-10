@@ -584,6 +584,8 @@ World map (#313): `/map` uses bundled public-domain Natural Earth outlines, serv
 
 - Grade display (#454): use formatClimbGrade for individual Projects/Logbook labels (selected-system effective grade, original route text in parentheses when different); use formatGradeLabel for aggregates, chart axes, milestones, and scale-aware suggestions. Never change canonical scores to change presentation, and use usesVScale for DWS/highballs. User guides must not contain grade-repair/migration internals (#455); put upgrade behaviour in PR Release notes.
 
-- Saved grade goals do not persist route/V identity. Keep their existing numeric target/evidence labels until a scale is stored; never format every saved score as Ewbank or infer its scale from the free-text title. Suggested goals already know their scale and use selected-system labels.
+- Grade goals (#463) persist `grade_scale=route|boulder` and a `suggested` title flag (0022). Filter all evidence with usesVScale; never infer identity from a title. Legacy null-scale goals preserve stored fields, appear as needing a scale choice, and withhold progress until the owner chooses. Targets/evidence and automatic titles follow Settings; custom titles remain untouched. V0 and negative V targets are valid.
+
+- Eddington SVG embeds (#464) keep index tiles numeric, with grade-index labels and current/next explanations. Only explanatory grades follow Settings; E values, counts, and canonical thresholds never change with display preferences.
 
 - Top dashboard grade records (#456) use buildGradeRecords: all-time sends only, effective score first, one result per route/V scale. First-go accepts successful onsight/flash ticks only; ties prefer onsight, then stored ascent id. Format in selected systems; no guessed grades for missing scores.

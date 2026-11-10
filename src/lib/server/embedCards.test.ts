@@ -59,6 +59,34 @@ const stats = {
 } as unknown as DashboardStats;
 
 describe('embed cards', () => {
+	it('formats Eddington grade thresholds in the selected systems while retaining counts', () => {
+		const selected = {
+			...stats,
+			eddington: {
+				...stats.eddington,
+				routeGrade: { value: 21, next: 22, needed: 8 },
+				boulderGrade: { value: 4, next: 5, needed: 4 }
+			},
+			gradeSystems: { route: 'french', boulder: 'v_scale' }
+		} as DashboardStats;
+		const svg = renderEmbedCard('eddington', selected, 'light');
+		expect(svg).toContain('>21<');
+		expect(svg).toContain('>4<');
+		expect(svg).not.toContain('>V4<');
+		expect(svg).toContain('route grade index');
+		expect(svg).toContain('21 routes sent at French 6b+ or harder');
+		expect(svg).toContain('4 problems sent at V4 or harder');
+		expect(svg).toContain('4 more problems at ≥ V5 for index 5');
+		const font = renderEmbedCard(
+			'eddington',
+			{ ...selected, gradeSystems: { route: 'ewbank', boulder: 'font' } },
+			'dark'
+		);
+		expect(font).toContain('>21<');
+		expect(font).toContain('>4<');
+		expect(font).toContain('21 routes sent at Ewbank 21 or harder');
+		expect(font).toContain('4 problems sent at Font 6B or harder');
+	});
 	it('validates card ids and themes', () => {
 		expect(EMBED_CARDS.every(isEmbedCard)).toBe(true);
 		expect(isEmbedCard('notes')).toBe(false);

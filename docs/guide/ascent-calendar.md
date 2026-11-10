@@ -4,7 +4,7 @@ The **Ascent calendar** is a year-long heatmap of days you logged climbs. Cells 
 
 ## Intensity
 
-Colours scale with how many ascents you logged that day (empty → few → many), using the same green heat ramp as Dreeve. Attempts count toward intensity; the tooltip still separates send count.
+Colours scale with how many ascents you logged that day (empty → few → many), using the same green heat ramp. Attempts count toward intensity; the tooltip still separates send count.
 
 ## Grade
 

@@ -13,7 +13,9 @@ Goals turn a target in your theCrag logbook into a progress bar on the dashboard
 
 Venue scope (outdoor / indoor / any) filters which ascents count. Grade goals default to **outdoor**.
 
-Saved goal targets and progress use numeric scores. Suggested goals show their known route or boulder grade in your selected display system.
+Grade goals keep their **Routes** or **Boulders** scale. Targets and progress labels follow the corresponding grade system in Settings; changing the display system does not change the target or percentage. Suggested-goal titles follow Settings too, while custom titles stay as entered. In a goal's **Grade preferences**, you can choose its scale and whether to use an automatic title.
+
+If a goal says **Grade scale needed**, its progress is unavailable until the owner chooses **Routes** or **Boulders**. Its title and saved target are preserved; a title mentioning a grade does not decide its scale.
 
 ## Grade readiness
 
@@ -50,7 +52,7 @@ On the **Goals** page, when you have outdoor sends in the last **two years**, Cr
 
 - **Approximate.** Soft pyramid numbers are a coaching rule of thumb, not a prediction that you will send N.
 - **Same-system scores.** Supporting buckets are the score ranges [N−1, N) and [N−2, N−1), so fractional sends below a target still support it. Scores use the goal’s canonical score; mixed grading systems are not converted inside the bar.
-- **Year + venue only.** Older ticks outside the goal year, or the wrong venue, do not help readiness.
+- **Scale, year, and venue.** Route and V-scale evidence never mix. Older ticks outside the goal year, or the wrong venue, do not help readiness. V-graded DWS and highballs count with boulder goals, using the grade system rather than the gear style.
 - **Attempts are approximate.** We only see logged non-sends with a grade at ≥ N−1 — not every burn on an ungraded project.
 - **Custom goals** never auto-fill from the logbook.
 

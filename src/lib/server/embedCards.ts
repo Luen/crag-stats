@@ -5,7 +5,7 @@
  *
  * Fonts: an SVG in `<img>` can't load web fonts, so this uses a system stack.
  */
-import { bandById } from '#lib/grades';
+import { bandById, DEFAULT_DISPLAY_SYSTEMS, formatGradeLabel } from '#lib/grades';
 import { STYLE_COLORS } from '#lib/ticks';
 import type { DashboardStats } from '#lib/types/dashboard';
 
@@ -182,20 +182,44 @@ ${parts.join('\n')}
 
 function eddingtonCard(s: DashboardStats, t: Record<string, string>): string {
 	const e = s.eddington;
-	const body = `${header(t, displayName(s), 'Eddington numbers · the biggest E you’ve hit E times')}
+	const systems = s.gradeSystems ?? DEFAULT_DISPLAY_SYSTEMS;
+	const routeName = { ewbank: 'Ewbank', french: 'French', yds: 'YDS' }[systems.route];
+	const routeGrade = (score: number) => `${routeName} ${formatGradeLabel(score, false, systems)}`;
+	const boulderGrade = (score: number) =>
+		`${systems.boulder === 'font' ? 'Font ' : ''}${formatGradeLabel(score, true, systems)}`;
+	const details = [
+		[
+			`${e.sends.value} days with ${e.sends.value}+ sends`,
+			`${e.sends.needed} more days with ${e.sends.next}+ sends for ${e.sends.next}`
+		],
+		[
+			`${e.vertical.value} days with ${e.vertical.value * e.verticalUnitM}+ m climbed`,
+			`${e.vertical.needed} more days with ${e.vertical.next * e.verticalUnitM}+ m for ${e.vertical.next}`
+		],
+		[
+			`${e.routeGrade.value} routes sent at ${routeGrade(e.routeGrade.value)} or harder`,
+			`${e.routeGrade.needed} more routes at ≥ ${routeGrade(e.routeGrade.next)} for index ${e.routeGrade.next}`
+		],
+		[
+			`${e.boulderGrade.value} problems sent at ${boulderGrade(e.boulderGrade.value)} or harder`,
+			`${e.boulderGrade.needed} more problems at ≥ ${boulderGrade(e.boulderGrade.next)} for index ${e.boulderGrade.next}`
+		]
+	]
+		.map(([current, next], i) => {
+			const y = 152 + i * 44;
+			return `<text x="20" y="${y}" font-size="11.5" fill="${t.ink}">${escapeXml(current)}</text>
+<text x="20" y="${y + 16}" font-size="10.5" fill="${t.muted}">${escapeXml(next)}</text>`;
+		})
+		.join('\n');
+	const body = `${header(t, displayName(s), 'Eddington numbers · consistency across days and grades')}
 ${tiles(t, 68, [
 	{ value: String(e.sends.value), label: 'send days' },
 	{ value: String(e.vertical.value), label: `vertical (${e.verticalUnitM} m)` },
-	{ value: String(e.routeGrade.value), label: 'route grade' },
-	{ value: String(e.boulderGrade.value), label: 'boulder grade' }
+	{ value: String(e.routeGrade.value), label: 'route grade index' },
+	{ value: String(e.boulderGrade.value), label: 'boulder grade index' }
 ])}
-<text x="20" y="152" font-size="11.5" fill="${t.muted}">${escapeXml(
-		`${e.sends.value} days with ${e.sends.value}+ sends · ${e.vertical.value} days of ${e.vertical.value * e.verticalUnitM}+ m`
-	)}</text>
-<text x="20" y="170" font-size="11.5" fill="${t.muted}">${escapeXml(
-		`${e.routeGrade.value} routes at Ewbank ${e.routeGrade.value}+ · ${e.boulderGrade.value} problems at V${e.boulderGrade.value}+`
-	)}</text>`;
-	return frame(t, 188, cardTitle(s, 'Eddington numbers'), body);
+${details}`;
+	return frame(t, 320, cardTitle(s, 'Eddington numbers'), body);
 }
 
 function hardestCard(s: DashboardStats, t: Record<string, string>): string {

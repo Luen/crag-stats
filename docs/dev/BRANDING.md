@@ -236,3 +236,6 @@ Logbook comments longer than 140 characters show a 120-character preview with an
 - Individual Projects and Logbook grades show the selected-system grade first, followed by the original theCrag route grade in parentheses when different. Keep the existing grade chip and project text styling. Charts and aggregate rows use only the selected display system; source grades do not appear in chart axes.
 
 - The first two top dashboard summary boxes are Hardest send and Hardest onsight / flash. Use existing accent-soft metric styling with separate route/boulder rows, clear tick attribution, links to qualifying ascents, and explicit empty states. Keep the existing count/distance boxes after them.
+
+- Goals offer a Routes/Boulders selector and per-goal native disclosure for grade preferences. Unknown scales show an explicit unavailable-progress message. Automatic titles follow display Settings; preserve custom title text.
+- Eddington share SVGs keep four numeric index tiles. Name grade tiles route/boulder grade index, then show four pairs of current-threshold and next-milestone explanations below them; grade text follows Settings without changing index values.

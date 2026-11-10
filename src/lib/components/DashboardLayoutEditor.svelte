@@ -33,8 +33,8 @@
 
 <div class="editor">
 	<p class="hint">
-		Choose which dashboard cards to show and their order (like Dreeve). The hero and summary metrics
-		stay fixed. Saved for the whole site, so every visitor sees this layout.
+		Choose which dashboard cards to show and their order. The hero and summary metrics stay fixed.
+		Saved for the whole site, so every visitor sees this layout.
 	</p>
 	<form method="POST" action="?/saveDashboardLayout" class="form">
 		<input type="hidden" name="layout" value={JSON.stringify(draft)} />

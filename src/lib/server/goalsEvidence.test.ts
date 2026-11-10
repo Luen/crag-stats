@@ -4,12 +4,15 @@ vi.mock('./auth', () => ({ authScope: () => 'settings', isAuthEnabled: () => fal
 import { setAppSetting } from './appSettings';
 import { wipeAllData } from './wipe';
 import { upsertAscents } from './ingest';
-import { createGoal, listGoals } from './goals';
+import { createGoal, listGoals, setGoalGradeScale } from './goals';
+import { eq } from 'drizzle-orm';
+import { db } from './db';
+import { goals } from './db/schema';
 import { parseTheCragCsv } from './providers/thecrag/csv';
 
 const sample = parseTheCragCsv(readFileSync('samples/thecrag-logbook-sample.csv'))[0];
 
-it('does not convert a scale-less saved goal as a route grade', () => {
+it('formats known scales in the selected systems and keeps custom titles', () => {
 	setAppSetting('route_grade_system', 'french');
 	setAppSetting('boulder_grade_system', 'font');
 	upsertAscents([tick('display-goal', 'display-goal-route', 20)]);
@@ -19,16 +22,100 @@ it('does not convert a scale-less saved goal as a route grade', () => {
 		targetGradeScore: 21,
 		year: 2026
 	});
-	expect(goal.targetLabel).toContain('Send ≥ 21');
-	expect(goal.progressLabel).toContain('Best send 20');
+	expect(goal.targetLabel).toContain('Send ≥ 6b+');
+	expect(goal.progressLabel).toContain('Best send 6b');
+	expect(goal.title).toBe('Display goal');
 	const boulder = createGoal({
 		kind: 'grade',
 		title: 'Send V5',
 		targetGradeScore: 5,
+		gradeScale: 'boulder',
 		year: 2026
 	});
-	expect(boulder.targetLabel).toContain('Send ≥ 5 ·');
+	expect(boulder.targetLabel).toContain('Send ≥ 6C ·');
+	expect(boulder.completed).toBe(false);
 });
+
+it('withholds unknown legacy evidence without changing local data, then uses the owner-selected scale', () => {
+	upsertAscents([tick('legacy-route', 'legacy-route', 25)]);
+	const saved = createGoal({ kind: 'grade', title: 'My V5 goal', targetGradeScore: 5 });
+	db.update(goals)
+		.set({ gradeScale: null, progressValue: '4', completed: true, achievedAt: '2026-01-01' })
+		.where(eq(goals.id, saved.id))
+		.run();
+	const legacy = listGoals()[0];
+	expect(legacy.title).toBe('My V5 goal');
+	expect(legacy.progressPct).toBe(0);
+	expect(legacy.progressLabel).toContain('Choose route or boulder');
+	expect(db.select().from(goals).where(eq(goals.id, saved.id)).get()).toMatchObject({
+		progressValue: '4',
+		completed: true,
+		achievedAt: '2026-01-01'
+	});
+	expect(setGoalGradeScale(saved.id, 'boulder', false)).toBe(true);
+	expect(listGoals()[0]).toMatchObject({
+		title: 'My V5 goal',
+		completed: false,
+		gradeScale: 'boulder'
+	});
+});
+
+it('keeps route and V-scaled DWS sends, supporting buckets, attempts, and sessions separate', () => {
+	const boulder = (id: string, score: number, send = true) => {
+		const r = tick(id, id, score, { send });
+		return { ...r, route: { ...r.route, gearStyle: 'DWS', gradeSystem: 'v_scale' } };
+	};
+	upsertAscents([
+		tick('route-send', 'route-send', 25),
+		tick('route-work', 'route-work', 25, { send: false }),
+		boulder('support', 4),
+		boulder('work', 4, false)
+	]);
+	const goal = createGoal({
+		kind: 'grade',
+		title: 'Boulder',
+		targetGradeScore: 5,
+		gradeScale: 'boulder'
+	});
+	expect(goal.completed).toBe(false);
+	expect(goal.progressLabel).toContain('Best send V4');
+	expect(goal.progressLabel).toContain('1/2 at V4');
+	expect(goal.progressLabel).toContain('1 attempt');
+	expect(goal.progressLabel).toContain('1 qualifying sessions');
+	upsertAscents([boulder('target', 5)]);
+	expect(listGoals()[0].completed).toBe(true);
+	const routeGoal = createGoal({
+		kind: 'grade',
+		title: 'Route',
+		targetGradeScore: 26,
+		gradeScale: 'route'
+	});
+	expect(routeGoal.progressLabel).toContain('Best send 25');
+	expect(routeGoal.progressLabel).toContain('1 attempt');
+});
+
+it.each([0, -1])(
+	'supports a V-scale goal at %s and formats generated titles on every read',
+	(target) => {
+		const r = tick(`v-${target}`, `v-${target}`, target);
+		upsertAscents([{ ...r, route: { ...r.route, gearStyle: 'Boulder', gradeSystem: 'v_scale' } }]);
+		const goal = createGoal({
+			kind: 'grade',
+			title: 'Original suggested title',
+			targetGradeScore: target,
+			gradeScale: 'boulder',
+			suggested: true
+		});
+		expect(goal.completed).toBe(true);
+		expect(goal.progressPct).toBe(100);
+		expect(goal.title).toContain(target === 0 ? 'V0' : 'VB');
+		setAppSetting('boulder_grade_system', 'font');
+		expect(listGoals()[0].title).not.toBe(goal.title);
+		expect(db.select().from(goals).where(eq(goals.id, goal.id)).get()!.title).toBe(
+			'Original suggested title'
+		);
+	}
+);
 function tick(
 	id: string,
 	routeId: string,
@@ -55,6 +142,7 @@ function tick(
 beforeEach(() => {
 	wipeAllData();
 	setAppSetting('route_grade_system', 'ewbank');
+	setAppSetting('boulder_grade_system', 'v_scale');
 });
 
 it('adds a point per additional qualifying day, deduplicating routes/ticks and excluding future days', () => {
@@ -135,7 +223,7 @@ it('uses the same support ranges for fractional targets', () => {
 	});
 	expect(goal.completed).toBe(false);
 	expect(goal.progressPct).toBe(45);
-	expect(goal.progressLabel).toContain('1/2 at 22.5');
+	expect(goal.progressLabel).toContain('1/2 at 23');
 });
 
 it('raises readiness on each near-target attempt and steps faster for short-term goals', () => {

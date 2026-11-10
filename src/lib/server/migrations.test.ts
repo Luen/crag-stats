@@ -52,6 +52,14 @@ function oldDatabase(path: string, applied: string[]) {
 		db.prepare(
 			`INSERT INTO goals (kind, title, created_at, updated_at) VALUES ('custom', 'Local goal', ?, ?)`
 		).run(NOW, NOW);
+		db.prepare(
+			`INSERT INTO goals (kind, title, target_grade_score, target_value, progress_value, completed, created_at, updated_at)
+			 VALUES ('grade', 'My saved grade goal', 5, '5', '4', 1, ?, ?)`
+		).run(NOW, NOW);
+		if (applied.some((f) => f.startsWith('0007_')))
+			db.prepare("UPDATE goals SET achieved_at=? WHERE kind='grade'").run(NOW);
+		if (applied.includes('0022_goal_grade_scale.sql'))
+			db.prepare("UPDATE goals SET grade_scale='boulder', suggested=1 WHERE kind='grade'").run();
 		db.prepare(`INSERT INTO sync_state (provider, last_success_at) VALUES ('thecrag', ?)`).run(NOW);
 	}
 	// Local-only data from later releases, which must never be lost.
@@ -152,6 +160,22 @@ describe('migrations survive skipped releases', () => {
 						.get() as { comment: string; is_send: number; name: string };
 					expect(ascent).toEqual({ comment: 'sample note', is_send: 1, name: 'Sample Route' });
 					expect(db.prepare('SELECT title FROM goals').get()).toEqual({ title: 'Local goal' });
+					expect(
+						db
+							.prepare(
+								"SELECT title, target_grade_score, target_value, progress_value, completed, achieved_at, grade_scale, suggested FROM goals WHERE kind='grade'"
+							)
+							.get()
+					).toEqual({
+						title: 'My saved grade goal',
+						target_grade_score: 5,
+						target_value: '5',
+						progress_value: '4',
+						completed: 1,
+						achieved_at: k >= 7 ? NOW : null,
+						grade_scale: k >= FILES.indexOf('0022_goal_grade_scale.sql') + 1 ? 'boulder' : null,
+						suggested: k >= FILES.indexOf('0022_goal_grade_scale.sql') + 1 ? 1 : 0
+					});
 					expect(db.prepare('SELECT login FROM profiles').get()).toEqual({ login: 'sample' });
 				}
 				if (k >= FILES.indexOf('0008_app_settings.sql') + 1) {

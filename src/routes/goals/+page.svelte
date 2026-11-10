@@ -21,6 +21,7 @@
 				aria-valuenow={g.progressPct}
 				aria-valuemin={0}
 				aria-valuemax={100}
+				aria-label="{g.title} progress"
 			>
 				<span style:width="{g.progressPct}%"></span>
 			</div>
@@ -28,6 +29,27 @@
 				{g.progressLabel}
 				<span class="pct">{g.progressPct}%</span>
 			</p>
+			{#if data.canEdit && g.kind === 'grade'}
+				<details>
+					<summary>{g.gradeScale ? 'Grade preferences' : 'Choose grade scale'}</summary>
+					<form method="POST" action="?/scale" class="scale-form">
+						<input type="hidden" name="id" value={g.id} />
+						<label>
+							Grade scale
+							<select name="gradeScale" required value={g.gradeScale ?? ''}>
+								<option value="" disabled>Choose a scale</option>
+								<option value="route">Routes</option>
+								<option value="boulder">Boulders</option>
+							</select>
+						</label>
+						<label>
+							<input type="checkbox" name="suggested" value="1" checked={g.suggested} />
+							Use automatic goal title
+						</label>
+						<button type="submit">Save grade preferences</button>
+					</form>
+				</details>
+			{/if}
 			{#if g.completed && g.achievedAt}
 				<p class="achieved">Achieved {(g.achievedAt || '').slice(0, 10)}</p>
 			{/if}
@@ -87,6 +109,8 @@
 					{:else if data.canEdit}
 						<form method="POST" action="?/create">
 							<input type="hidden" name="kind" value="grade" />
+							<input type="hidden" name="gradeScale" value={s.family} />
+							<input type="hidden" name="suggested" value="1" />
 							<input type="hidden" name="title" value={s.title} />
 							<input type="hidden" name="venueScope" value={s.venueScope} />
 							<input type="hidden" name="year" value={s.year} />
@@ -133,6 +157,13 @@
 				</select>
 			</label>
 			{#if kind === 'grade'}
+				<label>
+					Grade scale
+					<select name="gradeScale">
+						<option value="route">Routes</option>
+						<option value="boulder">Boulders</option>
+					</select>
+				</label>
 				<label>
 					Target grade
 					<input name="grade" required placeholder="25 · 7a · V5 · 5.12a" />
@@ -194,6 +225,16 @@
 </section>
 
 <style>
+	.scale-form {
+		display: grid;
+		gap: 0.65rem;
+		margin: 0.75rem 0;
+		max-width: 28rem;
+	}
+	.scale-form input[type='checkbox'] {
+		width: auto;
+		justify-self: start;
+	}
 	.head,
 	.panel {
 		padding: 1.1rem 1.2rem;
@@ -286,7 +327,7 @@
 	button.danger {
 		background: transparent;
 		border-color: var(--danger);
-		color: var(--danger);
+		color: var(--ink);
 	}
 	.suggest-panel h2 {
 		margin: 0 0 0.35rem;
@@ -345,7 +386,7 @@
 		background: var(--surface-2);
 	}
 	.goal.done {
-		opacity: 0.88;
+		opacity: 1;
 	}
 	.goal-main {
 		flex: 1 1 14rem;
