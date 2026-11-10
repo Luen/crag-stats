@@ -1,6 +1,4 @@
 import { calendarDay as validDay } from '#lib/calendarDay';
-import { formatGradeLabel } from '#lib/grades';
-import { getDisplayGradeSystems } from './appSettings';
 import { desc, eq } from 'drizzle-orm';
 import { db, ensureSchema } from './db';
 import { ascents, goals, routes, type Goal } from './db/schema';
@@ -144,12 +142,11 @@ function enrichGoal(g: Goal, ascentRows: AscentRouteRow[] = []): GoalView {
 	let targetLabel: string;
 
 	if (g.kind === 'grade') {
-		const systems = getDisplayGradeSystems();
-		const formatScore = (score: number) => formatGradeLabel(score, false, systems);
+		// Saved goals have no grade scale. Keep numeric labels until route/V identity is
+		// persisted; treating every target as Ewbank would mislabel boulder goals.
 		const target = g.targetGradeScore ?? targetNum;
 		const evidence = gradeGoalSendEvidence(g, ascentRows, new Date().getFullYear());
 		const readiness = gradeGoalReadiness({
-			formatScore,
 			target,
 			bestSend: evidence.best,
 			routesAtNMinus1: evidence.routesAtNMinus1,
@@ -160,10 +157,10 @@ function enrichGoal(g: Goal, ascentRows: AscentRouteRow[] = []): GoalView {
 		pct = g.completed ? 100 : readiness.pct;
 		progressLabel = g.completed
 			? evidence.best != null
-				? `Best send ${formatScore(evidence.best)} · done`
+				? `Best send ${evidence.best} · done`
 				: 'Done'
 			: readiness.label;
-		targetLabel = Number.isFinite(target) ? `Send ≥ ${formatScore(target)}` : 'Grade goal';
+		targetLabel = Number.isFinite(target) ? `Send ≥ ${target}` : 'Grade goal';
 		if (g.year) targetLabel += ` · ${g.year}`;
 	} else if (g.kind === 'height_year') {
 		const metres = Number.isFinite(currentNum) ? currentNum : 0;

@@ -29,7 +29,6 @@ const GRADE_READY_N2_FILL = 25;
 const GRADE_READY_ATTEMPT_FILL = 20;
 
 export type GradeGoalReadinessInput = {
-	formatScore?: (score: number) => string;
 	target: number;
 	bestSend: number | null;
 	/** Distinct routes with a send in the N−1 score bucket. */
@@ -96,7 +95,7 @@ export function progressPct(current: number, target: number): number {
 	return Math.min(100, Math.round((current / target) * 1000) / 10);
 }
 
-function defaultGoalScore(score: number): string {
+function formatGoalScore(score: number): string {
 	return Number.isInteger(score) ? String(score) : String(Math.round(score * 10) / 10);
 }
 
@@ -125,7 +124,6 @@ function horizonLabel(horizon: GradeGoalHorizon): string {
  * plus horizon-scaled working ticks at ≥ N−1. Still capped below 100% without a send at N.
  */
 export function gradeGoalReadiness(input: GradeGoalReadinessInput): GradeGoalReadiness {
-	const formatGoalScore = input.formatScore ?? defaultGoalScore;
 	const target = input.target;
 	const n1Bucket = target - 1;
 	const n2Bucket = target - 2;

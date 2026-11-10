@@ -9,8 +9,9 @@ import { parseTheCragCsv } from './providers/thecrag/csv';
 
 const sample = parseTheCragCsv(readFileSync('samples/thecrag-logbook-sample.csv'))[0];
 
-it('formats saved goal targets and evidence in the selected route system', () => {
+it('does not convert a scale-less saved goal as a route grade', () => {
 	setAppSetting('route_grade_system', 'french');
+	setAppSetting('boulder_grade_system', 'font');
 	upsertAscents([tick('display-goal', 'display-goal-route', 20)]);
 	const goal = createGoal({
 		kind: 'grade',
@@ -18,8 +19,15 @@ it('formats saved goal targets and evidence in the selected route system', () =>
 		targetGradeScore: 21,
 		year: 2026
 	});
-	expect(goal.targetLabel).toContain('Send ≥ 6b+');
-	expect(goal.progressLabel).toContain('Best send 6b');
+	expect(goal.targetLabel).toContain('Send ≥ 21');
+	expect(goal.progressLabel).toContain('Best send 20');
+	const boulder = createGoal({
+		kind: 'grade',
+		title: 'Send V5',
+		targetGradeScore: 5,
+		year: 2026
+	});
+	expect(boulder.targetLabel).toContain('Send ≥ 5 ·');
 });
 function tick(
 	id: string,
@@ -127,7 +135,7 @@ it('uses the same support ranges for fractional targets', () => {
 	});
 	expect(goal.completed).toBe(false);
 	expect(goal.progressPct).toBe(45);
-	expect(goal.progressLabel).toContain('1/2 at 23');
+	expect(goal.progressLabel).toContain('1/2 at 22.5');
 });
 
 it('raises readiness on each near-target attempt and steps faster for short-term goals', () => {
