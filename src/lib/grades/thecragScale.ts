@@ -112,3 +112,34 @@ export function nearestTheCragGrade(system: ScoredSystem, score: number): string
 	}
 	return best[0];
 }
+
+export type GradeBucket = {
+	/** Ladder grade label in the system. */
+	label: string;
+	/** theCrag score of that grade. */
+	score: number;
+	/** Inclusive lower theCrag-score edge (halfway to the grade below). */
+	min: number;
+	/** Exclusive upper theCrag-score edge (halfway to the grade above). */
+	max: number;
+};
+
+/**
+ * The grade in `system` that a theCrag score belongs to, with the score range it covers.
+ * Pyramids bucket by this so a French 6a is never filed under a neighbouring grade (#450).
+ * Midpoint ties belong to the upper grade, matching the half-open drill-down range.
+ * Null beyond the system's ladder (including its exclusive upper edge).
+ */
+export function theCragGradeBucket(system: ScoredSystem, score: number): GradeBucket | null {
+	if (!Number.isFinite(score)) return null;
+	const ladder = THECRAG_GRADE_SCORES[system];
+	for (let i = 0; i < ladder.length; i++) {
+		const [label, own] = ladder[i];
+		const below = i > 0 ? ladder[i - 1][1] : own - (ladder[1][1] - own);
+		const above = i < ladder.length - 1 ? ladder[i + 1][1] : own + (own - ladder[i - 1][1]);
+		const min = (below + own) / 2;
+		const max = (own + above) / 2;
+		if (score >= min && score < max) return { label, score: own, min, max };
+	}
+	return null;
+}

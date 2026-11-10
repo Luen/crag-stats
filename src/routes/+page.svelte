@@ -204,7 +204,7 @@
 	{:else if id === 'projects'}
 		<ProjectsHighlight projects={data.dashboardProjects} />
 	{:else if id === 'trainingLoad'}
-		<TrainingLoad load={s.trainingLoad} />
+		<TrainingLoad load={s.trainingLoad} gradeSystems={data.gradeSystems} />
 	{:else if id === 'sessionsPerWeek'}
 		<SessionsPerWeek years={s.sessionsPerWeek.years} byYear={s.sessionsPerWeek.byYear} />
 	{:else if id === 'weekday'}
@@ -239,7 +239,7 @@
 	{:else if id === 'rockPerformance' && s.rockPerformance}
 		<RockPerformance data={s.rockPerformance} dateDisplay={data.dateDisplay} />
 	{:else if id === 'stars'}
-		<StarsScatter points={s.starsScatter} />
+		<StarsScatter points={s.starsScatter} gradeSystems={data.gradeSystems} />
 	{:else if id === 'quality'}
 		<QualityBreakdown ratings={s.qualityBreakdown} />
 	{:else if id === 'routePopularity' && s.routePopularity}
@@ -281,9 +281,9 @@
 			<h2>CPR timelines</h2>
 			<p>Sport · Trad · Boulder performance over time</p>
 		</header>
-		<CprTimeline title="Sport" data={s.cpr.sport} />
-		<CprTimeline title="Trad" data={s.cpr.trad} />
-		<CprTimeline title="Boulder" data={s.cpr.boulder} />
+		<CprTimeline title="Sport" data={s.cpr.sport} gradeSystems={data.gradeSystems} />
+		<CprTimeline title="Trad" data={s.cpr.trad} gradeSystems={data.gradeSystems} />
+		<CprTimeline title="Boulder" data={s.cpr.boulder} gradeSystems={data.gradeSystems} />
 	{:else if id === 'hardest'}
 		{@const mixed = new Set(s.hardestSends.map((c) => c.discipline)).size > 1}
 		<article class="panel">
@@ -402,6 +402,26 @@
 	</section>
 {:else}
 	<section class="metrics">
+		{#each [{ label: 'Hardest send', records: s.gradeRecords.sends, empty: 'No graded sends yet' }, { label: 'Hardest onsight / flash', records: s.gradeRecords.onsightFlash, empty: 'No graded onsights or flashes yet' }] as summary (summary.label)}
+			<article class="metric panel accent grade-record" aria-label={summary.label}>
+				<h2>{summary.label}</h2>
+				{#each summary.records as record (record.discipline)}
+					<div class="record-entry">
+						<strong>
+							{#if record.href}
+								<a
+									href={record.href}
+									aria-label="{record.grade} · {record.tick} · {record.routeName}">{record.grade}</a
+								>
+							{:else}{record.grade}{/if}
+						</strong>
+						<span>{record.discipline === 'route' ? 'Routes' : 'Boulders'} · {record.tick}</span>
+					</div>
+				{:else}
+					<strong>—</strong><span>{summary.empty}</span>
+				{/each}
+			</article>
+		{/each}
 		<div class="metric panel accent">
 			<strong>{s.onsightCount}</strong>
 			<span>onsighted</span>
@@ -561,6 +581,21 @@
 		font-weight: 750;
 		letter-spacing: -0.02em;
 		font-variant-numeric: tabular-nums;
+	}
+	.grade-record h2 {
+		font-size: 0.85rem;
+		font-weight: 650;
+		margin: 0 0 0.35rem;
+		color: var(--ink);
+	}
+	.record-entry {
+		display: flex;
+		align-items: baseline;
+		flex-wrap: wrap;
+		gap: 0.2rem 0.65rem;
+	}
+	.record-entry a:hover {
+		text-decoration: underline;
 	}
 	.grid {
 		display: grid;

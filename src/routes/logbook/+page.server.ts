@@ -1,7 +1,7 @@
 import { parseSoloKind } from '#lib/soloKind';
 import { fail } from '@sveltejs/kit';
 import { listLogbook } from '#lib/server/analytics';
-import { getRouteGradeSystem, getShowNotes } from '#lib/server/appSettings';
+import { getDisplayGradeSystems, getRouteGradeSystem, getShowNotes } from '#lib/server/appSettings';
 import { parseFirstAscentKind, routeExists, setFirstAscent } from '#lib/server/firstAscents';
 import { notesVisible } from '#lib/server/notes';
 import { getProjectOverrides } from '#lib/server/projectOverrides';
@@ -147,6 +147,13 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 	const score = scoreRaw != null && scoreRaw !== '' ? Number(scoreRaw) : undefined;
 	const bandRaw = url.searchParams.get('band');
 	const band = bandRaw != null && bandRaw !== '' ? Number(bandRaw) : undefined;
+	const tcMinRaw = url.searchParams.get('tcMin');
+	const tcMaxRaw = url.searchParams.get('tcMax');
+	const tcMin = tcMinRaw ? Number(tcMinRaw) : NaN;
+	const tcMax = tcMaxRaw ? Number(tcMaxRaw) : NaN;
+	const tcRange = Number.isFinite(tcMin) && Number.isFinite(tcMax) ? { tcMin, tcMax } : null;
+	const scaleRaw = url.searchParams.get('gradeScale');
+	const gradeScale = scaleRaw === 'route' || scaleRaw === 'v' ? scaleRaw : undefined;
 	const minScore = parseScoreBound(url.searchParams.get('minScore'));
 	const maxScore = parseScoreBound(url.searchParams.get('maxScore'));
 	const minStarsRaw = url.searchParams.get('minStars');
@@ -195,6 +202,10 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 		minStars,
 		minScore,
 		maxScore,
+		tcMin: tcRange?.tcMin,
+		tcMax: tcRange?.tcMax,
+		gradeSystems: getDisplayGradeSystems(),
+		gradeScale,
 		year: year != null && Number.isFinite(year) ? year : undefined,
 		score: score != null && Number.isFinite(score) ? score : undefined,
 		band: band != null && Number.isFinite(band) ? band : undefined,
@@ -246,6 +257,9 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 		minStars: minStars ?? '',
 		minScore: minScore ?? '',
 		maxScore: maxScore ?? '',
+		tcMin: tcRange?.tcMin ?? '',
+		tcMax: tcRange?.tcMax ?? '',
+		gradeScale: gradeScale ?? '',
 		gradeOptions: routeGradeOptions(gradeSystem),
 		year: year != null && Number.isFinite(year) ? year : '',
 		score: score != null && Number.isFinite(score) ? score : '',

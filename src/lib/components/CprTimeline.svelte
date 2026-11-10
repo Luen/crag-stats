@@ -1,10 +1,21 @@
 <script lang="ts">
-	import { formatVScaleLabel, GRADE_BANDS } from '#lib/grades';
+	import {
+		DEFAULT_DISPLAY_SYSTEMS,
+		formatGradeLabel,
+		GRADE_BANDS,
+		type DisplayGradeSystems
+	} from '#lib/grades';
 	import { styleBadgeColor } from '#lib/ticks';
 	import type { CprTimelineData } from '#lib/types/dashboard';
 
-	type Props = { title: string; data: CprTimelineData; gradeMin?: number; gradeMax?: number };
-	let { title, data, gradeMin, gradeMax }: Props = $props();
+	type Props = {
+		title: string;
+		data: CprTimelineData;
+		gradeMin?: number;
+		gradeMax?: number;
+		gradeSystems?: DisplayGradeSystems;
+	};
+	let { title, data, gradeMin, gradeMax, gradeSystems = DEFAULT_DISPLAY_SYSTEMS }: Props = $props();
 	const titleColor = $derived(styleBadgeColor(title));
 	/** Boulder scores are V-grades; sport/trad are Ewbanks. */
 	const isBoulder = $derived(title.toLowerCase().includes('boulder'));
@@ -33,7 +44,7 @@
 		return Math.min(100, Math.max(0, ((range.max - score) / span) * 100));
 	}
 
-	const gradeLabel = (g: number) => (isBoulder ? formatVScaleLabel(g) : String(Math.round(g)));
+	const gradeLabel = (g: number) => formatGradeLabel(g, isBoulder, gradeSystems);
 
 	/** Background bands at the real theCrag band boundaries, clipped to the visible range. */
 	const bands = $derived.by(() => {
@@ -206,7 +217,7 @@
 
 				<div class="cols" style:--n={n}>
 					{#each data.buckets as b, i (b.period)}
-						<div class="col" class:gap={xLabels[i].gap} title={colTitle(b)}>
+						<div class={['col', { gap: xLabels[i].gap }]} title={colTitle(b)}>
 							{#each paintOrder(b.candles) as c (c.family)}
 								<div
 									class="candle"
@@ -227,9 +238,7 @@
 				</svg>
 				{#each points as p (p.i)}
 					<span
-						class="dot"
-						class:peak={p.i === peakIdx}
-						class:last={p.i === lastIdx}
+						class={['dot', { peak: p.i === peakIdx, last: p.i === lastIdx }]}
 						style:left="{xPct(p.i)}%"
 						style:top="{y(p.g)}%"
 						title="CPR ≈ {gradeLabel(p.g)}"
@@ -240,7 +249,7 @@
 
 		<div class="xaxis" style:--n={n} aria-hidden="true">
 			{#each xLabels as l, i (data.buckets[i].period)}
-				<span class:gap={l.gap}>
+				<span class={{ gap: l.gap }}>
 					{#if l.gap}<i title="Gap in time">⋯</i>{/if}
 					<b>{l.year}</b>{l.sub}
 				</span>

@@ -142,6 +142,8 @@ function enrichGoal(g: Goal, ascentRows: AscentRouteRow[] = []): GoalView {
 	let targetLabel: string;
 
 	if (g.kind === 'grade') {
+		// Saved goals have no grade scale. Keep numeric labels until route/V identity is
+		// persisted; treating every target as Ewbank would mislabel boulder goals.
 		const target = g.targetGradeScore ?? targetNum;
 		const evidence = gradeGoalSendEvidence(g, ascentRows, new Date().getFullYear());
 		const readiness = gradeGoalReadiness({

@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { formatVScaleLabel } from '#lib/grades';
+	import { DEFAULT_DISPLAY_SYSTEMS, formatGradeLabel, type DisplayGradeSystems } from '#lib/grades';
 	import { scatterQualityY } from '#lib/qualityScore';
 
 	type Point = {
@@ -11,8 +11,8 @@
 		url: string | null;
 	};
 
-	type Props = { points: Point[] };
-	let { points }: Props = $props();
+	type Props = { points: Point[]; gradeSystems?: DisplayGradeSystems };
+	let { points, gradeSystems = DEFAULT_DISPLAY_SYSTEMS }: Props = $props();
 
 	type Kind = Point['kind'];
 
@@ -134,7 +134,7 @@
 	}
 
 	function gradeLabel(score: number): string {
-		return kind === 'boulder' ? formatVScaleLabel(score) : String(score);
+		return formatGradeLabel(score, kind === 'boulder', gradeSystems);
 	}
 
 	function yTickLabel(t: number): string {

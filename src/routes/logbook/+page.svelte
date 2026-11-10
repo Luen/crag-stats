@@ -59,6 +59,11 @@
 		if (data.maxScore !== '') p.set('maxScore', String(data.maxScore));
 		if (data.year !== '') p.set('year', String(data.year));
 		if (data.score !== '') p.set('score', String(data.score));
+		if (data.gradeScale) p.set('gradeScale', data.gradeScale);
+		if (data.tcMin !== '' && data.tcMax !== '') {
+			p.set('tcMin', String(data.tcMin));
+			p.set('tcMax', String(data.tcMax));
+		}
 		if (data.band !== '') p.set('band', String(data.band));
 		if (data.sort && data.sort !== 'date') p.set('sort', data.sort);
 		if (data.order && data.order !== 'desc') p.set('order', data.order);
@@ -121,6 +126,9 @@
 			· selected climb · <a href="/logbook">Clear climb</a>{/if}
 		{#if data.score !== ''}
 			· grade score {data.score}
+		{/if}
+		{#if data.tcMin !== '' && data.tcMax !== ''}
+			· one pyramid grade row
 		{/if}
 		{#if data.day}
 			· {data.day}
@@ -422,6 +430,13 @@
 			<input type="checkbox" name="multipitch" value="1" checked={data.multipitch} />
 			Multipitch only
 		</label>
+		{#if data.tcMin !== '' && data.tcMax !== ''}
+			<input type="hidden" name="tcMin" value={data.tcMin} />
+			<input type="hidden" name="tcMax" value={data.tcMax} />
+		{/if}
+		{#if data.gradeScale}
+			<input type="hidden" name="gradeScale" value={data.gradeScale} />
+		{/if}
 		{#if data.score !== ''}
 			<input type="hidden" name="score" value={data.score} />
 		{/if}
@@ -589,7 +604,7 @@
 							<WeatherChips chips={row.weatherChips} dateDisplay={data.dateDisplay} />
 						{:else}—{/if}
 					</td>
-					<td class="nowrap"><GradeChip grade={row.gradeRaw} band={row.gradeBand} /></td>
+					<td class="nowrap"><GradeChip grade={row.gradeLabel} band={row.gradeBand} /></td>
 					<td class="tick-cell">
 						<div class="tick-meta">
 							<TickTypeIcon tick={row.tickType} />

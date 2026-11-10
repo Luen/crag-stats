@@ -9,6 +9,7 @@
 		status: string;
 		routeName: string;
 		gradeRaw: string | null;
+		gradeLabel: string | null;
 		ungraded: boolean;
 		isProject: boolean;
 		areaLabel: string;
@@ -62,7 +63,7 @@
 				<li>
 					<div class="row">
 						<a class="name" href={`/projects/${p.routeId}`}>
-							{p.routeName}{#if p.gradeRaw}<span class="grade"> · {p.gradeRaw}</span>{/if}
+							{p.routeName}{#if p.gradeLabel}<span class="grade"> · {p.gradeLabel}</span>{/if}
 						</a>
 						{#if p.isProject}
 							<ProjectRouteBadge />

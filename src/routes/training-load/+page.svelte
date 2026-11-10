@@ -22,7 +22,13 @@
 	</p>
 </section>
 
-<TrainingLoad load={data.trainingLoad} weeksShown={26} titleHref={null} showDaily />
+<TrainingLoad
+	load={data.trainingLoad}
+	gradeSystems={data.gradeSystems}
+	weeksShown={26}
+	titleHref={null}
+	showDaily
+/>
 
 <style>
 	.head {

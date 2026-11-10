@@ -10,7 +10,12 @@ import { soloKind } from './solo';
 import { isSunFacingSummer } from '#lib/sunFacing';
 
 import { calendarDay as dayKey } from '#lib/calendarDay';
-import { formatVScaleLabel, usesVScale } from '#lib/grades';
+import {
+	DEFAULT_DISPLAY_SYSTEMS,
+	formatGradeLabel,
+	usesVScale,
+	type DisplayGradeSystems
+} from '#lib/grades';
 import { tickKind } from '#lib/ticks';
 import { DEFAULT_DATE_DISPLAY, formatDateTime, formatNumber, type DateDisplay } from '#lib/dates';
 import {
@@ -1018,6 +1023,7 @@ export function buildBadges(
 	communityHits: readonly CommunityBadgeHit[] = [],
 	context: {
 		firstImport?: FirstImport | null;
+		gradeSystems?: DisplayGradeSystems;
 		dateDisplay?: DateDisplay;
 		/** Cached Open-Meteo days keyed by lat|lon|day (#268). */
 		weatherByKey?: ReadonlyMap<string, WeatherSnapshot>;
@@ -1387,14 +1393,24 @@ export function buildBadges(
 			if (boulder) {
 				if (n > maxBoulder) {
 					maxBoulder = n;
-					const label = formatVScaleLabel(n);
+					const label = formatGradeLabel(
+						score,
+						true,
+						context.gradeSystems ?? DEFAULT_DISPLAY_SYSTEMS
+					);
 					mark('new_high', hitAt(row, `New boulder high · ${label}`));
 					// Allow new_high to update to latest? Catalog is single badge — keep first high only via mark()
 				}
 			} else if (n > maxRoute) {
 				maxRoute = n;
 				if (!earned.has('new_high')) {
-					mark('new_high', hitAt(row, `New route high · ${n}`));
+					mark(
+						'new_high',
+						hitAt(
+							row,
+							`New route high · ${formatGradeLabel(score, false, context.gradeSystems ?? DEFAULT_DISPLAY_SYSTEMS)}`
+						)
+					);
 				}
 			}
 		}

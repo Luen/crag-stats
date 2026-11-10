@@ -1,5 +1,7 @@
 import { eq } from 'drizzle-orm';
 import { calendarDay } from '#lib/calendarDay';
+import { formatClimbGrade } from '#lib/grades';
+import { getDisplayGradeSystems } from './appSettings';
 import { db, ensureSchema } from './db';
 import { ascents, routes } from './db/schema';
 import { isLikelyIndoorRoute, listProjects } from './projects';
@@ -13,6 +15,7 @@ export function getProjectDetails(routeId: number, now = new Date()) {
 	if (!target) return null;
 	const rows = loadProjectProgressRows();
 	const today = now.toISOString().slice(0, 10);
+	const gradeSystems = getDisplayGradeSystems();
 	const progress = projectProgress({ routeId, ...target }, rows, today);
 	const attempts = rows
 		.filter((row) => row.routeId === routeId)
@@ -21,13 +24,17 @@ export function getProjectDetails(routeId: number, now = new Date()) {
 			day: calendarDay(row.ascentDate),
 			tickType: row.tickType,
 			tickLabel: row.tickLabel,
-			grade: row.grade,
+			grade: formatClimbGrade({ ...row, effectiveGradeRaw: row.grade }, gradeSystems),
 			pitchLabel: row.pitchLabel,
 			isSend: row.isSend,
 			numberAttempts: row.numberAttempts
 		}))
 		.sort((a, b) => (b.day ?? '').localeCompare(a.day ?? '') || b.id - a.id);
-	return { project, progress, attempts };
+	return {
+		project: { ...project, gradeLabel: formatClimbGrade(project, gradeSystems) },
+		progress,
+		attempts
+	};
 }
 
 export function loadProjectProgressRows() {
@@ -48,6 +55,7 @@ export function loadProjectProgressRows() {
 			tickType: ascents.tickType,
 			tickLabel: ascents.tickLabel,
 			grade: ascents.effectiveGradeRaw,
+			gradeRaw: routes.gradeRaw,
 			pitchLabel: ascents.pitchLabel,
 			name: routes.name,
 			cragName: routes.cragName,

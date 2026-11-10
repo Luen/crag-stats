@@ -207,6 +207,7 @@ export type HeatmapDay = {
 };
 
 export type DashboardStats = {
+	gradeRecords: { sends: GradeRecord[]; onsightFlash: GradeRecord[] };
 	profileName: string | null;
 	climberType: string;
 	avatar: string | null;
@@ -407,6 +408,14 @@ export type DashboardStats = {
 	rockPerformance: RockPerformanceView | null;
 	/** First visits vs repeat days on the same route; null (hidden) below 20 dated ascents. */
 	routeRepeats: RouteRepeatsView | null;
+};
+
+export type GradeRecord = {
+	discipline: 'route' | 'boulder';
+	grade: string;
+	tick: string;
+	routeName: string;
+	href: string | null;
 };
 
 export type BestMonthsCrag = {

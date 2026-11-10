@@ -4,7 +4,12 @@
  */
 
 import { calendarDay as dayKey } from '#lib/calendarDay';
-import { formatVScaleLabel, usesVScale } from '#lib/grades';
+import {
+	DEFAULT_DISPLAY_SYSTEMS,
+	formatGradeLabel,
+	usesVScale,
+	type DisplayGradeSystems
+} from '#lib/grades';
 import {
 	buildPartnerStats,
 	ascentPartners,
@@ -300,7 +305,10 @@ export function buildYearlyStats(rows: DashboardExtraRow[]): { years: YearlyStat
 	return { years };
 }
 
-export function buildMilestones(rows: DashboardExtraRow[]): { items: MilestoneItem[] } {
+export function buildMilestones(
+	rows: DashboardExtraRow[],
+	systems: DisplayGradeSystems = DEFAULT_DISPLAY_SYSTEMS
+): { items: MilestoneItem[] } {
 	const dated = [...rows]
 		.filter((r) => dayKey(r.ascentDate))
 		.sort((a, b) => (a.ascentDate || '').localeCompare(b.ascentDate || ''));
@@ -325,7 +333,7 @@ export function buildMilestones(rows: DashboardExtraRow[]): { items: MilestoneIt
 		const prevMax = highs.length ? Math.max(...highs) : -Infinity;
 		seenInt.add(key);
 		if (n <= prevMax) continue;
-		const label = boulder ? formatVScaleLabel(n) : String(n);
+		const label = formatGradeLabel(score, boulder, systems);
 		const name = (row.routeName || 'Unknown').trim() || 'Unknown';
 		gradeItems.push({
 			id: `grade:${key}`,

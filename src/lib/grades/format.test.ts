@@ -5,6 +5,7 @@ import {
 	DEFAULT_DISPLAY_SYSTEMS,
 	displaySystemsFromLegacy,
 	formatGradeLabel,
+	formatClimbGrade,
 	resolveDisplaySystems
 } from './format';
 
@@ -80,5 +81,47 @@ describe('formatGradeLabel with mixed systems', () => {
 		const ydsV = { route: 'yds', boulder: 'v_scale' } as const;
 		expect(formatGradeLabel(24, false, ydsV)).toBe(convertFromEwbank(24, 'yds'));
 		expect(formatGradeLabel(5, true, ydsV)).toBe('V5');
+	});
+});
+
+describe('individual climb grades', () => {
+	const systems = { route: 'french', boulder: 'font' } as const;
+	const route = { gradeScore: 20, gradeRaw: '20', gradeSystem: 'ewbank', gearStyle: 'Sport' };
+
+	it('converts a route and retains its original grade once', () => {
+		expect(formatClimbGrade(route, systems)).toBe('6b (20)');
+		expect(formatClimbGrade({ ...route, gradeRaw: '6b' }, systems)).toBe('6b');
+		expect(formatClimbGrade(route, DEFAULT_DISPLAY_SYSTEMS)).toBe('20');
+	});
+
+	it('uses the boulder preference for V-graded DWS', () => {
+		expect(
+			formatClimbGrade(
+				{ gradeScore: 3, gradeRaw: 'V3', gradeSystem: 'v_scale', gearStyle: 'DWS' },
+				systems
+			)
+		).toBe('6A (V3)');
+	});
+
+	it('keeps the climbed pitch primary and the route grade as context', () => {
+		expect(
+			formatClimbGrade(
+				{
+					...route,
+					gradeRaw: '25',
+					gradeScore: 25,
+					effectiveGradeScore: 18,
+					effectiveGradeRaw: '18'
+				},
+				systems
+			)
+		).toBe('5c+ (25)');
+	});
+
+	it('preserves unscored and ungraded routes without inventing a grade', () => {
+		expect(formatClimbGrade({ ...route, gradeScore: null, gradeRaw: 'VIIa' }, systems)).toBe(
+			'VIIa'
+		);
+		expect(formatClimbGrade({ ...route, gradeScore: null, gradeRaw: null }, systems)).toBeNull();
 	});
 });

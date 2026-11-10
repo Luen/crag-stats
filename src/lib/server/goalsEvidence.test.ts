@@ -1,11 +1,34 @@
 import { readFileSync } from 'node:fs';
 import { beforeEach, expect, it, vi } from 'vitest';
+vi.mock('./auth', () => ({ authScope: () => 'settings', isAuthEnabled: () => false }));
+import { setAppSetting } from './appSettings';
 import { wipeAllData } from './wipe';
 import { upsertAscents } from './ingest';
 import { createGoal, listGoals } from './goals';
 import { parseTheCragCsv } from './providers/thecrag/csv';
 
 const sample = parseTheCragCsv(readFileSync('samples/thecrag-logbook-sample.csv'))[0];
+
+it('does not convert a scale-less saved goal as a route grade', () => {
+	setAppSetting('route_grade_system', 'french');
+	setAppSetting('boulder_grade_system', 'font');
+	upsertAscents([tick('display-goal', 'display-goal-route', 20)]);
+	const goal = createGoal({
+		kind: 'grade',
+		title: 'Display goal',
+		targetGradeScore: 21,
+		year: 2026
+	});
+	expect(goal.targetLabel).toContain('Send ≥ 21');
+	expect(goal.progressLabel).toContain('Best send 20');
+	const boulder = createGoal({
+		kind: 'grade',
+		title: 'Send V5',
+		targetGradeScore: 5,
+		year: 2026
+	});
+	expect(boulder.targetLabel).toContain('Send ≥ 5 ·');
+});
 function tick(
 	id: string,
 	routeId: string,
@@ -29,7 +52,10 @@ function tick(
 		effectiveGradeScore: score
 	};
 }
-beforeEach(() => wipeAllData());
+beforeEach(() => {
+	wipeAllData();
+	setAppSetting('route_grade_system', 'ewbank');
+});
 
 it('adds a point per additional qualifying day, deduplicating routes/ticks and excluding future days', () => {
 	vi.useFakeTimers();

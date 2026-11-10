@@ -1,5 +1,74 @@
 import { describe, expect, it } from 'vitest';
-import { gradeSystemFitsStyle, resolveEffectiveGrade } from './effectiveGrade';
+import {
+	gradeFromTheCragScore,
+	gradeSystemFitsStyle,
+	resolveEffectiveGrade
+} from './effectiveGrade';
+
+describe('unreadable pitch score attribution', () => {
+	it('uses the ascent band, not the first easier pitch band, for a complete climb', () => {
+		const g = resolveEffectiveGrade({
+			routeStyle: 'Trad',
+			ascentGrade: '9',
+			ascentGradeSystem: 'UIAA',
+			ascentGradeScore: 350,
+			ascentGradeBand: 4,
+			pitches: [
+				{ number: 1, grade: '5', gradeSystem: 'UIAA', gradeBand: 2, tick: { name: 'Tick' } },
+				{ number: 2, grade: '9', gradeSystem: 'UIAA', gradeBand: 4, tick: { name: 'Tick' } }
+			]
+		});
+		expect(g.score).toBe(gradeFromTheCragScore(350, 'Trad')!.score);
+		expect(g.band).toBe(4);
+	});
+
+	it('does not give a lone ticked P1 the whole route grade (partial climb)', () => {
+		const g = resolveEffectiveGrade({
+			routeStyle: 'Trad',
+			ascentGrade: '9',
+			ascentGradeSystem: 'UIAA',
+			ascentGradeScore: 350,
+			ascentGradeBand: 4,
+			pitches: [
+				{ number: 1, grade: '6', gradeSystem: 'UIAA', gradeBand: 2, tick: { name: 'Tick' } }
+			]
+		});
+		expect(g.partialMultipitch).toBe(true);
+		expect(g.score).toBe(15);
+		expect(g.band).toBe(2);
+		expect(g.pitchLabel).toBe('P1');
+	});
+
+	it('still uses the ascent score when a lone ticked P1 is the ascent grade', () => {
+		const g = resolveEffectiveGrade({
+			routeStyle: 'Trad',
+			ascentGrade: '9',
+			ascentGradeSystem: 'UIAA',
+			ascentGradeScore: 350,
+			ascentGradeBand: 4,
+			pitches: [
+				{ number: 1, grade: '9', gradeSystem: 'UIAA', gradeBand: 4, tick: { name: 'Tick' } }
+			]
+		});
+		expect(g.score).toBe(gradeFromTheCragScore(350, 'Trad')!.score);
+		expect(g.band).toBe(4);
+	});
+
+	it('does not match identical grade text from a different system on a partial climb', () => {
+		const g = resolveEffectiveGrade({
+			routeStyle: 'Trad',
+			ascentGrade: '7',
+			ascentGradeSystem: 'AU',
+			ascentGradeScore: 50,
+			pitches: [
+				{ number: 1, grade: '7', gradeSystem: 'UIAA', gradeBand: 3, tick: { name: 'Tick' } },
+				{ number: 2, grade: '9', gradeSystem: 'UIAA', tick: null }
+			]
+		});
+		expect(g.score).toBe(21);
+		expect(g.pitchLabel).toBe('P1');
+	});
+});
 
 describe('gradeSystemFitsStyle', () => {
 	it('rejects boulder CPR systems on trad/sport (Trad −1 / VB bug)', () => {
