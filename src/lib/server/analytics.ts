@@ -79,6 +79,7 @@ import {
 } from './firstAscents';
 import { ascents, profiles, routeHistoryFetches, routes } from './db/schema';
 import { pickHardestSends } from './hardestSends';
+import { buildGradeRecords } from './gradeRecords';
 import { loadWeatherSnapshotMap, loadWeatherCachedKeys } from './weatherEngine';
 import { isLikelyIndoorRoute } from './venue';
 import {
@@ -869,6 +870,14 @@ export function getDashboardStats(
 			url: linkFor(r)
 		};
 	});
+	const gradeRecords = buildGradeRecords(
+		all.map((row) => ({
+			...row,
+			routeName: displayRouteName(row.routeName, row.pitchLabel, row.ascentLabel),
+			href: linkFor(row)
+		})),
+		gradeSystems
+	);
 
 	const recent = all
 		.map((row) => ({
@@ -1014,6 +1023,7 @@ export function getDashboardStats(
 		distinctRoutes: routeSet.size,
 		distinctCrags: cragMap.size,
 		gradeSystems,
+		gradeRecords,
 		heatmap,
 		styleShare,
 		tickBreakdown: [...tickMap.entries()]

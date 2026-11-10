@@ -402,6 +402,26 @@
 	</section>
 {:else}
 	<section class="metrics">
+		{#each [{ label: 'Hardest send', records: s.gradeRecords.sends, empty: 'No graded sends yet' }, { label: 'Hardest onsight / flash', records: s.gradeRecords.onsightFlash, empty: 'No graded onsights or flashes yet' }] as summary (summary.label)}
+			<article class="metric panel accent grade-record" aria-label={summary.label}>
+				<h2>{summary.label}</h2>
+				{#each summary.records as record (record.discipline)}
+					<div class="record-entry">
+						<strong>
+							{#if record.href}
+								<a
+									href={record.href}
+									aria-label="{record.grade} · {record.tick} · {record.routeName}">{record.grade}</a
+								>
+							{:else}{record.grade}{/if}
+						</strong>
+						<span>{record.discipline === 'route' ? 'Routes' : 'Boulders'} · {record.tick}</span>
+					</div>
+				{:else}
+					<strong>—</strong><span>{summary.empty}</span>
+				{/each}
+			</article>
+		{/each}
 		<div class="metric panel accent">
 			<strong>{s.onsightCount}</strong>
 			<span>onsighted</span>
@@ -561,6 +581,21 @@
 		font-weight: 750;
 		letter-spacing: -0.02em;
 		font-variant-numeric: tabular-nums;
+	}
+	.grade-record h2 {
+		font-size: 0.85rem;
+		font-weight: 650;
+		margin: 0 0 0.35rem;
+		color: var(--ink);
+	}
+	.record-entry {
+		display: flex;
+		align-items: baseline;
+		flex-wrap: wrap;
+		gap: 0.2rem 0.65rem;
+	}
+	.record-entry a:hover {
+		text-decoration: underline;
 	}
 	.grid {
 		display: grid;

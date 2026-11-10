@@ -234,3 +234,5 @@ Logbook comments longer than 140 characters show a 120-character preview with an
 - French, YDS, and Font style-pyramid rows use their own grade labels and link to that grade's score range; Ewbank and V keep whole-grade rows. Logbook identifies a selected pyramid row and preserves its range through its existing controls.
 
 - Individual Projects and Logbook grades show the selected-system grade first, followed by the original theCrag route grade in parentheses when different. Keep the existing grade chip and project text styling. Charts and aggregate rows use only the selected display system; source grades do not appear in chart axes.
+
+- The first two top dashboard summary boxes are Hardest send and Hardest onsight / flash. Use existing accent-soft metric styling with separate route/boulder rows, clear tick attribution, links to qualifying ascents, and explicit empty states. Keep the existing count/distance boxes after them.

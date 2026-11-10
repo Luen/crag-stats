@@ -583,3 +583,5 @@ World map (#313): `/map` uses bundled public-domain Natural Earth outlines, serv
 - Native row links also retain gradeScale=route|v, preventing universal-score ranges from mixing route- and V-graded DWS/highballs.
 
 - Grade display (#454): use formatClimbGrade for individual Projects/Logbook labels (selected-system effective grade, original route text in parentheses when different); use formatGradeLabel for aggregates, chart axes, milestones, and goals. Never change canonical scores to change presentation, and use usesVScale for DWS/highballs. User guides must not contain grade-repair/migration internals (#455); put upgrade behaviour in PR Release notes.
+
+- Top dashboard grade records (#456) use buildGradeRecords: all-time sends only, effective score first, one result per route/V scale. First-go accepts successful onsight/flash ticks only; ties prefer onsight, then stored ascent id. Format in selected systems; no guessed grades for missing scores.

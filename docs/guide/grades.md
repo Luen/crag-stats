@@ -38,3 +38,7 @@ Conversions between systems are approximate: grades are cultural, and a "6c" at 
 
 - theCrag: [Grades and grade conversions](https://www.thecrag.com/en/article/grades)
 - theCrag: [Grades on theCrag](https://www.thecrag.com/en/article/gradesonthecrag)
+
+## Dashboard grade records
+
+The dashboard starts with **Hardest send** and **Hardest onsight / flash**. They show your all-time highest successful grade and highest successful first-go grade, in your selected systems. Attempts and unscored climbs do not qualify. Routes and boulders have separate results; V-graded DWS and highballs count with boulders. Partial multi-pitch ascents use the hardest pitch you climbed. Each result names its tick and links to the qualifying ascent. When onsight and flash records tie, the onsight is shown. A missing record shows a dash and an explanation.
