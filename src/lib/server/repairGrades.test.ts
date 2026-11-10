@@ -7,6 +7,7 @@ import { setFirstAscent } from './firstAscents';
 import { upsertAscents } from './ingest';
 import { mapAscent } from './providers/thecrag/api';
 import { repairGradesFromRawJson } from './repairGrades';
+import { detectAndParseGrade } from '#lib/grades';
 
 beforeEach(() => wipeAllData());
 describe('grade-system evidence survives repair (#124)', () => {
@@ -77,6 +78,10 @@ describe('French in-between grades (#441)', () => {
 		// Simulate the old parser's band-midpoint fallback (Ewbank 21 ≈ 6b+).
 		db.update(routes).set({ gradeScore: 21 }).where(eq(routes.externalId, '99002')).run();
 		repairGradesFromRawJson();
-		expect(db.select().from(routes).get()!.gradeScore).toBe(24.5);
+		// theCrag puts 7a+ (score 294) just above AU 24 (292).
+		expect(db.select().from(routes).get()!.gradeScore).toBe(
+			detectAndParseGrade('7a+', { gearStyle: 'Sport' }).score
+		);
+		expect(Math.round(db.select().from(routes).get()!.gradeScore!)).toBe(24);
 	});
 });

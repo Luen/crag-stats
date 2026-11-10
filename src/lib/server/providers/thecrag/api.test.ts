@@ -310,3 +310,73 @@ it('identifies inherited exposure only when its source matches the immediate par
 		flattenRouteTags({ Weather: { sun: { name: 'All day sun', ancestor: {} } } }, 2)[0]?.source
 	).toBe('ancestor');
 });
+
+describe("mapAscent uses theCrag's gradeScore (#445)", () => {
+	// Synthetic payloads; scores are theCrag's values for these grades (POST /api/grade).
+	const ascent = (over: Record<string, unknown>, route: Record<string, unknown>) =>
+		mapAscent({
+			id: 445001,
+			date: '2026-02-01',
+			tick: { name: 'Red point' },
+			...over,
+			route: { id: 445002, name: 'Synthetic', gradeBand: 3, ...route }
+		} as Parameters<typeof mapAscent>[0])!;
+
+	it('scores a bare-digit UIAA grade from its score, not as Ewbank', () => {
+		// UIAA 7 has no Ewbank reading; score 226 is AU 20.
+		const m = ascent(
+			{ grade: '7', gradeSystem: 'UIAA', gradeScore: 226 },
+			{ grade: '7', style: 'Sport' }
+		);
+		expect(m.effectiveGradeScore).toBe(20);
+		expect(m.route.gradeScore).toBe(20);
+		expect(m.route.gradeSystem).toBe('ewbank');
+	});
+
+	it('scores systems the text parser cannot read', () => {
+		const m = ascent(
+			{ grade: 'VIIa', gradeSystem: 'SCHALL', gradeScore: 209 },
+			{ grade: 'VIIa', style: 'Trad' }
+		);
+		expect(m.effectiveGradeScore).toBe(19);
+		expect(m.route.gradeScore).toBe(19);
+	});
+
+	it('maps boulder scores onto the V-scale', () => {
+		const m = ascent(
+			{ grade: '7A', gradeSystem: 'FB', gradeScore: 342 },
+			{ grade: '7A', style: 'Boulder' }
+		);
+		expect(m.effectiveGradeScore).toBe(7);
+		expect(m.route.gradeSystem).toBe('v_scale');
+	});
+
+	it('keeps exact AU and V grades unchanged', () => {
+		expect(
+			ascent({ grade: '24', gradeSystem: 'AU', gradeScore: 292 }, { grade: '24', style: 'Sport' })
+				.effectiveGradeScore
+		).toBe(24);
+		expect(
+			ascent(
+				{ grade: 'V5', gradeSystem: 'BLDV', gradeScore: 309 },
+				{ grade: 'V5', style: 'Boulder' }
+			).effectiveGradeScore
+		).toBe(5);
+	});
+
+	it("leaves the route's own grade alone when the ascent grade differs", () => {
+		const m = ascent(
+			{ grade: '22', gradeSystem: 'AU', gradeScore: 259 },
+			{ grade: '21', style: 'Sport' }
+		);
+		expect(m.effectiveGradeScore).toBe(22);
+		expect(m.route.gradeScore).toBe(21);
+	});
+
+	it('falls back to the grade text without a score', () => {
+		expect(
+			ascent({ grade: '21', gradeSystem: 'AU' }, { grade: '21', style: 'Sport' })
+				.effectiveGradeScore
+		).toBe(21);
+	});
+});

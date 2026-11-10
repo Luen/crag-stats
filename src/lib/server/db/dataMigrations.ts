@@ -103,9 +103,10 @@ const MIGRATIONS = [
 		}
 	},
 	{
-		// French 7a+, 6a, 5c+ and other in-between grades used to fall back to the grade-band
-		// midpoint (#441). Re-derive cached scores from stored raw JSON.
-		id: 'data:0012_french_between_grades',
+		// Re-derive cached grades on theCrag's universal score (#441, #444, #445): French
+		// in-between grades (7a+, 6a, 5c+, …), every Font grade, theCrag-aligned French/YDS
+		// conversions, and API ascents in systems the text parser can't read (UIAA, Saxon, …).
+		id: 'data:0012_thecrag_grade_scores',
 		apply: () => {
 			repairGradesFromRawJson();
 			refreshProjects();

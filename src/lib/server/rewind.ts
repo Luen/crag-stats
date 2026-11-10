@@ -1,5 +1,6 @@
 import { calendarDay as validDay } from '#lib/calendarDay';
 import { eq } from 'drizzle-orm';
+import { formatGradeLabel, usesVScale, type GradeSystem } from '#lib/grades';
 import { theCragAscentUrl } from '#lib/thecragUrls';
 import { tickKind } from '#lib/ticks';
 import { db, ensureSchema } from './db';
@@ -15,6 +16,7 @@ export type RewindYearSummary = {
 	topCrags: { crag: string; count: number }[];
 	hardestSend: {
 		name: string;
+		/** Grade label in the preferred grade system (or the stored raw grade when unscored). */
 		gradeRaw: string | null;
 		cragName: string | null;
 		ascentDate: string | null;
@@ -35,7 +37,10 @@ export function listRewindYears(): number[] {
 	return [...years].sort((a, b) => b - a);
 }
 
-export function getRewindSummary(year: number): RewindYearSummary {
+export function getRewindSummary(
+	year: number,
+	preferredSystem: GradeSystem = 'ewbank'
+): RewindYearSummary {
 	ensureSchema();
 	const joined = db
 		.select({
@@ -51,6 +56,8 @@ export function getRewindSummary(year: number): RewindYearSummary {
 			routeName: routes.name,
 			cragName: routes.cragName,
 			routeGradeRaw: routes.gradeRaw,
+			routeGradeSystem: routes.gradeSystem,
+			gearStyle: routes.gearStyle,
 			routeUrl: routes.url
 		})
 		.from(ascents)
@@ -80,7 +87,12 @@ export function getRewindSummary(year: number): RewindYearSummary {
 			if (!hardest || score > hardest.score) {
 				hardest = {
 					name: r.ascentLabel?.trim() || r.routeName,
-					gradeRaw: r.effectiveGradeRaw ?? r.routeGradeRaw,
+					gradeRaw: formatGradeLabel(
+						score,
+						usesVScale(r.routeGradeSystem, r.gearStyle),
+						preferredSystem,
+						r.effectiveGradeRaw ?? r.routeGradeRaw
+					),
 					cragName: r.cragName,
 					ascentDate: day,
 					href: r.ascentUrl || theCragAscentUrl(r.externalId) || r.routeUrl,

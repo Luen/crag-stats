@@ -19,9 +19,7 @@ import {
 	bandFromEwbank,
 	bandFromVScale,
 	boulderPyramidScoreKey,
-	convertFromEwbank,
-	convertFromVScale,
-	formatVScaleLabel,
+	formatGradeLabel as formatGrade,
 	GRADE_BANDS,
 	type GradeSystem,
 	usesVScale
@@ -175,20 +173,6 @@ function tickColor(tick: string): string {
 	if (t.includes('red')) return TICK_COLORS['Red point'];
 	if (t.includes('send') || t === 'tick') return TICK_COLORS.Send;
 	return TICK_COLORS.Other;
-}
-
-function formatGrade(
-	score: number,
-	isBoulder: boolean,
-	system: GradeSystem,
-	raw?: string | null
-): string {
-	if (isBoulder) {
-		if (system === 'font') return convertFromVScale(score, 'font');
-		return formatVScaleLabel(score, raw);
-	}
-	const routeSystem: GradeSystem = system === 'v_scale' || system === 'font' ? 'ewbank' : system;
-	return convertFromEwbank(score, routeSystem);
 }
 
 /** Pyramid key suffix for V-graded routes that aren't boulders (DWS, highball), #72. */

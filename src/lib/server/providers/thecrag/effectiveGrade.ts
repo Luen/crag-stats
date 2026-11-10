@@ -1,4 +1,14 @@
-import { detectAndParseGrade, type ParsedGrade } from '#lib/grades';
+import {
+	bandFromEwbank,
+	bandFromVScale,
+	bandById,
+	convertFromEwbank,
+	detectAndParseGrade,
+	formatVScaleLabel,
+	theCragScoreToEwbank,
+	theCragScoreToVScale,
+	type ParsedGrade
+} from '#lib/grades';
 
 export type ApiPitch = {
 	number?: number;
@@ -81,6 +91,30 @@ export function gradeSystemFitsStyle(
 	return true;
 }
 
+/**
+ * Grade from theCrag's universal `gradeScore` (#445): Ewbank-equivalent for routes, V-scale for
+ * boulders. Every theCrag system shares the score, so it is exact where text parsing guesses.
+ */
+export function gradeFromTheCragScore(
+	score: number | null | undefined,
+	style: string | null | undefined,
+	gradeBand?: number | null
+): ParsedGrade | null {
+	if (typeof score !== 'number' || !Number.isFinite(score) || score <= 0) return null;
+	const boulder = isBoulderStyle(style);
+	const value = boulder ? theCragScoreToVScale(score) : theCragScoreToEwbank(score);
+	const apiBand =
+		gradeBand != null && gradeBand >= 1 && gradeBand <= 5 ? bandById(gradeBand) : null;
+	return {
+		system: boulder ? 'v_scale' : 'ewbank',
+		raw: boulder ? formatVScaleLabel(value) : convertFromEwbank(value, 'ewbank'),
+		score: value,
+		label: boulder ? formatVScaleLabel(value) : convertFromEwbank(value, 'ewbank'),
+		band: apiBand ?? (boulder ? bandFromVScale(value) : bandFromEwbank(value)),
+		isBoulder: boulder
+	};
+}
+
 function toEffective(
 	parsed: ParsedGrade
 ): Pick<EffectiveGrade, 'raw' | 'score' | 'band' | 'system'> {
@@ -106,6 +140,8 @@ export function resolveEffectiveGrade(opts: {
 	ascentGrade?: string | null;
 	ascentGradeSystem?: string | null;
 	ascentGradeBand?: number | null;
+	/** theCrag universal score for the ascent grade; wins over parsing its text (#445). */
+	ascentGradeScore?: number | null;
 	cprGrade?: string | null;
 	cprBand?: number | null;
 	pitches?: ApiPitch[] | null;
@@ -180,8 +216,18 @@ export function resolveEffectiveGrade(opts: {
 	// Skip boulder V/BLDV overlays on sport/trad (Gropefest Trad 8 + CPR VB).
 	// Skip AU/Ewbank ascent overlays when the route already has an explicit V-grade
 	// (Splinder: route V0 + ascent AU "12" must not become V12).
-	const candidates: { raw?: string | null; sys?: string | null; band?: number | null }[] = [
-		{ raw: opts.ascentGrade, sys: opts.ascentGradeSystem, band: opts.ascentGradeBand },
+	const candidates: {
+		raw?: string | null;
+		sys?: string | null;
+		band?: number | null;
+		score?: number | null;
+	}[] = [
+		{
+			raw: opts.ascentGrade,
+			sys: opts.ascentGradeSystem,
+			band: opts.ascentGradeBand,
+			score: opts.ascentGradeScore
+		},
 		{
 			raw: opts.cprGrade,
 			sys: inferCprSystem(opts.cprGrade, opts.ascentGradeSystem),
@@ -190,7 +236,7 @@ export function resolveEffectiveGrade(opts: {
 	];
 
 	for (const c of candidates) {
-		if (!c.raw) continue;
+		if (!c.raw && c.score == null) continue;
 		if (!gradeSystemFitsStyle(c.sys, routeStyle)) continue;
 		const sys = (c.sys || '').toUpperCase();
 		const auOnBoulder = isBoulderStyle(routeStyle) && (sys === 'AU' || sys.includes('EWBANK'));
@@ -198,7 +244,9 @@ export function resolveEffectiveGrade(opts: {
 			continue;
 		}
 		// Also skip when the *parsed* result is boulder-scaled but route is not
-		const parsed = parseWith(c.raw, routeStyle, c.band, c.sys);
+		const parsed =
+			gradeFromTheCragScore(c.score, routeStyle, c.band) ??
+			parseWith(c.raw, routeStyle, c.band, c.sys);
 		if (!isBoulderStyle(routeStyle) && parsed.isBoulder) continue;
 		if (parsed.score == null) continue;
 		return {
