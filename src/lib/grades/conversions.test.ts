@@ -226,4 +226,9 @@ describe('YDS on theCrag scores (#445)', () => {
 		}
 		expect(parse('5.10-').score!).toBeLessThan(parse('5.10+').score!);
 	});
+
+	it('labels Ewbank grades below 5.0 as 5.0, never a bare Ewbank number', () => {
+		for (const ew of [1, 2, 3]) expect(convertFromEwbank(ew, 'yds'), `Ewbank ${ew}`).toBe('5.0');
+		expect(convertFromEwbank(4, 'yds')).toBe('5.0');
+	});
 });

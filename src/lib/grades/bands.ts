@@ -2,6 +2,8 @@
  * Grade bands aligned with theCrag's five difficulty bands.
  * Colours match https://www.thecrag.com/en/article/grades
  */
+import { ewbankToTheCragScore, vScaleToTheCragScore } from './thecragScale';
+
 export type GradeBandId = 1 | 2 | 3 | 4 | 5;
 
 export type GradeBand = {
@@ -64,28 +66,34 @@ export function bandById(id: number | null | undefined): GradeBand | null {
 	return GRADE_BANDS[id - 1] ?? null;
 }
 
-/** Map an Ewbanks (AU) grade number to a theCrag-style band. */
-export function bandFromEwbank(grade: number | null | undefined): GradeBand | null {
-	if (grade == null || Number.isNaN(grade)) return null;
-	for (const band of GRADE_BANDS) {
-		if (grade >= band.ewbankMin && grade <= band.ewbankMax) return band;
-	}
-	if (grade < GRADE_BANDS[0].ewbankMin) return GRADE_BANDS[0];
-	return GRADE_BANDS[GRADE_BANDS.length - 1];
+/**
+ * Band for a theCrag universal grade score: each band spans 100 points (Beginner 1–100,
+ * Intermediate 101–200, … Elite 401+), so 200 is still Intermediate.
+ */
+export function bandFromTheCragScore(score: number | null | undefined): GradeBand | null {
+	if (score == null || Number.isNaN(score)) return null;
+	const id = Math.min(5, Math.max(1, Math.ceil(score / 100)));
+	return GRADE_BANDS[id - 1];
 }
 
 /**
- * V-Scale → band (boulder table on theCrag grades page).
+ * Map an Ewbank-equivalent route score to a theCrag-style band. Scores can sit between
+ * whole Ewbank grades (French 6a ≈ 18.3, 7a+ ≈ 24.1), so the band comes from theCrag's
+ * score, where 6a is still Intermediate and 7a+ still Experienced.
+ */
+export function bandFromEwbank(grade: number | null | undefined): GradeBand | null {
+	if (grade == null || Number.isNaN(grade)) return null;
+	return bandFromTheCragScore(ewbankToTheCragScore(grade));
+}
+
+/**
+ * V-Scale → band (boulder table on theCrag grades page), through theCrag's score.
  * Beginner: VB± · Intermediate: V0± · Experienced: V1–V4 · Expert: V5–V10 · Elite: V11+.
+ * In-between scores follow theCrag too: Font 5A is Experienced, 6B+ Experienced, 7C+ Expert.
  */
 export function bandFromVScale(v: number | null | undefined): GradeBand | null {
 	if (v == null || Number.isNaN(v)) return null;
-	// VB+ is ~-0.5; V0- is ~-0.3 — do not treat all negatives as Beginner.
-	if (v <= -0.4) return GRADE_BANDS[0];
-	if (v < 1) return GRADE_BANDS[1];
-	if (v <= 4) return GRADE_BANDS[2];
-	if (v <= 10) return GRADE_BANDS[3];
-	return GRADE_BANDS[4];
+	return bandFromTheCragScore(vScaleToTheCragScore(v));
 }
 
 /**
