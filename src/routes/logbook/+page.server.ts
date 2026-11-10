@@ -1,3 +1,6 @@
+import { logbookDates } from '#lib/logbookDates';
+import { normalizeRock } from '#lib/logbookSuggestions';
+import { logbookOptions } from '#lib/server/logbookOptions';
 import { parseSoloKind } from '#lib/soloKind';
 import { fail } from '@sveltejs/kit';
 import { listLogbook } from '#lib/server/analytics';
@@ -26,8 +29,6 @@ function parseSectorPath(raw: string | null): string[] {
 		return [];
 	}
 }
-
-const ISO_DAY = /^\d{4}-\d{2}-\d{2}$/;
 
 function parseFaParam(raw: string | null): string {
 	if (raw === 'FA' || raw === 'FFA' || raw === 'any' || raw === 'none') return raw;
@@ -112,8 +113,13 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 	const day = url.searchParams.get('day') ?? '';
 	const fromRaw = url.searchParams.get('from') ?? '';
 	const toRaw = url.searchParams.get('to') ?? '';
-	const from = ISO_DAY.test(fromRaw) ? fromRaw : '';
-	const to = ISO_DAY.test(toRaw) ? toRaw : '';
+	const dates = logbookDates({
+		from: fromRaw,
+		to: toRaw,
+		year: Number(url.searchParams.get('year')) || undefined,
+		season: url.searchParams.get('season') ?? ''
+	});
+	const { from, to } = dates;
 	const season = url.searchParams.get('season') ?? '';
 	const sort = url.searchParams.get('sort') ?? 'date';
 	const order = url.searchParams.get('order') ?? 'desc';
@@ -140,7 +146,11 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 	const tag = url.searchParams.get('tag') ?? '';
 	const tagExact = parseTagExactParams(url.searchParams.getAll('tagExact'));
 	const partnerMatch = url.searchParams.get('partnerMatch') === 'exact' ? 'exact' : 'contains';
-	const rock = url.searchParams.get('rock') ?? '';
+	const rock = normalizeRock(url.searchParams.get('rock') ?? '');
+	const options = logbookOptions();
+	const cragKey = url.searchParams.get('cragKey') ?? '';
+	const sectorKey = url.searchParams.get('sectorKey') ?? '';
+	const routeName = url.searchParams.get('routeName') ?? '';
 	const yearRaw = url.searchParams.get('year');
 	const year = yearRaw != null && yearRaw !== '' ? Number(yearRaw) : undefined;
 	const scoreRaw = url.searchParams.get('score');
@@ -176,6 +186,9 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 		solo,
 		qualities: qualities.length ? qualities : undefined,
 		crag: crag || undefined,
+		cragKey: cragKey || undefined,
+		sectorKey: sectorKey || undefined,
+		routeName: routeName || undefined,
 		sector: sector || undefined,
 		sectorPath: sectorPath.length ? sectorPath : undefined,
 		day: day || undefined,
@@ -214,6 +227,9 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 		includeNotes: notesShown
 	});
 	return {
+		options,
+		dateError: dates.error,
+		today: new Date().toISOString().slice(0, 10),
 		total,
 		route: route ?? '',
 		rows,
@@ -228,12 +244,15 @@ export const load: PageServerLoad = async ({ url, locals }) => {
 		solo,
 		qualities,
 		crag,
+		cragKey,
+		sectorKey,
+		routeName,
 		sector,
 		sectorPath,
 		day,
 		from,
 		to,
-		season,
+		season: from || to ? '' : season,
 		sort,
 		order,
 		multipitch,

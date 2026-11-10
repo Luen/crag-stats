@@ -1,3 +1,5 @@
+import { logbookDates } from '#lib/logbookDates';
+import { logbookAreaKey, normalizeRock } from '#lib/logbookSuggestions';
 import { logbookStyleLabels } from '#lib/logbookStyle';
 import { currentPeriodStreak } from '#lib/periodStreaks';
 import { consecutiveDayRuns, currentDayStreak, longestDayRun } from '#lib/dayStreaks';
@@ -9,7 +11,7 @@ import { validMapCoords, mapPlaceKey } from '#lib/climbingMap';
 import { calendarDay as validDay } from '#lib/calendarDay';
 import { listPartners } from './partners';
 import { topPartnersPerMetric } from '#lib/partnerStats';
-import { matchesClimbStyle } from '#lib/climbStyle';
+import { climbStyleLabel, matchesClimbStyle } from '#lib/climbStyle';
 
 import { classifyRoutePitches, hasRouteInfoFetched, isMissingPitchData } from './routePitches';
 import { ancestorAreaNames, parseAncestorsJson, sectorPathUnderCrag } from './sectorsTree';
@@ -1224,6 +1226,9 @@ export function listLogbook(filters?: {
 	ticks?: string[];
 	solo?: string;
 	crag?: string;
+	cragKey?: string;
+	sectorKey?: string;
+	routeName?: string;
 	sector?: string;
 	/** Exact path beneath the crag, including descendants. */
 	sectorPath?: string[];
@@ -1305,8 +1310,9 @@ export function listLogbook(filters?: {
 	const styleList = normalizeList(filters?.style, filters?.styles);
 	const tickList = normalizeList(filters?.tick, filters?.ticks).map((t) => t.toLowerCase());
 	const qualityList = normalizeList(filters?.quality, filters?.qualities);
-	const fromBound = filters?.from && ISO_DAY.test(filters.from) ? filters.from : '';
-	const toBound = filters?.to && ISO_DAY.test(filters.to) ? filters.to : '';
+	const dateRange = logbookDates(filters ?? {});
+	const fromBound = dateRange.error ? '' : dateRange.from;
+	const toBound = dateRange.error ? '' : dateRange.to;
 	// from/to win over year/season so mixed URL params stay predictable (#85).
 	const useYearSeason = !fromBound && !toBound;
 
@@ -1353,6 +1359,7 @@ export function listLogbook(filters?: {
 			popularity: routes.popularity,
 			relativePopularity: routes.relativePopularity,
 			parentName: routes.parentName,
+			parentExternalId: routes.parentExternalId,
 			bolts: routes.bolts,
 			pitchesJson: routes.pitchesJson,
 			routeInfoUpdatedAt: routes.routeInfoUpdatedAt,
@@ -1368,6 +1375,9 @@ export function listLogbook(filters?: {
 		.all()
 		.map((r) => attachWeatherLocation(r, weatherLocations));
 
+	if (dateRange.error) rows = [];
+	if (filters?.routeName && filters.route == null)
+		rows = rows.filter((r) => r.routeName.toLowerCase().includes(filters.routeName!.toLowerCase()));
 	if (filters?.route != null) rows = rows.filter((r) => r.routeId === filters.route);
 	if (filters?.place)
 		rows = rows.filter((r) => validMapCoords(r.lat, r.lon) && mapPlaceKey(r) === filters.place);
@@ -1381,8 +1391,14 @@ export function listLogbook(filters?: {
 
 	if (styleList.length) {
 		rows = rows.filter((r) => {
-			return styleList.some(
-				(s) => matchesClimbStyle(r.ascentGearStyle, s) || matchesClimbStyle(r.gearStyle, s)
+			return styleList.some((s) =>
+				s.trim().toLowerCase() === 'unknown'
+					? !(r.gearStyle ?? '').trim() || r.gearStyle!.trim().toLowerCase() === 'unknown'
+					: s.trim().toLowerCase() === 'other'
+						? Boolean(r.gearStyle?.trim()) &&
+							r.gearStyle!.trim().toLowerCase() !== 'unknown' &&
+							climbStyleLabel(r.gearStyle) === 'Other'
+						: matchesClimbStyle(r.ascentGearStyle, s) || matchesClimbStyle(r.gearStyle, s)
 			);
 		});
 	}
@@ -1391,11 +1407,15 @@ export function listLogbook(filters?: {
 	if (tickList.length) {
 		rows = rows.filter((r) => tickList.includes((r.tickType || '').toLowerCase()));
 	}
-	if (filters?.crag) {
+	if (filters?.cragKey) {
+		rows = rows.filter((r) => logbookAreaKey(r) === filters.cragKey);
+	} else if (filters?.crag) {
 		const c = filters.crag.toLowerCase();
 		rows = rows.filter((r) => (r.cragName || '').toLowerCase().includes(c));
 	}
-	if (filters?.sectorPath?.length) {
+	if (filters?.sectorKey) {
+		rows = rows.filter((r) => logbookAreaKey(r, true) === filters.sectorKey);
+	} else if (filters?.sectorPath?.length) {
 		const wanted = filters.sectorPath;
 		rows = rows.filter((r) => {
 			const { segments } = sectorPathUnderCrag({
@@ -1427,8 +1447,8 @@ export function listLogbook(filters?: {
 		const from = fromBound;
 		// Undated rows have no evidence they fall after `from` — exclude them.
 		rows = rows.filter((r) => {
-			const d = (r.ascentDate || '').slice(0, 10);
-			return ISO_DAY.test(d) && d >= from;
+			const d = validDay(r.ascentDate);
+			return d != null && d >= from;
 		});
 	}
 	if (toBound) {
@@ -1436,8 +1456,8 @@ export function listLogbook(filters?: {
 		// Undated rows have no evidence they fall on/before `to` — exclude them
 		// (empty string would otherwise compare as <= any bound).
 		rows = rows.filter((r) => {
-			const d = (r.ascentDate || '').slice(0, 10);
-			return ISO_DAY.test(d) && d <= to;
+			const d = validDay(r.ascentDate);
+			return d != null && d <= to;
 		});
 	}
 	if (filters?.score != null && Number.isFinite(filters.score)) {
@@ -1510,17 +1530,18 @@ export function listLogbook(filters?: {
 		const w = filters.with.toLowerCase();
 		rows = rows.filter((r) =>
 			filters.partnerMatch === 'exact'
-				? splitPartners(r.partners).some((partner) => partner.toLowerCase() === w)
+				? splitPartners(r.partners).some(
+						(partner) => partner.toLowerCase() === w.replace(/^@+/, '')
+					)
 				: (r.partners || '').toLowerCase().includes(w)
 		);
 	}
 	if (filters?.rock) {
-		const rock = filters.rock.trim().toLowerCase();
+		const rock = normalizeRock(filters.rock);
 		if (rock) {
 			rows = rows.filter((r) =>
 				parseTagsJson(r.tagsJson).some(
-					(t) =>
-						t.category.trim().toLowerCase() === 'rock type' && t.name.trim().toLowerCase() === rock
+					(t) => normalizeRock(t.category) === 'rock type' && normalizeRock(t.name) === rock
 				)
 			);
 		}
