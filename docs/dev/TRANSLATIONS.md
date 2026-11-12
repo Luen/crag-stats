@@ -16,7 +16,7 @@ Climbing is a global sport, but initial localization focuses on communities with
 | `es` | Spanish  | Español     | World-class sport climbing destinations (Siurana, Margalef, Chulilla, Rodellar); Spain and Latin America       |
 | `it` | Italian  | Italiano    | Iconic European climbing hubs (Arco, Dolomites, Sardinia, Finale Ligure, Val di Mello)                         |
 
-**Next wave candidates:** Japanese (`ja`), Portuguese (`pt` / `pt-BR`), and Polish (`pl`).
+**theCrag aligned target languages:** Korean (`ko`), Portuguese (`pt` / `pt-BR`), and Simplified Chinese (`zh-CN` / `zh-Hans`). (Additional community candidates: Japanese `ja`, and Polish `pl`).
 
 ---
 

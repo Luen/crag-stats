@@ -29,7 +29,7 @@ How the internationalisation architecture works is documented in [`docs/dev/TRAN
 3. Set the source language to **English** (`en`).
    > [!IMPORTANT]
    > Set the source language to `en` at project creation. Changing the source language later forces a full re-upload and orphans existing translations.
-4. Add the initial target languages: **German** (`de`), **French** (`fr`), **Spanish** (`es`), and **Italian** (`it`).
+4. Add the initial target languages: **German** (`de`), **French** (`fr`), **Spanish** (`es`), and **Italian** (`it`). To complete parity with all languages offered by theCrag, you can also add **Korean** (`ko`), **Portuguese** (`pt`), and **Simplified Chinese** (`zh-CN`).
 
 ### Step 2: Get the Numeric Project ID
 
