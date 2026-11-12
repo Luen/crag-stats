@@ -85,11 +85,11 @@ export type ResolveLocaleInput = {
 
 /**
  * Resolve active locale using the priority order:
- * 1. ?locale= query param
- * 2. cs_locale cookie
- * 3. app_settings.locale (stored DB setting)
- * 4. DISPLAY_LOCALE environment variable
- * 5. Accept-Language HTTP header
+ * 1. ?locale= query param (one-off preview / explicit link override)
+ * 2. cs_locale cookie (visitor preference)
+ * 3. app_settings.locale (stored DB default when explicitly chosen by admin)
+ * 4. Accept-Language HTTP header (browser autodetection when stored is unset or auto)
+ * 5. DISPLAY_LOCALE environment variable (fallback if browser language is unsupported)
  * 6. DEFAULT_LOCALE ('en')
  */
 export function resolveLocale(input: ResolveLocaleInput): SupportedLocale {
@@ -97,8 +97,8 @@ export function resolveLocale(input: ResolveLocaleInput): SupportedLocale {
 		matchSupportedLocale(input.query) ??
 		matchSupportedLocale(input.cookie) ??
 		matchSupportedLocale(input.stored) ??
-		matchSupportedLocale(input.displayLocale) ??
 		matchAcceptLanguage(input.acceptLanguage) ??
+		matchSupportedLocale(input.displayLocale) ??
 		DEFAULT_LOCALE
 	);
 }

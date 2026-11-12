@@ -88,11 +88,11 @@ Internationalisation in Crag Stats leverages native Svelte 5 runes (`$state` and
 
 On request, the active locale is resolved through the following hierarchy:
 
-1. **URL parameter:** `?locale=de` (convenient for testing, sharing links, and previews).
-2. **Cookie:** `cs_locale` (user selection in browser).
-3. **Database setting:** `app_settings.locale` (configured by the instance admin).
-4. **Environment variable:** `DISPLAY_LOCALE` (Docker or server environment override).
-5. **Browser header:** `Accept-Language` (matched against supported locales).
+1. **URL parameter:** `?locale=de` (one-off preview / explicit link override).
+2. **Cookie:** `cs_locale` (visitor selection in browser via globe icon).
+3. **Database setting:** `app_settings.locale` (configured by the admin in Settings when set to an explicit language).
+4. **Browser header:** `Accept-Language` (autodetects visitor's browser language when the site is in Auto mode or unset).
+5. **Environment variable:** `DISPLAY_LOCALE` (fallback if browser language is unsupported).
 6. **Fallback default:** `en` (English).
 
 ---

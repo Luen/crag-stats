@@ -97,18 +97,18 @@ describe('i18n locales and types', () => {
 			})
 		).toBe('fr');
 
-		// 3. Explicit stored 'en' wins over DISPLAY_LOCALE and Accept-Language
+		// 3. Explicit stored 'de' wins over Accept-Language and displayLocale when query and cookie are unset
 		expect(
 			resolveLocale({
 				query: null,
 				cookie: null,
-				stored: 'en',
-				displayLocale: 'de-DE',
+				stored: 'de',
+				displayLocale: 'es-ES',
 				acceptLanguage: 'fr-FR,fr;q=0.9'
 			})
-		).toBe('en');
+		).toBe('de');
 
-		// 4. DISPLAY_LOCALE wins over Accept-Language when stored is unset
+		// 4. Accept-Language autodetects when stored is unset or auto
 		expect(
 			resolveLocale({
 				query: null,
@@ -117,20 +117,20 @@ describe('i18n locales and types', () => {
 				displayLocale: 'es-AR',
 				acceptLanguage: 'de-DE'
 			})
-		).toBe('es');
+		).toBe('de');
 
-		// 5. Accept-Language wins when earlier sources are unset or unsupported
+		// 5. displayLocale wins when Accept-Language is unsupported or unset
 		expect(
 			resolveLocale({
 				query: 'invalid',
 				cookie: undefined,
-				stored: null,
-				displayLocale: 'zh-CN',
-				acceptLanguage: 'nl-NL, de;q=0.9, en;q=0.8'
+				stored: '',
+				displayLocale: 'es-AR',
+				acceptLanguage: 'zh-CN, ja;q=0.9'
 			})
-		).toBe('de');
+		).toBe('es');
 
-		// 6. Fallback to DEFAULT_LOCALE ('en')
+		// 6. Fallback to DEFAULT_LOCALE ('en') when all sources are unset or unsupported
 		expect(resolveLocale({})).toBe('en');
 	});
 

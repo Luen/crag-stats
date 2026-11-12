@@ -44,6 +44,7 @@ export const load: PageServerLoad = async ({ cookies }) => {
 		sync: getSyncStatus(),
 		hasApiKey: hasTheCragApiKey(),
 		syncConfiguration: getTheCragSyncConfiguration(),
+		siteLocale: getAppSetting('locale') ?? '',
 		supportedLocales: SUPPORTED_LOCALES,
 		localeMetadata: LOCALE_METADATA,
 		gradeSystems: getDisplayGradeSystems(),
@@ -78,8 +79,11 @@ export const actions: Actions = {
 	savePreferences: async ({ request, cookies, locals }) => {
 		if (!locals.authed) return fail(403);
 		const form = await request.formData();
-		const rawLocale = String(form.get('locale') ?? '');
-		if (isSupportedLocale(rawLocale)) {
+		const rawLocale = String(form.get('locale') ?? '').trim();
+		if (rawLocale === '' || rawLocale === 'auto') {
+			deleteAppSetting('locale');
+			cookies.delete('cs_locale', { path: '/' });
+		} else if (isSupportedLocale(rawLocale)) {
 			setAppSetting('locale', rawLocale);
 			cookies.set('cs_locale', rawLocale, {
 				path: '/',
