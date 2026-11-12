@@ -103,7 +103,7 @@ Inspired by [Dreeve](https://dreeve.app/) (Stats for Strava) and [RoxClimbs](htt
 - **Docker / GHCR:** multi-arch images (`amd64` + `arm64`) on a minimal distroless runtime, with database migrations applied automatically on start. Upgrading straight from any older release is tested.
 - **Nightly dependency updates:** in-major upgrades with a 3-day cooldown and the full test suite; a patch release (and image) only when something that ships in the image moved. Lint, format, typecheck and test tooling updates are committed without releasing.
 - **Dreeve-style UI:** light and dark themes, a collapsible sidebar and a mobile drawer.
-- **Multilanguage support:** switch between English, German, French, Spanish, and Italian directly in the header or in Settings. Translations are powered by Crowdin and ship inside the Docker image without runtime external dependencies. See [docs/dev/TRANSLATIONS.md](docs/dev/TRANSLATIONS.md).
+- **Multilanguage support:** switch between English, German, French, Spanish, and Italian directly in the header or in Settings. Translations are powered by Crowdin, synchronized via GitHub Actions, and ship inside the Docker image without runtime external dependencies. See [docs/dev/TRANSLATIONS.md](docs/dev/TRANSLATIONS.md) and [Crowdin Workflow Setup](.github/workflows/SETUP.md#crowdin-translation-sync--ai-pre-translate-setup).
 - Provider-shaped architecture, ready for Mountain Project later.
 
 Contributor / agent notes: see [AGENTS.md](./AGENTS.md) (living document).
@@ -363,6 +363,14 @@ docker compose up --build -d
 | `WEATHER_IMPORT`          | `true` to cache outdoor daily weather from Open-Meteo after sync (default `false`): 50 days per run, ≤1 request/s, heat/freeze/rain/snow/wind badges. Free non-commercial tier for personal self-hosted installs; see [docs/guide/weather.md](docs/guide/weather.md).                                    |
 
 Grade systems and private ascent notes are configured in **Settings** (stored in SQLite), not via environment variables. If an older install set `PREFERRED_GRADE_SYSTEM` or `SHOW_PRIVATE_NOTES`, the first start after upgrading copies them into Settings (unless Settings already has a value).
+
+## Translations
+
+Crag Stats is localized into multiple languages with help from the climbing community on [Crowdin](https://crowdin.com/). All translations are bundled directly into the application and container images so self-hosted instances run completely offline.
+
+- **Contribute translations:** Help translate Crag Stats into your language on [Crowdin](https://crowdin.com/).
+- **Architecture & terminology:** Read the developer guide in [docs/dev/TRANSLATIONS.md](docs/dev/TRANSLATIONS.md).
+- **Automation setup:** Read the workflow and API token setup in [.github/workflows/SETUP.md](.github/workflows/SETUP.md).
 
 ## Privacy
 
