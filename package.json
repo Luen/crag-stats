@@ -1,7 +1,7 @@
 {
 	"name": "crag-stats",
 	"private": true,
-	"version": "0.13.1",
+	"version": "0.13.2",
 	"description": "Self-hosted climbing analytics for theCrag",
 	"type": "module",
 	"packageManager": "pnpm@12.18.0",
@@ -47,8 +47,8 @@
 		"svelte-check": "^4.7.8",
 		"tailwindcss": "^4.3.5",
 		"typescript": "^6.0.3",
-		"typescript-eslint": "^8.72.1",
-		"vite": "^8.3.6",
+		"typescript-eslint": "^8.72.2",
+		"vite": "^8.3.7",
 		"vitest": "^5.1.0",
 		"yaml": "2.9.1"
 	},
