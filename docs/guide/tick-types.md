@@ -13,6 +13,18 @@ In the tables below, **Send** means Crag Stats counts the tick as a successful (
 - **Projects** are routes with attempts but no send yet. A route you sent first go (onsight or flash) is never a project.
 - **Training load** counts attempts at 0.8× a send, since working a route is still hard work; see [Training load](/docs/training-load).
 
+## Counted tick types in analytics
+
+On theCrag, non-send attempts (such as `Working`, `Attempt`, `Hang dog`, or `Retreat`) are logged as ascents. If you log numerous working burns while projecting, counting every attempt in dashboard totals can skew your headline ascent count, style share, and climber type.
+
+In **Settings → Display & visibility → Counted tick types**, you can configure how each tick type is treated across Crag Stats:
+
+- **Enable (Count everywhere):** Included in headline ascents, discipline breakdown, pyramids, activity heatmaps, training load, projects, and goals.
+- **Projects & goals only (Hide from analytics):** Excluded from headline ascents, discipline share, crag volume, and pyramids, but still counted towards project detection, activity heatmap sessions, training load fatigue, and grade goals.
+- **Hide (Exclude completely):** Excluded across all analytics, projects, and goals.
+
+The logbook always preserves and displays all your logged ascents with full filtering regardless of this setting.
+
 ## Source
 
 Definitions are paraphrased from theCrag's [Tick types](https://www.thecrag.com/en/article/ticktypes) article. Not every tick type applies to every gear style.

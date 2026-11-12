@@ -1,7 +1,8 @@
 import { eq } from 'drizzle-orm';
 import { calendarDay } from '#lib/calendarDay';
 import { formatClimbGrade } from '#lib/grades';
-import { getDisplayGradeSystems } from './appSettings';
+import { isTickCountedInProjectsAndGoals } from '#lib/tickSettings';
+import { getDisplayGradeSystems, getTickTypeSettings } from './appSettings';
 import { db, ensureSchema } from './db';
 import { ascents, routes } from './db/schema';
 import { isLikelyIndoorRoute, listProjects } from './projects';
@@ -39,6 +40,7 @@ export function getProjectDetails(routeId: number, now = new Date()) {
 
 export function loadProjectProgressRows() {
 	ensureSchema();
+	const tickSettings = getTickTypeSettings();
 	// Explicit whitelist: no ascent comment, raw JSON or local project notes are selected.
 	return db
 		.select({
@@ -64,5 +66,8 @@ export function loadProjectProgressRows() {
 		.from(ascents)
 		.innerJoin(routes, eq(routes.id, ascents.routeId))
 		.all()
-		.filter((row) => !isLikelyIndoorRoute(row));
+		.filter(
+			(row) =>
+				!isLikelyIndoorRoute(row) && isTickCountedInProjectsAndGoals(row.tickType, tickSettings)
+		);
 }

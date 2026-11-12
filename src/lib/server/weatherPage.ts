@@ -4,6 +4,8 @@ import { buildWeatherPerformanceView } from '#lib/weatherPerformance';
 import { ascentWeatherKey } from '#lib/weatherKeys';
 import { calendarDay } from '#lib/calendarDay';
 import { theCragAscentUrl } from '#lib/thecragUrls';
+import { isTickCountedInAnalytics, type TickTypeSettings } from '#lib/tickSettings';
+import { getTickTypeSettings } from './appSettings';
 import { db, ensureSchema } from './db';
 import { ascents, routes } from './db/schema';
 import { loadWeatherSnapshotMap, loadWeatherCachedKeys } from './weatherEngine';
@@ -11,9 +13,10 @@ import { attachWeatherLocation, loadWeatherLocations } from './weatherLocations'
 import { isOutdoorLogbookRow } from './logbookWeather';
 
 /** Local cache only: no notes, provider payloads or import actions reach the page. */
-export function getWeatherPageData() {
+export function getWeatherPageData(tickSettings?: TickTypeSettings) {
 	ensureSchema();
 	const locations = loadWeatherLocations();
+	const settings = tickSettings ?? getTickTypeSettings();
 	const rows = db
 		.select({
 			routeId: routes.id,
@@ -41,6 +44,7 @@ export function getWeatherPageData() {
 		.from(ascents)
 		.innerJoin(routes, eq(ascents.routeId, routes.id))
 		.all()
+		.filter((row) => isTickCountedInAnalytics(row.tickType, settings))
 		.map((row) => {
 			const base = row.ascentLabel?.trim() || row.routeName;
 			return {

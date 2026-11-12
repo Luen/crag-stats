@@ -107,6 +107,12 @@ import { buildBestMonthsView } from './bestMonths';
 import { buildSessionsPerWeek } from '#lib/sessionsPerWeek';
 import { buildWeekdayStats } from '#lib/weekdayStats';
 import { buildRouteRepeats, routeRepeatKey } from '#lib/routeRepeats';
+import {
+	isTickCountedInAnalytics,
+	isTickCountedInProjectsAndGoals,
+	type TickTypeSettings
+} from '#lib/tickSettings';
+import { getTickTypeSettings } from './appSettings';
 
 export type PyramidMode = 'all' | 'sends' | 'onsight';
 const PYRAMID_MODES: PyramidMode[] = ['all', 'sends', 'onsight'];
@@ -277,7 +283,11 @@ function relativeTime(iso: string | null): string | null {
 
 export function getDashboardStats(
 	gradeSystems: DisplayGradeSystems = DEFAULT_DISPLAY_SYSTEMS,
-	opts?: { pyramidMode?: PyramidMode; dateDisplay?: DateDisplay }
+	opts?: {
+		pyramidMode?: PyramidMode;
+		dateDisplay?: DateDisplay;
+		tickSettings?: TickTypeSettings;
+	}
 ): DashboardStats {
 	const pyramidMode = opts?.pyramidMode ?? 'all';
 	ensureSchema();
@@ -386,6 +396,11 @@ export function getDashboardStats(
 		.all()
 		.map((r) => attachWeatherLocation(r, weatherLocations));
 
+	const tickSettings = opts?.tickSettings ?? getTickTypeSettings();
+	const isFiltered = Object.values(tickSettings).some((b) => b !== 'enable');
+	const analyticsRows = all.filter((r) => isTickCountedInAnalytics(r.tickType, tickSettings));
+	const activityRows = all.filter((r) => isTickCountedInProjectsAndGoals(r.tickType, tickSettings));
+
 	const tickMap = new Map<string, number>();
 	const styleMap = new Map<string, number>();
 	const cragMap = new Map<
@@ -437,7 +452,7 @@ export function getDashboardStats(
 	const notableStyle = new Map<string, NotableAgg>();
 	const notableArea = new Map<string, NotableAgg>();
 
-	for (const row of all) {
+	for (const row of analyticsRows) {
 		routeSet.add(row.routeId);
 		const tick = row.tickType || 'Unknown';
 		tickMap.set(tick, (tickMap.get(tick) ?? 0) + 1);
@@ -548,7 +563,7 @@ export function getDashboardStats(
 		}
 	}
 
-	const totalForShare = Math.max(1, all.length);
+	const totalForShare = Math.max(1, analyticsRows.length);
 	const styleShare = [...styleMap.entries()]
 		.map(([style, count]) => ({
 			style,
@@ -559,11 +574,13 @@ export function getDashboardStats(
 		.sort((a, b) => b.count - a.count);
 
 	const dominant = styleShare[0];
-	const climberType =
-		profile?.typeOfClimber?.trim() ||
-		(dominant && dominant.pct >= 40 && ['Sport', 'Trad', 'Boulder'].includes(dominant.style)
+	const computedClimberType =
+		dominant && dominant.pct >= 40 && ['Sport', 'Trad', 'Boulder'].includes(dominant.style)
 			? `${dominant.style} climber`
-			: 'Rock climber');
+			: 'Rock climber';
+	const climberType = isFiltered
+		? computedClimberType
+		: profile?.typeOfClimber?.trim() || computedClimberType;
 
 	const weatherByKey = loadWeatherSnapshotMap();
 	// Calendar weather: the lowest-id outdoor ascent that day with a cache hit decides the colour.
@@ -572,7 +589,7 @@ export function getDashboardStats(
 		string,
 		{ count: number; sends: number; heightM: number; maxBand: number | null }
 	>();
-	for (const row of all) {
+	for (const row of activityRows) {
 		const day = validDay(row.ascentDate);
 		if (!day) continue;
 		const snap = logbookRowWeather(weatherByKey, row);
@@ -583,7 +600,8 @@ export function getDashboardStats(
 		}
 		const slot = dayMap.get(day) ?? { count: 0, sends: 0, heightM: 0, maxBand: null };
 		slot.count += 1;
-		if (row.isSend) {
+		const countedInAnalytics = isTickCountedInAnalytics(row.tickType, tickSettings);
+		if (row.isSend && countedInAnalytics) {
 			slot.sends += 1;
 			const rowScore = effectiveScore(row);
 			const rowBand = effectiveBand(row);
@@ -595,7 +613,7 @@ export function getDashboardStats(
 			if (band != null && (slot.maxBand == null || band > slot.maxBand)) slot.maxBand = band;
 		}
 		const h = row.heightM ?? row.routeHeightM ?? 0;
-		if (h > 0) slot.heightM += h;
+		if (h > 0 && countedInAnalytics) slot.heightM += h;
 		dayMap.set(day, slot);
 	}
 	const heatmap = [...dayMap.entries()]
@@ -731,7 +749,7 @@ export function getDashboardStats(
 		return Number.isFinite(n) ? n : null;
 	};
 
-	const cprInputs = all.map((a) => ({
+	const cprInputs = analyticsRows.map((a) => ({
 		routeId: a.routeId,
 		ascentDate: a.ascentDate,
 		tickType: a.tickType,
@@ -744,7 +762,7 @@ export function getDashboardStats(
 	}));
 
 	const faMarks = getFirstAscentMarks();
-	const extraRows = all.map((a) => ({
+	const toExtraRow = (a: (typeof all)[number]) => ({
 		ascentDate: a.ascentDate,
 		ascentId: a.id,
 		routeId: a.routeId,
@@ -785,7 +803,9 @@ export function getDashboardStats(
 			cragName: a.cragName,
 			tagsJson: a.tagsJson
 		})
-	}));
+	});
+	const extraRows = analyticsRows.map(toExtraRow);
+	const activityExtraRows = activityRows.map(toExtraRow);
 	const weatherConditions = buildWeatherConditionsView(extraRows, weatherByKey);
 	const weatherPerformance = buildWeatherPerformanceView(extraRows, weatherByKey);
 	const rockPerformance = buildRockPerformanceView(extraRows);
@@ -804,13 +824,13 @@ export function getDashboardStats(
 			weatherByKey
 		}
 	);
-	const trainingLoad = buildTrainingLoadView(extraRows);
+	const trainingLoad = buildTrainingLoadView(activityExtraRows);
 	const styleMix = buildStyleMixOverTime(extraRows);
-	const partners = topPartnersPerMetric(listPartners(), 7);
+	const partners = topPartnersPerMetric(listPartners(null, tickSettings), 7);
 	const starsScatter = buildStarsScatter(extraRows).points;
 	const qualityBreakdown = buildQualityBreakdown(extraRows).ratings;
 	const routePopularity = buildRoutePopularityStats(
-		all.map((a) => {
+		analyticsRows.map((a) => {
 			const isBoulder = vScale(a);
 			const score = effectiveScore(a);
 			const raw = effectiveRaw(a);
@@ -834,7 +854,7 @@ export function getDashboardStats(
 	const rockBlurb = rockTypeBlurb(rockAgg.dominant, rockAgg.dominantPct);
 	const karma = buildKarmaStats();
 	const bestMonths = buildBestMonthsView(
-		all.map((a) => ({
+		analyticsRows.map((a) => ({
 			cragName: a.cragName,
 			cragUrl: a.cragUrl,
 			ascentDate: a.ascentDate,
@@ -845,7 +865,7 @@ export function getDashboardStats(
 
 	// Ewbank and V-scale scores aren't comparable, so rank each discipline separately (#58).
 	const hardestSends = pickHardestSends(
-		all.filter((r) => r.isSend),
+		analyticsRows.filter((r) => r.isSend),
 		effectiveScore,
 		(r) => (vScale(r) ? 'boulder' : 'route')
 	).map(({ row: r, discipline }) => {
@@ -873,7 +893,7 @@ export function getDashboardStats(
 		};
 	});
 	const gradeRecords = buildGradeRecords(
-		all.map((row) => ({
+		analyticsRows.map((row) => ({
 			...row,
 			routeName: displayRouteName(row.routeName, row.pitchLabel, row.ascentLabel),
 			href: linkFor(row)
@@ -881,7 +901,7 @@ export function getDashboardStats(
 		gradeSystems
 	);
 
-	const recent = all
+	const recent = analyticsRows
 		.map((row) => ({
 			row,
 			day: validDay(row.ascentDate) ?? '',
@@ -921,22 +941,45 @@ export function getDashboardStats(
 			};
 		});
 
-	const outdoorAscents = profile?.outdoorAscentCount ?? null;
-	const indoorAscents = profile?.indoorAscentCount ?? null;
+	const outdoorAscents = isFiltered
+		? analyticsRows.filter(
+				(r) =>
+					!isLikelyIndoorRoute({
+						gearStyle: r.gearStyle,
+						name: r.routeName,
+						cragName: r.cragName,
+						tagsJson: r.tagsJson
+					})
+			).length
+		: (profile?.outdoorAscentCount ?? null);
+	const indoorAscents = isFiltered
+		? analyticsRows.filter((r) =>
+				isLikelyIndoorRoute({
+					gearStyle: r.gearStyle,
+					name: r.routeName,
+					cragName: r.cragName,
+					tagsJson: r.tagsJson
+				})
+			).length
+		: (profile?.indoorAscentCount ?? null);
 	const accountHeightM =
 		profile?.heightClimbed != null && Number.isFinite(profile.heightClimbed)
 			? Math.round(profile.heightClimbed)
 			: null;
+	const effectiveHeightM = isFiltered
+		? Math.round(heightM)
+		: (accountHeightM ?? Math.round(heightM));
+	const routesTicked = isFiltered ? routeSet.size : (profile?.routesTicked ?? routeSet.size);
 
 	let earliest: string | null = null;
-	for (const row of all) {
+	for (const row of analyticsRows) {
 		const d = validDay(row.ascentDate);
 		if (!d) continue;
 		if (!earliest || d < earliest) earliest = d;
 	}
 
 	const solo = buildSoloStats(
-		all.map((r) => {
+		analyticsRows.map((r) => {
 			const isBoulder = vScale(r);
 			const score = effectiveScore(r);
 			return {
@@ -962,7 +1005,7 @@ export function getDashboardStats(
 	);
 
 	const countries = new Set<string>();
-	for (const a of all) {
+	for (const a of analyticsRows) {
 		const c = (a.country || '').trim();
 		if (c) countries.add(c.toLowerCase());
 	}
@@ -975,14 +1018,14 @@ export function getDashboardStats(
 	const blurb = buildClimberBlurb({
 		firstDate: earliest,
 		activeDays: dayMap.size,
-		totalAscents: all.length,
+		totalAscents: analyticsRows.length,
 		totalSends: sends,
 		onsightCount,
 		flashCount,
 		redpointCount,
 		pinkpointCount,
 		climberType,
-		heightM: accountHeightM ?? heightM,
+		heightM: effectiveHeightM,
 		distinctRoutes: routeSet.size,
 		distinctCrags: cragMap.size,
 		outdoorAscents,
@@ -1013,15 +1056,17 @@ export function getDashboardStats(
 		profileName: profile?.name ?? null,
 		climberType,
 		avatar: resolveTheCragAvatar(profile?.avatar) ?? profile?.avatar ?? null,
-		totalAscents: all.length,
+		totalAscents: analyticsRows.length,
+		totalLogged: all.length,
+		isFiltered,
 		totalSends: sends,
 		totalAttempts: attempts,
 		onsightCount,
 		outdoorAscents,
 		indoorAscents,
-		routesTicked: profile?.routesTicked ?? routeSet.size,
-		heightM: accountHeightM ?? Math.round(heightM),
-		heightKm: Math.round(((accountHeightM ?? heightM) / 1000) * 10) / 10,
+		routesTicked,
+		heightM: effectiveHeightM,
+		heightKm: Math.round((effectiveHeightM / 1000) * 10) / 10,
 		distinctRoutes: routeSet.size,
 		distinctCrags: cragMap.size,
 		gradeSystems,

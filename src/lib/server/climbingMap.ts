@@ -1,4 +1,6 @@
 import { eq } from 'drizzle-orm';
+import { isTickCountedInAnalytics, type TickTypeSettings } from '#lib/tickSettings';
+import { getTickTypeSettings } from './appSettings';
 import { db, ensureSchema } from './db';
 import { ascents, routes } from './db/schema';
 import { isLikelyIndoorRoute } from './venue';
@@ -25,12 +27,14 @@ export function readMapFilters(params: URLSearchParams): MapFilters {
 		venue: venue === 'outdoor' || venue === 'indoor' ? venue : 'all'
 	};
 }
-export function listClimbingMap(filters: MapFilters) {
+export function listClimbingMap(filters: MapFilters, tickSettings?: TickTypeSettings) {
 	ensureSchema();
+	const settings = tickSettings ?? getTickTypeSettings();
 	const rows = db
 		.select({
 			id: ascents.id,
 			date: ascents.ascentDate,
+			tickType: ascents.tickType,
 			ascentGearStyle: ascents.ascentGearStyle,
 			routeProvider: routes.provider,
 			routeExternalId: routes.externalId,
@@ -45,7 +49,8 @@ export function listClimbingMap(filters: MapFilters) {
 		})
 		.from(ascents)
 		.leftJoin(routes, eq(ascents.routeId, routes.id))
-		.all();
+		.all()
+		.filter((r) => isTickCountedInAnalytics(r.tickType, settings));
 	let total = 0,
 		missing = 0;
 	const groups = new Map<

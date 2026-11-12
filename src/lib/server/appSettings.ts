@@ -1,8 +1,16 @@
-import { eq } from 'drizzle-orm';
+import { eq, sql } from 'drizzle-orm';
 import { resolveDisplaySystems, type DisplayGradeSystems } from '#lib/grades';
+import {
+	canonicalTickKey,
+	parseTickTypeSettings,
+	serializeTickTypeSettings,
+	STANDARD_TICKS,
+	type AvailableTickType,
+	type TickTypeSettings
+} from '#lib/tickSettings';
 import { authScope, isAuthEnabled } from './auth';
 import { db, ensureSchema } from './db';
-import { appSettings } from './db/schema';
+import { appSettings, ascents } from './db/schema';
 import { resolveShowNotes, type ShowNotes } from './notes';
 import { resolveSearchIndexing, type SearchIndexing } from './seo';
 
@@ -17,7 +25,8 @@ export type AppSettingKey =
 	| 'boulder_grade_system'
 	| 'dashboard_layout'
 	| 'show_notes'
-	| 'offline_revision';
+	| 'offline_revision'
+	| 'counted_tick_types';
 
 export function getAppSetting(key: AppSettingKey): string | null {
 	ensureSchema();
@@ -70,4 +79,54 @@ export function getRouteGradeSystem() {
 
 export function getBoulderGradeSystem() {
 	return getDisplayGradeSystems().boulder;
+}
+
+export function getTickTypeSettings(): TickTypeSettings {
+	return parseTickTypeSettings(getAppSetting('counted_tick_types'));
+}
+
+export function setTickTypeSettings(settings: TickTypeSettings) {
+	setAppSetting('counted_tick_types', serializeTickTypeSettings(settings));
+}
+
+export function listAvailableTickTypes(): AvailableTickType[] {
+	ensureSchema();
+	const counts = new Map<string, number>();
+	try {
+		const rows = db
+			.select({
+				tickType: ascents.tickType,
+				count: sql<number>`count(*)`
+			})
+			.from(ascents)
+			.groupBy(ascents.tickType)
+			.all();
+		for (const r of rows) {
+			if (r.tickType) {
+				const canon = canonicalTickKey(r.tickType);
+				counts.set(canon, (counts.get(canon) ?? 0) + Number(r.count));
+			}
+		}
+	} catch {
+		// Schema or table not available yet
+	}
+
+	const knownKeys = new Set(STANDARD_TICKS.map((t) => t.key));
+	const out: AvailableTickType[] = STANDARD_TICKS.map((t) => ({
+		...t,
+		count: counts.get(t.key) ?? 0
+	}));
+
+	for (const [key, count] of counts.entries()) {
+		if (!knownKeys.has(key)) {
+			out.push({
+				key,
+				name: key.charAt(0).toUpperCase() + key.slice(1),
+				category: 'other',
+				isSend: false,
+				count
+			});
+		}
+	}
+	return out;
 }
