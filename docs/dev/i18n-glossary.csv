@@ -1,0 +1,55 @@
+en-AU,de,fr,es-ES,it,description
+theCrag,theCrag,theCrag,theCrag,theCrag,"The climbing platform name (always lowercase 'the', capitalized 'Crag')"
+Crag Stats,Crag Stats,Crag Stats,Crag Stats,Crag Stats,The climbing analytics application name
+logbook,Tourenbuch,carnet de croix,libro de vías,diario delle salite,A climber's record of completed and attempted ascents
+ascent,Begehung,ascension,ascensión,salita,A completed or attempted climb of a route
+ascents,Begehungen,ascensions,ascensiones,salite,Multiple climb entries in a logbook
+ascent notes,Begehungsnotizen,notes d'ascension,notas de ascensión,note di salita,Personal notes recorded on an ascent
+onsight,Onsight,à vue,a vista,a vista,Cleanly climbing a route on first attempt with no prior beta or inspection
+flash,Flash,flash,flash,flash,Cleanly climbing a route on first attempt with prior beta or inspection
+redpoint,Rotpunkt,après travail,punto rojo,rotpunkt,Free climbing a route cleanly after prior practice or inspection
+pinkpoint,Pinkpoint,pink point,punto rosa,pink point,Free climbing a route cleanly with pre-placed gear or quickdraws
+clean,Clean,enchaîné,encadenado,pulito,Climbing without hanging on gear or falling
+tick,Begehung,croix,pegue,salita,A logged climb entry
+ticks,Begehungen,croix,pegues,salite,Logged climb entries
+top rope,Toprope,moulinette,en polea,moulinette,Climbing with the rope anchored at the top of the route
+lead,Vorstieg,tête,de primero,da primo,Climbing where the climber clips protection while ascending
+sport,Sport,sportive,deportiva,sportiva,Climbing protected by permanent pre-drilled bolts
+trad,Trad,trad,clásica,trad,Traditional climbing using removable gear for protection
+trad routes,Trad-Routen,voies trad,vías clásicas,vie trad,Routes protected by traditional removable protection
+boulder,Boulder,bloc,bloque,blocco,"Climbing short problems without ropes, protected by pads"
+boulder problems,Boulderprobleme,problèmes de bloc,problemas de bloque,problemi di blocco,Individual bouldering challenges or problems
+bouldering,Bouldern,escalade de bloc,escalada en bloque,arrampicata su massi,The activity and discipline of bouldering
+crag,Klettergarten,falaise,escuela de escalada,falesia,An outdoor climbing cliff or area
+route,Route,voie,vía,via,A designated path on a rock face
+route data,Routendaten,données de voie,datos de la vía,dati della via,Data and information associated with climbing routes
+route popularity,Routenbeliebtheit,popularité de la voie,popularidad de la vía,popolarità della via,Popularity metric of a climbing route
+pitch,Seillänge,longueur,largo,tiro,A section of a route climbed between two belays
+multipitch,Mehrseillängen,grande voie,varios largos,via lunga,A climbing route consisting of multiple pitches
+send,Durchstieg,enchaînement,encadene,chiusura,Successfully climbing a route without falling or resting on gear
+sends,Durchstiege,enchaînements,encadenes,chiusure,Multiple successful climbs without falling
+climbed,Gekletterte,grimpé,escalado,scalato,Climbed routes or pitches
+project,Projekt,projet,proyecto,progetto,A difficult route a climber is practicing to send
+projects,Projekte,projets,proyectos,progetti,Multiple routes being worked on as projects
+first ascent,Erstbegehung,première ascension,primera ascensión,prima salita,The first recorded ascent of a route
+first free ascent,erste freie Begehung,première ascension en libre,primera ascensión en libre,prima salita in libera,The first ascent completed without artificial aids
+grade,Grad,cotation,grado,grado,Difficulty rating of a climb
+pyramid,Pyramide,pyramide,pirámide,piramide,Visual distribution chart of climbed grades
+streak,Serie,série,racha,serie,Consecutive days or periods of climbing activity
+training load,Trainingsbelastung,charge d'entraînement,carga de entrenamiento,carico di allenamento,Quantified physical stress and fatigue from climbing
+Eddington number,Eddington-Zahl,nombre d'Eddington,número de Eddington,numero di Eddington,Metric representing E days with at least E ascents or kilometers
+rewind,Jahresrückblick,rétrospective,resumen anual,riepilogo annuale,Annual climbing activity summary and review
+discipline,Disziplin,discipline,disciplina,disciplina,"Climbing style classification: Sport, Trad, Boulder, Top rope"
+karma,Karma,karma,karma,karma,theCrag community contribution score
+CPR,CPR,CPR,CPR,CPR,"Climber Performance Rating, an approximate performance index"
+Ewbank,Ewbank,Ewbank,Ewbank,Ewbank,Australian and New Zealand numerical climbing grade system
+French grade,Französischer Grad,cotation française,grado francés,grado francese,"French route grading scale (e.g. 6a, 7b+)"
+YDS,YDS,YDS,YDS,YDS,Yosemite Decimal System grade (e.g. 5.10a)
+V-scale,V-Skala,échelle V,escala V,scala V,Hueco bouldering grade scale (e.g. V4)
+Fontainebleau,Fontainebleau,Fontainebleau,Fontainebleau,Fontainebleau,"Fontainebleau bouldering grading scale (e.g. 6A, 7C)"
+partner,Seilpartner,partenaire,compañero,compagno di cordata,Climbing companion
+partners,Seilpartner,partenaires,compañeros,compagni di cordata,Climbing companions
+belay,Sicherung,assurage,aseguramiento,assicurazione,Holding the rope to protect a climber
+height,Wandhöhe,hauteur,altura,altezza,Vertical distance of a climb in meters
+gear style,Kletterstil,style d'équipement,estilo de equipamiento,stile di arrampicata,Classification of route gear protection
+instance data,Instanzdaten,données de l'instance,datos de la instancia,dati dell'istanza,Data stored locally for the self-hosted instance

@@ -153,7 +153,50 @@ Follow these steps when writing new UI features:
 
 ---
 
-## Dictionaries & Glossaries in Crowdin
+## Translation Style Guide
 
-- **Glossary:** Guides human translators and AI prompts with climbing-specific terminology (e.g., _Red point_, _Onsight_, _Ewbank_, _Fontainebleau_, _DWS_, _TLC_, _Flash_).
-- **Dictionary:** Crowdin's spellchecker flags unfamiliar technical terms, brand names, and climbing abbreviations. Whitelisting climbing terms (such as _Rotpunkt_, _Crag_, _Ewbank_, _Font_, _DWS_, and _Flash_) in Crowdin keeps QA alert counts low and meaningful.
+[`i18n-style-guide.md`](i18n-style-guide.md) codifies tone, register (German *du*, French *vous*, Spanish *tú*, and Italian *tu*), brand name rules (`theCrag`), climbing grade honesty, and typographic conventions. It is uploaded to Crowdin as the project's official style guide, which Crowdin also uses to derive its AI translation prompt instructions. The repository copy is the source of truth; when editing it, re-upload to Crowdin (`POST /storages` with the file, then `PATCH /style-guides/{id}` pointing to the new storage ID).
+
+---
+
+## Glossary & Terminology
+
+[`i18n-glossary.csv`](i18n-glossary.csv) holds the version-controlled domain terminology (54 entries across English, German, French, Spanish, and Italian) and is the source copy for the project glossary in Crowdin. It covers climbing disciplines (*Sport*, *Trad*, *Boulder*, *Top rope*), tick types (*Onsight*, *Flash*, *Rotpunkt*, *Clean*), analytics metrics (*CPR*, *Eddington number*, *training load*, *rewind*), and crag concepts (*pitch*, *multipitch*, *crag*, *send*, *first ascent*).
+
+Keep the file and the Crowdin glossary in sync when adding new terms of art (`POST /glossaries/{glossaryId}/terms`).
+
+---
+
+## File Context
+
+The source catalog, `src/lib/i18n/locales/en.json`, carries a file description in Crowdin (`PATCH /projects/{id}/files/{fileId}`, path `/context`) that explains the product purpose, target audience, mobile screen constraints, and screen mapping per key prefix (`common.*`, `nav.*`, `dashboard.*`, `logbook.*`, `settings.*`, `disciplines.*`, `ticks.*`, `grades.*`, `weather.*`). Update it whenever a new top-level domain prefix is introduced.
+
+---
+
+## Character Limits & Length Policy
+
+Strings in tight UI slots carry a Crowdin **maximum length**: navigation rails, action buttons, filter chips, difficulty badges, and table column headers (`Date`, `Route`, `Grade`, `Style`, `Tick`, `Crag`, `Partner`, `Weather`). Sentence copy in help text, doc pages, and modals remains unlimited.
+
+The rule for tight slots is:
+
+$$\text{limit} = \max(\text{len} + 10,\, 2 \times \text{len})$$
+
+Where an existing translation was already longer, the limit is set to accommodate it with headroom. Because **size is an enforced QA check in Crowdin**, generous limits ensure translations do not overflow compact mobile layouts (≤860px) while preventing false-positive blocking for translators.
+
+Limits live on the Crowdin string asset, not in `en.json`, so GitHub Actions sync never sets them. When adding a new key in a tight slot, set its limit over the API (`PATCH /projects/{id}/strings/{stringId}`, path `/{stringId}/maxLength`).
+
+---
+
+## Ellipses Normalisation
+
+Always use the single-character typographical ellipsis glyph **`…`** (`U+2026`), never three individual full stops `...`. All catalogs (`en.json`, `de.json`, `fr.json`, `es.json`, and `it.json`) adhere strictly to this rule. Using three dots in source strings causes Crowdin QA punctuation warnings when translators correctly use the single ellipsis character.
+
+---
+
+## QA Checks Baseline
+
+Crowdin's QA panel is a **dynamic background linter**, not a task backlog. It recomputes live against current translations on every load and has no manual "mark as resolved" button. Issues clear only when the translation changes, the word is added to the project glossary/dictionary, or the check category is adjusted.
+
+- **Spellcheck in specialized domains:** Generic spellchecking engines flag valid compound words and technical climbing terms (e.g. German *Tourenbuch*, *Begehungsnotizen*, *Trad-Routen*, *Boulderprobleme*, *Toprope*, and *Eddington-Zahl*). Generic dictionary spellchecking is disabled in project QA categories to avoid false-positive alert noise, while the glossary guides translators.
+- **Enforced structural checks:** Structural safety checks remain active: empty translations, max length limits, mismatched tags, missing spaces, ICU plural formatting, and variable placeholders (`{count}`, `{name}`).
+- **Baseline:** With authentic terminology registered in the glossary and length limits set, the project maintains a **0-issue baseline**.

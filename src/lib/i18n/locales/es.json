@@ -111,7 +111,7 @@
 		"dashboardLayoutDesc": "Reorganiza las tarjetas para personalizar tu panel principal.",
 		"saveDashboardLayout": "Guardar diseño",
 		"resetDashboardLayout": "Restablecer diseño",
-		"syncTitle": "Sincronización con theCrag",
+		"syncTitle": "theCrag: sincronización del libro de vías",
 		"syncButton": "Sincronizar libro de vías",
 		"fullSyncButton": "Sincronización completa",
 		"csvTitle": "Subida manual de CSV",
