@@ -35,7 +35,7 @@ Self-hosted climbing analytics for [theCrag](https://www.thecrag.com/), inspired
 | Node            | 26 LTS+                                                                                   |
 | Deploy          | Docker multi-arch → GHCR (`ghcr.io/luen/crag-stats`)                                      |
 | Migrations      | Versioned SQL in `/migrations`, run on container boot via `scripts/docker-entrypoint.mjs` |
-| i18n            | Planned (Crowdin epic/issue) — not implemented yet                                        |
+| i18n            | Svelte 5 native context + Crowdin JSON message catalogs (`#lib/i18n`)                     |
 
 **Import alias:** `#lib/...` → `src/lib/...` (see `svelte.config` / `tsconfig` paths).
 
@@ -593,3 +593,5 @@ World map (#313): `/map` uses bundled public-domain Natural Earth outlines, serv
 - Top dashboard grade records (#456) use buildGradeRecords: all-time sends only, effective score first, one result per route/V scale. First-go accepts successful onsight/flash ticks only; ties prefer onsight, then stored ascent id. Format in selected systems; no guessed grades for missing scores.
 
 - Logbook filter controls (#458–#461): `logbookOptions` inventories only logged routes and public partner columns, independently of active filters. Never read notes/raw payloads for suggestions. Area selections use provider-scoped `cragKey`/`sectorKey`; route selection keeps the local route ID, and typing clears the exact key. Rock keys normalize case/whitespace. Unknown style matches absent/blank/literal Unknown **route** gear style despite ascent overrides; Other is present, unsupported route style. `logbookDates` resolves inclusive explicit ranges before legacy year/presets, validates calendar days, and keeps written timestamp dates; presets fill the visible From/To fields. Name controls share labeled grid rows with equal heights; keep helper text outside the grid so fields stay aligned.
+
+- Multilanguage support via Crowdin (#11): Svelte 5 native context + Crowdin message catalogs (`#lib/i18n`). Supported locales `en`, `de`, `fr`, `es`, and `it` with initial priority recommendations. Locale resolution uses `?locale=`, cookie `cs_locale`, `app_settings.locale`, and browser `Accept-Language`. Grades remain universal; bands, styles, ticks, and UI chrome are localized. Documentation in `docs/dev/TRANSLATIONS.md`.

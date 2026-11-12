@@ -5,9 +5,15 @@ import { sql } from 'drizzle-orm';
 import { db, ensureSchema } from '#lib/server/db';
 import { ascents } from '#lib/server/db/schema';
 import { countActiveProjects } from '#lib/server/projects';
-import { getSearchIndexing } from '#lib/server/appSettings';
+import { getAppLocale, getSearchIndexing } from '#lib/server/appSettings';
 import { isAuthEnabled, authScope } from '#lib/server/auth';
 import { resolveDateDisplay } from '#lib/dates';
+import {
+	DEFAULT_LOCALE,
+	isSupportedLocale,
+	normalizeLocale,
+	type SupportedLocale
+} from '#lib/i18n';
 import { env } from '#lib/server/env';
 import { isNoindexPath } from '#lib/server/seo';
 import type { LayoutServerLoad } from './$types';
@@ -39,7 +45,36 @@ function navCounts(): { ascents: number; projects: number } {
 	}
 }
 
-export const load: LayoutServerLoad = async ({ locals, url, cookies }) => {
+function resolveRequestLocale(
+	queryLocale: string | null,
+	cookieLocale: string | undefined,
+	acceptHeader: string | null
+): SupportedLocale {
+	if (queryLocale && isSupportedLocale(queryLocale)) return queryLocale;
+	if (cookieLocale && isSupportedLocale(cookieLocale)) return cookieLocale;
+	const dbLocale = getAppLocale();
+	if (dbLocale && isSupportedLocale(dbLocale) && dbLocale !== 'en') return dbLocale;
+	const display = env('DISPLAY_LOCALE');
+	if (display) {
+		const norm = normalizeLocale(display);
+		if (norm !== 'en') return norm;
+	}
+	if (acceptHeader) {
+		const first = acceptHeader.split(',')[0];
+		const norm = normalizeLocale(first);
+		if (norm !== 'en') return norm;
+	}
+	return dbLocale || DEFAULT_LOCALE;
+}
+
+export const load: LayoutServerLoad = async ({ locals, url, cookies, request }) => {
+	const cookieLocale = cookies.get('cs_locale');
+	const resolvedLocale = resolveRequestLocale(
+		url.searchParams.get('locale'),
+		cookieLocale,
+		request.headers.get('accept-language')
+	);
+
 	if (url.pathname === '/offline')
 		return {
 			appVersion: readAppVersion(),
@@ -51,6 +86,7 @@ export const load: LayoutServerLoad = async ({ locals, url, cookies }) => {
 			showSettings: false,
 			navCounts: null,
 			dateDisplay: resolveDateDisplay('en-AU', 'UTC'),
+			locale: resolvedLocale,
 			noindex: true
 		};
 	const authOn = isAuthEnabled();
@@ -68,6 +104,7 @@ export const load: LayoutServerLoad = async ({ locals, url, cookies }) => {
 		showSettings,
 		navCounts: gated ? null : navCounts(),
 		dateDisplay: resolveDateDisplay(env('DISPLAY_LOCALE'), env('TZ')),
+		locale: resolvedLocale,
 		noindex: isNoindexPath(url.pathname) || !getSearchIndexing().allowed
 	};
 };

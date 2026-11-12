@@ -1,0 +1,12 @@
+# Crowdin configuration file for Crag Stats
+# See https://support.crowdin.com/configuration-file/
+
+# The project identifier is populated in Crowdin or via environment variable CROWDIN_PROJECT_ID
+project_id: ''
+base_path: '.'
+base_url: 'https://api.crowdin.com'
+preserve_hierarchy: true
+
+files:
+  - source: '/src/lib/i18n/locales/en.json'
+    translation: '/src/lib/i18n/locales/%two_letters_code%.json'

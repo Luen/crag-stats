@@ -103,6 +103,7 @@ Inspired by [Dreeve](https://dreeve.app/) (Stats for Strava) and [RoxClimbs](htt
 - **Docker / GHCR:** multi-arch images (`amd64` + `arm64`) on a minimal distroless runtime, with database migrations applied automatically on start. Upgrading straight from any older release is tested.
 - **Nightly dependency updates:** in-major upgrades with a 3-day cooldown and the full test suite; a patch release (and image) only when something that ships in the image moved. Lint, format, typecheck and test tooling updates are committed without releasing.
 - **Dreeve-style UI:** light and dark themes, a collapsible sidebar and a mobile drawer.
+- **Multilanguage support:** switch between English, German, French, Spanish, and Italian directly in the header or in Settings. Translations are powered by Crowdin and ship inside the Docker image without runtime external dependencies. See [docs/dev/TRANSLATIONS.md](docs/dev/TRANSLATIONS.md).
 - Provider-shaped architecture, ready for Mountain Project later.
 
 Contributor / agent notes: see [AGENTS.md](./AGENTS.md) (living document).

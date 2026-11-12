@@ -2,6 +2,8 @@
  * Grade bands aligned with theCrag's five difficulty bands.
  * Colours match https://www.thecrag.com/en/article/grades
  */
+import { formatMessage } from '../i18n/format';
+import type { SupportedLocale } from '../i18n/types';
 import { ewbankToTheCragScore, vScaleToTheCragScore } from './thecragScale';
 
 export type GradeBandId = 1 | 2 | 3 | 4 | 5;
@@ -64,6 +66,25 @@ export const GRADE_BANDS: readonly GradeBand[] = [
 export function bandById(id: number | null | undefined): GradeBand | null {
 	if (!id || id < 1 || id > 5) return null;
 	return GRADE_BANDS[id - 1] ?? null;
+}
+
+const BAND_KEYS: Record<GradeBandId, string> = {
+	1: 'grades.bands.beginner',
+	2: 'grades.bands.intermediate',
+	3: 'grades.bands.experienced',
+	4: 'grades.bands.expert',
+	5: 'grades.bands.elite'
+};
+
+/**
+ * Return localized name of the grade band (or canonical English when unset).
+ * Grade numbers/letters themselves are never translated.
+ */
+export function getBandName(bandOrId: GradeBand | GradeBandId, locale?: SupportedLocale): string {
+	const id = typeof bandOrId === 'number' ? bandOrId : bandOrId.id;
+	const key = BAND_KEYS[id as GradeBandId];
+	if (!key) return typeof bandOrId === 'object' ? bandOrId.name : `Band ${id}`;
+	return formatMessage(locale ?? 'en', key);
 }
 
 /**

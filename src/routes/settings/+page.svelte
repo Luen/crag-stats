@@ -161,6 +161,20 @@
 		<h2>Display & visibility</h2>
 		<form method="POST" action="?/savePreferences" class="prefs">
 			<label class="field">
+				<span>Language</span>
+				<select name="locale">
+					{#each data.supportedLocales as loc (loc)}
+						<option value={loc} selected={data.locale === loc}>
+							{data.localeMetadata[loc].nativeName} ({data.localeMetadata[loc].name})
+						</option>
+					{/each}
+				</select>
+				<small class="hint">
+					Display language for the interface. Community translations are contributed on
+					<a class="how" href="https://crowdin.com" target="_blank" rel="noreferrer">Crowdin</a>.
+				</small>
+			</label>
+			<label class="field">
 				<span>Route grades</span>
 				<select name="routeSystem">
 					{#each ROUTE_GRADE_SYSTEMS as opt (opt.id)}

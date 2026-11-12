@@ -3,7 +3,9 @@ import {
 	bandFromEwbank,
 	bandFromTheCragScore,
 	bandFromVScale,
-	boulderPyramidScoreKey
+	boulderPyramidScoreKey,
+	getBandName,
+	GRADE_BANDS
 } from './bands';
 import { detectAndParseGrade } from './conversions';
 
@@ -80,5 +82,30 @@ describe('boulderPyramidScoreKey', () => {
 		expect(boulderPyramidScoreKey(0)).toBe(0);
 		expect(boulderPyramidScoreKey(0.3)).toBe(0);
 		expect(boulderPyramidScoreKey(1)).toBe(1);
+	});
+});
+
+describe('getBandName', () => {
+	it('returns localized band names for all supported locales', () => {
+		const b1 = GRADE_BANDS[0];
+		expect(getBandName(b1, 'en')).toBe('Beginner');
+		expect(getBandName(b1, 'de')).toBe('Anfänger');
+		expect(getBandName(b1, 'fr')).toBe('Débutant');
+		expect(getBandName(b1, 'es')).toBe('Principiante');
+		expect(getBandName(b1, 'it')).toBe('Principiante');
+
+		const b5 = GRADE_BANDS[4];
+		expect(getBandName(b5, 'en')).toBe('Elite');
+		expect(getBandName(b5, 'de')).toBe('Elite');
+		expect(getBandName(b5, 'fr')).toBe('Élite');
+		expect(getBandName(b5, 'es')).toBe('Élite');
+		expect(getBandName(b5, 'it')).toBe('Élite');
+	});
+
+	it('accepts band id numbers', () => {
+		expect(getBandName(1, 'de')).toBe('Anfänger');
+		expect(getBandName(2, 'fr')).toBe('Intermédiaire');
+		expect(getBandName(3, 'es')).toBe('Experimentado');
+		expect(getBandName(4, 'it')).toBe('Avanzato');
 	});
 });

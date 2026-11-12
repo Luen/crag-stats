@@ -1,5 +1,6 @@
 import { eq } from 'drizzle-orm';
 import { resolveDisplaySystems, type DisplayGradeSystems } from '#lib/grades';
+import { DEFAULT_LOCALE, isSupportedLocale, type SupportedLocale } from '#lib/i18n';
 import { authScope, isAuthEnabled } from './auth';
 import { db, ensureSchema } from './db';
 import { appSettings } from './db/schema';
@@ -17,7 +18,8 @@ export type AppSettingKey =
 	| 'boulder_grade_system'
 	| 'dashboard_layout'
 	| 'show_notes'
-	| 'offline_revision';
+	| 'offline_revision'
+	| 'locale';
 
 export function getAppSetting(key: AppSettingKey): string | null {
 	ensureSchema();
@@ -70,4 +72,9 @@ export function getRouteGradeSystem() {
 
 export function getBoulderGradeSystem() {
 	return getDisplayGradeSystems().boulder;
+}
+
+export function getAppLocale(): SupportedLocale {
+	const stored = getAppSetting('locale');
+	return stored && isSupportedLocale(stored) ? stored : DEFAULT_LOCALE;
 }

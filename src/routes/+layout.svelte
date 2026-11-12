@@ -7,34 +7,71 @@
 	import { formatNumber } from '#lib/dates';
 	import { startOfflineRefresh } from '#lib/offlineClient';
 	import NavIcon, { type NavIconName } from '#lib/components/NavIcon.svelte';
+	import { initI18n, LOCALE_METADATA, SUPPORTED_LOCALES } from '#lib/i18n';
 	import type { LayoutProps } from './$types';
 
 	let { children, data }: LayoutProps = $props();
+
+	const i18n = initI18n(() => data.locale);
+	const t = i18n.t;
+
+	let lastDataLocale: string | undefined;
+	$effect(() => {
+		if (data.locale !== lastDataLocale) {
+			lastDataLocale = data.locale;
+			i18n.setLocale(data.locale);
+		}
+	});
+
+	const currentLocale = $derived(i18n.locale);
+	const nextLocale = $derived(
+		SUPPORTED_LOCALES[(SUPPORTED_LOCALES.indexOf(currentLocale) + 1) % SUPPORTED_LOCALES.length]
+	);
+
+	function cycleLocale() {
+		i18n.setLocale(nextLocale);
+	}
+
+	$effect(() => {
+		if (typeof document !== 'undefined') {
+			document.documentElement.lang = currentLocale;
+		}
+	});
 
 	type NavLink = { href: string; label: string; icon: NavIconName; count?: number };
 
 	/** Dreeve-style groups, separated by dividers in the sidebar. */
 	const groups = $derived(
 		[
-			[{ href: '/', label: 'Dashboard', icon: 'dashboard' }],
+			[{ href: '/', label: t('nav.dashboard'), icon: 'dashboard' }],
 			[
-				{ href: '/logbook', label: 'Logbook', icon: 'logbook', count: data.navCounts?.ascents },
-				{ href: '/projects', label: 'Projects', icon: 'projects', count: data.navCounts?.projects },
-				{ href: '/map', label: 'Map & sectors', icon: 'map' },
-				{ href: '/partners', label: 'Partners', icon: 'partners' }
+				{
+					href: '/logbook',
+					label: t('nav.logbook'),
+					icon: 'logbook',
+					count: data.navCounts?.ascents
+				},
+				{
+					href: '/projects',
+					label: t('nav.projects'),
+					icon: 'projects',
+					count: data.navCounts?.projects
+				},
+				{ href: '/map', label: t('nav.map'), icon: 'map' },
+				{ href: '/partners', label: t('nav.partners'), icon: 'partners' }
 			],
 			[
-				{ href: '/goals', label: 'Goals', icon: 'goals' },
-				{ href: '/activity', label: 'Activity', icon: 'activity' },
-				{ href: '/badges', label: 'Badges', icon: 'badges' },
-				{ href: '/eddington', label: 'Eddington', icon: 'eddington' },
-				{ href: '/training-load', label: 'Training load', icon: 'training' },
-				{ href: '/weather', label: 'Weather', icon: 'sun' },
-				{ href: '/milestones', label: 'Milestones', icon: 'milestones' },
-				{ href: '/rewind', label: 'Rewind', icon: 'rewind' },
-				{ href: '/share', label: 'Share', icon: 'share' }
+				{ href: '/goals', label: t('nav.goals'), icon: 'goals' },
+				{ href: '/activity', label: t('nav.activity'), icon: 'activity' },
+				{ href: '/badges', label: t('nav.badges'), icon: 'badges' },
+				{ href: '/eddington', label: t('nav.eddington'), icon: 'eddington' },
+				{ href: '/training-load', label: t('nav.trainingLoad'), icon: 'training' },
+				{ href: '/weather', label: t('nav.weather'), icon: 'sun' },
+				{ href: '/milestones', label: t('nav.milestones'), icon: 'milestones' },
+				{ href: '/rewind', label: t('nav.rewind'), icon: 'rewind' },
+				{ href: '/share', label: t('nav.share'), icon: 'share' }
 			],
-			[{ href: '/docs', label: 'Docs', icon: 'docs' }]
+			[{ href: '/docs', label: t('nav.docs'), icon: 'docs' }]
 		].filter((g) => g.length > 0) as NavLink[][]
 	);
 
@@ -45,9 +82,9 @@
 	const current = $derived(
 		groups.flat().find((l) => isActive(l.href)) ??
 			(isActive('/settings')
-				? { label: 'Settings' }
+				? { label: t('nav.settings') }
 				: page.url.pathname === '/login'
-					? { label: 'Sign in' }
+					? { label: t('nav.signIn') }
 					: null)
 	);
 
@@ -204,10 +241,14 @@
 			type="button"
 			class="icon-btn"
 			onclick={toggleSidebar}
-			aria-label={drawerOpen ? 'Close menu' : mini ? 'Expand sidebar' : 'Collapse sidebar'}
+			aria-label={drawerOpen
+				? t('nav.closeMenu')
+				: mini
+					? t('nav.expandSidebar')
+					: t('nav.collapseSidebar')}
 			aria-expanded={isMobile ? drawerOpen : !mini}
 			aria-controls="side-nav"
-			title={mini ? 'Expand sidebar' : 'Collapse sidebar'}
+			title={mini ? t('nav.expandSidebar') : t('nav.collapseSidebar')}
 		>
 			<NavIcon name="sidebar" />
 		</button>
@@ -238,6 +279,18 @@
 			>
 				<NavIcon name={THEME_ICON[theme]} />
 			</button>
+			<button
+				type="button"
+				class="icon-btn"
+				onclick={cycleLocale}
+				title="Language: {LOCALE_METADATA[currentLocale].nativeName} — switch to {LOCALE_METADATA[
+					nextLocale
+				].nativeName}"
+				aria-label="Language: {LOCALE_METADATA[currentLocale]
+					.nativeName}. Switch to {LOCALE_METADATA[nextLocale].nativeName}"
+			>
+				<NavIcon name="globe" />
+			</button>
 			{#if data.showSettings}
 				<a class="icon-btn" href="/settings" title="Settings & sync" aria-label="Settings & sync">
 					<NavIcon name="settings" />
@@ -245,7 +298,12 @@
 			{/if}
 			{#if data.authEnabled && data.authed}
 				<form method="POST" action="/logout" class="logout">
-					<button type="submit" class="icon-btn" title="Log out" aria-label="Log out">
+					<button
+						type="submit"
+						class="icon-btn"
+						title={t('nav.signOut')}
+						aria-label={t('nav.signOut')}
+					>
 						<NavIcon name="logout" />
 					</button>
 				</form>

@@ -10,6 +10,7 @@ import {
 import { getSearchIndexing } from '#lib/server/appSettings';
 import { ensureSchema } from '#lib/server/db';
 import { runDataMigrations } from '#lib/server/db/dataMigrations';
+import { DEFAULT_LOCALE, isSupportedLocale } from '#lib/i18n';
 import { env } from '#lib/server/env';
 import { startScheduler } from '#lib/server/scheduler';
 import { isNoindexPath } from '#lib/server/seo';
@@ -53,11 +54,25 @@ function finish(res: Response, path: string): Response {
 
 export const handle: Handle = async ({ event, resolve }) => {
 	const path = event.url.pathname;
+	const queryLocale = event.url.searchParams.get('locale');
+	const cookieLocale = event.cookies.get('cs_locale');
+	const locale =
+		queryLocale && isSupportedLocale(queryLocale)
+			? queryLocale
+			: cookieLocale && isSupportedLocale(cookieLocale)
+				? cookieLocale
+				: DEFAULT_LOCALE;
+
+	const resolveWithLang = () =>
+		resolve(event, {
+			transformPageChunk: ({ html }) => html.replace('%lang%', locale)
+		});
+
 	// Public, data-free offline shell; no logbook or authenticated layout data is embedded.
-	if (path === '/offline') return finish(await resolve(event), path);
+	if (path === '/offline') return finish(await resolveWithLang(), path);
 
 	if (path === '/health' || path.startsWith('/health/')) {
-		return finish(await resolve(event), path);
+		return finish(await resolveWithLang(), path);
 	}
 
 	// Worker can trigger sync with shared secret even when password gate is on
@@ -65,7 +80,7 @@ export const handle: Handle = async ({ event, resolve }) => {
 		const secret = env('SESSION_SECRET');
 		const header = event.request.headers.get('x-worker-secret');
 		if (verifySharedSecret(header, secret)) {
-			return finish(await resolve(event), path);
+			return finish(await resolveWithLang(), path);
 		}
 	}
 
@@ -89,5 +104,5 @@ export const handle: Handle = async ({ event, resolve }) => {
 		);
 	}
 
-	return finish(await resolve(event), path);
+	return finish(await resolveWithLang(), path);
 };
