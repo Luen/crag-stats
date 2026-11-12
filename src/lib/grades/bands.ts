@@ -80,7 +80,10 @@ const BAND_KEYS: Record<GradeBandId, string> = {
  * Return localized name of the grade band (or canonical English when unset).
  * Grade numbers/letters themselves are never translated.
  */
-export function getBandName(bandOrId: GradeBand | GradeBandId, locale?: SupportedLocale): string {
+export function getBandName(
+	bandOrId: GradeBand | GradeBandId | number,
+	locale?: SupportedLocale
+): string {
 	const id = typeof bandOrId === 'number' ? bandOrId : bandOrId.id;
 	const key = BAND_KEYS[id as GradeBandId];
 	if (!key) return typeof bandOrId === 'object' ? bandOrId.name : `Band ${id}`;

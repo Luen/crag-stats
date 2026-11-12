@@ -35,18 +35,57 @@ function lookup(dict: Record<string, unknown>, path: string): string | undefined
 	return typeof current === 'string' ? current : undefined;
 }
 
-function evaluatePlural(count: number, branchesStr: string): string {
+function parsePluralBranches(branchesStr: string): Record<string, string> {
 	const branches: Record<string, string> = {};
-	const branchRegex = /([=\w]+)\s*\{([^}]*)\}/g;
-	let match: RegExpExecArray | null;
-	while ((match = branchRegex.exec(branchesStr)) !== null) {
-		branches[match[1].trim()] = match[2];
+	let i = 0;
+	const len = branchesStr.length;
+
+	while (i < len) {
+		while (i < len && /\s/.test(branchesStr[i])) i++;
+		if (i >= len) break;
+
+		const keyStart = i;
+		while (i < len && !/\s|\{/.test(branchesStr[i])) i++;
+		const key = branchesStr.slice(keyStart, i).trim();
+
+		while (i < len && /\s/.test(branchesStr[i])) i++;
+		if (i >= len || branchesStr[i] !== '{') break;
+
+		i++; // skip opening '{'
+		const contentStart = i;
+		let depth = 1;
+		while (i < len && depth > 0) {
+			if (branchesStr[i] === '{') depth++;
+			else if (branchesStr[i] === '}') depth--;
+			i++;
+		}
+
+		if (key && depth === 0) {
+			branches[key] = branchesStr.slice(contentStart, i - 1);
+		}
 	}
+
+	return branches;
+}
+
+function selectPluralCategory(locale: SupportedLocale, count: number): string {
+	try {
+		return new Intl.PluralRules(locale).select(count);
+	} catch {
+		return count === 1 ? 'one' : 'other';
+	}
+}
+
+function evaluatePlural(locale: SupportedLocale, count: number, branchesStr: string): string {
+	const branches = parsePluralBranches(branchesStr);
 
 	const exact = `=${count}`;
 	let template = branches[exact];
 	if (template === undefined) {
-		if (count === 1 && branches['one'] !== undefined) {
+		const category = selectPluralCategory(locale, count);
+		if (branches[category] !== undefined) {
+			template = branches[category];
+		} else if (count === 1 && branches['one'] !== undefined) {
 			template = branches['one'];
 		} else if (branches['other'] !== undefined) {
 			template = branches['other'];
@@ -58,7 +97,7 @@ function evaluatePlural(count: number, branchesStr: string): string {
 	return template.replace(/#/g, String(count));
 }
 
-function processPlurals(input: string, params: MessageParams): string {
+function processPlurals(locale: SupportedLocale, input: string, params: MessageParams): string {
 	const prefix = /\{(\w+),\s*plural,\s*/g;
 	let result = '';
 	let lastIndex = 0;
@@ -78,7 +117,7 @@ function processPlurals(input: string, params: MessageParams): string {
 			const branches = input.slice(prefix.lastIndex, i - 1);
 			const val = params[varName];
 			const num = typeof val === 'number' ? val : Number(val ?? 0);
-			result += evaluatePlural(isNaN(num) ? 0 : num, branches);
+			result += evaluatePlural(locale, isNaN(num) ? 0 : num, branches);
 			lastIndex = i;
 			prefix.lastIndex = i;
 		} else {
@@ -108,7 +147,7 @@ export function formatMessage(
 	}
 
 	// 1. Process ICU plural blocks
-	let result = processPlurals(raw, params);
+	let result = processPlurals(locale, raw, params);
 
 	// 2. Process standard parameter interpolation: {name}
 	result = result.replace(/\{(\w+)\}/g, (match, paramName) => {

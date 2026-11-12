@@ -204,7 +204,7 @@ def progress(lang: str) -> tuple[int, int]:
     raise RuntimeError(f"language {lang} not present in project")
 
 
-def run_pass(lang: str, prompt_id: int, file_id: int) -> str:
+def run_pass(lang: str, prompt_id: int, file_id: int, deadline: float) -> str:
     status, res = call(
         "POST",
         f"/projects/{PROJECT}/pre-translations",
@@ -222,6 +222,8 @@ def run_pass(lang: str, prompt_id: int, file_id: int) -> str:
 
     identifier = res["data"]["identifier"]
     while True:
+        if time.time() > deadline:
+            return "timeout"
         time.sleep(POLL_INTERVAL)
         status, body = call("GET", f"/projects/{PROJECT}/pre-translations/{identifier}")
         if status != 200:
@@ -268,12 +270,15 @@ def main() -> int:
                 print("wall-clock budget reached — stopping")
                 return finish(total_added, languages)
 
-            state = run_pass(lang, prompt_id, file_id)
+            state = run_pass(lang, prompt_id, file_id, deadline)
             before = done
             done, total = progress(lang)
             added = done - before
             total_added += added
             print(f"  {rotation[idx]:<24}{state:<10}{done}/{total} (+{added})")
+            if state == "timeout":
+                print("wall-clock budget reached during pre-translation pass — stopping")
+                return finish(total_added, languages)
 
             if added == 0 and not retried:
                 # Most likely the per-minute limit, not the day's: the model usually has

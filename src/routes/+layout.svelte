@@ -7,7 +7,7 @@
 	import { formatNumber } from '#lib/dates';
 	import { startOfflineRefresh } from '#lib/offlineClient';
 	import NavIcon, { type NavIconName } from '#lib/components/NavIcon.svelte';
-	import { initI18n, LOCALE_METADATA, SUPPORTED_LOCALES } from '#lib/i18n';
+	import { initI18n, LOCALE_METADATA, matchSupportedLocale, SUPPORTED_LOCALES } from '#lib/i18n';
 	import type { LayoutProps } from './$types';
 
 	let { children, data }: LayoutProps = $props();
@@ -16,10 +16,13 @@
 	const t = i18n.t;
 
 	let lastDataLocale: string | undefined;
+	let lastQueryLocale: string | null | undefined;
 	$effect(() => {
-		if (data.locale !== lastDataLocale) {
+		const queryLocale = matchSupportedLocale(page.url.searchParams.get('locale'));
+		if (data.locale !== lastDataLocale || queryLocale !== lastQueryLocale) {
 			lastDataLocale = data.locale;
-			i18n.setLocale(data.locale);
+			lastQueryLocale = queryLocale;
+			i18n.syncLocale(queryLocale ?? data.locale, { persistCookie: queryLocale != null });
 		}
 	});
 
@@ -29,7 +32,9 @@
 	);
 
 	function cycleLocale() {
-		i18n.setLocale(nextLocale);
+		const next = nextLocale;
+		lastDataLocale = next;
+		i18n.setLocale(next);
 	}
 
 	$effect(() => {
@@ -112,6 +117,14 @@
 		mini = root.dataset.sidebar === 'mini';
 		const t = root.dataset.theme;
 		theme = t === 'light' || t === 'dark' ? t : 'system';
+		if (page.url.pathname === '/offline') {
+			const cookiePart = document.cookie
+				.split('; ')
+				.find((c) => c.startsWith('cs_locale='))
+				?.slice('cs_locale='.length);
+			const saved = matchSupportedLocale(cookiePart);
+			if (saved) i18n.syncLocale(saved);
+		}
 
 		const mq = matchMedia('(max-width: 860px)');
 		isMobile = mq.matches;
@@ -216,9 +229,7 @@
 		<meta name="twitter:card" content="summary_large_image" />
 	{/if}
 	<title
-		>{current && current.label !== 'Dashboard'
-			? `${current.label} · Crag Stats`
-			: 'Crag Stats'}</title
+		>{current && page.url.pathname !== '/' ? `${current.label} · Crag Stats` : 'Crag Stats'}</title
 	>
 </svelte:head>
 
@@ -265,8 +276,8 @@
 				href={data.githubUrl}
 				target="_blank"
 				rel="noreferrer"
-				title="GitHub repository"
-				aria-label="GitHub repository"
+				title={t('nav.githubRepo')}
+				aria-label={t('nav.githubRepo')}
 			>
 				<NavIcon name="github" />
 			</a>
@@ -292,7 +303,12 @@
 				<NavIcon name="globe" />
 			</button>
 			{#if data.showSettings}
-				<a class="icon-btn" href="/settings" title="Settings & sync" aria-label="Settings & sync">
+				<a
+					class="icon-btn"
+					href="/settings"
+					title={t('settings.title')}
+					aria-label={t('settings.title')}
+				>
 					<NavIcon name="settings" />
 				</a>
 			{/if}
@@ -354,11 +370,16 @@
 				href="{data.githubUrl}/releases"
 				target="_blank"
 				rel="noreferrer"
-				title="Installed app version">{data.appVersion}</a
+				title={t('nav.installedVersion')}>{data.appVersion}</a
 			>
 		</div>
 	</aside>
-	<button type="button" class="backdrop" tabindex="-1" aria-label="Close menu" onclick={closeDrawer}
+	<button
+		type="button"
+		class="backdrop"
+		tabindex="-1"
+		aria-label={t('nav.closeMenu')}
+		onclick={closeDrawer}
 	></button>
 
 	<div class="content">

@@ -7,10 +7,10 @@ import {
 	verifySessionToken,
 	verifySharedSecret
 } from '#lib/server/auth';
-import { getSearchIndexing } from '#lib/server/appSettings';
+import { getAppSetting, getSearchIndexing } from '#lib/server/appSettings';
 import { ensureSchema } from '#lib/server/db';
 import { runDataMigrations } from '#lib/server/db/dataMigrations';
-import { DEFAULT_LOCALE, isSupportedLocale } from '#lib/i18n';
+import { DEFAULT_LOCALE, resolveLocale } from '#lib/i18n';
 import { env } from '#lib/server/env';
 import { startScheduler } from '#lib/server/scheduler';
 import { isNoindexPath } from '#lib/server/seo';
@@ -54,25 +54,29 @@ function finish(res: Response, path: string): Response {
 
 export const handle: Handle = async ({ event, resolve }) => {
 	const path = event.url.pathname;
-	const queryLocale = event.url.searchParams.get('locale');
-	const cookieLocale = event.cookies.get('cs_locale');
-	const locale =
-		queryLocale && isSupportedLocale(queryLocale)
-			? queryLocale
-			: cookieLocale && isSupportedLocale(cookieLocale)
-				? cookieLocale
-				: DEFAULT_LOCALE;
 
 	const resolveWithLang = () =>
 		resolve(event, {
-			transformPageChunk: ({ html }) => html.replace('%lang%', locale)
+			transformPageChunk: ({ html }) => {
+				const locale =
+					path === '/offline'
+						? DEFAULT_LOCALE
+						: resolveLocale({
+								query: event.url.searchParams.get('locale'),
+								cookie: event.cookies.get('cs_locale'),
+								stored: getAppSetting('locale'),
+								displayLocale: env('DISPLAY_LOCALE'),
+								acceptLanguage: event.request.headers.get('accept-language')
+							});
+				return html.replace('%lang%', locale);
+			}
 		});
 
 	// Public, data-free offline shell; no logbook or authenticated layout data is embedded.
 	if (path === '/offline') return finish(await resolveWithLang(), path);
 
 	if (path === '/health' || path.startsWith('/health/')) {
-		return finish(await resolveWithLang(), path);
+		return finish(await resolve(event), path);
 	}
 
 	// Worker can trigger sync with shared secret even when password gate is on

@@ -70,11 +70,14 @@ test.describe('app shell', () => {
 		await btn.click();
 		await expect(btn).toHaveAccessibleName(/Language: Deutsch/);
 		await expect(page.locator('html')).toHaveAttribute('lang', 'de');
+		await expect(page).toHaveTitle('Crag Stats');
 		await expect(page.locator('#side-nav').getByRole('link', { name: 'Übersicht' })).toBeVisible();
+		await expect(page.getByText('Sportklettern').first()).toBeVisible();
 
 		// Reload preserves language via cookie
 		await page.reload();
 		await expect(page.locator('html')).toHaveAttribute('lang', 'de');
+		await expect(page).toHaveTitle('Crag Stats');
 		await expect(page.locator('#side-nav').getByRole('link', { name: 'Übersicht' })).toBeVisible();
 
 		// Switch to French
@@ -84,9 +87,12 @@ test.describe('app shell', () => {
 			page.locator('#side-nav').getByRole('link', { name: 'Tableau de bord' })
 		).toBeVisible();
 
-		// Reset to English
+		// Reset to English via ?locale=en and verify it persists across reload
 		await page.goto('/?locale=en');
 		await expect(page.locator('html')).toHaveAttribute('lang', 'en');
+		await page.goto('/');
+		await expect(page.locator('html')).toHaveAttribute('lang', 'en');
+		await expect(page.locator('#side-nav').getByRole('link', { name: 'Dashboard' })).toBeVisible();
 	});
 
 	test('docs: every page renders and the dashboard links into them', async ({ page }) => {

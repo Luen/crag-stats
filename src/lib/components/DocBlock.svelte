@@ -7,11 +7,14 @@
 		ewbankToFrench,
 		ewbankToYds,
 		formatVScaleLabel,
+		getBandName,
 		GRADE_BANDS
 	} from '#lib/grades';
+	import { useI18n } from '#lib/i18n';
 
 	/** Generated tables embedded in docs pages via `<!-- component:name -->`. */
 	let { name }: { name: string } = $props();
+	const i18n = useI18n();
 
 	const routeRows = Array.from({ length: 39 }, (_, i) => i + 1).map((ew) => ({
 		ew,
@@ -43,7 +46,9 @@
 			<tbody>
 				{#each GRADE_BANDS as band (band.id)}
 					<tr>
-						<td><span class="band" style:--c={band.color}>{band.name}</span></td>
+						<td
+							><span class="band" style:--c={band.color}>{getBandName(band, i18n.locale)}</span></td
+						>
 						<td class="num">{BAND_DOCS[band.id].routes}</td>
 						<td class="num">{BAND_DOCS[band.id].boulders}</td>
 						<td>{BAND_DOCS[band.id].text}</td>
@@ -64,7 +69,7 @@
 						<td class="num strong">{r.ew}</td>
 						<td class="num">{r.fr}</td>
 						<td class="num">{r.yds}</td>
-						<td><span class="dot"></span>{r.band?.name}</td>
+						<td><span class="dot"></span>{r.band ? getBandName(r.band, i18n.locale) : ''}</td>
 					</tr>
 				{/each}
 			</tbody>
@@ -81,7 +86,7 @@
 					<tr style:--c={r.band?.color}>
 						<td class="num strong">{r.v}</td>
 						<td class="num">{r.font}</td>
-						<td><span class="dot"></span>{r.band?.name}</td>
+						<td><span class="dot"></span>{r.band ? getBandName(r.band, i18n.locale) : ''}</td>
 					</tr>
 				{/each}
 			</tbody>

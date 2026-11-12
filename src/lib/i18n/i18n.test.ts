@@ -4,10 +4,26 @@ import {
 	LOCALE_METADATA,
 	SUPPORTED_LOCALES,
 	isSupportedLocale,
-	normalizeLocale
+	matchAcceptLanguage,
+	matchSupportedLocale,
+	normalizeLocale,
+	resolveLocale
 } from './types';
 import { formatMessage, LOCALES } from './format';
 import { t } from './context.svelte';
+
+function flattenLeaves(obj: Record<string, unknown>, prefix = ''): Record<string, string> {
+	const out: Record<string, string> = {};
+	for (const [k, v] of Object.entries(obj)) {
+		const path = prefix ? `${prefix}.${k}` : k;
+		if (typeof v === 'string') {
+			out[path] = v;
+		} else if (v && typeof v === 'object') {
+			Object.assign(out, flattenLeaves(v as Record<string, unknown>, path));
+		}
+	}
+	return out;
+}
 
 describe('i18n locales and types', () => {
 	it('defines supported locales including en, de, fr, es, and it', () => {
@@ -26,6 +42,17 @@ describe('i18n locales and types', () => {
 		expect(isSupportedLocale('')).toBe(false);
 	});
 
+	it('distinguishes explicit English tags from unsupported tags with matchSupportedLocale', () => {
+		expect(matchSupportedLocale('en')).toBe('en');
+		expect(matchSupportedLocale('en-AU')).toBe('en');
+		expect(matchSupportedLocale('de-DE')).toBe('de');
+		expect(matchSupportedLocale('de;q=0.9')).toBe('de');
+		expect(matchSupportedLocale('fr_FR')).toBe('fr');
+		expect(matchSupportedLocale('zh-CN')).toBeNull();
+		expect(matchSupportedLocale(null)).toBeNull();
+		expect(matchSupportedLocale(undefined)).toBeNull();
+	});
+
 	it('normalizes locale tags from headers or environment variables', () => {
 		expect(normalizeLocale('en')).toBe('en');
 		expect(normalizeLocale('en-AU')).toBe('en');
@@ -36,6 +63,75 @@ describe('i18n locales and types', () => {
 		expect(normalizeLocale('zh-CN')).toBe('en');
 		expect(normalizeLocale(null)).toBe('en');
 		expect(normalizeLocale(undefined)).toBe('en');
+	});
+
+	it('parses Accept-Language headers with quality weights and unsupported prefixes', () => {
+		expect(matchAcceptLanguage('de;q=0.9')).toBe('de');
+		expect(matchAcceptLanguage('nl-NL, de-DE;q=0.9, en;q=0.8')).toBe('de');
+		expect(matchAcceptLanguage('fr;q=0.7, it-IT;q=0.9, es;q=0.8')).toBe('it');
+		expect(matchAcceptLanguage('en-US, de;q=0.9')).toBe('en');
+		expect(matchAcceptLanguage('zh-CN, ja;q=0.9')).toBeNull();
+		expect(matchAcceptLanguage(null)).toBeNull();
+	});
+
+	it('resolves locale across the full priority hierarchy', () => {
+		// 1. Query wins over cookie and stored
+		expect(
+			resolveLocale({
+				query: 'it',
+				cookie: 'fr',
+				stored: 'de',
+				displayLocale: 'es-ES',
+				acceptLanguage: 'de-DE'
+			})
+		).toBe('it');
+
+		// 2. Cookie wins over stored
+		expect(
+			resolveLocale({
+				query: null,
+				cookie: 'fr',
+				stored: 'de',
+				displayLocale: 'es-ES',
+				acceptLanguage: 'de-DE'
+			})
+		).toBe('fr');
+
+		// 3. Explicit stored 'en' wins over DISPLAY_LOCALE and Accept-Language
+		expect(
+			resolveLocale({
+				query: null,
+				cookie: null,
+				stored: 'en',
+				displayLocale: 'de-DE',
+				acceptLanguage: 'fr-FR,fr;q=0.9'
+			})
+		).toBe('en');
+
+		// 4. DISPLAY_LOCALE wins over Accept-Language when stored is unset
+		expect(
+			resolveLocale({
+				query: null,
+				cookie: null,
+				stored: null,
+				displayLocale: 'es-AR',
+				acceptLanguage: 'de-DE'
+			})
+		).toBe('es');
+
+		// 5. Accept-Language wins when earlier sources are unset or unsupported
+		expect(
+			resolveLocale({
+				query: 'invalid',
+				cookie: undefined,
+				stored: null,
+				displayLocale: 'zh-CN',
+				acceptLanguage: 'nl-NL, de;q=0.9, en;q=0.8'
+			})
+		).toBe('de');
+
+		// 6. Fallback to DEFAULT_LOCALE ('en')
+		expect(resolveLocale({})).toBe('en');
 	});
 
 	it('provides metadata for all supported locales', () => {
@@ -49,11 +145,12 @@ describe('i18n locales and types', () => {
 		}
 	});
 
-	it('has loaded catalogs for all supported locales with matching top-level keys', () => {
-		const enKeys = Object.keys(LOCALES.en).sort();
+	it('has loaded catalogs for all supported locales with matching leaf keys', () => {
+		const enLeaves = flattenLeaves(LOCALES.en);
+		const enKeys = Object.keys(enLeaves).sort();
 		for (const locale of SUPPORTED_LOCALES) {
-			const localeKeys = Object.keys(LOCALES[locale]).sort();
-			expect(localeKeys).toEqual(enKeys);
+			const localeLeaves = flattenLeaves(LOCALES[locale]);
+			expect(Object.keys(localeLeaves).sort(), `keys in ${locale}`).toEqual(enKeys);
 		}
 	});
 });

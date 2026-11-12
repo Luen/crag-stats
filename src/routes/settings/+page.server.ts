@@ -11,7 +11,6 @@ import { parseBoulderGradeSystem, parseRouteGradeSystem } from '#lib/grades';
 import { isSupportedLocale, LOCALE_METADATA, SUPPORTED_LOCALES } from '#lib/i18n';
 import {
 	deleteAppSetting,
-	getAppLocale,
 	getAppSetting,
 	getDisplayGradeSystems,
 	getSearchIndexing,
@@ -45,7 +44,6 @@ export const load: PageServerLoad = async ({ cookies }) => {
 		sync: getSyncStatus(),
 		hasApiKey: hasTheCragApiKey(),
 		syncConfiguration: getTheCragSyncConfiguration(),
-		locale: getAppLocale(),
 		supportedLocales: SUPPORTED_LOCALES,
 		localeMetadata: LOCALE_METADATA,
 		gradeSystems: getDisplayGradeSystems(),
@@ -77,7 +75,8 @@ export const actions: Actions = {
 		cookies.delete(DASH_LAYOUT_COOKIE, { path: '/' });
 		return { ok: true, layoutSaved: true };
 	},
-	savePreferences: async ({ request, cookies }) => {
+	savePreferences: async ({ request, cookies, locals }) => {
+		if (!locals.authed) return fail(403);
 		const form = await request.formData();
 		const rawLocale = String(form.get('locale') ?? '');
 		if (isSupportedLocale(rawLocale)) {

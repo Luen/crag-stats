@@ -7,8 +7,17 @@ const I18N_CONTEXT_KEY = Symbol('crag-stats-i18n');
 export type I18nContext = {
 	readonly locale: SupportedLocale;
 	setLocale: (next: SupportedLocale) => void;
+	syncLocale: (next: SupportedLocale, options?: { persistCookie?: boolean }) => void;
 	t: (key: MessageKey, params?: MessageParams) => string;
 };
+
+function applyDocumentLocale(next: SupportedLocale, persistCookie: boolean) {
+	if (typeof document === 'undefined') return;
+	document.documentElement.lang = next;
+	if (persistCookie) {
+		document.cookie = `cs_locale=${next}; path=/; max-age=31536000; SameSite=Lax`;
+	}
+}
 
 export function initI18n(
 	initial: SupportedLocale | (() => SupportedLocale) = DEFAULT_LOCALE
@@ -25,12 +34,14 @@ export function initI18n(
 			return current;
 		},
 		setLocale(next: SupportedLocale) {
-			if (!isSupportedLocale(next) || next === current) return;
+			if (!isSupportedLocale(next)) return;
 			current = next;
-			if (typeof document !== 'undefined') {
-				document.documentElement.lang = next;
-				document.cookie = `cs_locale=${next}; path=/; max-age=31536000; SameSite=Lax`;
-			}
+			applyDocumentLocale(next, true);
+		},
+		syncLocale(next: SupportedLocale, options?: { persistCookie?: boolean }) {
+			if (!isSupportedLocale(next)) return;
+			current = next;
+			applyDocumentLocale(next, Boolean(options?.persistCookie));
 		},
 		t(key: MessageKey, params?: MessageParams) {
 			return formatMessage(current, key, params);
@@ -51,6 +62,7 @@ export function useI18n(): I18nContext {
 	return {
 		locale: DEFAULT_LOCALE,
 		setLocale: () => {},
+		syncLocale: () => {},
 		t: (key: MessageKey, params?: MessageParams) => formatMessage(DEFAULT_LOCALE, key, params)
 	};
 }

@@ -45,6 +45,7 @@ jobs:
     # fails and emails the fork owner. Only run in the upstream repository.
     if: github.repository_owner == 'Luen'
     runs-on: ubuntu-latest
+    timeout-minutes: 60
     permissions:
       contents: write
       pull-requests: write

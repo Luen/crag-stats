@@ -3,6 +3,7 @@
 	import DashboardLayoutEditor from '#lib/components/DashboardLayoutEditor.svelte';
 	import { formatDateTime, formatNumber } from '#lib/dates';
 	import { BOULDER_GRADE_SYSTEMS, ROUTE_GRADE_SYSTEMS } from '#lib/grades';
+	import { useI18n } from '#lib/i18n';
 	import {
 		freshestSnapshot,
 		IMPORT_PROGRESS_POLL_MS,
@@ -12,6 +13,7 @@
 	import type { PageProps } from './$types';
 
 	let { data, form }: PageProps = $props();
+	const i18n = useI18n();
 
 	const importResult = $derived(
 		form?.result?.skipped === false
@@ -164,7 +166,7 @@
 				<span>Language</span>
 				<select name="locale">
 					{#each data.supportedLocales as loc (loc)}
-						<option value={loc} selected={data.locale === loc}>
+						<option value={loc} selected={i18n.locale === loc}>
 							{data.localeMetadata[loc].nativeName} ({data.localeMetadata[loc].name})
 						</option>
 					{/each}
