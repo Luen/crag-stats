@@ -39,26 +39,25 @@ test('Karma keeps account estimates separate from locally logged routes (#142)',
 		const card = page
 			.locator('article')
 			.filter({ has: page.getByRole('heading', { name: 'Karma', exact: true }) });
-		await expect(card).toHaveCount(0);
-		await page.goto('/settings#dashboard');
-		const section = page.locator('#dashboard');
-		const karma = section.getByRole('checkbox', { name: /^Karma/ });
-		await expect(karma).not.toBeChecked();
-		await karma.check();
-		await section.getByRole('button', { name: 'Save layout' }).click();
-		await expect(page.getByText('Dashboard layout saved.')).toBeVisible();
-		await page.goto('/');
-		await page.reload();
 		await expect(card.locator('.tile').nth(0).locator('strong')).toHaveText(String(local + 40));
 		await expect(card.locator('.tile').nth(1).locator('strong')).toHaveText(String(local));
 		await expect(card.locator('.tile').nth(1)).toContainText('local route');
 		await expect(card).toContainText('routesTicked');
 		await expectAxeClean(page, { include: [card] });
 		await page.goto('/settings#dashboard');
-		await section.getByRole('button', { name: 'Clear saved layout' }).click();
-		await expect(karma).not.toBeChecked();
+		const section = page.locator('#dashboard');
+		const karma = section.getByRole('checkbox', { name: /^Karma/ });
+		await expect(karma).toBeChecked();
+		await karma.uncheck();
+		await section.getByRole('button', { name: 'Save layout' }).click();
+		await expect(page.getByText('Dashboard layout saved.')).toBeVisible();
 		await page.goto('/');
 		await expect(card).toHaveCount(0);
+		await page.goto('/settings#dashboard');
+		await section.getByRole('button', { name: 'Clear saved layout' }).click();
+		await expect(karma).toBeChecked();
+		await page.goto('/');
+		await expect(card).toHaveCount(1);
 	} finally {
 		db.prepare("DELETE FROM app_settings WHERE key = 'dashboard_layout'").run();
 		if (savedLayout)

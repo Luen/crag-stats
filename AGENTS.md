@@ -157,8 +157,6 @@ Components: `TickTypeIcon.svelte`, `StyleBadge.svelte`. Keep icons SVG-inline so
 
 - Logbook long notes use native details/summary: swap the truncated and full text inside the summary with open-state CSS so expansion shows the comment only once and stays keyboard accessible without JavaScript.
 
-- Karma is disabled in the default dashboard catalog but remains selectable in Settings. Preserve explicit saved/legacy visibility; missing cards use their catalog default. Existing installs without a saved layout and Clear saved layout also hide Karma.
-
 - **Tokens only.** Colours come from `src/app.css` (`--bg`, `--paper`, `--surface-2/3`, `--ink`, `--ink-muted`, `--line`, `--accent` rope orange, `--accent-soft`, `--shadow`). Don't hard-code `white`/`#fff` surfaces or ink-tinted `rgba()` — they break dark mode. Use `color-mix(in srgb, var(--ink) N%, transparent)` for tints. `color: #fff` on an accent/coloured fill is fine.
 - SVG presentation attributes can't take `var()` reliably — use `style="stroke: var(--ink)"` instead.
 - Mobile header wordmark (#337): small Stats text uses `--accent` at the ≤860px breakpoint for normal-text contrast; desktop/mark retain `--brand`. Keep mobile light/dark full-page Axe coverage, including the header.

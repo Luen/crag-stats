@@ -10,10 +10,10 @@ import {
 } from './dashboardLayout';
 
 describe('dashboardLayout', () => {
-	it('defaults to Karma hidden and other cards enabled in catalog order', () => {
+	it('defaults to all enabled in catalog order', () => {
 		const d = defaultLayout();
 		expect(d.length).toBeGreaterThan(10);
-		expect(d.filter((i) => !i.enabled).map((i) => i.id)).toEqual(['karma']);
+		expect(d.every((i) => i.enabled)).toBe(true);
 		expect(d[0]?.id).toBe('climberType');
 		// Dreeve-style hero pair: recent activities left, climbing story right (#235).
 		expect(d.slice(0, 3).map((i) => i.id)).toEqual(['climberType', 'recent', 'blurb']);
@@ -83,9 +83,9 @@ describe('dashboardLayout', () => {
 });
 
 describe('resolveDashLayout', () => {
-	it('hides Karma for default, missing-card and invalid layouts', () => {
+	it('enables Karma for default, missing-card and invalid layouts', () => {
 		for (const raw of [null, '[]', '[{"id":"recent","enabled":true}]', 'invalid']) {
-			expect(resolveDashLayout(raw).find((item) => item.id === 'karma')?.enabled).toBe(false);
+			expect(resolveDashLayout(raw).find((item) => item.id === 'karma')?.enabled).toBe(true);
 		}
 	});
 

@@ -4,10 +4,6 @@ theCrag awards **Karma** for contributions to the climbing index — logging asc
 
 ## What Crag Stats can show
 
-The Karma card is hidden by default. Enable it in **Settings → Dashboard layout** by checking **Karma** and saving the layout.
-
-Existing saved layouts keep their Karma setting. Installs without a saved layout, layouts that omit Karma, and **Clear saved layout** use the new hidden default. This applies to existing installs as well as new ones; no saved preferences are migrated or overwritten.
-
 The supporter **logbook** API account object does **not** include your personal karma total or an ascents/edits split. Area `/karma` endpoints are contributor leaderboards for a crag, not a substitute for your account score.
 
 Until theCrag exposes personal karma (or negotiated access), the dashboard card is an **approximation of the ascent portion only**:
