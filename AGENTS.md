@@ -20,6 +20,9 @@ Self-hosted climbing analytics for [theCrag](https://www.thecrag.com/), inspired
    - Open redirects are blocked via `safeRedirectPath`; passwords compared via HMAC digests (timing-safe).
 3. **Provider-shaped.** Core types live under `src/lib/server/providers/`. theCrag is first; Mountain Project later. Keep canonical ascent/route shapes provider-agnostic.
 4. **Grade honesty.** Never mix grading systems in one pyramid row list. Split by climb style and/or convert into the user’s preferred system.
+5. **Language & copywriting.**
+   - **Australian English (en-AU):** Default source language is Australian English across the codebase, UI copy, docs, comments, and commit messages (Crowdin will translate it into target languages; do not maintain a separate `en-US` catalog).
+   - **Oxford comma:** Always use the Oxford comma in every list of three or more items, in UI copy, docs, comments, and commit/PR text: "hot, freezing, wet, or windy", not "hot, freezing, wet or windy".
 
 ---
 
@@ -175,6 +178,7 @@ Components: `TickTypeIcon.svelte`, `StyleBadge.svelte`. Keep icons SVG-inline so
 - **When you change an analytic (climber type, CPR, training load, grades), update its doc page in the same PR.** Dashboard cards link to their page ("How it works").
 - Paraphrase theCrag articles and link the source; don't paste their text.
 - **User guides describe current behaviour only.** Keep upgrade steps, migration notes, removed-feature fallbacks, and env vars to delete out of `docs/guide/` (and README/DEPLOY). Put them in the PR's `## Release notes` section, which feeds the GitHub release, and in `docs/dev/*` or AGENTS.md when agents need them.
+- **Use Australian English** for all primary documentation, comments, and UI copy (Crowdin will translate it into target languages).
 - **Use the Oxford comma** in every list of three or more, in UI copy, docs, comments, and commit/PR text: "hot, freezing, wet, or windy", not "hot, freezing, wet or windy".
 
 ## Docker / release
