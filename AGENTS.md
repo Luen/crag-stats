@@ -157,7 +157,7 @@ Components: `TickTypeIcon.svelte`, `StyleBadge.svelte`. Keep icons SVG-inline so
 
 - Logbook long notes use native details/summary: swap the truncated and full text inside the summary with open-state CSS so expansion shows the comment only once and stays keyboard accessible without JavaScript.
 
-- Mobile logbook (#478): on viewports ≤860px, table rows render as responsive cards styled after Recent activities, with interactive sort pills in the header, rather than horizontal table scroll.
+- Mobile logbook (#478): on viewports ≤860px, table rows render as responsive cards styled after Recent activities, with interactive sort pills in the header, rather than horizontal table scroll. Above 860px the 11-column table keeps a horizontally scrollable `.table-wrap` (`overflow-x: auto`) because the sidebar leaves it too narrow on many laptops; without the wrapper fallback the trailing columns are clipped and unreachable.
 
 - **Tokens only.** Colours come from `src/app.css` (`--bg`, `--paper`, `--surface-2/3`, `--ink`, `--ink-muted`, `--line`, `--accent` rope orange, `--accent-soft`, `--shadow`). Don't hard-code `white`/`#fff` surfaces or ink-tinted `rgba()` — they break dark mode. Use `color-mix(in srgb, var(--ink) N%, transparent)` for tints. `color: #fff` on an accent/coloured fill is fine.
 - SVG presentation attributes can't take `var()` reliably — use `style="stroke: var(--ink)"` instead.

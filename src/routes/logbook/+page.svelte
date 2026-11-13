@@ -521,7 +521,9 @@
 	</p>
 </form>
 
-<section class="panel table-wrap">
+<!-- Keyboard users need to reach the horizontally scrollable table wrapper above the mobile breakpoint. -->
+<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+<section class="panel table-wrap" aria-label="Logbook ascents" tabindex="0">
 	<table>
 		<thead>
 			<tr>
@@ -599,33 +601,38 @@
 						</div>
 						<div class="mobile-sub">
 							<span>{(row.ascentDate || '').slice(0, 10)}</span>
-							·
-							<TickTypeIcon tick={row.tickType} />
+							·&nbsp;<TickTypeIcon tick={row.tickType} />
 							{#if row.cragName}
-								·
-								<a
+								·&nbsp;<a
 									href="/logbook?crag={encodeURIComponent(row.cragName)}"
 									title="Filter logbook to this crag">{row.cragName}</a
-								>
+								>{#if row.cragUrl}<a
+										class="ext"
+										href={row.cragUrl}
+										target="_blank"
+										rel="noreferrer"
+										aria-label="Open {row.cragName} on theCrag">&nbsp;↗</a
+									>{/if}
 							{/if}
 							{#if row.parentName}
-								·
-								<a
+								·&nbsp;<a
 									href="/logbook?sector={encodeURIComponent(row.parentName)}"
 									title="Filter logbook to this sector">{row.parentName}</a
 								>
 							{/if}
 							{#if row.quality}
-								· <span>{row.quality}</span>
+								·&nbsp;<span>{row.quality}</span>
 							{/if}
 							{#if row.stars != null}
-								· <span>★ {row.stars}</span>
+								·&nbsp;<span>★ {row.stars}</span>
 							{/if}
 							{#if row.myAscentsOnRoute > 1}
-								· <span title="Your ascents on this route">×{row.myAscentsOnRoute}</span>
+								·&nbsp;<span title="Your ascents on this route">×{row.myAscentsOnRoute}</span>
 							{/if}
 							{#if row.routePopularity != null}
-								· <span title="Community popularity">Pop {Math.round(row.routePopularity)}</span>
+								·&nbsp;<span title="Community popularity"
+									>Pop {Math.round(row.routePopularity)}</span
+								>
 							{/if}
 						</div>
 						<div class="mobile-styles" role="group" aria-label="Climb styles">
@@ -674,7 +681,7 @@
 										type="submit"
 										name="kind"
 										value="FFA"
-										aria-label="FFA: Mark {row.displayName} as my first free ascent">FFA</button
+										aria-label="Mark FFA: {row.displayName} as my first free ascent">FFA</button
 									>
 								{/if}
 							</form>
@@ -1073,6 +1080,11 @@
 		margin: 0.5rem 0 1.5rem;
 	}
 	@media (min-width: 861px) {
+		/* The 11-column table needs more room than the sidebar leaves on many
+		   laptops, so keep it scrollable rather than clipped. */
+		.table-wrap {
+			overflow-x: auto;
+		}
 		.card-head {
 			display: block;
 		}
@@ -1183,6 +1195,7 @@
 			font-weight: 700;
 			line-height: 1.3;
 			min-width: 0;
+			overflow-wrap: anywhere;
 		}
 		.route-name a {
 			color: inherit;
@@ -1194,18 +1207,20 @@
 			flex-shrink: 0;
 		}
 		.mobile-sub {
-			display: flex;
-			flex-wrap: wrap;
-			align-items: center;
-			gap: 0.35rem;
 			color: var(--ink-muted);
 			font-size: 0.85rem;
-			line-height: 1.4;
+			line-height: 1.5;
+			overflow-wrap: anywhere;
 		}
 		.mobile-sub a {
 			text-decoration: underline;
 			text-underline-offset: 2px;
 			color: inherit;
+		}
+		/* The arrow is bound to the crag name with a non-breaking space. */
+		.mobile-sub .ext {
+			margin-left: 0.2rem;
+			text-decoration: none;
 		}
 		.mobile-styles {
 			display: flex;
