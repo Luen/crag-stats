@@ -1,4 +1,5 @@
 import { readFileSync } from 'node:fs';
+import { parse } from 'csv-parse/sync';
 import { describe, expect, it } from 'vitest';
 import {
 	csvGradeSystemHint,
@@ -108,6 +109,19 @@ describe('mapTheCragCsvRow — AU boulder bare digits (#112)', () => {
 describe('sample logbook CSV fixture (#480)', () => {
 	it('parses every row with 26 columns and leaves Quality empty on ascent 1000004', () => {
 		const raw = readFileSync('samples/thecrag-logbook-sample.csv');
+		// The production parser relaxes column counts, so re-parse strictly to
+		// prove every sample row matches the 26-column header (#480 slipped
+		// through as a 25-column row because of the relaxed mode).
+		const strict = parse(raw, { columns: true, skip_empty_lines: true, bom: true }) as Record<
+			string,
+			string
+		>[];
+		expect(strict).toHaveLength(5);
+		for (const parsed of strict) {
+			expect(Object.keys(parsed)).toHaveLength(26);
+			expect(parsed['Ascent Date']).toMatch(/^2026-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/);
+			expect(parsed['Log Date']).toMatch(/^2026-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/);
+		}
 		const ascents = parseTheCragCsv(raw);
 		expect(ascents).toHaveLength(5);
 
