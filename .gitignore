@@ -41,5 +41,9 @@ vite.config.ts.timestamp-*
 # Local agent / review worktrees
 .worktrees/
 
+# Python
+__pycache__/
+*.py[cod]
+
 # Claude Code worktrees (local only)
 /.claude/worktrees/

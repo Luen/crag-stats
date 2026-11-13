@@ -16,6 +16,7 @@ import {
 	parseTemperatureUnit,
 	parseWindUnit
 } from '#lib/units';
+import { isSupportedLocale, LOCALE_METADATA, SUPPORTED_LOCALES } from '#lib/i18n';
 import {
 	deleteAppSetting,
 	getAppSetting,
@@ -53,6 +54,9 @@ export const load: PageServerLoad = async ({ cookies }) => {
 		sync: getSyncStatus(),
 		hasApiKey: hasTheCragApiKey(),
 		syncConfiguration: getTheCragSyncConfiguration(),
+		siteLocale: getAppSetting('locale') ?? '',
+		supportedLocales: SUPPORTED_LOCALES,
+		localeMetadata: LOCALE_METADATA,
 		gradeSystems: getDisplayGradeSystems(),
 		dateFormat: getDateFormat(),
 		displayUnits: getDisplayUnits(),
@@ -84,8 +88,22 @@ export const actions: Actions = {
 		cookies.delete(DASH_LAYOUT_COOKIE, { path: '/' });
 		return { ok: true, layoutSaved: true };
 	},
-	savePreferences: async ({ request }) => {
+	savePreferences: async ({ request, cookies, locals }) => {
+		if (!locals.authed) return fail(403);
 		const form = await request.formData();
+		const rawLocale = String(form.get('locale') ?? '').trim();
+		if (rawLocale === '' || rawLocale === 'auto') {
+			deleteAppSetting('locale');
+			cookies.delete('cs_locale', { path: '/' });
+		} else if (isSupportedLocale(rawLocale)) {
+			setAppSetting('locale', rawLocale);
+			cookies.set('cs_locale', rawLocale, {
+				path: '/',
+				maxAge: 31536000,
+				sameSite: 'lax',
+				httpOnly: false
+			});
+		}
 		// Split keys; the legacy `grade_system` row stays as the fallback for older builds.
 		const current = getDisplayGradeSystems();
 		setAppSetting(

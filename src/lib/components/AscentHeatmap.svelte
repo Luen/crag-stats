@@ -6,7 +6,8 @@
 		saveCardPreference,
 		type CardPreferences
 	} from '#lib/cardPreferences';
-	import { GRADE_BANDS } from '#lib/grades/bands';
+	import { getBandName, GRADE_BANDS } from '#lib/grades/bands';
+	import { useI18n } from '#lib/i18n';
 	import {
 		DEFAULT_DATE_DISPLAY,
 		formatCalendarDate,
@@ -34,6 +35,7 @@
 		dateDisplay = DEFAULT_DATE_DISPLAY,
 		displayUnits = DEFAULT_DISPLAY_UNITS
 	}: Props = $props();
+	const i18n = useI18n();
 
 	type Mode = 'intensity' | 'grade' | 'weather';
 	const MODE_KEY = 'cs_heatmap_mode';
@@ -205,7 +207,8 @@
 		}
 		const base = `${cell.date}: ${cell.count} ascent${cell.count === 1 ? '' : 's'} (${cell.sends} send${cell.sends === 1 ? '' : 's'})`;
 		if (activeMode !== 'grade' || cell.maxBand == null) return base;
-		const name = GRADE_BANDS.find((b) => b.id === cell.maxBand)?.name ?? `band ${cell.maxBand}`;
+		const band = GRADE_BANDS.find((b) => b.id === cell.maxBand);
+		const name = band ? getBandName(band, i18n.locale) : `band ${cell.maxBand}`;
 		return `${base} · hardest send ${name}`;
 	}
 </script>
@@ -355,8 +358,8 @@
 				<i class="attempt"></i>
 				<span>Attempts</span>
 				{#each GRADE_BANDS as band (band.id)}
-					<i class="b{band.id}" title={band.name}></i>
-					<span class="band-name">{band.name}</span>
+					<i class="b{band.id}" title={getBandName(band, i18n.locale)}></i>
+					<span class="band-name">{getBandName(band, i18n.locale)}</span>
 				{/each}
 			</div>
 		{/if}

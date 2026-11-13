@@ -2,9 +2,11 @@
 	import {
 		DEFAULT_DISPLAY_SYSTEMS,
 		formatGradeLabel,
+		getBandName,
 		GRADE_BANDS,
 		type DisplayGradeSystems
 	} from '#lib/grades';
+	import { useI18n } from '#lib/i18n';
 	import { styleBadgeColor } from '#lib/ticks';
 	import type { CprTimelineData } from '#lib/types/dashboard';
 
@@ -16,6 +18,7 @@
 		gradeSystems?: DisplayGradeSystems;
 	};
 	let { title, data, gradeMin, gradeMax, gradeSystems = DEFAULT_DISPLAY_SYSTEMS }: Props = $props();
+	const i18n = useI18n();
 	const titleColor = $derived(styleBadgeColor(title));
 	/** Boulder scores are V-grades; sport/trad are Ewbanks. */
 	const isBoulder = $derived(title.toLowerCase().includes('boulder'));
@@ -64,7 +67,13 @@
 		GRADE_BANDS.forEach((band, i) => {
 			const lo = Math.max(edges[i][0], range.min);
 			const hi = Math.min(edges[i][1], range.max);
-			if (hi > lo) out.push({ name: band.name, id: band.id, top: y(hi), height: y(lo) - y(hi) });
+			if (hi > lo)
+				out.push({
+					name: getBandName(band, i18n.locale),
+					id: band.id,
+					top: y(hi),
+					height: y(lo) - y(hi)
+				});
 		});
 		return out;
 	});

@@ -29,9 +29,10 @@
 	import StyleMixChart from '#lib/components/StyleMixChart.svelte';
 	import StylePyramid from '#lib/components/StylePyramid.svelte';
 	import TagChips from '#lib/components/TagChips.svelte';
-	import { describeDisplaySystems } from '#lib/grades';
+	import { describeDisplaySystems, getBandName } from '#lib/grades';
 	import { formatCalendarDate } from '#lib/dates';
 	import { formatDistance } from '#lib/units';
+	import { useI18n } from '#lib/i18n';
 	import TickTypeIcon from '#lib/components/TickTypeIcon.svelte';
 	import StyleBadge from '#lib/components/StyleBadge.svelte';
 	import TrainingLoad from '#lib/components/TrainingLoad.svelte';
@@ -47,6 +48,7 @@
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
+	const i18n = useI18n();
 	const s = $derived(data.stats);
 	// Visitors don't get an empty First ascents card; the owner sees how to mark one.
 	const rows = $derived(
@@ -153,11 +155,13 @@
 				<h2>Grade bands</h2>
 				<HelpLink href="/docs/grades" label="About grade bands" />
 			</div>
-			<p class="hint">Colours match theCrag: Beginner → Elite</p>
+			<p class="hint">
+				Colours match theCrag: {getBandName(1, i18n.locale)} → {getBandName(5, i18n.locale)}
+			</p>
 			<BarList
 				items={s.bandBreakdown.map((b) => ({
 					id: `band:${b.band}`,
-					label: b.name,
+					label: getBandName(b.band, i18n.locale),
 					value: b.count,
 					color: b.color
 				}))}
