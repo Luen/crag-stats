@@ -6,7 +6,7 @@
 	import TickTypeIcon from '#lib/components/TickTypeIcon.svelte';
 	import {
 		groupTicksByCategory,
-		presetTickState,
+		applyPresetToState,
 		detectCurrentPreset,
 		type TickBehavior,
 		type TickPreset
@@ -95,9 +95,14 @@
 	});
 	const groupedTicks = $derived(groupTicksByCategory(data.availableTicks));
 	const currentPreset = $derived(detectCurrentPreset(tickState, data.availableTicks));
+	// Stored choices for ticks without a rendered radio (no logged rows yet). They must
+	// still reach the server on save, so a preset can clear them instead of persisting.
+	const storedWithoutRadio = $derived(
+		Object.entries(tickState).filter(([key]) => !data.availableTicks.some((t) => t.key === key))
+	);
 
 	function applyPreset(preset: TickPreset) {
-		tickOverrides = presetTickState(preset, data.availableTicks);
+		tickOverrides = applyPresetToState(preset, data.tickSettings, data.availableTicks);
 	}
 
 	function setTick(key: string, behavior: TickBehavior) {
@@ -368,6 +373,9 @@
 					</table>
 				</div>
 			</fieldset>
+			{#each storedWithoutRadio as [key, behavior] (key)}
+				<input type="hidden" name={`tick_${key}`} value={behavior} />
+			{/each}
 			<button type="submit">Save preferences</button>
 		</form>
 	</article>

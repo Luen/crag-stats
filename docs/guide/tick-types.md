@@ -19,8 +19,8 @@ On theCrag, non-send attempts (such as `Working`, `Attempt`, `Hang dog`, or `Ret
 
 In **Settings → Display & visibility → Counted tick types**, you can configure how each tick type is treated across Crag Stats:
 
-- **Enable (Count everywhere):** Included in headline ascents, discipline breakdown, crags and sectors, pyramids, map totals, activity heatmaps, training load, projects, and goals.
-- **Projects & goals only (Out of totals):** Excluded from headline ascents, discipline share, crags, sectors, pyramids, and map totals, but still counted towards project detection, activity heatmap sessions, training load fatigue, and grade goals.
+- **Enable (Count everywhere):** Included in headline ascents, discipline breakdown, crags and sectors, pyramids, map totals, Eddington numbers, route repeats, the climber profile axes, activity heatmaps, training load, projects, and goals.
+- **Projects & goals only (Out of totals):** Excluded from headline ascents, discipline share, crags, sectors, pyramids, map totals, Eddington numbers, route repeats, and the climber profile axes, but still counted towards project detection, session activity (heatmap, sessions per week, and weekday charts), training load fatigue, and grade goals.
 - **Hide (Exclude completely):** Excluded across all analytics, projects, and goals.
 
 The logbook always preserves and displays all your logged ascents with full filtering regardless of this setting.

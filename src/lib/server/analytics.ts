@@ -1168,7 +1168,8 @@ export function getDashboardStats(
 		})(),
 		solo,
 		eddington: buildEddington(
-			all.map((r) => ({
+			// Matches the /eddington detail page, which filters by the same settings.
+			analyticsRows.map((r) => ({
 				day: validDay(r.ascentDate),
 				routeId: r.routeId,
 				isSend: Boolean(r.isSend),
@@ -1178,7 +1179,7 @@ export function getDashboardStats(
 			}))
 		),
 		streaks: buildStreaks(dayMap),
-		athleteProfile: buildAthleteProfile(all, dayMap),
+		athleteProfile: buildAthleteProfile(analyticsRows, dayMap),
 		cpr: {
 			sport: buildCprTimeline(cprInputs, 'sport'),
 			trad: buildCprTimeline(cprInputs, 'trad'),
@@ -1191,9 +1192,11 @@ export function getDashboardStats(
 		milestones,
 		badges,
 		trainingLoad,
-		sessionsPerWeek: buildSessionsPerWeek(all.map((r) => r.ascentDate)),
+		// Session surfaces follow the heatmap: projecting ticks kept for sessions
+		// (projects_goals) still count, completely hidden ones never do.
+		sessionsPerWeek: buildSessionsPerWeek(activityRows.map((r) => r.ascentDate)),
 		weekday: buildWeekdayStats(
-			all.map((r) => ({
+			activityRows.map((r) => ({
 				date: r.ascentDate,
 				gearStyle: r.gearStyle,
 				ascentGearStyle: r.ascentGearStyle
@@ -1217,7 +1220,7 @@ export function getDashboardStats(
 		weatherPerformance,
 		rockPerformance,
 		routeRepeats: buildRouteRepeats(
-			all.map((r) => ({
+			analyticsRows.map((r) => ({
 				date: r.ascentDate,
 				routeProvider: r.routeProvider,
 				routeExternalId: r.routeExternalId,

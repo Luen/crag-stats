@@ -168,6 +168,26 @@ export function presetTickState(
 	return out;
 }
 
+/**
+ * Preset state over the settings page's current state, including stored choices for
+ * ticks that are not rendered right now (no logged rows or an unknown provider name).
+ * Only the `all` preset can clear those — the other presets only describe the rendered
+ * matrix, and merging under them keeps the earlier, stricter choices.
+ */
+export function applyPresetToState(
+	preset: TickPreset,
+	current: TickTypeSettings,
+	available: readonly AvailableTickType[] = STANDARD_TICKS
+): TickTypeSettings {
+	const out = presetTickState(preset, available);
+	if (preset === 'all') {
+		for (const key of Object.keys(current)) {
+			if (!(key in out)) out[key] = 'enable';
+		}
+	}
+	return out;
+}
+
 export function detectCurrentPreset(
 	settings: TickTypeSettings,
 	available: readonly AvailableTickType[] = STANDARD_TICKS

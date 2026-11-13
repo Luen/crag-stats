@@ -9,6 +9,7 @@ import {
 	parseTickTypeSettings,
 	presetSettings,
 	presetTickState,
+	applyPresetToState,
 	sameTickTypeSettings,
 	serializeTickTypeSettings,
 	STANDARD_TICKS,
@@ -140,6 +141,23 @@ describe('presets', () => {
 		expect(state['second']).toBe('enable');
 		expect(state['working']).toBe('projects_goals');
 		expect(Object.keys(state)).toHaveLength(available.length);
+	});
+
+	it('applyPresetToState clears stored choices for ticks that are not rendered', () => {
+		// 'dab hide' is stored for a provider-only tick that has no logged rows, so the
+		// settings page renders no radio for it — "All logged ticks" must still clear it.
+		const current: TickTypeSettings = { working: 'hide', 'dab hide': 'hide' };
+		const all = applyPresetToState('all', current, STANDARD_TICKS);
+		expect(all['working']).toBe('enable');
+		expect(all['dab hide']).toBe('enable');
+		expect(detectCurrentPreset(all, STANDARD_TICKS)).toBe('all');
+
+		// Other presets only describe the rendered matrix: the unrendered key is
+		// simply absent from the override state, so the stored choice survives the
+		// component's merge instead of guessing its send/attempt classification.
+		const sendsOnly = applyPresetToState('sends_only', current, STANDARD_TICKS);
+		expect(sendsOnly['working']).toBe('projects_goals');
+		expect(sendsOnly['dab hide']).toBeUndefined();
 	});
 });
 

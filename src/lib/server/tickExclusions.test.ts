@@ -85,6 +85,8 @@ function seedAscents() {
 			})
 			.run();
 	}
+
+	return { sportRoute, boulderRoute };
 }
 
 describe('configurable counted tick types', () => {
@@ -279,5 +281,89 @@ describe('configurable counted tick types', () => {
 		const season = searchSeasonality(filters);
 		expect(season.coverage.total).toBe(1);
 		expect(season.results.map((r) => r.name)).toEqual(['Counted Crag']);
+	});
+
+	it('drops hidden tick types from the remaining dashboard surfaces', () => {
+		const { sportRoute } = seedAscents();
+		// Ten more counted sport ticks so Route repeats passes its 20-dated-ascent floor.
+		for (let i = 1; i <= 10; i++) {
+			db.insert(ascents)
+				.values({
+					provider: 'thecrag',
+					externalId: `ascent_sport_repeat_${i}`,
+					routeId: sportRoute.id,
+					ascentDate: `2026-04-${String(i).padStart(2, '0')}`,
+					tickType: 'Red point',
+					isSend: true,
+					isAttempt: false,
+					updatedAt: '2026-04-10'
+				})
+				.run();
+		}
+
+		const sessionsOf = (stats: ReturnType<typeof getDashboardStats>) =>
+			Object.values(stats.sessionsPerWeek.byYear['2026'] ?? []).reduce(
+				(sum, w) => sum + w.sessions,
+				0
+			);
+
+		setTickTypeSettings({});
+		const counted = getDashboardStats();
+		// 12 seeded days + 10 April sends, all on distinct days.
+		expect(counted.eddington.activeDays).toBe(22);
+		expect(sessionsOf(counted)).toBe(22);
+		expect(counted.weekday.allTime.all.totalAscents).toBe(22);
+		expect(counted.routeRepeats?.allTime.all.ascents).toBe(22);
+
+		setTickTypeSettings({ working: 'hide' });
+		const filtered = getDashboardStats();
+		expect(filtered.eddington.activeDays).toBe(12);
+		expect(sessionsOf(filtered)).toBe(12);
+		expect(filtered.weekday.allTime.all.totalAscents).toBe(12);
+		// Twelve counted dated ascents sit below Route repeats' 20-row floor.
+		expect(filtered.routeRepeats).toBeNull();
+	});
+
+	it('excludes hidden ticks from the athlete profile axes', () => {
+		wipeAllData();
+		const route = db
+			.insert(routes)
+			.values({
+				provider: 'thecrag',
+				externalId: 'route_profile',
+				name: 'Profile Route',
+				gearStyle: 'Sport',
+				updatedAt: '2026-01-01'
+			})
+			.returning()
+			.get();
+		const today = new Date().toISOString().slice(0, 10);
+		for (const [externalId, tickType, isSend] of [
+			['ascent_profile_send', 'Red point', true],
+			['ascent_profile_working', 'Working', false]
+		] as const) {
+			db.insert(ascents)
+				.values({
+					provider: 'thecrag',
+					externalId,
+					routeId: route.id,
+					ascentDate: today,
+					tickType,
+					isSend,
+					isAttempt: !isSend,
+					updatedAt: today
+				})
+				.run();
+		}
+
+		const volume = (stats: ReturnType<typeof getDashboardStats>) =>
+			stats.athleteProfile.axes.find((a) => a.key === 'volume')?.last30;
+
+		setTickTypeSettings({});
+		// Two counted rows inside the 30-day window: 2 / (30 × 0.35) × 100 ≈ 19.
+		expect(volume(getDashboardStats())).toBe(19);
+
+		setTickTypeSettings({ working: 'hide' });
+		expect(volume(getDashboardStats())).toBe(10);
 	});
 });
