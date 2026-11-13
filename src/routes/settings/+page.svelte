@@ -8,6 +8,7 @@
 		groupTicksByCategory,
 		applyPresetToState,
 		detectCurrentPreset,
+		unrenderedChoices,
 		type TickBehavior,
 		type TickPreset
 	} from '#lib/tickSettings';
@@ -100,6 +101,24 @@
 	const storedWithoutRadio = $derived(
 		Object.entries(tickState).filter(([key]) => !data.availableTicks.some((t) => t.key === key))
 	);
+	// The same leftovers, surfaced as a note: the matrix only renders tick types with
+	// logged rows, so a saved non-Enable choice for an unrendered tick type is otherwise
+	// invisible while it keeps applying to future climbs (#477).
+	const leftoverChoices = $derived(unrenderedChoices(tickState, data.availableTicks));
+	const leftoverLabel = $derived(
+		leftoverChoices
+			.map(([key, behavior]) => `${prettyTickKey(key)} (${behaviorLabel(behavior)})`)
+			.join(', ')
+	);
+	function prettyTickKey(key: string): string {
+		return key
+			.split(' ')
+			.map((word) => (word ? word[0].toUpperCase() + word.slice(1) : word))
+			.join(' ');
+	}
+	function behaviorLabel(behavior: Exclude<TickBehavior, 'enable'>): string {
+		return behavior === 'projects_goals' ? 'Projects & goals only' : 'Hide';
+	}
 
 	function applyPreset(preset: TickPreset) {
 		tickOverrides = applyPresetToState(preset, data.tickSettings, data.availableTicks);
@@ -372,6 +391,13 @@
 						</tbody>
 					</table>
 				</div>
+				{#if leftoverChoices.length > 0}
+					<p class="hint tick-leftovers">
+						Saved for tick types with no logged ascents — these stay live for future climbs but are
+						not listed above: <strong>{leftoverLabel}</strong>. Choose
+						<strong>All logged ticks</strong> and save to clear them.
+					</p>
+				{/if}
 			</fieldset>
 			{#each storedWithoutRadio as [key, behavior] (key)}
 				<input type="hidden" name={`tick_${key}`} value={behavior} />
@@ -897,6 +923,9 @@
 		border: none;
 		padding: 0;
 		margin: 0.5rem 0 0;
+	}
+	.tick-leftovers {
+		margin: 0.6rem 0 0;
 	}
 	.field-title {
 		display: grid;

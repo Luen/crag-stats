@@ -14,6 +14,7 @@ import {
 	sameTickTypeSettings,
 	serializeTickTypeSettings,
 	STANDARD_TICKS,
+	unrenderedChoices,
 	type TickTypeSettings
 } from './tickSettings';
 
@@ -119,6 +120,37 @@ describe('presets', () => {
 		expect(detectCurrentPreset({ working: 'projects_goals' })).toBe('exclude_working');
 		expect(detectCurrentPreset(presetSettings('sends_only'))).toBe('sends_only');
 		expect(detectCurrentPreset({ working: 'hide' })).toBe('custom');
+	});
+
+	it('ignores stored choices for ticks the matrix does not render (#477)', () => {
+		// A saved hide for a tick type with no logged rows stays live for future climbs,
+		// but must not label an all-Enable matrix "custom" — Settings lists it as a
+		// leftover choice instead.
+		expect(detectCurrentPreset({ 'dab hide': 'hide' }, STANDARD_TICKS)).toBe('all');
+		expect(detectCurrentPreset({ 'dab hide': 'projects_goals' }, STANDARD_TICKS)).toBe('all');
+
+		// Rendered choices still decide the preset.
+		expect(
+			detectCurrentPreset({ working: 'projects_goals', 'dab hide': 'hide' }, STANDARD_TICKS)
+		).toBe('exclude_working');
+		expect(
+			detectCurrentPreset({ ...presetSettings('sends_only'), 'dab hide': 'hide' }, STANDARD_TICKS)
+		).toBe('sends_only');
+	});
+
+	it('lists unrendered choices for the settings page (#477)', () => {
+		const settings: TickTypeSettings = {
+			working: 'projects_goals',
+			'dab hide': 'hide',
+			'old tick': 'projects_goals',
+			'never logged': 'enable'
+		};
+		expect(unrenderedChoices(settings, STANDARD_TICKS)).toEqual([
+			['dab hide', 'hide'],
+			['old tick', 'projects_goals']
+		]);
+		expect(unrenderedChoices({ working: 'projects_goals' }, STANDARD_TICKS)).toEqual([]);
+		expect(unrenderedChoices({}, STANDARD_TICKS)).toEqual([]);
 	});
 
 	it('applying a preset replaces stored choices instead of merging under them', () => {

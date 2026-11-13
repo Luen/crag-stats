@@ -196,8 +196,12 @@ export function detectCurrentPreset(
 	settings: TickTypeSettings,
 	available: readonly AvailableTickType[] = STANDARD_TICKS
 ): TickPreset | 'custom' {
+	const renderedKeys = new Set(available.map((t) => t.key));
+	// Only the rendered matrix decides the preset label: a saved choice for a tick
+	// type with no logged rows must not label an all-Enable matrix "custom".
+	// Settings surfaces those leftovers separately (see unrenderedChoices).
 	const activeKeys = Object.entries(settings)
-		.filter(([, val]) => val !== 'enable')
+		.filter(([key, val]) => val !== 'enable' && renderedKeys.has(key))
 		.map(([key]) => key);
 
 	if (activeKeys.length === 0) {
@@ -218,6 +222,23 @@ export function detectCurrentPreset(
 	}
 
 	return 'custom';
+}
+
+/**
+ * Saved non-enable choices for tick types the settings matrix does not render
+ * (no logged rows and not in STANDARD_TICKS). They stay live for future climbs,
+ * so Settings lists them next to the matrix; only the "All logged ticks" preset
+ * clears them. Unrendered enable values are not listed — enable is the default.
+ */
+export function unrenderedChoices(
+	settings: TickTypeSettings,
+	available: readonly AvailableTickType[] = STANDARD_TICKS
+): [key: string, behavior: Exclude<TickBehavior, 'enable'>][] {
+	const renderedKeys = new Set(available.map((t) => t.key));
+	const out: [key: string, behavior: Exclude<TickBehavior, 'enable'>][] = Object.entries(settings)
+		.filter(([key, val]) => val !== 'enable' && !renderedKeys.has(key))
+		.map(([key, val]) => [key, val as Exclude<TickBehavior, 'enable'>]);
+	return out.sort(([a], [b]) => a.localeCompare(b));
 }
 
 const CATEGORY_ORDER: Record<TickCategory, { order: number; label: string }> = {
