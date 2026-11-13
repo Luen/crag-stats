@@ -35,6 +35,8 @@ Keep the form of address consistent across every screen:
 | French | formal/polite **vous** / **votre** — standard in software UI | *Sélectionnez votre système de cotation préféré …* |
 | Spanish (Spain & LatAm) | informal **tú** — standard for outdoor/sports software | *Elige tu sistema de graduación preferido …* |
 | Italian | friendly/informal **tu** — universal in Italian climbing | *Scegli il tuo sistema di gradi preferito …* |
+| Japanese | polite UI register (丁寧語) with concise noun forms for buttons | *グレード体系を選択…* |
+| Polish | direct software imperative (*Wybierz*, *Zapisz*) without stiff honorifics | *Wybierz preferowany system wycen…* |
 
 In climbing culture (especially German and Italian), formal address (*Sie*, *Lei*) feels entirely foreign and out of place at a climbing cliff or gym.
 

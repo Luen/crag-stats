@@ -18,7 +18,12 @@ Climbing is a global sport, but initial localization focuses on communities with
 | `es` | Spanish  | Español     | World-class sport climbing destinations (Siurana, Margalef, Chulilla, Rodellar); Spain and Latin America       |
 | `it` | Italian  | Italiano    | Iconic European climbing hubs (Arco, Dolomites, Sardinia, Finale Ligure, Val di Mello)                         |
 
-**theCrag aligned target languages:** Korean (`ko`), Portuguese (`pt` / `pt-BR`), and Simplified Chinese (`zh-CN` / `zh-Hans`). (Additional community candidates: Japanese `ja`, and Polish `pl`).
+**Next wave target languages configured in Crowdin:**
+- Korean (`ko`): High gym density and growing outdoor crags (Seoraksan, Bukhansan, and Insubong).
+- Portuguese (`pt-PT` / `pt-BR`): Portugal (Sintra, Cascais, and Arrábida) and Brazil (Rio de Janeiro and Serra do Cipó).
+- Simplified Chinese (`zh-CN`): Vibrant climbing communities across Yangshuo, Getu, and Liming.
+- Japanese (`ja`): Historic climbing hubs and world-class bouldering (Mizugaki, Ogawayama, and Mitake).
+- Polish (`pl`): Rich climbing and alpine heritage (Jura Krakowsko-Częstochowska, High Tatras, and Sokoliki).
 
 ---
 
@@ -33,6 +38,8 @@ Climbing is a global sport, but initial localization focuses on communities with
      - French: _À vue_, _Flash_, _Après travail_, _Moulinette_, _Carnet de croix_
      - Spanish: _A vista_, _Flash_, _Punto rojo_, _Libro de vías_, _Bloque_
      - Italian: _A vista_, _Flash_, _Rotpunkt_, _Chiusura_, _Falesia_
+     - Japanese: オンサイト (_onsight_), フラッシュ (_flash_), レッドポイント (_redpoint_), 完登 (_send/clean_), 岩場 (_crag_)
+     - Polish: _A vista_ / _Onsight_, _Flash_, _RP (Czysto)_, _Skały / Rejon_, _Na wędkę_
 
 2. **Zero Runtime Dependency & Complete Offline Capability:**
    - All locale dictionaries ship inside the repository and container image (`src/lib/i18n/locales/`).
