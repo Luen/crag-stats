@@ -252,3 +252,7 @@ Logbook name filters use a four-column grid on wide screens (Search spans two co
 a two-column grid on tablets, and a single column on phones. Every name field has a label
 and the same control height; helper text sits outside the grid. Dates have a dedicated row,
 with Solo type and Grade band grouped beside the other select filters.
+
+### Mobile logbook layout
+
+On screens up to 860px wide (#478), the Logbook replaces horizontal table scrolling with stacked, responsive cards matching the visual hierarchy of the Recent activities card. Each card features the route name and grade chip in the header, a subline with date, tick icon, and crag/sector links, followed by style badges, partner credits, tags, weather chips, expandable comments, and owner management actions. The table header transforms into a compact row of interactive sort pills.
