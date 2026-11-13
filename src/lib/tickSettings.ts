@@ -52,6 +52,15 @@ export const STANDARD_TICKS: readonly AvailableTickType[] = [
 	{ key: 'top rope', name: 'Top rope', category: 'other', isSend: false }
 ];
 
+/**
+ * Display name for a tick key we don't ship in `STANDARD_TICKS` (a provider name we
+ * only know from the logbook). Shared so the matrix and Settings' unrendered-choice
+ * note label the same tick identically.
+ */
+export function tickDisplayName(key: string): string {
+	return key ? key.charAt(0).toUpperCase() + key.slice(1) : '';
+}
+
 /** Normalize tick name or label to standard lowercase key with canonical spacing. */
 export function canonicalTickKey(tick: string | null | undefined): string {
 	const k = (tick || '').trim().toLowerCase().replace(/\s+/g, ' ');

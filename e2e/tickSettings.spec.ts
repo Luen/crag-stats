@@ -11,12 +11,27 @@ test('Settings presets decide which tick types count in dashboard totals', async
 		.prepare(`SELECT key, value, updated_at FROM app_settings WHERE key = ?`)
 		.all(KEY) as { key: string; value: string; updated_at: string }[];
 	try {
+		// #476: a saved choice for a tick type with no logged ascents is not in the matrix,
+		// so Settings has to surface it and "All logged ticks" has to clear it.
+		db.prepare(`DELETE FROM app_settings WHERE key = ?`).run(KEY);
+		db.prepare(`INSERT INTO app_settings (key, value, updated_at) VALUES (?, ?, ?)`).run(
+			KEY,
+			JSON.stringify({ 'old tick': 'hide' }),
+			new Date().toISOString()
+		);
 		await page.goto('/settings');
 		const card = page.locator('article.panel').filter({
 			has: page.getByRole('heading', { name: 'Display & visibility' })
 		});
 		const matrix = card.getByRole('table');
+		const leftoverNote = card.locator('.tick-leftovers');
 		await expect(matrix.getByRole('rowheader', { name: /^Attempt/ })).toBeVisible();
+		// The leftover must not label an all-Enable matrix "custom".
+		await expect(card.getByRole('button', { name: 'All logged ticks' })).toHaveAttribute(
+			'aria-pressed',
+			'true'
+		);
+		await expect(leftoverNote).toContainText('Old tick (Hide)');
 		// The tick icon must not repeat the tick name in the row header.
 		await expect(matrix.getByRole('rowheader', { name: /^Onsight/ })).toHaveAccessibleName(
 			/^Onsight(?: \(\d+\))?$/
@@ -36,6 +51,8 @@ test('Settings presets decide which tick types count in dashboard totals', async
 		await expect(
 			card.getByRole('radio', { name: 'Attempt: Projects and goals only (out of totals)' })
 		).toBeChecked();
+		// A rendered-only preset must not clear a choice it cannot show.
+		await expect(leftoverNote).toContainText('Old tick (Hide)');
 
 		await page.goto('/');
 		const counted = page.locator('.metric.panel').filter({ hasText: 'counted ascents' });
@@ -56,6 +73,12 @@ test('Settings presets decide which tick types count in dashboard totals', async
 		).toBeChecked();
 		await card.getByRole('button', { name: 'Save preferences' }).click();
 		await expect(page.getByText('Preferences saved.')).toBeVisible();
+
+		// "All logged ticks" is the reset: the note and the stored leftover both go.
+		await expect(leftoverNote).toHaveCount(0);
+		const afterAll = db.prepare(`SELECT value FROM app_settings WHERE key = ?`).get(KEY) as
+			{ value: string } | undefined;
+		expect(afterAll ? JSON.parse(afterAll.value) : {}).not.toHaveProperty('old tick');
 
 		await page.goto('/');
 		await expect(

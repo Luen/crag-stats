@@ -5,6 +5,7 @@ import {
 	parseTickTypeSettings,
 	serializeTickTypeSettings,
 	STANDARD_TICKS,
+	tickDisplayName,
 	type AvailableTickType,
 	type TickTypeSettings
 } from '#lib/tickSettings';
@@ -122,7 +123,7 @@ export function listAvailableTickTypes(): AvailableTickType[] {
 		if (!knownKeys.has(key)) {
 			out.push({
 				key,
-				name: key.charAt(0).toUpperCase() + key.slice(1),
+				name: tickDisplayName(key),
 				category: 'other',
 				// Provider tick names we don't ship in STANDARD_TICKS still need the
 				// right send/attempt flag, or "Sends only" would hide real sends.

@@ -122,7 +122,7 @@ describe('presets', () => {
 		expect(detectCurrentPreset({ working: 'hide' })).toBe('custom');
 	});
 
-	it('ignores stored choices for ticks the matrix does not render (#477)', () => {
+	it('ignores stored choices for ticks the matrix does not render (#476)', () => {
 		// A saved hide for a tick type with no logged rows stays live for future climbs,
 		// but must not label an all-Enable matrix "custom" — Settings lists it as a
 		// leftover choice instead.
@@ -138,7 +138,7 @@ describe('presets', () => {
 		).toBe('sends_only');
 	});
 
-	it('lists unrendered choices for the settings page (#477)', () => {
+	it('lists unrendered choices for the settings page (#476)', () => {
 		const settings: TickTypeSettings = {
 			working: 'projects_goals',
 			'dab hide': 'hide',

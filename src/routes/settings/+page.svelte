@@ -8,6 +8,7 @@
 		groupTicksByCategory,
 		applyPresetToState,
 		detectCurrentPreset,
+		tickDisplayName,
 		unrenderedChoices,
 		type TickBehavior,
 		type TickPreset
@@ -101,21 +102,15 @@
 	const storedWithoutRadio = $derived(
 		Object.entries(tickState).filter(([key]) => !data.availableTicks.some((t) => t.key === key))
 	);
-	// The same leftovers, surfaced as a note: the matrix only renders tick types with
-	// logged rows, so a saved non-Enable choice for an unrendered tick type is otherwise
-	// invisible while it keeps applying to future climbs (#477).
+	// The same leftovers, surfaced as a note: the matrix renders the standard tick types
+	// plus provider names that have logged rows, so a saved non-Enable choice for any
+	// other tick type is otherwise invisible while it keeps applying to future climbs (#476).
 	const leftoverChoices = $derived(unrenderedChoices(tickState, data.availableTicks));
 	const leftoverLabel = $derived(
 		leftoverChoices
-			.map(([key, behavior]) => `${prettyTickKey(key)} (${behaviorLabel(behavior)})`)
+			.map(([key, behavior]) => `${tickDisplayName(key)} (${behaviorLabel(behavior)})`)
 			.join(', ')
 	);
-	function prettyTickKey(key: string): string {
-		return key
-			.split(' ')
-			.map((word) => (word ? word[0].toUpperCase() + word.slice(1) : word))
-			.join(' ');
-	}
 	function behaviorLabel(behavior: Exclude<TickBehavior, 'enable'>): string {
 		return behavior === 'projects_goals' ? 'Projects & goals only' : 'Hide';
 	}

@@ -22,7 +22,6 @@ import {
 } from '#lib/server/appSettings';
 import { hasTheCragApiKey, getTheCragSyncConfiguration } from '#lib/server/env';
 import { beginFirstImport, completeFirstImport } from '#lib/server/firstImport';
-import { updateGoalProgress } from '#lib/server/goals';
 import { db } from '#lib/server/db';
 import { upsertAscents } from '#lib/server/ingest';
 import { parseTheCragCsv } from '#lib/server/providers/thecrag';
@@ -115,9 +114,8 @@ export const actions: Actions = {
 		}
 		if (!sameTickTypeSettings(previousTicks, tickSettings)) {
 			setTickTypeSettings(tickSettings);
-			// Derived caches keep the old decision until they are rebuilt.
+			// Projects cache their decision; goal progress is recomputed by `listGoals()`.
 			refreshProjects();
-			updateGoalProgress();
 		}
 
 		return { ok: true, saved: true };
