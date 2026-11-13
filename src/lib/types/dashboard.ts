@@ -1,4 +1,5 @@
 import type { DisplayGradeSystems, GradeSystem } from '#lib/grades';
+import type { DisplayUnits } from '#lib/units';
 import type { WeatherConditionsView } from '#lib/weatherStats';
 import type { RockPerformanceView } from '#lib/rockPerformance';
 import type { RouteRepeatsView } from '#lib/routeRepeats';
@@ -223,6 +224,7 @@ export type DashboardStats = {
 	distinctRoutes: number;
 	distinctCrags: number;
 	gradeSystems: DisplayGradeSystems;
+	displayUnits?: DisplayUnits;
 	heatmap: HeatmapDay[];
 	styleShare: { style: string; count: number; pct: number; color: string }[];
 	tickBreakdown: { tick: string; count: number }[];

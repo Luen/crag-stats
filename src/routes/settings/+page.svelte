@@ -1,8 +1,21 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import DashboardLayoutEditor from '#lib/components/DashboardLayoutEditor.svelte';
-	import { formatDateTime, formatNumber } from '#lib/dates';
+	import { DATE_FORMAT_OPTIONS, formatDateTime, formatNumber } from '#lib/dates';
 	import { BOULDER_GRADE_SYSTEMS, ROUTE_GRADE_SYSTEMS } from '#lib/grades';
+	import {
+		DISTANCE_UNIT_OPTIONS,
+		HEIGHT_UNIT_OPTIONS,
+		PRECIPITATION_UNIT_OPTIONS,
+		TEMPERATURE_UNIT_OPTIONS,
+		UNIT_PRESETS,
+		WIND_UNIT_OPTIONS,
+		type DistanceUnit,
+		type HeightUnit,
+		type PrecipitationUnit,
+		type TemperatureUnit,
+		type WindUnit
+	} from '#lib/units';
 	import {
 		freshestSnapshot,
 		IMPORT_PROGRESS_POLL_MS,
@@ -12,6 +25,30 @@
 	import type { PageProps } from './$types';
 
 	let { data, form }: PageProps = $props();
+
+	let unitHeight = $state<HeightUnit>('m');
+	let unitDistance = $state<DistanceUnit>('km');
+	let unitTemperature = $state<TemperatureUnit>('celsius');
+	let unitWind = $state<WindUnit>('kmh');
+	let unitPrecipitation = $state<PrecipitationUnit>('mm');
+
+	$effect(() => {
+		unitHeight = data.displayUnits.height;
+		unitDistance = data.displayUnits.distance;
+		unitTemperature = data.displayUnits.temperature;
+		unitWind = data.displayUnits.wind;
+		unitPrecipitation = data.displayUnits.precipitation;
+	});
+
+	function applyPreset(presetId: string) {
+		const preset = UNIT_PRESETS.find((p) => p.id === presetId);
+		if (!preset) return;
+		unitHeight = preset.units.height;
+		unitDistance = preset.units.distance;
+		unitTemperature = preset.units.temperature;
+		unitWind = preset.units.wind;
+		unitPrecipitation = preset.units.precipitation;
+	}
 
 	const importResult = $derived(
 		form?.result?.skipped === false
@@ -182,6 +219,74 @@
 				<small class="hint"
 					>Boulders and V-graded highballs. Both choices apply for every visitor.</small
 				>
+			</label>
+			<label class="field">
+				<span>Date format</span>
+				<select name="dateFormat">
+					{#each DATE_FORMAT_OPTIONS as opt (opt.id)}
+						<option value={opt.id} selected={data.dateFormat === opt.id}>{opt.label}</option>
+					{/each}
+				</select>
+				<small class="hint">Controls date layout across the logbook, heatmaps, and charts.</small>
+			</label>
+			<div class="subheading">Units of measurement</div>
+			<div class="presets-row">
+				<span>Presets:</span>
+				{#each UNIT_PRESETS as preset (preset.id)}
+					<button
+						type="button"
+						class="preset-btn"
+						title={preset.description}
+						onclick={() => applyPreset(preset.id)}
+					>
+						{preset.label}
+					</button>
+				{/each}
+			</div>
+			<label class="field">
+				<span>Height</span>
+				<select name="unitHeight" bind:value={unitHeight}>
+					{#each HEIGHT_UNIT_OPTIONS as opt (opt.id)}
+						<option value={opt.id}>{opt.label}</option>
+					{/each}
+				</select>
+				<small class="hint">Route, pitch, and crag heights.</small>
+			</label>
+			<label class="field">
+				<span>Distance</span>
+				<select name="unitDistance" bind:value={unitDistance}>
+					{#each DISTANCE_UNIT_OPTIONS as opt (opt.id)}
+						<option value={opt.id}>{opt.label}</option>
+					{/each}
+				</select>
+				<small class="hint">Cumulative vertical distance climbed.</small>
+			</label>
+			<label class="field">
+				<span>Temperature</span>
+				<select name="unitTemperature" bind:value={unitTemperature}>
+					{#each TEMPERATURE_UNIT_OPTIONS as opt (opt.id)}
+						<option value={opt.id}>{opt.label}</option>
+					{/each}
+				</select>
+				<small class="hint">Daily highs, lows, and weather conditions.</small>
+			</label>
+			<label class="field">
+				<span>Wind speed</span>
+				<select name="unitWind" bind:value={unitWind}>
+					{#each WIND_UNIT_OPTIONS as opt (opt.id)}
+						<option value={opt.id}>{opt.label}</option>
+					{/each}
+				</select>
+				<small class="hint">Windy and calm day weather filters.</small>
+			</label>
+			<label class="field">
+				<span>Precipitation</span>
+				<select name="unitPrecipitation" bind:value={unitPrecipitation}>
+					{#each PRECIPITATION_UNIT_OPTIONS as opt (opt.id)}
+						<option value={opt.id}>{opt.label}</option>
+					{/each}
+				</select>
+				<small class="hint">Rainfall and weather chips.</small>
 			</label>
 			<label class="check">
 				<input
@@ -573,6 +678,40 @@
 		border-radius: 0.55rem;
 		border: 1px solid var(--line);
 		max-width: 18rem;
+	}
+	.subheading {
+		font-size: 0.8rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		color: var(--ink-muted);
+		margin-top: 0.5rem;
+		border-top: 1px solid var(--line);
+		padding-top: 0.75rem;
+	}
+	.presets-row {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.4rem;
+	}
+	.presets-row > span {
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: var(--ink-muted);
+	}
+	.preset-btn {
+		font-size: 0.75rem;
+		padding: 0.25rem 0.55rem;
+		border-radius: 0.4rem;
+		background: var(--surface-2);
+		color: var(--ink);
+		border: 1px solid var(--line);
+		font-weight: 600;
+		cursor: pointer;
+	}
+	.preset-btn:hover {
+		background: var(--surface-3);
 	}
 	.prefs .hint {
 		margin: 0;

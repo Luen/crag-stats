@@ -2,6 +2,7 @@
 	import MonthlyStats from '#lib/components/MonthlyStats.svelte';
 	import YearlyStats from '#lib/components/YearlyStats.svelte';
 	import { formatNumber } from '#lib/dates';
+	import { formatHeight } from '#lib/units';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -55,12 +56,18 @@
 </section>
 
 <div class="charts">
-	<MonthlyStats months={data.monthly.months} years={data.monthly.years} titleHref={null} />
+	<MonthlyStats
+		months={data.monthly.months}
+		years={data.monthly.years}
+		titleHref={null}
+		displayUnits={data.displayUnits}
+	/>
 	<YearlyStats
 		preferences={data.cardPreferences}
 		years={data.yearly.years}
 		days={data.heatmap}
 		titleHref={null}
+		displayUnits={data.displayUnits}
 	/>
 </div>
 
@@ -107,7 +114,7 @@
 							</td>
 							<td>{formatNumber(row.ascents, data.dateDisplay)}</td>
 							<td>{formatNumber(row.sends, data.dateDisplay)}</td>
-							<td>{formatNumber(Math.round(row.heightM), data.dateDisplay)} m</td>
+							<td>{formatHeight(row.heightM, data.displayUnits.height)}</td>
 							<td>{formatNumber(styleCount(row.byStyle, 'Sport'), data.dateDisplay)}</td>
 							<td>{formatNumber(styleCount(row.byStyle, 'Trad'), data.dateDisplay)}</td>
 							<td>{formatNumber(styleCount(row.byStyle, 'Boulder'), data.dateDisplay)}</td>

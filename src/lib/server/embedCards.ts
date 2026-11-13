@@ -6,6 +6,7 @@
  * Fonts: an SVG in `<img>` can't load web fonts, so this uses a system stack.
  */
 import { bandById, DEFAULT_DISPLAY_SYSTEMS, formatGradeLabel } from '#lib/grades';
+import { DEFAULT_DISPLAY_UNITS, formatDistance, type DisplayUnits } from '#lib/units';
 import { STYLE_COLORS } from '#lib/ticks';
 import type { DashboardStats } from '#lib/types/dashboard';
 
@@ -122,13 +123,17 @@ function cardTitle(s: DashboardStats, what: string): string {
 	return s.profileName ? `${s.profileName}'s ${what}` : what[0].toUpperCase() + what.slice(1);
 }
 
-function summaryCard(s: DashboardStats, t: Record<string, string>): string {
+function summaryCard(
+	s: DashboardStats,
+	t: Record<string, string>,
+	units: DisplayUnits = DEFAULT_DISPLAY_UNITS
+): string {
 	const sub = `${s.climberType}${s.blurb.durationLabel ? ` · climbing ${s.blurb.durationLabel}` : ''}`;
 	const metrics = tiles(t, 68, [
 		{ value: fmt(s.totalAscents), label: 'ascents' },
 		{ value: fmt(s.totalSends), label: 'sends' },
 		{ value: fmt(s.onsightCount), label: 'onsights' },
-		{ value: `${s.heightKm.toLocaleString('en-US')} km`, label: 'climbed' }
+		{ value: formatDistance(s.heightKm, units.distance), label: 'climbed' }
 	]);
 
 	// Hardest send per discipline, from the sends pyramid (rows ascend by score).
@@ -249,9 +254,14 @@ function bandColor(band: number | null): string {
 	return bandById(band)?.color ?? '#888888';
 }
 
-export function renderEmbedCard(card: EmbedCard, stats: DashboardStats, theme: EmbedTheme): string {
+export function renderEmbedCard(
+	card: EmbedCard,
+	stats: DashboardStats,
+	theme: EmbedTheme,
+	units: DisplayUnits = DEFAULT_DISPLAY_UNITS
+): string {
 	const t = THEMES[theme];
 	if (card === 'eddington') return eddingtonCard(stats, t);
 	if (card === 'hardest') return hardestCard(stats, t);
-	return summaryCard(stats, t);
+	return summaryCard(stats, t, units);
 }

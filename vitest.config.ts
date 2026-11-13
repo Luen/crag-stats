@@ -8,7 +8,8 @@ export default defineConfig({
 	resolve: {
 		alias: {
 			'#lib': path.join(root, 'src/lib'),
-			'#lib/': path.join(root, 'src/lib/')
+			'#lib/': path.join(root, 'src/lib/'),
+			'$app/env/private': path.join(root, 'src/lib/server/testEnvPrivate.ts')
 		}
 	},
 	test: {

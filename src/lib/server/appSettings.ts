@@ -1,5 +1,15 @@
 import { eq } from 'drizzle-orm';
 import { resolveDisplaySystems, type DisplayGradeSystems } from '#lib/grades';
+import { parseDateFormat, type DateFormat } from '#lib/dates';
+import {
+	resolveDisplayUnits,
+	type DisplayUnits,
+	type HeightUnit,
+	type DistanceUnit,
+	type TemperatureUnit,
+	type WindUnit,
+	type PrecipitationUnit
+} from '#lib/units';
 import { authScope, isAuthEnabled } from './auth';
 import { db, ensureSchema } from './db';
 import { appSettings } from './db/schema';
@@ -17,7 +27,13 @@ export type AppSettingKey =
 	| 'boulder_grade_system'
 	| 'dashboard_layout'
 	| 'show_notes'
-	| 'offline_revision';
+	| 'offline_revision'
+	| 'date_format'
+	| 'unit_height'
+	| 'unit_distance'
+	| 'unit_temperature'
+	| 'unit_wind'
+	| 'unit_precipitation';
 
 export function getAppSetting(key: AppSettingKey): string | null {
 	ensureSchema();
@@ -70,4 +86,38 @@ export function getRouteGradeSystem() {
 
 export function getBoulderGradeSystem() {
 	return getDisplayGradeSystems().boulder;
+}
+
+export function getDateFormat(): DateFormat {
+	return parseDateFormat(getAppSetting('date_format')) ?? 'auto';
+}
+
+export function getDisplayUnits(): DisplayUnits {
+	return resolveDisplayUnits({
+		height: getAppSetting('unit_height'),
+		distance: getAppSetting('unit_distance'),
+		temperature: getAppSetting('unit_temperature'),
+		wind: getAppSetting('unit_wind'),
+		precipitation: getAppSetting('unit_precipitation')
+	});
+}
+
+export function getHeightUnit(): HeightUnit {
+	return getDisplayUnits().height;
+}
+
+export function getDistanceUnit(): DistanceUnit {
+	return getDisplayUnits().distance;
+}
+
+export function getTemperatureUnit(): TemperatureUnit {
+	return getDisplayUnits().temperature;
+}
+
+export function getWindUnit(): WindUnit {
+	return getDisplayUnits().wind;
+}
+
+export function getPrecipitationUnit(): PrecipitationUnit {
+	return getDisplayUnits().precipitation;
 }

@@ -15,7 +15,7 @@ Open-Meteo's free non-commercial tier is intended for personal self-hosted insta
 - **Past days** — today's UTC date is skipped; the archive is often incomplete for the current day.
 - **Shared cache key** — lat/lon are rounded to **one decimal place**, so nearby routes at one crag share a day row.
 
-Stored fields: daily max/min temperature (°C), precipitation (mm), WMO weather code, mean humidity, max/mean 10 m wind (km/h).
+Stored fields: daily max/min temperature (°C), precipitation (mm), WMO weather code, mean humidity, and max/mean 10 m wind (km/h). Display units for temperature (°C or °F), wind (km/h or mph), and precipitation (mm or in) can be chosen in **Settings → Display & visibility**.
 
 ## Badges
 

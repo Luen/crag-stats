@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { innerWidth } from 'svelte/reactivity/window';
+	import { DEFAULT_DISPLAY_UNITS, formatHeight, type DisplayUnits } from '#lib/units';
 
 	type MonthRow = {
 		month: string;
@@ -14,9 +15,10 @@
 		years: number[];
 		/** Dashboard links to `/activity` when that route exists; omit/null to skip. */
 		titleHref?: string | null;
+		displayUnits?: DisplayUnits;
 	};
 
-	let { months, years, titleHref = null }: Props = $props();
+	let { months, years, titleHref = null, displayUnits = DEFAULT_DISPLAY_UNITS }: Props = $props();
 
 	type Metric = 'ascents' | 'sends' | 'heightM';
 
@@ -49,8 +51,10 @@
 
 	const max = $derived(Math.max(1, ...values.map((v) => v.value)));
 
+	const heightUnit = $derived(displayUnits.height);
+
 	const metricLabel = $derived(
-		metric === 'ascents' ? 'Ascents' : metric === 'sends' ? 'Sends' : 'Height (m)'
+		metric === 'ascents' ? 'Ascents' : metric === 'sends' ? 'Sends' : `Height (${heightUnit})`
 	);
 
 	const narrow = $derived((innerWidth.current ?? 900) < 700);
@@ -80,7 +84,7 @@
 	}
 
 	function formatValue(v: number): string {
-		if (metric === 'heightM') return `${Math.round(v)} m`;
+		if (metric === 'heightM') return formatHeight(v, heightUnit);
 		return String(v);
 	}
 
@@ -134,7 +138,7 @@
 				<button
 					type="button"
 					class={{ active: metric === 'heightM' }}
-					onclick={() => (metric = 'heightM')}>Height (m)</button
+					onclick={() => (metric = 'heightM')}>Height ({heightUnit})</button
 				>
 			</div>
 		</div>

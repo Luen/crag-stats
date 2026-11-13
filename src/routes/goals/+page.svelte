@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { formatCalendarDate } from '#lib/dates';
 	import type { PageProps } from './$types';
 
 	let { data, form }: PageProps = $props();
@@ -51,7 +52,7 @@
 				</details>
 			{/if}
 			{#if g.completed && g.achievedAt}
-				<p class="achieved">Achieved {(g.achievedAt || '').slice(0, 10)}</p>
+				<p class="achieved">Achieved {formatCalendarDate(g.achievedAt, data.dateDisplay)}</p>
 			{/if}
 		</div>
 		{#if data.canEdit}

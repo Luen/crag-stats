@@ -53,6 +53,7 @@ import { getFirstImport } from './firstImport';
 import { communityAscentBadgeHits } from './communityBadges';
 import type { DateDisplay } from '#lib/dates';
 import { buildClimberBlurb } from './climberBlurb';
+import { DEFAULT_DISPLAY_UNITS, type DisplayUnits } from '#lib/units';
 import { buildRouteDeveloperImpact } from './routeDeveloperImpact';
 import { countOwnerSetRoutes, listOwnerSetRoutes, setterBadgeHits } from './routeSetters';
 import { countActiveProjects } from './projects';
@@ -277,9 +278,10 @@ function relativeTime(iso: string | null): string | null {
 
 export function getDashboardStats(
 	gradeSystems: DisplayGradeSystems = DEFAULT_DISPLAY_SYSTEMS,
-	opts?: { pyramidMode?: PyramidMode; dateDisplay?: DateDisplay }
+	opts?: { pyramidMode?: PyramidMode; dateDisplay?: DateDisplay; displayUnits?: DisplayUnits }
 ): DashboardStats {
 	const pyramidMode = opts?.pyramidMode ?? 'all';
+	const displayUnits = opts?.displayUnits ?? DEFAULT_DISPLAY_UNITS;
 	ensureSchema();
 	// Cheap: fill missing ascent logbook links without a full re-parse
 	db.run(
@@ -1006,7 +1008,8 @@ export function getDashboardStats(
 		putUpRoutes: developerImpact.routes,
 		weather: weatherConditions,
 		firstAscentCount: faMarks.size,
-		dateDisplay: opts?.dateDisplay
+		dateDisplay: opts?.dateDisplay,
+		displayUnits
 	});
 
 	return {
@@ -1025,6 +1028,7 @@ export function getDashboardStats(
 		distinctRoutes: routeSet.size,
 		distinctCrags: cragMap.size,
 		gradeSystems,
+		displayUnits,
 		gradeRecords,
 		heatmap,
 		styleShare,
