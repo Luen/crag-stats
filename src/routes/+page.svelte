@@ -411,7 +411,7 @@
 	{/if}
 </section>
 
-{#if s.totalAscents === 0}
+{#if s.totalLogged === 0}
 	<section class="panel empty">
 		<h2>Get started</h2>
 		<ol>
@@ -462,7 +462,10 @@
 		</div>
 		<div class="metric panel">
 			<strong>{s.totalAscents}</strong>
-			<span>total logged</span>
+			<span>{s.isFiltered ? 'counted ascents' : 'total logged'}</span>
+			{#if s.isFiltered}
+				<span class="sub">{s.totalLogged} total logged</span>
+			{/if}
 		</div>
 		{#if s.outdoorAscents != null || s.indoorAscents != null}
 			<div class="metric panel">
@@ -600,6 +603,10 @@
 		display: block;
 		color: var(--ink-muted);
 		font-size: 0.85rem;
+	}
+	.metric .sub {
+		font-size: 0.75rem;
+		margin-top: 0.15rem;
 	}
 	.metric strong {
 		font-size: 1.6rem;

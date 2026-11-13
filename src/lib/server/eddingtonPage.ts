@@ -1,11 +1,13 @@
 import { calendarDay as validDay } from '#lib/calendarDay';
 import { eq } from 'drizzle-orm';
 import { usesVScale } from '#lib/grades';
+import { isTickCountedInAnalytics, type TickTypeSettings } from '#lib/tickSettings';
 import type {
 	EddingtonMilestoneTable,
 	EddingtonStats,
 	EddingtonTimelinePoint
 } from '#lib/types/dashboard';
+import { getTickTypeSettings } from './appSettings';
 import { db, ensureSchema } from './db';
 import { ascents, routes } from './db/schema';
 import {
@@ -26,11 +28,13 @@ function vScale(row: { gradeSystem?: string | null; gearStyle: string | null }):
 	return usesVScale(row.gradeSystem, row.gearStyle);
 }
 
-export function listEddingtonRows(): EddingtonRow[] {
+export function listEddingtonRows(tickSettings?: TickTypeSettings): EddingtonRow[] {
 	ensureSchema();
+	const settings = tickSettings ?? getTickTypeSettings();
 	const joined = db
 		.select({
 			ascentDate: ascents.ascentDate,
+			tickType: ascents.tickType,
 			routeId: ascents.routeId,
 			isSend: ascents.isSend,
 			heightM: ascents.heightM,
@@ -42,7 +46,8 @@ export function listEddingtonRows(): EddingtonRow[] {
 		})
 		.from(ascents)
 		.innerJoin(routes, eq(ascents.routeId, routes.id))
-		.all();
+		.all()
+		.filter((r) => isTickCountedInAnalytics(r.tickType, settings));
 
 	return joined.map((r) => ({
 		day: validDay(r.ascentDate),
