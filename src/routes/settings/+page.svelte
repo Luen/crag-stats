@@ -323,7 +323,7 @@
 									<tr>
 										<th scope="row" class="tick-name-cell">
 											<div class="tick-info">
-												<TickTypeIcon tick={tick.name} />
+												<TickTypeIcon tick={tick.name} label={false} />
 												<span class="tick-name">{tick.name}</span>
 												{#if tick.count != null && tick.count > 0}
 													<span class="tick-count">({tick.count})</span>

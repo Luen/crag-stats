@@ -324,6 +324,61 @@ describe('configurable counted tick types', () => {
 		expect(filtered.routeRepeats).toBeNull();
 	});
 
+	it('keeps activity badges when project ticks are kept out of totals', () => {
+		wipeAllData();
+		const route = db
+			.insert(routes)
+			.values({
+				provider: 'thecrag',
+				externalId: 'route_persistence',
+				name: 'Worked Project',
+				gearStyle: 'Sport',
+				gradeRaw: '24',
+				gradeScore: 24,
+				updatedAt: '2026-01-01'
+			})
+			.returning()
+			.get();
+		// Four projecting days, then the send: "Persistence Pays" needs the working days.
+		for (let day = 1; day <= 4; day++) {
+			db.insert(ascents)
+				.values({
+					provider: 'thecrag',
+					externalId: `ascent_worked_${day}`,
+					routeId: route.id,
+					ascentDate: `2026-03-0${day}`,
+					tickType: 'Working',
+					isSend: false,
+					isAttempt: true,
+					updatedAt: `2026-03-0${day}`
+				})
+				.run();
+		}
+		db.insert(ascents)
+			.values({
+				provider: 'thecrag',
+				externalId: 'ascent_worked_send',
+				routeId: route.id,
+				ascentDate: '2026-03-05',
+				tickType: 'Red point',
+				isSend: true,
+				isAttempt: false,
+				updatedAt: '2026-03-05'
+			})
+			.run();
+
+		setTickTypeSettings({ working: 'projects_goals' });
+		const kept = getDashboardStats();
+		expect(kept.isFiltered).toBe(true);
+		// Working burns are out of the headline total but still evidence of the effort.
+		expect(kept.totalAscents).toBe(1);
+		expect(kept.badges.earned.some((b) => b.id === 'route_persistence')).toBe(true);
+
+		setTickTypeSettings({ working: 'hide' });
+		const hidden = getDashboardStats();
+		expect(hidden.badges.earned.some((b) => b.id === 'route_persistence')).toBe(false);
+	});
+
 	it('excludes hidden ticks from the athlete profile axes', () => {
 		wipeAllData();
 		const route = db

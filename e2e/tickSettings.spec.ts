@@ -17,6 +17,10 @@ test('Settings presets decide which tick types count in dashboard totals', async
 		});
 		const matrix = card.getByRole('table');
 		await expect(matrix.getByRole('rowheader', { name: /^Attempt/ })).toBeVisible();
+		// The tick icon must not repeat the tick name in the row header.
+		await expect(matrix.getByRole('rowheader', { name: /^Onsight/ })).toHaveAccessibleName(
+			/^Onsight(?: \(\d+\))?$/
+		);
 		await expect(matrix.getByText('(1)').first()).toBeVisible();
 		await expectAxeClean(page, { include: [card] });
 

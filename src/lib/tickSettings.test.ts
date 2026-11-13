@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { classifyTick } from './server/providers/types';
 import {
 	canonicalTickKey,
 	detectCurrentPreset,
@@ -104,6 +105,8 @@ describe('presets', () => {
 		expect(sendsOnly['working']).toBe('projects_goals');
 		expect(sendsOnly['attempt']).toBe('projects_goals');
 		expect(sendsOnly['hang dog']).toBe('projects_goals');
+		// "Top rope" is not a send in this app, so the preset must drop it from totals too.
+		expect(sendsOnly['top rope']).toBe('projects_goals');
 		expect(sendsOnly['onsight']).toBeUndefined();
 
 		const excludeWorking = presetSettings('exclude_working');
@@ -164,8 +167,18 @@ describe('presets', () => {
 describe('groupTicksByCategory', () => {
 	it('groups standard ticks by category in expected order', () => {
 		const groups = groupTicksByCategory(STANDARD_TICKS);
-		expect(groups.map((g) => g.category)).toEqual(['send', 'solo', 'attempt']);
+		expect(groups.map((g) => g.category)).toEqual(['send', 'solo', 'attempt', 'other']);
 		expect(groups[0].ticks.some((t) => t.key === 'onsight')).toBe(true);
 		expect(groups[2].ticks.some((t) => t.key === 'working')).toBe(true);
+	});
+});
+
+describe('STANDARD_TICKS', () => {
+	it('classifies every tick the same way as the logbook', () => {
+		// A hard-coded send/attempt flag that disagrees here would make "Sends only"
+		// hide real sends or leave attempts in the headline totals.
+		for (const tick of STANDARD_TICKS) {
+			expect(classifyTick(tick.name).isSend, tick.name).toBe(tick.isSend);
+		}
 	});
 });

@@ -403,6 +403,16 @@ export function getDashboardStats(
 	// you have never logged must not swap theCrag's own profile figures for local ones.
 	const isFiltered = analyticsRows.length !== all.length;
 
+	// Same outdoor rule as the weather importer; shared by the profile counts and the
+	// dashboard extra rows so indoor/outdoor figures can't drift apart.
+	const isOutdoorRow = (r: (typeof all)[number]) =>
+		!isLikelyIndoorRoute({
+			gearStyle: r.gearStyle,
+			name: r.routeName,
+			cragName: r.cragName,
+			tagsJson: r.tagsJson
+		});
+
 	const tickMap = new Map<string, number>();
 	const styleMap = new Map<string, number>();
 	const cragMap = new Map<
@@ -799,12 +809,7 @@ export function getDashboardStats(
 		pitchLabel: a.pitchLabel,
 		pitchesTotal: a.pitchesTotal,
 		sentPitchNumbers: sentPitchNumbersFromRaw(a.gradeProvenanceJson),
-		outdoor: !isLikelyIndoorRoute({
-			gearStyle: a.gearStyle,
-			name: a.routeName,
-			cragName: a.cragName,
-			tagsJson: a.tagsJson
-		})
+		outdoor: isOutdoorRow(a)
 	});
 	const extraRows = analyticsRows.map(toExtraRow);
 	const activityExtraRows = activityRows.map(toExtraRow);
@@ -815,8 +820,11 @@ export function getDashboardStats(
 	const yearly = buildYearlyStats(extraRows);
 	const milestones = buildMilestones(extraRows, gradeSystems);
 	const developerImpact = buildRouteDeveloperImpact();
+	// Badges describe what you did, so property/attempt ticks kept for projects and goals
+	// still count: otherwise "Persistence Pays" needs four *send* days and session/streak
+	// badges fall behind the streaks card. `hide` still removes a tick type completely.
 	const badges = buildBadges(
-		extraRows,
+		activityExtraRows,
 		setterBadgeHits(),
 		communityAscentBadgeHits(developerImpact, opts?.dateDisplay),
 		{
@@ -944,25 +952,10 @@ export function getDashboardStats(
 		});
 
 	const outdoorAscents = isFiltered
-		? analyticsRows.filter(
-				(r) =>
-					!isLikelyIndoorRoute({
-						gearStyle: r.gearStyle,
-						name: r.routeName,
-						cragName: r.cragName,
-						tagsJson: r.tagsJson
-					})
-			).length
+		? analyticsRows.filter(isOutdoorRow).length
 		: (profile?.outdoorAscentCount ?? null);
 	const indoorAscents = isFiltered
-		? analyticsRows.filter((r) =>
-				isLikelyIndoorRoute({
-					gearStyle: r.gearStyle,
-					name: r.routeName,
-					cragName: r.cragName,
-					tagsJson: r.tagsJson
-				})
-			).length
+		? analyticsRows.filter((r) => !isOutdoorRow(r)).length
 		: (profile?.indoorAscentCount ?? null);
 	const accountHeightM =
 		profile?.heightClimbed != null && Number.isFinite(profile.heightClimbed)

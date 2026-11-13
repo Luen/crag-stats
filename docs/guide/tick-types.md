@@ -19,13 +19,13 @@ On theCrag, non-send attempts (such as `Working`, `Attempt`, `Hang dog`, or `Ret
 
 In **Settings → Display & visibility → Counted tick types**, you can configure how each tick type is treated across Crag Stats:
 
-- **Enable (Count everywhere):** Included in headline ascents, discipline breakdown, crags and sectors, pyramids, map totals, Eddington numbers, route repeats, the climber profile axes, activity heatmaps, training load, projects, and goals.
-- **Projects & goals only (Out of totals):** Excluded from headline ascents, discipline share, crags, sectors, pyramids, map totals, Eddington numbers, route repeats, and the climber profile axes, but still counted towards project detection, session activity (heatmap, sessions per week, and weekday charts), training load fatigue, and grade goals.
-- **Hide (Exclude completely):** Excluded across all analytics, projects, and goals.
+- **Enable (Count everywhere):** Included in headline ascents, discipline breakdown, crags and sectors, pyramids, map totals, Eddington numbers, route repeats, the climber profile axes, activity heatmaps, training load, badges, projects, and goals.
+- **Projects & goals only (Out of totals):** Excluded from headline ascents, discipline share, crags, sectors, pyramids, map totals, Eddington numbers, route repeats, and the climber profile axes, but still counted towards project detection, session activity (heatmap, streaks, sessions per week, and weekday charts), training load fatigue, badges, and grade goals.
+- **Hide (Exclude completely):** Excluded across all analytics, projects, goals, and badges.
 
 The logbook always preserves and displays all your logged ascents with full filtering regardless of this setting.
 
-While any tick type is set to _Projects & goals only_ or _Hide_, the dashboard also recalculates the profile figures that normally come from theCrag (outdoor and indoor ascents, routes ticked, total height, and climber type) from your counted ascents, so every total on the page describes the same set of ticks. Clear the configuration with the **All logged ticks** preset to go back to theCrag's own totals.
+When a configured tick type excludes some of your logged ascents, the dashboard also recalculates the profile figures that normally come from theCrag (outdoor and indoor ascents, routes ticked, total height, and climber type) from your counted ascents, so every total on the page describes the same set of ticks. Clear the configuration with the **All logged ticks** preset to go back to theCrag's own totals.
 
 ## Source
 

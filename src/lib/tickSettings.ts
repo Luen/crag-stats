@@ -23,7 +23,6 @@ export const STANDARD_TICKS: readonly AvailableTickType[] = [
 	{ key: 'send', name: 'Send', category: 'send', isSend: true },
 	{ key: 'clean', name: 'Clean', category: 'send', isSend: true },
 	{ key: 'repeat', name: 'Repeat', category: 'send', isSend: true },
-	{ key: 'top rope', name: 'Top rope', category: 'send', isSend: true },
 	{ key: 'lead', name: 'Lead', category: 'send', isSend: true },
 	{ key: 'green point', name: 'Green point', category: 'send', isSend: true },
 	{ key: 'ground up red point', name: 'Ground up red point', category: 'send', isSend: true },
@@ -45,7 +44,12 @@ export const STANDARD_TICKS: readonly AvailableTickType[] = [
 	{ key: 'dab', name: 'Dab', category: 'attempt', isSend: false },
 	{ key: 'hit', name: 'Hit', category: 'attempt', isSend: false },
 	{ key: 'target', name: 'Target', category: 'attempt', isSend: false },
-	{ key: 'mark', name: 'Mark', category: 'attempt', isSend: false }
+	{ key: 'mark', name: 'Mark', category: 'attempt', isSend: false },
+
+	// Logged, but neither a send nor an attempt (`classifyTick` counts it as neither).
+	// Keep `isSend` in step with `classifyTick`, or "Sends only" would hide real sends
+	// or keep non-sends in the totals.
+	{ key: 'top rope', name: 'Top rope', category: 'other', isSend: false }
 ];
 
 /** Normalize tick name or label to standard lowercase key with canonical spacing. */
