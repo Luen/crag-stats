@@ -213,6 +213,8 @@ export type DashboardStats = {
 	climberType: string;
 	avatar: string | null;
 	totalAscents: number;
+	totalLogged: number;
+	isFiltered: boolean;
 	totalSends: number;
 	totalAttempts: number;
 	onsightCount: number;

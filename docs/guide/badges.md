@@ -12,9 +12,18 @@ Wiping local data resets this milestone along with the logbook; the next success
 
 Earned badges are listed by the climb that earned them, most recent first. The dashboard card shows the latest eight. Badges earned on the same day keep their gallery order. First Moves and the community-ascent estimates are not tied to a climb, so they come after every climb-dated badge.
 
+## Counted tick types
+
+The **Counted tick types** setting in Settings → Display & visibility decides which of your logged ascents each badge follows. See [Tick types](/docs/tick-types) for the setting itself.
+
+- Tick types set to **Projects & goals only** are out of headline ascents and dashboard totals, but they still earn badges: **Persistence Pays**, the consecutive-day streaks, **Multipitch Day**, **Travel Week**, the height milestones, and other activity badges all keep counting them. Height milestones therefore keep growing from working burns even though your ascent totals stay lean.
+- Tick types set to **Hide** earn nothing: those ascents are excluded from badges as well as every other analytic.
+
+The distinction is deliberate. Headline totals filter what you send, while badges describe what you did — a working burn is still a day on the rock, and it still counts towards the badges that celebrate that. If a badge you expect has not appeared, check whether its tick type is hidden rather than merely out of the totals.
+
 ## Distance climbed
 
-Height badges count the total height of your logged climbs: 1, 5, 10, 20, 50, 100 and 150 km. Each one is dated by the climb that takes your running total past the mark. **250m Day** instead sums the height climbed on a single calendar day.
+Height badges count the total height of your logged climbs: 1, 5, 10, 20, 50, 100, and 150 km. Each one is dated by the climb that takes your running total past the mark. **250m Day** instead sums the height climbed on a single calendar day.
 
 ## Weather
 

@@ -5,7 +5,8 @@ import { parseSeasonalityJson, weightedSeasonality } from './bestMonths';
 import { seasonalityAtMonth, type SeasonalityFilters } from '#lib/seasonality';
 import { theCragRouteUrl } from '#lib/thecragUrls';
 import { formatClimbGrade } from '#lib/grades';
-import { getDisplayGradeSystems } from './appSettings';
+import { isTickCountedInAnalytics, type TickTypeSettings } from '#lib/tickSettings';
+import { getDisplayGradeSystems, getTickTypeSettings } from './appSettings';
 
 export type SeasonalityRoute = {
 	id: number;
@@ -137,9 +138,10 @@ export function buildSeasonalitySearch(rows: SeasonalityRoute[], filters: Season
 	};
 }
 
-export function searchSeasonality(filters: SeasonalityFilters) {
+export function searchSeasonality(filters: SeasonalityFilters, tickSettings?: TickTypeSettings) {
 	ensureSchema();
-	const rows = db
+	const settings = tickSettings ?? getTickTypeSettings();
+	const grouped = db
 		.select({
 			id: routes.id,
 			provider: routes.provider,
@@ -157,15 +159,29 @@ export function searchSeasonality(filters: SeasonalityFilters) {
 			gearStyle: routes.gearStyle,
 			url: routes.url,
 			seasonalityJson: routes.seasonalityJson,
+			tickType: ascents.tickType,
 			ascentCount: sql<number>`count(*)`
 		})
 		.from(routes)
 		.innerJoin(ascents, eq(ascents.routeId, routes.id))
-		.groupBy(routes.id)
+		.groupBy(routes.id, ascents.tickType)
 		.all();
+	// Weights follow the same counted tick types as the dashboard.
+	const rows = new Map<number, { row: (typeof grouped)[number]; count: number }>();
+	for (const r of grouped) {
+		if (!isTickCountedInAnalytics(r.tickType, settings)) continue;
+		const n = Number(r.ascentCount) || 0;
+		const existing = rows.get(r.id);
+		if (existing) existing.count += n;
+		else rows.set(r.id, { row: r, count: n });
+	}
 	const systems = getDisplayGradeSystems();
 	return buildSeasonalitySearch(
-		rows.map((r) => ({ ...r, gradeRaw: formatClimbGrade(r, systems) })),
+		[...rows.values()].map(({ row, count }) => ({
+			...row,
+			gradeRaw: formatClimbGrade(row, systems),
+			ascentCount: count
+		})),
 		filters
 	);
 }

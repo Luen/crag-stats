@@ -8,6 +8,8 @@ import {
 } from '#lib/grades';
 import { theCragAscentUrl } from '#lib/thecragUrls';
 import { tickKind } from '#lib/ticks';
+import { isTickCountedInAnalytics, type TickTypeSettings } from '#lib/tickSettings';
+import { getTickTypeSettings } from './appSettings';
 import { db, ensureSchema } from './db';
 import { ascents, routes } from './db/schema';
 
@@ -30,11 +32,16 @@ export type RewindYearSummary = {
 	} | null;
 };
 
-export function listRewindYears(): number[] {
+export function listRewindYears(tickSettings?: TickTypeSettings): number[] {
 	ensureSchema();
-	const rows = db.select({ ascentDate: ascents.ascentDate }).from(ascents).all();
+	const settings = tickSettings ?? getTickTypeSettings();
+	const rows = db
+		.select({ ascentDate: ascents.ascentDate, tickType: ascents.tickType })
+		.from(ascents)
+		.all();
 	const years = new Set<number>();
 	for (const r of rows) {
+		if (!isTickCountedInAnalytics(r.tickType, settings)) continue;
 		const day = validDay(r.ascentDate);
 		if (!day) continue;
 		years.add(Number(day.slice(0, 4)));
@@ -44,9 +51,11 @@ export function listRewindYears(): number[] {
 
 export function getRewindSummary(
 	year: number,
-	gradeSystems: DisplayGradeSystems = DEFAULT_DISPLAY_SYSTEMS
+	gradeSystems: DisplayGradeSystems = DEFAULT_DISPLAY_SYSTEMS,
+	tickSettings?: TickTypeSettings
 ): RewindYearSummary {
 	ensureSchema();
+	const settings = tickSettings ?? getTickTypeSettings();
 	const joined = db
 		.select({
 			ascentDate: ascents.ascentDate,
@@ -67,7 +76,8 @@ export function getRewindSummary(
 		})
 		.from(ascents)
 		.innerJoin(routes, eq(ascents.routeId, routes.id))
-		.all();
+		.all()
+		.filter((r) => isTickCountedInAnalytics(r.tickType, settings));
 
 	const cragMap = new Map<string, number>();
 	let ascentCount = 0;
