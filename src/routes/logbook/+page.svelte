@@ -542,25 +542,48 @@
 	</p>
 </form>
 
-<section class="panel table-wrap">
+<!-- Keyboard users need to reach the horizontally scrollable table wrapper above the mobile breakpoint. -->
+<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+<section class="panel table-wrap" aria-label="Logbook ascents" tabindex="0">
 	<table>
 		<thead>
 			<tr>
-				<th><a href={sortHref('date')}>Date{sortMark('date')}</a></th>
+				<th
+					><a href={sortHref('date')} class:active={data.sort === 'date'}>Date{sortMark('date')}</a
+					></th
+				>
 				<th>Route</th>
 				<th class="weather-cell">Weather</th>
-				<th><a href={sortHref('grade')}>Grade{sortMark('grade')}</a></th>
-				<th><a href={sortHref('tick')}>Tick{sortMark('tick')}</a></th>
-				<th><a href={sortHref('quality')}>Quality{sortMark('quality')}</a></th>
-				<th><a href={sortHref('stars')}>★{sortMark('stars')}</a></th>
 				<th
-					><a href={sortHref('ascents')} title="Your ascents on this route"
-						>×{sortMark('ascents')}</a
+					><a href={sortHref('grade')} class:active={data.sort === 'grade'}
+						>Grade{sortMark('grade')}</a
 					></th
 				>
 				<th
-					><a href={sortHref('popularity')} title="Community popularity"
-						>Pop.{sortMark('popularity')}</a
+					><a href={sortHref('tick')} class:active={data.sort === 'tick'}>Tick{sortMark('tick')}</a
+					></th
+				>
+				<th
+					><a href={sortHref('quality')} class:active={data.sort === 'quality'}
+						>Quality{sortMark('quality')}</a
+					></th
+				>
+				<th
+					><a href={sortHref('stars')} class:active={data.sort === 'stars'}>★{sortMark('stars')}</a
+					></th
+				>
+				<th
+					><a
+						href={sortHref('ascents')}
+						class:active={data.sort === 'ascents'}
+						title="Your ascents on this route">×{sortMark('ascents')}</a
+					></th
+				>
+				<th
+					><a
+						href={sortHref('popularity')}
+						class:active={data.sort === 'popularity'}
+						title="Community popularity">Pop.{sortMark('popularity')}</a
 					></th
 				>
 				<th>With</th>
@@ -570,30 +593,82 @@
 		<tbody>
 			{#each data.rows as row (row.id)}
 				<tr>
-					<td class="date">{formatCalendarDate(row.ascentDate, data.dateDisplay)}</td>
+					<td class="date desktop-cell">{formatCalendarDate(row.ascentDate, data.dateDisplay)}</td>
 					<td class="route">
-						{#if row.url}
-							<a href={row.url} target="_blank" rel="noreferrer">{row.displayName}</a>
-						{:else}
-							{row.displayName}
-						{/if}
-						{#if row.firstAscent}
-							<span
-								class="chip fa"
-								title={row.firstAscent === 'FFA' ? 'First free ascent' : 'First ascent'}
-								>{row.firstAscent}</span
-							>
-						{/if}
-						{#if row.pitchLabel}
-							<span class="chip">{row.pitchLabel}</span>
-						{/if}
-						{#if row.numberAttempts != null && row.numberAttempts > 1}
-							<span class="chip">{row.numberAttempts} attempts</span>
+						<div class="card-head">
+							<div class="route-name">
+								{#if row.url}
+									<a href={row.url} target="_blank" rel="noreferrer">{row.displayName}</a>
+								{:else}
+									{row.displayName}
+								{/if}
+								{#if row.firstAscent}
+									<span
+										class="chip fa"
+										title={row.firstAscent === 'FFA' ? 'First free ascent' : 'First ascent'}
+										>{row.firstAscent}</span
+									>
+								{/if}
+								{#if row.pitchLabel}
+									<span class="chip">{row.pitchLabel}</span>
+								{/if}
+								{#if row.numberAttempts != null && row.numberAttempts > 1}
+									<span class="chip">{row.numberAttempts} attempts</span>
+								{/if}
+							</div>
+							<div class="mobile-grade">
+								<GradeChip grade={row.gradeLabel} band={row.gradeBand} />
+							</div>
+						</div>
+						<div class="mobile-sub">
+							<span>{formatCalendarDate(row.ascentDate, data.dateDisplay)}</span>
+							·&nbsp;<TickTypeIcon tick={row.tickType} />
+							{#if row.cragName}
+								·&nbsp;<a
+									href="/logbook?crag={encodeURIComponent(row.cragName)}"
+									title="Filter logbook to this crag">{row.cragName}</a
+								>{#if row.cragUrl}<a
+										class="ext"
+										href={row.cragUrl}
+										target="_blank"
+										rel="noreferrer"
+										aria-label="Open {row.cragName} on theCrag">&nbsp;↗</a
+									>{/if}
+							{/if}
+							{#if row.parentName}
+								·&nbsp;<a
+									href="/logbook?sector={encodeURIComponent(row.parentName)}"
+									title="Filter logbook to this sector">{row.parentName}</a
+								>
+							{/if}
+							{#if row.quality}
+								·&nbsp;<span>{row.quality}</span>
+							{/if}
+							{#if row.stars != null}
+								·&nbsp;<span>★ {row.stars}</span>
+							{/if}
+							{#if row.myAscentsOnRoute > 1}
+								·&nbsp;<span title="Your ascents on this route">×{row.myAscentsOnRoute}</span>
+							{/if}
+							{#if row.routePopularity != null}
+								·&nbsp;<span title="Community popularity"
+									>Pop {Math.round(row.routePopularity)}</span
+								>
+							{/if}
+						</div>
+						<div class="mobile-styles" role="group" aria-label="Climb styles">
+							{#each logbookStyleLabels(row) as label (label)}
+								<StyleBadge style={label} />
+							{/each}
+						</div>
+						{#if row.partners}
+							<div class="mobile-partners">Partners on this ascent: {row.partners}</div>
 						{/if}
 						<TagChips tags={row.tags} />
 						<!-- Narrow screens hide the Weather column; keep chips beside the route there. -->
 						<span class="route-weather-chips">
 							<WeatherChips
+								location={row.weatherLocation}
 								chips={row.weatherChips}
 								dateDisplay={data.dateDisplay}
 								displayUnits={data.displayUnits}
@@ -622,13 +697,13 @@
 										type="submit"
 										name="kind"
 										value="FA"
-										aria-label="Mark {row.displayName} as my first ascent">Mark FA</button
+										aria-label="Mark FA: {row.displayName} as my first ascent">Mark FA</button
 									>
 									<button
 										type="submit"
 										name="kind"
 										value="FFA"
-										aria-label="Mark {row.displayName} as my first free ascent">FFA</button
+										aria-label="Mark FFA: {row.displayName} as my first free ascent">FFA</button
 									>
 								{/if}
 							</form>
@@ -642,7 +717,7 @@
 							/>
 						{/if}
 					</td>
-					<td class="weather-cell">
+					<td class="weather-cell desktop-cell">
 						{#if row.weather}
 							<div class="weather-values">
 								{#if row.weatherLocation}<span title={row.weatherLocation.precision}
@@ -682,8 +757,10 @@
 							/>
 						{:else}—{/if}
 					</td>
-					<td class="nowrap"><GradeChip grade={row.gradeLabel} band={row.gradeBand} /></td>
-					<td class="tick-cell">
+					<td class="nowrap desktop-cell"
+						><GradeChip grade={row.gradeLabel} band={row.gradeBand} /></td
+					>
+					<td class="tick-cell desktop-cell">
 						<div class="tick-meta">
 							<TickTypeIcon tick={row.tickType} />
 							<div class="tick-styles">
@@ -693,14 +770,16 @@
 							</div>
 						</div>
 					</td>
-					<td class="muted">{row.quality || '—'}</td>
-					<td class="muted">{row.stars != null ? row.stars : '—'}</td>
-					<td class="muted num" title="Your ascents on this route">{row.myAscentsOnRoute}</td>
-					<td class="muted num" title="Community popularity">
+					<td class="muted desktop-cell">{row.quality || '—'}</td>
+					<td class="muted desktop-cell">{row.stars != null ? row.stars : '—'}</td>
+					<td class="muted num desktop-cell" title="Your ascents on this route"
+						>{row.myAscentsOnRoute}</td
+					>
+					<td class="muted num desktop-cell" title="Community popularity">
 						{row.routePopularity != null ? Math.round(row.routePopularity) : '—'}
 					</td>
-					<td class="muted">{row.partners || '—'}</td>
-					<td>
+					<td class="muted desktop-cell">{row.partners || '—'}</td>
+					<td class="desktop-cell">
 						{#if row.cragName}
 							<a
 								href="/logbook?crag={encodeURIComponent(row.cragName)}"
@@ -1029,13 +1108,161 @@
 		align-items: center;
 		margin: 0.5rem 0 1.5rem;
 	}
-	@media (max-width: 900px) {
+	@media (min-width: 861px) {
+		/* The 11-column table needs more room than the sidebar leaves on many
+		   laptops, so keep it scrollable rather than clipped. */
 		.table-wrap {
 			overflow-x: auto;
-			-webkit-overflow-scrolling: touch;
+		}
+		.card-head {
+			display: block;
+		}
+		.mobile-grade,
+		.mobile-sub,
+		.mobile-styles,
+		.mobile-partners {
+			display: none;
+		}
+		.route-weather-chips :global(.location) {
+			display: none;
+		}
+		th a.active {
+			color: var(--accent);
+		}
+	}
+	@media (max-width: 860px) {
+		.table-wrap {
+			padding: 0.75rem;
+			overflow-x: visible;
 		}
 		table {
-			min-width: 42rem;
+			display: block;
+			min-width: 0;
+			width: 100%;
+		}
+		thead {
+			display: block;
+			margin-bottom: 0.75rem;
+		}
+		thead tr {
+			display: flex;
+			flex-wrap: wrap;
+			align-items: center;
+			gap: 0.35rem;
+			background: transparent;
+		}
+		thead th {
+			display: inline-flex;
+			padding: 0;
+			background: transparent;
+			border: none;
+		}
+		thead th:not(:has(a)) {
+			display: none;
+		}
+		thead th a {
+			display: inline-flex;
+			align-items: center;
+			padding: 0.25rem 0.6rem;
+			border-radius: 999px;
+			border: 1px solid var(--line);
+			background: var(--surface-2);
+			color: var(--ink);
+			font-size: 0.75rem;
+			font-weight: 600;
+			text-decoration: none;
+		}
+		thead th a:hover {
+			background: var(--surface-3);
+			text-decoration: none;
+		}
+		thead th a.active {
+			border-color: var(--accent);
+			color: var(--ink);
+			font-weight: 700;
+			background: var(--surface-3);
+		}
+		tbody {
+			display: flex;
+			flex-direction: column;
+			gap: 0.75rem;
+			width: 100%;
+		}
+		tbody tr {
+			display: block;
+			width: 100%;
+			padding: 0.85rem 0.95rem;
+			border-radius: 0.75rem;
+			background: var(--surface-2);
+			border: 1px solid var(--line);
+		}
+		tbody tr:hover td {
+			background: transparent;
+		}
+		tbody td {
+			padding: 0;
+			border: none;
+		}
+		tbody td.desktop-cell {
+			display: none;
+		}
+		tbody td.route {
+			display: flex;
+			flex-direction: column;
+			gap: 0.35rem;
+			width: 100%;
+			min-width: 0;
+		}
+		.card-head {
+			display: flex;
+			justify-content: space-between;
+			align-items: flex-start;
+			gap: 0.75rem;
+		}
+		.route-name {
+			font-size: 1rem;
+			font-weight: 700;
+			line-height: 1.3;
+			min-width: 0;
+			overflow-wrap: anywhere;
+		}
+		.route-name a {
+			color: inherit;
+			text-decoration: underline;
+			text-underline-offset: 2px;
+		}
+		.mobile-grade {
+			display: inline-flex;
+			flex-shrink: 0;
+		}
+		.mobile-sub {
+			color: var(--ink-muted);
+			font-size: 0.85rem;
+			line-height: 1.5;
+			overflow-wrap: anywhere;
+		}
+		.mobile-sub a {
+			text-decoration: underline;
+			text-underline-offset: 2px;
+			color: inherit;
+		}
+		/* The arrow is bound to the crag name with a non-breaking space. */
+		.mobile-sub .ext {
+			margin-left: 0.2rem;
+			text-decoration: none;
+		}
+		.mobile-styles {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 0.25rem;
+			align-items: center;
+		}
+		.mobile-partners {
+			font-size: 0.82rem;
+			color: var(--ink-muted);
+		}
+		.fa-edit {
+			opacity: 1;
 		}
 	}
 </style>
