@@ -2,6 +2,8 @@
 
 Crag Stats supports multiple languages so climbers worldwide can analyze their climbing data in their native language. Community translations are managed on [Crowdin](https://crowdin.com/), synchronized via automated GitHub Actions, and bundled directly into the application and Docker image with zero runtime dependencies.
 
+For detailed API automation, Gemini AI configuration, quota rotation, and QA check baselines, see [`CROWDIN_SETUP_AND_QA.md`](CROWDIN_SETUP_AND_QA.md).
+
 ---
 
 ## Initial Priority Languages
