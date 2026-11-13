@@ -146,7 +146,8 @@ export const actions: Actions = {
 			});
 		}
 	},
-	importCsv: async ({ request }) => {
+	importCsv: async ({ request, locals }) => {
+		if (!locals.authed) return fail(403);
 		const form = await request.formData();
 		const file = form.get('file');
 		if (!(file instanceof File)) {
@@ -170,7 +171,8 @@ export const actions: Actions = {
 			});
 		}
 	},
-	wipe: async ({ request }) => {
+	wipe: async ({ request, locals }) => {
+		if (!locals.authed) return fail(403);
 		const form = await request.formData();
 		if (form.get('confirm') !== 'DELETE') {
 			return fail(400, { ok: false, message: 'Type DELETE to confirm' });
