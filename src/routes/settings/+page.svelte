@@ -6,7 +6,7 @@
 	import TickTypeIcon from '#lib/components/TickTypeIcon.svelte';
 	import {
 		groupTicksByCategory,
-		presetSettings,
+		presetTickState,
 		detectCurrentPreset,
 		type TickBehavior,
 		type TickPreset
@@ -97,7 +97,11 @@
 	const currentPreset = $derived(detectCurrentPreset(tickState, data.availableTicks));
 
 	function applyPreset(preset: TickPreset) {
-		tickOverrides = presetSettings(preset, data.availableTicks);
+		tickOverrides = presetTickState(preset, data.availableTicks);
+	}
+
+	function setTick(key: string, behavior: TickBehavior) {
+		tickOverrides = { ...tickOverrides, [key]: behavior };
 	}
 
 	onMount(() => {
@@ -244,7 +248,8 @@
 				<legend class="field-title">
 					<span>Counted tick types</span>
 					<small class="hint">
-						Configure which tick types are counted in dashboard analytics, projects, and goals.
+						Configure which tick types count in dashboard and page totals, projects, and goals. The
+						logbook always lists every logged ascent.
 					</small>
 				</legend>
 				<div class="preset-bar" role="group" aria-label="Tick configuration presets">
@@ -253,6 +258,7 @@
 						type="button"
 						class="btn secondary sm"
 						class:active={currentPreset === 'all'}
+						aria-pressed={currentPreset === 'all'}
 						onclick={() => applyPreset('all')}
 					>
 						All logged ticks
@@ -261,6 +267,7 @@
 						type="button"
 						class="btn secondary sm"
 						class:active={currentPreset === 'sends_only'}
+						aria-pressed={currentPreset === 'sends_only'}
 						onclick={() => applyPreset('sends_only')}
 					>
 						Sends only
@@ -269,6 +276,7 @@
 						type="button"
 						class="btn secondary sm"
 						class:active={currentPreset === 'exclude_working'}
+						aria-pressed={currentPreset === 'exclude_working'}
 						onclick={() => applyPreset('exclude_working')}
 					>
 						Exclude Working
@@ -288,7 +296,7 @@
 								<th scope="col" class="center">
 									<div class="col-head">
 										<span>Projects &amp; goals only</span>
-										<small class="col-desc">Hide from analytics</small>
+										<small class="col-desc">Out of totals</small>
 									</div>
 								</th>
 								<th scope="col" class="center">
@@ -308,7 +316,7 @@
 								</tr>
 								{#each group.ticks as tick (tick.key)}
 									<tr>
-										<td class="tick-name-cell">
+										<th scope="row" class="tick-name-cell">
 											<div class="tick-info">
 												<TickTypeIcon tick={tick.name} />
 												<span class="tick-name">{tick.name}</span>
@@ -316,7 +324,7 @@
 													<span class="tick-count">({tick.count})</span>
 												{/if}
 											</div>
-										</td>
+										</th>
 										<td class="center">
 											<label class="radio-cell">
 												<input
@@ -324,7 +332,7 @@
 													name={`tick_${tick.key}`}
 													value="enable"
 													checked={(tickState[tick.key] ?? 'enable') === 'enable'}
-													onchange={() => (tickOverrides = { ...tickOverrides, [tick.key]: 'enable' })}
+													onchange={() => setTick(tick.key, 'enable')}
 													aria-label={`${tick.name}: Enable (count everywhere)`}
 												/>
 											</label>
@@ -336,9 +344,8 @@
 													name={`tick_${tick.key}`}
 													value="projects_goals"
 													checked={tickState[tick.key] === 'projects_goals'}
-													onchange={() =>
-														(tickOverrides = { ...tickOverrides, [tick.key]: 'projects_goals' })}
-													aria-label={`${tick.name}: Projects and goals only (hide from analytics)`}
+													onchange={() => setTick(tick.key, 'projects_goals')}
+													aria-label={`${tick.name}: Projects and goals only (out of totals)`}
 												/>
 											</label>
 										</td>
@@ -349,7 +356,7 @@
 													name={`tick_${tick.key}`}
 													value="hide"
 													checked={tickState[tick.key] === 'hide'}
-													onchange={() => (tickOverrides = { ...tickOverrides, [tick.key]: 'hide' })}
+													onchange={() => setTick(tick.key, 'hide')}
 													aria-label={`${tick.name}: Hide completely`}
 												/>
 											</label>
@@ -930,7 +937,7 @@
 		border-collapse: collapse;
 		font-size: 0.85rem;
 	}
-	.tick-matrix th {
+	.tick-matrix thead th {
 		position: sticky;
 		top: 0;
 		background: var(--surface-2);
@@ -966,10 +973,12 @@
 		letter-spacing: 0.05em;
 		border-top: 1px solid var(--line);
 	}
-	.tick-matrix td {
+	.tick-matrix td,
+	.tick-matrix tbody th {
 		padding: 0.4rem 0.65rem;
 		border-top: 1px solid var(--line);
 		vertical-align: middle;
+		text-align: left;
 	}
 	.tick-name-cell {
 		font-weight: 600;

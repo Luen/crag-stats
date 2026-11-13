@@ -12,6 +12,7 @@ import { authScope, isAuthEnabled } from './auth';
 import { db, ensureSchema } from './db';
 import { appSettings, ascents } from './db/schema';
 import { resolveShowNotes, type ShowNotes } from './notes';
+import { classifyTick } from './providers/types';
 import { resolveSearchIndexing, type SearchIndexing } from './seo';
 
 export type { SearchIndexing };
@@ -123,7 +124,9 @@ export function listAvailableTickTypes(): AvailableTickType[] {
 				key,
 				name: key.charAt(0).toUpperCase() + key.slice(1),
 				category: 'other',
-				isSend: false,
+				// Provider tick names we don't ship in STANDARD_TICKS still need the
+				// right send/attempt flag, or "Sends only" would hide real sends.
+				isSend: classifyTick(key).isSend,
 				count
 			});
 		}

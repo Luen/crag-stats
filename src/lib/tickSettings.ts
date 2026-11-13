@@ -93,7 +93,16 @@ export function serializeTickTypeSettings(settings: TickTypeSettings): string {
 			out[canon] = val;
 		}
 	}
-	return JSON.stringify(out);
+	// Stable key order, so an unchanged configuration always serializes identically.
+	const sorted = Object.keys(out)
+		.sort((a, b) => a.localeCompare(b))
+		.map((key) => [key, out[key]] as const);
+	return JSON.stringify(Object.fromEntries(sorted));
+}
+
+/** True when both configurations would store the same tick behaviour. */
+export function sameTickTypeSettings(a: TickTypeSettings, b: TickTypeSettings): boolean {
+	return serializeTickTypeSettings(a) === serializeTickTypeSettings(b);
 }
 
 export function getTickBehavior(
@@ -140,6 +149,23 @@ export function presetSettings(
 		return { working: 'projects_goals' };
 	}
 	return {};
+}
+
+/**
+ * Complete behaviour map for every available tick (explicit `enable` included).
+ * Presets must override stored choices rather than merge under them, so picking
+ * "All logged ticks" really clears earlier hides.
+ */
+export function presetTickState(
+	preset: TickPreset,
+	available: readonly AvailableTickType[] = STANDARD_TICKS
+): TickTypeSettings {
+	const presetMap = presetSettings(preset, available);
+	const out: TickTypeSettings = {};
+	for (const item of available) {
+		out[item.key] = presetMap[item.key] ?? 'enable';
+	}
+	return out;
 }
 
 export function detectCurrentPreset(

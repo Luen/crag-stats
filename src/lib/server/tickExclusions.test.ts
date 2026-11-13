@@ -4,6 +4,10 @@ import { ascents, routes } from './db/schema';
 import { getDashboardStats } from './analytics';
 import { getTickTypeSettings, listAvailableTickTypes, setTickTypeSettings } from './appSettings';
 import { refreshProjects, listProjects } from './projects';
+import { listRewindYears } from './rewind';
+import { listSectors } from './sectors';
+import { searchSeasonality } from './seasonality';
+import { readSeasonalityFilters } from '#lib/seasonality';
 import { wipeAllData } from './wipe';
 
 function seedAscents() {
@@ -163,5 +167,117 @@ describe('configurable counted tick types', () => {
 		setTickTypeSettings({ working: 'projects_goals', attempt: 'hide' });
 		const loaded = getTickTypeSettings();
 		expect(loaded).toEqual({ working: 'projects_goals', attempt: 'hide' });
+	});
+
+	it('keeps account totals when a configured tick type has no logged rows', () => {
+		seedAscents();
+		// 'dab' is configured but never logged, so nothing is excluded from analytics.
+		setTickTypeSettings({ dab: 'hide' });
+
+		const stats = getDashboardStats();
+		expect(stats.totalAscents).toBe(12);
+		expect(stats.isFiltered).toBe(false);
+	});
+
+	it('keeps provider tick names outside the standard list classified by send/attempt', () => {
+		wipeAllData();
+		const route = db
+			.insert(routes)
+			.values({
+				provider: 'thecrag',
+				externalId: 'route_second',
+				name: 'Seconded Route',
+				gearStyle: 'Trad',
+				updatedAt: '2026-01-01'
+			})
+			.returning()
+			.get();
+		db.insert(ascents)
+			.values({
+				provider: 'thecrag',
+				externalId: 'ascent_second',
+				routeId: route.id,
+				ascentDate: '2026-04-01',
+				tickType: 'Second',
+				isSend: true,
+				isAttempt: false,
+				updatedAt: '2026-04-01'
+			})
+			.run();
+
+		const second = listAvailableTickTypes().find((t) => t.key === 'second');
+		expect(second?.isSend).toBe(true);
+	});
+
+	it('drops hidden tick types from rewind years, sectors, and seasonality weights', () => {
+		wipeAllData();
+		const seasonality = JSON.stringify([1, 1, 4, 1, 1, 1, 1, 1, 1, 1, 1, 1]);
+		const hiddenRoute = db
+			.insert(routes)
+			.values({
+				provider: 'thecrag',
+				externalId: 'route_proj_only',
+				name: 'Projected Problem',
+				cragName: 'Hidden Crag',
+				gearStyle: 'Boulder',
+				gradeSystem: 'v_scale',
+				gradeRaw: 'V6',
+				gradeScore: 6,
+				seasonalityJson: seasonality,
+				updatedAt: '2026-01-01'
+			})
+			.returning()
+			.get();
+		const sentRoute = db
+			.insert(routes)
+			.values({
+				provider: 'thecrag',
+				externalId: 'route_sent',
+				name: 'Sent Climb',
+				cragName: 'Counted Crag',
+				gearStyle: 'Sport',
+				gradeRaw: '18',
+				gradeScore: 18,
+				seasonalityJson: seasonality,
+				updatedAt: '2026-01-01'
+			})
+			.returning()
+			.get();
+
+		db.insert(ascents)
+			.values({
+				provider: 'thecrag',
+				externalId: 'ascent_proj_2024',
+				routeId: hiddenRoute.id,
+				ascentDate: '2024-06-01',
+				tickType: 'Working',
+				isSend: false,
+				isAttempt: true,
+				updatedAt: '2024-06-01'
+			})
+			.run();
+		db.insert(ascents)
+			.values({
+				provider: 'thecrag',
+				externalId: 'ascent_sent_2026',
+				routeId: sentRoute.id,
+				ascentDate: '2026-05-01',
+				tickType: 'Red point',
+				isSend: true,
+				isAttempt: false,
+				updatedAt: '2026-05-01'
+			})
+			.run();
+
+		setTickTypeSettings({ working: 'hide' });
+
+		expect(listRewindYears()).toEqual([2026]);
+		const crags = listSectors().map((c) => c.cragName);
+		expect(crags).toEqual(['Counted Crag']);
+
+		const filters = readSeasonalityFilters(new URLSearchParams('view=crags'), 3);
+		const season = searchSeasonality(filters);
+		expect(season.coverage.total).toBe(1);
+		expect(season.results.map((r) => r.name)).toEqual(['Counted Crag']);
 	});
 });

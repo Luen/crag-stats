@@ -8,7 +8,7 @@ import {
 } from '#lib/dashboardLayout';
 import { wipeAllData } from '#lib/server/analytics';
 import { parseBoulderGradeSystem, parseRouteGradeSystem } from '#lib/grades';
-import type { TickTypeSettings } from '#lib/tickSettings';
+import { sameTickTypeSettings, type TickTypeSettings } from '#lib/tickSettings';
 import {
 	deleteAppSetting,
 	getAppSetting,
@@ -98,19 +98,27 @@ export const actions: Actions = {
 		}
 		setAppSetting('show_notes', form.get('notes') === 'on' ? 'on' : 'off');
 
-		const tickSettings: TickTypeSettings = {};
+		// Start from the stored choices so ticks that are not currently rendered
+		// (no logged rows yet, or a provider tick name not in the standard list)
+		// keep their behaviour instead of silently reverting to "enable".
+		const previousTicks = getTickTypeSettings();
+		const tickSettings: TickTypeSettings = { ...previousTicks };
 		for (const [key, val] of form.entries()) {
-			if (key.startsWith('tick_')) {
-				const tickKey = key.slice(5);
-				const behavior = String(val);
-				if (behavior === 'projects_goals' || behavior === 'hide') {
-					tickSettings[tickKey] = behavior;
-				}
+			if (!key.startsWith('tick_')) continue;
+			const tickKey = key.slice('tick_'.length);
+			const behavior = String(val);
+			if (behavior === 'projects_goals' || behavior === 'hide') {
+				tickSettings[tickKey] = behavior;
+			} else {
+				delete tickSettings[tickKey];
 			}
 		}
-		setTickTypeSettings(tickSettings);
-		refreshProjects();
-		updateGoalProgress();
+		if (!sameTickTypeSettings(previousTicks, tickSettings)) {
+			setTickTypeSettings(tickSettings);
+			// Derived caches keep the old decision until they are rebuilt.
+			refreshProjects();
+			updateGoalProgress();
+		}
 
 		return { ok: true, saved: true };
 	},

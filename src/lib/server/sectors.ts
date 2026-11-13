@@ -3,6 +3,8 @@ import { loadWeatherLocations, attachWeatherLocation } from './weatherLocations'
 import { ascentWeatherKey } from '#lib/weatherKeys';
 import { eq, sql } from 'drizzle-orm';
 import type { CragSectorGroup } from '#lib/types/sectors';
+import { isTickCountedInAnalytics, type TickTypeSettings } from '#lib/tickSettings';
+import { getTickTypeSettings } from './appSettings';
 import { db, ensureSchema } from './db';
 import { ascents, routes } from './db/schema';
 import { buildVisitClimate, type VisitClimate } from '#lib/visitClimate';
@@ -68,8 +70,9 @@ export function listVisitClimateByCrag(): Map<string, VisitClimate> {
 }
 
 /** Group climbed routes by crag → sector tree (parentName, or ancestors when cached). */
-export function listSectors(): CragSectorGroup[] {
+export function listSectors(tickSettings?: TickTypeSettings): CragSectorGroup[] {
 	ensureSchema();
+	const settings = tickSettings ?? getTickTypeSettings();
 	const rows = db
 		.select({
 			cragName: routes.cragName,
@@ -79,12 +82,15 @@ export function listSectors(): CragSectorGroup[] {
 			pitchesJson: routes.pitchesJson,
 			flagsJson: routes.flagsJson,
 			routeId: routes.id,
+			tickType: ascents.tickType,
 			ascentCount: sql<number>`count(${ascents.id})`
 		})
 		.from(routes)
 		.innerJoin(ascents, eq(ascents.routeId, routes.id))
-		.groupBy(routes.id)
-		.all();
+		.groupBy(routes.id, ascents.tickType)
+		.all()
+		// Hidden tick types must not inflate sector sizes the /map totals exclude.
+		.filter((r) => isTickCountedInAnalytics(r.tickType, settings));
 
 	type Agg = {
 		routeIds: Set<number>;

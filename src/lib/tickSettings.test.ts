@@ -8,8 +8,11 @@ import {
 	isTickCountedInProjectsAndGoals,
 	parseTickTypeSettings,
 	presetSettings,
+	presetTickState,
+	sameTickTypeSettings,
 	serializeTickTypeSettings,
-	STANDARD_TICKS
+	STANDARD_TICKS,
+	type TickTypeSettings
 } from './tickSettings';
 
 describe('canonicalTickKey', () => {
@@ -38,9 +41,19 @@ describe('parseTickTypeSettings and serializeTickTypeSettings', () => {
 			working: 'projects_goals',
 			attempt: 'hide'
 		});
-		expect(serializeTickTypeSettings(parsed)).toBe(
-			JSON.stringify({ working: 'projects_goals', attempt: 'hide' })
+		expect(JSON.parse(serializeTickTypeSettings(parsed))).toEqual({
+			working: 'projects_goals',
+			attempt: 'hide'
+		});
+	});
+
+	it('serializes the same configuration identically regardless of key order', () => {
+		expect(serializeTickTypeSettings({ working: 'projects_goals', attempt: 'hide' })).toBe(
+			serializeTickTypeSettings({ attempt: 'hide', working: 'projects_goals' })
 		);
+		expect(sameTickTypeSettings({ working: 'hide' }, { working: 'hide' })).toBe(true);
+		expect(sameTickTypeSettings({ working: 'hide' }, { working: 'projects_goals' })).toBe(false);
+		expect(sameTickTypeSettings({}, { attempt: 'hidden' as never })).toBe(true);
 	});
 
 	it('handles empty or malformed strings gracefully', () => {
@@ -102,6 +115,31 @@ describe('presets', () => {
 		expect(detectCurrentPreset({ working: 'projects_goals' })).toBe('exclude_working');
 		expect(detectCurrentPreset(presetSettings('sends_only'))).toBe('sends_only');
 		expect(detectCurrentPreset({ working: 'hide' })).toBe('custom');
+	});
+
+	it('applying a preset replaces stored choices instead of merging under them', () => {
+		const stored: TickTypeSettings = { working: 'hide', attempt: 'hide' };
+		// Merging `presetSettings('all')` (empty) under stored choices would keep both hides.
+		const all = { ...stored, ...presetTickState('all', STANDARD_TICKS) };
+		expect(all['working']).toBe('enable');
+		expect(all['attempt']).toBe('enable');
+		expect(detectCurrentPreset(all, STANDARD_TICKS)).toBe('all');
+
+		const sendsOnly = { ...stored, ...presetTickState('sends_only', STANDARD_TICKS) };
+		expect(sendsOnly['working']).toBe('projects_goals');
+		expect(sendsOnly['onsight']).toBe('enable');
+		expect(detectCurrentPreset(sendsOnly, STANDARD_TICKS)).toBe('sends_only');
+	});
+
+	it('presetTickState covers every available tick, including provider-only names', () => {
+		const available = [
+			...STANDARD_TICKS,
+			{ key: 'second', name: 'Second', category: 'other' as const, isSend: true }
+		];
+		const state = presetTickState('sends_only', available);
+		expect(state['second']).toBe('enable');
+		expect(state['working']).toBe('projects_goals');
+		expect(Object.keys(state)).toHaveLength(available.length);
 	});
 });
 

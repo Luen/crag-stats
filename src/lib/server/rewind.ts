@@ -32,11 +32,16 @@ export type RewindYearSummary = {
 	} | null;
 };
 
-export function listRewindYears(): number[] {
+export function listRewindYears(tickSettings?: TickTypeSettings): number[] {
 	ensureSchema();
-	const rows = db.select({ ascentDate: ascents.ascentDate }).from(ascents).all();
+	const settings = tickSettings ?? getTickTypeSettings();
+	const rows = db
+		.select({ ascentDate: ascents.ascentDate, tickType: ascents.tickType })
+		.from(ascents)
+		.all();
 	const years = new Set<number>();
 	for (const r of rows) {
+		if (!isTickCountedInAnalytics(r.tickType, settings)) continue;
 		const day = validDay(r.ascentDate);
 		if (!day) continue;
 		years.add(Number(day.slice(0, 4)));

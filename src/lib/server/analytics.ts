@@ -397,9 +397,11 @@ export function getDashboardStats(
 		.map((r) => attachWeatherLocation(r, weatherLocations));
 
 	const tickSettings = opts?.tickSettings ?? getTickTypeSettings();
-	const isFiltered = Object.values(tickSettings).some((b) => b !== 'enable');
 	const analyticsRows = all.filter((r) => isTickCountedInAnalytics(r.tickType, tickSettings));
 	const activityRows = all.filter((r) => isTickCountedInProjectsAndGoals(r.tickType, tickSettings));
+	// Only claim filtered totals when rows actually dropped: configuring a tick type
+	// you have never logged must not swap theCrag's own profile figures for local ones.
+	const isFiltered = analyticsRows.length !== all.length;
 
 	const tickMap = new Map<string, number>();
 	const styleMap = new Map<string, number>();
