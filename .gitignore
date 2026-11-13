@@ -43,3 +43,4 @@ vite.config.ts.timestamp-*
 
 # Claude Code worktrees (local only)
 /.claude/worktrees/
+*.csv
