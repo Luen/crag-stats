@@ -2,6 +2,8 @@ import { calendarDay } from '#lib/calendarDay';
 import { asc, eq, sql } from 'drizzle-orm';
 import { projectPublicBetaFromJson, type ProjectPublicBeta } from '#lib/routeBeta';
 import { theCragBestLink, theCragRouteUrl } from '#lib/thecragUrls';
+import { isTickCountedInProjectsAndGoals } from '#lib/tickSettings';
+import { getTickTypeSettings } from './appSettings';
 import { db, ensureSchema } from './db';
 import { ascents, projects, routes } from './db/schema';
 import { isLikelyIndoorRoute } from './venue';
@@ -239,18 +241,21 @@ export function summarizeRouteAscents(rows: ProjectAscent[]): RouteAscentStats {
 export function refreshProjects(now: Date = new Date()) {
 	ensureSchema();
 	const overrides = getProjectOverrides();
+	const tickSettings = getTickTypeSettings();
 
 	const ascentRows = db
 		.select({
 			ascentId: ascents.id,
 			routeId: ascents.routeId,
 			ascentDate: ascents.ascentDate,
+			tickType: ascents.tickType,
 			isSend: ascents.isSend,
 			isAttempt: ascents.isAttempt,
 			numberAttempts: ascents.numberAttempts
 		})
 		.from(ascents)
-		.all();
+		.all()
+		.filter((r) => isTickCountedInProjectsAndGoals(r.tickType, tickSettings));
 
 	const routeMeta = new Map(
 		db
@@ -582,10 +587,12 @@ export function listDashboardProjects(limit = 3, now: Date = new Date()): Projec
 
 export function getProjectAttempts(routeId: number) {
 	ensureSchema();
+	const tickSettings = getTickTypeSettings();
 	return db
 		.select()
 		.from(ascents)
 		.where(eq(ascents.routeId, routeId))
 		.orderBy(asc(ascents.ascentDate))
-		.all();
+		.all()
+		.filter((r) => isTickCountedInProjectsAndGoals(r.tickType, tickSettings));
 }

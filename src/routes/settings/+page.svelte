@@ -3,6 +3,16 @@
 	import DashboardLayoutEditor from '#lib/components/DashboardLayoutEditor.svelte';
 	import { formatDateTime, formatNumber } from '#lib/dates';
 	import { BOULDER_GRADE_SYSTEMS, ROUTE_GRADE_SYSTEMS } from '#lib/grades';
+	import TickTypeIcon from '#lib/components/TickTypeIcon.svelte';
+	import {
+		groupTicksByCategory,
+		applyPresetToState,
+		detectCurrentPreset,
+		tickDisplayName,
+		unrenderedChoices,
+		type TickBehavior,
+		type TickPreset
+	} from '#lib/tickSettings';
 	import {
 		freshestSnapshot,
 		IMPORT_PROGRESS_POLL_MS,
@@ -79,6 +89,39 @@
 	}
 	const retryLabel = $derived(formatRetry(retrySeconds));
 	const weatherRetryLabel = $derived(formatRetry(weatherRetrySeconds));
+
+	let tickOverrides = $state<Record<string, TickBehavior>>({});
+	const tickState = $derived<Record<string, TickBehavior>>({
+		...data.tickSettings,
+		...tickOverrides
+	});
+	const groupedTicks = $derived(groupTicksByCategory(data.availableTicks));
+	const currentPreset = $derived(detectCurrentPreset(tickState, data.availableTicks));
+	// Stored choices for ticks without a rendered radio (no logged rows yet). They must
+	// still reach the server on save, so a preset can clear them instead of persisting.
+	const storedWithoutRadio = $derived(
+		Object.entries(tickState).filter(([key]) => !data.availableTicks.some((t) => t.key === key))
+	);
+	// The same leftovers, surfaced as a note: the matrix renders the standard tick types
+	// plus provider names that have logged rows, so a saved non-Enable choice for any
+	// other tick type is otherwise invisible while it keeps applying to future climbs (#476).
+	const leftoverChoices = $derived(unrenderedChoices(tickState, data.availableTicks));
+	const leftoverLabel = $derived(
+		leftoverChoices
+			.map(([key, behavior]) => `${tickDisplayName(key)} (${behaviorLabel(behavior)})`)
+			.join(', ')
+	);
+	function behaviorLabel(behavior: Exclude<TickBehavior, 'enable'>): string {
+		return behavior === 'projects_goals' ? 'Projects & goals only' : 'Hide';
+	}
+
+	function applyPreset(preset: TickPreset) {
+		tickOverrides = applyPresetToState(preset, data.tickSettings, data.availableTicks);
+	}
+
+	function setTick(key: string, behavior: TickBehavior) {
+		tickOverrides = { ...tickOverrides, [key]: behavior };
+	}
 
 	onMount(() => {
 		// Anchor to the server's clock so a skewed device clock cannot skip the cooldown.
@@ -220,6 +263,140 @@
 					</small>
 				</span>
 			</label>
+			<fieldset class="field tick-config">
+				<legend class="field-title">
+					<span>Counted tick types</span>
+					<small class="hint">
+						Configure which tick types count in dashboard and page totals, projects, and goals. The
+						logbook always lists every logged ascent.
+					</small>
+				</legend>
+				<div class="preset-bar" role="group" aria-label="Tick configuration presets">
+					<span class="preset-label">Presets:</span>
+					<button
+						type="button"
+						class="btn secondary sm"
+						class:active={currentPreset === 'all'}
+						aria-pressed={currentPreset === 'all'}
+						onclick={() => applyPreset('all')}
+					>
+						All logged ticks
+					</button>
+					<button
+						type="button"
+						class="btn secondary sm"
+						class:active={currentPreset === 'sends_only'}
+						aria-pressed={currentPreset === 'sends_only'}
+						onclick={() => applyPreset('sends_only')}
+					>
+						Sends only
+					</button>
+					<button
+						type="button"
+						class="btn secondary sm"
+						class:active={currentPreset === 'exclude_working'}
+						aria-pressed={currentPreset === 'exclude_working'}
+						onclick={() => applyPreset('exclude_working')}
+					>
+						Exclude Working
+					</button>
+				</div>
+				<div class="table-wrap">
+					<table class="tick-matrix">
+						<thead>
+							<tr>
+								<th scope="col">Tick type</th>
+								<th scope="col" class="center">
+									<div class="col-head">
+										<span>Enable</span>
+										<small class="col-desc">Count everywhere</small>
+									</div>
+								</th>
+								<th scope="col" class="center">
+									<div class="col-head">
+										<span>Projects &amp; goals only</span>
+										<small class="col-desc">Out of totals</small>
+									</div>
+								</th>
+								<th scope="col" class="center">
+									<div class="col-head">
+										<span>Hide</span>
+										<small class="col-desc">Exclude completely</small>
+									</div>
+								</th>
+							</tr>
+						</thead>
+						<tbody>
+							{#each groupedTicks as group (group.name)}
+								<tr class="group-header">
+									<td colspan="4">
+										<strong>{group.name}</strong>
+									</td>
+								</tr>
+								{#each group.ticks as tick (tick.key)}
+									<tr>
+										<th scope="row" class="tick-name-cell">
+											<div class="tick-info">
+												<TickTypeIcon tick={tick.name} label={false} />
+												<span class="tick-name">{tick.name}</span>
+												{#if tick.count != null && tick.count > 0}
+													<span class="tick-count">({tick.count})</span>
+												{/if}
+											</div>
+										</th>
+										<td class="center">
+											<label class="radio-cell">
+												<input
+													type="radio"
+													name={`tick_${tick.key}`}
+													value="enable"
+													checked={(tickState[tick.key] ?? 'enable') === 'enable'}
+													onchange={() => setTick(tick.key, 'enable')}
+													aria-label={`${tick.name}: Enable (count everywhere)`}
+												/>
+											</label>
+										</td>
+										<td class="center">
+											<label class="radio-cell">
+												<input
+													type="radio"
+													name={`tick_${tick.key}`}
+													value="projects_goals"
+													checked={tickState[tick.key] === 'projects_goals'}
+													onchange={() => setTick(tick.key, 'projects_goals')}
+													aria-label={`${tick.name}: Projects and goals only (out of totals)`}
+												/>
+											</label>
+										</td>
+										<td class="center">
+											<label class="radio-cell">
+												<input
+													type="radio"
+													name={`tick_${tick.key}`}
+													value="hide"
+													checked={tickState[tick.key] === 'hide'}
+													onchange={() => setTick(tick.key, 'hide')}
+													aria-label={`${tick.name}: Hide completely`}
+												/>
+											</label>
+										</td>
+									</tr>
+								{/each}
+							{/each}
+						</tbody>
+					</table>
+				</div>
+				{#if leftoverChoices.length > 0}
+					<p class="hint tick-leftovers">
+						Saved for tick types with no logged ascents — these stay live for future climbs but are
+						not listed above: <strong>{leftoverLabel}</strong>. Choose
+						<strong>All logged ticks</strong> and save to clear them.
+					</p>
+				{/if}
+			</fieldset>
+			{#each storedWithoutRadio as [key, behavior] (key)}
+				<input type="hidden" name={`tick_${key}`} value={behavior} />
+			{/each}
 			<button type="submit">Save preferences</button>
 		</form>
 	</article>
@@ -554,7 +731,7 @@
 	.prefs {
 		display: grid;
 		gap: 1rem;
-		max-width: 36rem;
+		max-width: 48rem;
 	}
 	.field {
 		display: grid;
@@ -736,5 +913,133 @@
 	.banner.hint {
 		background: var(--accent-soft);
 		color: var(--ink);
+	}
+	.tick-config {
+		border: none;
+		padding: 0;
+		margin: 0.5rem 0 0;
+	}
+	.tick-leftovers {
+		margin: 0.6rem 0 0;
+	}
+	.field-title {
+		display: grid;
+		gap: 0.3rem;
+		margin-bottom: 0.6rem;
+		padding: 0;
+	}
+	.field-title > span {
+		font-size: 0.75rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		color: var(--ink-muted);
+	}
+	.preset-bar {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: 0.5rem;
+		margin-bottom: 0.75rem;
+	}
+	.preset-label {
+		font-size: 0.8rem;
+		font-weight: 600;
+		color: var(--ink-muted);
+	}
+	.btn.sm {
+		padding: 0.3rem 0.6rem;
+		font-size: 0.8rem;
+		border-radius: 0.4rem;
+	}
+	.btn.secondary.active {
+		background: var(--accent-soft);
+		border-color: color-mix(in srgb, var(--accent) 40%, transparent);
+		color: var(--accent);
+		font-weight: 700;
+	}
+	.table-wrap {
+		overflow-x: auto;
+		border: 1px solid var(--line);
+		border-radius: 0.75rem;
+		background: var(--paper);
+	}
+	.tick-matrix {
+		width: 100%;
+		border-collapse: collapse;
+		font-size: 0.85rem;
+	}
+	.tick-matrix thead th {
+		position: sticky;
+		top: 0;
+		background: var(--surface-2);
+		color: var(--ink);
+		padding: 0.6rem 0.65rem;
+		font-size: 0.75rem;
+		font-weight: 700;
+		text-align: left;
+		border-bottom: 1px solid var(--line);
+	}
+	.tick-matrix th.center,
+	.tick-matrix td.center {
+		text-align: center;
+	}
+	.col-head {
+		display: grid;
+		gap: 0.1rem;
+		justify-items: center;
+	}
+	.col-desc {
+		font-size: 0.68rem;
+		font-weight: 500;
+		color: var(--ink-muted);
+		text-transform: none;
+		letter-spacing: normal;
+	}
+	.group-header td {
+		background: var(--surface-2);
+		padding: 0.45rem 0.75rem;
+		font-size: 0.75rem;
+		color: var(--ink-muted);
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
+		border-top: 1px solid var(--line);
+	}
+	.tick-matrix td,
+	.tick-matrix tbody th {
+		padding: 0.4rem 0.65rem;
+		border-top: 1px solid var(--line);
+		vertical-align: middle;
+		text-align: left;
+	}
+	.tick-name-cell {
+		font-weight: 600;
+	}
+	.tick-info {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+	}
+	.tick-name {
+		color: var(--ink);
+	}
+	.tick-count {
+		font-size: 0.75rem;
+		font-weight: normal;
+		color: var(--ink-muted);
+	}
+	.radio-cell {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		min-height: 2.2rem;
+		cursor: pointer;
+	}
+	.radio-cell input[type='radio'] {
+		width: 1.1rem;
+		height: 1.1rem;
+		cursor: pointer;
+		accent-color: var(--accent);
+		margin: 0;
 	}
 </style>

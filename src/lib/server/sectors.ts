@@ -3,6 +3,12 @@ import { loadWeatherLocations, attachWeatherLocation } from './weatherLocations'
 import { ascentWeatherKey } from '#lib/weatherKeys';
 import { eq, sql } from 'drizzle-orm';
 import type { CragSectorGroup } from '#lib/types/sectors';
+import {
+	isTickCountedInAnalytics,
+	isTickCountedInProjectsAndGoals,
+	type TickTypeSettings
+} from '#lib/tickSettings';
+import { getTickTypeSettings } from './appSettings';
 import { db, ensureSchema } from './db';
 import { ascents, routes } from './db/schema';
 import { buildVisitClimate, type VisitClimate } from '#lib/visitClimate';
@@ -26,9 +32,12 @@ export type { CragSectorGroup, SectorNode } from '#lib/types/sectors';
 /**
  * Cached weather on the distinct days (per rounded location) you climbed at each crag.
  * Empty map when the weather cache is empty or a crag has fewer than 5 such days (#278).
+ * Visit days follow the session surfaces: ticks kept for projects and goals still count
+ * as a visit, completely hidden tick types never do.
  */
-export function listVisitClimateByCrag(): Map<string, VisitClimate> {
+export function listVisitClimateByCrag(tickSettings?: TickTypeSettings): Map<string, VisitClimate> {
 	ensureSchema();
+	const settings = tickSettings ?? getTickTypeSettings();
 	const weatherByKey = loadWeatherSnapshotMap();
 	const out = new Map<string, VisitClimate>();
 	if (weatherByKey.size === 0) return out;
@@ -36,6 +45,7 @@ export function listVisitClimateByCrag(): Map<string, VisitClimate> {
 	const rows = db
 		.select({
 			ascentDate: ascents.ascentDate,
+			tickType: ascents.tickType,
 			routeId: ascents.routeId,
 			lat: routes.lat,
 			lon: routes.lon,
@@ -47,6 +57,7 @@ export function listVisitClimateByCrag(): Map<string, VisitClimate> {
 		.from(ascents)
 		.innerJoin(routes, eq(ascents.routeId, routes.id))
 		.all()
+		.filter((r) => isTickCountedInProjectsAndGoals(r.tickType, settings))
 		.map((r) => attachWeatherLocation(r, locations));
 	const byCrag = new Map<string, Map<string, WeatherSnapshot>>();
 	for (const r of rows) {
@@ -68,8 +79,9 @@ export function listVisitClimateByCrag(): Map<string, VisitClimate> {
 }
 
 /** Group climbed routes by crag → sector tree (parentName, or ancestors when cached). */
-export function listSectors(): CragSectorGroup[] {
+export function listSectors(tickSettings?: TickTypeSettings): CragSectorGroup[] {
 	ensureSchema();
+	const settings = tickSettings ?? getTickTypeSettings();
 	const rows = db
 		.select({
 			cragName: routes.cragName,
@@ -79,12 +91,15 @@ export function listSectors(): CragSectorGroup[] {
 			pitchesJson: routes.pitchesJson,
 			flagsJson: routes.flagsJson,
 			routeId: routes.id,
+			tickType: ascents.tickType,
 			ascentCount: sql<number>`count(${ascents.id})`
 		})
 		.from(routes)
 		.innerJoin(ascents, eq(ascents.routeId, routes.id))
-		.groupBy(routes.id)
-		.all();
+		.groupBy(routes.id, ascents.tickType)
+		.all()
+		// Hidden tick types must not inflate sector sizes the /map totals exclude.
+		.filter((r) => isTickCountedInAnalytics(r.tickType, settings));
 
 	type Agg = {
 		routeIds: Set<number>;
@@ -124,7 +139,7 @@ export function listSectors(): CragSectorGroup[] {
 		});
 	}
 
-	const climateByCrag = listVisitClimateByCrag();
+	const climateByCrag = listVisitClimateByCrag(settings);
 	return [...byCrag.entries()]
 		.map(([cragName, agg]) => {
 			const sectors = [...agg.sectors.values()]

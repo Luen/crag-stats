@@ -8,13 +8,17 @@ import {
 } from '#lib/dashboardLayout';
 import { wipeAllData } from '#lib/server/analytics';
 import { parseBoulderGradeSystem, parseRouteGradeSystem } from '#lib/grades';
+import { sameTickTypeSettings, type TickTypeSettings } from '#lib/tickSettings';
 import {
 	deleteAppSetting,
 	getAppSetting,
 	getDisplayGradeSystems,
 	getSearchIndexing,
 	getShowNotes,
-	setAppSetting
+	getTickTypeSettings,
+	listAvailableTickTypes,
+	setAppSetting,
+	setTickTypeSettings
 } from '#lib/server/appSettings';
 import { hasTheCragApiKey, getTheCragSyncConfiguration } from '#lib/server/env';
 import { beginFirstImport, completeFirstImport } from '#lib/server/firstImport';
@@ -46,6 +50,8 @@ export const load: PageServerLoad = async ({ cookies }) => {
 		gradeSystems: getDisplayGradeSystems(),
 		searchIndexing: getSearchIndexing(),
 		showNotes: getShowNotes(),
+		tickSettings: getTickTypeSettings(),
+		availableTicks: listAvailableTickTypes(),
 		dashLayout: resolveDashLayout(
 			getAppSetting('dashboard_layout'),
 			cookies.get(DASH_LAYOUT_COOKIE)
@@ -72,7 +78,8 @@ export const actions: Actions = {
 		cookies.delete(DASH_LAYOUT_COOKIE, { path: '/' });
 		return { ok: true, layoutSaved: true };
 	},
-	savePreferences: async ({ request }) => {
+	savePreferences: async ({ request, locals }) => {
+		if (!locals.authed) return fail(403);
 		const form = await request.formData();
 		// Split keys; the legacy `grade_system` row stays as the fallback for older builds.
 		const current = getDisplayGradeSystems();
@@ -89,6 +96,28 @@ export const actions: Actions = {
 			setAppSetting('search_indexing', form.get('indexing') === 'on' ? 'on' : 'off');
 		}
 		setAppSetting('show_notes', form.get('notes') === 'on' ? 'on' : 'off');
+
+		// Start from the stored choices so ticks that are not currently rendered
+		// (no logged rows yet, or a provider tick name not in the standard list)
+		// keep their behaviour instead of silently reverting to "enable".
+		const previousTicks = getTickTypeSettings();
+		const tickSettings: TickTypeSettings = { ...previousTicks };
+		for (const [key, val] of form.entries()) {
+			if (!key.startsWith('tick_')) continue;
+			const tickKey = key.slice('tick_'.length);
+			const behavior = String(val);
+			if (behavior === 'projects_goals' || behavior === 'hide') {
+				tickSettings[tickKey] = behavior;
+			} else {
+				delete tickSettings[tickKey];
+			}
+		}
+		if (!sameTickTypeSettings(previousTicks, tickSettings)) {
+			setTickTypeSettings(tickSettings);
+			// Projects cache their decision; goal progress is recomputed by `listGoals()`.
+			refreshProjects();
+		}
+
 		return { ok: true, saved: true };
 	},
 	sync: async ({ locals }) => {
@@ -115,7 +144,8 @@ export const actions: Actions = {
 			});
 		}
 	},
-	importCsv: async ({ request }) => {
+	importCsv: async ({ request, locals }) => {
+		if (!locals.authed) return fail(403);
 		const form = await request.formData();
 		const file = form.get('file');
 		if (!(file instanceof File)) {
@@ -139,7 +169,8 @@ export const actions: Actions = {
 			});
 		}
 	},
-	wipe: async ({ request }) => {
+	wipe: async ({ request, locals }) => {
+		if (!locals.authed) return fail(403);
 		const form = await request.formData();
 		if (form.get('confirm') !== 'DELETE') {
 			return fail(400, { ok: false, message: 'Type DELETE to confirm' });

@@ -1,7 +1,8 @@
 import { calendarDay as validDay } from '#lib/calendarDay';
 import { formatGradeLabel, usesVScale } from '#lib/grades';
 import { parseGoalGradeScale, parseScaledGoalGrade, type GoalGradeScale } from '#lib/goalGrades';
-import { getDisplayGradeSystems } from './appSettings';
+import { isTickCountedInProjectsAndGoals } from '#lib/tickSettings';
+import { getDisplayGradeSystems, getTickTypeSettings } from './appSettings';
 import { desc, eq } from 'drizzle-orm';
 import { db, ensureSchema } from './db';
 import { ascents, goals, routes, type Goal } from './db/schema';
@@ -42,6 +43,7 @@ function asVenue(g: Goal): VenueScope {
 type AscentRouteRow = {
 	routeId: number | null;
 	ascentDate: string | null;
+	tickType: string | null;
 	heightM: number | null;
 	isSend: boolean;
 	isAttempt: boolean;
@@ -54,10 +56,12 @@ type AscentRouteRow = {
 };
 
 function loadAscentRouteRows(): AscentRouteRow[] {
+	const tickSettings = getTickTypeSettings();
 	return db
 		.select({
 			routeId: ascents.routeId,
 			ascentDate: ascents.ascentDate,
+			tickType: ascents.tickType,
 			heightM: ascents.heightM,
 			isSend: ascents.isSend,
 			isAttempt: ascents.isAttempt,
@@ -70,7 +74,8 @@ function loadAscentRouteRows(): AscentRouteRow[] {
 		})
 		.from(ascents)
 		.innerJoin(routes, eq(ascents.routeId, routes.id))
-		.all();
+		.all()
+		.filter((r) => isTickCountedInProjectsAndGoals(r.tickType, tickSettings));
 }
 
 /** Qualifying year+venue evidence for a grade goal: sends for pyramid, non-sends near N. */

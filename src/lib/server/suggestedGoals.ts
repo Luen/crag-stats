@@ -7,7 +7,8 @@ import {
 	type SuggestedGoalAscent,
 	type SuggestedGradeGoal
 } from '#lib/suggestedGoals';
-import { getDisplayGradeSystems } from './appSettings';
+import { getDisplayGradeSystems, getTickTypeSettings } from './appSettings';
+import { isTickCountedInProjectsAndGoals } from '#lib/tickSettings';
 import { db, ensureSchema } from './db';
 import { ascents, routes } from './db/schema';
 import { listGoals } from './goals';
@@ -16,9 +17,11 @@ export type { SuggestedGradeGoal } from '#lib/suggestedGoals';
 export { buildSuggestedOutdoorGradeGoals, nextGradeStep } from '#lib/suggestedGoals';
 
 function loadSuggestedAscentRows(): SuggestedGoalAscent[] {
+	const tickSettings = getTickTypeSettings();
 	return db
 		.select({
 			ascentDate: ascents.ascentDate,
+			tickType: ascents.tickType,
 			isSend: ascents.isSend,
 			effectiveGradeScore: ascents.effectiveGradeScore,
 			gradeSystem: routes.gradeSystem,
@@ -29,7 +32,8 @@ function loadSuggestedAscentRows(): SuggestedGoalAscent[] {
 		})
 		.from(ascents)
 		.innerJoin(routes, eq(ascents.routeId, routes.id))
-		.all();
+		.all()
+		.filter((r) => isTickCountedInProjectsAndGoals(r.tickType, tickSettings));
 }
 
 /** Live suggestions for the Goals page. */
