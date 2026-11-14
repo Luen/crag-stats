@@ -5,10 +5,11 @@ import { sql } from 'drizzle-orm';
 import { db, ensureSchema } from '#lib/server/db';
 import { ascents } from '#lib/server/db/schema';
 import { countActiveProjects } from '#lib/server/projects';
-import { getDateFormat, getDisplayUnits, getSearchIndexing } from '#lib/server/appSettings';
+import { getAppSetting, getDateFormat, getDisplayUnits, getSearchIndexing } from '#lib/server/appSettings';
 import { isAuthEnabled, authScope } from '#lib/server/auth';
 import { resolveDateDisplay } from '#lib/dates';
 import { DEFAULT_DISPLAY_UNITS } from '#lib/units';
+import { DEFAULT_LOCALE, matchSupportedLocale, resolveLocale } from '#lib/i18n';
 import { env } from '#lib/server/env';
 import { isNoindexPath } from '#lib/server/seo';
 import type { LayoutServerLoad } from './$types';
@@ -40,7 +41,7 @@ function navCounts(): { ascents: number; projects: number } {
 	}
 }
 
-export const load: LayoutServerLoad = async ({ locals, url, cookies }) => {
+export const load: LayoutServerLoad = async ({ locals, url, cookies, request }) => {
 	if (url.pathname === '/offline')
 		return {
 			appVersion: readAppVersion(),
@@ -53,8 +54,28 @@ export const load: LayoutServerLoad = async ({ locals, url, cookies }) => {
 			navCounts: null,
 			dateDisplay: resolveDateDisplay('en-AU', 'UTC'),
 			displayUnits: DEFAULT_DISPLAY_UNITS,
+			locale: DEFAULT_LOCALE,
 			noindex: true
 		};
+
+	const queryLocale = matchSupportedLocale(url.searchParams.get('locale'));
+	if (queryLocale) {
+		cookies.set('cs_locale', queryLocale, {
+			path: '/',
+			maxAge: 31536000,
+			sameSite: 'lax',
+			httpOnly: false
+		});
+	}
+
+	const resolvedLocale = resolveLocale({
+		query: queryLocale,
+		cookie: cookies.get('cs_locale'),
+		stored: getAppSetting('locale'),
+		displayLocale: env('DISPLAY_LOCALE'),
+		acceptLanguage: request.headers.get('accept-language')
+	});
+
 	const authOn = isAuthEnabled();
 	const scope = authScope();
 	const showSettings = !authOn || locals.authed;
@@ -71,6 +92,7 @@ export const load: LayoutServerLoad = async ({ locals, url, cookies }) => {
 		navCounts: gated ? null : navCounts(),
 		dateDisplay: resolveDateDisplay(env('DISPLAY_LOCALE'), env('TZ'), getDateFormat()),
 		displayUnits: getDisplayUnits(),
+		locale: resolvedLocale,
 		noindex: isNoindexPath(url.pathname) || !getSearchIndexing().allowed
 	};
 };

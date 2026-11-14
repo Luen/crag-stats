@@ -241,6 +241,21 @@
 		<h2>Display & visibility</h2>
 		<form method="POST" action="?/savePreferences" class="prefs">
 			<label class="field">
+				<span>Language</span>
+				<select name="locale">
+					<option value="" selected={!data.siteLocale}>Auto (Browser language)</option>
+					{#each data.supportedLocales as loc (loc)}
+						<option value={loc} selected={data.siteLocale === loc}>
+							{data.localeMetadata[loc].nativeName} ({data.localeMetadata[loc].name})
+						</option>
+					{/each}
+				</select>
+				<small class="hint">
+					Default interface language. Set to Auto to match each visitor's browser language. Visitors
+					can also change their preferred language via the header.
+				</small>
+			</label>
+			<label class="field">
 				<span>Route grades</span>
 				<select name="routeSystem">
 					{#each ROUTE_GRADE_SYSTEMS as opt (opt.id)}

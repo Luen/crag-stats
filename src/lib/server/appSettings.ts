@@ -19,6 +19,7 @@ import {
 	type WindUnit,
 	type PrecipitationUnit
 } from '#lib/units';
+import { DEFAULT_LOCALE, isSupportedLocale, type SupportedLocale } from '#lib/i18n';
 import { authScope, isAuthEnabled } from './auth';
 import { db, ensureSchema } from './db';
 import { appSettings, ascents } from './db/schema';
@@ -38,6 +39,7 @@ export type AppSettingKey =
 	| 'dashboard_layout'
 	| 'show_notes'
 	| 'offline_revision'
+	| 'locale'
 	| 'counted_tick_types'
 	| 'date_format'
 	| 'unit_height'
@@ -131,6 +133,11 @@ export function getWindUnit(): WindUnit {
 
 export function getPrecipitationUnit(): PrecipitationUnit {
 	return getDisplayUnits().precipitation;
+}
+
+export function getAppLocale(): SupportedLocale {
+	const stored = getAppSetting('locale');
+	return stored && isSupportedLocale(stored) ? stored : DEFAULT_LOCALE;
 }
 
 export function getTickTypeSettings(): TickTypeSettings {

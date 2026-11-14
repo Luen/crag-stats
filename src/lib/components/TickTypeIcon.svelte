@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
 	import { tickKind } from '#lib/ticks';
 
 	type Props = {
@@ -9,9 +10,30 @@
 	};
 
 	let { tick, label = true, size = 16 }: Props = $props();
+	const i18n = useI18n();
+
+	const TICK_KEYS: Record<string, string> = {
+		onsight: 'ticks.onsight',
+		flash: 'ticks.flash',
+		'red point': 'ticks.redpoint',
+		redpoint: 'ticks.redpoint',
+		'pink point': 'ticks.pinkpoint',
+		pinkpoint: 'ticks.pinkpoint',
+		clean: 'ticks.clean',
+		tick: 'ticks.tick',
+		send: 'ticks.send',
+		'top rope': 'ticks.toprope',
+		toprope: 'ticks.toprope',
+		repeat: 'ticks.repeat',
+		other: 'ticks.other'
+	};
 
 	const kind = $derived(tickKind(tick));
-	const text = $derived((tick || '').trim() || 'Other');
+	const rawText = $derived((tick || '').trim() || 'Other');
+	const text = $derived.by(() => {
+		const key = TICK_KEYS[rawText.toLowerCase()];
+		return key ? i18n.t(key) : rawText;
+	});
 </script>
 
 <span class="tick" title={text}>
