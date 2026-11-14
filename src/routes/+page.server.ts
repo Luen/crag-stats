@@ -1,5 +1,6 @@
 import { DASH_LAYOUT_COOKIE, resolveDashLayout } from '#lib/dashboardLayout';
 import { applyDisplaySystemOverrides, formatClimbGrade } from '#lib/grades';
+import { applyDisplayUnitOverrides } from '#lib/units';
 import { getDashboardStats, parsePyramidMode } from '#lib/server/analytics';
 import { getAppSetting, getDisplayGradeSystems } from '#lib/server/appSettings';
 import { listActiveGoals } from '#lib/server/goals';
@@ -15,8 +16,9 @@ export const load: PageServerLoad = async ({ cookies, url, parent }) => {
 	const gradeSystems = applyDisplaySystemOverrides(getDisplayGradeSystems(), url.searchParams);
 	const pyramidMode = parsePyramidMode(url.searchParams.get('pyramid'));
 
-	const { dateDisplay } = await parent();
-	const stats = getDashboardStats(gradeSystems, { pyramidMode, dateDisplay });
+	const { dateDisplay, displayUnits } = await parent();
+	const units = applyDisplayUnitOverrides(displayUnits, url.searchParams);
+	const stats = getDashboardStats(gradeSystems, { pyramidMode, dateDisplay, displayUnits: units });
 	const projects = listDashboardProjects(3);
 	const progressRows = projects.length ? loadProjectProgressRows() : [];
 	const today = new Date().toISOString().slice(0, 10);
@@ -39,6 +41,7 @@ export const load: PageServerLoad = async ({ cookies, url, parent }) => {
 		},
 		sync: getSyncStatus(),
 		gradeSystems,
+		displayUnits: units,
 		pyramidMode,
 		activeGoals: listActiveGoals(3),
 		dashboardProjects,

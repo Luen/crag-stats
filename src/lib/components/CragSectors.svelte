@@ -1,10 +1,19 @@
 <script lang="ts">
 	import SectorTreeList from '#lib/components/SectorTreeList.svelte';
 	import { formatNumber } from '#lib/dates';
+	import { DEFAULT_DISPLAY_UNITS, formatTemperature, type DisplayUnits } from '#lib/units';
 	import type { CragSectorGroup } from '#lib/types/sectors';
 	import type { DateDisplay } from '#lib/dates';
 
-	let { crags, dateDisplay }: { crags: CragSectorGroup[]; dateDisplay: DateDisplay } = $props();
+	let {
+		crags,
+		dateDisplay,
+		displayUnits = DEFAULT_DISPLAY_UNITS
+	}: {
+		crags: CragSectorGroup[];
+		dateDisplay: DateDisplay;
+		displayUnits?: DisplayUnits;
+	} = $props();
 
 	let open = $state<Record<string, boolean>>({});
 
@@ -44,10 +53,13 @@
 						{@const c = crag.visitClimate}
 						<p class="climate">
 							<strong>On your {formatNumber(c.days, dateDisplay)} cached visit days:</strong>
-							{#if c.avgHighC != null}average high {formatNumber(
+							{#if c.avgHighC != null}average high {formatTemperature(
 									c.avgHighC,
-									dateDisplay
-								)}°C{/if}{#if c.avgLowC != null}, low {formatNumber(c.avgLowC, dateDisplay)}°C{/if}
+									displayUnits.temperature
+								)}{/if}{#if c.avgLowC != null}, low {formatTemperature(
+									c.avgLowC,
+									displayUnits.temperature
+								)}{/if}
 							· rain {formatNumber(c.rainPct, dateDisplay)}%{#if c.snowPct > 0}
 								· snow {formatNumber(c.snowPct, dateDisplay)}%{/if}{#if c.freezePct > 0}
 								· freezing {formatNumber(c.freezePct, dateDisplay)}%{/if}{#if c.heatPct > 0}

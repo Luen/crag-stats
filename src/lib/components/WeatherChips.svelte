@@ -1,17 +1,39 @@
 <script lang="ts">
 	import { DEFAULT_DATE_DISPLAY, formatNumber, type DateDisplay } from '#lib/dates';
 	import type { WeatherChip, WeatherLocation } from '#lib/weatherKeys';
+	import {
+		DEFAULT_DISPLAY_UNITS,
+		formatPrecipitation,
+		formatTemperature,
+		formatWind,
+		type DisplayUnits
+	} from '#lib/units';
 
 	type Props = {
 		location?: WeatherLocation | null;
 		chips?: WeatherChip[] | null;
 		dateDisplay?: DateDisplay;
+		displayUnits?: DisplayUnits;
 	};
-	let { location = null, chips = [], dateDisplay = DEFAULT_DATE_DISPLAY }: Props = $props();
+	let {
+		location = null,
+		chips = [],
+		dateDisplay = DEFAULT_DATE_DISPLAY,
+		displayUnits = DEFAULT_DISPLAY_UNITS
+	}: Props = $props();
 
 	function label(chip: WeatherChip): string {
 		if (chip.value == null || chip.unit == null) return chip.name;
-		const sep = chip.unit === '°C' ? '' : ' ';
+		if (chip.unit === '°C') {
+			return `${chip.name} ${formatTemperature(chip.value, displayUnits.temperature)}`;
+		}
+		if (chip.unit === 'km/h') {
+			return `${chip.name} ${formatWind(chip.value, displayUnits.wind)}`;
+		}
+		if (chip.unit === 'mm') {
+			return `${chip.name} ${formatPrecipitation(chip.value, displayUnits.precipitation)}`;
+		}
+		const sep = ' ';
 		return `${chip.name} ${formatNumber(chip.value, dateDisplay)}${sep}${chip.unit}`;
 	}
 </script>

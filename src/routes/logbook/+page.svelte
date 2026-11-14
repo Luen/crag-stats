@@ -8,7 +8,8 @@
 	import StyleBadge from '#lib/components/StyleBadge.svelte';
 	import TagChips from '#lib/components/TagChips.svelte';
 	import TickTypeIcon from '#lib/components/TickTypeIcon.svelte';
-	import { formatNumber } from '#lib/dates';
+	import { formatCalendarDate } from '#lib/dates';
+	import { formatPrecipitation, formatTemperature } from '#lib/units';
 	import WeatherChips from '#lib/components/WeatherChips.svelte';
 	import {
 		includeSelectedOptions,
@@ -158,9 +159,15 @@
 			· {WEATHER_LABELS[data.weather]} days
 		{/if}
 		{#if data.weatherHighMin !== ''}
-			· daily high ≥{formatNumber(data.weatherHighMin, data.dateDisplay)}°C{/if}
+			· daily high ≥{formatTemperature(
+				Number(data.weatherHighMin),
+				data.displayUnits.temperature
+			)}{/if}
 		{#if data.weatherHighMax !== ''}
-			· daily high &lt;{formatNumber(data.weatherHighMax, data.dateDisplay)}°C{/if}
+			· daily high &lt;{formatTemperature(
+				Number(data.weatherHighMax),
+				data.displayUnits.temperature
+			)}{/if}
 		{#if data.weatherHighMin !== '' || data.weatherHighMax !== ''}<a href={clearWeatherRangeHref()}
 				>Clear weather range</a
 			>{/if}
@@ -331,14 +338,28 @@
 		{#if data.weatherAvailable || data.weather}
 			<select name="weather" aria-label="Weather on the day" value={data.weather}>
 				<option value="">Any weather</option>
-				<option value="fair">Fair day (15–25°C, dry)</option>
+				<option value="fair"
+					>Fair day ({data.displayUnits.temperature === 'fahrenheit' ? '59–77°F' : '15–25°C'}, dry)</option
+				>
 				<option value="perfect">Perfect day (fair, calm, not humid)</option>
-				<option value="heat">Hot day (35°C+)</option>
-				<option value="freeze">Freezing (low 0°C or below)</option>
+				<option value="heat"
+					>Hot day ({data.displayUnits.temperature === 'fahrenheit' ? '95°F+' : '35°C+'})</option
+				>
+				<option value="freeze"
+					>Freezing ({data.displayUnits.temperature === 'fahrenheit'
+						? 'low 32°F or below'
+						: 'low 0°C or below'})</option
+				>
 				<option value="rain">Rainy day</option>
 				<option value="snow">Snowy day</option>
-				<option value="wind">Windy day (50 km/h+)</option>
-				<option value="calm">Calm / still day (under 25 km/h)</option>
+				<option value="wind"
+					>Windy day ({data.displayUnits.wind === 'mph' ? '31 mph+' : '50 km/h+'})</option
+				>
+				<option value="calm"
+					>Calm / still day ({data.displayUnits.wind === 'mph'
+						? 'under 16 mph'
+						: 'under 25 km/h'})</option
+				>
 			</select>
 		{/if}
 		<select name="partners" aria-label="Partners" value={data.partners}>
@@ -572,7 +593,7 @@
 		<tbody>
 			{#each data.rows as row (row.id)}
 				<tr>
-					<td class="date desktop-cell">{(row.ascentDate || '').slice(0, 10)}</td>
+					<td class="date desktop-cell">{formatCalendarDate(row.ascentDate, data.dateDisplay)}</td>
 					<td class="route">
 						<div class="card-head">
 							<div class="route-name">
@@ -600,7 +621,7 @@
 							</div>
 						</div>
 						<div class="mobile-sub">
-							<span>{(row.ascentDate || '').slice(0, 10)}</span>
+							<span>{formatCalendarDate(row.ascentDate, data.dateDisplay)}</span>
 							·&nbsp;<TickTypeIcon tick={row.tickType} />
 							{#if row.cragName}
 								·&nbsp;<a
@@ -650,6 +671,7 @@
 								location={row.weatherLocation}
 								chips={row.weatherChips}
 								dateDisplay={data.dateDisplay}
+								displayUnits={data.displayUnits}
 							/>
 						</span>
 						{#if row.comment}
@@ -712,20 +734,27 @@
 								<span
 									>High {row.weather.tempMaxC == null
 										? '—'
-										: `${formatNumber(row.weather.tempMaxC, data.dateDisplay)}°C`}</span
+										: formatTemperature(row.weather.tempMaxC, data.displayUnits.temperature)}</span
 								>
 								<span
 									>Low {row.weather.tempMinC == null
 										? '—'
-										: `${formatNumber(row.weather.tempMinC, data.dateDisplay)}°C`}</span
+										: formatTemperature(row.weather.tempMinC, data.displayUnits.temperature)}</span
 								>
 								<span
 									>Rain {row.weather.precipMm == null
 										? '—'
-										: `${formatNumber(row.weather.precipMm, data.dateDisplay)} mm`}</span
+										: formatPrecipitation(
+												row.weather.precipMm,
+												data.displayUnits.precipitation
+											)}</span
 								>
 							</div>
-							<WeatherChips chips={row.weatherChips} dateDisplay={data.dateDisplay} />
+							<WeatherChips
+								chips={row.weatherChips}
+								dateDisplay={data.dateDisplay}
+								displayUnits={data.displayUnits}
+							/>
 						{:else}—{/if}
 					</td>
 					<td class="nowrap desktop-cell"

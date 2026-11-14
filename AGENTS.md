@@ -20,6 +20,9 @@ Self-hosted climbing analytics for [theCrag](https://www.thecrag.com/), inspired
    - Open redirects are blocked via `safeRedirectPath`; passwords compared via HMAC digests (timing-safe).
 3. **Provider-shaped.** Core types live under `src/lib/server/providers/`. theCrag is first; Mountain Project later. Keep canonical ascent/route shapes provider-agnostic.
 4. **Grade honesty.** Never mix grading systems in one pyramid row list. Split by climb style and/or convert into the user’s preferred system.
+5. **Language & copywriting.**
+   - **Australian English (en-AU):** Default source language is Australian English across the codebase, UI copy, docs, comments, and commit messages (Crowdin will translate it into target languages; do not maintain a separate `en-US` catalog).
+   - **Oxford comma:** Always use the Oxford comma in every list of three or more items, in UI copy, docs, comments, and commit/PR text: "hot, freezing, wet, or windy", not "hot, freezing, wet or windy".
 
 ---
 
@@ -106,6 +109,7 @@ Height quirk: theCrag may return height as `[value, unit]` arrays — parse in t
 - Canonical numeric scores lean on **Ewbank** for routes and **V-scale** for boulder; convert for display via `src/lib/grades`.
 - Band palette (Beginner → Elite) matches theCrag article colours — see `bands.ts`. Boulder: VB± green, **V0± yellow** (Intermediate), V1–V4 orange, V5–V10 red, V11+ purple (`bandFromVScale`).
 - Display systems (#447): two site-wide settings, `app_settings.route_grade_system` (ewbank/french/yds, default Ewbank) and `boulder_grade_system` (v_scale/font, default V-scale), read via `getDisplayGradeSystems()` as a `DisplayGradeSystems` pair. Each falls back to the legacy `grade_system` row (`displaySystemsFromLegacy`: a route value keeps V boulders, `font`/`v_scale` keep Ewbank routes); never delete that row. Pass the pair to `formatGradeLabel`. `?system=` (route or boulder value) and `?boulderSystem=` are one-off overrides via `applyDisplaySystemOverrides`; the old `cs_grade_system` cookie is no longer read.
+- Granular display units & date formatting (#469): site-wide settings in `app_settings` for `date_format` (`auto`/`dd/mm/yyyy`/`mm/dd/yyyy`/`yyyy-mm-dd`) and units: `unit_height` (`m`/`ft`), `unit_distance` (`km`/`mi`), `unit_temperature` (`celsius`/`fahrenheit`), `unit_wind` (`kmh`/`mph`), and `unit_precipitation` (`mm`/`in`). Read via `getDateFormat()` and `getDisplayUnits()`. All canonical metrics in SQLite remain SI/metric (meters, km, °C, km/h, and mm); conversion happens strictly in presentation. Presets (`metric`, `imperial`, and `uk`) provide quick one-click selections in Settings.
 - **Style pyramids** group by Sport / Trad / Boulder / Top rope / … with stacked tick segments. Do not dump mixed VB + `7a` + `19` in one unordered list. Pyramid grade chips/bars link to `/logbook?style=&score=` (integer score buckets).
 - **Scale comes from the grade system, not gear style (#72).** Decide "is this score V-scale?" with `usesVScale(route.gradeSystem, gearStyle)` (`src/lib/grades/bands.ts`). V-graded DWS/highballs are V-scale; gear style is only the fallback when the system is `unknown`. Pyramids key such styles as `"<Style> · V"`. Never test `gearStyle` for `boulder` to pick a scale.
 - **Grade-system fit:** reject boulder CPR/V-scale on sport/trad (caused Trad `−1` / VB rows). On boulder, bare numbers without grade-system context (e.g. Upendi `5`) map to **V5**; explicit AU/Ewbank context converts through Ewbank to V-scale. Font `5A` must not steal French `5a` on routes.
@@ -175,6 +179,7 @@ Components: `TickTypeIcon.svelte`, `StyleBadge.svelte`. Keep icons SVG-inline so
 - **When you change an analytic (climber type, CPR, training load, grades), update its doc page in the same PR.** Dashboard cards link to their page ("How it works").
 - Paraphrase theCrag articles and link the source; don't paste their text.
 - **User guides describe current behaviour only.** Keep upgrade steps, migration notes, removed-feature fallbacks, and env vars to delete out of `docs/guide/` (and README/DEPLOY). Put them in the PR's `## Release notes` section, which feeds the GitHub release, and in `docs/dev/*` or AGENTS.md when agents need them.
+- **Use Australian English** for all primary documentation, comments, and UI copy (Crowdin will translate it into target languages).
 - **Use the Oxford comma** in every list of three or more, in UI copy, docs, comments, and commit/PR text: "hot, freezing, wet, or windy", not "hot, freezing, wet or windy".
 
 ## Docker / release

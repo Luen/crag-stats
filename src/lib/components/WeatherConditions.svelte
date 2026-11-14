@@ -7,13 +7,25 @@
 	} from '#lib/dates';
 	import {
 		histogramBinHref,
+		histogramBinLabel,
 		type WeatherConditionsView,
 		type WeatherExtreme
 	} from '#lib/weatherStats';
+	import { DEFAULT_DISPLAY_UNITS, formatTemperature, type DisplayUnits } from '#lib/units';
 	import BarList from './BarList.svelte';
 
-	type Props = { data: WeatherConditionsView; dateDisplay?: DateDisplay; compact?: boolean };
-	let { data, dateDisplay = DEFAULT_DATE_DISPLAY, compact = true }: Props = $props();
+	type Props = {
+		data: WeatherConditionsView;
+		dateDisplay?: DateDisplay;
+		displayUnits?: DisplayUnits;
+		compact?: boolean;
+	};
+	let {
+		data,
+		dateDisplay = DEFAULT_DATE_DISPLAY,
+		displayUnits = DEFAULT_DISPLAY_UNITS,
+		compact = true
+	}: Props = $props();
 
 	const SHARE_COLORS: Record<string, string> = {
 		perfect: 'var(--accent-2)',
@@ -33,7 +45,7 @@
 		data.histogram.map((b, index) => ({
 			href: histogramBinHref(index),
 			id: b.id,
-			label: b.label,
+			label: histogramBinLabel(index, displayUnits.temperature),
 			value: b.days,
 			color: 'var(--accent-2)'
 		}))
@@ -44,7 +56,7 @@
 	<div class="extreme">
 		<span class="k">{title}</span>
 		{#if e}
-			<strong>{formatNumber(Math.round(e.tempC), dateDisplay)}°C</strong>
+			<strong>{formatTemperature(e.tempC, displayUnits.temperature)}</strong>
 			<span class="meta">
 				{#if e.href}
 					<a href={e.href} target="_blank" rel="noreferrer">{e.routeName ?? 'Ascent'}</a>
@@ -91,8 +103,8 @@
 					f.days,
 					dateDisplay
 				)}
-				days were fair (15–25°C and dry); {formatNumber(f.toughPct, dateDisplay)}% were hot,
-				freezing, wet, or windy.
+				days were fair ({displayUnits.temperature === 'fahrenheit' ? '59–77°F' : '15–25°C'} and dry);
+				{formatNumber(f.toughPct, dateDisplay)}% were hot, freezing, wet, or windy.
 				<a href="/logbook?weather=fair">Fair days in the logbook</a>
 			</span>
 		</div>
@@ -125,7 +137,7 @@
 			{/each}
 		</ul>
 
-		<h3>Daily high (°C)</h3>
+		<h3>Daily high ({displayUnits.temperature === 'fahrenheit' ? '°F' : '°C'})</h3>
 		<BarList items={histogram} maxBars={histogram.length} wholeRowLinks />
 		<p class="hint">
 			Days per bin · open-meteo.com daily maximum at your crag's cached location (not official

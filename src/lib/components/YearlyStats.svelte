@@ -7,6 +7,12 @@
 		type CardPreferences
 	} from '#lib/cardPreferences';
 	import type { HeatmapDay } from '#lib/types/dashboard';
+	import {
+		convertHeight,
+		DEFAULT_DISPLAY_UNITS,
+		formatHeight,
+		type DisplayUnits
+	} from '#lib/units';
 	import { yearLineFractions } from '#lib/yearlyStatsLines';
 
 	type YearRow = {
@@ -27,12 +33,14 @@
 		days?: HeatmapDay[];
 		/** Dashboard links to `/activity` when that route exists; omit/null to skip. */
 		titleHref?: string | null;
+		displayUnits?: DisplayUnits;
 	};
 	let {
 		preferences = EMPTY_CARD_PREFERENCES,
 		years,
 		days = [],
-		titleHref = null
+		titleHref = null,
+		displayUnits = DEFAULT_DISPLAY_UNITS
 	}: Props = $props();
 
 	type Metric = 'ascents' | 'sends' | 'heightM';
@@ -107,8 +115,10 @@
 	/** Y-scale for thin within-year lines (each year starts at 0). */
 	const maxYear = $derived(Math.max(1, ...values.map((v) => v.value)));
 
+	const heightUnit = $derived(displayUnits.height);
+
 	const metricLabel = $derived(
-		metric === 'ascents' ? 'Ascents' : metric === 'sends' ? 'Sends' : 'Height (m)'
+		metric === 'ascents' ? 'Ascents' : metric === 'sends' ? 'Sends' : `Height (${heightUnit})`
 	);
 
 	const chartLabel = $derived(
@@ -116,14 +126,14 @@
 	);
 
 	function formatValue(v: number): string {
-		if (metric === 'heightM') return `${Math.round(v)} m`;
+		if (metric === 'heightM') return formatHeight(v, heightUnit);
 		return String(Math.round(v));
 	}
 
 	function fmtDelta(n: number | null, suffix = ''): string {
 		if (n == null) return '—';
 		const sign = n > 0 ? '+' : '';
-		const shown = metric === 'heightM' ? Math.round(n) : n;
+		const shown = metric === 'heightM' ? Math.round(convertHeight(n, heightUnit)) : n;
 		return `${sign}${shown}${suffix}`;
 	}
 
@@ -132,7 +142,7 @@
 		return n > 0 ? 'up' : 'down';
 	}
 
-	const deltaSuffix = $derived(metric === 'heightM' ? ' m' : '');
+	const deltaSuffix = $derived(metric === 'heightM' ? ` ${heightUnit}` : '');
 
 	function dayMetric(d: HeatmapDay): number {
 		if (metric === 'sends') return d.sends;
@@ -306,7 +316,7 @@
 						type="button"
 						class={{ active: metric === 'heightM' }}
 						aria-pressed={metric === 'heightM'}
-						onclick={() => (metric = 'heightM')}>Height (m)</button
+						onclick={() => (metric = 'heightM')}>Height ({heightUnit})</button
 					>
 				</div>
 			</div>
@@ -502,7 +512,7 @@
 								<td>{row.sends}</td>
 								<td>{row.onsights}</td>
 								<td class={deltaClass(row.deltaOnsights)}>{fmtDelta(row.deltaOnsights)}</td>
-								<td>{Math.round(row.heightM)} m</td>
+								<td>{formatHeight(row.heightM, heightUnit)}</td>
 								<td class={deltaClass(row.deltaHeightM)}>{fmtDelta(row.deltaHeightM, ' m')}</td>
 							</tr>
 						{/each}

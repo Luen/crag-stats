@@ -4,6 +4,7 @@
  */
 import { MONTH_LABELS } from '#lib/bestMonths';
 import { DEFAULT_DATE_DISPLAY, formatNumber, type DateDisplay } from '#lib/dates';
+import { formatDistance, formatTemperature, type DisplayUnits } from '#lib/units';
 import type { WeatherConditionsView } from '#lib/weatherStats';
 import type { StoryRouteLink } from '#lib/types/climbingStory';
 import { theCragRouteUrl } from '#lib/thecragUrls';
@@ -53,6 +54,7 @@ export type ClimberBlurbInput = {
 	pinkpointCount: number;
 	climberType: string;
 	heightM: number;
+	displayUnits?: DisplayUnits;
 	distinctRoutes: number;
 	distinctCrags: number;
 	outdoorAscents: number | null;
@@ -411,7 +413,8 @@ export function describePopularity(pop: {
  */
 export function describeWeatherPersonality(
 	weather: WeatherConditionsView | null | undefined,
-	format?: (n: number) => string
+	format?: (n: number) => string,
+	displayUnits?: DisplayUnits
 ): string | null {
 	if (!weather) return null;
 	const { withWeather, outdoorDays } = weather;
@@ -431,7 +434,8 @@ export function describeWeatherPersonality(
 	}
 	const heat = share('heat');
 	if (heat && heat.pct >= WEATHER_HEAT_SHARE) {
-		return `I climb in the heat too: ${pct(heat.pct)}% of my outdoor days with weather reached 35°C or more.`;
+		const label = displayUnits?.temperature === 'fahrenheit' ? '95°F' : '35°C';
+		return `I climb in the heat too: ${pct(heat.pct)}% of my outdoor days with weather reached ${label} or more.`;
 	}
 	const rain = share('rain');
 	if (rain && rain.pct >= WEATHER_RAIN_SHARE) {
@@ -440,7 +444,9 @@ export function describeWeatherPersonality(
 	const hot = weather.hottest?.tempC;
 	const cold = weather.coldest?.tempC;
 	if (hot != null && cold != null && hot - cold >= WEATHER_RANGE_MIN_C) {
-		return `I've climbed in everything from ${fmt(Math.round(cold))}°C to ${fmt(Math.round(hot))}°C.`;
+		const coldLabel = formatTemperature(cold, displayUnits?.temperature ?? 'celsius');
+		const hotLabel = formatTemperature(hot, displayUnits?.temperature ?? 'celsius');
+		return `I've climbed in everything from ${coldLabel} to ${hotLabel}.`;
 	}
 	return null;
 }
@@ -509,7 +515,7 @@ export function buildClimberBlurb(input: ClimberBlurbInput): ClimberBlurb {
 	push(
 		describeSeason(input.activeDayDates ?? [], (input.dateDisplay ?? DEFAULT_DATE_DISPLAY).locale)
 	);
-	push(describeWeatherPersonality(input.weather, fmt));
+	push(describeWeatherPersonality(input.weather, fmt, input.displayUnits));
 	push(describeSolo(input.soloByKind ?? []));
 	push(describeProjects(input.openProjects ?? 0, fmt));
 	push(describeHardest(input.hardestRouteLabel, input.hardestBoulderLabel));
@@ -542,7 +548,7 @@ export function buildClimberBlurb(input: ClimberBlurbInput): ClimberBlurb {
 		`Since I began climbing ${duration} ago on ${input.firstDate}, I've logged ${fmt(input.activeDays)} active days at the crag.`,
 		`In that time I've racked up ${fmt(input.totalAscents)} logged ascents (${fmt(input.totalSends)} sends, ${fmt(input.onsightCount)} onsights)${outdoorBit}, on ${fmt(input.distinctRoutes)} routes across ${fmt(input.distinctCrags)} areas.`,
 		heightM > 0
-			? `That's about ${heightKm} km of rock — roughly ${everest}× Everest or ${elCap}× El Capitan${worldLaps > 0 ? `, and ${worldLaps} trips around the world if you laid the rope end-to-end` : ''}.`
+			? `That's about ${formatDistance(heightKm, input.displayUnits?.distance ?? 'km')} of rock — roughly ${everest}× Everest or ${elCap}× El Capitan${worldLaps > 0 ? `, and ${worldLaps} trips around the world if you laid the rope end-to-end` : ''}.`
 			: null,
 		`On average that's ${perDay} ascents per active day.`,
 		identity,

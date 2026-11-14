@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { formatCalendarDate } from '#lib/dates';
+	import { formatDistance, formatHeight } from '#lib/units';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -44,8 +46,8 @@
 	</article>
 	<article class="panel metric">
 		<span class="label">Height in {year}</span>
-		<strong>{s.heightKm} km</strong>
-		<span class="sub">{s.heightM} m</span>
+		<strong>{formatDistance(s.heightKm, data.displayUnits.distance)}</strong>
+		<span class="sub">{formatHeight(s.heightM, data.displayUnits.height)}</span>
 	</article>
 </section>
 
@@ -89,7 +91,7 @@
 					>
 					·
 				{/if}
-				{s.hardestSend.ascentDate}
+				{formatCalendarDate(s.hardestSend.ascentDate, data.dateDisplay)}
 			</p>
 		{/if}
 	</article>

@@ -8,7 +8,7 @@ Bars (oldest → newest) for the selected metric:
 
 - **Ascents** — every logged tick that year
 - **Sends** — successful ticks only (see [Tick types](/docs/tick-types))
-- **Height (m)** — summed ascent height, falling back to route height when the tick has none
+- **Height** — summed ascent height (in meters or feet, matching your preferred height unit in Settings), falling back to route height when the tick has none
 
 The small figure under each bar is the **year-over-year delta** versus the previous calendar year (or “—” for your first year). Year bars link to `/logbook?year=`.
 
@@ -20,4 +20,4 @@ Your chart-mode preference is stored in the browser (`cs_yearly_chart`).
 
 ## Year-over-year table
 
-Expand **Year-over-year table** on the card for numeric deltas across ascents, height and onsights for every year in the logbook.
+Expand **Year-over-year table** on the card for numeric deltas across ascents, height, and onsights for every year in the logbook.
