@@ -136,7 +136,7 @@
 	function fmtDelta(n: number | null, suffix = ''): string {
 		if (n == null) return '—';
 		const sign = n > 0 ? '+' : '';
-		const shown = metric === 'heightM' ? Math.round(convertHeight(n, heightUnit)) : n;
+		const shown = suffix ? Math.round(convertHeight(n, heightUnit)) : n;
 		return `${sign}${shown}${suffix}`;
 	}
 
@@ -518,7 +518,7 @@
 								<td class={deltaClass(row.deltaOnsights)}>{fmtDelta(row.deltaOnsights)}</td>
 								<td>{formatHeight(row.heightM, heightUnit)}</td>
 								<td class={deltaClass(row.deltaHeightM)}
-									>{fmtDelta(row.deltaHeightM, deltaSuffix)}</td
+									>{fmtDelta(row.deltaHeightM, ` ${heightUnit}`)}</td
 								>
 							</tr>
 						{/each}

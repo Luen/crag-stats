@@ -106,6 +106,21 @@ test('Settings applies date format and unit presets across pages', async ({ page
 		await expect(weatherCard).toContainText('100°F');
 		await expectAxeClean(page, { include: [weatherCard, recent] });
 
+		// Chart metric selection must not change the units of any year-over-year table column.
+		await page.goto('/activity');
+		const yearly = page.locator('article').filter({
+			has: page.getByRole('heading', { name: 'Yearly stats', exact: true })
+		});
+		await yearly.getByText('Year-over-year table', { exact: true }).click();
+		const yearlyRows = yearly.locator('tbody tr');
+		await expect(yearlyRows.first()).toBeVisible();
+		const countModeRows = await yearlyRows.allTextContents();
+		await expect(yearlyRows.first().locator('td').nth(7)).toHaveText(/ft$|^—$/);
+		await yearly.getByRole('button', { name: 'Height (ft)', exact: true }).click();
+		await expect(yearlyRows).toHaveText(countModeRows);
+		await yearly.getByRole('button', { name: 'Ascents', exact: true }).click();
+		await expect(yearlyRows).toHaveText(countModeRows);
+
 		// The logbook day filter, weather chips, and the cached detail column follow the same
 		// choices; detail readings keep their stored precision instead of rounding (#490).
 		await page.setViewportSize({ width: 1440, height: 1000 });
