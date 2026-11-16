@@ -3,7 +3,7 @@
 
 	/** theCrag Project flag from route info import (#77). */
 	const i18n = useI18n();
-	const title = $derived(i18n.t('cards.projectRouteBadge.title'));
+	const title = $derived(i18n.t('cards.projectRouteBadge.titleMarkedAsProjectOnThecrag'));
 </script>
 
 <span class="project-flag" {title}>

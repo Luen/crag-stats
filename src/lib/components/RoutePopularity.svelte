@@ -27,7 +27,7 @@
 			<div class="track" aria-hidden="true">
 				<div class="fill" style:width="{data.busy.pct}%"></div>
 			</div>
-			<p class="hint">{i18n.t('cards.routePopularity.hint')}</p>
+			<p class="hint">{i18n.t('cards.routePopularity.hintPopularityAtLeast50')}</p>
 		</div>
 		<div class="bucket quiet">
 			<span class="k">{i18n.t('cards.routePopularity.labelOffTheBeatenTrack')}</span>

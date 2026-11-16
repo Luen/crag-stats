@@ -43,7 +43,7 @@
 			"empty": "Not enough data for a CPR timeline yet.",
 			"labelCurrent": "Current",
 			"labelPeak": "Peak",
-			"title": "Gap in time"
+			"titleGapInTime": "Gap in time"
 		},
 		"cragSectors": {
 			"averageHigh": "average high",
@@ -58,7 +58,7 @@
 			"meta": "{routes, plural, one {# route} other {# routes}} · {ascents, plural, one {# ascent} other {# ascents}} · {sectors, plural, one {# top sector} other {# top sectors}}",
 			"rain": "rain",
 			"snow": "snow",
-			"title": "Crags and sectors ({count, plural, one {# crag} other {# crags}})"
+			"titleCragsAndSectorsCountPluralOne": "Crags and sectors ({count, plural, one {# crag} other {# crags}})"
 		},
 		"dashboardLayoutEditor": {
 			"buttonClearSavedLayout": "Clear saved layout",
@@ -133,7 +133,7 @@
 		},
 		"newRouteBadge": {
 			"labelNewRoute": "New route?",
-			"title": "No firm grade on theCrag (blank or a wide estimate like 21-23 / V1-3), so probably a new route you're bolting or working"
+			"titleNoFirmGradeOnThecragBlank": "No firm grade on theCrag (blank or a wide estimate like 21-23 / V1-3), so probably a new route you're bolting or working"
 		},
 		"notableAscents": {
 			"titleNotableAscents": "Notable ascents"
@@ -151,7 +151,7 @@
 		},
 		"projectRouteBadge": {
 			"labelProject": "Project",
-			"title": "Marked as Project on theCrag"
+			"titleMarkedAsProjectOnThecrag": "Marked as Project on theCrag"
 		},
 		"projectRouteBeta": {
 			"labelAccess": "Access",
@@ -178,7 +178,7 @@
 			"titleRockTypes": "Rock types"
 		},
 		"routePopularity": {
-			"hint": "Popularity ≥ 50",
+			"hintPopularityAtLeast50": "Popularity ≥ 50",
 			"hintPopularityLt50": "Popularity < 50",
 			"labelBeatenTrack": "Beaten track",
 			"labelOffTheBeatenTrack": "Off the beaten track",
@@ -405,6 +405,248 @@
 		"toggleSidebar": "Toggle sidebar",
 		"trainingLoad": "Training load",
 		"weather": "Weather"
+	},
+	"pages": {
+		"activity": {
+			"empty": "No monthly data yet.",
+			"label": "Year",
+			"optionAllYears": "All years",
+			"titleActivity": "Activity",
+			"titleMonthlyBreakdown": "Monthly breakdown"
+		},
+		"badges": {
+			"titleAlmostThere": "Almost there",
+			"titleBadges": "Badges"
+		},
+		"dashboard": {
+			"ariaClimbStyles": "Climb styles",
+			"ariaPyramidFilter": "Pyramid filter",
+			"titleBoulder": "Boulder",
+			"titleCPRTimelines": "CPR timelines",
+			"titleGetStarted": "Get started",
+			"titleGradeBands": "Grade bands",
+			"titleGradePyramids": "Grade pyramids",
+			"titleHardestSends": "Hardest sends",
+			"titleRecentActivities": "Recent activities",
+			"titleSport": "Sport",
+			"titleTickTypes": "Tick types",
+			"titleTopCrags": "Top crags",
+			"titleTrad": "Trad",
+			"titleVolume": "Volume"
+		},
+		"docsLayout": {
+			"ariaDocs": "Docs"
+		},
+		"eddington": {
+			"titleEddingtonNumbers": "Eddington numbers"
+		},
+		"goals": {
+			"buttonAdd": "Add",
+			"buttonAddGoal": "Add goal",
+			"buttonMarkComplete": "Mark complete",
+			"buttonReopen": "Reopen",
+			"buttonSaveGradePreferences": "Save grade preferences",
+			"emptyCompletedGoalsLandHere": "Completed goals land here.",
+			"emptyNoActiveGoals": "No active goals — add one above.",
+			"label": "Already tracking",
+			"optionAny": "Any",
+			"optionBoulders": "Boulders",
+			"optionChooseAScale": "Choose a scale",
+			"optionClimbingDaysThisMonth": "Climbing days this month",
+			"optionCustomManual": "Custom (manual)",
+			"optionGradeThisYearSendX": "Grade this year (send ≥ X)",
+			"optionIndoorGym": "Indoor / gym",
+			"optionOutdoor": "Outdoor",
+			"optionRoutes": "Routes",
+			"titleAchieved": "Achieved",
+			"titleActive": "Active",
+			"titleAddGoal": "Add goal",
+			"titleGoals": "Goals",
+			"titleSuggested": "Suggested"
+		},
+		"logbook": {
+			"ariaClimbStyles": "Climb styles",
+			"ariaExactRouteTagCategoryName": "Exact route tag Category:Name",
+			"ariaFirstAscentMark": "First ascent mark",
+			"ariaGradeBand": "Grade band",
+			"ariaLogbookAscents": "Logbook ascents",
+			"ariaMaximumRouteGrade": "Maximum route grade",
+			"ariaMinimumRouteGrade": "Minimum route grade",
+			"ariaPartnerMatch": "Partner match",
+			"ariaPartners": "Partners",
+			"ariaRockType": "Rock type",
+			"ariaRouteHistoryImport": "Route history import",
+			"ariaRouteSetter": "Route setter",
+			"ariaRouteTag": "Route tag",
+			"ariaSoloType": "Solo type",
+			"ariaSortBy": "Sort by",
+			"ariaSortOrder": "Sort order",
+			"ariaTheCragProjectFlag": "theCrag project flag",
+			"ariaWeatherOnTheDay": "Weather on the day",
+			"buttonApplyFilters": "Apply filters",
+			"optionAnyBand": "Any band",
+			"optionAnyFaMark": "Any FA mark",
+			"optionAnyHistoryStatus": "Any history status",
+			"optionAnyPartners": "Any partners",
+			"optionAnyProjectFlag": "Any project flag",
+			"optionAnyRockType": "Any rock type",
+			"optionAnySetter": "Any setter",
+			"optionAnySoloType": "Any solo type",
+			"optionAnyWeather": "Any weather",
+			"optionAscending": "Ascending",
+			"optionBeginner": "Beginner",
+			"optionDescending": "Descending",
+			"optionElite": "Elite",
+			"optionExactPartnerName": "Exact partner name",
+			"optionExperienced": "Experienced",
+			"optionExpert": "Expert",
+			"optionHasPartners": "Has partners",
+			"optionHistoryNotCheckedYet": "History not checked yet",
+			"optionIntermediate": "Intermediate",
+			"optionMaxRouteGrade": "Max route grade",
+			"optionMinRouteGrade": "Min route grade",
+			"optionMissingPartners": "Missing partners",
+			"optionMyFa": "My FA",
+			"optionMyFaOrFfa": "My FA or FFA",
+			"optionMyFfa": "My FFA",
+			"optionNoFaFfaMark": "No FA/FFA mark",
+			"optionNoSetterCreditFound": "No setter credit found",
+			"optionNotAProject": "Not a project",
+			"optionPartnerNameContains": "Partner name contains",
+			"optionPerfectDayFairCalmNot": "Perfect day (fair, calm, not humid)",
+			"optionProject": "Project",
+			"optionRainyDay": "Rainy day",
+			"optionRoutesISet": "Routes I set",
+			"optionSnowyDay": "Snowy day",
+			"optionSortDate": "Sort: Date",
+			"optionSortGrade": "Sort: Grade",
+			"optionSortMyAscentsOnRoute": "Sort: My ascents on route",
+			"optionSortPopularity": "Sort: Popularity",
+			"optionSortQuality": "Sort: Quality",
+			"optionSortStars": "Sort: Stars",
+			"optionSortStyle": "Sort: Style",
+			"optionSortTick": "Sort: Tick",
+			"placeholderExactTagSteepnessVertical": "Exact tag (Steepness:Vertical)",
+			"placeholderTagContains": "Tag contains…",
+			"titleCommunityPopularity": "Community popularity",
+			"titleFilterLogbookToThisCrag": "Filter logbook to this crag",
+			"titleFilterLogbookToThisSector": "Filter logbook to this sector",
+			"titleLogbook": "Logbook",
+			"titleYourAscentsOnThisRoute": "Your ascents on this route"
+		},
+		"login": {
+			"buttonUnlock": "Unlock",
+			"placeholderPassword": "Password"
+		},
+		"map": {
+			"buttonApplyFilters": "Apply filters",
+			"optionAllVenues": "All venues",
+			"optionOutdoor": "Outdoor",
+			"titleAllMappedPlaces": "All mapped places",
+			"titleClimbingAroundTheWorld": "Climbing around the world"
+		},
+		"milestones": {
+			"titleMilestones": "Milestones"
+		},
+		"offline": {
+			"ariaDownloadedDashboardStats": "Downloaded dashboard stats",
+			"ariaDownloadedLogbook": "Downloaded logbook",
+			"columnClimb": "Climb",
+			"columnDate": "Date",
+			"columnGrade": "Grade",
+			"columnPartners": "Partners",
+			"titleDashboardSummary": "Dashboard summary",
+			"titleLogbook": "Logbook",
+			"titleOfflineCopy": "Offline copy"
+		},
+		"partners": {
+			"titlePartners": "Partners"
+		},
+		"projectDetail": {
+			"ariaSessionProgressionTable": "Session progression table",
+			"summary": "How approximate readiness and estimates work"
+		},
+		"projects": {
+			"emptyNoFoughtThenSentProjects": "No fought-then-sent projects in the past six months.",
+			"emptyNoOpenProjects": "No open projects yet. Log unsent attempts on two different climbing days on theCrag.",
+			"emptyRoutesYouSelectedWhoseSend": "Routes you selected whose send is outside the six-month window or has no valid date.",
+			"titleEarlierSelectedSends": "Earlier selected sends",
+			"titleProjects": "Projects",
+			"titleRecentlySent": "Recently sent",
+			"titleWorkingOn": "Working on"
+		},
+		"rewind": {
+			"buttonGo": "Go"
+		},
+		"seasonality": {
+			"ariaSeasonalityResultsPages": "Seasonality results pages",
+			"buttonSearch": "Search",
+			"optionClimbs": "Climbs",
+			"optionCrags": "Crags",
+			"optionName": "Name",
+			"optionSelectedMonth": "Selected month",
+			"placeholderSearchYourCachedClimbs": "Search your cached climbs…",
+			"titleNoSeasonalityResults": "No seasonality results",
+			"titleSeasonalitySearch": "Seasonality search"
+		},
+		"settings": {
+			"ariaImportSummary": "Import summary",
+			"ariaTheCragLogbookCsvExport": "theCrag logbook CSV export",
+			"ariaTickConfigurationPresets": "Tick configuration presets",
+			"buttonAllLoggedTicks": "All logged ticks",
+			"buttonExcludeWorking": "Exclude Working",
+			"buttonImportCsv": "Import CSV",
+			"buttonLogOut": "Log out",
+			"buttonReApplyFromSavedHistory": "Re-apply from saved history",
+			"buttonRefreshAllRoutes": "Refresh all routes",
+			"buttonSavePreferences": "Save preferences",
+			"buttonSendsOnly": "Sends only",
+			"buttonSyncAgain": "Sync again",
+			"buttonSyncNow": "Sync now",
+			"buttonWipeAllLocalData": "Wipe all local data",
+			"columnTickType": "Tick type",
+			"hintEndYourSignedInSession": "End your signed-in session on this device. You will need the app password to return.",
+			"hintReAppliesMarksFromHistory": "Re-applies marks from history already saved here. No requests to theCrag.",
+			"hintRouteDataRefresh": "Reload this page to update route data availability.",
+			"label": "Presets:",
+			"optionAutoBrowserLanguage": "Auto (Browser language)",
+			"placeholderTypeDeleteToConfirm": "Type DELETE to confirm",
+			"summary": "Re-apply or refresh",
+			"titleAdminSession": "Admin session",
+			"titleCSVImport": "CSV import",
+			"titleDashboardLayout": "Dashboard layout",
+			"titleDisplayVisibility": "Display & visibility",
+			"titleImportRouteData": "Import route data",
+			"titleImportWeather": "Import weather",
+			"titlePrivacyDataControl": "Privacy & data control",
+			"titleSettings": "Settings",
+			"titleTheCragLogbookSync": "theCrag logbook sync"
+		},
+		"share": {
+			"ariaEmbedOptions": "Embed options",
+			"buttonShare": "Share…",
+			"titleShareEmbed": "Share & embed"
+		},
+		"trainingLoad": {
+			"titleTrainingLoad": "Training load"
+		},
+		"weather": {
+			"ariaWeatherAndPerformance": "Weather and performance",
+			"ariaWeatherConditions": "Weather conditions",
+			"ariaWeatherSections": "Weather sections",
+			"titleCoverageAmpLocationQuality": "Coverage & location quality",
+			"titleNoWeatherCachedForOutdoor": "No weather cached for outdoor climbs yet",
+			"titleWeather": "Weather",
+			"titleWeatherAmpPerformance": "Weather & performance"
+		},
+		"weatherLocations": {
+			"ariaPlaceSearchResults": "Place search results",
+			"placeholderAU": "AU",
+			"placeholderTownRegion": "Town, region",
+			"titleChooseTheCorrectPlace": "Choose the correct place",
+			"titleOutdoorClimbingAreas": "Outdoor climbing areas",
+			"titleWeatherLocations": "Weather locations"
+		}
 	},
 	"projects": {
 		"completedProjects": "Sent projects",

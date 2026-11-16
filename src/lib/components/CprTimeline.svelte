@@ -259,7 +259,7 @@
 		<div class="xaxis" style:--n={n} aria-hidden="true">
 			{#each xLabels as l, i (data.buckets[i].period)}
 				<span class={{ gap: l.gap }}>
-					{#if l.gap}<i title={i18n.t('cards.cprTimeline.title')}>⋯</i>{/if}
+					{#if l.gap}<i title={i18n.t('cards.cprTimeline.titleGapInTime')}>⋯</i>{/if}
 					<b>{l.year}</b>{l.sub}
 				</span>
 			{/each}

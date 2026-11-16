@@ -6,7 +6,7 @@
 	 * line still being dialled in. Adjacent half-grades (V1/2) stay ordinary published grades.
 	 */
 	const i18n = useI18n();
-	const title = $derived(i18n.t('cards.newRouteBadge.title'));
+	const title = $derived(i18n.t('cards.newRouteBadge.titleNoFirmGradeOnThecragBlank'));
 </script>
 
 <span class="new-route" {title}>
