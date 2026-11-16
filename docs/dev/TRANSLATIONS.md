@@ -133,7 +133,7 @@ src/lib/i18n/locales/en.json  ──push to main──▶  Crowdin  ──transl
 
 - Runs daily at 08:15 UTC (after midnight Pacific, catching fresh Google AI Studio free quotas).
 - Calls Crowdin's API to run AI pre-translation passes against untranslated strings using Google Gemini.
-- **Model Rotation:** Google AI Studio free quotas are metered per model. When a model's minute or daily quota is reached, `scripts/crowdin_topup.py` automatically rotates to the next model in the hierarchy (`gemini-3.8-flash` → `gemini-3.6-flash` → `gemini-2.5-flash` → `gemini-3.5-flash-lite` → `gemini-2.5-flash-lite`).
+- **Model Rotation:** Google AI Studio free quotas are metered per model. When a model's minute or daily quota is reached, `scripts/crowdin_topup.py` automatically rotates to the next model in the hierarchy (`gemini-4-hydrogen` → `gemini-3.8-flash` → `gemini-3.7-flash` → `gemini-3.6-flash` → `gemini-2.5-flash` → `gemini-3.5-flash-lite` → `gemini-2.5-flash-lite`). The list lives in `DEFAULT_MODELS`; confirm an id against `GET /users/{userId}/ai/providers/{providerId}/models` before adding it, because Crowdin silently rejects retired ids. A model with no free-tier quota costs one empty pass plus a 65 s retry before the rotation moves on, so put new models where that tax is worth paying.
 - **Idempotency:** Only untranslated strings are submitted (`scope: untranslated`); human reviews and existing translations are never overwritten.
 - When new translations are added, it pulls them and opens or updates the pull request on `chore/crowdin-translations`.
 

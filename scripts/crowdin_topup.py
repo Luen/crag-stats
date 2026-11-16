@@ -51,9 +51,12 @@ SOURCE_FILE = os.environ.get("CROWDIN_SOURCE_FILE", "/src/lib/i18n/locales/en.js
 # Ordered best-intelligence-first: Flash tier first (better translations, ~20 RPD each), then
 # Flash Lite last (~500 RPD each). Every id must be one the prompt's AI provider offers — list
 # them with GET /users/{userId}/ai/providers/{providerId}/models. Aliases such as
-# gemini-flash-latest are left out: they share a quota with the model they point to.
+# gemini-flash-latest are left out: they share a quota with the model they point to, as do the
+# Gemini 4 frontier models (carbon/argon), which are Pro-class and unlikely to have a free tier.
 DEFAULT_MODELS = [
+    "gemini-4-hydrogen",
     "gemini-3.8-flash",
+    "gemini-3.7-flash",
     "gemini-3.6-flash",
     "gemini-3-flash-preview",
     "gemini-2.5-flash",
