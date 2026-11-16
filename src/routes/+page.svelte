@@ -221,6 +221,7 @@
 			load={s.trainingLoad}
 			gradeSystems={data.gradeSystems}
 			displayUnits={data.displayUnits}
+			dateDisplay={data.dateDisplay}
 		/>
 	{:else if id === 'sessionsPerWeek'}
 		<SessionsPerWeek years={s.sessionsPerWeek.years} byYear={s.sessionsPerWeek.byYear} />
@@ -296,7 +297,11 @@
 			{/each}
 		</div>
 	{:else if id === 'notable'}
-		<NotableAscents byStyle={s.notableByStyle} byArea={s.notableByArea} />
+		<NotableAscents
+			byStyle={s.notableByStyle}
+			byArea={s.notableByArea}
+			dateDisplay={data.dateDisplay}
+		/>
 	{:else if id === 'cpr'}
 		<header class="section-head">
 			<h2>CPR timelines</h2>

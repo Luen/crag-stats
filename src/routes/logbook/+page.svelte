@@ -136,7 +136,7 @@
 			· one pyramid grade row
 		{/if}
 		{#if data.day}
-			· {data.day}
+			· {formatCalendarDate(data.day, data.dateDisplay)}
 		{/if}
 		{#if data.sector}
 			· sector {data.sector}

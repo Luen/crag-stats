@@ -101,6 +101,7 @@ export const PRECIPITATION_UNIT_OPTIONS = [
 ] as const;
 
 export const METERS_TO_FEET = 3.280839895;
+export const FEET_TO_METERS = 0.3048;
 export const KM_TO_MILES = 0.621371192;
 export const MM_TO_INCHES = 0.0393700787;
 
@@ -176,6 +177,11 @@ export function applyDisplayUnitOverrides(
 
 export function convertHeight(meters: number, unit: HeightUnit): number {
 	return unit === 'ft' ? meters * METERS_TO_FEET : meters;
+}
+
+/** Inverse of {@link convertHeight} for owner-entered feet (#483). */
+export function feetToMeters(feet: number): number {
+	return feet * FEET_TO_METERS;
 }
 
 export function formatHeight(meters: number | null | undefined, unit: HeightUnit = 'm'): string {

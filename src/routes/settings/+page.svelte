@@ -240,6 +240,10 @@
 <section class="grid">
 	<article class="panel">
 		<h2>Display & visibility</h2>
+		<p class="hint">
+			Dates and measurements are display-only: stored data, badge thresholds, and filters stay
+			metric. <a href="/docs/display-settings">How display settings work</a>
+		</p>
 		<form method="POST" action="?/savePreferences" class="prefs">
 			<label class="field">
 				<span>Route grades</span>

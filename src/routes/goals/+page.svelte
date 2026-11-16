@@ -1,11 +1,14 @@
 <script lang="ts">
 	import { formatCalendarDate } from '#lib/dates';
+	import { heightUnitLabel } from '#lib/units';
 	import type { PageProps } from './$types';
 
 	let { data, form }: PageProps = $props();
 
 	let kind = $state('grade');
 	let venueScope = $state('outdoor');
+	const heightUnit = $derived(heightUnitLabel(data.displayUnits.height));
+	const heightPlaceholder = $derived(heightUnit === 'ft' ? '16404' : '5000');
 </script>
 
 {#snippet goalCard(g: (typeof data.goals)[number])}
@@ -134,7 +137,7 @@
 				Kind
 				<select name="kind" bind:value={kind}>
 					<option value="grade">Grade this year (send ≥ X)</option>
-					<option value="height_year">Height this year (m)</option>
+					<option value="height_year">Height this year ({heightUnit})</option>
 					<option value="days_month">Climbing days this month</option>
 					<option value="custom">Custom (manual)</option>
 				</select>
@@ -146,7 +149,9 @@
 					required
 					placeholder={kind === 'grade'
 						? 'e.g. Lead outdoor 25 this year'
-						: 'e.g. 5 km vertical in 2026'}
+						: kind === 'height_year'
+							? `e.g. ${heightPlaceholder} ${heightUnit} vertical in 2026`
+							: 'e.g. a short title'}
 				/>
 			</label>
 			<label>
@@ -175,12 +180,19 @@
 				</label>
 			{:else if kind === 'height_year' || kind === 'days_month' || kind === 'custom'}
 				<label>
-					Target
+					{kind === 'height_year' ? `Target height (${heightUnit})` : 'Target'}
 					<input
 						name="targetValue"
-						placeholder={kind === 'height_year' ? '5000' : kind === 'days_month' ? '8' : 'anything'}
+						placeholder={kind === 'height_year'
+							? heightPlaceholder
+							: kind === 'days_month'
+								? '8'
+								: 'anything'}
 					/>
 				</label>
+				{#if kind === 'height_year'}
+					<input type="hidden" name="heightUnit" value={heightUnit} />
+				{/if}
 			{/if}
 			{#if kind === 'height_year'}
 				<label>

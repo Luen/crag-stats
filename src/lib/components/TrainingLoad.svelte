@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { DEFAULT_DISPLAY_SYSTEMS, formatGradeLabel, type DisplayGradeSystems } from '#lib/grades';
+	import { DEFAULT_DATE_DISPLAY, formatCalendarDate, type DateDisplay } from '#lib/dates';
 	import { DEFAULT_DISPLAY_UNITS, formatHeight, type DisplayUnits } from '#lib/units';
 	import type { LoadStatus, TrainingLoadView } from '#lib/types/trainingLoad';
 
@@ -7,6 +8,7 @@
 		load: TrainingLoadView;
 		gradeSystems?: DisplayGradeSystems;
 		displayUnits?: DisplayUnits;
+		dateDisplay?: DateDisplay;
 		/** Dashboard shows the newest N weeks; detail page can show all. */
 		weeksShown?: number;
 		titleHref?: string | null;
@@ -16,6 +18,7 @@
 		load,
 		gradeSystems = DEFAULT_DISPLAY_SYSTEMS,
 		displayUnits = DEFAULT_DISPLAY_UNITS,
+		dateDisplay = DEFAULT_DATE_DISPLAY,
 		weeksShown = 12,
 		titleHref = '/training-load',
 		showDaily = false
@@ -92,7 +95,7 @@
 			<span
 				class="wk"
 				style:height="{Math.max(4, (w.load / maxWeek) * 100)}%"
-				title="Week to {w.end}: load {w.load}"
+				title="Week to {formatCalendarDate(w.end, dateDisplay)}: load {w.load}"
 			></span>
 		{/each}
 	</div>
@@ -104,7 +107,7 @@
 				<span
 					class={['day', { rest: d.load <= 0 }]}
 					style:height="{d.load <= 0 ? 4 : Math.max(4, (d.load / maxDay) * 100)}%"
-					title="{d.day}: load {d.load}"
+					title="{formatCalendarDate(d.day, dateDisplay)}: load {d.load}"
 				></span>
 			{/each}
 		</div>

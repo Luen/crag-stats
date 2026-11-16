@@ -198,7 +198,7 @@
 				? `${head} · ${weatherSummary(cell.weather)}`
 				: `${head} · no weather data`;
 		}
-		const base = `${cell.date}: ${cell.count} ascent${cell.count === 1 ? '' : 's'} (${cell.sends} send${cell.sends === 1 ? '' : 's'})`;
+		const base = `${formatCalendarDate(cell.date, dateDisplay)}: ${cell.count} ascent${cell.count === 1 ? '' : 's'} (${cell.sends} send${cell.sends === 1 ? '' : 's'})`;
 		if (activeMode !== 'grade' || cell.maxBand == null) return base;
 		const name = GRADE_BANDS.find((b) => b.id === cell.maxBand)?.name ?? `band ${cell.maxBand}`;
 		return `${base} · hardest send ${name}`;

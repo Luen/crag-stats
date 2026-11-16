@@ -18,6 +18,8 @@ import {
 	type PartnerStat
 } from '#lib/partnerStats';
 import { tickKind } from '#lib/ticks';
+import { DEFAULT_DATE_DISPLAY, formatNumber, type DateDisplay } from '#lib/dates';
+import { DEFAULT_DISPLAY_UNITS, formatDistance, type DisplayUnits } from '#lib/units';
 
 export { splitPartners };
 
@@ -307,7 +309,9 @@ export function buildYearlyStats(rows: DashboardExtraRow[]): { years: YearlyStat
 
 export function buildMilestones(
 	rows: DashboardExtraRow[],
-	systems: DisplayGradeSystems = DEFAULT_DISPLAY_SYSTEMS
+	systems: DisplayGradeSystems = DEFAULT_DISPLAY_SYSTEMS,
+	units: DisplayUnits = DEFAULT_DISPLAY_UNITS,
+	display: DateDisplay = DEFAULT_DATE_DISPLAY
 ): { items: MilestoneItem[] } {
 	const dated = [...rows]
 		.filter((r) => dayKey(r.ascentDate))
@@ -356,7 +360,7 @@ export function buildMilestones(
 				items.push({
 					id: `count:${mark}`,
 					kind: 'count',
-					label: `${mark.toLocaleString('en-US')} ascents`,
+					label: `${formatNumber(mark, display)} ascents`,
 					date: dayKey(row.ascentDate),
 					detail: `Ascent #${mark}`
 				});
@@ -372,13 +376,13 @@ export function buildMilestones(
 		for (const mark of HEIGHT_LANDMARKS_M) {
 			if (cumH >= mark && !hitHeight.has(mark)) {
 				hitHeight.add(mark);
-				const km = mark / 1000;
+				const climbed = formatDistance(mark / 1000, units.distance);
 				items.push({
 					kind: 'height',
 					id: `height:${mark}`,
-					label: `${km} km climbed`,
+					label: `${climbed} climbed`,
 					date: dayKey(row.ascentDate),
-					detail: `Cumulative height reached ${km} km`
+					detail: `Cumulative height reached ${climbed}`
 				});
 			}
 		}

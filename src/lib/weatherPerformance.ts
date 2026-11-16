@@ -135,8 +135,12 @@ export const TEMPERATURE_EDGES = [10, 18, 25, 30] as const;
 function temperatureBands(unit: TemperatureUnit = 'celsius'): BandDef[] {
 	const edges = TEMPERATURE_EDGES;
 	// Labels follow the display unit; band tests and logbook links stay Celsius.
-	const shown = (c: number) =>
-		unit === 'fahrenheit' ? Math.round(celsiusToFahrenheit(c)) : Math.round(c);
+	// Print the converted edge exactly (one decimal at most) and mark the upper edge
+	// exclusive, so a day rounded to 64°F never sits under a "50–63°" label (#486).
+	const shown = (c: number) => {
+		const converted = unit === 'fahrenheit' ? celsiusToFahrenheit(c) : c;
+		return String(Math.round(converted * 10) / 10);
+	};
 	const high = (w: WeatherSnapshot) =>
 		w.tempMaxC != null && Number.isFinite(w.tempMaxC) ? w.tempMaxC : null;
 	const out: BandDef[] = [
@@ -155,7 +159,7 @@ function temperatureBands(unit: TemperatureUnit = 'celsius'): BandDef[] {
 		const to = edges[i + 1]!;
 		out.push({
 			id: `temp:${from}`,
-			label: `${shown(from)}–${shown(to) - 1}°`,
+			label: `${shown(from)}–<${shown(to)}°`,
 			href: `/logbook?weatherHighMin=${from}&weatherHighMax=${to}`,
 			test: (w) => {
 				const t = high(w);

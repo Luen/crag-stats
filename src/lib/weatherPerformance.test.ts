@@ -138,9 +138,9 @@ describe('buildWeatherPerformanceView', () => {
 		expect(temp.overlapping).toBe(false);
 		expect(temp.bands.map((b) => [b.label, b.days])).toEqual([
 			['Under 10°', 1],
-			['10–17°', 2],
-			['18–24°', 2 + (WEATHER_PERFORMANCE_MIN_DAYS - highs.length)],
-			['25–29°', 2],
+			['10–<18°', 2],
+			['18–<25°', 2 + (WEATHER_PERFORMANCE_MIN_DAYS - highs.length)],
+			['25–<30°', 2],
 			['30°+', 1]
 		]);
 		expect(temp.bands.map((b) => b.href)).toEqual([
@@ -166,9 +166,9 @@ describe('buildWeatherPerformanceView', () => {
 		const temp = view.groups.find((g) => g.key === 'temperature')!;
 		expect(temp.bands.map((b) => b.label)).toEqual([
 			'Under 50°',
-			'50–63°',
-			'64–76°',
-			'77–85°',
+			'50–<64.4°',
+			'64.4–<77°',
+			'77–<86°',
 			'86°+'
 		]);
 		expect(temp.bands.map((b) => b.href)).toEqual([
@@ -178,6 +178,33 @@ describe('buildWeatherPerformanceView', () => {
 			'/logbook?weatherHighMin=25&weatherHighMax=30',
 			'/logbook?weatherHighMin=30'
 		]);
+	});
+
+	it('prints converted edges that include every high the band test accepts (#486)', () => {
+		const bandFor = (tempMaxC: number, unit: 'celsius' | 'fahrenheit') => {
+			const rows: WeatherPerformanceRow[] = [];
+			const map = new Map<string, WeatherSnapshot>();
+			for (let i = 0; i < WEATHER_PERFORMANCE_MIN_DAYS; i++) {
+				const d = day(i);
+				rows.push(row({ ascentDate: d }));
+				// One sample day plus a hot sentinel keeps every low band at exactly one day.
+				map.set(keyOf(d), snap({ tempMaxC: i === 0 ? tempMaxC : 50 }));
+			}
+			const view = buildWeatherPerformanceView(rows, map, unit)!;
+			const temp = view.groups.find((g) => g.key === 'temperature')!;
+			return temp.bands.filter((b) => b.days === 1 && b.id !== 'temp:gte').map((b) => b.id);
+		};
+
+		expect(bandFor(17.9, 'celsius')).toEqual(['temp:10']);
+		expect(bandFor(18, 'celsius')).toEqual(['temp:18']);
+		expect(bandFor(24.9, 'celsius')).toEqual(['temp:18']);
+		expect(bandFor(25, 'celsius')).toEqual(['temp:25']);
+		// 64°F (17.78°C) is below the 18°C edge, so the printed 50–<64.4° range must hold it.
+		expect(bandFor(17.7778, 'fahrenheit')).toEqual(['temp:10']);
+		expect(bandFor(17.9, 'fahrenheit')).toEqual(['temp:10']);
+		// 64.4°F (18°C) and 65°F (18.33°C) belong to the next band.
+		expect(bandFor(18, 'fahrenheit')).toEqual(['temp:18']);
+		expect(bandFor(18.3333, 'fahrenheit')).toEqual(['temp:18']);
 	});
 
 	it('flags a band that differs from other days and stays quiet on noise', () => {
