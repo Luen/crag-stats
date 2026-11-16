@@ -36,17 +36,20 @@ function svelteFiles(dir, out = []) {
 }
 
 function stripBlocks(source, tag) {
+	// `<tag` must be a real element, not a component such as `<StylePyramid>` or `<Scripted…>`.
 	const haystack = source.toLowerCase();
-	const open = `<${tag}`;
+	const open = new RegExp(`<${tag}(?=[\\s>])`, 'g');
 	const close = `</${tag}>`;
 	let out = '';
 	let i = 0;
 	while (true) {
-		const start = haystack.indexOf(open, i);
-		if (start === -1) {
+		open.lastIndex = i;
+		const match = open.exec(haystack);
+		if (!match) {
 			out += source.slice(i);
 			break;
 		}
+		const start = match.index;
 		out += source.slice(i, start);
 		const end = haystack.indexOf(close, start);
 		if (end === -1) break;

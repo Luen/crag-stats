@@ -511,7 +511,7 @@
 			<!-- The top bar drops its GitHub icon on narrow screens; keep the link reachable here. -->
 			<a class="gh-drawer" href={data.githubUrl} target="_blank" rel="noreferrer">
 				<NavIcon name="github" size={16} />
-				<span>GitHub</span>
+				<span>{t('nav.github')}</span>
 			</a>
 			<a
 				class="ver"
@@ -543,7 +543,8 @@
 		<footer>
 			<p>
 				{t('footer.selfHosted')} · AGPL-3.0 · {t('footer.dataFrom')}
-				<a href="https://www.thecrag.com/" target="_blank" rel="noreferrer">theCrag</a>
+				<a href="https://www.thecrag.com/" target="_blank" rel="noreferrer">{t('footer.theCrag')}</a
+				>
 				·
 				<a href={data.githubUrl} target="_blank" rel="noreferrer">{data.appVersion}</a>
 				· <a href="/offline" data-sveltekit-reload>{t('footer.offlineCopy')}</a>

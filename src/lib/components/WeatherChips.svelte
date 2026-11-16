@@ -51,13 +51,17 @@
 {/if}
 
 {#if location && location.source !== 'route'}<p class="location">
-		Weather location: {location.source === 'place'
-			? 'Approximate nearby place'
-			: location.source === 'polygon'
-				? 'Approximate area polygon'
-				: location.source === 'cached'
-					? 'Cached point'
-					: 'Approximate crag/sector'} · {location.name}
+		{i18n.t('cards.weatherChips.locationSource', {
+			source:
+				location.source === 'place'
+					? i18n.t('pages.logbook.weatherSourcePlace')
+					: location.source === 'polygon'
+						? i18n.t('pages.logbook.weatherSourcePolygon')
+						: location.source === 'cached'
+							? i18n.t('pages.logbook.weatherSourceCached')
+							: i18n.t('pages.logbook.weatherSourceCrag'),
+			name: location.name
+		})}
 	</p>{/if}
 
 <style>

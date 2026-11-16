@@ -58,17 +58,17 @@
 	const max = $derived(Math.max(1, ...ranked.map((p) => partnerMetricValue(p, metric))));
 
 	const metricButtonLabel = (m: PartnerMetric): string => {
-		if (m === 'sessions') return 'Sessions';
-		if (m === 'areas') return 'Areas';
-		return 'Ascents';
+		if (m === 'sessions') return i18n.t('cards.partnerLeaderboard.metricSessions');
+		if (m === 'areas') return i18n.t('cards.partnerLeaderboard.metricAreas');
+		return i18n.t('cards.partnerLeaderboard.metricAscents');
 	};
 
 	const hint = $derived(
 		metric === 'sessions'
-			? 'A session is a calendar day with at least one shared ascent.'
+			? i18n.t('cards.partnerLeaderboard.hintSessions')
 			: metric === 'areas'
-				? 'Areas are distinct crags (blank or Unknown venues are skipped).'
-				: 'Counts every logged ascent that names that partner.'
+				? i18n.t('cards.partnerLeaderboard.hintAreas')
+				: i18n.t('cards.partnerLeaderboard.hintAscents')
 	);
 </script>
 
@@ -86,9 +86,11 @@
 		<div class="titles">
 			<h2>
 				{#if titleHref}
-					<a class="title-link" href={titleHref}>Partners</a>
+					<a class="title-link" href={titleHref}
+						>{i18n.t('cards.partnerLeaderboard.titlePartners')}</a
+					>
 				{:else}
-					Partners
+					{i18n.t('cards.partnerLeaderboard.titlePartners')}
 				{/if}
 			</h2>
 			{#if metricToggle}

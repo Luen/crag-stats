@@ -9,11 +9,13 @@
 	function thresholdLabel(table: EddingtonMilestoneTable, target: number): string {
 		if (table.key === 'vertical') {
 			const m = target * table.unit;
-			return `${target} days · ${m}+ m`;
+			return i18n.t('cards.eddingtonMilestones.thresholdVertical', { days: target, height: m });
 		}
-		if (table.key === 'boulderGrade') return `V${target}+ · ${target} problems`;
-		if (table.key === 'routeGrade') return `Ewbank ${target}+ · ${target} routes`;
-		return `${target}+ sends · ${target} days`;
+		if (table.key === 'boulderGrade')
+			return i18n.t('cards.eddingtonMilestones.thresholdBoulderGrade', { target });
+		if (table.key === 'routeGrade')
+			return i18n.t('cards.eddingtonMilestones.thresholdRouteGrade', { target });
+		return i18n.t('cards.eddingtonMilestones.thresholdSends', { target });
 	}
 </script>
 
@@ -28,10 +30,10 @@
 				<table>
 					<thead>
 						<tr>
-							<th scope="col">Target E</th>
-							<th scope="col">Have</th>
-							<th scope="col">Need</th>
-							<th scope="col">Progress</th>
+							<th scope="col">{i18n.t('cards.eddingtonMilestones.thTargetE')}</th>
+							<th scope="col">{i18n.t('cards.eddingtonMilestones.thHave')}</th>
+							<th scope="col">{i18n.t('cards.eddingtonMilestones.thNeed')}</th>
+							<th scope="col">{i18n.t('cards.eddingtonMilestones.thProgress')}</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -47,7 +49,12 @@
 									<div class="bar" role="presentation">
 										<div class="fill" style:width="{row.progress * 100}%"></div>
 									</div>
-									<span class="sr">{Math.round(row.progress * 100)}% toward {row.target}</span>
+									<span class="sr"
+										>{i18n.t('cards.eddingtonMilestones.srProgress', {
+											percent: Math.round(row.progress * 100),
+											target: row.target
+										})}</span
+									>
 								</td>
 							</tr>
 						{/each}

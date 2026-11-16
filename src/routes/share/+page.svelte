@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { useI18n } from '#lib/i18n';
+	import RichText from '#lib/components/RichText.svelte';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
@@ -42,7 +43,7 @@
 
 	async function shareDashboard() {
 		try {
-			await navigator.share({ title: 'My climbing stats', url: dashboardUrl });
+			await navigator.share({ title: i18n.t('pages.share.titleShareSheet'), url: dashboardUrl });
 		} catch {
 			// Dismissed, or not allowed here.
 		}
@@ -52,22 +53,21 @@
 <section class="panel head">
 	<h1>{i18n.t('pages.share.titleShareEmbed')}</h1>
 	<p>
-		Live cards for a blog, forum signature or profile page. They're plain images, so they work
-		anywhere that accepts an <code>&lt;img&gt;</code> or Markdown, and they update after each sync. Cards
-		only show totals, grades and route names, never ascent notes or partners.
+		<RichText message={i18n.t('pages.share.lead')} />
 	</p>
 	{#if data.privateHost}
 		<p class="warn" role="note">
-			<strong>Only you can see these right now.</strong> This site is at
-			<code>{data.origin}</code>, a local or private-network address, so the links and images below
-			won't load for anyone else. To share them, host Crag Stats on a public server or domain (a
-			VPS, or a tunnel such as Cloudflare Tunnel), then open this page from that address and copy
-			the code again.
+			<RichText
+				message={i18n.t('pages.share.warnPrivateHost')}
+				tokens={{ origin: { kind: 'code', text: data.origin } }}
+			/>
 		</p>
 	{/if}
 	<div class="share-row">
 		<button type="button" class="primary" onclick={() => copy('link', dashboardUrl)}>
-			{copied === 'link' ? 'Link copied' : 'Copy dashboard link'}
+			{copied === 'link'
+				? i18n.t('pages.share.buttonLinkCopied')
+				: i18n.t('pages.share.buttonCopyDashboardLink')}
 		</button>
 		{#if canShare}
 			<button type="button" class="secondary" onclick={shareDashboard}
@@ -79,16 +79,24 @@
 
 <section class="panel options" aria-label={i18n.t('pages.share.ariaEmbedOptions')}>
 	<fieldset>
-		<legend>Theme</legend>
-		<label><input type="radio" bind:group={theme} value="light" /> Light</label>
-		<label><input type="radio" bind:group={theme} value="dark" /> Dark</label>
+		<legend>{i18n.t('pages.share.legendTheme')}</legend>
+		<label><input type="radio" bind:group={theme} value="light" /> {i18n.t('theme.light')}</label>
+		<label><input type="radio" bind:group={theme} value="dark" /> {i18n.t('theme.dark')}</label>
 	</fieldset>
 	<fieldset>
-		<legend>Code</legend>
-		<label><input type="radio" bind:group={format} value="html" /> HTML</label>
-		<label><input type="radio" bind:group={format} value="markdown" /> Markdown</label>
+		<legend>{i18n.t('pages.share.legendCode')}</legend>
+		<label
+			><input type="radio" bind:group={format} value="html" />
+			{i18n.t('pages.share.optionHtml')}</label
+		>
+		<label
+			><input type="radio" bind:group={format} value="markdown" />
+			{i18n.t('pages.share.optionMarkdown')}</label
+		>
 	</fieldset>
-	<label class="check"><input type="checkbox" bind:checked={linkBack} /> Link to my dashboard</label
+	<label class="check"
+		><input type="checkbox" bind:checked={linkBack} />
+		{i18n.t('pages.share.labelLinkToMyDashboard')}</label
 	>
 </section>
 
@@ -100,13 +108,16 @@
 			<div class="preview" class:dark={theme === 'dark'}>
 				<img src="/embed/{card.id}.svg{theme === 'dark' ? '?theme=dark' : ''}" alt={card.alt} />
 			</div>
-			<label class="code-label" for="code-{card.id}">Embed code</label>
+			<label class="code-label" for="code-{card.id}">{i18n.t('pages.share.labelEmbedCode')}</label>
 			<textarea id="code-{card.id}" readonly rows="3" value={code}></textarea>
 			<div class="card-actions">
 				<button type="button" class="primary" onclick={() => copy(card.id, code)}>
-					{copied === card.id ? 'Copied' : 'Copy code'}
+					{copied === card.id
+						? i18n.t('pages.share.buttonCopied')
+						: i18n.t('pages.share.buttonCopyCode')}
 				</button>
-				<a class="secondary" href={imageUrl(card.id)} target="_blank" rel="noreferrer">Open image</a
+				<a class="secondary" href={imageUrl(card.id)} target="_blank" rel="noreferrer"
+					>{i18n.t('pages.share.linkOpenImage')}</a
 				>
 			</div>
 		</section>
@@ -138,7 +149,7 @@
 		font-size: 0.9rem;
 		max-width: 72ch;
 	}
-	.warn code {
+	.warn :global(code) {
 		overflow-wrap: anywhere;
 	}
 	.share-row,
@@ -235,7 +246,7 @@
 		color: var(--ink);
 		border: 1px solid var(--line);
 	}
-	code {
+	.warn :global(code) {
 		font-size: 0.9em;
 	}
 </style>

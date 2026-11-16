@@ -73,9 +73,10 @@ test.describe('app shell', () => {
 		// Every supported locale, including the last one, is one interaction away (#494).
 		await expect(menu.getByRole('menuitemradio')).toHaveCount(5);
 		await expect(menu.getByRole('menuitemradio', { name: 'Italiano', exact: true })).toBeVisible();
-		await expect(
-			menu.getByRole('menuitemradio', { name: 'English', exact: true })
-		).toHaveAttribute('aria-checked', 'true');
+		await expect(menu.getByRole('menuitemradio', { name: 'English', exact: true })).toHaveAttribute(
+			'aria-checked',
+			'true'
+		);
 		await expect(menu.getByRole('menuitemradio', { name: 'English', exact: true })).toBeFocused();
 		await expectAxeClean(page, { include: ['.topbar'] });
 

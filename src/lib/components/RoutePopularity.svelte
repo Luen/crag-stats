@@ -15,15 +15,20 @@
 	</header>
 
 	<p class="lead">
-		Among {formatNumber(data.withData, dateDisplay)} ascents with community stats, how often you tick
-		busy classics vs quieter lines.
+		{i18n.t('cards.routePopularity.lead', {
+			count: formatNumber(data.withData, dateDisplay)
+		})}
 	</p>
 
 	<div class="split">
 		<div class="bucket busy">
 			<span class="k">{i18n.t('cards.routePopularity.labelBeatenTrack')}</span>
 			<strong>{data.busy.pct}%</strong>
-			<span class="n">{formatNumber(data.busy.count, dateDisplay)} ticks</span>
+			<span class="n"
+				>{i18n.t('cards.routePopularity.labelTicks', {
+					count: formatNumber(data.busy.count, dateDisplay)
+				})}</span
+			>
 			<div class="track" aria-hidden="true">
 				<div class="fill" style:width="{data.busy.pct}%"></div>
 			</div>
@@ -32,7 +37,11 @@
 		<div class="bucket quiet">
 			<span class="k">{i18n.t('cards.routePopularity.labelOffTheBeatenTrack')}</span>
 			<strong>{data.quiet.pct}%</strong>
-			<span class="n">{formatNumber(data.quiet.count, dateDisplay)} ticks</span>
+			<span class="n"
+				>{i18n.t('cards.routePopularity.labelTicks', {
+					count: formatNumber(data.quiet.count, dateDisplay)
+				})}</span
+			>
 			<div class="track" aria-hidden="true">
 				<div class="fill" style:width="{data.quiet.pct}%"></div>
 			</div>
@@ -42,7 +51,7 @@
 
 	{#if data.hiddenGems.length > 0}
 		<section class="gems">
-			<h3>Hidden gems you've sent</h3>
+			<h3>{i18n.t('cards.routePopularity.titleHiddenGems')}</h3>
 			<ul>
 				{#each data.hiddenGems as gem (gem.routeId)}
 					<li>

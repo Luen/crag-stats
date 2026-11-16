@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { useI18n } from '#lib/i18n';
+	import RichText from '#lib/components/RichText.svelte';
 	import type { ProjectPublicBeta } from '#lib/routeBeta';
 
 	type Props = { beta: ProjectPublicBeta };
@@ -24,8 +25,17 @@
 
 {#if showAttribution}
 	<p class="attrib">
-		Guidebook text from
-		<a href={beta.attributionUrl} target="_blank" rel="noreferrer">theCrag</a>
+		<RichText
+			message={i18n.t('cards.projectRouteBeta.attribGuidebookFrom')}
+			tokens={{
+				theCrag: {
+					kind: 'link',
+					text: 'theCrag',
+					href: beta.attributionUrl ?? '',
+					external: true
+				}
+			}}
+		/>
 		<span class="license">{i18n.t('cards.projectRouteBeta.labelCCBySa')}</span>
 	</p>
 {/if}
@@ -62,12 +72,12 @@
 		font-size: 0.72rem;
 		line-height: 1.35;
 	}
-	.attrib a {
+	.attrib :global(a) {
 		color: var(--accent);
 		font-weight: 600;
 		text-decoration: none;
 	}
-	.attrib a:hover {
+	.attrib :global(a:hover) {
 		text-decoration: underline;
 		text-underline-offset: 0.12em;
 	}

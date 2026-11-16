@@ -1,13 +1,13 @@
 <script lang="ts">
-	import { MONTH_LABELS } from '#lib/bestMonths';
-	import { useI18n } from '#lib/i18n';
+	import { monthLabels, useI18n } from '#lib/i18n';
 	let { values, month, name }: { values: number[]; month: number; name: string } = $props();
 	const i18n = useI18n();
+	const MONTHS = monthLabels(i18n.t);
 	const peak = $derived(Math.max(0, ...values) || 1);
 </script>
 
 <div class="strip" aria-hidden="true">
-	{#each MONTH_LABELS as label, i (label)}
+	{#each MONTHS as label, i (label)}
 		<div class="month" class:selected={i === month - 1}>
 			<span class="bar" style:height={`${Math.max(2, (values[i] / peak) * 32)}px`}></span>
 			<span>{label}</span>
@@ -26,7 +26,7 @@
 			></thead
 		>
 		<tbody
-			>{#each MONTH_LABELS as label, i (label)}
+			>{#each MONTHS as label, i (label)}
 				<tr
 					><th scope="row"
 						>{label}{i === month - 1 ? ` ${i18n.t('cards.seasonalityStrip.selected')}` : ''}</th

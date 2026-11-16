@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { useI18n } from '#lib/i18n';
+	import RichText from '#lib/components/RichText.svelte';
 	import type { EddingtonTimelinePoint } from '#lib/types/dashboard';
 
 	type Props = { timeline: EddingtonTimelinePoint[] };
@@ -8,16 +9,33 @@
 
 	type SeriesKey = 'sendsE' | 'verticalE' | 'routeE' | 'boulderE';
 
-	const SERIES: { key: SeriesKey; label: string; color: string }[] = [
-		{ key: 'sendsE', label: 'Send days', color: 'var(--accent)' },
-		{ key: 'verticalE', label: 'Vertical days', color: 'var(--style-trad)' },
-		{ key: 'routeE', label: 'Route grade', color: 'var(--style-sport)' },
-		{ key: 'boulderE', label: 'Boulder grade', color: 'var(--style-boulder)' }
+	const SERIES: { key: SeriesKey; labelKey: string; color: string }[] = [
+		{
+			key: 'sendsE',
+			labelKey: 'cards.eddingtonTimelineChart.metricSendsE',
+			color: 'var(--accent)'
+		},
+		{
+			key: 'verticalE',
+			labelKey: 'cards.eddingtonTimelineChart.metricVerticalE',
+			color: 'var(--style-trad)'
+		},
+		{
+			key: 'routeE',
+			labelKey: 'cards.eddingtonTimelineChart.metricRouteGrade',
+			color: 'var(--style-sport)'
+		},
+		{
+			key: 'boulderE',
+			labelKey: 'cards.eddingtonTimelineChart.metricBoulderGrade',
+			color: 'var(--style-boulder)'
+		}
 	];
 
 	let active = $state<SeriesKey>('sendsE');
 
 	const series = $derived(SERIES.find((s) => s.key === active)!);
+	const seriesLabel = $derived(i18n.t(series.labelKey));
 
 	const points = $derived(
 		timeline.map((p, i) => ({
@@ -62,7 +80,7 @@
 					type="button"
 					class={{ active: active === s.key }}
 					aria-pressed={active === s.key}
-					onclick={() => (active = s.key)}>{s.label}</button
+					onclick={() => (active = s.key)}>{i18n.t(s.labelKey)}</button
 				>
 			{/each}
 		</div>
@@ -72,12 +90,22 @@
 		<p class="empty">{i18n.t('cards.eddingtonTimelineChart.empty')}</p>
 	{:else if points.length === 1}
 		<p class="single">
-			{series.label} E is <strong>{points[0].value}</strong> as of {points[0].period}.
+			<RichText
+				message={i18n.t('cards.eddingtonTimelineChart.leadSingleValue', {
+					metric: seriesLabel,
+					value: points[0].value,
+					period: points[0].period
+				})}
+			/>
 		</p>
 	{:else}
 		<div class="chart-wrap">
 			<svg viewBox="0 0 100 100" preserveAspectRatio="none" role="img">
-				<title>{series.label} Eddington number by year</title>
+				<title
+					>{i18n.t('cards.eddingtonTimelineChart.captionEddingtonByYear', {
+						metric: seriesLabel
+					})}</title
+				>
 				{#if areaPath}
 					<path class="area" d={areaPath} style:fill={series.color} />
 				{/if}
@@ -106,10 +134,18 @@
 	{/if}
 	{#if points.length > 1}
 		<details class="values">
-			<summary>View yearly values</summary>
+			<summary>{i18n.t('cards.eddingtonTimelineChart.summaryViewYearlyValues')}</summary>
 			<table>
-				<caption>{series.label} Eddington number by year</caption><thead
-					><tr><th scope="col">Year</th><th scope="col">Eddington number</th></tr></thead
+				<caption
+					>{i18n.t('cards.eddingtonTimelineChart.captionEddingtonByYear', {
+						metric: seriesLabel
+					})}</caption
+				><thead
+					><tr
+						><th scope="col">{i18n.t('cards.eddingtonTimelineChart.thYear')}</th><th scope="col"
+							>{i18n.t('cards.eddingtonTimelineChart.thEddingtonNumber')}</th
+						></tr
+					></thead
 				><tbody>
 					{#each points as p (p.period)}<tr><th scope="row">{p.period}</th><td>{p.value}</td></tr
 						>{/each}
@@ -209,7 +245,7 @@
 		color: var(--ink-muted);
 		font-size: 0.9rem;
 	}
-	.single strong {
+	.single :global(strong) {
 		color: var(--ink);
 		font-family: var(--font-display);
 	}

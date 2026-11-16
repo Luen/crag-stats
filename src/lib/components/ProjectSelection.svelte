@@ -21,35 +21,45 @@
 	method="POST"
 	{action}
 	class="project-selection"
-	aria-label="Project selection for {name}"
+	aria-label={i18n.t('cards.projectSelection.ariaProjectSelectionFor', { name })}
 	use:enhance
 >
 	<input type="hidden" name="provider" value={provider} />
 	<input type="hidden" name="route" value={route} />
 	{#if decision === 'include'}
 		<span class="mark">{i18n.t('cards.projectSelection.labelProject')}</span>
-		<button type="submit" name="decision" value="exclude" aria-label="Unmark project: {name}"
-			>Unmark project</button
+		<button
+			type="submit"
+			name="decision"
+			value="exclude"
+			aria-label={i18n.t('cards.projectSelection.ariaUnmarkProject', { name })}
+			>{i18n.t('cards.projectSelection.buttonUnmarkProject')}</button
 		>
 	{:else}
 		{#if decision === 'exclude'}<span class="dismissed"
 				>{i18n.t('cards.projectSelection.labelNotAProject')}</span
 			>{/if}
-		<button type="submit" name="decision" value="include" aria-label="Mark project: {name}"
-			>Mark project</button
+		<button
+			type="submit"
+			name="decision"
+			value="include"
+			aria-label={i18n.t('cards.projectSelection.ariaMarkProject', { name })}
+			>{i18n.t('cards.projectSelection.buttonMarkProject')}</button
 		>
 		{#if decision === 'auto'}<button
 				type="submit"
 				name="decision"
 				value="exclude"
-				aria-label="Not a project: {name}">Not a project</button
+				aria-label={i18n.t('cards.projectSelection.ariaNotAProject', { name })}
+				>{i18n.t('cards.projectSelection.labelNotAProject')}</button
 			>{/if}
 	{/if}
 	{#if decision !== 'auto'}<button
 			type="submit"
 			name="decision"
 			value="auto"
-			aria-label="Use automatic project detection for {name}">Use automatic</button
+			aria-label={i18n.t('cards.projectSelection.ariaUseAutomatic', { name })}
+			>{i18n.t('cards.projectSelection.buttonUseAutomatic')}</button
 		>{/if}
 </form>
 

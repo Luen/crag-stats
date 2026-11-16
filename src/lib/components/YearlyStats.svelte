@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { useI18n } from '#lib/i18n';
+	import { useI18n, monthLabels } from '#lib/i18n';
 	import { onMount } from 'svelte';
 	import {
 		EMPTY_CARD_PREFERENCES,
@@ -47,6 +47,7 @@
 		dateDisplay = DEFAULT_DATE_DISPLAY
 	}: Props = $props();
 	const i18n = useI18n();
+	const t = i18n.t;
 
 	type Metric = 'ascents' | 'sends' | 'heightM';
 	type ChartMode = 'year' | 'cumulative';
@@ -123,11 +124,25 @@
 	const heightUnit = $derived(displayUnits.height);
 
 	const metricLabel = $derived(
-		metric === 'ascents' ? 'Ascents' : metric === 'sends' ? 'Sends' : `Height (${heightUnit})`
+		metric === 'ascents'
+			? t('cards.yearlyStats.metricAscents')
+			: metric === 'sends'
+				? t('cards.yearlyStats.metricSends')
+				: t('cards.yearlyStats.metricHeight', { unit: heightUnit })
+	);
+
+	const metricLower = $derived(
+		metric === 'ascents'
+			? t('cards.yearlyStats.metricAscentsLower')
+			: metric === 'sends'
+				? t('cards.yearlyStats.metricSendsLower')
+				: t('cards.yearlyStats.metricHeightLower', { unit: heightUnit })
 	);
 
 	const chartLabel = $derived(
-		chartMode === 'cumulative' ? `Total ${metricLabel.toLowerCase()}` : metricLabel
+		chartMode === 'cumulative'
+			? t('cards.yearlyStats.chartTotal', { metric: metricLower })
+			: metricLabel
 	);
 
 	function formatValue(v: number): string {
@@ -162,20 +177,7 @@
 	const plot = { w: 1000, h: 240, padX: 36, padTop: 18, padBot: 28 };
 
 	const monthTicks = $derived.by(() => {
-		const labels = [
-			'Jan',
-			'Feb',
-			'Mar',
-			'Apr',
-			'May',
-			'Jun',
-			'Jul',
-			'Aug',
-			'Sep',
-			'Oct',
-			'Nov',
-			'Dec'
-		];
+		const labels = monthLabels(t);
 		const innerW = plot.w - plot.padX * 2;
 		return labels.map((label, i) => ({
 			label,
@@ -281,9 +283,9 @@
 		<div class="titles">
 			<h2>
 				{#if titleHref}
-					<a href={titleHref}>Yearly stats</a>
+					<a href={titleHref}>{t('cards.yearlyStats.titleYearlyStats')}</a>
 				{:else}
-					Yearly stats
+					{t('cards.yearlyStats.titleYearlyStats')}
 				{/if}
 			</h2>
 			<a class="how" href="/docs/yearly-stats">{i18n.t('common.howItWorks')}</a>
@@ -295,13 +297,14 @@
 						type="button"
 						class={{ active: chartMode === 'year' }}
 						aria-pressed={chartMode === 'year'}
-						onclick={() => setChartMode('year')}>Per year</button
+						onclick={() => setChartMode('year')}>{t('cards.yearlyStats.modeYear')}</button
 					>
 					<button
 						type="button"
 						class={{ active: chartMode === 'cumulative' }}
 						aria-pressed={chartMode === 'cumulative'}
-						onclick={() => setChartMode('cumulative')}>Cumulative</button
+						onclick={() => setChartMode('cumulative')}
+						>{t('cards.yearlyStats.modeCumulative')}</button
 					>
 				</div>
 				<div class="toggles" role="group" aria-label={i18n.t('cards.yearlyStats.ariaMetric')}>
@@ -309,19 +312,20 @@
 						type="button"
 						class={{ active: metric === 'ascents' }}
 						aria-pressed={metric === 'ascents'}
-						onclick={() => (metric = 'ascents')}>Ascents</button
+						onclick={() => (metric = 'ascents')}>{t('cards.yearlyStats.metricAscents')}</button
 					>
 					<button
 						type="button"
 						class={{ active: metric === 'sends' }}
 						aria-pressed={metric === 'sends'}
-						onclick={() => (metric = 'sends')}>Sends</button
+						onclick={() => (metric = 'sends')}>{t('cards.yearlyStats.metricSends')}</button
 					>
 					<button
 						type="button"
 						class={{ active: metric === 'heightM' }}
 						aria-pressed={metric === 'heightM'}
-						onclick={() => (metric = 'heightM')}>Height ({heightUnit})</button
+						onclick={() => (metric = 'heightM')}
+						>{t('cards.yearlyStats.metricHeight', { unit: heightUnit })}</button
 					>
 				</div>
 			</div>
@@ -336,7 +340,7 @@
 				class="line-chart"
 				viewBox="0 0 {plot.w} {plot.h}"
 				role="group"
-				aria-label="{chartLabel} by year, with within-year daily progress overlaid"
+				aria-label={t('cards.yearlyStats.ariaCumulativeChart', { chart: chartLabel })}
 			>
 				{#each monthTicks as tick (tick.label)}
 					<line
@@ -366,7 +370,11 @@
 						{@const dayLabel = formatCalendarDate(dot.date, dateDisplay)}
 						<a
 							href="/logbook?day={encodeURIComponent(dot.date)}"
-							aria-label="{dayLabel}: {formatValue(dot.value)} {metricLabel} — open logbook"
+							aria-label={t('cards.yearlyStats.ariaDayDot', {
+								day: dayLabel,
+								value: formatValue(dot.value),
+								metric: metricLabel
+							})}
 							onmouseenter={() => onDotEnter(yl.year, dot.date, dot.value, dot.x, dot.y, yl.color)}
 							onmouseleave={onDotLeave}
 						>
@@ -389,11 +397,18 @@
 				{#each linePoints as p, i (p.year)}
 					<a
 						href={`/logbook?year=${p.year}`}
-						aria-label="{p.year}: {formatValue(p.value)} {chartLabel}"
+						aria-label={t('cards.yearlyStats.ariaYearPoint', {
+							year: p.year,
+							value: formatValue(p.value),
+							chart: chartLabel
+						})}
 					>
 						<title
 							>{p.year}: {formatValue(p.value)}
-							{chartLabel} ({fmtDelta(series[i]?.delta ?? null, deltaSuffix)} this year)</title
+							{t('cards.yearlyStats.yearPointTitle', {
+								chart: chartLabel,
+								delta: fmtDelta(series[i]?.delta ?? null, deltaSuffix)
+							})}</title
 						>
 						<circle
 							class="dot"
@@ -430,12 +445,11 @@
 			{#if hover}
 				<p class="hover-label" style:color={hover.color}>
 					{formatCalendarDate(hover.date, dateDisplay)} · {hover.year} · {formatValue(hover.value)}
-					{metricLabel.toLowerCase()}
+					{metricLower}
 				</p>
 			{:else if yearLines.length > 0}
 				<p class="hint">
-					Thick orange: career total. Thin lines: each year from 0 across the calendar — click a day
-					for the logbook; lines stay flat after the last climb of the year.
+					{t('cards.yearlyStats.hintCumulative')}
 				</p>
 			{/if}
 			{#if yearLines.length > 0}
@@ -451,7 +465,7 @@
 					<li>
 						<span class="career-swatch">
 							<i style:background="var(--accent)"></i>
-							Career
+							{t('cards.yearlyStats.legendCareer')}
 						</span>
 					</li>
 				</ul>
@@ -472,10 +486,12 @@
 					<a
 						class="col"
 						href={`/logbook?year=${point.year}`}
-						title="{point.year}: {formatValue(point.value)} {metricLabel} ({fmtDelta(
-							point.delta,
-							deltaSuffix
-						)} YoY)"
+						title={t('cards.yearlyStats.yearBarTitle', {
+							year: point.year,
+							value: formatValue(point.value),
+							metric: metricLabel,
+							delta: fmtDelta(point.delta, deltaSuffix)
+						})}
 					>
 						<div class="stack">
 							<div class="bar" style:height="{(point.value / max) * 100}%"></div>
@@ -492,19 +508,19 @@
 
 	{#if years.length > 0}
 		<details class="yoy">
-			<summary>Year-over-year table</summary>
+			<summary>{t('cards.yearlyStats.tableTitle')}</summary>
 			<div class="table-wrap">
 				<table>
 					<thead>
 						<tr>
-							<th>Year</th>
-							<th>Ascents</th>
-							<th>YoY</th>
-							<th>Sends</th>
-							<th>Onsights</th>
-							<th>YoY</th>
-							<th>Height</th>
-							<th>YoY</th>
+							<th>{t('cards.yearlyStats.thYear')}</th>
+							<th>{t('cards.yearlyStats.metricAscents')}</th>
+							<th>{t('cards.yearlyStats.thYoy')}</th>
+							<th>{t('cards.yearlyStats.metricSends')}</th>
+							<th>{t('cards.yearlyStats.thOnsights')}</th>
+							<th>{t('cards.yearlyStats.thYoy')}</th>
+							<th>{t('cards.yearlyStats.thHeight')}</th>
+							<th>{t('cards.yearlyStats.thYoy')}</th>
 						</tr>
 					</thead>
 					<tbody>

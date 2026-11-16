@@ -2,6 +2,7 @@
 	import { useI18n } from '#lib/i18n';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
+	import RichText from '#lib/components/RichText.svelte';
 	import { DEFAULT_DATE_DISPLAY, formatNumber, type DateDisplay } from '#lib/dates';
 	import {
 		MIN_RATE_ASCENTS,
@@ -18,21 +19,21 @@
 	let { data, dateDisplay = DEFAULT_DATE_DISPLAY, compact = true }: Props = $props();
 	const i18n = useI18n();
 
-	const METRICS: { key: WeatherPerformanceMetric; label: string; help: string }[] = [
+	const METRICS: { key: WeatherPerformanceMetric; labelKey: string; helpKey: string }[] = [
 		{
 			key: 'sendRate',
-			label: 'Send rate',
-			help: 'Sends as a share of your logged sends and attempts.'
+			labelKey: 'cards.weatherPerformance.labelSendRate',
+			helpKey: 'cards.weatherPerformance.helpSendRate'
 		},
 		{
 			key: 'nearLimit',
-			label: 'Near-limit',
-			help: 'Sends within 2 grades (1 V-grade) of your hardest outdoor send of the same style in the year before.'
+			labelKey: 'cards.weatherPerformance.labelNearLimit',
+			helpKey: 'cards.weatherPerformance.helpNearLimit'
 		},
 		{
 			key: 'onsightFlash',
-			label: 'Onsight/flash',
-			help: 'Onsights and flashes as a share of your sends.'
+			labelKey: 'cards.weatherPerformance.labelOnsightFlash',
+			helpKey: 'cards.weatherPerformance.helpOnsightFlash'
 		}
 	];
 
@@ -84,20 +85,25 @@
 	// Leading spaces live in the strings: Svelte trims whitespace at the start of {#if} blocks.
 	const uncachedNote = $derived(
 		data.outdoorAscents > data.ascents
-			? ` (${fmt(data.outdoorAscents - data.ascents)} more outdoor sends and attempts with resolved locations have no usable weather)`
+			? ` ${i18n.t('cards.weatherPerformance.noteUncachedSends', {
+					count: fmt(data.outdoorAscents - data.ascents)
+				})}`
 			: ''
 	);
 	const approximateNote = $derived(
 		data.approximateAscents > 0
-			? ` ${fmt(data.approximateAscents)} ${data.approximateAscents === 1 ? 'ascent uses' : 'ascents use'} weather from an approximate nearby place or area.`
+			? ` ${i18n.t('cards.weatherPerformance.noteApproximateWeather', {
+					count: data.approximateAscents
+				})}`
 			: ''
 	);
 
 	function daysPhrase(band: WeatherPerformanceBand): string {
-		if (dimension === 'conditions') return `${band.label.toLowerCase()} days`;
+		if (dimension === 'conditions')
+			return i18n.t('cards.weatherPerformance.daysAfterLabel', { label: band.label.toLowerCase() });
 		return band.label.startsWith('Under')
-			? `days ${band.label.toLowerCase()}`
-			: `${band.label} days`;
+			? i18n.t('cards.weatherPerformance.daysBeforeLabel', { label: band.label.toLowerCase() })
+			: i18n.t('cards.weatherPerformance.daysAfterLabel', { label: band.label });
 	}
 
 	function rateText(rate: WeatherRate): string {
@@ -105,27 +111,39 @@
 	}
 
 	function sampleText(rate: WeatherRate): string {
-		return `${fmt(rate.count)} of ${fmt(rate.total)}`;
+		return i18n.t('cards.weatherPerformance.sampleCountOfTotal', {
+			count: fmt(rate.count),
+			total: fmt(rate.total)
+		});
 	}
 </script>
 
 <article class="panel weather-performance">
 	<header>
 		<h2>
-			{#if compact}<a href="/weather#performance">Weather &amp; performance</a>{:else}Weather &amp;
-				performance{/if}
+			{#if compact}<a href="/weather#performance"
+					>{i18n.t('cards.weatherPerformance.titleWeatherAndPerformance')}</a
+				>{:else}{i18n.t('cards.weatherPerformance.titleWeatherAndPerformance')}{/if}
 		</h2>
 		<a class="how" href="/docs/weather">{i18n.t('common.howItWorks')}</a>
 	</header>
 
 	{#if !data.ready || !group}
 		<p class="lead">
-			Compare your sends across weather once {fmt(data.minDays)} outdoor location-days have cached weather.
-			So far: {fmt(data.days)}.{approximateNote}
+			{i18n.t('cards.weatherPerformance.leadNotReady', {
+				minDays: fmt(data.minDays),
+				days: fmt(data.days),
+				approximate: approximateNote
+			})}
 		</p>
 	{:else}
 		<p class="lead">
-			{fmt(data.ascents)} outdoor sends and attempts on {fmt(data.days)} location-days with cached weather{uncachedNote}.{approximateNote}
+			{i18n.t('cards.weatherPerformance.leadCounts', {
+				ascents: fmt(data.ascents),
+				days: fmt(data.days),
+				uncached: uncachedNote,
+				approximate: approximateNote
+			})}
 		</p>
 
 		{#if showDetails}
@@ -154,30 +172,42 @@
 							type="button"
 							class={{ active: metric === m.key }}
 							aria-pressed={metric === m.key}
-							onclick={() => select('measure', m.key)}>{m.label}</button
+							onclick={() => select('measure', m.key)}>{i18n.t(m.labelKey)}</button
 						>
 					{/each}
 				</div>
 			</div>
-			<p class="hint">{metricDef.help}</p>
+			<p class="hint">{i18n.t(metricDef.helpKey)}</p>
 		{:else}
 			<p class="hint">
-				Daily high · Send rate{overall != null ? ` · Overall ${fmt(overall)}%` : ''}
+				{overall == null
+					? i18n.t('cards.weatherPerformance.hintDailyHighSendRate')
+					: i18n.t('cards.weatherPerformance.hintDailyHighSendRateOverall', {
+							percent: fmt(overall)
+						})}
 			</p>
 		{/if}
 
 		<p class="summary" aria-live="polite">
 			{#if standout}
 				{@const r = standout[metric]}
-				{metricDef.label} is <strong>{r.signal === 'higher' ? 'higher' : 'lower'}</strong> on
-				{daysPhrase(standout)}: {fmt(r.pct!)}% vs {fmt(
-					Math.round((r.pct! - r.diffPts!) * 10) / 10
-				)}% on your other days.
+				<RichText
+					message={i18n.t(
+						r.signal === 'higher'
+							? 'cards.weatherPerformance.summaryHigher'
+							: 'cards.weatherPerformance.summaryLower',
+						{
+							metric: i18n.t(metricDef.labelKey),
+							days: daysPhrase(standout),
+							percent: fmt(r.pct!),
+							other: fmt(Math.round((r.pct! - r.diffPts!) * 10) / 10)
+						}
+					)}
+				/>
 			{:else if !showDetails}
-				No clear weather pattern yet for daily-high/send rate.
+				{i18n.t('cards.weatherPerformance.summaryNoPattern')}
 			{:else}
-				No weather band stands out from your other days yet; the differences below are within normal
-				day-to-day variation.
+				{i18n.t('cards.weatherPerformance.summaryNoStandout')}
 			{/if}
 		</p>
 
@@ -187,13 +217,16 @@
 				<span class="label">{band.label}</span>
 				<span class="value">
 					{#if r.pct == null}
-						Not enough data · {fmt(band.ascents)}
-						{band.ascents === 1 ? 'ascent' : 'ascents'}
+						{i18n.t('cards.weatherPerformance.valueNotEnoughData', { count: band.ascents })}
 					{:else}
 						{fmt(r.pct)}% · {sampleText(r)}
 					{/if}
 					{#if r.signal}
-						<span class="signal {r.signal}">{r.signal === 'higher' ? '↑ Higher' : '↓ Lower'}</span>
+						<span class="signal {r.signal}"
+							>{r.signal === 'higher'
+								? i18n.t('cards.weatherPerformance.labelHigher')
+								: i18n.t('cards.weatherPerformance.labelLower')}</span
+						>
 					{/if}
 				</span>
 				<div class="track" aria-hidden="true">
@@ -220,29 +253,41 @@
 
 			<p class="hint">
 				{#if overall != null}
-					Overall {metricDef.label.toLowerCase()}: {fmt(overall)}% (the line on each bar).
+					{i18n.t('cards.weatherPerformance.hintOverallLine', {
+						metric: i18n.t(metricDef.labelKey).toLowerCase(),
+						percent: fmt(overall)
+					})}
 				{/if}
-				“Higher” or “Lower” marks a band that differs from your other weather days by more than day-to-day
-				variation explains, with at least {fmt(MIN_RATE_ASCENTS)} ascents over
-				{fmt(MIN_SIGNAL_DAYS)} days on each side.
-				{#if group.overlapping}One day can count in several conditions.{/if}
-				Season, crag and project choice also change with the weather, so treat this as a pattern, not
-				a cause.
+				{i18n.t('cards.weatherPerformance.hintSignalThreshold', {
+					minAscents: fmt(MIN_RATE_ASCENTS),
+					minDays: fmt(MIN_SIGNAL_DAYS)
+				})}
+				{#if group.overlapping}{i18n.t('cards.weatherPerformance.hintOverlapping')}{/if}
+				{i18n.t('cards.weatherPerformance.hintPatternNotCause')}
 			</p>
 
 			<details class="values">
-				<summary>View values</summary>
+				<summary>{i18n.t('cards.weatherPerformance.summaryViewValues')}</summary>
 				<!-- Scrollable region: focusable so keyboard users can scroll it (axe). -->
 				<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-				<div class="table-wrap" tabindex="0" role="region" aria-label="{group.label} values">
+				<div
+					class="table-wrap"
+					tabindex="0"
+					role="region"
+					aria-label={i18n.t('cards.weatherPerformance.ariaBandValues', { group: group.label })}
+				>
 					<table>
-						<caption>{group.label}: sends by weather (count of total)</caption>
+						<caption>
+							{i18n.t('cards.weatherPerformance.captionSendsByWeather', {
+								group: group.label
+							})}
+						</caption>
 						<thead>
 							<tr>
-								<th scope="col">Band</th>
-								<th scope="col">Days</th>
+								<th scope="col">{i18n.t('cards.weatherPerformance.thBand')}</th>
+								<th scope="col">{i18n.t('cards.weatherPerformance.thDays')}</th>
 								{#each METRICS as m (m.key)}
-									<th scope="col">{m.label}</th>
+									<th scope="col">{i18n.t(m.labelKey)}</th>
 								{/each}
 							</tr>
 						</thead>
@@ -256,7 +301,10 @@
 										<td>
 											{rateText(r)}
 											<span class="n">({sampleText(r)})</span>
-											{#if r.signal}<span class="visually-hidden">, {r.signal} than other days</span
+											{#if r.signal}<span class="visually-hidden"
+													>{r.signal === 'higher'
+														? i18n.t('cards.weatherPerformance.visuallyHiddenHigher')
+														: i18n.t('cards.weatherPerformance.visuallyHiddenLower')}</span
 												>{/if}
 										</td>
 									{/each}
@@ -268,10 +316,16 @@
 			</details>
 		{:else}
 			<p class="hint">{i18n.t('cards.weatherPerformance.hint')}</p>
-			{#if standout?.href}<p><a href={standout.href}>View the qualifying ascents</a></p>{/if}
+			{#if standout?.href}<p>
+					<a href={standout.href}>{i18n.t('cards.weatherPerformance.linkViewQualifyingAscents')}</a>
+				</p>{/if}
 		{/if}
 	{/if}
-	{#if compact}<p><a href="/weather#performance">Explore weather &amp; performance</a></p>{/if}
+	{#if compact}<p>
+			<a href="/weather#performance"
+				>{i18n.t('cards.weatherPerformance.linkExploreWeatherPerformance')}</a
+			>
+		</p>{/if}
 </article>
 
 <style>

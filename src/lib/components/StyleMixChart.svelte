@@ -22,6 +22,15 @@
 		Other: STYLE_COLORS.Unknown
 	};
 
+	const STYLE_KEYS: Record<(typeof styles)[number], string> = {
+		Sport: 'styles.sport',
+		Trad: 'styles.trad',
+		Boulder: 'styles.boulder',
+		Other: 'styles.other'
+	};
+
+	const styleLabel = (style: (typeof styles)[number]) => i18n.t(STYLE_KEYS[style]);
+
 	type Range = 'recent' | 'all';
 	let range = $state<Range>('recent');
 
@@ -52,10 +61,11 @@
 				<button
 					type="button"
 					class={{ active: range === 'recent' }}
-					onclick={() => (range = 'recent')}>Last 3 years</button
+					onclick={() => (range = 'recent')}
+					>{i18n.t('cards.styleMixChart.buttonLastThreeYears')}</button
 				>
 				<button type="button" class={{ active: range === 'all' }} onclick={() => (range = 'all')}
-					>All</button
+					>{i18n.t('cards.styleMixChart.buttonAll')}</button
 				>
 			</div>
 		{/if}
@@ -75,7 +85,17 @@
 					<a
 						class="col"
 						href={`/logbook?year=${m.month.slice(0, 4)}`}
-						title="{m.month}: Sport {m.Sport}, Trad {m.Trad}, Boulder {m.Boulder}, Other {m.Other}"
+						title={i18n.t('cards.styleMixChart.titleMonthMix', {
+							month: m.month,
+							sport: styleLabel('Sport'),
+							sportCount: m.Sport,
+							trad: styleLabel('Trad'),
+							tradCount: m.Trad,
+							boulder: styleLabel('Boulder'),
+							boulderCount: m.Boulder,
+							other: styleLabel('Other'),
+							otherCount: m.Other
+						})}
 					>
 						<div class="plot">
 							{#if total > 0}
@@ -86,7 +106,10 @@
 												class="seg"
 												style:flex={m[style]}
 												style:background={colors[style]}
-												title="{style}: {m[style]}"
+												title={i18n.t('cards.styleMixChart.titleStyleCount', {
+													style: styleLabel(style),
+													count: m[style]
+												})}
 											></div>
 										{/if}
 									{/each}
@@ -100,7 +123,7 @@
 		</div>
 		<div class="legend">
 			{#each styles as style (style)}
-				<span><i style:background={colors[style]}></i> {style}</span>
+				<span><i style:background={colors[style]}></i> {styleLabel(style)}</span>
 			{/each}
 		</div>
 	{/if}

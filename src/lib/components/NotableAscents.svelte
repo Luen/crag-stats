@@ -101,7 +101,7 @@
 		{/each}
 	</div>
 
-	<h3>By area</h3>
+	<h3>{i18n.t('cards.notableAscents.titleByArea')}</h3>
 	<div class="groups groups-columns">
 		{#each areaGroups as g (g.group)}
 			<section class="group-block">

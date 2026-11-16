@@ -34,10 +34,7 @@
 </script>
 
 <div class="editor">
-	<p class="hint">
-		Choose which dashboard cards to show and their order. The hero and summary metrics stay fixed.
-		Saved for the whole site, so every visitor sees this layout.
-	</p>
+	<p class="hint">{i18n.t('cards.dashboardLayoutEditor.hint')}</p>
 	<form method="POST" action="?/saveDashboardLayout" class="form">
 		<input type="hidden" name="layout" value={JSON.stringify(draft)} />
 		<ul>
@@ -54,14 +51,18 @@
 							class="icon"
 							disabled={index === 0}
 							onclick={() => move(item.id, -1)}
-							aria-label="Move {cardDef(item.id).label} up">↑</button
+							aria-label={i18n.t('cards.dashboardLayoutEditor.ariaMoveUp', {
+								name: cardDef(item.id).label
+							})}>↑</button
 						>
 						<button
 							type="button"
 							class="icon"
 							disabled={index === draft.length - 1}
 							onclick={() => move(item.id, 1)}
-							aria-label="Move {cardDef(item.id).label} down">↓</button
+							aria-label={i18n.t('cards.dashboardLayoutEditor.ariaMoveDown', {
+								name: cardDef(item.id).label
+							})}>↓</button
 						>
 					</div>
 				</li>
@@ -79,7 +80,12 @@
 			>{i18n.t('cards.dashboardLayoutEditor.buttonClearSavedLayout')}</button
 		>
 	</form>
-	<p class="meta">{DEFAULT_DASH_CARDS.length} cards · {visibleCount} visible</p>
+	<p class="meta">
+		{i18n.t('cards.dashboardLayoutEditor.metaCardsVisible', {
+			cards: DEFAULT_DASH_CARDS.length,
+			visible: visibleCount
+		})}
+	</p>
 </div>
 
 <style>

@@ -28,7 +28,7 @@
 
 <div class="date-range">
 	<label
-		>From (inclusive)<input
+		>{i18n.t('cards.logbookDateRange.labelFrom')}<input
 			type="date"
 			name="from"
 			bind:value={start}
@@ -38,7 +38,7 @@
 		/></label
 	>
 	<label
-		>To (inclusive)<input
+		>{i18n.t('cards.logbookDateRange.labelTo')}<input
 			type="date"
 			name="to"
 			bind:value={end}
@@ -48,7 +48,7 @@
 		/></label
 	>
 	<label
-		>Fill date range<select
+		>{i18n.t('cards.logbookDateRange.labelFillDateRange')}<select
 			aria-label={i18n.t('cards.logbookDateRange.ariaFillDateRange')}
 			onchange={preset}
 		>
@@ -56,13 +56,12 @@
 			<option value="all">{i18n.t('cards.logbookDateRange.optionAllDates')}</option>
 			<option value="ytd">{i18n.t('cards.logbookDateRange.optionYearToDate')}</option>
 			<option value="last_year">{i18n.t('cards.logbookDateRange.optionLastYear')}</option>
-			{#each years as year (year)}<option value={year}>Full year {year}</option>{/each}
+			{#each years as year (year)}<option value={year}
+					>{i18n.t('cards.logbookDateRange.optionFullYear', { year })}</option
+				>{/each}
 		</select></label
 	>
-	<p id={`${id}-help`}>
-		Leave either date blank for an open-ended range. Presets fill these dates; apply filters to
-		search.
-	</p>
+	<p id={`${id}-help`}>{i18n.t('cards.logbookDateRange.help')}</p>
 	{#if error}<p role="alert">{error}</p>{/if}
 </div>
 

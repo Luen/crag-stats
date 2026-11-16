@@ -5,22 +5,18 @@
 	const i18n = useI18n();
 </script>
 
-<svelte:head><title>Weather locations · Crag Stats</title></svelte:head>
+<svelte:head><title>{i18n.t('pages.weatherLocations.pageTitle')}</title></svelte:head>
 <section class="panel">
 	<h1>{i18n.t('pages.weatherLocations.titleWeatherLocations')}</h1>
-	<p><a href="/settings">Back to Settings</a> · <a href="/docs/weather">How weather works</a></p>
 	<p>
-		Route points take priority, then crag points, then immediate sector points. Validated small area
-		polygons supply an approximate boundary coordinate when these points are missing. Country
-		centres are excluded when the original payload identifies them. Without a usable point, choose a
-		nearby town as an approximate weather location. Polygon and town fallbacks do not move route
-		maps or unlock weather badges. Existing weather stays cached, but only the current location's
-		key is used.
+		<a href="/settings">{i18n.t('pages.weatherLocations.linkBackToSettings')}</a> ·
+		<a href="/docs/weather">{i18n.t('pages.settings.linkHowWeatherWorks')}</a>
 	</p>
 	<p>
-		Search sends only the place name and country code you enter to Open-Meteo/GeoNames when you
-		submit. No ascent details or private notes are sent. Results are cached for 30 days; no place is
-		selected automatically.
+		{i18n.t('pages.weatherLocations.leadLocationPriority')}
+	</p>
+	<p>
+		{i18n.t('pages.weatherLocations.leadSearchPrivacy')}
 	</p>
 	{#if form?.message}<p role="status">{form.message}</p>{/if}
 	{#if form?.candidates}<section
@@ -28,7 +24,7 @@
 		>
 			<h2>{i18n.t('pages.weatherLocations.titleChooseTheCorrectPlace')}</h2>
 			{#if !form.candidates.length}<p>
-					No matching places. Try a nearby town with its region.
+					{i18n.t('pages.weatherLocations.emptyNoMatchingPlaces')}
 				</p>{/if}
 			<ul>
 				{#each form.candidates as p (p.id)}<li>
@@ -41,7 +37,7 @@
 								name="queryKey"
 								value={form.queryKey}
 							/><input type="hidden" name="id" value={p.id} /><button type="submit"
-								>Use {p.name} as an approximate weather place</button
+								>{i18n.t('pages.weatherLocations.buttonUsePlace', { name: p.name })}</button
 							>
 						</form>
 					</li>{/each}
@@ -49,22 +45,31 @@
 		</section>{/if}
 	<h2>{i18n.t('pages.weatherLocations.titleOutdoorClimbingAreas')}</h2>
 	<p>
-		{data.groups.reduce((n, g) => n + g.unresolved, 0)} routes have unresolved weather locations.
+		{i18n.t('pages.weatherLocations.labelUnresolvedRoutes', {
+			count: data.groups.reduce((n, g) => n + g.unresolved, 0)
+		})}
 	</p>
 	{#each data.groups as g (g.key)}<details>
 			<summary
-				>{g.name} · {g.country ?? 'Country unknown'} · {g.unresolved}/{g.routes} unresolved routes · {g.source}</summary
+				>{i18n.t('pages.weatherLocations.summaryArea', {
+					name: g.name,
+					country: g.country ?? i18n.t('pages.weatherLocations.labelCountryUnknown'),
+					unresolved: g.unresolved,
+					routes: g.routes,
+					source: g.source
+				})}</summary
 			>{#if g.override}<p>
-					Chosen fallback: {g.override.name}. Precise route/crag points still take priority.
+					{i18n.t('pages.weatherLocations.labelChosenFallback', { name: g.override.name })}
 				</p>
 				<form method="POST" action="?/clear">
 					<input type="hidden" name="areaKey" value={g.key} /><button type="submit"
-						>Remove nearby-place fallback</button
+						>{i18n.t('pages.weatherLocations.buttonRemoveNearbyPlaceFallback')}</button
 					>
 				</form>{/if}
 			<form method="POST" action="?/search" class="search">
 				<input type="hidden" name="areaKey" value={g.key} /><label
-					>Nearby place or town <input
+					>{i18n.t('pages.weatherLocations.labelNearbyPlaceOrTown')}
+					<input
 						name="query"
 						required
 						minlength="3"
@@ -72,14 +77,17 @@
 						placeholder={i18n.t('pages.weatherLocations.placeholderTownRegion')}
 					/></label
 				><label
-					>Country code <input
+					>{i18n.t('pages.weatherLocations.labelCountryCode')}
+					<input
 						name="countryCode"
 						required
 						pattern={'[A-Za-z]{2}'}
 						maxlength="2"
 						placeholder={i18n.t('pages.weatherLocations.placeholderAU')}
 					/></label
-				><button type="submit">Search places for {g.name}</button>
+				><button type="submit"
+					>{i18n.t('pages.weatherLocations.buttonSearchPlacesForArea', { name: g.name })}</button
+				>
 			</form>
 		</details>{/each}
 </section>

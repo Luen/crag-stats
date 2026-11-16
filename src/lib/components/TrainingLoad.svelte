@@ -26,17 +26,26 @@
 	}: Props = $props();
 	const i18n = useI18n();
 
-	const STATUS: Record<LoadStatus, { label: string; hint: string }> = {
-		idle: { label: 'Resting', hint: 'Nothing logged in the last couple of weeks.' },
-		detraining: {
-			label: 'Below usual',
-			hint: 'Lighter than your recent norm: fresh, tapering, or losing fitness.'
+	const STATUS: Record<LoadStatus, { labelKey: string; hintKey: string }> = {
+		idle: {
+			labelKey: 'cards.trainingLoad.labelStatusResting',
+			hintKey: 'cards.trainingLoad.hintStatusResting'
 		},
-		optimal: { label: 'Sweet spot', hint: 'Load is in line with what you are used to (0.8–1.3).' },
-		building: { label: 'Ramping up', hint: 'Load is climbing quickly (1.3–1.5). Watch recovery.' },
+		detraining: {
+			labelKey: 'cards.trainingLoad.labelStatusBelowUsual',
+			hintKey: 'cards.trainingLoad.hintStatusBelowUsual'
+		},
+		optimal: {
+			labelKey: 'cards.trainingLoad.labelStatusSweetSpot',
+			hintKey: 'cards.trainingLoad.hintStatusSweetSpot'
+		},
+		building: {
+			labelKey: 'cards.trainingLoad.labelStatusRampingUp',
+			hintKey: 'cards.trainingLoad.hintStatusRampingUp'
+		},
 		spike: {
-			label: 'Spike',
-			hint: 'Much more than usual (> 1.5): the zone most linked to finger and shoulder tweaks.'
+			labelKey: 'cards.trainingLoad.labelStatusSpike',
+			hintKey: 'cards.trainingLoad.hintStatusSpike'
 		}
 	};
 
@@ -51,10 +60,14 @@
 	const refs = $derived(
 		[
 			load.refRoute != null
-				? `routes ${formatGradeLabel(load.refRoute, false, gradeSystems)}`
+				? i18n.t('cards.trainingLoad.referenceRoutes', {
+						grade: formatGradeLabel(load.refRoute, false, gradeSystems)
+					})
 				: null,
 			load.refBoulder != null
-				? `boulders ${formatGradeLabel(load.refBoulder, true, gradeSystems)}`
+				? i18n.t('cards.trainingLoad.referenceBoulders', {
+						grade: formatGradeLabel(load.refBoulder, true, gradeSystems)
+					})
 				: null
 		].filter(Boolean)
 	);
@@ -64,9 +77,9 @@
 	<header>
 		<h2>
 			{#if titleHref}
-				<a href={titleHref}>Training load</a>
+				<a href={titleHref}>{i18n.t('cards.trainingLoad.titleTrainingLoad')}</a>
 			{:else}
-				Training load
+				{i18n.t('cards.trainingLoad.titleTrainingLoad')}
 			{/if}
 		</h2>
 		<a class="how" href="/docs/training-load">{i18n.t('common.howItWorks')}</a>
@@ -76,7 +89,7 @@
 		<div class="ratio" data-status={load.status}>
 			<span class="k">{i18n.t('cards.trainingLoad.labelAcuteChronic')}</span>
 			<strong>{load.ratio != null ? load.ratio.toFixed(2) : '—'}</strong>
-			<span class="pill">{status.label}</span>
+			<span class="pill">{i18n.t(status.labelKey)}</span>
 		</div>
 		<div class="meter" aria-hidden="true">
 			<div class="zones">
@@ -89,19 +102,27 @@
 				<span>0</span><span>0.8</span><span>1.3</span><span>1.5</span><span>2</span>
 			</div>
 		</div>
-		<p class="hint">{status.hint}</p>
+		<p class="hint">{i18n.t(status.hintKey)}</p>
 	</div>
 
-	<div class="weeks" aria-label="Weekly load, last {weeks.length} weeks">
+	<div
+		class="weeks"
+		aria-label={i18n.t('cards.trainingLoad.ariaWeeklyLoad', { weeks: weeks.length })}
+	>
 		{#each weeks as w (w.end)}
 			<span
 				class="wk"
 				style:height="{Math.max(4, (w.load / maxWeek) * 100)}%"
-				title="Week to {formatCalendarDate(w.end, dateDisplay)}: load {w.load}"
+				title={i18n.t('cards.trainingLoad.titleWeekLoad', {
+					date: formatCalendarDate(w.end, dateDisplay),
+					load: w.load
+				})}
 			></span>
 		{/each}
 	</div>
-	<p class="weeks-cap">Weekly load · last {weeks.length} weeks</p>
+	<p class="weeks-cap">
+		{i18n.t('cards.trainingLoad.captionWeeklyLoad', { weeks: weeks.length })}
+	</p>
 
 	{#if showDaily && load.daily28.length}
 		<div class="days" aria-label={i18n.t('cards.trainingLoad.ariaDailyLoadLast28Days')}>
@@ -109,60 +130,63 @@
 				<span
 					class={['day', { rest: d.load <= 0 }]}
 					style:height="{d.load <= 0 ? 4 : Math.max(4, (d.load / maxDay) * 100)}%"
-					title="{formatCalendarDate(d.day, dateDisplay)}: load {d.load}"
+					title={i18n.t('cards.trainingLoad.titleDayLoad', {
+						date: formatCalendarDate(d.day, dateDisplay),
+						load: d.load
+					})}
 				></span>
 			{/each}
 		</div>
-		<p class="weeks-cap">Daily load · last 28 days</p>
+		<p class="weeks-cap">{i18n.t('cards.trainingLoad.captionDailyLoad')}</p>
 	{/if}
 
 	<dl class="kpis">
 		<div>
-			<dt>Fatigue (7-day)</dt>
+			<dt>{i18n.t('cards.trainingLoad.labelFatigue7Day')}</dt>
 			<dd>{load.acute}</dd>
 		</div>
 		<div>
-			<dt>Fitness (28-day)</dt>
+			<dt>{i18n.t('cards.trainingLoad.labelFitness28Day')}</dt>
 			<dd>{load.chronic}</dd>
 		</div>
 		<div>
-			<dt>Near-limit sends · 28d</dt>
+			<dt>{i18n.t('cards.trainingLoad.labelNearLimitSends28d')}</dt>
 			<dd>{load.limitSends28}</dd>
 		</div>
 		<div>
-			<dt>Near-limit share · 28d</dt>
+			<dt>{i18n.t('cards.trainingLoad.labelNearLimitShare28d')}</dt>
 			<dd>{pct(load.limitShare28)}</dd>
 		</div>
 	</dl>
 	{#if refs.length}
 		<p class="ref">
-			Intensity is measured against your hardest sends of the last 12 months: {refs.join(' · ')}.
+			{i18n.t('cards.trainingLoad.helpIntensityReference', { refs: refs.join(' · ') })}
 		</p>
 	{/if}
 
 	<div class="cols">
-		{#each [{ t: 'Last 7 days', w: load.last7, rest: load.restDays7, rate: load.sendRate7 }, { t: 'Last 28 days', w: load.last28, rest: load.restDays28, rate: load.sendRate28 }] as col (col.t)}
+		{#each [{ t: 'cards.trainingLoad.labelLast7Days', w: load.last7, rest: load.restDays7, rate: load.sendRate7 }, { t: 'cards.trainingLoad.labelLast28Days', w: load.last28, rest: load.restDays28, rate: load.sendRate28 }] as col (col.t)}
 			<section>
-				<h3>{col.t}</h3>
+				<h3>{i18n.t(col.t)}</h3>
 				<dl>
 					<div>
-						<dt>Ascents</dt>
+						<dt>{i18n.t('cards.trainingLoad.labelAscents')}</dt>
 						<dd>{col.w.ascents}</dd>
 					</div>
 					<div>
-						<dt>Sends</dt>
+						<dt>{i18n.t('cards.trainingLoad.labelSends')}</dt>
 						<dd>{col.w.sends}</dd>
 					</div>
 					<div>
-						<dt>Active / rest days</dt>
+						<dt>{i18n.t('cards.trainingLoad.labelActiveRestDays')}</dt>
 						<dd>{col.w.activeDays} / {col.rest}</dd>
 					</div>
 					<div>
-						<dt>Height</dt>
+						<dt>{i18n.t('cards.trainingLoad.labelHeight')}</dt>
 						<dd>{formatHeight(col.w.heightM, displayUnits.height)}</dd>
 					</div>
 					<div>
-						<dt>Send rate</dt>
+						<dt>{i18n.t('cards.trainingLoad.labelSendRate')}</dt>
 						<dd>{pct(col.rate)}</dd>
 					</div>
 				</dl>

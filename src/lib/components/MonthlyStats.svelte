@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { useI18n } from '#lib/i18n';
+	import { useI18n, monthLabels } from '#lib/i18n';
 	import { innerWidth } from 'svelte/reactivity/window';
 	import { DEFAULT_DISPLAY_UNITS, formatHeight, type DisplayUnits } from '#lib/units';
 
@@ -56,27 +56,18 @@
 	const heightUnit = $derived(displayUnits.height);
 
 	const metricLabel = $derived(
-		metric === 'ascents' ? 'Ascents' : metric === 'sends' ? 'Sends' : `Height (${heightUnit})`
+		metric === 'ascents'
+			? i18n.t('cards.monthlyStats.metricAscents')
+			: metric === 'sends'
+				? i18n.t('cards.monthlyStats.metricSends')
+				: i18n.t('cards.monthlyStats.metricHeight', { unit: heightUnit })
 	);
 
 	const narrow = $derived((innerWidth.current ?? 900) < 700);
 	const sparseLabels = $derived(values.length > (narrow ? 12 : 18));
 	const showYearInLabel = $derived(yearFilter === 'all' || yearFilter === 'last12');
 
-	const MONTH_NAMES = [
-		'Jan',
-		'Feb',
-		'Mar',
-		'Apr',
-		'May',
-		'Jun',
-		'Jul',
-		'Aug',
-		'Sep',
-		'Oct',
-		'Nov',
-		'Dec'
-	];
+	const MONTH_NAMES = $derived(monthLabels(i18n.t));
 
 	function axisLabel(month: string, index: number): string | null {
 		const isYearStart = month.endsWith('-01') || index === 0;
@@ -106,9 +97,9 @@
 <article class="panel">
 	<h2>
 		{#if titleHref}
-			<a href={titleHref}>Monthly stats</a>
+			<a href={titleHref}>{i18n.t('cards.monthlyStats.titleMonthlyStats')}</a>
 		{:else}
-			Monthly stats
+			{i18n.t('cards.monthlyStats.titleMonthlyStats')}
 		{/if}
 	</h2>
 
@@ -130,17 +121,18 @@
 				<button
 					type="button"
 					class={{ active: metric === 'ascents' }}
-					onclick={() => (metric = 'ascents')}>Ascents</button
+					onclick={() => (metric = 'ascents')}>{i18n.t('cards.monthlyStats.metricAscents')}</button
 				>
 				<button
 					type="button"
 					class={{ active: metric === 'sends' }}
-					onclick={() => (metric = 'sends')}>Sends</button
+					onclick={() => (metric = 'sends')}>{i18n.t('cards.monthlyStats.metricSends')}</button
 				>
 				<button
 					type="button"
 					class={{ active: metric === 'heightM' }}
-					onclick={() => (metric = 'heightM')}>Height ({heightUnit})</button
+					onclick={() => (metric = 'heightM')}
+					>{i18n.t('cards.monthlyStats.metricHeight', { unit: heightUnit })}</button
 				>
 			</div>
 		</div>

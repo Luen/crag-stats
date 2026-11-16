@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { useI18n } from '#lib/i18n';
 	import { sortEarnedBadges } from '#lib/badgeOrder';
+	import RichText from '#lib/components/RichText.svelte';
 
 	type Badge = {
 		id: string;
@@ -115,7 +116,9 @@
 			{/if}
 		</p>
 		{#if b.earned && b.href}
-			<a class="link" href={b.href} target="_blank" rel="noreferrer">View climb</a>
+			<a class="link" href={b.href} target="_blank" rel="noreferrer"
+				>{i18n.t('cards.badges.linkViewClimb')}</a
+			>
 		{:else if b.earned}
 			<span class="link muted">{i18n.t('cards.badges.labelEarned')}</span>
 		{:else}
@@ -129,19 +132,24 @@
 		<div>
 			<h2>
 				{#if titleHref}
-					<a href={titleHref}>Badges</a>
+					<a href={titleHref}>{i18n.t('cards.badges.titleBadges')}</a>
 				{:else}
-					Badges
+					{i18n.t('cards.badges.titleBadges')}
 				{/if}
 			</h2>
 			{#if !compact}
-				<p class="blurb">Real milestones from your logbook. Breaks do not erase them.</p>
+				<p class="blurb">{i18n.t('cards.badges.blurb')}</p>
 			{:else}
-				<p class="blurb">Recently earned — open the gallery for locked badges too.</p>
+				<p class="blurb">{i18n.t('cards.badges.blurbCompact')}</p>
 			{/if}
 		</div>
 		<div class="meta">
-			<span class="progress">{earnedCount} of {totalCount} earned</span>
+			<span class="progress"
+				>{i18n.t('cards.badges.progressEarned', {
+					earned: earnedCount,
+					total: totalCount
+				})}</span
+			>
 			<a class="how" href="/docs/badges">{i18n.t('common.howItWorks')}</a>
 		</div>
 	</header>
@@ -149,9 +157,18 @@
 	{#if cards.length === 0}
 		<p class="empty">
 			{#if compact && earnedCount === 0 && totalCount > 0}
-				No badges earned yet — <a href={moreHref}>see what is locked</a>.
+				<RichText
+					message={i18n.t('cards.badges.emptyNothingEarned')}
+					tokens={{
+						locked: {
+							kind: 'link',
+							text: i18n.t('cards.badges.linkLockedBadges'),
+							href: moreHref
+						}
+					}}
+				/>
 			{:else}
-				No badges yet — keep ticking.
+				{i18n.t('cards.badges.emptyNone')}
 			{/if}
 		</p>
 	{:else if resolvedLayout === 'grid'}
@@ -191,7 +208,7 @@
 	{/if}
 
 	{#if moreCount > 0}
-		<a class="more" href={moreHref}>Show more ({moreCount} more)</a>
+		<a class="more" href={moreHref}>{i18n.t('cards.badges.linkShowMore', { count: moreCount })}</a>
 	{/if}
 </article>
 
@@ -364,7 +381,7 @@
 		margin: 0;
 		color: var(--ink-muted);
 	}
-	.empty a {
+	.empty :global(a) {
 		color: var(--accent);
 		font-weight: 600;
 	}

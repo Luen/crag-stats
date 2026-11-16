@@ -150,7 +150,9 @@
 			.join(', ')
 	);
 	function behaviorLabel(behavior: Exclude<TickBehavior, 'enable'>): string {
-		return behavior === 'projects_goals' ? 'Projects & goals only' : 'Hide';
+		return behavior === 'projects_goals'
+			? i18n.t('pages.settings.thProjectsGoals')
+			: i18n.t('pages.settings.thHide');
 	}
 
 	function applyPreset(preset: TickPreset) {
@@ -304,7 +306,7 @@
 			</label>
 			<h3 class="subheading">{i18n.t('pages.settings.labelUnitsOfMeasurement')}</h3>
 			<div class="presets-row">
-				<span>Presets:</span>
+				<span>{i18n.t('pages.settings.labelPresets')}</span>
 				{#each UNIT_PRESETS as preset (preset.id)}
 					<button
 						type="button"
@@ -452,20 +454,22 @@
 								<th scope="col">{i18n.t('pages.settings.columnTickType')}</th>
 								<th scope="col" class="center">
 									<div class="col-head">
-										<span>Enable</span>
-										<small class="col-desc">Count everywhere</small>
+										<span>{i18n.t('pages.settings.thEnable')}</span>
+										<small class="col-desc">{i18n.t('pages.settings.hintColumnEnable')}</small>
 									</div>
 								</th>
 								<th scope="col" class="center">
 									<div class="col-head">
-										<span>Projects &amp; goals only</span>
-										<small class="col-desc">Out of totals</small>
+										<span>{i18n.t('pages.settings.thProjectsGoals')}</span>
+										<small class="col-desc"
+											>{i18n.t('pages.settings.hintColumnProjectsGoals')}</small
+										>
 									</div>
 								</th>
 								<th scope="col" class="center">
 									<div class="col-head">
-										<span>Hide</span>
-										<small class="col-desc">Exclude completely</small>
+										<span>{i18n.t('pages.settings.thHide')}</span>
+										<small class="col-desc">{i18n.t('pages.settings.hintColumnHide')}</small>
 									</div>
 								</th>
 							</tr>
@@ -496,7 +500,9 @@
 													value="enable"
 													checked={(tickState[tick.key] ?? 'enable') === 'enable'}
 													onchange={() => setTick(tick.key, 'enable')}
-													aria-label={`${tick.name}: Enable (count everywhere)`}
+													aria-label={i18n.t('pages.settings.ariaTickEnable', {
+														name: tick.name
+													})}
 												/>
 											</label>
 										</td>
@@ -508,7 +514,9 @@
 													value="projects_goals"
 													checked={tickState[tick.key] === 'projects_goals'}
 													onchange={() => setTick(tick.key, 'projects_goals')}
-													aria-label={`${tick.name}: Projects and goals only (out of totals)`}
+													aria-label={i18n.t('pages.settings.ariaTickProjectsGoals', {
+														name: tick.name
+													})}
 												/>
 											</label>
 										</td>
@@ -520,7 +528,9 @@
 													value="hide"
 													checked={tickState[tick.key] === 'hide'}
 													onchange={() => setTick(tick.key, 'hide')}
-													aria-label={`${tick.name}: Hide completely`}
+													aria-label={i18n.t('pages.settings.ariaTickHide', {
+														name: tick.name
+													})}
 												/>
 											</label>
 										</td>

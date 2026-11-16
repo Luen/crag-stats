@@ -8,24 +8,19 @@
 </script>
 
 <svelte:head>
-	<title>Badges · Crag Stats</title>
-	<meta name="description" content="Earned and locked climbing badges from your theCrag logbook." />
+	<title>{i18n.t('pages.badges.pageTitle')}</title>
+	<meta name="description" content={i18n.t('pages.badges.pageDescription')} />
 </svelte:head>
 
 <section class="panel head">
 	<h1>{i18n.t('pages.badges.titleBadges')}</h1>
-	<p>
-		Logbook milestones that stick — sends, onsights, height, holidays, first ascents and more. The
-		dashboard card shows recently earned badges; everything lives here.
-	</p>
+	<p>{i18n.t('pages.badges.lead')}</p>
 </section>
 
 {#if data.badges.almost.length > 0}
 	<section class="panel almost">
 		<h2>{i18n.t('pages.badges.titleAlmostThere')}</h2>
-		<p class="blurb">
-			Closest countable badges — holidays and one-shot firsts stay out of this list.
-		</p>
+		<p class="blurb">{i18n.t('pages.badges.hintAlmost')}</p>
 		<ul>
 			{#each data.badges.almost as a (a.id)}
 				<li>
@@ -39,7 +34,11 @@
 						aria-valuenow={a.pct}
 						aria-valuemin={0}
 						aria-valuemax={100}
-						aria-label="{a.title}: {a.current} of {a.target}"
+						aria-label={i18n.t('pages.badges.ariaAlmostProgress', {
+							title: a.title,
+							current: a.current,
+							target: a.target
+						})}
 					>
 						<span style:width="{a.pct}%"></span>
 					</div>

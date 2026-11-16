@@ -12,16 +12,25 @@
 
 	type Props = {
 		title: string;
+		/** theCrag gear style value (`Sport`, `Trad`, `Boulder` …). Never derive from `title`. */
+		style: string;
 		data: CprTimelineData;
 		gradeMin?: number;
 		gradeMax?: number;
 		gradeSystems?: DisplayGradeSystems;
 	};
-	let { title, data, gradeMin, gradeMax, gradeSystems = DEFAULT_DISPLAY_SYSTEMS }: Props = $props();
+	let {
+		title,
+		style,
+		data,
+		gradeMin,
+		gradeMax,
+		gradeSystems = DEFAULT_DISPLAY_SYSTEMS
+	}: Props = $props();
 	const i18n = useI18n();
-	const titleColor = $derived(styleBadgeColor(title));
+	const titleColor = $derived(styleBadgeColor(style));
 	/** Boulder scores are V-grades; sport/trad are Ewbanks. */
-	const isBoulder = $derived(title.toLowerCase().includes('boulder'));
+	const isBoulder = $derived(style.trim().toLowerCase() === 'boulder');
 
 	const range = $derived.by(() => {
 		const vals: number[] = [];
@@ -156,12 +165,12 @@
 	);
 
 	const LEGEND = [
-		{ family: 'onsight', label: 'Onsight', color: '#54b41a' },
-		{ family: 'flash', label: 'Flash', color: '#fee100' },
-		{ family: 'redpoint', label: 'Red point', color: '#c90909' },
-		{ family: 'pinkpoint', label: 'Pink point', color: '#e83e8c' },
-		{ family: 'send', label: 'Send / clean', color: '#1d6fa5' },
-		{ family: 'other', label: 'Attempts', color: '#b0b0b0' }
+		{ family: 'onsight', labelKey: 'ticks.onsight', color: '#54b41a' },
+		{ family: 'flash', labelKey: 'ticks.flash', color: '#fee100' },
+		{ family: 'redpoint', labelKey: 'ticks.redpoint', color: '#c90909' },
+		{ family: 'pinkpoint', labelKey: 'ticks.pinkpoint', color: '#e83e8c' },
+		{ family: 'send', labelKey: 'cards.cprTimeline.legendSendClean', color: '#1d6fa5' },
+		{ family: 'other', labelKey: 'cards.cprTimeline.legendAttempts', color: '#b0b0b0' }
 	];
 	const usedFamilies = $derived(
 		new Set(data.buckets.flatMap((b) => b.candles.map((c) => c.family)))
@@ -172,8 +181,15 @@
 		[...candles].sort((a, b) => ORDER.indexOf(a.family) - ORDER.indexOf(b.family));
 	const colTitle = (b: CprTimelineData['buckets'][number]) =>
 		[
-			`${b.label}: ${b.volume} ascents`,
-			...b.candles.map((c) => `${c.family} ${gradeLabel(c.min)}–${gradeLabel(c.max)} (${c.count})`)
+			i18n.t('cards.cprTimeline.titleBucket', { label: b.label, count: b.volume }),
+			...b.candles.map((c) =>
+				i18n.t('cards.cprTimeline.titleCandle', {
+					family: c.family,
+					min: gradeLabel(c.min),
+					max: gradeLabel(c.max),
+					count: c.count
+				})
+			)
 		].join('\n');
 </script>
 
@@ -198,9 +214,11 @@
 			<span
 				class="src"
 				title={data.source === 'api'
-					? "CPR curve from theCrag's API"
-					: 'Approximate CPR model (see Docs)'}
-				>{data.source === 'api' ? 'theCrag CPR' : 'Approx.'}</span
+					? i18n.t('cards.cprTimeline.titleSourceApi')
+					: i18n.t('cards.cprTimeline.titleSourceApprox')}
+				>{data.source === 'api'
+					? i18n.t('cards.cprTimeline.labelSourceApi')
+					: i18n.t('cards.cprTimeline.labelSourceApprox')}</span
 			>
 		</div>
 	</header>
@@ -250,7 +268,7 @@
 						class={['dot', { peak: p.i === peakIdx, last: p.i === lastIdx }]}
 						style:left="{xPct(p.i)}%"
 						style:top="{y(p.g)}%"
-						title="CPR ≈ {gradeLabel(p.g)}"
+						title={i18n.t('cards.cprTimeline.titleCprGrade', { grade: gradeLabel(p.g) })}
 					></span>
 				{/each}
 			</div>
@@ -269,8 +287,11 @@
 			{#each data.buckets as b (b.period)}
 				<a
 					class="vcol"
-					href="/logbook?style={encodeURIComponent(title)}&year={b.period.slice(0, 4)}"
-					title="{b.label}: {b.volume} ascents — open logbook"
+					href="/logbook?style={encodeURIComponent(style)}&year={b.period.slice(0, 4)}"
+					title={i18n.t('cards.cprTimeline.titleVolumeLink', {
+						label: b.label,
+						count: b.volume
+					})}
 				>
 					<span class="vbar" style:height="{Math.max(6, (b.volume / maxVol) * 100)}%"></span>
 					<span class="vn">{b.volume}</span>
@@ -280,18 +301,18 @@
 
 		<footer>
 			<ul class="legend">
-				<li><span class="sw line"></span>CPR</li>
+				<li><span class="sw line"></span>{i18n.t('cards.cprTimeline.legendCpr')}</li>
 				{#each LEGEND.filter((l) => usedFamilies.has(l.family)) as l (l.family)}
-					<li><span class="sw" style:--c={l.color}></span>{l.label}</li>
+					<li><span class="sw" style:--c={l.color}></span>{i18n.t(l.labelKey)}</li>
 				{/each}
 			</ul>
 			<p class="footnote">
 				{#if data.source === 'api'}
-					Curve from theCrag's API (decayed CPR); candles show your ticks.
+					{i18n.t('cards.cprTimeline.footnoteApi')}
 				{:else}
-					Approximate CPR: power factor 5, tick shifts, ~0.7 grade/year decay.
+					{i18n.t('cards.cprTimeline.footnoteApprox')}
 				{/if}
-				<a class="how" href="/docs/cpr">How CPR works</a>
+				<a class="how" href="/docs/cpr">{i18n.t('cards.cprTimeline.howCprWorks')}</a>
 			</p>
 		</footer>
 	{/if}

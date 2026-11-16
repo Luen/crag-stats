@@ -169,3 +169,16 @@ export function formatMessage(
 
 	return result;
 }
+
+/**
+ * Short month names (Jan…Dec) in the active language.
+ *
+ * These come from the catalogue rather than `Intl`'s month names: the source catalogue's
+ * "Jan…Dec" is what every chart and axis already renders, and `en-AU` would render "Jan." and
+ * "Sept." instead. Translators supply the short forms for their own language.
+ */
+export function monthLabels(t: (key: MessageKey) => string): string[] {
+	return ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'].map(
+		(month) => t(`months.short.${month}`)
+	);
+}

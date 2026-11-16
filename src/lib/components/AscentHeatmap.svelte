@@ -7,7 +7,7 @@
 		type CardPreferences
 	} from '#lib/cardPreferences';
 	import { getBandName, GRADE_BANDS } from '#lib/grades/bands';
-	import { useI18n } from '#lib/i18n';
+	import { monthLabels as monthAbbreviations, useI18n } from '#lib/i18n';
 	import { DEFAULT_DATE_DISPLAY, formatCalendarDate, type DateDisplay } from '#lib/dates';
 	import {
 		DEFAULT_DISPLAY_UNITS,
@@ -53,18 +53,24 @@
 	const hasWeather = $derived(data.some((d) => d.weather != null));
 	const activeMode = $derived<Mode>(mode === 'weather' && !hasWeather ? 'intensity' : mode);
 
-	const WEATHER_KINDS: { kind: CalendarWeatherKind; label: string }[] = $derived([
-		{ kind: 'snow', label: 'Snow' },
-		{ kind: 'rain', label: 'Rain' },
+	const WEATHER_KINDS: { kind: CalendarWeatherKind; key: string }[] = $derived([
+		{ kind: 'snow', key: 'cards.ascentHeatmap.labelSnow' },
+		{ kind: 'rain', key: 'cards.ascentHeatmap.labelRain' },
 		{
 			kind: 'heat',
-			label: `Hot (${displayUnits.temperature === 'fahrenheit' ? '95°F+' : '35°C+'})`
+			key:
+				displayUnits.temperature === 'fahrenheit'
+					? 'cards.ascentHeatmap.labelHotImperial'
+					: 'cards.ascentHeatmap.labelHotMetric'
 		},
-		{ kind: 'freeze', label: 'Freezing' },
-		{ kind: 'fair', label: 'Fair' },
-		{ kind: 'mild', label: 'Mild' }
+		{ kind: 'freeze', key: 'cards.ascentHeatmap.labelFreezing' },
+		{ kind: 'fair', key: 'cards.ascentHeatmap.labelFair' },
+		{ kind: 'mild', key: 'cards.ascentHeatmap.labelMild' }
 	]);
-	const kindLabel = (k: CalendarWeatherKind) => WEATHER_KINDS.find((w) => w.kind === k)?.label ?? k;
+	const kindLabel = (k: CalendarWeatherKind) => {
+		const key = WEATHER_KINDS.find((w) => w.kind === k)?.key;
+		return key ? i18n.t(key) : k;
+	};
 
 	const years = $derived(
 		[...new Set(data.map((d) => d.date.slice(0, 4)))].sort((a, b) => b.localeCompare(a))
@@ -130,28 +136,14 @@
 
 	const maxCount = $derived(Math.max(1, ...weeks.flat().map((c) => c.count)));
 
-	const MONTH_ABBR = [
-		'Jan',
-		'Feb',
-		'Mar',
-		'Apr',
-		'May',
-		'Jun',
-		'Jul',
-		'Aug',
-		'Sep',
-		'Oct',
-		'Nov',
-		'Dec'
-	] as const;
+	const MONTH_ABBR = $derived(monthAbbreviations(i18n.t));
 
-	/** Label a week column when it contains the 1st of a month (GitHub/Dreeve style). */
-	const monthLabels = $derived(
+	/** Month number of the week column that contains the 1st (GitHub/Dreeve style). */
+	const monthNums = $derived(
 		weeks.map((col) => {
 			const day1 = col.find((c) => c.date && c.date.slice(8, 10) === '01');
 			if (!day1?.date) return null;
-			const month = Number(day1.date.slice(5, 7));
-			return MONTH_ABBR[month - 1] ?? null;
+			return Number(day1.date.slice(5, 7));
 		})
 	);
 
@@ -179,11 +171,19 @@
 		n == null ? '—' : formatTemperature(n, displayUnits.temperature);
 
 	function weatherSummary(w: CalendarWeather): string {
-		const rain =
-			w.precipMm != null && w.precipMm >= 1
-				? `, ${formatPrecipitation(w.precipMm, displayUnits.precipitation)}`
-				: '';
-		return `${kindLabel(w.kind)} · high ${tempText(w.tempMaxC)}, low ${tempText(w.tempMinC)}${rain}`;
+		const rain = w.precipMm != null && w.precipMm >= 1;
+		return i18n.t(
+			rain ? 'cards.ascentHeatmap.weatherSummaryRain' : 'cards.ascentHeatmap.weatherSummary',
+			{
+				label: kindLabel(w.kind),
+				high: tempText(w.tempMaxC),
+				low: tempText(w.tempMinC),
+				rain:
+					w.precipMm != null && rain
+						? formatPrecipitation(w.precipMm, displayUnits.precipitation)
+						: ''
+			}
+		);
 	}
 
 	/** Days in the chosen year that have cached weather, for the screen-reader values table. */
@@ -194,18 +194,31 @@
 	);
 
 	function cellTitle(cell: Cell): string {
+		const date = formatCalendarDate(cell.date, dateDisplay);
 		if (activeMode === 'weather') {
-			const head = `${formatCalendarDate(cell.date, dateDisplay)}: ${cell.count} ascent${cell.count === 1 ? '' : 's'}`;
-			if (cell.count <= 0) return head;
+			if (cell.count <= 0) {
+				return i18n.t('cards.ascentHeatmap.titleDayWeather', { date, count: cell.count });
+			}
 			return cell.weather
-				? `${head} · ${weatherSummary(cell.weather)}`
-				: `${head} · no weather data`;
+				? i18n.t('cards.ascentHeatmap.titleDayWeatherConditions', {
+						date,
+						count: cell.count,
+						conditions: weatherSummary(cell.weather)
+					})
+				: i18n.t('cards.ascentHeatmap.titleDayWeatherMissing', {
+						date,
+						count: cell.count
+					});
 		}
-		const base = `${formatCalendarDate(cell.date, dateDisplay)}: ${cell.count} ascent${cell.count === 1 ? '' : 's'} (${cell.sends} send${cell.sends === 1 ? '' : 's'})`;
-		if (activeMode !== 'grade' || cell.maxBand == null) return base;
+		const counts = { date, count: cell.count, sends: cell.sends };
+		if (activeMode !== 'grade' || cell.maxBand == null) {
+			return i18n.t('cards.ascentHeatmap.titleDay', counts);
+		}
 		const band = GRADE_BANDS.find((b) => b.id === cell.maxBand);
-		const name = band ? getBandName(band, i18n.locale) : `band ${cell.maxBand}`;
-		return `${base} · hardest send ${name}`;
+		const name = band
+			? getBandName(band, i18n.locale)
+			: i18n.t('cards.ascentHeatmap.labelBandFallback', { band: cell.maxBand });
+		return i18n.t('cards.ascentHeatmap.titleDayHardest', { ...counts, band: name });
 	}
 </script>
 
@@ -224,20 +237,22 @@
 						type="button"
 						class={{ active: activeMode === 'intensity' }}
 						aria-pressed={activeMode === 'intensity'}
-						onclick={() => setMode('intensity')}>Intensity</button
+						onclick={() => setMode('intensity')}
+						>{i18n.t('cards.ascentHeatmap.buttonIntensity')}</button
 					>
 					<button
 						type="button"
 						class={{ active: activeMode === 'grade' }}
 						aria-pressed={activeMode === 'grade'}
-						onclick={() => setMode('grade')}>Grade</button
+						onclick={() => setMode('grade')}>{i18n.t('cards.ascentHeatmap.buttonGrade')}</button
 					>
 					{#if hasWeather}
 						<button
 							type="button"
 							class={{ active: activeMode === 'weather' }}
 							aria-pressed={activeMode === 'weather'}
-							onclick={() => setMode('weather')}>Weather</button
+							onclick={() => setMode('weather')}
+							>{i18n.t('cards.ascentHeatmap.buttonWeather')}</button
 						>
 					{/if}
 				</div>
@@ -264,10 +279,9 @@
 	{:else}
 		<div class="scroll">
 			<div class="months" style:--cols={weeks.length} aria-hidden="true">
-				{#each monthLabels as label, i (i)}
-					{@const monthNum = label ? MONTH_ABBR.indexOf(label) + 1 : 0}
-					<span class={['month', { sparse: monthNum > 0 && monthNum % 2 === 0 }]}
-						>{label ?? ''}</span
+				{#each monthNums as monthNum, i (i)}
+					<span class={['month', { sparse: monthNum != null && monthNum % 2 === 0 }]}
+						>{monthNum ? (MONTH_ABBR[monthNum - 1] ?? '') : ''}</span
 					>
 				{/each}
 			</div>
@@ -298,9 +312,9 @@
 		</div>
 		{#if activeMode === 'intensity'}
 			<div class="legend">
-				<span>Less</span>
+				<span>{i18n.t('cards.ascentHeatmap.labelLess')}</span>
 				<i class="l0"></i><i class="l1"></i><i class="l2"></i><i class="l3"></i><i class="l4"></i>
-				<span>More</span>
+				<span>{i18n.t('cards.ascentHeatmap.labelMore')}</span>
 			</div>
 		{:else if activeMode === 'weather'}
 			<div class="legend grade">
@@ -308,23 +322,27 @@
 				<span class="band-name">{i18n.t('cards.ascentHeatmap.labelNoWeatherData')}</span>
 				{#each WEATHER_KINDS as w (w.kind)}
 					<i class="w-{w.kind}"></i>
-					<span class="band-name">{w.label}</span>
+					<span class="band-name">{i18n.t(w.key)}</span>
 				{/each}
 			</div>
 			<details class="values">
-				<summary>View weather values ({year})</summary>
+				<summary>{i18n.t('cards.ascentHeatmap.summaryViewWeatherValues', { year })}</summary>
 				{#if weatherDays.length === 0}
-					<p class="empty">No cached weather for {year}.</p>
+					<p class="empty">
+						{i18n.t('cards.ascentHeatmap.emptyNoCachedWeather', { year })}
+					</p>
 				{:else}
 					<table>
-						<caption>Weather on climbing days in {year}</caption>
+						<caption>
+							{i18n.t('cards.ascentHeatmap.captionWeatherOnClimbingDays', { year })}
+						</caption>
 						<thead>
 							<tr>
-								<th scope="col">Date</th>
-								<th scope="col">Conditions</th>
-								<th scope="col">High</th>
-								<th scope="col">Low</th>
-								<th scope="col">Precipitation</th>
+								<th scope="col">{i18n.t('cards.ascentHeatmap.thDate')}</th>
+								<th scope="col">{i18n.t('cards.ascentHeatmap.thConditions')}</th>
+								<th scope="col">{i18n.t('cards.ascentHeatmap.thHigh')}</th>
+								<th scope="col">{i18n.t('cards.ascentHeatmap.thLow')}</th>
+								<th scope="col">{i18n.t('cards.ascentHeatmap.thPrecipitation')}</th>
 							</tr>
 						</thead>
 						<tbody>
@@ -352,7 +370,7 @@
 		{:else}
 			<div class="legend grade">
 				<i class="attempt"></i>
-				<span>Attempts</span>
+				<span>{i18n.t('cards.ascentHeatmap.labelAttempts')}</span>
 				{#each GRADE_BANDS as band (band.id)}
 					<i class="b{band.id}" title={getBandName(band, i18n.locale)}></i>
 					<span class="band-name">{getBandName(band, i18n.locale)}</span>

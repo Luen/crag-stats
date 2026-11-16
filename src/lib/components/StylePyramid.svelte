@@ -13,7 +13,12 @@
 <article class="panel">
 	<header>
 		<h3>{pyramid.style}</h3>
-		<span class="meta">{pyramid.total} ascents · {pyramid.system}</span>
+		<span class="meta"
+			>{i18n.t('cards.stylePyramid.meta', {
+				ascents: pyramid.total,
+				system: pyramid.system
+			})}</span
+		>
 	</header>
 	{#if pyramid.rows.length === 0}
 		<p class="empty">{i18n.t('cards.stylePyramid.empty')}</p>
@@ -22,12 +27,25 @@
 			{#each pyramid.rows as row (row.score)}
 				<div class="row">
 					<span class="g">
-						<a href={row.href} title="Show {pyramid.style} ascents at {row.grade}">
+						<a
+							href={row.href}
+							title={i18n.t('cards.stylePyramid.titleShowStyleAscents', {
+								style: pyramid.style,
+								grade: row.grade
+							})}
+						>
 							<GradeChip grade={row.grade} band={row.band} />
 						</a>
 					</span>
 					<div class="track">
-						<a class="bar-link" href={row.href} title="Show {pyramid.style} ascents at {row.grade}">
+						<a
+							class="bar-link"
+							href={row.href}
+							title={i18n.t('cards.stylePyramid.titleShowStyleAscents', {
+								style: pyramid.style,
+								grade: row.grade
+							})}
+						>
 							<div class="stack" style:width="{Math.max(10, (row.total / max) * 100)}%">
 								{#each row.segments as seg (seg.tick)}
 									<span

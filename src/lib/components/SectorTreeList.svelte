@@ -26,15 +26,22 @@
 					)}">{sector.name}</a
 				>
 				<span class="meta">
-					{sector.routeCount} routes · {sector.ascentCount} ascents
+					{i18n.t('cards.sectorTreeList.meta', {
+						routes: sector.routeCount,
+						ascents: sector.ascentCount
+					})}
 					{#if sector.multipitchRouteCount}
 						<span class="tag" title={i18n.t('cards.sectorTreeList.titlePitchesHint')}
-							>· {sector.multipitchRouteCount} multipitch</span
+							>· {i18n.t('cards.sectorTreeList.metaMultipitch', {
+								count: sector.multipitchRouteCount
+							})}</span
 						>
 					{/if}
 					{#if sector.styleMismatchRouteCount}
 						<span class="tag warn" title={i18n.t('cards.sectorTreeList.titleStyleFlagsHint')}
-							>· {sector.styleMismatchRouteCount} style flag ≠ gear</span
+							>· {i18n.t('cards.sectorTreeList.metaStyleFlags', {
+								count: sector.styleMismatchRouteCount
+							})}</span
 						>
 					{/if}
 				</span>

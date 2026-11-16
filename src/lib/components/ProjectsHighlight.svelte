@@ -3,6 +3,7 @@
 	import NewRouteBadge from '#lib/components/NewRouteBadge.svelte';
 	import ProjectReadiness from '#lib/components/ProjectReadiness.svelte';
 	import ProjectRouteBadge from '#lib/components/ProjectRouteBadge.svelte';
+	import RichText from '#lib/components/RichText.svelte';
 	import { DEFAULT_DATE_DISPLAY, formatCalendarDate, type DateDisplay } from '#lib/dates';
 
 	type ProjectCard = {
@@ -27,11 +28,11 @@
 	const i18n = useI18n();
 
 	function sessionsLabel(n: number) {
-		return n === 1 ? '1 session' : `${n} sessions`;
+		return i18n.t('cards.projectsHighlight.sessionsCount', { count: n });
 	}
 
 	function triesLabel(n: number) {
-		return n === 1 ? '1 try' : `${n} tries`;
+		return i18n.t('cards.projectsHighlight.triesCount', { count: n });
 	}
 
 	function when(iso: string | null) {
@@ -43,13 +44,21 @@
 <article class="panel">
 	<header>
 		<h2>{i18n.t('cards.projectsHighlight.titleProjects')}</h2>
-		<a href="/projects">All projects</a>
+		<a href="/projects">{i18n.t('cards.projectsHighlight.linkAllProjects')}</a>
 	</header>
 
 	{#if projects.length === 0}
 		<p class="empty">
-			No open projects — log attempts on a route and it shows up on
-			<a href="/projects">Projects</a>.
+			<RichText
+				message={i18n.t('cards.projectsHighlight.emptyNoOpenProjects')}
+				tokens={{
+					projects: {
+						kind: 'link',
+						text: i18n.t('cards.projectsHighlight.titleProjects'),
+						href: '/projects'
+					}
+				}}
+			/>
 		</p>
 	{:else}
 		<ul>
@@ -155,7 +164,7 @@
 		color: var(--ink-muted);
 		font-size: 0.82rem;
 	}
-	.empty a {
+	.empty :global(a) {
 		color: var(--accent);
 		font-weight: 600;
 	}

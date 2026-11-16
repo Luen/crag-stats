@@ -41,7 +41,12 @@
 	<div class="table-wrap">
 		<table>
 			<thead>
-				<tr><th>Band</th><th>Routes (Ewbank)</th><th>Boulders</th><th>What it means</th></tr>
+				<tr>
+					<th>{i18n.t('cards.docBlock.thBand')}</th>
+					<th>{i18n.t('cards.docBlock.thRoutesEwbank')}</th>
+					<th>{i18n.t('cards.docBlock.thBoulders')}</th>
+					<th>{i18n.t('cards.docBlock.thWhatItMeans')}</th>
+				</tr>
 			</thead>
 			<tbody>
 				{#each GRADE_BANDS as band (band.id)}
@@ -67,7 +72,14 @@
 		aria-label={i18n.t('cards.docBlock.ariaRouteGradeConversions')}
 	>
 		<table>
-			<thead><tr><th>Ewbank</th><th>French</th><th>YDS</th><th>Band</th></tr></thead>
+			<thead>
+				<tr>
+					<th>{i18n.t('cards.docBlock.thEwbank')}</th>
+					<th>{i18n.t('cards.docBlock.thFrench')}</th>
+					<th>{i18n.t('cards.docBlock.thYds')}</th>
+					<th>{i18n.t('cards.docBlock.thBand')}</th>
+				</tr>
+			</thead>
 			<tbody>
 				{#each routeRows as r (r.ew)}
 					<tr style:--c={r.band?.color}>
@@ -90,7 +102,13 @@
 		aria-label={i18n.t('cards.docBlock.ariaBoulderGradeConversions')}
 	>
 		<table>
-			<thead><tr><th>V-scale</th><th>Font</th><th>Band</th></tr></thead>
+			<thead>
+				<tr>
+					<th>{i18n.t('cards.docBlock.thVScale')}</th>
+					<th>{i18n.t('cards.docBlock.thFont')}</th>
+					<th>{i18n.t('cards.docBlock.thBand')}</th>
+				</tr>
+			</thead>
 			<tbody>
 				{#each boulderRows as r (r.v)}
 					<tr style:--c={r.band?.color}>
@@ -113,7 +131,9 @@
 							<td class="strong nowrap">{t.name}</td>
 							<td>{t.meaning}</td>
 							<td class="nowrap"
-								><span class="kind" class:send={t.send}>{t.send ? 'Send' : 'Attempt'}</span></td
+								><span class="kind" class:send={t.send}
+									>{t.send ? i18n.t('ticks.send') : i18n.t('ticks.attempt')}</span
+								></td
 							>
 						</tr>
 					{/each}

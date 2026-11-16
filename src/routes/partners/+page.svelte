@@ -11,8 +11,7 @@
 	<div class="copy">
 		<h1>{i18n.t('pages.partners.titlePartners')}</h1>
 		<p>
-			Everyone you've climbed with. Rank by shared ascents, climbing days, or distinct crags — click
-			a name to filter the logbook.
+			{i18n.t('pages.partners.lead')}
 		</p>
 	</div>
 </section>

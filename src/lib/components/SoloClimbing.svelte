@@ -25,12 +25,14 @@
 						<a
 							class="kind-link"
 							href={`/logbook?solo=${k.kind}`}
-							aria-label={`View ${k.label} climbs in the logbook`}><strong>{k.label}</strong></a
+							aria-label={i18n.t('cards.soloClimbing.ariaViewClimbsInLogbook', {
+								kind: k.label
+							})}><strong>{k.label}</strong></a
 						>
 						<span class="count">{k.count}</span>
 					</div>
 					<p class="meta">
-						{k.sends} send{k.sends === 1 ? '' : 's'}
+						{i18n.t('cards.soloClimbing.unitSends', { count: k.sends })}
 						{#if k.first}
 							· {year(k.first) === year(k.latest)
 								? year(k.first)
@@ -53,9 +55,12 @@
 		</ul>
 	{/if}
 	<p class="foot">
-		<strong>{data.unpartnered}</strong> ascent{data.unpartnered === 1 ? '' : 's'}
-		({data.unpartneredSends} send{data.unpartneredSends === 1 ? '' : 's'}, {unpartneredPct}%) have
-		no partner tagged on theCrag.
+		<strong>{data.unpartnered}</strong>
+		{i18n.t('cards.soloClimbing.footNoPartner', {
+			ascents: data.unpartnered,
+			sends: data.unpartneredSends,
+			percent: unpartneredPct
+		})}
 		<a class="how" href="/docs/solo">{i18n.t('common.howItWorks')}</a>
 	</p>
 </article>

@@ -1,47 +1,42 @@
 <script lang="ts">
-	import { useI18n } from '#lib/i18n';
-	import { MONTH_LABELS } from '#lib/bestMonths';
+	import { monthLabels, useI18n } from '#lib/i18n';
 	import SeasonalityStrip from '#lib/components/SeasonalityStrip.svelte';
 	import { seasonalityHref } from '#lib/seasonality';
 	import { formatNumber } from '#lib/dates';
 	import type { PageProps } from './$types';
 	let { data }: PageProps = $props();
 	const i18n = useI18n();
+	const t = i18n.t;
+	const MONTHS = $derived(monthLabels(t));
 </script>
 
 <svelte:head>
-	<title>Seasonality search · Crag Stats</title>
-	<meta
-		name="description"
-		content="Search your cached crags and climbs by month using theCrag seasonality."
-	/>
+	<title>{t('pages.seasonality.pageTitle')}</title>
+	<meta name="description" content={t('pages.seasonality.pageDescription')} />
 </svelte:head>
 
 <section class="panel intro">
 	<h1>{i18n.t('pages.seasonality.titleSeasonalitySearch')}</h1>
 	<p>
-		Explore theCrag’s community climbing patterns by month. These are seasonal patterns, not a
-		weather forecast or conditions on your visits. <a class="how" href="/docs/best-months"
-			>How it works</a
-		>
+		{t('pages.seasonality.intro')}
+		<a class="how" href="/docs/best-months">{t('common.howItWorks')}</a>
 	</p>
 	<p>
-		Search covers only climbs in your synced logbook. {formatNumber(
-			data.coverage.covered,
-			data.dateDisplay
-		)} of {formatNumber(data.coverage.total, data.dateDisplay)} matching climbs have cached monthly data.
-		Missing data stays unknown.
+		{t('pages.seasonality.coverage', {
+			covered: formatNumber(data.coverage.covered, data.dateDisplay),
+			total: formatNumber(data.coverage.total, data.dateDisplay)
+		})}
 	</p>
 </section>
 
 <form class="panel filters" method="GET" action="/seasonality">
 	<label
-		>Month<select name="month" value={data.filters.month}>
-			{#each MONTH_LABELS as label, i (label)}<option value={i + 1}>{label}</option>{/each}
+		>{t('pages.seasonality.labelMonth')}<select name="month" value={data.filters.month}>
+			{#each MONTHS as label, i (label)}<option value={i + 1}>{label}</option>{/each}
 		</select></label
 	>
 	<label class="search"
-		>Crag, area or climb<input
+		>{t('pages.seasonality.labelSearch')}<input
 			name="q"
 			type="search"
 			value={data.filters.q}
@@ -49,14 +44,14 @@
 		/></label
 	>
 	<label
-		>Show<select name="view" value={data.filters.view}
+		>{t('pages.seasonality.labelShow')}<select name="view" value={data.filters.view}
 			><option value="crags">{i18n.t('pages.seasonality.optionCrags')}</option><option
 				value="routes">{i18n.t('pages.seasonality.optionClimbs')}</option
 			></select
 		></label
 	>
 	<label
-		>Sort by<select name="sort" value={data.filters.sort}
+		>{t('pages.seasonality.labelSortBy')}<select name="sort" value={data.filters.sort}
 			><option value="season">{i18n.t('pages.seasonality.optionSelectedMonth')}</option><option
 				value="name">{i18n.t('pages.seasonality.optionName')}</option
 			></select
@@ -68,17 +63,21 @@
 
 {#if data.filters.crag}
 	<p class="scope">
-		At {data.cragName}.
-		<a href={seasonalityHref(data.filters, { crag: '', page: 1 })}>Search all crags</a>
+		{t('pages.seasonality.scopeAt', { crag: data.cragName })}
+		<a href={seasonalityHref(data.filters, { crag: '', page: 1 })}
+			>{t('pages.seasonality.searchAllCrags')}</a
+		>
 	</p>
 {/if}
 <p class="explanation">
-	{formatNumber(data.total, data.dateDisplay)}
-	{data.filters.view === 'crags' ? 'crags' : 'climbs'} with monthly data · {MONTH_LABELS[
-		data.filters.month - 1
-	]}. Selected-month sorting compares the month’s percentage of each annual peak, highest first;
-	names break ties. No “in season” cutoff is applied. Crag curves are weighted by your ascents on
-	routes with data.
+	{t('pages.seasonality.explanation', {
+		count: formatNumber(data.total, data.dateDisplay),
+		noun:
+			data.filters.view === 'crags'
+				? t('pages.seasonality.nounCrags')
+				: t('pages.seasonality.nounClimbs'),
+		month: MONTHS[data.filters.month - 1] ?? ''
+	})}
 </p>
 
 {#if data.results.length === 0}
@@ -86,13 +85,13 @@
 		<h2>{i18n.t('pages.seasonality.titleNoSeasonalityResults')}</h2>
 		<p>
 			{data.coverage.total
-				? 'No matching climbs have usable monthly data yet.'
-				: 'No logged climbs match this search.'} Try another name or clear your search.
+				? t('pages.seasonality.noMatchingClimbsWithData')
+				: t('pages.seasonality.noLoggedClimbsMatch')}
+			{t('pages.seasonality.tryAnotherName')}
 		</p>
 		<p>
-			Seasonality is cached by the optional route-history import after sync. <a
-				href="/docs/best-months">Learn about coverage</a
-			>
+			{t('pages.seasonality.coverageHint')}
+			<a href="/docs/best-months">{t('pages.seasonality.learnAboutCoverage')}</a>
 		</p>
 	</section>
 {:else}
@@ -104,24 +103,34 @@
 				<p class="score">
 					<strong
 						>{result.relative == null
-							? 'No seasonal signal'
-							: `${Math.round(result.relative * 100)}% of annual peak`}</strong
-					><br />{MONTH_LABELS[data.filters.month - 1]} value: {result.value.toFixed(1)}
+							? t('pages.seasonality.noSeasonalSignal')
+							: t('pages.seasonality.percentOfAnnualPeak', {
+									percent: Math.round(result.relative * 100)
+								})}</strong
+					><br />{t('pages.seasonality.monthValue', {
+						month: MONTHS[data.filters.month - 1] ?? '',
+						value: result.value.toFixed(1)
+					})}
 				</p>
 				{#if data.filters.view === 'crags'}<p class="coverage">
-						{result.covered} of {result.total} logged climbs with data
+						{t('pages.seasonality.loggedClimbsWithData', {
+							covered: result.covered,
+							total: result.total
+						})}
 					</p>{/if}
 				<SeasonalityStrip values={result.curve} month={data.filters.month} name={result.name} />
 				<div class="links">
 					{#if data.filters.view === 'crags'}
 						<a href={seasonalityHref(data.filters, { view: 'routes', crag: result.crag, page: 1 })}
-							>View climbs at {result.name}</a
+							>{t('pages.seasonality.viewClimbsAt', { name: result.name })}</a
 						>
 					{:else if result.logbookHref}
-						<a href={result.logbookHref}>View {result.name} in logbook</a>
+						<a href={result.logbookHref}
+							>{t('pages.seasonality.viewInLogbook', { name: result.name })}</a
+						>
 					{/if}
 					{#if result.guidebookHref}<a href={result.guidebookHref} target="_blank" rel="noreferrer"
-							>{result.name} on theCrag ↗</a
+							>{t('pages.seasonality.onTheCrag', { name: result.name })}</a
 						>{/if}
 				</div>
 			</li>
@@ -132,11 +141,11 @@
 {#if data.pages > 1}
 	<nav class="pagination" aria-label={i18n.t('pages.seasonality.ariaSeasonalityResultsPages')}>
 		{#if data.page > 1}<a href={seasonalityHref(data.filters, { page: data.page - 1 })}
-				>← Previous</a
+				>{t('pages.seasonality.buttonPrevious')}</a
 			>{/if}
-		<span>Page {data.page} of {data.pages}</span>
+		<span>{t('pages.seasonality.pageOf', { page: data.page, pages: data.pages })}</span>
 		{#if data.page < data.pages}<a href={seasonalityHref(data.filters, { page: data.page + 1 })}
-				>Next →</a
+				>{t('pages.seasonality.buttonNext')}</a
 			>{/if}
 	</nav>
 {/if}

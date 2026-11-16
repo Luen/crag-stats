@@ -8,19 +8,13 @@
 </script>
 
 <svelte:head>
-	<title>Milestones · Crag Stats</title>
-	<meta
-		name="description"
-		content="Grade, count, height and first-ascent milestones from your logbook."
-	/>
+	<title>{i18n.t('pages.milestones.pageTitle')}</title>
+	<meta name="description" content={i18n.t('pages.milestones.pageDescription')} />
 </svelte:head>
 
 <section class="panel head">
 	<h1>{i18n.t('pages.milestones.titleMilestones')}</h1>
-	<p>
-		Personal breakthroughs from your logbook — first grades, ascent counts, height landmarks and
-		first-ascent thresholds. The dashboard card shows a short recent list.
-	</p>
+	<p>{i18n.t('pages.milestones.lead')}</p>
 </section>
 
 <Milestones items={data.items} titleHref={null} dateDisplay={data.dateDisplay} />

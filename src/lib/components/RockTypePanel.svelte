@@ -50,7 +50,9 @@
 				{/if}
 			</div>
 		{:else if dominant}
-			<p class="foot">Dominant rock: <strong>{dominant}</strong></p>
+			<p class="foot">
+				{i18n.t('cards.rockTypePanel.dominantRock')} <strong>{dominant}</strong>
+			</p>
 		{/if}
 	{/if}
 </article>

@@ -11,13 +11,13 @@
 		<img src={favicon} alt="" width="52" height="52" />
 		<h1>Crag <span>Stats</span></h1>
 	</div>
-	<p class="lede">Enter the app password to continue.</p>
+	<p class="lede">{i18n.t('pages.login.lead')}</p>
 	{#if form?.message}
 		<p class="err" role="alert">{form.message}</p>
 	{/if}
 	<form method="POST">
 		<input type="hidden" name="next" value={data.next} />
-		<label class="sr-only" for="password">Password</label>
+		<label class="sr-only" for="password">{i18n.t('pages.login.placeholderPassword')}</label>
 		<input
 			id="password"
 			type="password"

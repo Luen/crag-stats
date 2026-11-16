@@ -41,18 +41,14 @@
 </script>
 
 <svelte:head>
-	<title>Activity · Crag Stats</title>
-	<meta
-		name="description"
-		content="Monthly and yearly climbing volume with style breakdowns and year-over-year deltas."
-	/>
+	<title>{i18n.t('pages.activity.pageTitle')}</title>
+	<meta name="description" content={i18n.t('pages.activity.pageDescription')} />
 </svelte:head>
 
 <section class="panel head">
 	<h1>{i18n.t('pages.activity.titleActivity')}</h1>
 	<p>
-		Deeper monthly and yearly volume than the dashboard cards — full per-month tables (ascents,
-		sends, height, styles) plus year-over-year deltas.
+		{i18n.t('pages.activity.lead')}
 		<a class="how" href="/docs/activity">{i18n.t('common.howItWorks')}</a>
 	</p>
 </section>
@@ -97,14 +93,14 @@
 			<table>
 				<thead>
 					<tr>
-						<th>Month</th>
-						<th>Ascents</th>
-						<th>Sends</th>
-						<th>Height</th>
-						<th>Sport</th>
-						<th>Trad</th>
-						<th>Boulder</th>
-						<th>Other</th>
+						<th>{i18n.t('pages.activity.thMonth')}</th>
+						<th>{i18n.t('pages.activity.thAscents')}</th>
+						<th>{i18n.t('pages.activity.thSends')}</th>
+						<th>{i18n.t('pages.activity.thHeight')}</th>
+						<th>{i18n.t('styles.sport')}</th>
+						<th>{i18n.t('styles.trad')}</th>
+						<th>{i18n.t('styles.boulder')}</th>
+						<th>{i18n.t('styles.other')}</th>
 					</tr>
 				</thead>
 				<tbody>

@@ -12,22 +12,20 @@
 </script>
 
 <svelte:head>
-	<title>Eddington numbers · Crag Stats</title>
-	<meta
-		name="description"
-		content="Send-day, vertical, and grade-index Eddington numbers from your climbing logbook."
-	/>
+	<title>{i18n.t('pages.eddington.pageTitle')}</title>
+	<meta name="description" content={i18n.t('pages.eddington.pageDescription')} />
 </svelte:head>
 
 <section class="panel head">
 	<h1>{i18n.t('pages.eddington.titleEddingtonNumbers')}</h1>
 	<p>
-		Consistency metrics inspired by cycling's Eddington number — how your send days, vertical, and
-		grade indexes grew over time.
+		{i18n.t('pages.eddington.lead')}
 		<a class="how" href="/docs/eddington">{i18n.t('common.howItWorks')}</a>
 	</p>
 	<p class="meta">
-		{formatNumber(data.stats.activeDays, data.dateDisplay)} active logbook days in total.
+		{i18n.t('pages.eddington.metaActiveDays', {
+			count: formatNumber(data.stats.activeDays, data.dateDisplay)
+		})}
 	</p>
 </section>
 

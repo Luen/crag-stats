@@ -53,11 +53,11 @@
 		saveCardPreference('cs_repeats_style', next);
 	}
 
-	const STYLE_LABELS: Record<RepeatStyleKey, string> = {
-		all: 'All',
-		sport: 'Sport',
-		trad: 'Trad',
-		boulder: 'Boulder'
+	const STYLE_LABEL_KEYS: Record<RepeatStyleKey, string> = {
+		all: 'cards.routeRepeats.styleAll',
+		sport: 'styles.sport',
+		trad: 'styles.trad',
+		boulder: 'styles.boulder'
 	};
 
 	const STYLE_CHIPS: Record<RepeatStyleKey, string> = {
@@ -67,17 +67,25 @@
 		boulder: STYLE_COLORS.Boulder
 	};
 
-	const PERSONA_TEXT: Record<RepeatPersona, string> = {
-		explorer: 'Most of your climbs are on routes you hadn’t logged before.',
-		repeater: 'At least half of your climbs are return visits to routes you’ve logged before.',
-		mixed: 'You split your climbing between new routes and old favourites.'
+	const PERSONA_TEXT_KEYS: Record<RepeatPersona, string> = {
+		explorer: 'cards.routeRepeats.personaExplorer',
+		repeater: 'cards.routeRepeats.personaRepeater',
+		mixed: 'cards.routeRepeats.personaMixed'
 	};
 
 	const slice = $derived((range === 'last12' ? data.last12Months : data.allTime)[style]);
-	const styleWord = $derived(style === 'all' ? '' : `${STYLE_LABELS[style].toLowerCase()} `);
-	const rangeWord = $derived(range === 'last12' ? 'in the last 12 months' : 'yet');
+	const styleLabel = $derived(style === 'all' ? '' : i18n.t(STYLE_LABEL_KEYS[style]));
+	const styleWord = $derived(styleLabel.toLocaleLowerCase(i18n.locale));
+	const rangeWord = $derived(
+		range === 'last12'
+			? i18n.t('cards.routeRepeats.rangeLast12Months')
+			: i18n.t('cards.routeRepeats.rangeYet')
+	);
 	const fmt = (n: number) => formatNumber(n, dateDisplay);
-	const plural = (n: number, one: string, many = `${one}s`) => `${fmt(n)} ${n === 1 ? one : many}`;
+	const onRoutes = (ascents: number, routes: number) =>
+		i18n.t('cards.routeRepeats.onRoutes', { ascents, routes });
+	const daysAndAscents = (days: number, ascents: number) =>
+		i18n.t('cards.routeRepeats.countDaysAscents', { days, ascents });
 </script>
 
 <article
@@ -93,7 +101,7 @@
 	<header>
 		<div class="titles">
 			<h2>{i18n.t('cards.routeRepeats.titleRepeatsVsNewRoutes')}</h2>
-			<HelpLink href="/docs/repeats" label="How repeats vs new routes works" />
+			<HelpLink href="/docs/repeats" label={i18n.t('cards.routeRepeats.helpRepeatsVsNewRoutes')} />
 		</div>
 		<div class="controls">
 			<div class="toggles" role="group" aria-label={i18n.t('cards.routeRepeats.ariaRepeatsRange')}>
@@ -101,13 +109,14 @@
 					type="button"
 					class={{ active: range === 'all' }}
 					aria-pressed={range === 'all'}
-					onclick={() => setRange('all')}>All time</button
+					onclick={() => setRange('all')}>{i18n.t('cards.routeRepeats.buttonAllTime')}</button
 				>
 				<button
 					type="button"
 					class={{ active: range === 'last12' }}
 					aria-pressed={range === 'last12'}
-					onclick={() => setRange('last12')}>Last 12 months</button
+					onclick={() => setRange('last12')}
+					>{i18n.t('cards.routeRepeats.buttonLast12Months')}</button
 				>
 			</div>
 			<div
@@ -121,7 +130,7 @@
 						class={{ active: style === key }}
 						aria-pressed={style === key}
 						style:--chip={STYLE_CHIPS[key]}
-						onclick={() => setStyle(key)}>{STYLE_LABELS[key]}</button
+						onclick={() => setStyle(key)}>{i18n.t(STYLE_LABEL_KEYS[key])}</button
 					>
 				{/each}
 			</div>
@@ -129,18 +138,26 @@
 	</header>
 
 	{#if slice.ascents === 0}
-		<p class="empty">No dated {styleWord}ascents {rangeWord}.</p>
+		<p class="empty">
+			{style === 'all'
+				? i18n.t('cards.routeRepeats.emptyAscents', { range: rangeWord })
+				: i18n.t('cards.routeRepeats.emptyAscentsStyle', {
+						style: styleWord,
+						range: rangeWord
+					})}
+		</p>
 	{:else}
 		{#if slice.persona}
 			<p class="lead">
 				<strong class="persona">{REPEAT_PERSONA_LABELS[slice.persona]}</strong>
-				{PERSONA_TEXT[slice.persona]}
+				{i18n.t(PERSONA_TEXT_KEYS[slice.persona])}
 			</p>
 		{:else}
 			<p class="lead">
-				A label appears once this view has {fmt(REPEAT_LABEL_MIN_ASCENTS)} ascents. So far: {fmt(
-					slice.ascents
-				)}.
+				{i18n.t('cards.routeRepeats.leadNeedsLabel', {
+					threshold: fmt(REPEAT_LABEL_MIN_ASCENTS),
+					ascents: fmt(slice.ascents)
+				})}
 			</p>
 		{/if}
 
@@ -154,28 +171,23 @@
 		</div>
 		<dl class="legend">
 			<div>
-				<dt><i class="dot new"></i>New routes</dt>
+				<dt><i class="dot new"></i>{i18n.t('cards.routeRepeats.labelNewRoutes')}</dt>
 				<dd>
 					<strong>{fmt(slice.newPct ?? 0)}%</strong>
-					<span>{plural(slice.newAscents, 'ascent')} on {plural(slice.newRoutes, 'route')}</span>
+					<span>{onRoutes(slice.newAscents, slice.newRoutes)}</span>
 				</dd>
 			</div>
 			<div>
-				<dt><i class="dot repeat"></i>Repeats</dt>
+				<dt><i class="dot repeat"></i>{i18n.t('cards.routeRepeats.labelRepeats')}</dt>
 				<dd>
 					<strong>{fmt(slice.repeatPct ?? 0)}%</strong>
-					<span
-						>{plural(slice.repeatAscents, 'ascent')} on {plural(
-							slice.repeatedRoutes,
-							'route'
-						)}</span
-					>
+					<span>{onRoutes(slice.repeatAscents, slice.repeatedRoutes)}</span>
 				</dd>
 			</div>
 		</dl>
 
 		{#if slice.top.length > 0}
-			<h3>Most repeated</h3>
+			<h3>{i18n.t('cards.routeRepeats.titleMostRepeated')}</h3>
 			<ol class="top">
 				{#each slice.top as route (route.key)}
 					<li>
@@ -187,19 +199,23 @@
 							{/if}
 							{#if route.cragName}<span class="crag">{route.cragName}</span>{/if}
 						</div>
-						<span class="count"
-							>{plural(route.days, 'day')} · {plural(route.ascents, 'ascent')}</span
-						>
+						<span class="count">{daysAndAscents(route.days, route.ascents)}</span>
 					</li>
 				{/each}
 			</ol>
 		{:else}
-			<p class="hint">No repeated {styleWord}routes {rangeWord}.</p>
+			<p class="hint">
+				{style === 'all'
+					? i18n.t('cards.routeRepeats.emptyRepeats', { range: rangeWord })
+					: i18n.t('cards.routeRepeats.emptyRepeatsStyle', {
+							style: styleWord,
+							range: rangeWord
+						})}
+			</p>
 		{/if}
 
 		<p class="hint">
-			A first visit is any ascent on the first day you logged a route; later days on the same route
-			are repeats.
+			{i18n.t('cards.routeRepeats.hintFirstVisit')}
 		</p>
 	{/if}
 </article>
