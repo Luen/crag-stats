@@ -21,4 +21,10 @@ files:
     # %two_letters_code% yields de / fr / es / it whether the project stores the
     # target as "de" or "de-DE", so committed filenames stay stable if a regional
     # variant is added later.
+    #
+    # Caveat: two targets that share a language code collide. Adding pt-BR beside
+    # pt-PT would have both write src/lib/i18n/locales/pt.json. Switch this to
+    # /src/lib/i18n/locales/%locale%.json (es-ES.json, pt-PT.json, pt-BR.json) and
+    # rename the committed catalogues at the same time as the first variant is
+    # added; see the "Adding a locale" section in docs/dev/TRANSLATIONS.md.
     translation: /src/lib/i18n/locales/%two_letters_code%.json

@@ -26,6 +26,17 @@ Climbing is a global sport, but initial localisation focuses on communities with
 - Japanese (`ja`): Historic climbing hubs and world-class bouldering (Mizugaki, Ogawayama, and Mitake).
 - Polish (`pl`): Rich climbing and alpine heritage (Jura Krakowsko-Częstochowska, High Tatras, and Sokoliki).
 
+### Adding a locale
+
+A language only ships once its Crowdin catalogue has real coverage; adding it to `SUPPORTED_LOCALES` earlier gives readers a half-English UI instead of their own language.
+
+1. Finish the in-flight target in Crowdin first (`ko`, `pl`, `zh-CN`, and `pt-PT` were seeded; `ja` and `pt-PT` are translated).
+2. Add the language id to `SUPPORTED_LOCALES` and `LOCALE_METADATA` in `src/lib/i18n/types.ts`, import its catalogue in `format.ts`, and add its label to `LOCALE_METADATA`'s native name.
+3. Add the language to the Settings picker; the header menu and `?locale=` read `SUPPORTED_LOCALES`, so nothing else needs touching.
+4. Run `pnpm check` and `pnpm test:e2e` — `e2e/shell.spec.ts` asserts the menu lists every locale.
+
+**Regional variants collide.** `crowdin.yml` writes `%two_letters_code%.json`, so adding `pt-BR` beside `pt-PT` would have both targets overwrite `pt.json`. Before the first such pair, switch the `translation:` pattern to `%locale%.json` and rename the committed catalogues (`es.json` → `es-ES.json`, and so on), updating the imports in `src/lib/i18n/format.ts`.
+
 ---
 
 ## Core Principles & Climbing Terminology
