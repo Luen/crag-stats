@@ -144,13 +144,15 @@ src/lib/i18n/locales/en.json  ──push to main──▶  Crowdin  ──transl
 Follow these steps when writing new UI features:
 
 1. **Add strings to `src/lib/i18n/locales/en.json`:**
-   Group strings logically by domain (`common`, `nav`, `dashboard`, `logbook`, `projects`, `settings`, etc.):
+   Group strings logically by domain (`common`, `nav`, `theme`, `language`, `grades`, `styles`, `ticks`, `footer`, `cards` (per dashboard component), and `pages` (per route)):
 
    ```json
    {
-   	"logbook": {
-   		"filterTitle": "Filter logbook",
-   		"ascentsCount": "{count, plural, one {# ascent} other {# ascents}}"
+   	"pages": {
+   		"logbook": {
+   			"filterTitle": "Filter logbook",
+   			"ascentsCount": "{count, plural, one {# ascent} other {# ascents}}"
+   		}
    	}
    }
    ```
@@ -165,13 +167,14 @@ Follow these steps when writing new UI features:
    	let count = $state(5);
    </script>
 
-   <h2>{i18n.t('logbook.filterTitle')}</h2><p>{i18n.t('logbook.ascentsCount', { count })}</p>
+   <h2>{i18n.t('pages.logbook.filterTitle')}</h2>
+   <p>{i18n.t('pages.logbook.ascentsCount', { count })}</p>
    ```
 
    Keep the whole context object rather than destructuring `t`: `locale` is a getter over reactive state, and keeping one reference makes it obvious where copy comes from.
 
 3. **Fallback guarantee:**
-   If a string key is missing in a target language, it automatically falls back to the English source string. If missing from English, it safely renders the key name itself (e.g. `logbook.filterTitle`) to prevent crashes while remaining easy to spot during testing.
+   If a string key is missing in a target language, it automatically falls back to the English source string. If missing from English, it safely renders the key name itself (e.g. `pages.logbook.filterTitle`) to prevent crashes while remaining easy to spot during testing.
 
 4. **Run the coverage test:**
    `src/lib/i18n/i18n.test.ts` scans `src/**/*.{svelte,ts}` for dotted string literals whose first segment is a catalogue section, and fails when one is missing from `en.json`. Add the key to `en.json` first; Crowdin fills the translations later.
@@ -196,7 +199,7 @@ Keep the file and the Crowdin glossary in sync when adding new terms of art (`PO
 
 ## File Context
 
-The source catalog, `src/lib/i18n/locales/en.json`, carries a file description in Crowdin (`PATCH /projects/{id}/files/{fileId}`, path `/context`) that explains the product purpose, target audience, mobile screen constraints, and screen mapping per key prefix (`common.*`, `nav.*`, `theme.*`, `language.*`, `dashboard.*`, `cards.*` (per dashboard component), `pages.*` (per route), `logbook.*`, `projects.*`, `settings.*`, `badges.*`, `styles.*`, `ticks.*`, `grades.*`, `footer.*`, and `crowdin.*`). Update it whenever a new top-level domain prefix is introduced.
+The source catalog, `src/lib/i18n/locales/en.json`, carries a file description in Crowdin (`PATCH /projects/{id}/files/{fileId}`, path `/context`) that explains the product purpose, target audience, mobile screen constraints, and screen mapping per key prefix (`common.*`, `nav.*`, `theme.*`, `language.*`, `grades.*`, `styles.*`, `ticks.*`, `footer.*`, `cards.*` (per dashboard component), and `pages.*` (per route)). Update it whenever a new top-level domain prefix is introduced. Every key in `en.json` must be referenced by the application: the catalogue has no reserved or placeholder strings, and unused keys are removed rather than translated.
 
 ---
 

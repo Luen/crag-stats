@@ -249,26 +249,21 @@ describe('formatMessage', () => {
 	});
 
 	it('formats ICU plurals for single and plural counts', () => {
-		expect(formatMessage('en', 'dashboard.ascentsCount', { count: 1 })).toBe('1 ascent');
-		expect(formatMessage('en', 'dashboard.ascentsCount', { count: 5 })).toBe('5 ascents');
-		expect(formatMessage('en', 'dashboard.ascentsCount', { count: 0 })).toBe('0 ascents');
+		expect(formatMessage('en', 'common.days', { count: 1 })).toBe('1 day');
+		expect(formatMessage('en', 'common.days', { count: 5 })).toBe('5 days');
+		expect(formatMessage('en', 'common.days', { count: 0 })).toBe('0 days');
+		expect(formatMessage('en', 'common.activeDays', { count: 1 })).toBe('1 active day');
+		expect(formatMessage('en', 'common.activeDays', { count: 4 })).toBe('4 active days');
 
-		expect(formatMessage('de', 'dashboard.ascentsCount', { count: 1 })).toBe('1 Begehung');
-		expect(formatMessage('de', 'dashboard.ascentsCount', { count: 4 })).toBe('4 Begehungen');
-
-		expect(formatMessage('fr', 'dashboard.ascentsCount', { count: 1 })).toBe('1 ascension');
-		expect(formatMessage('fr', 'dashboard.ascentsCount', { count: 2 })).toBe('2 ascensions');
-
-		expect(formatMessage('es', 'dashboard.ascentsCount', { count: 1 })).toBe('1 ascensión');
-		expect(formatMessage('es', 'dashboard.ascentsCount', { count: 3 })).toBe('3 ascensiones');
-
-		expect(formatMessage('it', 'dashboard.ascentsCount', { count: 1 })).toBe('1 salita');
-		expect(formatMessage('it', 'dashboard.ascentsCount', { count: 6 })).toBe('6 salite');
+		// Target catalogues may lag English; a missing key falls back to the English string,
+		// and Crowdin's pre-translate workflow fills the translations after merge.
+		expect(formatMessage('fr', 'common.days', { count: 2 })).toBe('2 days');
 	});
 
 	it('falls back to English when a key is missing in another locale', () => {
-		const customKey = 'common.save';
-		expect(formatMessage('de', customKey)).toBe('Speichern');
+		// `common.since` exists in English but is not yet in the German catalogue.
+		expect(formatMessage('en', 'common.since')).toBe('since');
+		expect(formatMessage('de', 'common.since')).toBe('since');
 		// Non-existent in de falls back to en
 		expect(formatMessage('de', 'nonexistent.key.test')).toBe('nonexistent.key.test');
 	});
@@ -298,9 +293,9 @@ describe('formatMessage', () => {
 
 describe('i18n context and reactivity', () => {
 	it('handles plural exact matches and numbers gracefully', () => {
-		expect(formatMessage('en', 'projects.sessions', { count: 1 })).toBe('1 session');
-		expect(formatMessage('en', 'projects.sessions', { count: 12 })).toBe('12 sessions');
-		expect(formatMessage('de', 'projects.sessions', { count: 1 })).toBe('1 Session');
-		expect(formatMessage('de', 'projects.sessions', { count: 5 })).toBe('5 Sessions');
+		expect(formatMessage('en', 'common.days', { count: 1 })).toBe('1 day');
+		expect(formatMessage('en', 'common.days', { count: 12 })).toBe('12 days');
+		// Target catalogues may lag English; a missing key falls back to the English string.
+		expect(formatMessage('de', 'common.days', { count: 5 })).toBe('5 days');
 	});
 });

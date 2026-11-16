@@ -79,7 +79,7 @@
 		<h2>{i18n.t('pages.activity.titleMonthlyBreakdown')}</h2>
 		{#if data.monthly.years.length > 0}
 			<label>
-				<span class="sr">{i18n.t('pages.activity.label')}</span>
+				<span class="sr">{i18n.t('pages.activity.labelYear')}</span>
 				<select bind:value={yearFilter}>
 					<option value="all">{i18n.t('pages.activity.optionAllYears')}</option>
 					{#each [...data.monthly.years].reverse() as y (y)}

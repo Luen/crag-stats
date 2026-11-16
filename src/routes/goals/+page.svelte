@@ -113,7 +113,7 @@
 						<p>{s.blurb}</p>
 					</div>
 					{#if s.alreadyTracking}
-						<span class="tracking">{i18n.t('pages.goals.label')}</span>
+						<span class="tracking">{i18n.t('pages.goals.labelAlreadyTracking')}</span>
 					{:else if data.canEdit}
 						<form method="POST" action="?/create">
 							<input type="hidden" name="kind" value="grade" />

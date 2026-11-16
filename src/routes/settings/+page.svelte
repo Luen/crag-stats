@@ -405,7 +405,7 @@
 					role="group"
 					aria-label={i18n.t('pages.settings.ariaTickConfigurationPresets')}
 				>
-					<span class="preset-label">{i18n.t('pages.settings.label')}</span>
+					<span class="preset-label">{i18n.t('pages.settings.labelPresets')}</span>
 					<button
 						type="button"
 						class="btn secondary sm"

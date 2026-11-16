@@ -1,10 +1,4 @@
 {
-	"badges": {
-		"almostThere": "Almost there",
-		"earned": "Earned",
-		"locked": "Locked",
-		"title": "Badges"
-	},
 	"cards": {
 		"ascentHeatmap": {
 			"ariaColourMode": "Colour mode",
@@ -282,58 +276,13 @@
 	},
 	"common": {
 		"activeDays": "{count, plural, one {# active day} other {# active days}}",
-		"all": "All",
-		"back": "Back",
-		"cancel": "Cancel",
-		"close": "Close",
-		"confirm": "Confirm",
 		"days": "{count, plural, one {# day} other {# days}}",
 		"delete": "Delete",
-		"edit": "Edit",
 		"from": "From",
 		"howItWorks": "How it works",
-		"loading": "Loading…",
-		"moreInLogbook": "+{count} more in the logbook",
-		"no": "No",
-		"offline": "Offline",
-		"offlineMode": "Offline mode active",
 		"on": "On",
-		"reset": "Reset",
-		"save": "Save",
-		"saved": "Saved",
-		"saving": "Saving…",
-		"showLess": "Show less",
-		"showMore": "Show more",
 		"since": "since",
-		"to": "to",
-		"yes": "Yes"
-	},
-	"crowdin": {
-		"contribute": "Translate Crag Stats on Crowdin",
-		"contributeDesc": "Help make climbing analytics accessible to climbers worldwide by contributing translations on Crowdin."
-	},
-	"dashboard": {
-		"ascentsCount": "{count, plural, one {# ascent} other {# ascents}}",
-		"badges": "Badges",
-		"climberType": "Climber profile",
-		"climbingStory": "Climbing story",
-		"customizeDashboard": "Customise dashboard",
-		"eddington": "Eddington number",
-		"firstAscents": "First ascents",
-		"hardestSends": "Hardest sends",
-		"heightClimbed": "Height climbed",
-		"heroGreeting": "Welcome back",
-		"karma": "Karma",
-		"milestones": "Milestones",
-		"partners": "Partners",
-		"recentActivities": "Recent activity",
-		"routePopularity": "Route popularity",
-		"routesCount": "{count, plural, one {# route} other {# routes}}",
-		"sendsCount": "{count, plural, one {# send} other {# sends}}",
-		"streaks": "Streaks",
-		"trainingLoad": "Training load",
-		"weatherConditions": "Weather conditions",
-		"weatherPerformance": "Weather & performance"
+		"to": "to"
 	},
 	"footer": {
 		"dataFrom": "Data from",
@@ -347,36 +296,10 @@
 			"experienced": "Experienced",
 			"expert": "Expert",
 			"intermediate": "Intermediate"
-		},
-		"boulderGradeSystem": "Boulder grade system",
-		"boulderGradeSystemDesc": "Preferred system for boulder problems.",
-		"routeGradeSystem": "Route grade system",
-		"routeGradeSystemDesc": "Preferred system for sport and trad routes."
+		}
 	},
 	"language": {
-		"de": "Deutsch",
-		"en": "English",
-		"es": "Español",
-		"fr": "Français",
-		"it": "Italiano",
-		"label": "Language",
-		"preferredLanguage": "Preferred language",
-		"preferredLanguageDesc": "Display language for the interface. Community translations are managed on Crowdin.",
 		"switchLabel": "Language: {current}. Switch to {next}"
-	},
-	"logbook": {
-		"filterPlaceholder": "Filter ascents…",
-		"noAscents": "No ascents match the current filters.",
-		"search": "Search",
-		"tableCrag": "Crag",
-		"tableDate": "Date",
-		"tableGrade": "Grade",
-		"tablePartner": "Partner",
-		"tableRoute": "Route",
-		"tableStyle": "Style",
-		"tableTick": "Tick",
-		"tableWeather": "Weather",
-		"title": "Logbook"
 	},
 	"nav": {
 		"activity": "Activity",
@@ -402,14 +325,13 @@
 		"shareEmbed": "Share & embed",
 		"signIn": "Sign in",
 		"signOut": "Log out",
-		"toggleSidebar": "Toggle sidebar",
 		"trainingLoad": "Training load",
 		"weather": "Weather"
 	},
 	"pages": {
 		"activity": {
 			"empty": "No monthly data yet.",
-			"label": "Year",
+			"labelYear": "Year",
 			"optionAllYears": "All years",
 			"titleActivity": "Activity",
 			"titleMonthlyBreakdown": "Monthly breakdown"
@@ -448,7 +370,7 @@
 			"buttonSaveGradePreferences": "Save grade preferences",
 			"emptyCompletedGoalsLandHere": "Completed goals land here.",
 			"emptyNoActiveGoals": "No active goals — add one above.",
-			"label": "Already tracking",
+			"labelAlreadyTracking": "Already tracking",
 			"optionAny": "Any",
 			"optionBoulders": "Boulders",
 			"optionChooseAScale": "Choose a scale",
@@ -608,7 +530,7 @@
 			"hintEndYourSignedInSession": "End your signed-in session on this device. You will need the app password to return.",
 			"hintReAppliesMarksFromHistory": "Re-applies marks from history already saved here. No requests to theCrag.",
 			"hintRouteDataRefresh": "Reload this page to update route data availability.",
-			"label": "Presets:",
+			"labelPresets": "Presets:",
 			"optionAutoBrowserLanguage": "Auto (Browser language)",
 			"placeholderTypeDeleteToConfirm": "Type DELETE to confirm",
 			"summary": "Re-apply or refresh",
@@ -648,41 +570,8 @@
 			"titleWeatherLocations": "Weather locations"
 		}
 	},
-	"projects": {
-		"completedProjects": "Sent projects",
-		"noProjects": "No active projects found.",
-		"openProjects": "Open projects",
-		"sessions": "{count, plural, one {# session} other {# sessions}}",
-		"title": "Projects",
-		"tries": "{count, plural, one {# try} other {# tries}}"
-	},
 	"settings": {
-		"chooseCsv": "Choose a CSV file",
-		"csvTitle": "Manual CSV upload",
-		"csvUploadButton": "Upload CSV",
-		"dashboardLayout": "Dashboard cards",
-		"dashboardLayoutDesc": "Drag or reorder cards to customise your dashboard layout.",
-		"fullSyncButton": "Full reconcile sync",
-		"preferences": "Preferences",
-		"preferencesSaved": "Preferences saved",
-		"resetDashboardLayout": "Reset layout",
-		"routeDataButton": "Fetch route data",
-		"routeDataTitle": "Route data & first ascents",
-		"saveDashboardLayout": "Save layout",
-		"savePreferences": "Save preferences",
-		"searchIndexing": "Show in search engines",
-		"searchIndexingDesc": "Allow search engines to index public pages.",
-		"showPrivateNotes": "Show private notes",
-		"showPrivateNotesDesc": "Include your private ascent notes in the logbook (owner only).",
-		"syncButton": "Sync logbook",
-		"syncTitle": "theCrag logbook sync",
-		"title": "Settings & sync",
-		"weatherButton": "Fetch weather data",
-		"weatherTitle": "Weather enrichment",
-		"wipeButton": "Wipe all data",
-		"wipeConfirmPrompt": "Type DELETE to confirm:",
-		"wipeTitle": "Wipe instance data",
-		"wipeWarning": "This permanently removes all cached ascents, routes, and analytics from the database."
+		"title": "Settings & sync"
 	},
 	"styles": {
 		"aid": "Aid",
