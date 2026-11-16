@@ -1,17 +1,24 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
+
 	type Share = { style: string; count: number; pct: number; color: string };
 	type Props = { shares: Share[]; climberType: string };
 	let { shares, climberType }: Props = $props();
+	const i18n = useI18n();
 </script>
 
 <article class="panel">
 	<header>
-		<h2>Climber type</h2>
+		<h2>{i18n.t('cards.climberTypeBar.titleClimberType')}</h2>
 		<strong class="type">{climberType}</strong>
 	</header>
-	<p class="hint"><a href="/docs/climber-type">How is this decided?</a></p>
+	<p class="hint"><a href="/docs/climber-type">{i18n.t('cards.climberTypeBar.howDecided')}</a></p>
 	{#if shares.length}
-		<div class="bar" role="img" aria-label="Climbing style distribution">
+		<div
+			class="bar"
+			role="img"
+			aria-label={i18n.t('cards.climberTypeBar.ariaClimbingStyleDistribution')}
+		>
 			{#each shares as s (s.style)}
 				{#if s.pct >= 2}
 					<span

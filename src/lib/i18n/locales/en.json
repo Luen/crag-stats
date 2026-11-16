@@ -1,25 +1,382 @@
 {
+	"badges": {
+		"almostThere": "Almost there",
+		"earned": "Earned",
+		"locked": "Locked",
+		"title": "Badges"
+	},
+	"cards": {
+		"ascentHeatmap": {
+			"ariaColourMode": "Colour mode",
+			"ariaHeatmapYear": "Heatmap year",
+			"empty": "No dated ascents yet",
+			"labelNoWeatherData": "No weather data",
+			"titleAscentCalendar": "Ascent calendar"
+		},
+		"athleteProfile": {
+			"ariaClimberProfileRadar": "Climber profile radar",
+			"empty": "Not enough recent ascents",
+			"helpLabel": "How climber profile works",
+			"last30": "last 30 days",
+			"last90": "last 90 days",
+			"titleClimberProfile": "Climber profile"
+		},
+		"badges": {
+			"ariaScrollBadgesLeft": "Scroll badges left",
+			"ariaScrollBadgesRight": "Scroll badges right",
+			"labelEarned": "Earned",
+			"labelLocked": "Locked"
+		},
+		"bestMonths": {
+			"lead": "theCrag seasonality for your favourite crags (orange) vs when you climb there (grey).",
+			"titleBestMonths": "Best months"
+		},
+		"climberBlurb": {
+			"titleClimbingStory": "Climbing story"
+		},
+		"climberTypeBar": {
+			"ariaClimbingStyleDistribution": "Climbing style distribution",
+			"howDecided": "How is this decided?",
+			"titleClimberType": "Climber type"
+		},
+		"cprTimeline": {
+			"empty": "Not enough data for a CPR timeline yet.",
+			"labelCurrent": "Current",
+			"labelPeak": "Peak",
+			"title": "Gap in time"
+		},
+		"cragSectors": {
+			"averageHigh": "average high",
+			"climateDays": "On your {days} cached visit days:",
+			"climateNote": "Weather on the days you climbed here, not official climate normals.",
+			"empty": "No climbed routes yet.",
+			"freezing": "freezing",
+			"hint": "All logged climbs, independent of the map filters. Expand a crag to explore its sectors.",
+			"hot": "hot",
+			"logbook": "Logbook",
+			"low": "low",
+			"meta": "{routes, plural, one {# route} other {# routes}} · {ascents, plural, one {# ascent} other {# ascents}} · {sectors, plural, one {# top sector} other {# top sectors}}",
+			"rain": "rain",
+			"snow": "snow",
+			"title": "Crags and sectors ({count, plural, one {# crag} other {# crags}})"
+		},
+		"dashboardLayoutEditor": {
+			"buttonClearSavedLayout": "Clear saved layout",
+			"buttonResetDraft": "Reset draft",
+			"buttonSaveLayout": "Save layout"
+		},
+		"docBlock": {
+			"ariaBoulderGradeConversions": "Boulder grade conversions",
+			"ariaRouteGradeConversions": "Route grade conversions"
+		},
+		"eddington": {
+			"foot": "Like cycling's Eddington number: the biggest E you've hit E times.",
+			"titleEddingtonNumbers": "Eddington numbers"
+		},
+		"eddingtonMilestones": {
+			"lead": "How many qualifying days or routes you already have toward the next Eddington numbers.",
+			"titleUpcomingMilestones": "Upcoming milestones"
+		},
+		"eddingtonTimelineChart": {
+			"ariaMetric": "Metric",
+			"empty": "No dated ascents yet — sync or import your logbook to see growth.",
+			"titleEddingtonOverTime": "Eddington over time"
+		},
+		"firstAscents": {
+			"labelSet": "Set",
+			"labelUnavailable": "Unavailable"
+		},
+		"goalsProgress": {
+			"allGoals": "All goals",
+			"ariaTitlePctPercent": "{title} {pct} percent",
+			"emptyAfterLink": ". Grade bars show readiness from nearby sends and attempts; height and days stay linear.",
+			"emptyBeforeLink": "No active goals — ",
+			"emptyLink": "set one",
+			"emptyReadOnly": "No active goals right now.",
+			"titleActiveGoals": "Active goals"
+		},
+		"gradeChip": {
+			"unknownBand": "Unknown band"
+		},
+		"karma": {
+			"articleLink": "theCrag Karma article",
+			"ascentKarma": "ascent karma (approx)",
+			"editUnavailable": "edit karma unavailable",
+			"lead": "Approximate theCrag contribution score from your logbook. Ascents use their once-per-route rule; guide-edit points are not in the logbook API yet.",
+			"pointRule": "1 point per distinct route logged (theCrag “Log Ascent”).",
+			"queueNote": "Real karma also waits in a review queue (~1 week) and includes guide edits we cannot see yet.",
+			"routesLogged": "{count, plural, one {local route logged} other {local routes logged}}",
+			"sourceAccountAfter": " account figure.",
+			"sourceAccountBefore": "Ascent total uses your theCrag ",
+			"sourceLocal": "Ascent total uses distinct routes with locally logged ascents.",
+			"titleKarma": "Karma"
+		},
+		"logbookDateRange": {
+			"ariaFillDateRange": "Fill date range",
+			"optionAllDates": "All dates",
+			"optionChooseAPreset": "Choose a preset…",
+			"optionLastYear": "Last year",
+			"optionYearToDate": "Year to date"
+		},
+		"milestones": {
+			"empty": "No milestones yet — keep ticking.",
+			"more": "Show more ({count} more)",
+			"titleMilestones": "Milestones"
+		},
+		"monthlyStats": {
+			"ariaMetric": "Metric",
+			"empty": "No monthly data yet.",
+			"labelRange": "Range",
+			"noMonthsInThisRange": "No months in this range.",
+			"optionAllYears": "All years",
+			"optionPast12Months": "Past 12 months"
+		},
+		"newRouteBadge": {
+			"labelNewRoute": "New route?",
+			"title": "No firm grade on theCrag (blank or a wide estimate like 21-23 / V1-3), so probably a new route you're bolting or working"
+		},
+		"notableAscents": {
+			"titleNotableAscents": "Notable ascents"
+		},
+		"partnerLeaderboard": {
+			"ariaPartnerCountMetric": "Partner count metric",
+			"empty": "No partners recorded yet."
+		},
+		"projectReadiness": {
+			"approximate": "Approximate readiness",
+			"ariaApproximateProjectReadiness": "Approximate project readiness",
+			"estimateNote": "an estimate, not a send probability",
+			"noGradeData": "Not enough grade data",
+			"sent": "Sent"
+		},
+		"projectRouteBadge": {
+			"labelProject": "Project",
+			"title": "Marked as Project on theCrag"
+		},
+		"projectRouteBeta": {
+			"labelAccess": "Access",
+			"labelCCBySa": "(CC BY-SA)"
+		},
+		"projectSelection": {
+			"labelNotAProject": "Not a project",
+			"labelProject": "Project"
+		},
+		"projectsHighlight": {
+			"titleProjects": "Projects"
+		},
+		"qualityBreakdown": {
+			"empty": "No quality ratings yet.",
+			"titleQualityRatings": "Quality ratings"
+		},
+		"rockPerformance": {
+			"ariaPerformanceMeasure": "Performance measure",
+			"ariaRockPerformanceValues": "Rock performance values",
+			"titleRockPerformance": "Rock & performance"
+		},
+		"rockTypePanel": {
+			"empty": "No rock type data yet.",
+			"titleRockTypes": "Rock types"
+		},
+		"routePopularity": {
+			"hint": "Popularity ≥ 50",
+			"hintPopularityLt50": "Popularity < 50",
+			"labelBeatenTrack": "Beaten track",
+			"labelOffTheBeatenTrack": "Off the beaten track",
+			"titleRoutePopularity": "Route popularity"
+		},
+		"routeRepeats": {
+			"ariaRepeatsClimbingStyle": "Repeats climbing style",
+			"ariaRepeatsRange": "Repeats range",
+			"titleRepeatsVsNewRoutes": "Repeats vs new routes"
+		},
+		"seasonalityStrip": {
+			"caption": "{name}: theCrag seasonality",
+			"month": "Month",
+			"selected": "(selected)",
+			"summary": "Monthly values for {name}",
+			"value": "Value"
+		},
+		"sectorTreeList": {
+			"titlePitchesHint": "Routes with 2+ pitches from route API",
+			"titleStyleFlagsHint": "Logbook style differs from route IsSport/IsTrad/IsBoulder flags"
+		},
+		"sessionsPerWeek": {
+			"average": "Average {avg} sessions / week",
+			"chartAria": "Sessions per week in {year}",
+			"empty": "No dated climbing days yet",
+			"hint": "A session is a calendar day with at least one ascent.",
+			"titleSessionsPerWeek": "Sessions per week",
+			"weekTitle": "Week {week} starting {start}: {count, plural, one {# session} other {# sessions}}",
+			"yearAria": "Sessions year"
+		},
+		"soloClimbing": {
+			"empty": "No solo ascents logged yet: top-rope solo, lead solo or free solo.",
+			"labelHardest": "Hardest",
+			"titleSoloClimbing": "Solo climbing"
+		},
+		"starsScatter": {
+			"ariaClimbType": "Climb type",
+			"empty": "No rated routes yet."
+		},
+		"streaks": {
+			"days": "days",
+			"lastAscent": "Last ascent",
+			"longest": "longest",
+			"months": "months",
+			"titleStreaks": "Streaks",
+			"weeks": "weeks"
+		},
+		"styleMixChart": {
+			"ariaTimeRange": "Time range",
+			"empty": "No style mix data yet.",
+			"titleStyleMix": "Style mix"
+		},
+		"stylePyramid": {
+			"empty": "No graded ascents"
+		},
+		"trainingLoad": {
+			"ariaDailyLoadLast28Days": "Daily load, last 28 days",
+			"labelAcuteChronic": "Acute : chronic"
+		},
+		"volumeChart": {
+			"ascents": "Ascents",
+			"empty": "No volume data yet — sync or import a logbook.",
+			"pointTitle": "{month}: {count, plural, one {# ascent} other {# ascents}} ({sends, plural, one {# send} other {# sends}})",
+			"sends": "Sends"
+		},
+		"weatherChips": {
+			"ariaWeatherOnTheDay": "Weather on the day",
+			"titleWeatherOnTheDayOpen": "Weather on the day (Open-Meteo)"
+		},
+		"weatherConditions": {
+			"labelFairWeatherRate": "Fair-weather rate",
+			"labelNoData": "No data"
+		},
+		"weatherPerformance": {
+			"ariaPerformanceMeasure": "Performance measure",
+			"ariaWeatherGrouping": "Weather grouping",
+			"hint": "Weather patterns are correlations. Season, crag and project choice also matter."
+		},
+		"weekdayStats": {
+			"ariaClimbingStyle": "Climbing style",
+			"ariaWeekdayMetric": "Weekday metric",
+			"ariaWeekdayRange": "Weekday range",
+			"titleWeekday": "Weekday"
+		},
+		"worldClimbingMap": {
+			"ariaMapNavigation": "Map navigation",
+			"ariaPanEast": "Pan east",
+			"ariaPanNorth": "Pan north",
+			"ariaPanSouth": "Pan south",
+			"ariaPanWest": "Pan west",
+			"ariaSelectedMapPlaces": "Selected map places",
+			"ariaWorldwideClimbingPlaces": "Worldwide climbing places",
+			"ariaZoomIn": "Zoom in",
+			"ariaZoomOut": "Zoom out"
+		},
+		"yearlyStats": {
+			"ariaChartMode": "Chart mode",
+			"ariaMetric": "Metric",
+			"empty": "No yearly data yet."
+		}
+	},
 	"common": {
+		"activeDays": "{count, plural, one {# active day} other {# active days}}",
 		"all": "All",
 		"back": "Back",
 		"cancel": "Cancel",
 		"close": "Close",
 		"confirm": "Confirm",
+		"days": "{count, plural, one {# day} other {# days}}",
 		"delete": "Delete",
 		"edit": "Edit",
+		"from": "From",
 		"howItWorks": "How it works",
 		"loading": "Loading…",
 		"moreInLogbook": "+{count} more in the logbook",
 		"no": "No",
 		"offline": "Offline",
 		"offlineMode": "Offline mode active",
+		"on": "On",
 		"reset": "Reset",
 		"save": "Save",
 		"saved": "Saved",
 		"saving": "Saving…",
 		"showLess": "Show less",
 		"showMore": "Show more",
+		"since": "since",
+		"to": "to",
 		"yes": "Yes"
+	},
+	"crowdin": {
+		"contribute": "Translate Crag Stats on Crowdin",
+		"contributeDesc": "Help make climbing analytics accessible to climbers worldwide by contributing translations on Crowdin."
+	},
+	"dashboard": {
+		"ascentsCount": "{count, plural, one {# ascent} other {# ascents}}",
+		"badges": "Badges",
+		"climberType": "Climber profile",
+		"climbingStory": "Climbing story",
+		"customizeDashboard": "Customise dashboard",
+		"eddington": "Eddington number",
+		"firstAscents": "First ascents",
+		"hardestSends": "Hardest sends",
+		"heightClimbed": "Height climbed",
+		"heroGreeting": "Welcome back",
+		"karma": "Karma",
+		"milestones": "Milestones",
+		"partners": "Partners",
+		"recentActivities": "Recent activity",
+		"routePopularity": "Route popularity",
+		"routesCount": "{count, plural, one {# route} other {# routes}}",
+		"sendsCount": "{count, plural, one {# send} other {# sends}}",
+		"streaks": "Streaks",
+		"trainingLoad": "Training load",
+		"weatherConditions": "Weather conditions",
+		"weatherPerformance": "Weather & performance"
+	},
+	"footer": {
+		"dataFrom": "Data from",
+		"offlineCopy": "Offline copy",
+		"selfHosted": "Self-hosted climbing analytics"
+	},
+	"grades": {
+		"bands": {
+			"beginner": "Beginner",
+			"elite": "Elite",
+			"experienced": "Experienced",
+			"expert": "Expert",
+			"intermediate": "Intermediate"
+		},
+		"boulderGradeSystem": "Boulder grade system",
+		"boulderGradeSystemDesc": "Preferred system for boulder problems.",
+		"routeGradeSystem": "Route grade system",
+		"routeGradeSystemDesc": "Preferred system for sport and trad routes."
+	},
+	"language": {
+		"de": "Deutsch",
+		"en": "English",
+		"es": "Español",
+		"fr": "Français",
+		"it": "Italiano",
+		"label": "Language",
+		"preferredLanguage": "Preferred language",
+		"preferredLanguageDesc": "Display language for the interface. Community translations are managed on Crowdin.",
+		"switchLabel": "Language: {current}. Switch to {next}"
+	},
+	"logbook": {
+		"filterPlaceholder": "Filter ascents…",
+		"noAscents": "No ascents match the current filters.",
+		"search": "Search",
+		"tableCrag": "Crag",
+		"tableDate": "Date",
+		"tableGrade": "Grade",
+		"tablePartner": "Partner",
+		"tableRoute": "Route",
+		"tableStyle": "Style",
+		"tableTick": "Tick",
+		"tableWeather": "Weather",
+		"title": "Logbook"
 	},
 	"nav": {
 		"activity": "Activity",
@@ -49,143 +406,67 @@
 		"trainingLoad": "Training load",
 		"weather": "Weather"
 	},
+	"projects": {
+		"completedProjects": "Sent projects",
+		"noProjects": "No active projects found.",
+		"openProjects": "Open projects",
+		"sessions": "{count, plural, one {# session} other {# sessions}}",
+		"title": "Projects",
+		"tries": "{count, plural, one {# try} other {# tries}}"
+	},
+	"settings": {
+		"chooseCsv": "Choose a CSV file",
+		"csvTitle": "Manual CSV upload",
+		"csvUploadButton": "Upload CSV",
+		"dashboardLayout": "Dashboard cards",
+		"dashboardLayoutDesc": "Drag or reorder cards to customise your dashboard layout.",
+		"fullSyncButton": "Full reconcile sync",
+		"preferences": "Preferences",
+		"preferencesSaved": "Preferences saved",
+		"resetDashboardLayout": "Reset layout",
+		"routeDataButton": "Fetch route data",
+		"routeDataTitle": "Route data & first ascents",
+		"saveDashboardLayout": "Save layout",
+		"savePreferences": "Save preferences",
+		"searchIndexing": "Show in search engines",
+		"searchIndexingDesc": "Allow search engines to index public pages.",
+		"showPrivateNotes": "Show private notes",
+		"showPrivateNotesDesc": "Include your private ascent notes in the logbook (owner only).",
+		"syncButton": "Sync logbook",
+		"syncTitle": "theCrag logbook sync",
+		"title": "Settings & sync",
+		"weatherButton": "Fetch weather data",
+		"weatherTitle": "Weather enrichment",
+		"wipeButton": "Wipe all data",
+		"wipeConfirmPrompt": "Type DELETE to confirm:",
+		"wipeTitle": "Wipe instance data",
+		"wipeWarning": "This permanently removes all cached ascents, routes, and analytics from the database."
+	},
+	"styles": {
+		"aid": "Aid",
+		"alpine": "Alpine",
+		"boulder": "Boulder",
+		"sport": "Sport",
+		"toprope": "Top rope",
+		"trad": "Trad",
+		"unknown": "Unknown"
+	},
 	"theme": {
 		"dark": "Dark",
 		"light": "Light",
 		"system": "System",
 		"themeLabel": "Theme: {current}. Switch to {next}"
 	},
-	"language": {
-		"label": "Language",
-		"switchLabel": "Language: {current}. Switch to {next}",
-		"preferredLanguage": "Preferred language",
-		"preferredLanguageDesc": "Display language for the interface. Community translations are managed on Crowdin.",
-		"en": "English",
-		"de": "Deutsch",
-		"fr": "Français",
-		"es": "Español",
-		"it": "Italiano"
-	},
-	"grades": {
-		"routeGradeSystem": "Route grade system",
-		"routeGradeSystemDesc": "Preferred system for sport and trad routes.",
-		"boulderGradeSystem": "Boulder grade system",
-		"boulderGradeSystemDesc": "Preferred system for boulder problems.",
-		"bands": {
-			"beginner": "Beginner",
-			"intermediate": "Intermediate",
-			"experienced": "Experienced",
-			"expert": "Expert",
-			"elite": "Elite"
-		}
-	},
 	"ticks": {
-		"onsight": "Onsight",
-		"flash": "Flash",
-		"redpoint": "Red point",
-		"pinkpoint": "Pink point",
 		"clean": "Clean",
-		"tick": "Tick",
-		"send": "Send",
-		"toprope": "Top rope",
+		"flash": "Flash",
+		"onsight": "Onsight",
+		"other": "Other",
+		"pinkpoint": "Pink point",
+		"redpoint": "Red point",
 		"repeat": "Repeat",
-		"other": "Other"
-	},
-	"styles": {
-		"sport": "Sport",
-		"trad": "Trad",
-		"boulder": "Boulder",
-		"toprope": "Top rope",
-		"alpine": "Alpine",
-		"aid": "Aid",
-		"unknown": "Unknown"
-	},
-	"settings": {
-		"title": "Settings & sync",
-		"preferences": "Preferences",
-		"savePreferences": "Save preferences",
-		"preferencesSaved": "Preferences saved",
-		"showPrivateNotes": "Show private notes",
-		"showPrivateNotesDesc": "Include your private ascent notes in the logbook (owner only).",
-		"searchIndexing": "Show in search engines",
-		"searchIndexingDesc": "Allow search engines to index public pages.",
-		"dashboardLayout": "Dashboard cards",
-		"dashboardLayoutDesc": "Drag or reorder cards to customise your dashboard layout.",
-		"saveDashboardLayout": "Save layout",
-		"resetDashboardLayout": "Reset layout",
-		"syncTitle": "theCrag logbook sync",
-		"syncButton": "Sync logbook",
-		"fullSyncButton": "Full reconcile sync",
-		"csvTitle": "Manual CSV upload",
-		"csvUploadButton": "Upload CSV",
-		"chooseCsv": "Choose a CSV file",
-		"routeDataTitle": "Route data & first ascents",
-		"routeDataButton": "Fetch route data",
-		"weatherTitle": "Weather enrichment",
-		"weatherButton": "Fetch weather data",
-		"wipeTitle": "Wipe instance data",
-		"wipeWarning": "This permanently removes all cached ascents, routes, and analytics from the database.",
-		"wipeConfirmPrompt": "Type DELETE to confirm:",
-		"wipeButton": "Wipe all data"
-	},
-	"dashboard": {
-		"heroGreeting": "Welcome back",
-		"ascentsCount": "{count, plural, one {# ascent} other {# ascents}}",
-		"sendsCount": "{count, plural, one {# send} other {# sends}}",
-		"routesCount": "{count, plural, one {# route} other {# routes}}",
-		"heightClimbed": "Height climbed",
-		"climberType": "Climber profile",
-		"recentActivities": "Recent activity",
-		"climbingStory": "Climbing story",
-		"badges": "Badges",
-		"streaks": "Streaks",
-		"eddington": "Eddington number",
-		"trainingLoad": "Training load",
-		"milestones": "Milestones",
-		"weatherConditions": "Weather conditions",
-		"weatherPerformance": "Weather & performance",
-		"routePopularity": "Route popularity",
-		"hardestSends": "Hardest sends",
-		"firstAscents": "First ascents",
-		"partners": "Partners",
-		"karma": "Karma",
-		"customizeDashboard": "Customise dashboard"
-	},
-	"logbook": {
-		"title": "Logbook",
-		"filterPlaceholder": "Filter ascents…",
-		"search": "Search",
-		"noAscents": "No ascents match the current filters.",
-		"tableDate": "Date",
-		"tableRoute": "Route",
-		"tableGrade": "Grade",
-		"tableStyle": "Style",
-		"tableTick": "Tick",
-		"tableCrag": "Crag",
-		"tablePartner": "Partner",
-		"tableWeather": "Weather"
-	},
-	"projects": {
-		"title": "Projects",
-		"openProjects": "Open projects",
-		"completedProjects": "Sent projects",
-		"noProjects": "No active projects found.",
-		"sessions": "{count, plural, one {# session} other {# sessions}}",
-		"tries": "{count, plural, one {# try} other {# tries}}"
-	},
-	"badges": {
-		"title": "Badges",
-		"earned": "Earned",
-		"almostThere": "Almost there",
-		"locked": "Locked"
-	},
-	"crowdin": {
-		"contribute": "Translate Crag Stats on Crowdin",
-		"contributeDesc": "Help make climbing analytics accessible to climbers worldwide by contributing translations on Crowdin."
-	},
-	"footer": {
-		"selfHosted": "Self-hosted climbing analytics",
-		"dataFrom": "Data from",
-		"offlineCopy": "Offline copy"
+		"send": "Send",
+		"tick": "Tick",
+		"toprope": "Top rope"
 	}
 }

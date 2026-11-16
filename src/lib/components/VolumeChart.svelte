@@ -1,20 +1,27 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
+
 	type Point = { month: string; count: number; sends: number };
 	type Props = { data: Point[] };
 	let { data }: Props = $props();
+	const i18n = useI18n();
 
 	const max = $derived(Math.max(1, ...data.map((d) => d.count)));
 </script>
 
 {#if data.length === 0}
-	<p class="empty">No volume data yet — sync or import a logbook.</p>
+	<p class="empty">{i18n.t('cards.volumeChart.empty')}</p>
 {:else}
 	<div class="chart" style:--n={data.length}>
 		{#each data as point (point.month)}
 			<a
 				class="col"
 				href="/logbook?year={point.month.slice(0, 4)}"
-				title="{point.month}: {point.count} ascents ({point.sends} sends)"
+				title={i18n.t('cards.volumeChart.pointTitle', {
+					month: point.month,
+					count: point.count,
+					sends: point.sends
+				})}
 			>
 				<div class="stack">
 					<div class="bar total" style:height="{(point.count / max) * 100}%"></div>
@@ -25,8 +32,8 @@
 		{/each}
 	</div>
 	<div class="legend">
-		<span><i class="t"></i> Ascents</span>
-		<span><i class="s"></i> Sends</span>
+		<span><i class="t"></i> {i18n.t('cards.volumeChart.ascents')}</span>
+		<span><i class="s"></i> {i18n.t('cards.volumeChart.sends')}</span>
 	</div>
 {/if}
 

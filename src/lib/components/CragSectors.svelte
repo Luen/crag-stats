@@ -1,6 +1,7 @@
 <script lang="ts">
 	import SectorTreeList from '#lib/components/SectorTreeList.svelte';
 	import { formatNumber } from '#lib/dates';
+	import { useI18n } from '#lib/i18n';
 	import { DEFAULT_DISPLAY_UNITS, formatTemperature, type DisplayUnits } from '#lib/units';
 	import type { CragSectorGroup } from '#lib/types/sectors';
 	import type { DateDisplay } from '#lib/dates';
@@ -14,6 +15,7 @@
 		dateDisplay: DateDisplay;
 		displayUnits?: DisplayUnits;
 	} = $props();
+	const i18n = useI18n();
 
 	let open = $state<Record<string, boolean>>({});
 
@@ -23,12 +25,10 @@
 </script>
 
 <section class="panel">
-	<h2>Crags and sectors ({crags.length})</h2>
-	<p class="hint">
-		All logged climbs, independent of the map filters. Expand a crag to explore its sectors.
-	</p>
+	<h2>{i18n.t('cards.cragSectors.title', { count: crags.length })}</h2>
+	<p class="hint">{i18n.t('cards.cragSectors.hint')}</p>
 	{#if crags.length === 0}
-		<p class="empty">No climbed routes yet.</p>
+		<p class="empty">{i18n.t('cards.cragSectors.empty')}</p>
 	{:else}
 		<ul class="crags">
 			{#each crags as crag (crag.cragName)}
@@ -42,32 +42,42 @@
 						<span class="chev" aria-hidden="true">{open[crag.cragName] ? '▾' : '▸'}</span>
 						<strong>{crag.cragName}</strong>
 						<span class="meta"
-							>{crag.routeCount} routes · {crag.ascentCount} ascents · {crag.sectors.length} top sectors</span
+							>{i18n.t('cards.cragSectors.meta', {
+								routes: crag.routeCount,
+								ascents: crag.ascentCount,
+								sectors: crag.sectors.length
+							})}</span
 						>
 					</button>
-					<a class="log" href="/logbook?crag={encodeURIComponent(crag.cragName)}">Logbook</a>
+					<a class="log" href="/logbook?crag={encodeURIComponent(crag.cragName)}"
+						>{i18n.t('cards.cragSectors.logbook')}</a
+					>
 					{#if crag.areaBreadcrumb}
 						<p class="breadcrumb">{crag.areaBreadcrumb}</p>
 					{/if}
 					{#if crag.visitClimate}
 						{@const c = crag.visitClimate}
 						<p class="climate">
-							<strong>On your {formatNumber(c.days, dateDisplay)} cached visit days:</strong>
-							{#if c.avgHighC != null}average high {formatTemperature(
-									c.avgHighC,
-									displayUnits.temperature
-								)}{/if}{#if c.avgLowC != null}, low {formatTemperature(
-									c.avgLowC,
-									displayUnits.temperature
-								)}{/if}
-							· rain {formatNumber(c.rainPct, dateDisplay)}%{#if c.snowPct > 0}
-								· snow {formatNumber(c.snowPct, dateDisplay)}%{/if}{#if c.freezePct > 0}
-								· freezing {formatNumber(c.freezePct, dateDisplay)}%{/if}{#if c.heatPct > 0}
-								· hot {formatNumber(c.heatPct, dateDisplay)}%{/if}
-							<span class="note"
-								>Weather on the days you climbed here, not official climate normals.</span
+							<strong
+								>{i18n.t('cards.cragSectors.climateDays', {
+									days: formatNumber(c.days, dateDisplay)
+								})}</strong
 							>
-							<a class="how" href="/docs/weather">How it works</a>
+							{#if c.avgHighC != null}
+								{i18n.t('cards.cragSectors.averageHigh')}
+								{formatTemperature(c.avgHighC, displayUnits.temperature)}
+							{/if}{#if c.avgLowC != null}, {i18n.t('cards.cragSectors.low')}
+								{formatTemperature(c.avgLowC, displayUnits.temperature)}{/if}
+							· {i18n.t('cards.cragSectors.rain')}
+							{formatNumber(c.rainPct, dateDisplay)}%{#if c.snowPct > 0}
+								· {i18n.t('cards.cragSectors.snow')}
+								{formatNumber(c.snowPct, dateDisplay)}%{/if}{#if c.freezePct > 0}
+								· {i18n.t('cards.cragSectors.freezing')}
+								{formatNumber(c.freezePct, dateDisplay)}%{/if}{#if c.heatPct > 0}
+								· {i18n.t('cards.cragSectors.hot')}
+								{formatNumber(c.heatPct, dateDisplay)}%{/if}
+							<span class="note">{i18n.t('cards.cragSectors.climateNote')}</span>
+							<a class="how" href="/docs/weather">{i18n.t('common.howItWorks')}</a>
 						</p>
 					{/if}
 					{#if open[crag.cragName]}

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
 	import { sortEarnedBadges } from '#lib/badgeOrder';
 
 	type Badge = {
@@ -36,6 +37,7 @@
 		titleHref = '/badges',
 		layout
 	}: Props = $props();
+	const i18n = useI18n();
 
 	const earnedSorted = $derived(sortEarnedBadges(earned));
 
@@ -115,9 +117,9 @@
 		{#if b.earned && b.href}
 			<a class="link" href={b.href} target="_blank" rel="noreferrer">View climb</a>
 		{:else if b.earned}
-			<span class="link muted">Earned</span>
+			<span class="link muted">{i18n.t('cards.badges.labelEarned')}</span>
 		{:else}
-			<span class="link muted">Locked</span>
+			<span class="link muted">{i18n.t('cards.badges.labelLocked')}</span>
 		{/if}
 	</article>
 {/snippet}
@@ -140,7 +142,7 @@
 		</div>
 		<div class="meta">
 			<span class="progress">{earnedCount} of {totalCount} earned</span>
-			<a class="how" href="/docs/badges">How it works</a>
+			<a class="how" href="/docs/badges">{i18n.t('common.howItWorks')}</a>
 		</div>
 	</header>
 
@@ -164,7 +166,7 @@
 				type="button"
 				class="nav prev"
 				onclick={() => scrollBy(-1)}
-				aria-label="Scroll badges left">‹</button
+				aria-label={i18n.t('cards.badges.ariaScrollBadgesLeft')}>‹</button
 			>
 			<div
 				class="scroller"
@@ -183,7 +185,7 @@
 				type="button"
 				class="nav next"
 				onclick={() => scrollBy(1)}
-				aria-label="Scroll badges right">›</button
+				aria-label={i18n.t('cards.badges.ariaScrollBadgesRight')}>›</button
 			>
 		</div>
 	{/if}

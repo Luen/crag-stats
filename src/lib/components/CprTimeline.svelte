@@ -183,14 +183,14 @@
 		<div class="scores">
 			{#if data.peakScore != null}
 				<span class="stat">
-					<span class="k">Peak</span>
+					<span class="k">{i18n.t('cards.cprTimeline.labelPeak')}</span>
 					<strong>{data.peakScore}</strong>
 					{#if data.peakGrade != null}<em>≈ {gradeLabel(data.peakGrade)}</em>{/if}
 				</span>
 			{/if}
 			{#if data.currentScore != null}
 				<span class="stat">
-					<span class="k">Current</span>
+					<span class="k">{i18n.t('cards.cprTimeline.labelCurrent')}</span>
 					<strong>{data.currentScore}</strong>
 					{#if data.currentGrade != null}<em>≈ {gradeLabel(data.currentGrade)}</em>{/if}
 				</span>
@@ -206,7 +206,7 @@
 	</header>
 
 	{#if n === 0}
-		<p class="empty">Not enough data for a CPR timeline yet.</p>
+		<p class="empty">{i18n.t('cards.cprTimeline.empty')}</p>
 	{:else}
 		<div class="chart">
 			<div class="yaxis" aria-hidden="true">
@@ -259,7 +259,7 @@
 		<div class="xaxis" style:--n={n} aria-hidden="true">
 			{#each xLabels as l, i (data.buckets[i].period)}
 				<span class={{ gap: l.gap }}>
-					{#if l.gap}<i title="Gap in time">⋯</i>{/if}
+					{#if l.gap}<i title={i18n.t('cards.cprTimeline.title')}>⋯</i>{/if}
 					<b>{l.year}</b>{l.sub}
 				</span>
 			{/each}

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { DEFAULT_DATE_DISPLAY, formatCalendarDate, type DateDisplay } from '#lib/dates';
+	import { useI18n } from '#lib/i18n';
 	type Props = {
 		currentDays: number;
 		currentWeeks: number;
@@ -24,49 +25,57 @@
 		daysSinceLastActive,
 		dateDisplay = DEFAULT_DATE_DISPLAY
 	}: Props = $props();
+	const i18n = useI18n();
 </script>
 
 <article class="panel">
 	<header>
-		<h2>Streaks</h2>
-		<a class="how" href="/docs/activity">How it works</a>
+		<h2>{i18n.t('cards.streaks.titleStreaks')}</h2>
+		<a class="how" href="/docs/activity">{i18n.t('common.howItWorks')}</a>
 	</header>
 	<div class="cards">
 		<div class="card">
 			<strong>{currentDays}</strong>
-			<span>days</span>
+			<span>{i18n.t('cards.streaks.days')}</span>
 		</div>
 		<div class="card">
 			<strong>{currentWeeks}</strong>
-			<span>weeks</span>
+			<span>{i18n.t('cards.streaks.weeks')}</span>
 		</div>
 		<div class="card">
 			<strong>{currentMonths}</strong>
-			<span>months</span>
+			<span>{i18n.t('cards.streaks.months')}</span>
 		</div>
 		<div class="card">
 			<strong>{longestDays}</strong>
-			<span>longest</span>
+			<span>{i18n.t('cards.streaks.longest')}</span>
 		</div>
 	</div>
 	{#if longestStartDate && longestEndDate}
 		<p class="foot record-range">
-			{#if longestStartDate === longestEndDate}On{:else}From{/if}
+			{#if longestStartDate === longestEndDate}{i18n.t('common.on')}{:else}{i18n.t(
+					'common.from'
+				)}{/if}
 			<time datetime={longestStartDate}>{formatCalendarDate(longestStartDate, dateDisplay)}</time>
 			{#if longestStartDate !== longestEndDate}
-				to <time datetime={longestEndDate}>{formatCalendarDate(longestEndDate, dateDisplay)}</time>
+				{i18n.t('common.to')}
+				<time datetime={longestEndDate}>{formatCalendarDate(longestEndDate, dateDisplay)}</time>
 			{/if}
 		</p>
 	{/if}
 	<p class="foot">
 		{#if lastActiveDate}
-			Last ascent <strong>{formatCalendarDate(lastActiveDate, dateDisplay)}</strong>
+			{i18n.t('cards.streaks.lastAscent')}
+			<strong>{formatCalendarDate(lastActiveDate, dateDisplay)}</strong>
 			{#if daysSinceLastActive != null}
-				· <strong>{daysSinceLastActive}</strong> day{daysSinceLastActive === 1 ? '' : 's'} since
+				· <strong>{daysSinceLastActive}</strong>
+				{i18n.t('common.days', { count: daysSinceLastActive })}
+				{i18n.t('common.since')}
 			{/if}
 			·
 		{/if}
-		<strong>{activeDays}</strong> active day{activeDays === 1 ? '' : 's'}
+		<strong>{activeDays}</strong>
+		{i18n.t('common.activeDays', { count: activeDays })}
 	</p>
 </article>
 

@@ -1,8 +1,10 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
 	import type { EddingtonMilestoneTable } from '#lib/types/dashboard';
 
 	type Props = { tables: EddingtonMilestoneTable[] };
 	let { tables }: Props = $props();
+	const i18n = useI18n();
 
 	function thresholdLabel(table: EddingtonMilestoneTable, target: number): string {
 		if (table.key === 'vertical') {
@@ -16,10 +18,8 @@
 </script>
 
 <section class="milestones">
-	<h2>Upcoming milestones</h2>
-	<p class="lead">
-		How many qualifying days or routes you already have toward the next Eddington numbers.
-	</p>
+	<h2>{i18n.t('cards.eddingtonMilestones.titleUpcomingMilestones')}</h2>
+	<p class="lead">{i18n.t('cards.eddingtonMilestones.lead')}</p>
 
 	<div class="grid">
 		{#each tables as table (table.key)}

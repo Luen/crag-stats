@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
 	import { onMount } from 'svelte';
 	import {
 		EMPTY_CARD_PREFERENCES,
@@ -33,6 +34,7 @@
 		limit,
 		compact = false
 	}: Props = $props();
+	const i18n = useI18n();
 
 	const METRIC_KEY = 'cs_partners_metric';
 
@@ -90,11 +92,15 @@
 				{/if}
 			</h2>
 			{#if metricToggle}
-				<a class="how" href="/docs/partners">How it works</a>
+				<a class="how" href="/docs/partners">{i18n.t('common.howItWorks')}</a>
 			{/if}
 		</div>
 		{#if metricToggle}
-			<div class="toggles" role="group" aria-label="Partner count metric">
+			<div
+				class="toggles"
+				role="group"
+				aria-label={i18n.t('cards.partnerLeaderboard.ariaPartnerCountMetric')}
+			>
 				{#each PARTNER_METRICS as m (m)}
 					<button
 						type="button"
@@ -108,7 +114,7 @@
 	</header>
 
 	{#if ranked.length === 0}
-		<p class="empty">No partners recorded yet.</p>
+		<p class="empty">{i18n.t('cards.partnerLeaderboard.empty')}</p>
 	{:else}
 		<ul class="bars">
 			{#each ranked as p (p.name)}

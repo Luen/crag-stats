@@ -60,7 +60,12 @@
 {:else if name === 'route-conversions'}
 	<!-- Scrollable region: focusable so keyboard users can scroll it (axe). -->
 	<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-	<div class="table-wrap tall" tabindex="0" role="region" aria-label="Route grade conversions">
+	<div
+		class="table-wrap tall"
+		tabindex="0"
+		role="region"
+		aria-label={i18n.t('cards.docBlock.ariaRouteGradeConversions')}
+	>
 		<table>
 			<thead><tr><th>Ewbank</th><th>French</th><th>YDS</th><th>Band</th></tr></thead>
 			<tbody>
@@ -78,7 +83,12 @@
 {:else if name === 'boulder-conversions'}
 	<!-- Scrollable region: focusable so keyboard users can scroll it (axe). -->
 	<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-	<div class="table-wrap tall" tabindex="0" role="region" aria-label="Boulder grade conversions">
+	<div
+		class="table-wrap tall"
+		tabindex="0"
+		role="region"
+		aria-label={i18n.t('cards.docBlock.ariaBoulderGradeConversions')}
+	>
 		<table>
 			<thead><tr><th>V-scale</th><th>Font</th><th>Band</th></tr></thead>
 			<tbody>

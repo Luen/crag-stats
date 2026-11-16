@@ -1,11 +1,14 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
 	import type { StoryRouteLink } from '#lib/types/climbingStory';
 	type Props = { paragraphs: string[]; routeLink?: StoryRouteLink | null; title?: string };
-	let { paragraphs, routeLink = null, title = 'Climbing story' }: Props = $props();
+	let { paragraphs, routeLink = null, title }: Props = $props();
+	const i18n = useI18n();
+	const heading = $derived(title ?? i18n.t('cards.climberBlurb.titleClimbingStory'));
 </script>
 
 <article class="panel">
-	<h2>{title}</h2>
+	<h2>{heading}</h2>
 	{#each paragraphs as p, i (i)}
 		<p class="blurb">
 			{#if routeLink && routeLink.paragraph === i}{p.slice(0, routeLink.start)}<a
@@ -15,7 +18,7 @@
 				>{p.slice(routeLink.end)}{:else}{p}{/if}
 		</p>
 	{/each}
-	<p class="foot"><a class="how" href="/docs/climbing-story">How it works</a></p>
+	<p class="foot"><a class="how" href="/docs/climbing-story">{i18n.t('common.howItWorks')}</a></p>
 </article>
 
 <style>

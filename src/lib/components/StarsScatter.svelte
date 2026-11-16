@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
 	import { DEFAULT_DISPLAY_SYSTEMS, formatGradeLabel, type DisplayGradeSystems } from '#lib/grades';
 	import { scatterQualityY } from '#lib/qualityScore';
 
@@ -13,6 +14,7 @@
 
 	type Props = { points: Point[]; gradeSystems?: DisplayGradeSystems };
 	let { points, gradeSystems = DEFAULT_DISPLAY_SYSTEMS }: Props = $props();
+	const i18n = useI18n();
 
 	type Kind = Point['kind'];
 
@@ -160,7 +162,7 @@
 	<header>
 		<h2>{useQualityAxis ? 'Quality vs grade' : 'Stars vs grade'}</h2>
 		{#if counts.route && counts.boulder}
-			<div class="toggles" role="group" aria-label="Climb type">
+			<div class="toggles" role="group" aria-label={i18n.t('cards.starsScatter.ariaClimbType')}>
 				<button
 					type="button"
 					class={{ active: kind === 'route' }}
@@ -178,7 +180,7 @@
 	</header>
 
 	{#if shown.length === 0}
-		<p class="empty">No rated routes yet.</p>
+		<p class="empty">{i18n.t('cards.starsScatter.empty')}</p>
 	{:else}
 		<p class="summary">
 			{shown.length} rated sends ·

@@ -1,8 +1,10 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
 	import type { EddingtonTimelinePoint } from '#lib/types/dashboard';
 
 	type Props = { timeline: EddingtonTimelinePoint[] };
 	let { timeline }: Props = $props();
+	const i18n = useI18n();
 
 	type SeriesKey = 'sendsE' | 'verticalE' | 'routeE' | 'boulderE';
 
@@ -49,8 +51,12 @@
 
 <article class="panel">
 	<div class="head">
-		<h2>Eddington over time</h2>
-		<div class="toggles" role="group" aria-label="Metric">
+		<h2>{i18n.t('cards.eddingtonTimelineChart.titleEddingtonOverTime')}</h2>
+		<div
+			class="toggles"
+			role="group"
+			aria-label={i18n.t('cards.eddingtonTimelineChart.ariaMetric')}
+		>
 			{#each SERIES as s (s.key)}
 				<button
 					type="button"
@@ -63,7 +69,7 @@
 	</div>
 
 	{#if timeline.length === 0}
-		<p class="empty">No dated ascents yet — sync or import your logbook to see growth.</p>
+		<p class="empty">{i18n.t('cards.eddingtonTimelineChart.empty')}</p>
 	{:else if points.length === 1}
 		<p class="single">
 			{series.label} E is <strong>{points[0].value}</strong> as of {points[0].period}.

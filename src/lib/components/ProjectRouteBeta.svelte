@@ -1,8 +1,10 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
 	import type { ProjectPublicBeta } from '#lib/routeBeta';
 
 	type Props = { beta: ProjectPublicBeta };
 	let { beta }: Props = $props();
+	const i18n = useI18n();
 
 	const showAttribution = $derived(
 		Boolean(beta.attributionUrl && (beta.descriptionExcerpt || beta.accessWarning))
@@ -11,7 +13,7 @@
 
 {#if beta.accessWarning}
 	<p class="access" role="note">
-		<span class="access-label">Access</span>
+		<span class="access-label">{i18n.t('cards.projectRouteBeta.labelAccess')}</span>
 		{beta.accessWarning}
 	</p>
 {/if}
@@ -24,7 +26,7 @@
 	<p class="attrib">
 		Guidebook text from
 		<a href={beta.attributionUrl} target="_blank" rel="noreferrer">theCrag</a>
-		<span class="license">(CC BY-SA)</span>
+		<span class="license">{i18n.t('cards.projectRouteBeta.labelCCBySa')}</span>
 	</p>
 {/if}
 

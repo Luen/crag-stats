@@ -1,17 +1,20 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
+
 	type Rating = { quality: string; count: number };
 
 	type Props = { ratings: Rating[] };
 	let { ratings }: Props = $props();
+	const i18n = useI18n();
 
 	const max = $derived(Math.max(1, ...ratings.map((r) => r.count)));
 </script>
 
 <article class="panel">
-	<h2>Quality ratings</h2>
+	<h2>{i18n.t('cards.qualityBreakdown.titleQualityRatings')}</h2>
 
 	{#if ratings.length === 0}
-		<p class="empty">No quality ratings yet.</p>
+		<p class="empty">{i18n.t('cards.qualityBreakdown.empty')}</p>
 	{:else}
 		<ul class="bars">
 			{#each ratings as r (r.quality)}

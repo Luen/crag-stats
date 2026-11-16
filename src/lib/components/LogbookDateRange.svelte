@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
 	import { logbookDates } from '#lib/logbookDates';
 	let {
 		from,
@@ -7,6 +8,7 @@
 		today,
 		error
 	}: { from: string; to: string; years: string[]; today: string; error: string } = $props();
+	const i18n = useI18n();
 	let start = $derived(from);
 	let end = $derived(to);
 	const id = $props.id();
@@ -46,11 +48,14 @@
 		/></label
 	>
 	<label
-		>Fill date range<select aria-label="Fill date range" onchange={preset}>
-			<option value="">Choose a preset…</option>
-			<option value="all">All dates</option>
-			<option value="ytd">Year to date</option>
-			<option value="last_year">Last year</option>
+		>Fill date range<select
+			aria-label={i18n.t('cards.logbookDateRange.ariaFillDateRange')}
+			onchange={preset}
+		>
+			<option value="">{i18n.t('cards.logbookDateRange.optionChooseAPreset')}</option>
+			<option value="all">{i18n.t('cards.logbookDateRange.optionAllDates')}</option>
+			<option value="ytd">{i18n.t('cards.logbookDateRange.optionYearToDate')}</option>
+			<option value="last_year">{i18n.t('cards.logbookDateRange.optionLastYear')}</option>
 			{#each years as year (year)}<option value={year}>Full year {year}</option>{/each}
 		</select></label
 	>

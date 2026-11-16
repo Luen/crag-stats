@@ -1,9 +1,12 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
+
 	/** theCrag Project flag from route info import (#77). */
-	const TITLE = 'Marked as Project on theCrag';
+	const i18n = useI18n();
+	const title = $derived(i18n.t('cards.projectRouteBadge.title'));
 </script>
 
-<span class="project-flag" title={TITLE}>
+<span class="project-flag" {title}>
 	<svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true">
 		<path
 			d="M8 1.5a3.5 3.5 0 0 1 3.5 3.5v1.2l1.9 6.1a1.3 1.3 0 0 1-1.25 1.7h-8.3a1.3 1.3 0 0 1-1.25-1.7l1.9-6.1V5A3.5 3.5 0 0 1 8 1.5Z"
@@ -12,8 +15,8 @@
 		<circle cx="8" cy="5" r="1.3" style="fill: currentColor" />
 		<circle cx="8" cy="10.8" r="1.6" style="fill: none; stroke: currentColor; stroke-width: 1.3" />
 	</svg>
-	<span>Project</span>
-	<span class="sr-only">{TITLE}</span>
+	<span>{i18n.t('cards.projectRouteBadge.labelProject')}</span>
+	<span class="sr-only">{title}</span>
 </span>
 
 <style>

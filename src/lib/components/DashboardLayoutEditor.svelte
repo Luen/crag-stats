@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
 	import {
 		DEFAULT_DASH_CARDS,
 		cardDef,
@@ -12,6 +13,7 @@
 	};
 
 	let { layout }: Props = $props();
+	const i18n = useI18n();
 
 	// Editable copy of the saved layout; resets when a save reloads `layout`.
 	let draft = $derived(structuredClone(layout));
@@ -66,12 +68,16 @@
 			{/each}
 		</ul>
 		<div class="actions">
-			<button type="submit">Save layout</button>
-			<button type="button" class="secondary" onclick={resetDraft}>Reset draft</button>
+			<button type="submit">{i18n.t('cards.dashboardLayoutEditor.buttonSaveLayout')}</button>
+			<button type="button" class="secondary" onclick={resetDraft}
+				>{i18n.t('cards.dashboardLayoutEditor.buttonResetDraft')}</button
+			>
 		</div>
 	</form>
 	<form method="POST" action="?/resetDashboardLayout" class="reset-form">
-		<button type="submit" class="secondary">Clear saved layout</button>
+		<button type="submit" class="secondary"
+			>{i18n.t('cards.dashboardLayoutEditor.buttonClearSavedLayout')}</button
+		>
 	</form>
 	<p class="meta">{DEFAULT_DASH_CARDS.length} cards · {visibleCount} visible</p>
 </div>

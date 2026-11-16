@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { DEFAULT_DATE_DISPLAY, formatCalendarDate, type DateDisplay } from '#lib/dates';
+	import { useI18n } from '#lib/i18n';
 
 	type Item = {
 		id: string;
@@ -23,6 +24,7 @@
 		titleHref = '/milestones',
 		dateDisplay = DEFAULT_DATE_DISPLAY
 	}: Props = $props();
+	const i18n = useI18n();
 
 	const sorted = $derived(
 		[...items].sort((a, b) => String(b.date ?? '').localeCompare(String(a.date ?? '')))
@@ -35,15 +37,15 @@
 	<header>
 		<h2>
 			{#if titleHref}
-				<a href={titleHref}>Milestones</a>
+				<a href={titleHref}>{i18n.t('cards.milestones.titleMilestones')}</a>
 			{:else}
-				Milestones
+				{i18n.t('cards.milestones.titleMilestones')}
 			{/if}
 		</h2>
 	</header>
 
 	{#if sorted.length === 0}
-		<p class="empty">No milestones yet — keep ticking.</p>
+		<p class="empty">{i18n.t('cards.milestones.empty')}</p>
 	{:else}
 		<ul>
 			{#each shown as item (item.id)}
@@ -62,7 +64,9 @@
 			{/each}
 		</ul>
 		{#if remaining > 0}
-			<a class="more" href={titleHref || '/milestones'}>Show more ({remaining} more)</a>
+			<a class="more" href={titleHref || '/milestones'}
+				>{i18n.t('cards.milestones.more', { count: remaining })}</a
+			>
 		{/if}
 	{/if}
 </article>

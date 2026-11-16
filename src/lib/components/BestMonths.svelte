@@ -1,8 +1,10 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
 	import { MONTH_LABELS } from '#lib/bestMonths';
 	import type { BestMonthsView } from '#lib/types/dashboard';
 
 	let { data }: { data: BestMonthsView } = $props();
+	const i18n = useI18n();
 
 	function maxOf(values: number[]): number {
 		return Math.max(1, ...values);
@@ -11,13 +13,11 @@
 
 <article class="panel">
 	<header>
-		<h2>Best months</h2>
+		<h2>{i18n.t('cards.bestMonths.titleBestMonths')}</h2>
 		<a class="how" href="/seasonality">Search seasonality</a>
-		<a class="how" href="/docs/best-months">How it works</a>
+		<a class="how" href="/docs/best-months">{i18n.t('common.howItWorks')}</a>
 	</header>
-	<p class="lead">
-		theCrag seasonality for your favourite crags (orange) vs when you climb there (grey).
-	</p>
+	<p class="lead">{i18n.t('cards.bestMonths.lead')}</p>
 
 	<ul class="crags">
 		{#each data.crags as c (c.crag)}

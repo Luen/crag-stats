@@ -1,15 +1,17 @@
 <script lang="ts">
 	import { eddingtonTiles } from '#lib/eddingtonDisplay';
+	import { useI18n } from '#lib/i18n';
 	import type { EddingtonStats } from '#lib/types/dashboard';
 
 	type Props = { data: EddingtonStats };
 	let { data }: Props = $props();
+	const i18n = useI18n();
 
 	const tiles = $derived(eddingtonTiles(data));
 </script>
 
 <article class="panel">
-	<h2><a href="/eddington">Eddington numbers</a></h2>
+	<h2><a href="/eddington">{i18n.t('cards.eddington.titleEddingtonNumbers')}</a></h2>
 	<div class="cards">
 		{#each tiles as t (t.key)}
 			<div class="card">
@@ -21,8 +23,8 @@
 		{/each}
 	</div>
 	<p class="foot">
-		Like cycling's Eddington number: the biggest E you've hit E times.
-		<a class="how" href="/docs/eddington">How it works</a>
+		{i18n.t('cards.eddington.foot')}
+		<a class="how" href="/docs/eddington">{i18n.t('common.howItWorks')}</a>
 	</p>
 </article>
 

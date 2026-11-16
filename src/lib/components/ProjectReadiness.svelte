@@ -1,16 +1,29 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
+
 	let { pct, horizon }: { pct: number | null; horizon: string } = $props();
+	const i18n = useI18n();
 </script>
 
 <div class="readiness">
 	<div class="label">
-		<span>{pct === 100 ? 'Sent' : 'Approximate readiness'}</span>
-		<strong>{pct == null ? 'Not enough grade data' : `${pct}%`}</strong>
+		<span
+			>{pct === 100
+				? i18n.t('cards.projectReadiness.sent')
+				: i18n.t('cards.projectReadiness.approximate')}</span
+		>
+		<strong>{pct == null ? i18n.t('cards.projectReadiness.noGradeData') : `${pct}%`}</strong>
 	</div>
 	{#if pct != null}
-		<progress max="100" value={pct} aria-label="Approximate project readiness">{pct}%</progress>
+		<progress
+			max="100"
+			value={pct}
+			aria-label={i18n.t('cards.projectReadiness.ariaApproximateProjectReadiness')}>{pct}%</progress
+		>
 	{/if}
-	{#if pct !== 100}<span class="horizon">{horizon} · an estimate, not a send probability</span>{/if}
+	{#if pct !== 100}<span class="horizon"
+			>{horizon} · {i18n.t('cards.projectReadiness.estimateNote')}</span
+		>{/if}
 </div>
 
 <style>

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
 	import GradeChip from '#lib/components/GradeChip.svelte';
 	import StyleBadge from '#lib/components/StyleBadge.svelte';
 	import TickTypeIcon from '#lib/components/TickTypeIcon.svelte';
@@ -12,6 +13,7 @@
 		dateDisplay?: DateDisplay;
 	};
 	let { byStyle, byArea, dateDisplay = DEFAULT_DATE_DISPLAY }: Props = $props();
+	const i18n = useI18n();
 
 	function bandWidth(row: NotableRow, bandId: number) {
 		const total = Math.max(
@@ -75,7 +77,7 @@
 {/snippet}
 
 <article class="panel">
-	<h2>Notable ascents</h2>
+	<h2>{i18n.t('cards.notableAscents.titleNotableAscents')}</h2>
 
 	<div class="groups groups-columns">
 		{#each styleGroups as g (g.group)}

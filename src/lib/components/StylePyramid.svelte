@@ -1,9 +1,11 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
 	import GradeChip from '#lib/components/GradeChip.svelte';
 	import type { StylePyramid } from '#lib/types/dashboard';
 
 	type Props = { pyramid: StylePyramid };
 	let { pyramid }: Props = $props();
+	const i18n = useI18n();
 
 	const max = $derived(Math.max(1, ...pyramid.rows.map((r) => r.total)));
 </script>
@@ -14,7 +16,7 @@
 		<span class="meta">{pyramid.total} ascents · {pyramid.system}</span>
 	</header>
 	{#if pyramid.rows.length === 0}
-		<p class="empty">No graded ascents</p>
+		<p class="empty">{i18n.t('cards.stylePyramid.empty')}</p>
 	{:else}
 		<div class="pyramid">
 			{#each pyramid.rows as row (row.score)}

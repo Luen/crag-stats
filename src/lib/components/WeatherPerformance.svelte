@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { DEFAULT_DATE_DISPLAY, formatNumber, type DateDisplay } from '#lib/dates';
@@ -15,6 +16,7 @@
 
 	type Props = { data: WeatherPerformanceView; dateDisplay?: DateDisplay; compact?: boolean };
 	let { data, dateDisplay = DEFAULT_DATE_DISPLAY, compact = true }: Props = $props();
+	const i18n = useI18n();
 
 	const METRICS: { key: WeatherPerformanceMetric; label: string; help: string }[] = [
 		{
@@ -113,7 +115,7 @@
 			{#if compact}<a href="/weather#performance">Weather &amp; performance</a>{:else}Weather &amp;
 				performance{/if}
 		</h2>
-		<a class="how" href="/docs/weather">How it works</a>
+		<a class="how" href="/docs/weather">{i18n.t('common.howItWorks')}</a>
 	</header>
 
 	{#if !data.ready || !group}
@@ -128,7 +130,11 @@
 
 		{#if showDetails}
 			<div class="controls">
-				<div class="toggles" role="group" aria-label="Weather grouping">
+				<div
+					class="toggles"
+					role="group"
+					aria-label={i18n.t('cards.weatherPerformance.ariaWeatherGrouping')}
+				>
 					{#each data.groups as g (g.key)}
 						<button
 							type="button"
@@ -138,7 +144,11 @@
 						>
 					{/each}
 				</div>
-				<div class="toggles" role="group" aria-label="Performance measure">
+				<div
+					class="toggles"
+					role="group"
+					aria-label={i18n.t('cards.weatherPerformance.ariaPerformanceMeasure')}
+				>
 					{#each METRICS as m (m.key)}
 						<button
 							type="button"
@@ -257,9 +267,7 @@
 				</div>
 			</details>
 		{:else}
-			<p class="hint">
-				Weather patterns are correlations. Season, crag and project choice also matter.
-			</p>
+			<p class="hint">{i18n.t('cards.weatherPerformance.hint')}</p>
 			{#if standout?.href}<p><a href={standout.href}>View the qualifying ascents</a></p>{/if}
 		{/if}
 	{/if}

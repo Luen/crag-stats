@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
 	import { onMount } from 'svelte';
 	import {
 		EMPTY_CARD_PREFERENCES,
@@ -45,6 +46,7 @@
 		displayUnits = DEFAULT_DISPLAY_UNITS,
 		dateDisplay = DEFAULT_DATE_DISPLAY
 	}: Props = $props();
+	const i18n = useI18n();
 
 	type Metric = 'ascents' | 'sends' | 'heightM';
 	type ChartMode = 'year' | 'cumulative';
@@ -284,11 +286,11 @@
 					Yearly stats
 				{/if}
 			</h2>
-			<a class="how" href="/docs/yearly-stats">How it works</a>
+			<a class="how" href="/docs/yearly-stats">{i18n.t('common.howItWorks')}</a>
 		</div>
 		{#if years.length > 0}
 			<div class="controls">
-				<div class="toggles" role="group" aria-label="Chart mode">
+				<div class="toggles" role="group" aria-label={i18n.t('cards.yearlyStats.ariaChartMode')}>
 					<button
 						type="button"
 						class={{ active: chartMode === 'year' }}
@@ -302,7 +304,7 @@
 						onclick={() => setChartMode('cumulative')}>Cumulative</button
 					>
 				</div>
-				<div class="toggles" role="group" aria-label="Metric">
+				<div class="toggles" role="group" aria-label={i18n.t('cards.yearlyStats.ariaMetric')}>
 					<button
 						type="button"
 						class={{ active: metric === 'ascents' }}
@@ -327,7 +329,7 @@
 	</header>
 
 	{#if years.length === 0}
-		<p class="empty">No yearly data yet.</p>
+		<p class="empty">{i18n.t('cards.yearlyStats.empty')}</p>
 	{:else if chartMode === 'cumulative'}
 		<div class="line-wrap">
 			<svg

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
 	import { enhance } from '$app/forms';
 	let {
 		provider,
@@ -13,6 +14,7 @@
 		decision?: string;
 		action?: string;
 	} = $props();
+	const i18n = useI18n();
 </script>
 
 <form
@@ -25,12 +27,14 @@
 	<input type="hidden" name="provider" value={provider} />
 	<input type="hidden" name="route" value={route} />
 	{#if decision === 'include'}
-		<span class="mark">Project</span>
+		<span class="mark">{i18n.t('cards.projectSelection.labelProject')}</span>
 		<button type="submit" name="decision" value="exclude" aria-label="Unmark project: {name}"
 			>Unmark project</button
 		>
 	{:else}
-		{#if decision === 'exclude'}<span class="dismissed">Not a project</span>{/if}
+		{#if decision === 'exclude'}<span class="dismissed"
+				>{i18n.t('cards.projectSelection.labelNotAProject')}</span
+			>{/if}
 		<button type="submit" name="decision" value="include" aria-label="Mark project: {name}"
 			>Mark project</button
 		>

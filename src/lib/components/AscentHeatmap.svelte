@@ -214,12 +214,12 @@
 >
 	<header>
 		<div class="titles">
-			<h2>Ascent calendar</h2>
-			<a class="how" href="/docs/ascent-calendar">How it works</a>
+			<h2>{i18n.t('cards.ascentHeatmap.titleAscentCalendar')}</h2>
+			<a class="how" href="/docs/ascent-calendar">{i18n.t('common.howItWorks')}</a>
 		</div>
 		<div class="controls">
 			{#if years.length > 0}
-				<div class="toggles" role="group" aria-label="Colour mode">
+				<div class="toggles" role="group" aria-label={i18n.t('cards.ascentHeatmap.ariaColourMode')}>
 					<button
 						type="button"
 						class={{ active: activeMode === 'intensity' }}
@@ -245,7 +245,7 @@
 			{#if years.length > 1}
 				<select
 					value={year}
-					aria-label="Heatmap year"
+					aria-label={i18n.t('cards.ascentHeatmap.ariaHeatmapYear')}
 					onchange={(e) => {
 						selectedYear = e.currentTarget.value;
 					}}
@@ -260,7 +260,7 @@
 		</div>
 	</header>
 	{#if !weeks.length}
-		<p class="empty">No dated ascents yet</p>
+		<p class="empty">{i18n.t('cards.ascentHeatmap.empty')}</p>
 	{:else}
 		<div class="scroll">
 			<div class="months" style:--cols={weeks.length} aria-hidden="true">
@@ -305,7 +305,7 @@
 		{:else if activeMode === 'weather'}
 			<div class="legend grade">
 				<i class="attempt"></i>
-				<span class="band-name">No weather data</span>
+				<span class="band-name">{i18n.t('cards.ascentHeatmap.labelNoWeatherData')}</span>
 				{#each WEATHER_KINDS as w (w.kind)}
 					<i class="w-{w.kind}"></i>
 					<span class="band-name">{w.label}</span>

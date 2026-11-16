@@ -1,15 +1,17 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
 	import { formatNumber, DEFAULT_DATE_DISPLAY, type DateDisplay } from '#lib/dates';
 	import type { RoutePopularityStats } from '#lib/types/routePopularity';
 
 	type Props = { data: RoutePopularityStats; dateDisplay?: DateDisplay };
 	let { data, dateDisplay = DEFAULT_DATE_DISPLAY }: Props = $props();
+	const i18n = useI18n();
 </script>
 
 <article class="panel">
 	<header>
-		<h2>Route popularity</h2>
-		<a class="how" href="/docs/route-popularity">How it works</a>
+		<h2>{i18n.t('cards.routePopularity.titleRoutePopularity')}</h2>
+		<a class="how" href="/docs/route-popularity">{i18n.t('common.howItWorks')}</a>
 	</header>
 
 	<p class="lead">
@@ -19,22 +21,22 @@
 
 	<div class="split">
 		<div class="bucket busy">
-			<span class="k">Beaten track</span>
+			<span class="k">{i18n.t('cards.routePopularity.labelBeatenTrack')}</span>
 			<strong>{data.busy.pct}%</strong>
 			<span class="n">{formatNumber(data.busy.count, dateDisplay)} ticks</span>
 			<div class="track" aria-hidden="true">
 				<div class="fill" style:width="{data.busy.pct}%"></div>
 			</div>
-			<p class="hint">Popularity ≥ 50</p>
+			<p class="hint">{i18n.t('cards.routePopularity.hint')}</p>
 		</div>
 		<div class="bucket quiet">
-			<span class="k">Off the beaten track</span>
+			<span class="k">{i18n.t('cards.routePopularity.labelOffTheBeatenTrack')}</span>
 			<strong>{data.quiet.pct}%</strong>
 			<span class="n">{formatNumber(data.quiet.count, dateDisplay)} ticks</span>
 			<div class="track" aria-hidden="true">
 				<div class="fill" style:width="{data.quiet.pct}%"></div>
 			</div>
-			<p class="hint">Popularity &lt; 50</p>
+			<p class="hint">{i18n.t('cards.routePopularity.hintPopularityLt50')}</p>
 		</div>
 	</div>
 

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
 	import land from '#lib/assets/world-land.json';
 	import {
 		clusterMapPlaces,
@@ -18,6 +19,7 @@
 		places,
 		dateDisplay = DEFAULT_DATE_DISPLAY
 	}: { places: ClimbingPlace[]; dateDisplay?: DateDisplay } = $props();
+	const i18n = useI18n();
 	const centre = $derived(longitudeCentre(places));
 	let customView = $state<MapView | null>(null);
 	const view = $derived(customView ?? fitMapPlaces(places, centre));
@@ -63,20 +65,32 @@
 </script>
 
 <div class="controls">
-	<div role="group" aria-label="Map navigation">
-		<button type="button" onclick={() => zoom(0.6)} aria-label="Zoom in">+</button><button
+	<div role="group" aria-label={i18n.t('cards.worldClimbingMap.ariaMapNavigation')}>
+		<button
+			type="button"
+			onclick={() => zoom(0.6)}
+			aria-label={i18n.t('cards.worldClimbingMap.ariaZoomIn')}>+</button
+		><button
 			type="button"
 			onclick={() => zoom(1 / 0.6)}
-			aria-label="Zoom out">−</button
+			aria-label={i18n.t('cards.worldClimbingMap.ariaZoomOut')}>−</button
 		>
-		<button type="button" onclick={() => pan(-1, 0)} aria-label="Pan west">←</button><button
+		<button
+			type="button"
+			onclick={() => pan(-1, 0)}
+			aria-label={i18n.t('cards.worldClimbingMap.ariaPanWest')}>←</button
+		><button
 			type="button"
 			onclick={() => pan(1, 0)}
-			aria-label="Pan east">→</button
-		><button type="button" onclick={() => pan(0, -1)} aria-label="Pan north">↑</button><button
+			aria-label={i18n.t('cards.worldClimbingMap.ariaPanEast')}>→</button
+		><button
+			type="button"
+			onclick={() => pan(0, -1)}
+			aria-label={i18n.t('cards.worldClimbingMap.ariaPanNorth')}>↑</button
+		><button
 			type="button"
 			onclick={() => pan(0, 1)}
-			aria-label="Pan south">↓</button
+			aria-label={i18n.t('cards.worldClimbingMap.ariaPanSouth')}>↓</button
 		>
 		<button
 			type="button"
@@ -93,7 +107,11 @@
 		>
 	</div>
 </div>
-<div class="world-map" role="group" aria-label="Worldwide climbing places">
+<div
+	class="world-map"
+	role="group"
+	aria-label={i18n.t('cards.worldClimbingMap.ariaWorldwideClimbingPlaces')}
+>
 	<svg
 		viewBox={`${view.x} ${view.y} ${view.width} ${view.height}`}
 		preserveAspectRatio="none"
@@ -121,7 +139,11 @@
 	marker for details.
 </p>
 {#if selected}
-	<section class="selection" aria-label="Selected map places" aria-live="polite">
+	<section
+		class="selection"
+		aria-label={i18n.t('cards.worldClimbingMap.ariaSelectedMapPlaces')}
+		aria-live="polite"
+	>
 		<h2>{label(selected)}</h2>
 		{#if selected.places.length > 1}<button
 				type="button"

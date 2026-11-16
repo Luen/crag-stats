@@ -1,9 +1,11 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
 	import GradeChip from '#lib/components/GradeChip.svelte';
 	import type { SoloStats } from '#lib/types/dashboard';
 
 	type Props = { data: SoloStats };
 	let { data }: Props = $props();
+	const i18n = useI18n();
 
 	const year = (d: string | null) => (d ? d.slice(0, 4) : null);
 	const unpartneredPct = $derived(
@@ -12,9 +14,9 @@
 </script>
 
 <article class="panel">
-	<h2>Solo climbing</h2>
+	<h2>{i18n.t('cards.soloClimbing.titleSoloClimbing')}</h2>
 	{#if data.total === 0}
-		<p class="empty">No solo ascents logged yet: top-rope solo, lead solo or free solo.</p>
+		<p class="empty">{i18n.t('cards.soloClimbing.empty')}</p>
 	{:else}
 		<ul class="kinds">
 			{#each data.kinds as k (k.kind)}
@@ -37,7 +39,7 @@
 					</p>
 					{#if k.hardest}
 						<p class="hardest">
-							<span class="label">Hardest</span>
+							<span class="label">{i18n.t('cards.soloClimbing.labelHardest')}</span>
 							{#if k.hardest.url}
 								<a href={k.hardest.url} target="_blank" rel="noreferrer">{k.hardest.routeName}</a>
 							{:else}
@@ -54,7 +56,7 @@
 		<strong>{data.unpartnered}</strong> ascent{data.unpartnered === 1 ? '' : 's'}
 		({data.unpartneredSends} send{data.unpartneredSends === 1 ? '' : 's'}, {unpartneredPct}%) have
 		no partner tagged on theCrag.
-		<a class="how" href="/docs/solo">How it works</a>
+		<a class="how" href="/docs/solo">{i18n.t('common.howItWorks')}</a>
 	</p>
 </article>
 

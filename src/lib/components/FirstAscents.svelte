@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
 	import GradeChip from '#lib/components/GradeChip.svelte';
 	import StyleBadge from '#lib/components/StyleBadge.svelte';
 	import type { FirstAscentStats } from '#lib/types/dashboard';
@@ -6,6 +7,7 @@
 
 	type Props = { data: FirstAscentStats; canEdit: boolean; dateDisplay?: DateDisplay };
 	let { data, canEdit, dateDisplay = DEFAULT_DATE_DISPLAY }: Props = $props();
+	const i18n = useI18n();
 
 	const years = $derived(
 		data.firstYear == null
@@ -158,7 +160,9 @@
 							</strong>
 							<span class="credits">
 								{#if r.faKind}<span class="kind">{r.faKind}</span>{/if}
-								{#if r.fromSetter}<span class="kind setter">Set</span>{/if}
+								{#if r.fromSetter}<span class="kind setter"
+										>{i18n.t('cards.firstAscents.labelSet')}</span
+									>{/if}
 								{#if r.styleLabel}<StyleBadge style={r.styleLabel} />{/if}
 							</span>
 							<div class="sub">
@@ -174,7 +178,7 @@
 							</div>
 						</div>
 						{#if r.othersAscents == null}
-							<span class="missing">Unavailable</span>
+							<span class="missing">{i18n.t('cards.firstAscents.labelUnavailable')}</span>
 						{:else}
 							<strong class="est">{formatNumber(r.othersAscents, dateDisplay)}</strong>
 						{/if}
@@ -200,7 +204,7 @@
 			routes have a paired count snapshot.
 			{#if canEdit}<a href="/settings">Import or refresh route history in Settings</a>.{/if}
 		{/if}
-		<a class="how" href="/docs/first-ascents">How it works</a>
+		<a class="how" href="/docs/first-ascents">{i18n.t('common.howItWorks')}</a>
 	</p>
 </article>
 

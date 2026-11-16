@@ -193,12 +193,14 @@ describe('i18n locales and types', () => {
 		}
 	});
 
-	it('has loaded catalogs for all supported locales with matching leaf keys', () => {
-		const enLeaves = flattenLeaves(LOCALES.en);
-		const enKeys = Object.keys(enLeaves).sort();
+	it('never carries target keys that English does not define', () => {
+		// Targets may lag behind `en` until Crowdin syncs; a missing key falls back to English.
+		// Stale keys are still a bug: they survive a rename and never render.
+		const enKeys = new Set(Object.keys(flattenLeaves(LOCALES.en)));
 		for (const locale of SUPPORTED_LOCALES) {
-			const localeLeaves = flattenLeaves(LOCALES[locale]);
-			expect(Object.keys(localeLeaves).sort(), `keys in ${locale}`).toEqual(enKeys);
+			if (locale === 'en') continue;
+			const orphans = Object.keys(flattenLeaves(LOCALES[locale])).filter((key) => !enKeys.has(key));
+			expect(orphans.sort(), `keys in ${locale} missing from en.json`).toEqual([]);
 		}
 	});
 

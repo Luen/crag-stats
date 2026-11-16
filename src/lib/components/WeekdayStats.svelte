@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
 	import { onMount } from 'svelte';
 	import {
 		EMPTY_CARD_PREFERENCES,
@@ -29,6 +30,7 @@
 		data,
 		dateDisplay = DEFAULT_DATE_DISPLAY
 	}: Props = $props();
+	const i18n = useI18n();
 
 	const RANGE_KEY = 'cs_weekday_range';
 	const METRIC_KEY = 'cs_weekday_metric';
@@ -188,11 +190,11 @@
 >
 	<header>
 		<div class="titles">
-			<h2>Weekday</h2>
-			<a class="how" href="/docs/weekday">How it works</a>
+			<h2>{i18n.t('cards.weekdayStats.titleWeekday')}</h2>
+			<a class="how" href="/docs/weekday">{i18n.t('common.howItWorks')}</a>
 		</div>
 		<div class="controls">
-			<div class="toggles" role="group" aria-label="Weekday range">
+			<div class="toggles" role="group" aria-label={i18n.t('cards.weekdayStats.ariaWeekdayRange')}>
 				<button
 					type="button"
 					class={{ active: range === 'all' }}
@@ -206,7 +208,7 @@
 					onclick={() => setRange('last12')}>Last 12 weeks</button
 				>
 			</div>
-			<div class="toggles" role="group" aria-label="Weekday metric">
+			<div class="toggles" role="group" aria-label={i18n.t('cards.weekdayStats.ariaWeekdayMetric')}>
 				<button
 					type="button"
 					class={{ active: metric === 'sessions' }}
@@ -220,7 +222,7 @@
 					onclick={() => setMetric('ascents')}>Ascents</button
 				>
 			</div>
-			<div class="toggles" role="group" aria-label="Climbing style">
+			<div class="toggles" role="group" aria-label={i18n.t('cards.weekdayStats.ariaClimbingStyle')}>
 				{#each WEEKDAY_STYLE_KEYS as key (key)}
 					{@const chip = styleChipColor(key)}
 					<button

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
 	import { DEFAULT_DATE_DISPLAY, formatNumber, type DateDisplay } from '#lib/dates';
 	import {
 		MIN_RATE_ASCENTS,
@@ -12,6 +13,7 @@
 
 	type Props = { data: RockPerformanceView; dateDisplay?: DateDisplay };
 	let { data, dateDisplay = DEFAULT_DATE_DISPLAY }: Props = $props();
+	const i18n = useI18n();
 
 	const METRICS: { key: RockPerformanceMetric; label: string; help: string }[] = [
 		{
@@ -55,8 +57,8 @@
 
 <article class="panel rock-performance">
 	<header>
-		<h2>Rock &amp; performance</h2>
-		<a class="how" href="/docs/rock-types">How it works</a>
+		<h2>{i18n.t('cards.rockPerformance.titleRockPerformance')}</h2>
+		<a class="how" href="/docs/rock-types">{i18n.t('common.howItWorks')}</a>
 	</header>
 
 	{#if !data.ready}
@@ -70,7 +72,11 @@
 			{fmt(data.rockCount)} rock{data.rockCount === 1 ? '' : 's'}{coverageNote}.
 		</p>
 
-		<div class="toggles" role="group" aria-label="Performance measure">
+		<div
+			class="toggles"
+			role="group"
+			aria-label={i18n.t('cards.rockPerformance.ariaPerformanceMeasure')}
+		>
 			{#each METRICS as m (m.key)}
 				<button
 					type="button"
@@ -144,7 +150,12 @@
 		<details class="values">
 			<summary>View values</summary>
 			<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-			<div class="table-wrap" tabindex="0" role="region" aria-label="Rock performance values">
+			<div
+				class="table-wrap"
+				tabindex="0"
+				role="region"
+				aria-label={i18n.t('cards.rockPerformance.ariaRockPerformanceValues')}
+			>
 				<table>
 					<caption>Rock types: sends by rock (count of total)</caption>
 					<thead>

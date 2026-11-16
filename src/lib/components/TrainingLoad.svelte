@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
 	import { DEFAULT_DISPLAY_SYSTEMS, formatGradeLabel, type DisplayGradeSystems } from '#lib/grades';
 	import { DEFAULT_DATE_DISPLAY, formatCalendarDate, type DateDisplay } from '#lib/dates';
 	import { DEFAULT_DISPLAY_UNITS, formatHeight, type DisplayUnits } from '#lib/units';
@@ -23,6 +24,7 @@
 		titleHref = '/training-load',
 		showDaily = false
 	}: Props = $props();
+	const i18n = useI18n();
 
 	const STATUS: Record<LoadStatus, { label: string; hint: string }> = {
 		idle: { label: 'Resting', hint: 'Nothing logged in the last couple of weeks.' },
@@ -67,12 +69,12 @@
 				Training load
 			{/if}
 		</h2>
-		<a class="how" href="/docs/training-load">How it works</a>
+		<a class="how" href="/docs/training-load">{i18n.t('common.howItWorks')}</a>
 	</header>
 
 	<div class="top">
 		<div class="ratio" data-status={load.status}>
-			<span class="k">Acute : chronic</span>
+			<span class="k">{i18n.t('cards.trainingLoad.labelAcuteChronic')}</span>
 			<strong>{load.ratio != null ? load.ratio.toFixed(2) : '—'}</strong>
 			<span class="pill">{status.label}</span>
 		</div>
@@ -102,7 +104,7 @@
 	<p class="weeks-cap">Weekly load · last {weeks.length} weeks</p>
 
 	{#if showDaily && load.daily28.length}
-		<div class="days" aria-label="Daily load, last 28 days">
+		<div class="days" aria-label={i18n.t('cards.trainingLoad.ariaDailyLoadLast28Days')}>
 			{#each load.daily28 as d (d.day)}
 				<span
 					class={['day', { rest: d.load <= 0 }]}

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
 	import {
 		DEFAULT_DATE_DISPLAY,
 		formatCalendarDate,
@@ -26,6 +27,7 @@
 		displayUnits = DEFAULT_DISPLAY_UNITS,
 		compact = true
 	}: Props = $props();
+	const i18n = useI18n();
 
 	const SHARE_COLORS: Record<string, string> = {
 		perfect: 'var(--accent-2)',
@@ -67,7 +69,7 @@
 			</span>
 		{:else}
 			<strong>—</strong>
-			<span class="meta">No data</span>
+			<span class="meta">{i18n.t('cards.weatherConditions.labelNoData')}</span>
 		{/if}
 	</div>
 {/snippet}
@@ -77,7 +79,7 @@
 		<h2>
 			{#if compact}<a href="/weather#conditions">Weather conditions</a>{:else}Weather conditions{/if}
 		</h2>
-		<a class="how" href="/docs/weather">How it works</a>
+		<a class="how" href="/docs/weather">{i18n.t('common.howItWorks')}</a>
 	</header>
 
 	<p class="lead">
@@ -96,7 +98,7 @@
 	{#if data.fairWeather}
 		{@const f = data.fairWeather}
 		<div class="fair">
-			<span class="k">Fair-weather rate</span>
+			<span class="k">{i18n.t('cards.weatherConditions.labelFairWeatherRate')}</span>
 			<strong>{formatNumber(f.fairPct, dateDisplay)}%</strong>
 			<span class="meta">
 				{FAIR_LABELS[f.label]}: {formatNumber(f.fairDays, dateDisplay)} of {formatNumber(

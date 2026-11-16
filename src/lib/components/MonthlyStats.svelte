@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
 	import { innerWidth } from 'svelte/reactivity/window';
 	import { DEFAULT_DISPLAY_UNITS, formatHeight, type DisplayUnits } from '#lib/units';
 
@@ -19,6 +20,7 @@
 	};
 
 	let { months, years, titleHref = null, displayUnits = DEFAULT_DISPLAY_UNITS }: Props = $props();
+	const i18n = useI18n();
 
 	type Metric = 'ascents' | 'sends' | 'heightM';
 
@@ -111,20 +113,20 @@
 	</h2>
 
 	{#if months.length === 0}
-		<p class="empty">No monthly data yet.</p>
+		<p class="empty">{i18n.t('cards.monthlyStats.empty')}</p>
 	{:else}
 		<div class="controls">
 			<label>
-				<span class="sr">Range</span>
+				<span class="sr">{i18n.t('cards.monthlyStats.labelRange')}</span>
 				<select bind:value={yearFilter}>
-					<option value="last12">Past 12 months</option>
-					<option value="all">All years</option>
+					<option value="last12">{i18n.t('cards.monthlyStats.optionPast12Months')}</option>
+					<option value="all">{i18n.t('cards.monthlyStats.optionAllYears')}</option>
 					{#each [...years].reverse() as y (y)}
 						<option value={String(y)}>{y}</option>
 					{/each}
 				</select>
 			</label>
-			<div class="toggles" role="group" aria-label="Metric">
+			<div class="toggles" role="group" aria-label={i18n.t('cards.monthlyStats.ariaMetric')}>
 				<button
 					type="button"
 					class={{ active: metric === 'ascents' }}
@@ -144,7 +146,7 @@
 		</div>
 
 		{#if values.length === 0}
-			<p class="empty">No months in this range.</p>
+			<p class="empty">{i18n.t('cards.monthlyStats.noMonthsInThisRange')}</p>
 		{:else}
 			<div class="chart-scroll">
 				<div class="chart" style:--n={values.length}>

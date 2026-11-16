@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
 	type RockType = { name: string; count: number; pct: number };
 	type Info = { name: string; summary: string; tips: string };
 
@@ -9,18 +10,19 @@
 	};
 
 	let { types, dominant, info }: Props = $props();
+	const i18n = useI18n();
 
 	const max = $derived(Math.max(1, ...types.map((t) => t.count)));
 </script>
 
 <article class="panel">
 	<header>
-		<h2>Rock types</h2>
-		<a class="how" href="/docs/rock-types">How it works</a>
+		<h2>{i18n.t('cards.rockTypePanel.titleRockTypes')}</h2>
+		<a class="how" href="/docs/rock-types">{i18n.t('common.howItWorks')}</a>
 	</header>
 
 	{#if types.length === 0}
-		<p class="empty">No rock type data yet.</p>
+		<p class="empty">{i18n.t('cards.rockTypePanel.empty')}</p>
 	{:else}
 		<ul class="bars">
 			{#each types as t (t.name)}

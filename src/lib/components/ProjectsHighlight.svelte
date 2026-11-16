@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
 	import NewRouteBadge from '#lib/components/NewRouteBadge.svelte';
 	import ProjectReadiness from '#lib/components/ProjectReadiness.svelte';
 	import ProjectRouteBadge from '#lib/components/ProjectRouteBadge.svelte';
@@ -23,6 +24,7 @@
 
 	type Props = { projects: ProjectCard[]; dateDisplay?: DateDisplay };
 	let { projects, dateDisplay = DEFAULT_DATE_DISPLAY }: Props = $props();
+	const i18n = useI18n();
 
 	function sessionsLabel(n: number) {
 		return n === 1 ? '1 session' : `${n} sessions`;
@@ -40,7 +42,7 @@
 
 <article class="panel">
 	<header>
-		<h2>Projects</h2>
+		<h2>{i18n.t('cards.projectsHighlight.titleProjects')}</h2>
 		<a href="/projects">All projects</a>
 	</header>
 

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
 	import { onMount } from 'svelte';
 	import HelpLink from '#lib/components/HelpLink.svelte';
 	import {
@@ -30,6 +31,7 @@
 		data,
 		dateDisplay = DEFAULT_DATE_DISPLAY
 	}: Props = $props();
+	const i18n = useI18n();
 
 	let range = $derived<RepeatRange>(preferences.cs_repeats_range ?? 'all');
 	let style = $derived<RepeatStyleKey>(preferences.cs_repeats_style ?? 'all');
@@ -90,11 +92,11 @@
 >
 	<header>
 		<div class="titles">
-			<h2>Repeats vs new routes</h2>
+			<h2>{i18n.t('cards.routeRepeats.titleRepeatsVsNewRoutes')}</h2>
 			<HelpLink href="/docs/repeats" label="How repeats vs new routes works" />
 		</div>
 		<div class="controls">
-			<div class="toggles" role="group" aria-label="Repeats range">
+			<div class="toggles" role="group" aria-label={i18n.t('cards.routeRepeats.ariaRepeatsRange')}>
 				<button
 					type="button"
 					class={{ active: range === 'all' }}
@@ -108,7 +110,11 @@
 					onclick={() => setRange('last12')}>Last 12 months</button
 				>
 			</div>
-			<div class="toggles" role="group" aria-label="Repeats climbing style">
+			<div
+				class="toggles"
+				role="group"
+				aria-label={i18n.t('cards.routeRepeats.ariaRepeatsClimbingStyle')}
+			>
 				{#each REPEAT_STYLE_KEYS as key (key)}
 					<button
 						type="button"

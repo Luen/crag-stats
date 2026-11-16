@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
 	import { STYLE_COLORS } from '#lib/ticks';
 
 	type MonthMix = {
@@ -11,6 +12,7 @@
 
 	type Props = { months: MonthMix[] };
 	let { months }: Props = $props();
+	const i18n = useI18n();
 
 	const styles = ['Sport', 'Trad', 'Boulder', 'Other'] as const;
 	const colors: Record<(typeof styles)[number], string> = {
@@ -44,9 +46,9 @@
 
 <article class="panel">
 	<div class="head">
-		<h2>Style mix</h2>
+		<h2>{i18n.t('cards.styleMixChart.titleStyleMix')}</h2>
 		{#if showRangeToggle}
-			<div class="toggles" role="group" aria-label="Time range">
+			<div class="toggles" role="group" aria-label={i18n.t('cards.styleMixChart.ariaTimeRange')}>
 				<button
 					type="button"
 					class={{ active: range === 'recent' }}
@@ -60,7 +62,7 @@
 	</div>
 
 	{#if months.length === 0}
-		<p class="empty">No style mix data yet.</p>
+		<p class="empty">{i18n.t('cards.styleMixChart.empty')}</p>
 	{:else}
 		<div class="chart-scroll">
 			<div
