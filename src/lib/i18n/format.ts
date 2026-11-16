@@ -3,7 +3,7 @@ import de from './locales/de.json' with { type: 'json' };
 import fr from './locales/fr.json' with { type: 'json' };
 import es from './locales/es.json' with { type: 'json' };
 import it from './locales/it.json' with { type: 'json' };
-import type { SupportedLocale } from './types';
+import { intlLocale, type SupportedLocale } from './types';
 
 export const LOCALES: Record<SupportedLocale, Record<string, unknown>> = {
 	en,
@@ -76,6 +76,18 @@ function selectPluralCategory(locale: SupportedLocale, count: number): string {
 	}
 }
 
+/**
+ * ICU's `#` stands for the plural count rendered with locale number formatting, which is what
+ * `Intl.NumberFormat` does here (`1,234` in English, `1.234` in German and Spanish).
+ */
+function formatPluralNumber(locale: SupportedLocale, count: number): string {
+	try {
+		return new Intl.NumberFormat(intlLocale(locale)).format(count);
+	} catch {
+		return String(count);
+	}
+}
+
 function evaluatePlural(locale: SupportedLocale, count: number, branchesStr: string): string {
 	const branches = parsePluralBranches(branchesStr);
 
@@ -94,7 +106,7 @@ function evaluatePlural(locale: SupportedLocale, count: number, branchesStr: str
 		}
 	}
 
-	return template.replace(/#/g, String(count));
+	return template.replace(/#/g, formatPluralNumber(locale, count));
 }
 
 function processPlurals(locale: SupportedLocale, input: string, params: MessageParams): string {

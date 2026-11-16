@@ -2,7 +2,7 @@
 	import { useI18n } from '#lib/i18n';
 	import { onMount, untrack } from 'svelte';
 	import DashboardLayoutEditor from '#lib/components/DashboardLayoutEditor.svelte';
-	import { DATE_FORMAT_OPTIONS, formatDateTime, formatNumber } from '#lib/dates';
+	import { DATE_FORMAT_OPTIONS, formatDateTime } from '#lib/dates';
 	import { BOULDER_GRADE_SYSTEMS, ROUTE_GRADE_SYSTEMS } from '#lib/grades';
 	import TickTypeIcon from '#lib/components/TickTypeIcon.svelte';
 	import {
@@ -70,9 +70,6 @@
 				? { count: form.imported, created: form.created, pruned: null }
 				: null
 	);
-	function countLabel(n: number, singular: string, plural = `${singular}s`): string {
-		return `${formatNumber(n, data.dateDisplay)} ${n === 1 ? singular : plural}`;
-	}
 	type ImportSnapshot = ImportProgressSnapshot<
 		PageProps['data']['routeHistory'],
 		PageProps['data']['weatherImport']
@@ -218,22 +215,26 @@
 				? i18n.t('pages.settings.bannerSyncComplete')
 				: i18n.t('pages.settings.bannerCsvComplete')}</strong
 		>
-		<p>Processed {countLabel(importResult.count, 'ascent')}.</p>
+		<p>{i18n.t('pages.settings.summaryProcessed', { count: importResult.count })}</p>
 		<ul>
-			<li>{countLabel(importResult.created.routes, 'new route')}</li>
-			<li>{countLabel(importResult.created.ascents, 'new ascent')}</li>
+			<li>{i18n.t('pages.settings.summaryNewRoutes', { count: importResult.created.routes })}</li>
+			<li>{i18n.t('pages.settings.summaryNewAscents', { count: importResult.created.ascents })}</li>
 			<li>
-				{countLabel(
-					importResult.count - importResult.created.ascents,
-					'existing ascent refreshed',
-					'existing ascents refreshed'
-				)}
+				{i18n.t('pages.settings.summaryRefreshedAscents', {
+					count: importResult.count - importResult.created.ascents
+				})}
 			</li>
 			{#if importResult.pruned}
 				<li>
-					{countLabel(importResult.pruned.deletedAscents, 'ascent removed', 'ascents removed')}
+					{i18n.t('pages.settings.summaryRemovedAscents', {
+						count: importResult.pruned.deletedAscents
+					})}
 				</li>
-				<li>{countLabel(importResult.pruned.deletedRoutes, 'route removed', 'routes removed')}</li>
+				<li>
+					{i18n.t('pages.settings.summaryRemovedRoutes', {
+						count: importResult.pruned.deletedRoutes
+					})}
+				</li>
 			{/if}
 		</ul>
 		<p class="summary-note">

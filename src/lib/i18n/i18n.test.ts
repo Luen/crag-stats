@@ -260,6 +260,18 @@ describe('formatMessage', () => {
 		expect(formatMessage('fr', 'common.days', { count: 2 })).toBe('2 days');
 	});
 
+	it('formats the plural count with locale number grouping', () => {
+		// ICU's `#` is the count formatted for the active locale, not a bare number (#492). The
+		// German catalogue has no `common.days` yet, so its words fall back to English while the
+		// number still groups the German way.
+		expect(formatMessage('en', 'common.days', { count: 12345 })).toBe('12,345 days');
+		expect(formatMessage('de', 'common.days', { count: 12345 })).toBe('12.345 days');
+		// Spanish and Italian only group from five digits up, per CLDR minimumGroupingDigits.
+		expect(formatMessage('es', 'common.days', { count: 12345 })).toBe('12.345 days');
+		expect(formatMessage('it', 'common.days', { count: 12345 })).toBe('12.345 days');
+		expect(formatMessage('en', 'common.activeDays', { count: 1234 })).toBe('1,234 active days');
+	});
+
 	it('falls back to English when a key is missing in another locale', () => {
 		// `common.since` exists in English but is not yet in the German catalogue.
 		expect(formatMessage('en', 'common.since')).toBe('since');
