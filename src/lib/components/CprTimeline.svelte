@@ -184,7 +184,7 @@
 			i18n.t('cards.cprTimeline.titleBucket', { label: b.label, count: b.volume }),
 			...b.candles.map((c) =>
 				i18n.t('cards.cprTimeline.titleCandle', {
-					family: c.family,
+					family: i18n.t(LEGEND.find((entry) => entry.family === c.family)!.labelKey),
 					min: gradeLabel(c.min),
 					max: gradeLabel(c.max),
 					count: c.count

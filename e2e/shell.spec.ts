@@ -121,6 +121,35 @@ test.describe('app shell', () => {
 		await expect(page.locator('#side-nav').getByRole('link', { name: 'Dashboard' })).toBeVisible();
 	});
 
+	test('saving a language applies to the immediate native form response', async ({
+		request,
+		baseURL
+	}) => {
+		try {
+			const saved = await request.post('/settings?/savePreferences', {
+				form: { locale: 'de' },
+				headers: {
+					accept: 'text/html',
+					'accept-language': 'en-AU',
+					origin: new URL(baseURL!).origin
+				}
+			});
+			expect(saved.status()).toBe(200);
+			expect(await saved.text()).toMatch(/<html[^>]*lang="de"/);
+		} finally {
+			const reset = await request.post('/settings?/savePreferences', {
+				form: { locale: 'auto' },
+				headers: {
+					accept: 'text/html',
+					'accept-language': 'en-AU',
+					origin: new URL(baseURL!).origin
+				}
+			});
+			expect(reset.status()).toBe(200);
+			expect(await reset.text()).toMatch(/<html[^>]*lang="en"/);
+		}
+	});
+
 	test('docs: every page renders and the dashboard links into them', async ({ page }) => {
 		await page.goto('/docs');
 		const links = page.locator('.toc a');

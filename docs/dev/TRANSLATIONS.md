@@ -255,7 +255,7 @@ $$\text{limit} = \max(\text{len} + 10,\, 2 \times \text{len})$$
 
 Where an existing translation was already longer, the limit is set to accommodate it with headroom. Because **size is an enforced QA check in Crowdin**, generous limits ensure translations do not overflow compact mobile layouts (≤860px) while preventing false-positive blocking for translators.
 
-Limits live on the Crowdin string asset, not in `en.json`, so GitHub Actions sync never sets them. When adding a new key in a tight slot, set its limit over the API (`PATCH /projects/{id}/strings/{stringId}`, path `/{stringId}/maxLength`).
+Limits live on the Crowdin string asset, not in `en.json`, so GitHub Actions sync never sets them. When adding a new key in a tight slot, set its limit over the API (`PATCH /projects/{id}/strings/{stringId}`, path `/maxLength`).
 
 ---
 
@@ -271,4 +271,8 @@ Crowdin's QA panel is a **dynamic background linter**, not a task backlog. It re
 
 - **Spellcheck in specialized domains:** Generic spellchecking engines flag valid compound words and technical climbing terms (e.g. German _Tourenbuch_, _Begehungsnotizen_, _Trad-Routen_, _Boulderprobleme_, _Toprope_, and _Eddington-Zahl_). Generic dictionary spellchecking is disabled in project QA categories to avoid false-positive alert noise, while the glossary guides translators.
 - **Enforced structural checks:** Structural safety checks remain active: empty translations, max length limits, mismatched tags, missing spaces, ICU plural formatting, and variable placeholders (`{count}`, `{name}`).
-- **Baseline:** With authentic terminology registered in the glossary and length limits set, the project maintains a **0-issue baseline**.
+- **Review warnings in context:** Structural errors (variables, ICU, empty strings, and length limits) need correction. Number and symbol warnings can be valid localisation: German may render a spelled-out English number as digits, use “1. Weihnachtstag” for Christmas Day, or add parentheses. Do not distort correct translations or disable structural checks just to force the warning count to zero.
+
+### Review limitation (#493)
+
+The owner accepted closure of #493 with an AI-assisted review on 17 November 2026. This checks terminology, register, catalogue structure, and consistency; it does not constitute sign-off by a native or fluent human climber. Future human corrections should be made in Crowdin and reflected in the glossary, then downloaded into the repository.

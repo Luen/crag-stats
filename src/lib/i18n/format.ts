@@ -148,7 +148,8 @@ export function formatMessage(
 	params?: MessageParams
 ): string {
 	let raw = lookup(LOCALES[locale] ?? LOCALES.en, key);
-	if (raw === undefined && locale !== 'en') {
+	// Crowdin exports can represent an untranslated entry as an empty string.
+	if ((raw === undefined || raw.trim() === '') && locale !== 'en') {
 		raw = lookup(LOCALES.en, key);
 	}
 	if (raw === undefined) {

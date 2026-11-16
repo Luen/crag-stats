@@ -316,27 +316,31 @@ describe('formatMessage', () => {
 		expect(formatMessage('en', 'common.activeDays', { count: 1 })).toBe('1 active day');
 		expect(formatMessage('en', 'common.activeDays', { count: 4 })).toBe('4 active days');
 
-		// Target catalogues may lag English; a missing key falls back to the English string,
-		// and Crowdin's pre-translate workflow fills the translations after merge.
-		expect(formatMessage('fr', 'common.days', { count: 2 })).toBe('2 days');
+		expect(formatMessage('fr', 'common.days', { count: 2 })).toContain('2');
 	});
 
 	it('formats the plural count with locale number grouping', () => {
-		// ICU's `#` is the count formatted for the active locale, not a bare number (#492). The
-		// German catalogue has no `common.days` yet, so its words fall back to English while the
-		// number still groups the German way.
+		// ICU's `#` is the count formatted for the active locale (#492), regardless of wording.
 		expect(formatMessage('en', 'common.days', { count: 12345 })).toBe('12,345 days');
-		expect(formatMessage('de', 'common.days', { count: 12345 })).toBe('12.345 days');
+		expect(formatMessage('de', 'common.days', { count: 12345 })).toContain('12.345');
 		// Spanish and Italian only group from five digits up, per CLDR minimumGroupingDigits.
-		expect(formatMessage('es', 'common.days', { count: 12345 })).toBe('12.345 days');
-		expect(formatMessage('it', 'common.days', { count: 12345 })).toBe('12.345 days');
+		expect(formatMessage('es', 'common.days', { count: 12345 })).toContain('12.345');
+		expect(formatMessage('it', 'common.days', { count: 12345 })).toContain('12.345');
 		expect(formatMessage('en', 'common.activeDays', { count: 1234 })).toBe('1,234 active days');
 	});
 
 	it('falls back to English when a key is missing in another locale', () => {
-		// `common.since` exists in English but is not yet in the German catalogue.
-		expect(formatMessage('en', 'common.since')).toBe('since');
-		expect(formatMessage('de', 'common.since')).toBe('since');
+		LOCALES.en['test.fallback'] = 'Fallback wording';
+		try {
+			expect(formatMessage('de', 'test.fallback')).toBe('Fallback wording');
+			LOCALES.de['test.fallback'] = '';
+			expect(formatMessage('de', 'test.fallback')).toBe('Fallback wording');
+			LOCALES.de['test.fallback'] = '   ';
+			expect(formatMessage('de', 'test.fallback')).toBe('Fallback wording');
+		} finally {
+			delete LOCALES.en['test.fallback'];
+			delete LOCALES.de['test.fallback'];
+		}
 		// Non-existent in de falls back to en
 		expect(formatMessage('de', 'nonexistent.key.test')).toBe('nonexistent.key.test');
 	});
@@ -397,11 +401,28 @@ describe('formatMessage', () => {
 });
 
 describe('i18n context and reactivity', () => {
+	it('preserves interpolation and plural variables in downloaded translations', () => {
+		const variables = (text: string) =>
+			[...new Set([...text.matchAll(/\{(\w+)(?:\}|,\s*plural,)/g)].map((m) => m[1]))].sort();
+		const source = flattenLeaves(LOCALES.en);
+		for (const locale of SUPPORTED_LOCALES.filter((l) => l !== 'en')) {
+			for (const [key, text] of Object.entries(flattenLeaves(LOCALES[locale]))) {
+				if (!text.trim()) continue; // Untranslated Crowdin entries use English fallback.
+				expect(variables(text), `${locale}: ${key}`).toEqual(variables(source[key] ?? ''));
+			}
+		}
+	});
+
 	it('handles plural exact matches and numbers gracefully', () => {
 		expect(formatMessage('en', 'common.days', { count: 1 })).toBe('1 day');
 		expect(formatMessage('en', 'common.days', { count: 12 })).toBe('12 days');
-		// Target catalogues may lag English; a missing key falls back to the English string.
-		expect(formatMessage('de', 'common.days', { count: 5 })).toBe('5 days');
+		// Exercise fallback independently of how far the real target catalogue has progressed.
+		LOCALES.en['test.fallbackDays'] = '{count, plural, one {# day} other {# days}}';
+		try {
+			expect(formatMessage('de', 'test.fallbackDays', { count: 5 })).toBe('5 days');
+		} finally {
+			delete LOCALES.en['test.fallbackDays'];
+		}
 	});
 });
 
@@ -474,7 +495,7 @@ describe('module-level copy and label tables (#495)', () => {
 			},
 			'de'
 		);
-		expect(eddDe[0]?.means).toBe('1.234 days with 1234+ sends');
+		expect(eddDe[0]?.means).toContain('1.234');
 
 		expect(rockTypeInfo('granite', 'en')?.name).toBe('Granite');
 		expect(rockTypeBlurb('granite', 64, 'en')).toContain(
