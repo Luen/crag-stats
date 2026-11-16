@@ -146,13 +146,13 @@
 		/>
 	{:else if id === 'volume'}
 		<article class="panel">
-			<h2>Volume</h2>
+			<h2>{i18n.t('pages.dashboard.titleVolume')}</h2>
 			<VolumeChart data={s.volumeByMonth} />
 		</article>
 	{:else if id === 'gradeBands'}
 		<article class="panel">
 			<div class="card-title">
-				<h2>Grade bands</h2>
+				<h2>{i18n.t('pages.dashboard.titleGradeBands')}</h2>
 				<HelpLink href="/docs/grades" label="About grade bands" />
 			</div>
 			<p class="hint">
@@ -169,7 +169,7 @@
 		</article>
 	{:else if id === 'topCrags'}
 		<article class="panel">
-			<h2>Top crags</h2>
+			<h2>{i18n.t('pages.dashboard.titleTopCrags')}</h2>
 			<BarList
 				items={s.topCrags.map((c) => ({
 					id: `crag:${c.crag}`,
@@ -183,7 +183,7 @@
 		</article>
 	{:else if id === 'tickTypes'}
 		<article class="panel">
-			<h2>Tick types</h2>
+			<h2>{i18n.t('pages.dashboard.titleTickTypes')}</h2>
 			<BarList
 				items={s.tickBreakdown.slice(0, 12).map((t) => ({
 					id: `tick:${t.tick}`,
@@ -280,11 +280,11 @@
 		<Karma data={s.karma} dateDisplay={data.dateDisplay} />
 	{:else if id === 'pyramids'}
 		<header class="section-head">
-			<h2>Grade pyramids</h2>
+			<h2>{i18n.t('pages.dashboard.titleGradePyramids')}</h2>
 			<p>
 				Split by style · {describeDisplaySystems(data.gradeSystems)}
 			</p>
-			<nav class="pyramid-toggles" aria-label="Pyramid filter">
+			<nav class="pyramid-toggles" aria-label={i18n.t('pages.dashboard.ariaPyramidFilter')}>
 				{#each pyramidModes as mode (mode.id)}
 					<button
 						type="button"
@@ -308,16 +308,28 @@
 		/>
 	{:else if id === 'cpr'}
 		<header class="section-head">
-			<h2>CPR timelines</h2>
+			<h2>{i18n.t('pages.dashboard.titleCPRTimelines')}</h2>
 			<p>Sport · Trad · Boulder performance over time</p>
 		</header>
-		<CprTimeline title="Sport" data={s.cpr.sport} gradeSystems={data.gradeSystems} />
-		<CprTimeline title="Trad" data={s.cpr.trad} gradeSystems={data.gradeSystems} />
-		<CprTimeline title="Boulder" data={s.cpr.boulder} gradeSystems={data.gradeSystems} />
+		<CprTimeline
+			title={i18n.t('pages.dashboard.titleSport')}
+			data={s.cpr.sport}
+			gradeSystems={data.gradeSystems}
+		/>
+		<CprTimeline
+			title={i18n.t('pages.dashboard.titleTrad')}
+			data={s.cpr.trad}
+			gradeSystems={data.gradeSystems}
+		/>
+		<CprTimeline
+			title={i18n.t('pages.dashboard.titleBoulder')}
+			data={s.cpr.boulder}
+			gradeSystems={data.gradeSystems}
+		/>
 	{:else if id === 'hardest'}
 		{@const mixed = new Set(s.hardestSends.map((c) => c.discipline)).size > 1}
 		<article class="panel">
-			<h2>Hardest sends</h2>
+			<h2>{i18n.t('pages.dashboard.titleHardestSends')}</h2>
 			<ul class="list">
 				{#each s.hardestSends as climb, i (climb.id)}
 					{#if mixed && climb.discipline !== s.hardestSends[i - 1]?.discipline}
@@ -351,7 +363,7 @@
 		</article>
 	{:else if id === 'recent'}
 		<article class="panel">
-			<h2>Recent activities</h2>
+			<h2>{i18n.t('pages.dashboard.titleRecentActivities')}</h2>
 			<ul class="list">
 				{#each s.recent.slice(0, RECENT_LIMIT) as climb (climb.id)}
 					<li>
@@ -374,7 +386,11 @@
 									· {climb.quality}
 								{/if}
 							</div>
-							<div class="recent-styles" role="group" aria-label="Climb styles">
+							<div
+								class="recent-styles"
+								role="group"
+								aria-label={i18n.t('pages.dashboard.ariaClimbStyles')}
+							>
 								{#each climb.styleLabels as style (style)}<StyleBadge {style} />{/each}
 							</div>
 							{#if ascentPartners(climb.partners)}
@@ -420,7 +436,7 @@
 
 {#if s.totalLogged === 0}
 	<section class="panel empty">
-		<h2>Get started</h2>
+		<h2>{i18n.t('pages.dashboard.titleGetStarted')}</h2>
 		<ol>
 			<li>Add <code>THECRAG_API_KEY</code> for Supporters, or</li>
 			<li>

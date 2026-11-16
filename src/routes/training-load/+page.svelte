@@ -1,8 +1,10 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
 	import TrainingLoad from '#lib/components/TrainingLoad.svelte';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
+	const i18n = useI18n();
 </script>
 
 <svelte:head>
@@ -14,11 +16,11 @@
 </svelte:head>
 
 <section class="panel head">
-	<h1>Training load</h1>
+	<h1>{i18n.t('pages.trainingLoad.titleTrainingLoad')}</h1>
 	<p>
 		How hard you've been climbing lately versus what you're used to — the acute:chronic workload
 		ratio used in sports science and climbing coaching. Treat the bands as a nudge, not a diagnosis.
-		<a class="how" href="/docs/training-load">How it works</a>
+		<a class="how" href="/docs/training-load">{i18n.t('common.howItWorks')}</a>
 	</p>
 </section>
 

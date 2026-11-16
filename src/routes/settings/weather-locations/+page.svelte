@@ -1,11 +1,13 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
 	import type { PageProps } from './$types';
 	let { data, form }: PageProps = $props();
+	const i18n = useI18n();
 </script>
 
 <svelte:head><title>Weather locations · Crag Stats</title></svelte:head>
 <section class="panel">
-	<h1>Weather locations</h1>
+	<h1>{i18n.t('pages.weatherLocations.titleWeatherLocations')}</h1>
 	<p><a href="/settings">Back to Settings</a> · <a href="/docs/weather">How weather works</a></p>
 	<p>
 		Route points take priority, then crag points, then immediate sector points. Validated small area
@@ -21,8 +23,10 @@
 		selected automatically.
 	</p>
 	{#if form?.message}<p role="status">{form.message}</p>{/if}
-	{#if form?.candidates}<section aria-label="Place search results">
-			<h2>Choose the correct place</h2>
+	{#if form?.candidates}<section
+			aria-label={i18n.t('pages.weatherLocations.ariaPlaceSearchResults')}
+		>
+			<h2>{i18n.t('pages.weatherLocations.titleChooseTheCorrectPlace')}</h2>
 			{#if !form.candidates.length}<p>
 					No matching places. Try a nearby town with its region.
 				</p>{/if}
@@ -43,7 +47,7 @@
 					</li>{/each}
 			</ul>
 		</section>{/if}
-	<h2>Outdoor climbing areas</h2>
+	<h2>{i18n.t('pages.weatherLocations.titleOutdoorClimbingAreas')}</h2>
 	<p>
 		{data.groups.reduce((n, g) => n + g.unresolved, 0)} routes have unresolved weather locations.
 	</p>
@@ -65,7 +69,7 @@
 						required
 						minlength="3"
 						maxlength="100"
-						placeholder="Town, region"
+						placeholder={i18n.t('pages.weatherLocations.placeholderTownRegion')}
 					/></label
 				><label
 					>Country code <input
@@ -73,7 +77,7 @@
 						required
 						pattern={'[A-Za-z]{2}'}
 						maxlength="2"
-						placeholder="AU"
+						placeholder={i18n.t('pages.weatherLocations.placeholderAU')}
 					/></label
 				><button type="submit">Search places for {g.name}</button>
 			</form>

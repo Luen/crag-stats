@@ -1,10 +1,12 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
 	import CragSectors from '#lib/components/CragSectors.svelte';
 	import WorldClimbingMap from '#lib/components/WorldClimbingMap.svelte';
 	import { formatCalendarDate, formatNumber } from '#lib/dates';
 	import { LOGBOOK_STYLES, includeSelectedOptions } from '#lib/logbookFilters';
 	import type { PageProps } from './$types';
 	let { data }: PageProps = $props();
+	const i18n = useI18n();
 </script>
 
 <svelte:head
@@ -14,13 +16,14 @@
 	/></svelte:head
 >
 <section class="panel">
-	<h1>Climbing around the world</h1>
+	<h1>{i18n.t('pages.map.titleClimbingAroundTheWorld')}</h1>
 	<p>
 		{formatNumber(data.mapped, data.dateDisplay)} of {formatNumber(data.total, data.dateDisplay)} ascents
 		mapped across {formatNumber(data.places.length, data.dateDisplay)} places. {formatNumber(
 			data.missing,
 			data.dateDisplay
-		)} ascents have no usable location. <a class="how" href="/docs/climbing-map">How it works</a>
+		)} ascents have no usable location.
+		<a class="how" href="/docs/climbing-map">{i18n.t('common.howItWorks')}</a>
 	</p>
 	<form method="GET" class="filters">
 		<label>From <input type="date" name="from" value={data.filters.from} /></label><label
@@ -36,12 +39,12 @@
 		>
 		<label
 			>Venues <select name="venue" value={data.filters.venue}
-				><option value="all">All venues</option><option value="outdoor">Outdoor</option><option
-					value="indoor">Indoor</option
-				></select
+				><option value="all">{i18n.t('pages.map.optionAllVenues')}</option><option value="outdoor"
+					>{i18n.t('pages.map.optionOutdoor')}</option
+				><option value="indoor">Indoor</option></select
 			></label
 		>
-		<button type="submit">Apply filters</button><a href="/map">Reset</a>
+		<button type="submit">{i18n.t('pages.map.buttonApplyFilters')}</button><a href="/map">Reset</a>
 	</form>
 	{#if data.places.length}<WorldClimbingMap
 			places={data.places}
@@ -54,7 +57,7 @@
 	<CragSectors crags={data.crags} dateDisplay={data.dateDisplay} displayUnits={data.displayUnits} />
 </div>
 <section class="panel values">
-	<h2>All mapped places</h2>
+	<h2>{i18n.t('pages.map.titleAllMappedPlaces')}</h2>
 	<p>The same exact counts are available here without using the map.</p>
 	<div class="table-wrap">
 		<table>

@@ -1,7 +1,9 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
+	const i18n = useI18n();
 
 	let theme = $state<'light' | 'dark'>('light');
 	let format = $state<'html' | 'markdown'>('html');
@@ -48,7 +50,7 @@
 </script>
 
 <section class="panel head">
-	<h1>Share & embed</h1>
+	<h1>{i18n.t('pages.share.titleShareEmbed')}</h1>
 	<p>
 		Live cards for a blog, forum signature or profile page. They're plain images, so they work
 		anywhere that accepts an <code>&lt;img&gt;</code> or Markdown, and they update after each sync. Cards
@@ -68,12 +70,14 @@
 			{copied === 'link' ? 'Link copied' : 'Copy dashboard link'}
 		</button>
 		{#if canShare}
-			<button type="button" class="secondary" onclick={shareDashboard}>Share…</button>
+			<button type="button" class="secondary" onclick={shareDashboard}
+				>{i18n.t('pages.share.buttonShare')}</button
+			>
 		{/if}
 	</div>
 </section>
 
-<section class="panel options" aria-label="Embed options">
+<section class="panel options" aria-label={i18n.t('pages.share.ariaEmbedOptions')}>
 	<fieldset>
 		<legend>Theme</legend>
 		<label><input type="radio" bind:group={theme} value="light" /> Light</label>

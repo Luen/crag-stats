@@ -1,8 +1,10 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
 	import Milestones from '#lib/components/Milestones.svelte';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
+	const i18n = useI18n();
 </script>
 
 <svelte:head>
@@ -14,7 +16,7 @@
 </svelte:head>
 
 <section class="panel head">
-	<h1>Milestones</h1>
+	<h1>{i18n.t('pages.milestones.titleMilestones')}</h1>
 	<p>
 		Personal breakthroughs from your logbook — first grades, ascent counts, height landmarks and
 		first-ascent thresholds. The dashboard card shows a short recent list.

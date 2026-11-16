@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
 	import NewRouteBadge from '#lib/components/NewRouteBadge.svelte';
 	import ProjectReadiness from '#lib/components/ProjectReadiness.svelte';
 	import ProjectSelection from '#lib/components/ProjectSelection.svelte';
@@ -7,6 +8,7 @@
 	import type { PageProps } from './$types';
 
 	let { data, form }: PageProps = $props();
+	const i18n = useI18n();
 
 	type ProjectCard = (typeof data.workingOn)[number];
 
@@ -87,7 +89,7 @@
 
 <section class="head">
 	<p class="eyebrow">Outdoor routes</p>
-	<h1>Projects</h1>
+	<h1>{i18n.t('pages.projects.titleProjects')}</h1>
 	<p class="blurb">
 		Auto-detected from theCrag: open projects need unsent attempts on two separate climbing days.
 		Completed projects include sends after work across days or at least two failed tries that day
@@ -103,13 +105,11 @@
 
 <section class="block">
 	<div class="section-head">
-		<h2>Working on</h2>
+		<h2>{i18n.t('pages.projects.titleWorkingOn')}</h2>
 		<span class="count">{data.workingOn.length} route{data.workingOn.length === 1 ? '' : 's'}</span>
 	</div>
 	{#if data.workingOn.length === 0}
-		<p class="empty">
-			No open projects yet. Log unsent attempts on two different climbing days on theCrag.
-		</p>
+		<p class="empty">{i18n.t('pages.projects.emptyNoOpenProjects')}</p>
 	{:else}
 		<div class="cards">
 			{#each data.workingOn as p (p.id)}
@@ -121,10 +121,8 @@
 
 {#if data.earlierSelected.length}
 	<section class="block">
-		<div class="section-head"><h2>Earlier selected sends</h2></div>
-		<p class="empty">
-			Routes you selected whose send is outside the six-month window or has no valid date.
-		</p>
+		<div class="section-head"><h2>{i18n.t('pages.projects.titleEarlierSelectedSends')}</h2></div>
+		<p class="empty">{i18n.t('pages.projects.emptyRoutesYouSelectedWhoseSend')}</p>
 		<div class="cards">
 			{#each data.earlierSelected as p (p.id)}{@render projectCard(p)}{/each}
 		</div>
@@ -133,13 +131,13 @@
 
 <section class="block">
 	<div class="section-head">
-		<h2>Recently sent</h2>
+		<h2>{i18n.t('pages.projects.titleRecentlySent')}</h2>
 		<span class="count muted"
 			>{data.recentlySent.length} route{data.recentlySent.length === 1 ? '' : 's'}</span
 		>
 	</div>
 	{#if data.recentlySent.length === 0}
-		<p class="empty">No fought-then-sent projects in the past six months.</p>
+		<p class="empty">{i18n.t('pages.projects.emptyNoFoughtThenSentProjects')}</p>
 	{:else}
 		<div class="cards">
 			{#each data.recentlySent as p (p.id)}

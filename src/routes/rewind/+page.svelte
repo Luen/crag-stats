@@ -1,9 +1,11 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
 	import { formatCalendarDate } from '#lib/dates';
 	import { formatDistance, formatHeight } from '#lib/units';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
+	const i18n = useI18n();
 	const s = $derived(data.summary);
 	const year = $derived(s.year ?? data.year);
 </script>
@@ -27,7 +29,7 @@
 				{/if}
 			</select>
 		</label>
-		<noscript><button type="submit">Go</button></noscript>
+		<noscript><button type="submit">{i18n.t('pages.rewind.buttonGo')}</button></noscript>
 	</form>
 </section>
 

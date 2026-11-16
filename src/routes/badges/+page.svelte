@@ -1,8 +1,10 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
 	import Badges from '#lib/components/Badges.svelte';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
+	const i18n = useI18n();
 </script>
 
 <svelte:head>
@@ -11,7 +13,7 @@
 </svelte:head>
 
 <section class="panel head">
-	<h1>Badges</h1>
+	<h1>{i18n.t('pages.badges.titleBadges')}</h1>
 	<p>
 		Logbook milestones that stick — sends, onsights, height, holidays, first ascents and more. The
 		dashboard card shows recently earned badges; everything lives here.
@@ -20,7 +22,7 @@
 
 {#if data.badges.almost.length > 0}
 	<section class="panel almost">
-		<h2>Almost there</h2>
+		<h2>{i18n.t('pages.badges.titleAlmostThere')}</h2>
 		<p class="blurb">
 			Closest countable badges — holidays and one-shot firsts stay out of this list.
 		</p>

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
 	import LogbookAutocomplete from '#lib/components/LogbookAutocomplete.svelte';
 	import LogbookDateRange from '#lib/components/LogbookDateRange.svelte';
 	import { SOLO_KINDS } from '#lib/soloKind';
@@ -22,6 +23,7 @@
 	import type { PageProps } from './$types';
 
 	let { data, form }: PageProps = $props();
+	const i18n = useI18n();
 
 	function filterParams() {
 		// Query builder for hrefs, rebuilt when called.
@@ -119,7 +121,7 @@
 </script>
 
 <section class="panel head">
-	<h1>Logbook</h1>
+	<h1>{i18n.t('pages.logbook.titleLogbook')}</h1>
 	{#if form?.message}<p role="alert">{form.message}</p>{/if}
 	{#if data.place}<p>
 			Climbing map place filter · <a href="/map">Back to map</a> ·
@@ -247,20 +249,24 @@
 		{/key}
 		<label class="filter-field"
 			>Partner match
-			<select name="partnerMatch" aria-label="Partner match" value={data.partnerMatch}>
-				<option value="contains">Partner name contains</option>
-				<option value="exact">Exact partner name</option>
+			<select
+				name="partnerMatch"
+				aria-label={i18n.t('pages.logbook.ariaPartnerMatch')}
+				value={data.partnerMatch}
+			>
+				<option value="contains">{i18n.t('pages.logbook.optionPartnerNameContains')}</option>
+				<option value="exact">{i18n.t('pages.logbook.optionExactPartnerName')}</option>
 			</select>
 		</label>
 		<label class="rock-filter"
 			>Rock type
 			<select
 				name="rock"
-				aria-label="Rock type"
+				aria-label={i18n.t('pages.logbook.ariaRockType')}
 				value={data.rock}
 				aria-describedby={data.options.rocks.length ? undefined : 'rock-help'}
 			>
-				<option value="">Any rock type</option>
+				<option value="">{i18n.t('pages.logbook.optionAnyRockType')}</option>
 				{#if data.rock && !data.options.rocks.some((r) => r.value === data.rock)}
 					<option value={data.rock}>{data.rock} (not in cached logbook)</option>
 				{/if}
@@ -286,62 +292,86 @@
 	</div>
 
 	<div class="filter-row">
-		<select name="solo" aria-label="Solo type" value={data.solo}>
-			<option value="">Any solo type</option>
+		<select name="solo" aria-label={i18n.t('pages.logbook.ariaSoloType')} value={data.solo}>
+			<option value="">{i18n.t('pages.logbook.optionAnySoloType')}</option>
 			{#each SOLO_KINDS as kind (kind.kind)}
 				<option value={kind.kind}>{kind.label}</option>
 			{/each}
 		</select>
-		<select name="band" aria-label="Grade band" value={String(data.band)}>
-			<option value="">Any band</option>
-			<option value="1">Beginner</option>
-			<option value="2">Intermediate</option>
-			<option value="3">Experienced</option>
-			<option value="4">Expert</option>
-			<option value="5">Elite</option>
+		<select
+			name="band"
+			aria-label={i18n.t('pages.logbook.ariaGradeBand')}
+			value={String(data.band)}
+		>
+			<option value="">{i18n.t('pages.logbook.optionAnyBand')}</option>
+			<option value="1">{i18n.t('pages.logbook.optionBeginner')}</option>
+			<option value="2">{i18n.t('pages.logbook.optionIntermediate')}</option>
+			<option value="3">{i18n.t('pages.logbook.optionExperienced')}</option>
+			<option value="4">{i18n.t('pages.logbook.optionExpert')}</option>
+			<option value="5">{i18n.t('pages.logbook.optionElite')}</option>
 		</select>
-		<select name="minScore" aria-label="Minimum route grade" value={String(data.minScore)}>
-			<option value="">Min route grade</option>
+		<select
+			name="minScore"
+			aria-label={i18n.t('pages.logbook.ariaMinimumRouteGrade')}
+			value={String(data.minScore)}
+		>
+			<option value="">{i18n.t('pages.logbook.optionMinRouteGrade')}</option>
 			{#each data.gradeOptions as g (g.score)}
 				<option value={g.score}>{g.label}</option>
 			{/each}
 		</select>
-		<select name="maxScore" aria-label="Maximum route grade" value={String(data.maxScore)}>
-			<option value="">Max route grade</option>
+		<select
+			name="maxScore"
+			aria-label={i18n.t('pages.logbook.ariaMaximumRouteGrade')}
+			value={String(data.maxScore)}
+		>
+			<option value="">{i18n.t('pages.logbook.optionMaxRouteGrade')}</option>
 			{#each data.gradeOptions as g (g.score)}
 				<option value={g.score}>{g.label}</option>
 			{/each}
 		</select>
-		<select name="fa" aria-label="First ascent mark" value={data.fa}>
-			<option value="">Any FA mark</option>
-			<option value="any">My FA or FFA</option>
-			<option value="FA">My FA</option>
-			<option value="FFA">My FFA</option>
-			<option value="none">No FA/FFA mark</option>
+		<select name="fa" aria-label={i18n.t('pages.logbook.ariaFirstAscentMark')} value={data.fa}>
+			<option value="">{i18n.t('pages.logbook.optionAnyFaMark')}</option>
+			<option value="any">{i18n.t('pages.logbook.optionMyFaOrFfa')}</option>
+			<option value="FA">{i18n.t('pages.logbook.optionMyFa')}</option>
+			<option value="FFA">{i18n.t('pages.logbook.optionMyFfa')}</option>
+			<option value="none">{i18n.t('pages.logbook.optionNoFaFfaMark')}</option>
 		</select>
-		<select name="setter" aria-label="Route setter" value={data.setter}>
-			<option value="">Any setter</option>
-			<option value="me">Routes I set</option>
-			<option value="none">No setter credit found</option>
+		<select name="setter" aria-label={i18n.t('pages.logbook.ariaRouteSetter')} value={data.setter}>
+			<option value="">{i18n.t('pages.logbook.optionAnySetter')}</option>
+			<option value="me">{i18n.t('pages.logbook.optionRoutesISet')}</option>
+			<option value="none">{i18n.t('pages.logbook.optionNoSetterCreditFound')}</option>
 		</select>
-		<select name="project" aria-label="theCrag project flag" value={data.project}>
-			<option value="">Any project flag</option>
-			<option value="yes">Project</option>
-			<option value="no">Not a project</option>
+		<select
+			name="project"
+			aria-label={i18n.t('pages.logbook.ariaTheCragProjectFlag')}
+			value={data.project}
+		>
+			<option value="">{i18n.t('pages.logbook.optionAnyProjectFlag')}</option>
+			<option value="yes">{i18n.t('pages.logbook.optionProject')}</option>
+			<option value="no">{i18n.t('pages.logbook.optionNotAProject')}</option>
 		</select>
 		{#if data.historyFilter}
-			<select name="history" aria-label="Route history import" value={data.history}>
-				<option value="">Any history status</option>
-				<option value="pending">History not checked yet</option>
+			<select
+				name="history"
+				aria-label={i18n.t('pages.logbook.ariaRouteHistoryImport')}
+				value={data.history}
+			>
+				<option value="">{i18n.t('pages.logbook.optionAnyHistoryStatus')}</option>
+				<option value="pending">{i18n.t('pages.logbook.optionHistoryNotCheckedYet')}</option>
 			</select>
 		{/if}
 		{#if data.weatherAvailable || data.weather}
-			<select name="weather" aria-label="Weather on the day" value={data.weather}>
-				<option value="">Any weather</option>
+			<select
+				name="weather"
+				aria-label={i18n.t('pages.logbook.ariaWeatherOnTheDay')}
+				value={data.weather}
+			>
+				<option value="">{i18n.t('pages.logbook.optionAnyWeather')}</option>
 				<option value="fair"
 					>Fair day ({data.displayUnits.temperature === 'fahrenheit' ? '59–77°F' : '15–25°C'}, dry)</option
 				>
-				<option value="perfect">Perfect day (fair, calm, not humid)</option>
+				<option value="perfect">{i18n.t('pages.logbook.optionPerfectDayFairCalmNot')}</option>
 				<option value="heat"
 					>Hot day ({data.displayUnits.temperature === 'fahrenheit' ? '95°F+' : '35°C+'})</option
 				>
@@ -350,8 +380,8 @@
 						? 'low 32°F or below'
 						: 'low 0°C or below'})</option
 				>
-				<option value="rain">Rainy day</option>
-				<option value="snow">Snowy day</option>
+				<option value="rain">{i18n.t('pages.logbook.optionRainyDay')}</option>
+				<option value="snow">{i18n.t('pages.logbook.optionSnowyDay')}</option>
 				<option value="wind"
 					>Windy day ({data.displayUnits.wind === 'mph' ? '31 mph+' : '50 km/h+'})</option
 				>
@@ -362,10 +392,10 @@
 				>
 			</select>
 		{/if}
-		<select name="partners" aria-label="Partners" value={data.partners}>
-			<option value="">Any partners</option>
-			<option value="has">Has partners</option>
-			<option value="missing">Missing partners</option>
+		<select name="partners" aria-label={i18n.t('pages.logbook.ariaPartners')} value={data.partners}>
+			<option value="">{i18n.t('pages.logbook.optionAnyPartners')}</option>
+			<option value="has">{i18n.t('pages.logbook.optionHasPartners')}</option>
+			<option value="missing">{i18n.t('pages.logbook.optionMissingPartners')}</option>
 		</select>
 	</div>
 
@@ -477,7 +507,12 @@
 	</fieldset>
 
 	<div class="filter-row">
-		<input name="tag" value={data.tag} placeholder="Tag contains…" aria-label="Route tag" />
+		<input
+			name="tag"
+			value={data.tag}
+			placeholder={i18n.t('pages.logbook.placeholderTagContains')}
+			aria-label={i18n.t('pages.logbook.ariaRouteTag')}
+		/>
 		{#each data.tagExact as exact, i (exact)}
 			{#if i > 0}
 				<input type="hidden" name="tagExact" value={exact} />
@@ -486,8 +521,8 @@
 		<input
 			name="tagExact"
 			value={data.tagExact[0] ?? ''}
-			placeholder="Exact tag (Steepness:Vertical)"
-			aria-label="Exact route tag Category:Name"
+			placeholder={i18n.t('pages.logbook.placeholderExactTagSteepnessVertical')}
+			aria-label={i18n.t('pages.logbook.ariaExactRouteTagCategoryName')}
 		/>
 	</div>
 
@@ -509,21 +544,21 @@
 		{#if data.day}
 			<input type="hidden" name="day" value={data.day} />
 		{/if}
-		<select name="sort" aria-label="Sort by" value={data.sort}>
-			<option value="date">Sort: Date</option>
-			<option value="grade">Sort: Grade</option>
-			<option value="quality">Sort: Quality</option>
-			<option value="stars">Sort: Stars</option>
-			<option value="style">Sort: Style</option>
-			<option value="tick">Sort: Tick</option>
-			<option value="ascents">Sort: My ascents on route</option>
-			<option value="popularity">Sort: Popularity</option>
+		<select name="sort" aria-label={i18n.t('pages.logbook.ariaSortBy')} value={data.sort}>
+			<option value="date">{i18n.t('pages.logbook.optionSortDate')}</option>
+			<option value="grade">{i18n.t('pages.logbook.optionSortGrade')}</option>
+			<option value="quality">{i18n.t('pages.logbook.optionSortQuality')}</option>
+			<option value="stars">{i18n.t('pages.logbook.optionSortStars')}</option>
+			<option value="style">{i18n.t('pages.logbook.optionSortStyle')}</option>
+			<option value="tick">{i18n.t('pages.logbook.optionSortTick')}</option>
+			<option value="ascents">{i18n.t('pages.logbook.optionSortMyAscentsOnRoute')}</option>
+			<option value="popularity">{i18n.t('pages.logbook.optionSortPopularity')}</option>
 		</select>
-		<select name="order" aria-label="Sort order" value={data.order}>
-			<option value="desc">Descending</option>
-			<option value="asc">Ascending</option>
+		<select name="order" aria-label={i18n.t('pages.logbook.ariaSortOrder')} value={data.order}>
+			<option value="desc">{i18n.t('pages.logbook.optionDescending')}</option>
+			<option value="asc">{i18n.t('pages.logbook.optionAscending')}</option>
 		</select>
-		<button type="submit">Apply filters</button>
+		<button type="submit">{i18n.t('pages.logbook.buttonApplyFilters')}</button>
 	</div>
 	<p class="hint">
 		From/to dates are inclusive. Unknown style finds missing, blank, or literal Unknown route
@@ -544,7 +579,11 @@
 
 <!-- Keyboard users need to reach the horizontally scrollable table wrapper above the mobile breakpoint. -->
 <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-<section class="panel table-wrap" aria-label="Logbook ascents" tabindex="0">
+<section
+	class="panel table-wrap"
+	aria-label={i18n.t('pages.logbook.ariaLogbookAscents')}
+	tabindex="0"
+>
 	<table>
 		<thead>
 			<tr>
@@ -576,14 +615,14 @@
 					><a
 						href={sortHref('ascents')}
 						class:active={data.sort === 'ascents'}
-						title="Your ascents on this route">×{sortMark('ascents')}</a
+						title={i18n.t('pages.logbook.titleYourAscentsOnThisRoute')}>×{sortMark('ascents')}</a
 					></th
 				>
 				<th
 					><a
 						href={sortHref('popularity')}
 						class:active={data.sort === 'popularity'}
-						title="Community popularity">Pop.{sortMark('popularity')}</a
+						title={i18n.t('pages.logbook.titleCommunityPopularity')}>Pop.{sortMark('popularity')}</a
 					></th
 				>
 				<th>With</th>
@@ -626,7 +665,7 @@
 							{#if row.cragName}
 								·&nbsp;<a
 									href="/logbook?crag={encodeURIComponent(row.cragName)}"
-									title="Filter logbook to this crag">{row.cragName}</a
+									title={i18n.t('pages.logbook.titleFilterLogbookToThisCrag')}>{row.cragName}</a
 								>{#if row.cragUrl}<a
 										class="ext"
 										href={row.cragUrl}
@@ -638,7 +677,7 @@
 							{#if row.parentName}
 								·&nbsp;<a
 									href="/logbook?sector={encodeURIComponent(row.parentName)}"
-									title="Filter logbook to this sector">{row.parentName}</a
+									title={i18n.t('pages.logbook.titleFilterLogbookToThisSector')}>{row.parentName}</a
 								>
 							{/if}
 							{#if row.quality}
@@ -648,15 +687,21 @@
 								·&nbsp;<span>★ {row.stars}</span>
 							{/if}
 							{#if row.myAscentsOnRoute > 1}
-								·&nbsp;<span title="Your ascents on this route">×{row.myAscentsOnRoute}</span>
+								·&nbsp;<span title={i18n.t('pages.logbook.titleYourAscentsOnThisRoute')}
+									>×{row.myAscentsOnRoute}</span
+								>
 							{/if}
 							{#if row.routePopularity != null}
-								·&nbsp;<span title="Community popularity"
+								·&nbsp;<span title={i18n.t('pages.logbook.titleCommunityPopularity')}
 									>Pop {Math.round(row.routePopularity)}</span
 								>
 							{/if}
 						</div>
-						<div class="mobile-styles" role="group" aria-label="Climb styles">
+						<div
+							class="mobile-styles"
+							role="group"
+							aria-label={i18n.t('pages.logbook.ariaClimbStyles')}
+						>
 							{#each logbookStyleLabels(row) as label (label)}
 								<StyleBadge style={label} />
 							{/each}
@@ -778,10 +823,14 @@
 					</td>
 					<td class="muted desktop-cell">{row.quality || '—'}</td>
 					<td class="muted desktop-cell">{row.stars != null ? row.stars : '—'}</td>
-					<td class="muted num desktop-cell" title="Your ascents on this route"
-						>{row.myAscentsOnRoute}</td
+					<td
+						class="muted num desktop-cell"
+						title={i18n.t('pages.logbook.titleYourAscentsOnThisRoute')}>{row.myAscentsOnRoute}</td
 					>
-					<td class="muted num desktop-cell" title="Community popularity">
+					<td
+						class="muted num desktop-cell"
+						title={i18n.t('pages.logbook.titleCommunityPopularity')}
+					>
 						{row.routePopularity != null ? Math.round(row.routePopularity) : '—'}
 					</td>
 					<td class="muted desktop-cell">{row.partners || '—'}</td>
@@ -789,7 +838,7 @@
 						{#if row.cragName}
 							<a
 								href="/logbook?crag={encodeURIComponent(row.cragName)}"
-								title="Filter logbook to this crag">{row.cragName}</a
+								title={i18n.t('pages.logbook.titleFilterLogbookToThisCrag')}>{row.cragName}</a
 							>
 							{#if row.cragUrl}
 								<a class="ext" href={row.cragUrl} target="_blank" rel="noreferrer">↗</a>

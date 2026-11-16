@@ -1,7 +1,9 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
 	import favicon from '#lib/assets/favicon.svg';
 	import type { PageProps } from './$types';
 	let { data, form }: PageProps = $props();
+	const i18n = useI18n();
 </script>
 
 <section class="panel">
@@ -20,13 +22,13 @@
 			id="password"
 			type="password"
 			name="password"
-			placeholder="Password"
+			placeholder={i18n.t('pages.login.placeholderPassword')}
 			required
 			autocomplete="current-password"
 			autocapitalize="off"
 			spellcheck="false"
 		/>
-		<button type="submit">Unlock</button>
+		<button type="submit">{i18n.t('pages.login.buttonUnlock')}</button>
 	</form>
 </section>
 

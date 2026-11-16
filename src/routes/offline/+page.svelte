@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
 	import { onMount } from 'svelte';
 	import {
 		formatCalendarDate,
@@ -12,6 +13,7 @@
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
+	const i18n = useI18n();
 
 	let snapshot = $state<OfflineSnapshot | null>(null);
 	let message = $state('Preparing offline storage…');
@@ -121,7 +123,7 @@
 </script>
 
 <svelte:head><title>Offline copy · Crag Stats</title></svelte:head>
-<h1>Offline copy</h1>
+<h1>{i18n.t('pages.offline.titleOfflineCopy')}</h1>
 <p>
 	Download public climbing stats and your latest logbook rows for this browser. Private notes are
 	excluded. Sites protected by a whole-app password stay online-only.
@@ -154,8 +156,8 @@
 		Saved {formatDateTime(snapshot.savedAt, DEFAULT_DATE_DISPLAY)} (UTC). Expires after seven days. This
 		is a snapshot, not live data.
 	</p>
-	<section class="panel" aria-label="Downloaded dashboard stats">
-		<h2>Dashboard summary</h2>
+	<section class="panel" aria-label={i18n.t('pages.offline.ariaDownloadedDashboardStats')}>
+		<h2>{i18n.t('pages.offline.titleDashboardSummary')}</h2>
 		<dl>
 			<div>
 				<dt>Ascents</dt>
@@ -171,8 +173,8 @@
 			</div>
 		</dl>
 	</section>
-	<section class="panel" aria-label="Downloaded logbook">
-		<h2>Logbook</h2>
+	<section class="panel" aria-label={i18n.t('pages.offline.ariaDownloadedLogbook')}>
+		<h2>{i18n.t('pages.offline.titleLogbook')}</h2>
 		<p>
 			Downloaded {fmt(snapshot.rows.length)} of {fmt(snapshot.total)} ascents, newest first. Up to 5,000
 			rows / 10 MB; other pages and charts need a connection.
@@ -191,9 +193,11 @@
 			<table>
 				<caption class="sr-only">Downloaded ascents</caption><thead
 					><tr
-						><th scope="col">Date</th><th scope="col">Climb</th><th scope="col">Grade</th><th
-							scope="col">Tick</th
-						><th scope="col">Partners</th></tr
+						><th scope="col">{i18n.t('pages.offline.columnDate')}</th><th scope="col"
+							>{i18n.t('pages.offline.columnClimb')}</th
+						><th scope="col">{i18n.t('pages.offline.columnGrade')}</th><th scope="col">Tick</th><th
+							scope="col">{i18n.t('pages.offline.columnPartners')}</th
+						></tr
 					></thead
 				><tbody>
 					{#each matching.slice(0, limit) as row (row.id)}<tr

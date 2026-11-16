@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
 	import { onMount, untrack } from 'svelte';
 	import DashboardLayoutEditor from '#lib/components/DashboardLayoutEditor.svelte';
 	import { DATE_FORMAT_OPTIONS, formatDateTime, formatNumber } from '#lib/dates';
@@ -35,6 +36,7 @@
 	import type { PageProps } from './$types';
 
 	let { data, form }: PageProps = $props();
+	const i18n = useI18n();
 
 	// Seed from SSR data so the selects render the stored choice without JS.
 	let unitHeight = $state<HeightUnit>(untrack(() => data.displayUnits.height));
@@ -178,7 +180,7 @@
 </script>
 
 <section class="panel head">
-	<h1>Settings</h1>
+	<h1>{i18n.t('pages.settings.titleSettings')}</h1>
 	<p>Sync, display preferences, search visibility, imports and local data control.</p>
 </section>
 
@@ -207,7 +209,7 @@
 {:else if form?.result?.skipped}
 	<p class="banner hint" role="status">{form.result.reason}</p>
 {:else if importResult}
-	<div class="banner ok" role="status" aria-label="Import summary">
+	<div class="banner ok" role="status" aria-label={i18n.t('pages.settings.ariaImportSummary')}>
 		<strong>{importResult.pruned ? 'Logbook sync complete.' : 'CSV import complete.'}</strong>
 		<p>Processed {countLabel(importResult.count, 'ascent')}.</p>
 		<ul>
@@ -239,7 +241,7 @@
 
 <section class="grid">
 	<article class="panel">
-		<h2>Display & visibility</h2>
+		<h2>{i18n.t('pages.settings.titleDisplayVisibility')}</h2>
 		<p class="hint">
 			Dates and measurements are display-only: stored data, badge thresholds, and filters stay
 			metric. <a href="/docs/display-settings">How display settings work</a>
@@ -248,7 +250,9 @@
 			<label class="field">
 				<span>Language</span>
 				<select name="locale">
-					<option value="" selected={!data.siteLocale}>Auto (Browser language)</option>
+					<option value="" selected={!data.siteLocale}
+						>{i18n.t('pages.settings.optionAutoBrowserLanguage')}</option
+					>
 					{#each data.supportedLocales as loc (loc)}
 						<option value={loc} selected={data.siteLocale === loc}>
 							{data.localeMetadata[loc].nativeName} ({data.localeMetadata[loc].name})
@@ -396,41 +400,42 @@
 						logbook always lists every logged ascent.
 					</small>
 				</legend>
-				<div class="preset-bar" role="group" aria-label="Tick configuration presets">
-					<span class="preset-label">Presets:</span>
+				<div
+					class="preset-bar"
+					role="group"
+					aria-label={i18n.t('pages.settings.ariaTickConfigurationPresets')}
+				>
+					<span class="preset-label">{i18n.t('pages.settings.label')}</span>
 					<button
 						type="button"
 						class="btn secondary sm"
 						class:active={currentPreset === 'all'}
 						aria-pressed={currentPreset === 'all'}
 						onclick={() => applyPreset('all')}
+						>{i18n.t('pages.settings.buttonAllLoggedTicks')}</button
 					>
-						All logged ticks
-					</button>
 					<button
 						type="button"
 						class="btn secondary sm"
 						class:active={currentPreset === 'sends_only'}
 						aria-pressed={currentPreset === 'sends_only'}
 						onclick={() => applyPreset('sends_only')}
+						>{i18n.t('pages.settings.buttonSendsOnly')}</button
 					>
-						Sends only
-					</button>
 					<button
 						type="button"
 						class="btn secondary sm"
 						class:active={currentPreset === 'exclude_working'}
 						aria-pressed={currentPreset === 'exclude_working'}
 						onclick={() => applyPreset('exclude_working')}
+						>{i18n.t('pages.settings.buttonExcludeWorking')}</button
 					>
-						Exclude Working
-					</button>
 				</div>
 				<div class="table-wrap">
 					<table class="tick-matrix">
 						<thead>
 							<tr>
-								<th scope="col">Tick type</th>
+								<th scope="col">{i18n.t('pages.settings.columnTickType')}</th>
 								<th scope="col" class="center">
 									<div class="col-head">
 										<span>Enable</span>
@@ -522,17 +527,17 @@
 			{#each storedWithoutRadio as [key, behavior] (key)}
 				<input type="hidden" name={`tick_${key}`} value={behavior} />
 			{/each}
-			<button type="submit">Save preferences</button>
+			<button type="submit">{i18n.t('pages.settings.buttonSavePreferences')}</button>
 		</form>
 	</article>
 
 	<article class="panel" id="dashboard">
-		<h2>Dashboard layout</h2>
+		<h2>{i18n.t('pages.settings.titleDashboardLayout')}</h2>
 		<DashboardLayoutEditor layout={data.dashLayout} />
 	</article>
 
 	<article class="panel">
-		<h2>CSV import</h2>
+		<h2>{i18n.t('pages.settings.titleCSVImport')}</h2>
 		<p class="hint">
 			For everyone without supporter API access. Export from theCrag:
 			<em>Action → Export logbook as CSV</em>, then upload the file here whenever you want to
@@ -544,15 +549,15 @@
 				type="file"
 				name="file"
 				accept=".csv,text/csv"
-				aria-label="theCrag logbook CSV export"
+				aria-label={i18n.t('pages.settings.ariaTheCragLogbookCsvExport')}
 				required
 			/>
-			<button type="submit">Import CSV</button>
+			<button type="submit">{i18n.t('pages.settings.buttonImportCsv')}</button>
 		</form>
 	</article>
 
 	<article class="panel">
-		<h2>theCrag logbook sync</h2>
+		<h2>{i18n.t('pages.settings.titleTheCragLogbookSync')}</h2>
 		<p class="hint">
 			Uses <code>THECRAG_API_KEY</code> from your environment. Keys grant read access to private
 			notes — treat them like passwords.
@@ -580,10 +585,11 @@
 		{#if data.syncConfiguration.configured}
 			<div class="actions">
 				<form method="POST" action="?/sync">
-					<button type="submit">Sync now</button>
+					<button type="submit">{i18n.t('pages.settings.buttonSyncNow')}</button>
 				</form>
 				<form method="POST" action="?/fullSync">
-					<button type="submit" class="secondary">Sync again</button>
+					<button type="submit" class="secondary">{i18n.t('pages.settings.buttonSyncAgain')}</button
+					>
 				</form>
 			</div>
 		{:else}
@@ -595,7 +601,7 @@
 	</article>
 
 	<article class="panel">
-		<h2>Import route data</h2>
+		<h2>{i18n.t('pages.settings.titleImportRouteData')}</h2>
 		<p class="hint">
 			Caches route details for routes in your logbook from theCrag (popularity, ascent counts,
 			quality, seasonality, beta, location, pitches and flags) along with their public history. FA /
@@ -666,14 +672,12 @@
 				</form>
 			</div>
 			<noscript>
-				<p class="hint">Reload this page to update route data availability.</p>
+				<p class="hint">{i18n.t('pages.settings.hintRouteDataRefresh')}</p>
 			</noscript>
 			<details>
-				<summary>Re-apply or refresh</summary>
+				<summary>{i18n.t('pages.settings.summary')}</summary>
 				<form method="POST" action="?/reapplyRouteHistory" class="stack">
-					<p class="hint">
-						Re-applies marks from history already saved here. No requests to theCrag.
-					</p>
+					<p class="hint">{i18n.t('pages.settings.hintReAppliesMarksFromHistory')}</p>
 					<label class="check">
 						<input type="checkbox" name="replaceExisting" />
 						<span>
@@ -688,7 +692,9 @@
 							<small class="hint">Off by default: routes you unmarked stay unmarked.</small>
 						</span>
 					</label>
-					<button type="submit" class="secondary">Re-apply from saved history</button>
+					<button type="submit" class="secondary"
+						>{i18n.t('pages.settings.buttonReApplyFromSavedHistory')}</button
+					>
 				</form>
 				<form method="POST" action="?/refreshRouteHistory" class="stack">
 					<p class="hint">
@@ -702,14 +708,16 @@
 						<span>Type <code>REFRESH</code> to confirm</span>
 						<input name="confirm" autocomplete="off" />
 					</label>
-					<button type="submit" class="secondary">Refresh all routes</button>
+					<button type="submit" class="secondary"
+						>{i18n.t('pages.settings.buttonRefreshAllRoutes')}</button
+					>
 				</form>
 			</details>
 		{/if}
 	</article>
 
 	<article class="panel">
-		<h2>Import weather</h2>
+		<h2>{i18n.t('pages.settings.titleImportWeather')}</h2>
 		<p>
 			<a href="/settings/weather-locations"
 				>Review weather locations and choose a nearby place for missing locations</a
@@ -786,7 +794,7 @@
 	</article>
 
 	<article class="panel">
-		<h2>Privacy & data control</h2>
+		<h2>{i18n.t('pages.settings.titlePrivacyDataControl')}</h2>
 		<p class="hint">
 			Revoking a theCrag key does not delete data already synced here. Wipe only removes the
 			<strong>local</strong> SQLite copy on this machine — it never deletes your theCrag logbook.
@@ -813,19 +821,22 @@
 			<small class="hint">Backup / re-import</small>
 		</div>
 		<form method="POST" action="?/wipe" class="stack">
-			<input name="confirm" placeholder="Type DELETE to confirm" required />
-			<button type="submit" class="danger">Wipe all local data</button>
+			<input
+				name="confirm"
+				placeholder={i18n.t('pages.settings.placeholderTypeDeleteToConfirm')}
+				required
+			/>
+			<button type="submit" class="danger">{i18n.t('pages.settings.buttonWipeAllLocalData')}</button
+			>
 		</form>
 	</article>
 
 	{#if data.authEnabled && data.authed}
 		<article class="panel">
-			<h2>Admin session</h2>
-			<p class="hint">
-				End your signed-in session on this device. You will need the app password to return.
-			</p>
+			<h2>{i18n.t('pages.settings.titleAdminSession')}</h2>
+			<p class="hint">{i18n.t('pages.settings.hintEndYourSignedInSession')}</p>
 			<form method="POST" action="/logout">
-				<button type="submit" class="secondary">Log out</button>
+				<button type="submit" class="secondary">{i18n.t('pages.settings.buttonLogOut')}</button>
 			</form>
 		</article>
 	{/if}

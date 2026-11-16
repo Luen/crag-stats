@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
 	import MonthlyStats from '#lib/components/MonthlyStats.svelte';
 	import YearlyStats from '#lib/components/YearlyStats.svelte';
 	import { formatNumber } from '#lib/dates';
@@ -6,6 +7,7 @@
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
+	const i18n = useI18n();
 
 	let yearFilter = $state<string>('all');
 
@@ -47,11 +49,11 @@
 </svelte:head>
 
 <section class="panel head">
-	<h1>Activity</h1>
+	<h1>{i18n.t('pages.activity.titleActivity')}</h1>
 	<p>
 		Deeper monthly and yearly volume than the dashboard cards — full per-month tables (ascents,
 		sends, height, styles) plus year-over-year deltas.
-		<a class="how" href="/docs/activity">How it works</a>
+		<a class="how" href="/docs/activity">{i18n.t('common.howItWorks')}</a>
 	</p>
 </section>
 
@@ -74,12 +76,12 @@
 
 <section class="panel table-panel">
 	<header class="table-head">
-		<h2>Monthly breakdown</h2>
+		<h2>{i18n.t('pages.activity.titleMonthlyBreakdown')}</h2>
 		{#if data.monthly.years.length > 0}
 			<label>
-				<span class="sr">Year</span>
+				<span class="sr">{i18n.t('pages.activity.label')}</span>
 				<select bind:value={yearFilter}>
-					<option value="all">All years</option>
+					<option value="all">{i18n.t('pages.activity.optionAllYears')}</option>
 					{#each [...data.monthly.years].reverse() as y (y)}
 						<option value={String(y)}>{y}</option>
 					{/each}
@@ -89,7 +91,7 @@
 	</header>
 
 	{#if newestFirst.length === 0}
-		<p class="empty">No monthly data yet.</p>
+		<p class="empty">{i18n.t('pages.activity.empty')}</p>
 	{:else}
 		<div class="table-wrap">
 			<table>

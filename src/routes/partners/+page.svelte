@@ -1,13 +1,15 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
 	import PartnerLeaderboard from '#lib/components/PartnerLeaderboard.svelte';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
+	const i18n = useI18n();
 </script>
 
 <section class="panel head">
 	<div class="copy">
-		<h1>Partners</h1>
+		<h1>{i18n.t('pages.partners.titlePartners')}</h1>
 		<p>
 			Everyone you've climbed with. Rank by shared ascents, climbing days, or distinct crags — click
 			a name to filter the logbook.

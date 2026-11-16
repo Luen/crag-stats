@@ -1,9 +1,11 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
 	import WeatherConditions from '#lib/components/WeatherConditions.svelte';
 	import WeatherPerformance from '#lib/components/WeatherPerformance.svelte';
 	import { formatNumber } from '#lib/dates';
 	import type { PageProps } from './$types';
 	let { data }: PageProps = $props();
+	const i18n = useI18n();
 	const fmt = (n: number) => formatNumber(n, data.dateDisplay);
 </script>
 
@@ -16,13 +18,13 @@
 </svelte:head>
 
 <section class="panel head">
-	<h1>Weather</h1>
+	<h1>{i18n.t('pages.weather.titleWeather')}</h1>
 	<p>
 		Historical weather on the days you climbed outdoors. These are modelled daily conditions at
 		cached locations, not measurements at the wall or a forecast.
-		<a class="how" href="/docs/weather">How it works</a>
+		<a class="how" href="/docs/weather">{i18n.t('common.howItWorks')}</a>
 	</p>
-	<nav aria-label="Weather sections">
+	<nav aria-label={i18n.t('pages.weather.ariaWeatherSections')}>
 		<a href="#conditions">Conditions</a><a href="#performance">Performance</a><a href="#coverage"
 			>Coverage &amp; location quality</a
 		>
@@ -30,7 +32,7 @@
 </section>
 
 {#if data.conditions}
-	<section id="conditions" aria-label="Weather conditions">
+	<section id="conditions" aria-label={i18n.t('pages.weather.ariaWeatherConditions')}>
 		<WeatherConditions
 			data={data.conditions}
 			dateDisplay={data.dateDisplay}
@@ -40,7 +42,7 @@
 	</section>
 {:else}
 	<section id="conditions" class="panel empty">
-		<h2>No weather cached for outdoor climbs yet</h2>
+		<h2>{i18n.t('pages.weather.titleNoWeatherCachedForOutdoor')}</h2>
 		<p>
 			Weather appears after the owner enables weather import and eligible outdoor location-days have
 			been fetched. Indoor climbs are excluded. <a href="/docs/weather">Read about weather import</a
@@ -49,19 +51,19 @@
 	</section>
 {/if}
 
-<section id="performance" aria-label="Weather and performance">
+<section id="performance" aria-label={i18n.t('pages.weather.ariaWeatherAndPerformance')}>
 	{#if data.performance}
 		<WeatherPerformance data={data.performance} dateDisplay={data.dateDisplay} compact={false} />
 	{:else}
 		<div class="panel empty">
-			<h2>Weather &amp; performance</h2>
+			<h2>{i18n.t('pages.weather.titleWeatherAmpPerformance')}</h2>
 			<p>There are no outdoor sends or attempts with cached weather to compare yet.</p>
 		</div>
 	{/if}
 </section>
 
 <section id="coverage" class="panel coverage">
-	<h2>Coverage &amp; location quality</h2>
+	<h2>{i18n.t('pages.weather.titleCoverageAmpLocationQuality')}</h2>
 	<p>
 		A location-day is one calendar day at one weather location, rounded to 0.1°. Visiting two
 		locations in a day can count twice. Conditions include all outdoor ticks; performance includes

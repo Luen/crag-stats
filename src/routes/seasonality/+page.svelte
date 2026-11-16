@@ -1,10 +1,12 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
 	import { MONTH_LABELS } from '#lib/bestMonths';
 	import SeasonalityStrip from '#lib/components/SeasonalityStrip.svelte';
 	import { seasonalityHref } from '#lib/seasonality';
 	import { formatNumber } from '#lib/dates';
 	import type { PageProps } from './$types';
 	let { data }: PageProps = $props();
+	const i18n = useI18n();
 </script>
 
 <svelte:head>
@@ -16,7 +18,7 @@
 </svelte:head>
 
 <section class="panel intro">
-	<h1>Seasonality search</h1>
+	<h1>{i18n.t('pages.seasonality.titleSeasonalitySearch')}</h1>
 	<p>
 		Explore theCrag’s community climbing patterns by month. These are seasonal patterns, not a
 		weather forecast or conditions on your visits. <a class="how" href="/docs/best-months"
@@ -43,21 +45,25 @@
 			name="q"
 			type="search"
 			value={data.filters.q}
-			placeholder="Search your cached climbs…"
+			placeholder={i18n.t('pages.seasonality.placeholderSearchYourCachedClimbs')}
 		/></label
 	>
 	<label
 		>Show<select name="view" value={data.filters.view}
-			><option value="crags">Crags</option><option value="routes">Climbs</option></select
+			><option value="crags">{i18n.t('pages.seasonality.optionCrags')}</option><option
+				value="routes">{i18n.t('pages.seasonality.optionClimbs')}</option
+			></select
 		></label
 	>
 	<label
 		>Sort by<select name="sort" value={data.filters.sort}
-			><option value="season">Selected month</option><option value="name">Name</option></select
+			><option value="season">{i18n.t('pages.seasonality.optionSelectedMonth')}</option><option
+				value="name">{i18n.t('pages.seasonality.optionName')}</option
+			></select
 		></label
 	>
 	{#if data.filters.crag}<input type="hidden" name="crag" value={data.filters.crag} />{/if}
-	<button type="submit">Search</button>
+	<button type="submit">{i18n.t('pages.seasonality.buttonSearch')}</button>
 </form>
 
 {#if data.filters.crag}
@@ -77,7 +83,7 @@
 
 {#if data.results.length === 0}
 	<section class="panel empty">
-		<h2>No seasonality results</h2>
+		<h2>{i18n.t('pages.seasonality.titleNoSeasonalityResults')}</h2>
 		<p>
 			{data.coverage.total
 				? 'No matching climbs have usable monthly data yet.'
@@ -124,7 +130,7 @@
 {/if}
 
 {#if data.pages > 1}
-	<nav class="pagination" aria-label="Seasonality results pages">
+	<nav class="pagination" aria-label={i18n.t('pages.seasonality.ariaSeasonalityResultsPages')}>
 		{#if data.page > 1}<a href={seasonalityHref(data.filters, { page: data.page - 1 })}
 				>← Previous</a
 			>{/if}

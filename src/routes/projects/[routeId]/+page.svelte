@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
 	import ProjectReadiness from '#lib/components/ProjectReadiness.svelte';
 	import ProjectSelection from '#lib/components/ProjectSelection.svelte';
 	import ProjectRouteBeta from '#lib/components/ProjectRouteBeta.svelte';
@@ -7,6 +8,7 @@
 	import { formatCalendarDate, formatNumber } from '#lib/dates';
 	import type { PageProps } from './$types';
 	let { data }: PageProps = $props();
+	const i18n = useI18n();
 	const p = $derived(data.project);
 	const progress = $derived(data.progress);
 	function count(n: number) {
@@ -97,7 +99,12 @@
 	{#if progress.sessions.length}
 		<!-- Mobile table overflow must be scrollable with a keyboard. -->
 		<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-		<div class="table-scroll" role="region" aria-label="Session progression table" tabindex="0">
+		<div
+			class="table-scroll"
+			role="region"
+			aria-label={i18n.t('pages.projectDetail.ariaSessionProgressionTable')}
+			tabindex="0"
+		>
 			<table>
 				<thead
 					><tr
@@ -145,7 +152,7 @@
 </section>
 
 <details id="method" class="panel method">
-	<summary>How approximate readiness and estimates work</summary>
+	<summary>{i18n.t('pages.projectDetail.summary')}</summary>
 	<p>
 		Readiness uses the past 365 days of outdoor sends on distinct routes in the same discipline and
 		grade scale. A best send at this grade or above contributes 60 points, one step below 35, or two
