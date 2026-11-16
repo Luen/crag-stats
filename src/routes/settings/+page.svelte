@@ -187,21 +187,24 @@
 {#if form?.routeHistoryWaiting}
 	<p class="banner hint">
 		{retrySeconds > 0
-			? `Route data can be checked again in ${retryLabel}.`
-			: 'Route data is ready to check again.'}
+			? i18n.t('pages.settings.bannerRouteDataWaiting', { when: retryLabel })
+			: i18n.t('pages.settings.bannerRouteDataReady')}
 	</p>
 {:else if form?.weatherWaiting}
 	<p class="banner hint">
 		{weatherRetrySeconds > 0
-			? `Weather import can run again in ${weatherRetryLabel}.`
-			: 'Weather import is ready to run again.'}
+			? i18n.t('pages.settings.bannerWeatherWaiting', { when: weatherRetryLabel })
+			: i18n.t('pages.settings.bannerWeatherReady')}
 	</p>
 {:else if form?.message}
 	<p class="banner err">{form.message}</p>
 {:else if form?.layoutSaved}
-	<p class="banner ok">Dashboard layout saved. <a href="/">View dashboard</a></p>
+	<p class="banner ok">
+		{i18n.t('pages.settings.bannerDashboardLayoutSaved')}
+		<a href="/">{i18n.t('pages.settings.linkViewDashboard')}</a>
+	</p>
 {:else if form?.saved}
-	<p class="banner ok">Preferences saved.</p>
+	<p class="banner ok">{i18n.t('pages.settings.bannerPreferencesSaved')}</p>
 {:else if form?.routeHistoryMessage}
 	<p class="banner ok">{form.routeHistoryMessage}</p>
 {:else if form?.weatherMessage}
@@ -210,7 +213,11 @@
 	<p class="banner hint" role="status">{form.result.reason}</p>
 {:else if importResult}
 	<div class="banner ok" role="status" aria-label={i18n.t('pages.settings.ariaImportSummary')}>
-		<strong>{importResult.pruned ? 'Logbook sync complete.' : 'CSV import complete.'}</strong>
+		<strong
+			>{importResult.pruned
+				? i18n.t('pages.settings.bannerSyncComplete')
+				: i18n.t('pages.settings.bannerCsvComplete')}</strong
+		>
 		<p>Processed {countLabel(importResult.count, 'ascent')}.</p>
 		<ul>
 			<li>{countLabel(importResult.created.routes, 'new route')}</li>
@@ -231,12 +238,12 @@
 		</ul>
 		<p class="summary-note">
 			{importResult.pruned
-				? 'Route data and weather imports run separately when enabled.'
-				: 'Manual CSV uploads do not remove missing entries.'}
+				? i18n.t('pages.settings.bannerImportsRunSeparately')
+				: i18n.t('pages.settings.bannerCsvDoesNotRemove')}
 		</p>
 	</div>
 {:else if form?.ok}
-	<p class="banner ok">Done.</p>
+	<p class="banner ok">{i18n.t('pages.settings.bannerDone')}</p>
 {/if}
 
 <section class="grid">
@@ -570,9 +577,13 @@
 				>{data.sync.status}</span
 			>
 			{#if data.sync.lastSuccessAt}
-				<span>Last sync {formatDateTime(data.sync.lastSuccessAt, data.dateDisplay)}</span>
+				<span
+					>{i18n.t('pages.settings.statusLastSync', {
+						when: formatDateTime(data.sync.lastSuccessAt, data.dateDisplay)
+					})}</span
+				>
 			{:else}
-				<span>No logbook sync yet</span>
+				<span>{i18n.t('pages.settings.statusNoSyncYet')}</span>
 			{/if}
 		</p>
 		{#if data.sync.lastError}
@@ -634,17 +645,26 @@
 					aria-live="polite">{rh.status}</span
 				>
 				<span>
-					{rh.fetchedRoutes} of {rh.totalRoutes} routes checked · {rh.importedMarks} FA/FFA imported
+					{i18n.t('pages.settings.statusRoutesChecked', {
+						checked: rh.fetchedRoutes,
+						total: rh.totalRoutes
+					})} · {i18n.t('pages.settings.statusFasImported', { count: rh.importedMarks })}
 					{#if rh.pendingAreas > 0}
-						· {rh.pendingAreas} weather areas pending{/if}
+						· {i18n.t('pages.settings.statusAreasPending', { count: rh.pendingAreas })}{/if}
 					{#if rh.lastRunAt}
-						· last run {formatDateTime(rh.lastRunAt, data.dateDisplay)} ({rh.lastFetched} checked)
+						· {i18n.t('pages.settings.statusLastRunRoutes', {
+							when: formatDateTime(rh.lastRunAt, data.dateDisplay),
+							count: rh.lastFetched
+						})}
 					{/if}
 				</span>
 			</p>
 			{#if rh.nextAllowedAt && (rh.status === 'blocked' || rh.status === 'error')}
 				<p class="err">
-					{rh.lastError} Paused until {formatDateTime(rh.nextAllowedAt, data.dateDisplay)}.
+					{i18n.t('pages.settings.statusPausedUntil', {
+						message: rh.lastError ?? '',
+						when: formatDateTime(rh.nextAllowedAt, data.dateDisplay)
+					})}
 				</p>
 			{/if}
 			<div class="actions">
@@ -656,14 +676,14 @@
 							retrySeconds > 0}
 					>
 						{rh.pendingRoutes === 0 && rh.pendingAreas === 0
-							? 'All routes checked'
+							? i18n.t('pages.settings.buttonAllRoutesChecked')
 							: rh.running
-								? 'Checking routes…'
+								? i18n.t('pages.settings.buttonCheckingRoutes')
 								: retrySeconds > 0
-									? `Check again in ${retryLabel}`
+									? i18n.t('pages.settings.buttonCheckAgainIn', { when: retryLabel })
 									: rh.pendingRoutes === 0
-										? 'Check weather locations now'
-										: `Check next ${rh.perRun} routes now`}
+										? i18n.t('pages.settings.buttonCheckWeatherLocationsNow')
+										: i18n.t('pages.settings.buttonCheckNextRoutes', { count: rh.perRun })}
 					</button>
 				</form>
 			</div>
@@ -677,15 +697,15 @@
 					<label class="check">
 						<input type="checkbox" name="replaceExisting" />
 						<span>
-							<strong>Replace existing FA / FFA marks</strong>
-							<small class="hint">Off by default: marks you set stay as they are.</small>
+							<strong>{i18n.t('pages.settings.titleReplaceExistingMarks')}</strong>
+							<small class="hint">{i18n.t('pages.settings.hintReplaceExistingMarks')}</small>
 						</span>
 					</label>
 					<label class="check">
 						<input type="checkbox" name="reapplyUnmarked" />
 						<span>
-							<strong>Re-apply routes I unmarked</strong>
-							<small class="hint">Off by default: routes you unmarked stay unmarked.</small>
+							<strong>{i18n.t('pages.settings.titleReapplyUnmarked')}</strong>
+							<small class="hint">{i18n.t('pages.settings.hintReapplyUnmarked')}</small>
 						</span>
 					</label>
 					<button type="submit" class="secondary"
@@ -715,8 +735,7 @@
 	<article class="panel">
 		<h2>{i18n.t('pages.settings.titleImportWeather')}</h2>
 		<p>
-			<a href="/settings/weather-locations"
-				>Review weather locations and choose a nearby place for missing locations</a
+			<a href="/settings/weather-locations">{i18n.t('pages.settings.linkReviewWeatherLocations')}</a
 			>
 		</p>
 		<p class="hint">
@@ -743,17 +762,26 @@
 					aria-live="polite">{wx.status}</span
 				>
 				<span>
-					{wx.cachedOk} days cached · {wx.totalPending} pending
+					{i18n.t('pages.settings.statusDaysCached', { count: wx.cachedOk })} ·
+					{i18n.t('pages.settings.statusPending', { count: wx.totalPending })}
 					{#if wx.unresolvedRoutes > 0}
-						· {wx.unresolvedRoutes} outdoor routes without locations{/if}
+						· {i18n.t('pages.settings.statusRoutesWithoutLocations', {
+							count: wx.unresolvedRoutes
+						})}{/if}
 					{#if wx.lastRunAt}
-						· last run {formatDateTime(wx.lastRunAt, data.dateDisplay)} ({wx.lastFetched} fetched)
+						· {i18n.t('pages.settings.statusLastRunWeather', {
+							when: formatDateTime(wx.lastRunAt, data.dateDisplay),
+							count: wx.lastFetched
+						})}
 					{/if}
 				</span>
 			</p>
 			{#if wx.nextAllowedAt && (wx.status === 'blocked' || wx.status === 'error')}
 				<p class="err">
-					{wx.lastError} Paused until {formatDateTime(wx.nextAllowedAt, data.dateDisplay)}.
+					{i18n.t('pages.settings.statusPausedUntil', {
+						message: wx.lastError ?? '',
+						when: formatDateTime(wx.nextAllowedAt, data.dateDisplay)
+					})}
 				</p>
 			{/if}
 			{#if wx.totalPending === 0 && wx.cachedOk === 0}
@@ -776,13 +804,13 @@
 					>
 						{wx.totalPending === 0
 							? wx.cachedOk === 0
-								? 'No eligible days pending'
-								: 'All outdoor days cached'
+								? i18n.t('pages.settings.buttonNoEligibleDays')
+								: i18n.t('pages.settings.buttonAllDaysCached')
 							: wx.running
-								? 'Fetching weather…'
+								? i18n.t('pages.settings.buttonFetchingWeather')
 								: weatherRetrySeconds > 0
-									? `Fetch again in ${weatherRetryLabel}`
-									: `Fetch next ${wx.perRun} days now`}
+									? i18n.t('pages.settings.buttonFetchAgainIn', { when: weatherRetryLabel })
+									: i18n.t('pages.settings.buttonFetchNextDays', { count: wx.perRun })}
 					</button>
 				</form>
 			</div>
@@ -812,9 +840,9 @@
 						d="M12 3v12m0 0-4.5-4.5M12 15l4.5-4.5M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"
 					/></svg
 				>
-				Download logbook CSV
+				{i18n.t('pages.settings.buttonDownloadLogbookCsv')}
 			</a>
-			<small class="hint">Backup / re-import</small>
+			<small class="hint">{i18n.t('pages.settings.labelBackupReImport')}</small>
 		</div>
 		<form method="POST" action="?/wipe" class="stack">
 			<input
