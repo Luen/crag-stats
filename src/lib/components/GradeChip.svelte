@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { bandById } from '#lib/grades';
+	import { bandById, getBandName } from '#lib/grades';
 	import { useI18n } from '#lib/i18n';
 
 	type Props = {
@@ -17,7 +17,7 @@
 <span
 	class="grade-chip"
 	style:--chip={meta?.color ?? 'var(--style-unknown)'}
-	title={meta?.name ?? i18n.t('cards.gradeChip.unknownBand')}
+	title={meta ? getBandName(meta, i18n.locale) : i18n.t('cards.gradeChip.unknownBand')}
 >
 	{#if meta}
 		<span class="dot" style:background={meta.color}></span>

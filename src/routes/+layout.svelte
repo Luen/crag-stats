@@ -2,7 +2,7 @@
 	import favicon from '#lib/assets/favicon.svg';
 	import '../app.css';
 	import { onMount, tick } from 'svelte';
-	import { afterNavigate, invalidateAll } from '$app/navigation';
+	import { afterNavigate, goto, invalidateAll } from '$app/navigation';
 	import { page } from '$app/state';
 	import { formatNumber } from '#lib/dates';
 	import { startOfflineRefresh } from '#lib/offlineClient';
@@ -46,11 +46,20 @@
 	/**
 	 * Persist the choice in `cs_locale`, translate client-rendered copy immediately, then re-run
 	 * the loaders so server-rendered copy (titles, story, docs) follows the same language.
+	 *
+	 * The `?locale=` URL override is a one-off: the layout remembers it in the cookie, and it wins
+	 * every resolution while it stays in the address bar. After an explicit switch the cookie owns
+	 * the choice, so drop the query parameter before reloading — otherwise the next load would
+	 * resolve back to the old URL locale and revert this switch (with the cookie rewritten too).
 	 */
 	async function refreshLocale(next: SupportedLocale) {
 		i18n.setLocale(next);
+		lastQueryLocale = null;
+		const url = new URL(page.url.href);
+		url.searchParams.delete('locale');
 		try {
-			await invalidateAll();
+			if (url.href === page.url.href) await invalidateAll();
+			else await goto(url, { replaceState: true });
 		} catch {
 			// Offline: client-rendered copy already switched; the rest catches up on reconnect.
 		}
