@@ -17,9 +17,6 @@
 			"intermediate": "Intermedio"
 		}
 	},
-	"language": {
-		"switchLabel": "Lingua: {current}. Passa a {next}"
-	},
 	"nav": {
 		"activity": "Attività",
 		"badges": "Badge",

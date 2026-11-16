@@ -17,9 +17,6 @@
 			"intermediate": "Fortgeschritten"
 		}
 	},
-	"language": {
-		"switchLabel": "Sprache: {current}. Zu {next} wechseln"
-	},
 	"nav": {
 		"activity": "Aktivität",
 		"badges": "Abzeichen",

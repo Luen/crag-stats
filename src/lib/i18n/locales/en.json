@@ -299,7 +299,8 @@
 		}
 	},
 	"language": {
-		"switchLabel": "Language: {current}. Switch to {next}"
+		"menuLabel": "Choose language",
+		"triggerLabel": "Choose language (current: {current})"
 	},
 	"nav": {
 		"activity": "Activity",

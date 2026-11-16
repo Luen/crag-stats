@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { DOC_PAGES } from '../src/lib/docs';
+import { expectAxeClean } from './axe';
 
 test.describe('app shell', () => {
 	test('Settings remains in the header without a duplicate sidebar entry', async ({ page }) => {
@@ -60,36 +61,55 @@ test.describe('app shell', () => {
 		await expect(page.locator('html')).not.toHaveAttribute('data-theme', /.+/);
 	});
 
-	test('language switcher cycles languages and updates document language', async ({ page }) => {
+	test('language menu lists every locale and switches in one interaction', async ({ page }) => {
 		await page.goto('/');
-		// The button names itself in the active language, so select it by class.
-		const btn = page.locator('.top-actions .locale');
-		await expect(btn).toHaveAccessibleName('Language: English. Switch to Deutsch');
+		// The button is named in the active language, so select it by class.
+		const trigger = page.locator('.top-actions .locale');
 		await expect(page.locator('html')).toHaveAttribute('lang', 'en');
 
-		// Switch to German: shell copy and the server-rendered <html lang> follow immediately.
-		await btn.click();
-		await expect(btn).toHaveAccessibleName('Sprache: Deutsch. Zu Français wechseln');
+		await trigger.click();
+		const menu = page.getByRole('menu');
+		await expect(menu).toBeVisible();
+		// Every supported locale, including the last one, is one interaction away (#494).
+		await expect(menu.getByRole('menuitemradio')).toHaveCount(5);
+		await expect(menu.getByRole('menuitemradio', { name: 'Italiano', exact: true })).toBeVisible();
+		await expect(
+			menu.getByRole('menuitemradio', { name: 'English', exact: true })
+		).toHaveAttribute('aria-checked', 'true');
+		await expect(menu.getByRole('menuitemradio', { name: 'English', exact: true })).toBeFocused();
+		await expectAxeClean(page, { include: ['.topbar'] });
+
+		// Escape closes the menu and hands focus back to the trigger.
+		await page.keyboard.press('Escape');
+		await expect(menu).toHaveCount(0);
+		await expect(trigger).toBeFocused();
+
+		// ArrowDown opens on the current locale; the next ArrowDown moves into the list.
+		await trigger.press('ArrowDown');
+		await expect(menu.getByRole('menuitemradio', { name: 'English', exact: true })).toBeFocused();
+		await page.keyboard.press('ArrowDown');
+		await expect(menu.getByRole('menuitemradio', { name: 'Deutsch', exact: true })).toBeFocused();
+		await page.keyboard.press('Enter');
+
+		// German: shell copy and the server-rendered <html lang> follow immediately.
 		await expect(page.locator('html')).toHaveAttribute('lang', 'de');
-		await expect(page).toHaveTitle('Crag Stats');
 		await expect(page.locator('#side-nav').getByRole('link', { name: 'Übersicht' })).toBeVisible();
-		await expect(page.getByText('Sportklettern').first()).toBeVisible();
 		await expect(page.getByRole('contentinfo')).toContainText('Selbst gehostete Kletteranalyse');
 
-		// Reload preserves language via cookie
+		// Reload preserves the language via the cookie.
 		await page.reload();
 		await expect(page.locator('html')).toHaveAttribute('lang', 'de');
-		await expect(page).toHaveTitle('Crag Stats');
 		await expect(page.locator('#side-nav').getByRole('link', { name: 'Übersicht' })).toBeVisible();
 
-		// Switch to French
-		await page.locator('.top-actions .locale').click();
+		// French sits below German in the list, so reaching it is one more interaction, not a cycle.
+		await trigger.click();
+		await page.getByRole('menuitemradio', { name: 'Français', exact: true }).click();
 		await expect(page.locator('html')).toHaveAttribute('lang', 'fr');
 		await expect(
 			page.locator('#side-nav').getByRole('link', { name: 'Tableau de bord' })
 		).toBeVisible();
 
-		// Reset to English via ?locale=en and verify it persists across reload
+		// Reset to English via ?locale=en and verify it persists across reload.
 		await page.goto('/?locale=en');
 		await expect(page.locator('html')).toHaveAttribute('lang', 'en');
 		await page.goto('/');

@@ -33,14 +33,85 @@
 	});
 
 	const currentLocale = $derived(i18n.locale);
-	const nextLocale = $derived(
-		SUPPORTED_LOCALES[(SUPPORTED_LOCALES.indexOf(currentLocale) + 1) % SUPPORTED_LOCALES.length]
-	);
+	const currentLocaleName = $derived(LOCALE_METADATA[currentLocale].nativeName);
 
-	function cycleLocale() {
-		const next = nextLocale;
-		lastDataLocale = next;
-		void refreshLocale(next);
+	/**
+	 * The header language control is a menu rather than a cycling button: with more than a couple
+	 * of locales, cycling makes the last one several clicks away and hides the rest (#494).
+	 */
+	let localeMenuOpen = $state(false);
+	let localeWrap = $state<HTMLDivElement>();
+	let localeTrigger = $state<HTMLButtonElement>();
+	let localeItems = $state<HTMLButtonElement[]>([]);
+	let localeFocusIndex = $state(0);
+
+	async function openLocaleMenu() {
+		localeMenuOpen = true;
+		localeFocusIndex = Math.max(SUPPORTED_LOCALES.indexOf(currentLocale), 0);
+		await tick();
+		localeItems[localeFocusIndex]?.focus();
+	}
+
+	function closeLocaleMenu(restoreFocus = true) {
+		if (!localeMenuOpen) return;
+		localeMenuOpen = false;
+		if (restoreFocus) localeTrigger?.focus();
+	}
+
+	function focusLocaleItem(index: number) {
+		const count = SUPPORTED_LOCALES.length;
+		localeFocusIndex = ((index % count) + count) % count;
+		localeItems[localeFocusIndex]?.focus();
+	}
+
+	function onLocaleTriggerKeydown(event: KeyboardEvent) {
+		if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+			event.preventDefault();
+			if (localeMenuOpen) focusLocaleItem(localeFocusIndex + (event.key === 'ArrowDown' ? 1 : -1));
+			else void openLocaleMenu();
+		} else if (event.key === 'Escape' && localeMenuOpen) {
+			event.preventDefault();
+			closeLocaleMenu();
+		}
+	}
+
+	function onLocaleMenuKeydown(event: KeyboardEvent) {
+		if (event.key === 'ArrowDown') {
+			event.preventDefault();
+			focusLocaleItem(localeFocusIndex + 1);
+		} else if (event.key === 'ArrowUp') {
+			event.preventDefault();
+			focusLocaleItem(localeFocusIndex - 1);
+		} else if (event.key === 'Home') {
+			event.preventDefault();
+			focusLocaleItem(0);
+		} else if (event.key === 'End') {
+			event.preventDefault();
+			focusLocaleItem(SUPPORTED_LOCALES.length - 1);
+		} else if (event.key === 'Escape') {
+			event.preventDefault();
+			closeLocaleMenu();
+		} else if (event.key === 'Tab') {
+			// Tab is navigation, not selection: close without stealing focus back.
+			closeLocaleMenu(false);
+		}
+	}
+
+	function onWindowPointerDown(event: PointerEvent) {
+		if (!localeMenuOpen) return;
+		const target = event.target;
+		if (target instanceof Node && localeWrap?.contains(target)) return;
+		closeLocaleMenu(false);
+	}
+
+	async function chooseLocale(next: SupportedLocale) {
+		localeMenuOpen = false;
+		if (next === currentLocale) {
+			localeTrigger?.focus();
+			return;
+		}
+		await refreshLocale(next);
+		localeTrigger?.focus();
 	}
 
 	/**
@@ -54,6 +125,7 @@
 	 */
 	async function refreshLocale(next: SupportedLocale) {
 		i18n.setLocale(next);
+		lastDataLocale = next;
 		lastQueryLocale = null;
 		const url = new URL(page.url.href);
 		url.searchParams.delete('locale');
@@ -172,6 +244,7 @@
 
 	afterNavigate(() => {
 		drawerOpen = false;
+		localeMenuOpen = false;
 	});
 
 	function save(key: string, value: string | null) {
@@ -268,6 +341,7 @@
 </svelte:head>
 
 <svelte:window
+	onpointerdown={onWindowPointerDown}
 	onkeydown={(e) => {
 		if (e.key === 'Escape') closeDrawer();
 		else trapFocus(e);
@@ -329,21 +403,53 @@
 			>
 				<NavIcon name={THEME_ICON[theme]} />
 			</button>
-			<button
-				type="button"
-				class="icon-btn locale"
-				onclick={cycleLocale}
-				title={t('language.switchLabel', {
-					current: LOCALE_METADATA[currentLocale].nativeName,
-					next: LOCALE_METADATA[nextLocale].nativeName
-				})}
-				aria-label={t('language.switchLabel', {
-					current: LOCALE_METADATA[currentLocale].nativeName,
-					next: LOCALE_METADATA[nextLocale].nativeName
-				})}
-			>
-				<NavIcon name="globe" />
-			</button>
+			<div class="locale-wrap" bind:this={localeWrap}>
+				<button
+					type="button"
+					class="icon-btn locale"
+					aria-haspopup="menu"
+					aria-expanded={localeMenuOpen}
+					aria-controls="header-locale-menu"
+					aria-label={t('language.triggerLabel', { current: currentLocaleName })}
+					title={t('language.triggerLabel', { current: currentLocaleName })}
+					bind:this={localeTrigger}
+					onclick={() => {
+						if (localeMenuOpen) closeLocaleMenu();
+						else void openLocaleMenu();
+					}}
+					onkeydown={onLocaleTriggerKeydown}
+				>
+					<NavIcon name="globe" />
+				</button>
+				{#if localeMenuOpen}
+					<div
+						id="header-locale-menu"
+						class="locale-menu"
+						role="menu"
+						tabindex="-1"
+						aria-label={t('language.menuLabel')}
+						onkeydown={onLocaleMenuKeydown}
+					>
+						{#each SUPPORTED_LOCALES as locale, index (locale)}
+							<button
+								type="button"
+								class="locale-item"
+								role="menuitemradio"
+								aria-checked={locale === currentLocale}
+								tabindex={index === localeFocusIndex ? 0 : -1}
+								bind:this={localeItems[index]}
+								onfocus={() => (localeFocusIndex = index)}
+								onclick={() => void chooseLocale(locale)}
+							>
+								<span>{LOCALE_METADATA[locale].nativeName}</span>
+								{#if locale === currentLocale}
+									<span class="tick" aria-hidden="true">✓</span>
+								{/if}
+							</button>
+						{/each}
+					</div>
+				{/if}
+			</div>
 			{#if data.showSettings}
 				<a
 					class="icon-btn"
@@ -511,6 +617,57 @@
 	.icon-btn:hover {
 		background: var(--surface-3);
 		color: var(--ink);
+	}
+	.locale-wrap {
+		position: relative;
+		display: flex;
+	}
+	.locale-menu {
+		position: absolute;
+		top: calc(100% - 0.15rem);
+		right: 0;
+		z-index: 60;
+		min-width: 10.5rem;
+		margin: 0;
+		padding: 0.3rem;
+		display: grid;
+		gap: 0.1rem;
+		background: var(--paper);
+		border: 1px solid var(--line);
+		border-radius: 0.7rem;
+		box-shadow: var(--shadow);
+	}
+	.locale-item {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.75rem;
+		width: 100%;
+		padding: 0.5rem 0.6rem;
+		border: 0;
+		border-radius: 0.45rem;
+		background: transparent;
+		color: var(--ink);
+		font: inherit;
+		font-size: 0.9rem;
+		text-align: left;
+		cursor: pointer;
+	}
+	.locale-item:hover,
+	.locale-item:focus-visible {
+		background: var(--surface-3);
+		color: var(--ink);
+	}
+	.locale-item:focus-visible {
+		outline: 2px solid var(--accent);
+		outline-offset: -2px;
+	}
+	.locale-item[aria-checked='true'] {
+		font-weight: 700;
+	}
+	.tick {
+		color: var(--accent);
+		font-size: 0.85rem;
 	}
 	.logout {
 		display: contents;
