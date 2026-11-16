@@ -20,6 +20,19 @@ describe('crowdin top-up rotation', () => {
 		// `-latest` ids share the quota of the model they point at, so rotating into one is a no-op.
 		expect(DEFAULT_MODELS.filter((id: string) => id.endsWith('-latest'))).toEqual([]);
 	});
+
+	it('rotates only full Flash models so translation quality does not drop', () => {
+		// Flash Lite carries a much larger daily allowance, but it is the tier that drifts on ICU
+		// plurals, {placeholders}, and glossary terms — and that drift costs a re-review.
+		expect(DEFAULT_MODELS.filter((id: string) => id.includes('lite'))).toEqual([]);
+		expect(DEFAULT_MODELS).not.toContain('gemini-2.5-flash');
+	});
+
+	it('drops retired model ids instead of leaving them as a fallback', () => {
+		// gemini-3.7-flash is gone from Google's API; a dead id costs a failed pass plus a 65 s
+		// retry before the rotation moves on.
+		expect(DEFAULT_MODELS).not.toContain('gemini-3.7-flash');
+	});
 });
 
 describe('parseList', () => {

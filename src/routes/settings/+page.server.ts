@@ -17,7 +17,7 @@ import {
 	parseTemperatureUnit,
 	parseWindUnit
 } from '#lib/units';
-import { isSupportedLocale, LOCALE_METADATA, SUPPORTED_LOCALES } from '#lib/i18n';
+import { isEnabledLocale, LOCALE_METADATA, ENABLED_LOCALES } from '#lib/i18n';
 import {
 	deleteAppSetting,
 	getAppSetting,
@@ -60,8 +60,10 @@ export const load: PageServerLoad = async ({ cookies }) => {
 		sync: getSyncStatus(),
 		hasApiKey: hasTheCragApiKey(),
 		syncConfiguration: getTheCragSyncConfiguration(),
-		siteLocale: isSupportedLocale(storedLocale) ? storedLocale : '',
-		supportedLocales: SUPPORTED_LOCALES,
+		// Only an enabled language is a real default; anything else (Auto, a disabled or stale
+		// tag) falls back to Auto.
+		siteLocale: isEnabledLocale(storedLocale) ? storedLocale : '',
+		supportedLocales: ENABLED_LOCALES,
 		localeMetadata: LOCALE_METADATA,
 		gradeSystems: getDisplayGradeSystems(),
 		dateFormat: getDateFormat(),
@@ -103,7 +105,7 @@ export const actions: Actions = {
 		if (rawLocale === '' || rawLocale === 'auto') {
 			deleteAppSetting('locale');
 			cookies.delete('cs_locale', { path: '/' });
-		} else if (isSupportedLocale(rawLocale)) {
+		} else if (isEnabledLocale(rawLocale)) {
 			setAppSetting('locale', rawLocale);
 			cookies.set('cs_locale', rawLocale, {
 				path: '/',

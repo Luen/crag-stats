@@ -8,10 +8,10 @@
 	import { startOfflineRefresh } from '#lib/offlineClient';
 	import NavIcon, { type NavIconName } from '#lib/components/NavIcon.svelte';
 	import {
+		ENABLED_LOCALES,
 		initI18n,
 		LOCALE_METADATA,
 		matchSupportedLocale,
-		SUPPORTED_LOCALES,
 		type SupportedLocale
 	} from '#lib/i18n';
 	import type { LayoutProps } from './$types';
@@ -24,7 +24,7 @@
 	let lastDataLocale: string | undefined;
 	let lastQueryLocale: string | null | undefined;
 	$effect(() => {
-		const queryLocale = matchSupportedLocale(page.url.searchParams.get('locale'));
+		const queryLocale = matchSupportedLocale(page.url.searchParams.get('locale'), ENABLED_LOCALES);
 		if (data.locale !== lastDataLocale || queryLocale !== lastQueryLocale) {
 			lastDataLocale = data.locale;
 			lastQueryLocale = queryLocale;
@@ -47,7 +47,10 @@
 
 	async function openLocaleMenu() {
 		localeMenuOpen = true;
-		localeFocusIndex = Math.max(SUPPORTED_LOCALES.indexOf(currentLocale), 0);
+		localeFocusIndex = Math.max(
+			(ENABLED_LOCALES as readonly SupportedLocale[]).indexOf(currentLocale),
+			0
+		);
 		await tick();
 		localeItems[localeFocusIndex]?.focus();
 	}
@@ -59,7 +62,7 @@
 	}
 
 	function focusLocaleItem(index: number) {
-		const count = SUPPORTED_LOCALES.length;
+		const count = ENABLED_LOCALES.length;
 		localeFocusIndex = ((index % count) + count) % count;
 		localeItems[localeFocusIndex]?.focus();
 	}
@@ -87,7 +90,7 @@
 			focusLocaleItem(0);
 		} else if (event.key === 'End') {
 			event.preventDefault();
-			focusLocaleItem(SUPPORTED_LOCALES.length - 1);
+			focusLocaleItem(ENABLED_LOCALES.length - 1);
 		} else if (event.key === 'Escape') {
 			event.preventDefault();
 			closeLocaleMenu();
@@ -430,7 +433,7 @@
 						aria-label={t('language.menuLabel')}
 						onkeydown={onLocaleMenuKeydown}
 					>
-						{#each SUPPORTED_LOCALES as locale, index (locale)}
+						{#each ENABLED_LOCALES as locale, index (locale)}
 							<button
 								type="button"
 								class="locale-item"

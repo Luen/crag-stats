@@ -28,12 +28,12 @@ Climbing is a global sport, but initial localisation focuses on communities with
 
 ### Adding a locale
 
-A language only ships once its Crowdin catalogue has real coverage; adding it to `SUPPORTED_LOCALES` earlier gives readers a half-English UI instead of their own language.
+A locale is _supported_ once its catalogue exists, and _enabled_ once it is translated well enough to ship. Only `en` and `de` are enabled today; `fr`, `es`, and `it` keep their catalogues, stay validated by `i18n.test.ts`, and stay out of the header menu, the Settings picker, and locale resolution until they are switched on.
 
-1. Finish the in-flight target in Crowdin first (`ko`, `pl`, `zh-CN`, and `pt-PT` were seeded; `ja` and `pt-PT` are translated).
-2. Add the language id to `SUPPORTED_LOCALES` and `LOCALE_METADATA` in `src/lib/i18n/types.ts`, import its catalogue in `format.ts`, and add its label to `LOCALE_METADATA`'s native name.
-3. Add the language to the Settings picker; the header menu and `?locale=` read `SUPPORTED_LOCALES`, so nothing else needs touching.
-4. Run `pnpm check` and `pnpm test:e2e` — `e2e/shell.spec.ts` asserts the menu lists every locale.
+1. Finish the target in Crowdin first — `crowdin-pretranslate.yml` translates one language per scheduled run, so add the next id to its `CROWDIN_LANGUAGES` line and let the daily top-up work through the catalogue. Seeded but unshipped: `ko`, `pl`, `zh-CN`, `pt-PT` (already translated), and `ja` (already translated).
+2. Add the language id to `ENABLED_LOCALES` in `src/lib/i18n/types.ts`. If the catalogue is new, add it to `SUPPORTED_LOCALES`, `LOCALE_METADATA`, and the `LOCALES` map in `format.ts` too.
+3. Nothing else needs touching: the header menu, the Settings picker, `?locale=`, the `cs_locale` cookie, and `Accept-Language` all read `ENABLED_LOCALES`.
+4. Run `pnpm test` and `pnpm test:e2e` — `i18n.test.ts` asserts the enabled subset, and `e2e/shell.spec.ts` asserts the menu lists exactly the enabled locales and that a disabled one stays unreachable.
 
 **Regional variants collide.** `crowdin.yml` writes `%two_letters_code%.json`, so adding `pt-BR` beside `pt-PT` would have both targets overwrite `pt.json`. Before the first such pair, switch the `translation:` pattern to `%locale%.json` and rename the committed catalogues (`es.json` → `es-ES.json`, and so on), updating the imports in `src/lib/i18n/format.ts`.
 
@@ -144,7 +144,8 @@ src/lib/i18n/locales/en.json  ──push to main──▶  Crowdin  ──transl
 
 - Runs daily at 08:15 UTC (after midnight Pacific, catching fresh Google AI Studio free quotas).
 - Calls Crowdin's API to run AI pre-translation passes against untranslated strings using Google Gemini.
-- **Model Rotation:** Google AI Studio free quotas are metered per model. When a model's minute or daily quota is reached, `scripts/crowdin_topup.mjs` automatically rotates to the next model in the hierarchy (`gemini-4-hydrogen` → `gemini-3.8-flash` → `gemini-3.7-flash` → `gemini-3.6-flash` → `gemini-2.5-flash` → `gemini-3.5-flash-lite` → `gemini-2.5-flash-lite`). The list lives in `DEFAULT_MODELS`; confirm an id against `GET /users/{userId}/ai/providers/{providerId}/models` before adding it, because Crowdin silently rejects retired ids. A model with no free-tier quota costs one empty pass plus a 65 s retry before the rotation moves on, so put new models where that tax is worth paying.
+- **One language per run:** the workflow pre-translates a single target (`CROWDIN_LANGUAGES`, currently `de`) because a day's rotation covers about one catalogue. Translating every target at once splits the allowance and leaves each language half-done, so the next language is added to that line and to `ENABLED_LOCALES` only after the previous one ships.
+- **Model Rotation:** Google AI Studio free quotas are metered per model. When a model's minute or daily quota is reached, `scripts/crowdin_topup.mjs` automatically rotates to the next model in the hierarchy (`gemini-4-hydrogen` → `gemini-3.8-flash` → `gemini-3.6-flash` → `gemini-3.5-flash` → `gemini-3-flash-preview`). Every entry is a full Flash model: the Flash Lite tier has ~25× the daily allowance but drifts on ICU plurals, `{placeholders}`, and glossary terms, and a translation that needs re-review costs more than another day of quota. The list lives in `DEFAULT_MODELS`; confirm an id against `GET /users/{userId}/ai/providers/{providerId}/models` before adding it, because Crowdin rejects retired ids. Delete retired ids rather than keeping them as a fallback — a dead id costs one failed pass plus a 65 s retry before the rotation moves on. Crowdin's model list can outlive Google's: a model Crowdin still lists may already be retired upstream.
 - **Testable decisions:** The quota state machine lives in `scripts/crowdinTopup.mjs` (no network, no `process.env`) and is covered by `src/lib/server/crowdinTopup.test.ts`, the same pattern as `scripts/serverOrigin.mjs`. Adding a branch to the rotation logic means adding a test there; the CLI in `crowdin_topup.mjs` only wires those decisions to the API.
 - **Budget:** `CROWDIN_TOPUP_BUDGET` caps the wall clock (default 3000 s) so the run always leaves room for the download and PR steps. `CROWDIN_LANGUAGES` / `CROWDIN_MODELS` override the project targets / rotation for a one-off manual run.
 - **Idempotency:** Only untranslated strings are submitted (`scope: untranslated`); human reviews and existing translations are never overwritten.

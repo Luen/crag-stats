@@ -3,13 +3,17 @@ name: Crowdin AI Pre-translate
 # Tops up AI pre-translation in Crowdin, then pulls whatever is now translated.
 #
 # Crowdin's AI pre-translate spends roughly one Gemini request per batch of strings, and the AI
-# Studio free tier meters requests per day *per model*: the Flash tier gets ~20 requests/day
-# each, Flash Lite ~500 each. One model therefore stalls after a few hundred strings.
-#
-# scripts/crowdin_topup.mjs works around that by rotating models — when a pass adds
+# Studio free tier meters requests per day *per model*: the full Flash tier gets ~20 requests/day
+# each. scripts/crowdin_topup.mjs works around that by rotating models - when a pass adds
 # nothing, it switches the Crowdin prompt to the next model, which has its own untouched
-# allowance. That is enough to translate the whole catalogue in a single run; the daily schedule
-# then exists only to pick up strings added since, and is a cheap no-op when there are none.
+# allowance. Every entry in that rotation is a full Flash model; the Flash Lite tier has a much
+# larger allowance but translates ICU plurals, {placeholders}, and glossary terms less reliably.
+#
+# One language at a time. A day's rotation is enough for one catalogue, so the schedule spends it
+# on the next language that has not been shipped yet, and `ENABLED_LOCALES` in
+# src/lib/i18n/types.ts stays in step: add the language here, then switch it on in the app once it
+# is translated. Translating all targets at once splits the allowance and leaves every language
+# half-done.
 #
 # It only ever pre-translates strings that are still untranslated, so it can be re-run freely
 # and will never overwrite an existing or human-reviewed translation.
@@ -63,7 +67,9 @@ jobs:
         env:
           CROWDIN_PROJECT_ID: ${{ secrets.CROWDIN_PROJECT_ID }}
           CROWDIN_PERSONAL_TOKEN: ${{ secrets.CROWDIN_PERSONAL_TOKEN }}
-          CROWDIN_LANGUAGES: ${{ inputs.languages }}
+          # German first: it is the only enabled target. Change this (and ENABLED_LOCALES in
+          # src/lib/i18n/types.ts) when the next language is ready to ship.
+          CROWDIN_LANGUAGES: ${{ inputs.languages || 'de' }}
 
       - name: Pull translations and open a PR
         # Nothing new means nothing to download — skip rather than open an empty PR.

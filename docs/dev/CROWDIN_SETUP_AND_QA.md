@@ -57,11 +57,13 @@ The personal access token stored in GitHub Secret `CROWDIN_PERSONAL_TOKEN` requi
 
 Google AI Studio's free tier meters requests **per day per model** (Requests Per Day / RPD):
 
-- **Flash tier (`gemini-3.8-flash`, `gemini-3.6-flash`, `gemini-2.5-flash`):** ~20 requests/day each, capped at ~5 requests/minute.
-- **Flash Lite tier (`gemini-3.5-flash-lite`, `gemini-3.1-flash-lite`, `gemini-2.5-flash-lite`):** ~500 requests/day each.
+- **Flash tier:** ~20 requests/day each, capped at ~5 requests/minute. Every model in the rotation is one of these, newest first: `gemini-4-hydrogen`, `gemini-3.8-flash`, `gemini-3.6-flash`, `gemini-3.5-flash`, and `gemini-3-flash-preview`.
 - **Gemini 4 Hydrogen:** the strongest free-tier model available to the prompt, so the rotation starts there.
+- **Flash Lite tier:** deliberately **excluded**, despite ~500 requests/day each. The catalogue is short UI strings carrying ICU plurals, `{placeholders}`, glossary terms, and hard `maxLength` caps, which is where a small model drifts; a cheap translation that has to be re-reviewed costs more than a second day of quota.
 
 `scripts/crowdin_topup.mjs` leverages this by rotating through models sequentially. When a pass adds 0 strings after waiting out the 65-second rate window, it patches the prompt to the next model via `PATCH /users/{userId}/ai/prompts/{promptId}` with `[{"op": "replace", "path": "/aiModelId", "value": model}]`.
+
+Because one day's rotation covers roughly one catalogue, `.github/workflows/crowdin-pretranslate.yml` pre-translates a single target language per scheduled run (`CROWDIN_LANGUAGES`, currently `de`). Translating every target at once splits the allowance and leaves each language half-done, so the next language is added to that line and to `ENABLED_LOCALES` in `src/lib/i18n/types.ts` only once the previous one is shipped. Retired model ids must be removed rather than left as a fallback: a dead id costs a failed pass plus a 65-second retry before the rotation moves on.
 
 ### Pre-Translation Prompt (`Crag Stats pre-translate`)
 

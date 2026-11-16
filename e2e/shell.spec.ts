@@ -61,7 +61,9 @@ test.describe('app shell', () => {
 		await expect(page.locator('html')).not.toHaveAttribute('data-theme', /.+/);
 	});
 
-	test('language menu lists every locale and switches in one interaction', async ({ page }) => {
+	test('language menu lists every enabled locale and switches in one interaction', async ({
+		page
+	}) => {
 		await page.goto('/');
 		// The button is named in the active language, so select it by class.
 		const trigger = page.locator('.top-actions .locale');
@@ -70,9 +72,12 @@ test.describe('app shell', () => {
 		await trigger.click();
 		const menu = page.getByRole('menu');
 		await expect(menu).toBeVisible();
-		// Every supported locale, including the last one, is one interaction away (#494).
-		await expect(menu.getByRole('menuitemradio')).toHaveCount(5);
-		await expect(menu.getByRole('menuitemradio', { name: 'Italiano', exact: true })).toBeVisible();
+		// Every enabled locale is one interaction away (#494). Only German ships while the other
+		// catalogues are still being translated, so a catalogue that exists but is not enabled
+		// must not appear here.
+		await expect(menu.getByRole('menuitemradio')).toHaveCount(2);
+		await expect(menu.getByRole('menuitemradio', { name: 'Deutsch', exact: true })).toBeVisible();
+		await expect(menu.getByRole('menuitemradio', { name: 'Français', exact: true })).toHaveCount(0);
 		await expect(menu.getByRole('menuitemradio', { name: 'English', exact: true })).toHaveAttribute(
 			'aria-checked',
 			'true'
@@ -102,17 +107,15 @@ test.describe('app shell', () => {
 		await expect(page.locator('html')).toHaveAttribute('lang', 'de');
 		await expect(page.locator('#side-nav').getByRole('link', { name: 'Übersicht' })).toBeVisible();
 
-		// French sits below German in the list, so reaching it is one more interaction, not a cycle.
-		await trigger.click();
-		await page.getByRole('menuitemradio', { name: 'Français', exact: true }).click();
-		await expect(page.locator('html')).toHaveAttribute('lang', 'fr');
-		await expect(
-			page.locator('#side-nav').getByRole('link', { name: 'Tableau de bord' })
-		).toBeVisible();
-
-		// Reset to English via ?locale=en and verify it persists across reload.
+		// Reset to English via ?locale=en, then confirm a disabled catalogue is not reachable by
+		// link: ?locale=fr keeps English rather than serving a half-translated catalogue.
 		await page.goto('/?locale=en');
 		await expect(page.locator('html')).toHaveAttribute('lang', 'en');
+		await page.goto('/?locale=fr');
+		await expect(page.locator('html')).toHaveAttribute('lang', 'en');
+		await expect(page.locator('#side-nav').getByRole('link', { name: 'Dashboard' })).toBeVisible();
+
+		// The choice persists across reload.
 		await page.goto('/');
 		await expect(page.locator('html')).toHaveAttribute('lang', 'en');
 		await expect(page.locator('#side-nav').getByRole('link', { name: 'Dashboard' })).toBeVisible();

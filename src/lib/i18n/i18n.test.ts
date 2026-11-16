@@ -4,8 +4,10 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import {
 	DEFAULT_LOCALE,
+	ENABLED_LOCALES,
 	LOCALE_METADATA,
 	SUPPORTED_LOCALES,
+	isEnabledLocale,
 	isSupportedLocale,
 	matchAcceptLanguage,
 	matchSupportedLocale,
@@ -80,6 +82,34 @@ describe('i18n locales and types', () => {
 		expect(DEFAULT_LOCALE).toBe('en');
 	});
 
+	it('enables a subset of the supported locales while the rest are still translating', () => {
+		// A catalogue can exist and be validated without being offered: Half-translated copy reads
+		// worse than English, so languages ship one at a time (docs/dev/TRANSLATIONS.md).
+		expect(ENABLED_LOCALES).toEqual(['en', 'de']);
+		for (const locale of ENABLED_LOCALES) {
+			expect(SUPPORTED_LOCALES).toContain(locale);
+			expect(isEnabledLocale(locale)).toBe(true);
+			expect(isSupportedLocale(locale)).toBe(true);
+		}
+		expect(isEnabledLocale('fr')).toBe(false);
+		expect(isSupportedLocale('fr')).toBe(true);
+		expect(isEnabledLocale(null)).toBe(false);
+	});
+
+	it('never resolves to a locale that is not enabled', () => {
+		// A stale cs_locale=fr cookie, an old app_settings row, or a French browser header all
+		// fall through to the next source instead of serving a half-translated catalogue.
+		expect(resolveLocale({ query: 'fr' })).toBe('en');
+		expect(resolveLocale({ cookie: 'es' })).toBe('en');
+		expect(resolveLocale({ stored: 'it' })).toBe('en');
+		expect(resolveLocale({ acceptLanguage: 'fr-FR,fr;q=0.9' })).toBe('en');
+		expect(resolveLocale({ displayLocale: 'es-AR' })).toBe('en');
+		// An enabled locale still wins, and a disabled query does not shadow a lower-priority one.
+		expect(resolveLocale({ query: 'de' })).toBe('de');
+		expect(resolveLocale({ query: 'fr', stored: 'de' })).toBe('de');
+		expect(resolveLocale({ acceptLanguage: 'fr;q=0.9, de;q=0.8' })).toBe('de');
+	});
+
 	it('validates supported locales with isSupportedLocale', () => {
 		expect(isSupportedLocale('en')).toBe(true);
 		expect(isSupportedLocale('de')).toBe(true);
@@ -124,36 +154,38 @@ describe('i18n locales and types', () => {
 	});
 
 	it('resolves locale across the full priority hierarchy', () => {
+		// Enabled locales only: `de` is the one translated target, so the ordering is proved with
+		// it against English rather than with a catalogue that is still being translated.
 		// 1. Query wins over cookie and stored
 		expect(
 			resolveLocale({
-				query: 'it',
-				cookie: 'fr',
-				stored: 'de',
-				displayLocale: 'es-ES',
-				acceptLanguage: 'de-DE'
+				query: 'de',
+				cookie: 'en',
+				stored: 'en',
+				displayLocale: 'en-GB',
+				acceptLanguage: 'en-US'
 			})
-		).toBe('it');
+		).toBe('de');
 
 		// 2. Cookie wins over stored
 		expect(
 			resolveLocale({
 				query: null,
-				cookie: 'fr',
+				cookie: 'en',
 				stored: 'de',
-				displayLocale: 'es-ES',
+				displayLocale: 'en-GB',
 				acceptLanguage: 'de-DE'
 			})
-		).toBe('fr');
+		).toBe('en');
 
-		// 3. Explicit stored 'de' wins over Accept-Language and displayLocale when query and cookie are unset
+		// 3. Explicit stored 'de' wins over Accept-Language when query and cookie are unset
 		expect(
 			resolveLocale({
 				query: null,
 				cookie: null,
 				stored: 'de',
-				displayLocale: 'es-ES',
-				acceptLanguage: 'fr-FR,fr;q=0.9'
+				displayLocale: 'en-GB',
+				acceptLanguage: 'en-AU'
 			})
 		).toBe('de');
 
@@ -163,21 +195,21 @@ describe('i18n locales and types', () => {
 				query: null,
 				cookie: null,
 				stored: null,
-				displayLocale: 'es-AR',
-				acceptLanguage: 'de-DE'
+				displayLocale: 'en-GB',
+				acceptLanguage: 'de-AT,de;q=0.9'
 			})
 		).toBe('de');
 
-		// 5. displayLocale wins when Accept-Language is unsupported or unset
+		// 5. displayLocale wins when Accept-Language is unsupported
 		expect(
 			resolveLocale({
 				query: 'invalid',
 				cookie: undefined,
 				stored: '',
-				displayLocale: 'es-AR',
+				displayLocale: 'de-CH',
 				acceptLanguage: 'zh-CN, ja;q=0.9'
 			})
-		).toBe('es');
+		).toBe('de');
 
 		// 6. Fallback to DEFAULT_LOCALE ('en') when all sources are unset or unsupported
 		expect(resolveLocale({})).toBe('en');

@@ -3,13 +3,14 @@
  * Pre-translate the Crowdin catalogue with Gemini, rotating models as quotas run out.
  *
  * Crowdin's AI pre-translate spends roughly one Gemini request per batch of strings, and the AI
- * Studio free tier meters requests per day. Critically, RPD is per model, not per project: the
- * Flash tier gets ~20 requests/day each, and the Flash Lite tier ~500 each. A single model
- * therefore stalls after a few hundred strings, but switching the Crowdin prompt to another model
- * gets a completely fresh allowance.
+ * Studio free tier meters requests per day. Critically, RPD is per model, not per project, and the
+ * full Flash tier gets ~20 requests/day each. A single model therefore stalls after a few hundred
+ * strings, but switching the Crowdin prompt to another model gets a completely fresh allowance.
  *
  * So this script walks the rotation in order, staying on one model until it stops adding strings,
- * then moving to the next. See docs/dev/TRANSLATIONS.md for the full quota story and
+ * then moving to the next. Every entry is a full Flash model: the Flash Lite tier has a far larger
+ * allowance but produces weaker translations, and the catalogue's ICU syntax, placeholders, and
+ * `maxLength` caps punish that. See docs/dev/TRANSLATIONS.md for the full quota story and
  * scripts/crowdinTopup.mjs for the unit-tested decisions.
  *
  * Every pass asks Crowdin to pre-translate only what is still untranslated, so runs are idempotent

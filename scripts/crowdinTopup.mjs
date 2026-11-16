@@ -7,24 +7,29 @@
  */
 
 /**
- * Ordered best-intelligence-first: Flash tier first (better translations, ~20 RPD each), then
- * Flash Lite last (~500 RPD each). Every id must be one the prompt's AI provider offers — list
- * them with GET /users/{userId}/ai/providers/{providerId}/models. Aliases such as
- * gemini-flash-latest are left out: they share a quota with the model they point to, as do the
- * Gemini 4 frontier models (carbon/argon), which are Pro-class and unlikely to have a free tier.
+ * Ordered best-intelligence-first, full Flash tier only.
+ *
+ * The Flash Lite tier and gemini-2.5-flash used to sit at the end of this list because they carry
+ * a much larger free daily allowance (~500 requests/day against ~20). They also produce weaker
+ * translations: the catalogue is short UI strings carrying ICU plural syntax, `{placeholders}`,
+ * glossary terms, and hard `maxLength` caps, which is exactly where a small model drifts. Now that
+ * languages are switched on one at a time, the newest full Flash models comfortably cover a day's
+ * work, so quality wins over raw throughput.
+ *
+ * Every id must be one the prompt's AI provider offers — list them with
+ * GET /users/{userId}/ai/providers/{providerId}/models. Aliases such as `gemini-flash-latest` are
+ * left out: they share a quota with the model they point to, as do the Gemini 4 frontier models
+ * (carbon/argon), which are Pro-class and unlikely to have a free tier. Retired ids cost a wasted
+ * pass, so remove them rather than leaving them as a fallback.
  *
  * @type {string[]}
  */
 export const DEFAULT_MODELS = [
 	'gemini-4-hydrogen',
 	'gemini-3.8-flash',
-	'gemini-3.7-flash',
 	'gemini-3.6-flash',
-	'gemini-3-flash-preview',
-	'gemini-2.5-flash',
-	'gemini-3.5-flash-lite',
-	'gemini-3.1-flash-lite',
-	'gemini-2.5-flash-lite'
+	'gemini-3.5-flash',
+	'gemini-3-flash-preview'
 ];
 
 /**
