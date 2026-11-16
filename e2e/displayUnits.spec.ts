@@ -48,7 +48,7 @@ test('Settings applies date format and unit presets across pages', async ({ page
 		).run(ROUTE_EXTERNAL_IDS[0], routeId);
 		db.prepare(
 			`INSERT INTO weather_days (lat_key, lon_key, day, temp_max_c, temp_min_c, precip_mm, wind_max_kmh, weather_code, status, fetched_at)
-				VALUES (12, 34, '2026-10-29', 38, 10, 0, 60, 0, 'ok', '2026-10-28')`
+				VALUES (12, 34, '2026-10-29', 38, 10, 12.7, 60, 0, 'ok', '2026-10-28')`
 		).run();
 
 		await page.goto('/settings');
@@ -106,13 +106,21 @@ test('Settings applies date format and unit presets across pages', async ({ page
 		await expect(weatherCard).toContainText('100°F');
 		await expectAxeClean(page, { include: [weatherCard, recent] });
 
-		// The logbook day filter and weather chips follow the same choices.
+		// The logbook day filter, weather chips, and the cached detail column follow the same
+		// choices; detail readings keep their stored precision instead of rounding (#490).
+		await page.setViewportSize({ width: 1440, height: 1000 });
 		await page.goto('/logbook?day=2026-10-29');
 		await expect(page.getByText('10/29/2026').first()).toBeVisible();
-		await expect(page.locator('tbody')).toContainText('Review units hot');
-		await expect(page.getByRole('list', { name: 'Weather on the day' }).first()).toContainText(
+		const logRow = page.locator('tbody tr').filter({ hasText: 'Review units hot' });
+		await expect(logRow).toContainText('Review units hot');
+		await expect(logRow.getByRole('list', { name: 'Weather on the day' })).toContainText(
 			'Hot 100°F'
 		);
+		const detail = logRow.locator('.weather-cell .weather-values');
+		await expect(detail).toContainText('High 100.4°F');
+		await expect(detail).toContainText('Low 50°F');
+		await expect(detail).toContainText('Rain 0.50 in');
+		await expectAxeClean(page, { include: [logRow] });
 
 		// Badge wording converts while ids and thresholds stay metric.
 		await page.goto('/badges');
