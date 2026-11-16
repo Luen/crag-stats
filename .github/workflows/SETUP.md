@@ -56,7 +56,7 @@ How the internationalisation architecture works is documented in [`docs/dev/TRAN
    - **Name**: `Crag Stats pre-translate`
    - **Action**: Select `Pre-translate`
    - **AI Provider**: Google Gemini
-   - **AI Model**: Select any current Gemini model (e.g., `gemini-2.5-flash` or `gemini-3-flash-preview`); `scripts/crowdin_topup.py` will rotate this automatically.
+   - **AI Model**: Select any current Gemini model (e.g., `gemini-2.5-flash` or `gemini-3-flash-preview`); `scripts/crowdin_topup.mjs` will rotate this automatically.
    - **Prompt Message**:
      ```text
      You are translating climbing analytics software (Crag Stats) for rock climbers and mountaineers.

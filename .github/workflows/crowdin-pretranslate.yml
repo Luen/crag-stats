@@ -6,7 +6,7 @@ name: Crowdin AI Pre-translate
 # Studio free tier meters requests per day *per model*: the Flash tier gets ~20 requests/day
 # each, Flash Lite ~500 each. One model therefore stalls after a few hundred strings.
 #
-# scripts/crowdin_topup.py works around that by rotating models — when a pass adds
+# scripts/crowdin_topup.mjs works around that by rotating models — when a pass adds
 # nothing, it switches the Crowdin prompt to the next model, which has its own untouched
 # allowance. That is enough to translate the whole catalogue in a single run; the daily schedule
 # then exists only to pick up strings added since, and is a cheap no-op when there are none.
@@ -53,13 +53,13 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-node@v7
         with:
-          python-version: '3.14'
+          node-version: 26
 
       - name: Top up AI pre-translation
         id: topup
-        run: python scripts/crowdin_topup.py
+        run: node scripts/crowdin_topup.mjs
         env:
           CROWDIN_PROJECT_ID: ${{ secrets.CROWDIN_PROJECT_ID }}
           CROWDIN_PERSONAL_TOKEN: ${{ secrets.CROWDIN_PERSONAL_TOKEN }}

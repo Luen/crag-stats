@@ -22,7 +22,7 @@ GitHub Repository (main)
 - **Runtime engine:** Lightweight, reactive Svelte 5 context (`#lib/i18n`) with full ICU pluralisation support (`{count, plural, one {# ascent} other {# ascents}}`). Zero runtime third-party npm dependencies.
 - **Automated Workflows:**
   - `.github/workflows/crowdin-sync.yml`: Path-filtered to `en.json` to avoid bot loops. Pushes source changes on `main` and opens a PR back with community translations.
-  - `.github/workflows/crowdin-pretranslate.yml`: Daily automated top-up with Google Gemini AI (`scripts/crowdin_topup.py`).
+  - `.github/workflows/crowdin-pretranslate.yml`: Daily automated top-up with Google Gemini AI (`scripts/crowdin_topup.mjs`).
 
 ---
 
@@ -59,8 +59,9 @@ Google AI Studio's free tier meters requests **per day per model** (Requests Per
 
 - **Flash tier (`gemini-3.8-flash`, `gemini-3.6-flash`, `gemini-2.5-flash`):** ~20 requests/day each, capped at ~5 requests/minute.
 - **Flash Lite tier (`gemini-3.5-flash-lite`, `gemini-3.1-flash-lite`, `gemini-2.5-flash-lite`):** ~500 requests/day each.
+- **Gemini 4 Hydrogen:** the strongest free-tier model available to the prompt, so the rotation starts there.
 
-`scripts/crowdin_topup.py` leverages this by rotating through models sequentially. When a pass adds 0 strings after waiting out the 65-second rate window, it patches the prompt to the next model via `PATCH /users/{userId}/ai/prompts/{promptId}` with `[{"op": "replace", "path": "/aiModelId", "value": model}]`.
+`scripts/crowdin_topup.mjs` leverages this by rotating through models sequentially. When a pass adds 0 strings after waiting out the 65-second rate window, it patches the prompt to the next model via `PATCH /users/{userId}/ai/prompts/{promptId}` with `[{"op": "replace", "path": "/aiModelId", "value": model}]`.
 
 ### Pre-Translation Prompt (`Crag Stats pre-translate`)
 
