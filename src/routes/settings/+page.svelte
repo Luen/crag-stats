@@ -181,7 +181,7 @@
 
 <section class="panel head">
 	<h1>{i18n.t('pages.settings.titleSettings')}</h1>
-	<p>Sync, display preferences, search visibility, imports and local data control.</p>
+	<p>{i18n.t('pages.settings.hintIntro')}</p>
 </section>
 
 {#if form?.routeHistoryWaiting}
@@ -243,12 +243,12 @@
 	<article class="panel">
 		<h2>{i18n.t('pages.settings.titleDisplayVisibility')}</h2>
 		<p class="hint">
-			Dates and measurements are display-only: stored data, badge thresholds, and filters stay
-			metric. <a href="/docs/display-settings">How display settings work</a>
+			{i18n.t('pages.settings.hintDatesAreDisplayOnly')}
+			<a href="/docs/display-settings">{i18n.t('pages.settings.linkHowDisplaySettingsWork')}</a>
 		</p>
 		<form method="POST" action="?/savePreferences" class="prefs">
 			<label class="field">
-				<span>Language</span>
+				<span>{i18n.t('pages.settings.labelLanguage')}</span>
 				<select name="locale">
 					<option value="" selected={!data.siteLocale}
 						>{i18n.t('pages.settings.optionAutoBrowserLanguage')}</option
@@ -260,22 +260,21 @@
 					{/each}
 				</select>
 				<small class="hint">
-					Default interface language. Set to Auto to match each visitor's browser language. Visitors
-					can also change their preferred language via the header.
+					{i18n.t('pages.settings.hintLanguage')}
 				</small>
 			</label>
 			<label class="field">
-				<span>Route grades</span>
+				<span>{i18n.t('pages.settings.labelRouteGrades')}</span>
 				<select name="routeSystem">
 					{#each ROUTE_GRADE_SYSTEMS as opt (opt.id)}
 						<option value={opt.id} selected={data.gradeSystems.route === opt.id}>{opt.label}</option
 						>
 					{/each}
 				</select>
-				<small class="hint">Sport, trad, top rope, and other roped climbing.</small>
+				<small class="hint">{i18n.t('pages.settings.hintRouteGrades')}</small>
 			</label>
 			<label class="field">
-				<span>Boulder grades</span>
+				<span>{i18n.t('pages.settings.labelBoulderGrades')}</span>
 				<select name="boulderSystem">
 					{#each BOULDER_GRADE_SYSTEMS as opt (opt.id)}
 						<option value={opt.id} selected={data.gradeSystems.boulder === opt.id}
@@ -283,20 +282,18 @@
 						>
 					{/each}
 				</select>
-				<small class="hint"
-					>Boulders and V-graded highballs. Both choices apply for every visitor.</small
-				>
+				<small class="hint">{i18n.t('pages.settings.hintBoulderGrades')}</small>
 			</label>
 			<label class="field">
-				<span>Date format</span>
+				<span>{i18n.t('pages.settings.labelDateFormat')}</span>
 				<select name="dateFormat">
 					{#each DATE_FORMAT_OPTIONS as opt (opt.id)}
 						<option value={opt.id} selected={data.dateFormat === opt.id}>{opt.label}</option>
 					{/each}
 				</select>
-				<small class="hint">Controls date layout across the logbook, heatmaps, and charts.</small>
+				<small class="hint">{i18n.t('pages.settings.hintDateFormat')}</small>
 			</label>
-			<h3 class="subheading">Units of measurement</h3>
+			<h3 class="subheading">{i18n.t('pages.settings.labelUnitsOfMeasurement')}</h3>
 			<div class="presets-row">
 				<span>Presets:</span>
 				{#each UNIT_PRESETS as preset (preset.id)}
@@ -311,49 +308,49 @@
 				{/each}
 			</div>
 			<label class="field">
-				<span>Height</span>
+				<span>{i18n.t('pages.settings.labelHeight')}</span>
 				<select name="unitHeight" bind:value={unitHeight}>
 					{#each HEIGHT_UNIT_OPTIONS as opt (opt.id)}
 						<option value={opt.id}>{opt.label}</option>
 					{/each}
 				</select>
-				<small class="hint">Route, pitch, and crag heights.</small>
+				<small class="hint">{i18n.t('pages.settings.hintHeight')}</small>
 			</label>
 			<label class="field">
-				<span>Distance</span>
+				<span>{i18n.t('pages.settings.labelDistance')}</span>
 				<select name="unitDistance" bind:value={unitDistance}>
 					{#each DISTANCE_UNIT_OPTIONS as opt (opt.id)}
 						<option value={opt.id}>{opt.label}</option>
 					{/each}
 				</select>
-				<small class="hint">Cumulative vertical distance climbed.</small>
+				<small class="hint">{i18n.t('pages.settings.hintDistance')}</small>
 			</label>
 			<label class="field">
-				<span>Temperature</span>
+				<span>{i18n.t('pages.settings.labelTemperature')}</span>
 				<select name="unitTemperature" bind:value={unitTemperature}>
 					{#each TEMPERATURE_UNIT_OPTIONS as opt (opt.id)}
 						<option value={opt.id}>{opt.label}</option>
 					{/each}
 				</select>
-				<small class="hint">Daily highs, lows, and weather conditions.</small>
+				<small class="hint">{i18n.t('pages.settings.hintTemperature')}</small>
 			</label>
 			<label class="field">
-				<span>Wind speed</span>
+				<span>{i18n.t('pages.settings.labelWindSpeed')}</span>
 				<select name="unitWind" bind:value={unitWind}>
 					{#each WIND_UNIT_OPTIONS as opt (opt.id)}
 						<option value={opt.id}>{opt.label}</option>
 					{/each}
 				</select>
-				<small class="hint">Windy and calm day weather filters.</small>
+				<small class="hint">{i18n.t('pages.settings.hintWindSpeed')}</small>
 			</label>
 			<label class="field">
-				<span>Precipitation</span>
+				<span>{i18n.t('pages.settings.labelPrecipitation')}</span>
 				<select name="unitPrecipitation" bind:value={unitPrecipitation}>
 					{#each PRECIPITATION_UNIT_OPTIONS as opt (opt.id)}
 						<option value={opt.id}>{opt.label}</option>
 					{/each}
 				</select>
-				<small class="hint">Rainfall and weather chips.</small>
+				<small class="hint">{i18n.t('pages.settings.hintPrecipitation')}</small>
 			</label>
 			<label class="check">
 				<input
@@ -394,10 +391,9 @@
 			</label>
 			<fieldset class="field tick-config">
 				<legend class="field-title">
-					<span>Counted tick types</span>
+					<span>{i18n.t('pages.settings.titleCountedTickTypes')}</span>
 					<small class="hint">
-						Configure which tick types count in dashboard and page totals, projects, and goals. The
-						logbook always lists every logged ascent.
+						{i18n.t('pages.settings.hintCountedTickTypes')}
 					</small>
 				</legend>
 				<div
