@@ -37,10 +37,12 @@
 		"map": "Mapa & sectores",
 		"milestones": "Hitos",
 		"partners": "Compañeros",
+		"primaryNav": "Navegación principal",
 		"projects": "Proyectos",
 		"rewind": "Retrospectiva",
 		"settings": "Ajustes",
 		"share": "Compartir",
+		"shareEmbed": "Compartir e insertar",
 		"signIn": "Iniciar sesión",
 		"signOut": "Cerrar sesión",
 		"toggleSidebar": "Alternar barra lateral",
@@ -180,5 +182,10 @@
 	"crowdin": {
 		"contribute": "Traducir Crag Stats en Crowdin",
 		"contributeDesc": "Ayuda a que las analíticas de escalada estén disponibles para escaladores de todo el mundo colaborando en Crowdin."
+	},
+	"footer": {
+		"selfHosted": "Análisis de escalada autoalojado",
+		"dataFrom": "Datos de",
+		"offlineCopy": "Copia sin conexión"
 	}
 }

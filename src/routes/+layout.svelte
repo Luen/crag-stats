@@ -2,12 +2,18 @@
 	import favicon from '#lib/assets/favicon.svg';
 	import '../app.css';
 	import { onMount, tick } from 'svelte';
-	import { afterNavigate } from '$app/navigation';
+	import { afterNavigate, invalidateAll } from '$app/navigation';
 	import { page } from '$app/state';
 	import { formatNumber } from '#lib/dates';
 	import { startOfflineRefresh } from '#lib/offlineClient';
 	import NavIcon, { type NavIconName } from '#lib/components/NavIcon.svelte';
-	import { initI18n, LOCALE_METADATA, matchSupportedLocale, SUPPORTED_LOCALES } from '#lib/i18n';
+	import {
+		initI18n,
+		LOCALE_METADATA,
+		matchSupportedLocale,
+		SUPPORTED_LOCALES,
+		type SupportedLocale
+	} from '#lib/i18n';
 	import type { LayoutProps } from './$types';
 
 	let { children, data }: LayoutProps = $props();
@@ -34,7 +40,20 @@
 	function cycleLocale() {
 		const next = nextLocale;
 		lastDataLocale = next;
+		void refreshLocale(next);
+	}
+
+	/**
+	 * Persist the choice in `cs_locale`, translate client-rendered copy immediately, then re-run
+	 * the loaders so server-rendered copy (titles, story, docs) follows the same language.
+	 */
+	async function refreshLocale(next: SupportedLocale) {
 		i18n.setLocale(next);
+		try {
+			await invalidateAll();
+		} catch {
+			// Offline: client-rendered copy already switched; the rest catches up on reconnect.
+		}
 	}
 
 	$effect(() => {
@@ -102,10 +121,16 @@
 	// Theme: follow the OS ("system") unless the user picked light/dark (#43).
 	type Theme = 'system' | 'light' | 'dark';
 	const THEME_ORDER: Theme[] = ['system', 'light', 'dark'];
-	const THEME_LABEL: Record<Theme, string> = { system: 'System', light: 'Light', dark: 'Dark' };
 	const THEME_ICON: Record<Theme, NavIconName> = { system: 'monitor', light: 'sun', dark: 'moon' };
+	const THEME_LABEL_KEY = {
+		system: 'theme.system',
+		light: 'theme.light',
+		dark: 'theme.dark'
+	} as const;
 	let theme = $state<Theme>('system');
 	const nextTheme = $derived(THEME_ORDER[(THEME_ORDER.indexOf(theme) + 1) % THEME_ORDER.length]);
+	const themeLabel = $derived(t(THEME_LABEL_KEY[theme]));
+	const nextThemeLabel = $derived(t(THEME_LABEL_KEY[nextTheme]));
 
 	let toggleBtn: HTMLButtonElement | undefined = $state();
 	let sideEl: HTMLElement | undefined = $state();
@@ -268,7 +293,12 @@
 			<span class="wordmark">Crag <span>Stats</span></span>
 		</a>
 		<div class="top-actions">
-			<a class="icon-btn" href="/share" title="Share & embed" aria-label="Share & embed">
+			<a
+				class="icon-btn"
+				href="/share"
+				title={t('nav.shareEmbed')}
+				aria-label={t('nav.shareEmbed')}
+			>
 				<NavIcon name="share" />
 			</a>
 			<a
@@ -285,20 +315,23 @@
 				type="button"
 				class="icon-btn"
 				onclick={cycleTheme}
-				title="Theme: {THEME_LABEL[theme]} — switch to {THEME_LABEL[nextTheme]}"
-				aria-label="Theme: {THEME_LABEL[theme]}. Switch to {THEME_LABEL[nextTheme]}"
+				title={t('theme.themeLabel', { current: themeLabel, next: nextThemeLabel })}
+				aria-label={t('theme.themeLabel', { current: themeLabel, next: nextThemeLabel })}
 			>
 				<NavIcon name={THEME_ICON[theme]} />
 			</button>
 			<button
 				type="button"
-				class="icon-btn"
+				class="icon-btn locale"
 				onclick={cycleLocale}
-				title="Language: {LOCALE_METADATA[currentLocale].nativeName} — switch to {LOCALE_METADATA[
-					nextLocale
-				].nativeName}"
-				aria-label="Language: {LOCALE_METADATA[currentLocale]
-					.nativeName}. Switch to {LOCALE_METADATA[nextLocale].nativeName}"
+				title={t('language.switchLabel', {
+					current: LOCALE_METADATA[currentLocale].nativeName,
+					next: LOCALE_METADATA[nextLocale].nativeName
+				})}
+				aria-label={t('language.switchLabel', {
+					current: LOCALE_METADATA[currentLocale].nativeName,
+					next: LOCALE_METADATA[nextLocale].nativeName
+				})}
 			>
 				<NavIcon name="globe" />
 			</button>
@@ -337,7 +370,7 @@
 		}}
 		class="side"
 		id="side-nav"
-		aria-label="Primary"
+		aria-label={t('nav.primaryNav')}
 		inert={isMobile && !drawerOpen}
 	>
 		<nav>
@@ -394,11 +427,11 @@
 		</main>
 		<footer>
 			<p>
-				Self-hosted climbing analytics · AGPL-3.0 · Data from
+				{t('footer.selfHosted')} · AGPL-3.0 · {t('footer.dataFrom')}
 				<a href="https://www.thecrag.com/" target="_blank" rel="noreferrer">theCrag</a>
 				·
 				<a href={data.githubUrl} target="_blank" rel="noreferrer">{data.appVersion}</a>
-				· <a href="/offline" data-sveltekit-reload>Offline copy</a>
+				· <a href="/offline" data-sveltekit-reload>{t('footer.offlineCopy')}</a>
 			</p>
 		</footer>
 	</div>

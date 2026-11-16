@@ -37,10 +37,12 @@
 		"map": "Karte & Sektoren",
 		"milestones": "Meilensteine",
 		"partners": "Kletterpartner",
+		"primaryNav": "Hauptnavigation",
 		"projects": "Projekte",
 		"rewind": "Rückblick",
 		"settings": "Einstellungen",
 		"share": "Teilen",
+		"shareEmbed": "Teilen & einbetten",
 		"signIn": "Anmelden",
 		"signOut": "Abmelden",
 		"toggleSidebar": "Seitenleiste umschalten",
@@ -180,5 +182,10 @@
 	"crowdin": {
 		"contribute": "Crag Stats auf Crowdin übersetzen",
 		"contributeDesc": "Hilf mit, Kletterstatistiken für Kletterer weltweit zugänglich zu machen, indem du Übersetzungen auf Crowdin beiträgst."
+	},
+	"footer": {
+		"selfHosted": "Selbst gehostete Kletteranalyse",
+		"dataFrom": "Daten von",
+		"offlineCopy": "Offline-Kopie"
 	}
 }

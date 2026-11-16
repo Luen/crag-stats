@@ -1,3 +1,6 @@
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import {
 	DEFAULT_LOCALE,
@@ -10,7 +13,6 @@ import {
 	resolveLocale
 } from './types';
 import { formatMessage, LOCALES } from './format';
-import { t } from './context.svelte';
 
 function flattenLeaves(obj: Record<string, unknown>, prefix = ''): Record<string, string> {
 	const out: Record<string, string> = {};
@@ -23,6 +25,52 @@ function flattenLeaves(obj: Record<string, unknown>, prefix = ''): Record<string
 		}
 	}
 	return out;
+}
+
+const SRC_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
+
+function walkSourceFiles(dir: string, out: string[] = []): string[] {
+	for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+		const full = path.join(dir, entry.name);
+		if (entry.isDirectory()) {
+			// Catalogues are data, and tests assert their own literal keys.
+			if (entry.name === 'i18n' || entry.name === 'node_modules') continue;
+			walkSourceFiles(full, out);
+		} else if (/\.(svelte|ts)$/.test(entry.name) && !/\.(test|spec)\.ts$/.test(entry.name)) {
+			out.push(full);
+		}
+	}
+	return out;
+}
+
+/**
+ * Collect dotted string literals whose first segment is a catalogue section. This catches
+ * `t('nav.map')`, `i18n.t('ticks.send')`, and key tables such as `BAND_KEYS` without
+ * requiring a specific call shape.
+ */
+function collectReferencedKeys(): Map<string, Set<string>> {
+	const en = LOCALES.en as Record<string, unknown>;
+	const sections = new Set(Object.keys(en));
+	const pattern = /['"`]([A-Za-z][A-Za-z0-9_]*(?:\.[A-Za-z0-9_]+)+)['"`]/g;
+	const referenced = new Map<string, Set<string>>();
+	for (const file of walkSourceFiles(SRC_DIR)) {
+		const source = fs.readFileSync(file, 'utf8');
+		for (const match of source.matchAll(pattern)) {
+			const key = match[1];
+			if (!sections.has(key.split('.')[0])) continue;
+			const files = referenced.get(key) ?? new Set<string>();
+			files.add(path.relative(SRC_DIR, file));
+			referenced.set(key, files);
+		}
+	}
+	return referenced;
+}
+
+function lookupKey(catalog: Record<string, unknown>, key: string): unknown {
+	return key.split('.').reduce<unknown>((node, part) => {
+		if (!node || typeof node !== 'object') return undefined;
+		return (node as Record<string, unknown>)[part];
+	}, catalog);
 }
 
 describe('i18n locales and types', () => {
@@ -53,7 +101,7 @@ describe('i18n locales and types', () => {
 		expect(matchSupportedLocale(undefined)).toBeNull();
 	});
 
-	it('normalizes locale tags from headers or environment variables', () => {
+	it('normalises locale tags from headers or environment variables', () => {
 		expect(normalizeLocale('en')).toBe('en');
 		expect(normalizeLocale('en-AU')).toBe('en');
 		expect(normalizeLocale('de-DE')).toBe('de');
@@ -153,6 +201,19 @@ describe('i18n locales and types', () => {
 			expect(Object.keys(localeLeaves).sort(), `keys in ${locale}`).toEqual(enKeys);
 		}
 	});
+
+	it('only references catalogue keys that exist in English', () => {
+		const referenced = collectReferencedKeys();
+		expect(referenced.size).toBeGreaterThan(0);
+
+		const missing: string[] = [];
+		for (const [key, files] of referenced) {
+			if (typeof lookupKey(LOCALES.en, key) !== 'string') {
+				missing.push(`${key} (${[...files].sort().join(', ')})`);
+			}
+		}
+		expect(missing, 'keys used in source but missing from en.json').toEqual([]);
+	});
 });
 
 describe('formatMessage', () => {
@@ -234,14 +295,6 @@ describe('formatMessage', () => {
 });
 
 describe('i18n context and reactivity', () => {
-	it('formats messages with standalone t function', () => {
-		expect(t('nav.dashboard', undefined, 'de')).toBe('Übersicht');
-		expect(t('nav.dashboard', undefined, 'fr')).toBe('Tableau de bord');
-		expect(t('nav.dashboard', undefined, 'es')).toBe('Panel principal');
-		expect(t('nav.dashboard', undefined, 'it')).toBe('Dashboard');
-		expect(t('nav.dashboard', undefined, 'en')).toBe('Dashboard');
-	});
-
 	it('handles plural exact matches and numbers gracefully', () => {
 		expect(formatMessage('en', 'projects.sessions', { count: 1 })).toBe('1 session');
 		expect(formatMessage('en', 'projects.sessions', { count: 12 })).toBe('12 sessions');

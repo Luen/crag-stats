@@ -55,21 +55,22 @@ function finish(res: Response, path: string): Response {
 export const handle: Handle = async ({ event, resolve }) => {
 	const path = event.url.pathname;
 
+	// Resolve the interface language once per request so the shell (`%lang%`), the root layout
+	// and every server-rendered string agree. Settings, not the URL, own the site default.
+	event.locals.locale =
+		path === '/offline'
+			? DEFAULT_LOCALE
+			: resolveLocale({
+					query: event.url.searchParams.get('locale'),
+					cookie: event.cookies.get('cs_locale'),
+					stored: getAppSetting('locale'),
+					displayLocale: env('DISPLAY_LOCALE'),
+					acceptLanguage: event.request.headers.get('accept-language')
+				});
+
 	const resolveWithLang = () =>
 		resolve(event, {
-			transformPageChunk: ({ html }) => {
-				const locale =
-					path === '/offline'
-						? DEFAULT_LOCALE
-						: resolveLocale({
-								query: event.url.searchParams.get('locale'),
-								cookie: event.cookies.get('cs_locale'),
-								stored: getAppSetting('locale'),
-								displayLocale: env('DISPLAY_LOCALE'),
-								acceptLanguage: event.request.headers.get('accept-language')
-							});
-				return html.replace('%lang%', locale);
-			}
+			transformPageChunk: ({ html }) => html.replace('%lang%', event.locals.locale)
 		});
 
 	// Public, data-free offline shell; no logbook or authenticated layout data is embedded.

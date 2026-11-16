@@ -77,7 +77,7 @@ const BAND_KEYS: Record<GradeBandId, string> = {
 };
 
 /**
- * Return localized name of the grade band (or canonical English when unset).
+ * Return localised name of the grade band (or canonical English when unset).
  * Grade numbers/letters themselves are never translated.
  */
 export function getBandName(

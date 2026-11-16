@@ -62,17 +62,19 @@ test.describe('app shell', () => {
 
 	test('language switcher cycles languages and updates document language', async ({ page }) => {
 		await page.goto('/');
-		const btn = page.getByRole('button', { name: /^Language:/ });
-		await expect(btn).toHaveAccessibleName(/Language: English/);
+		// The button names itself in the active language, so select it by class.
+		const btn = page.locator('.top-actions .locale');
+		await expect(btn).toHaveAccessibleName('Language: English. Switch to Deutsch');
 		await expect(page.locator('html')).toHaveAttribute('lang', 'en');
 
-		// Switch to German
+		// Switch to German: shell copy and the server-rendered <html lang> follow immediately.
 		await btn.click();
-		await expect(btn).toHaveAccessibleName(/Language: Deutsch/);
+		await expect(btn).toHaveAccessibleName('Sprache: Deutsch. Zu Français wechseln');
 		await expect(page.locator('html')).toHaveAttribute('lang', 'de');
 		await expect(page).toHaveTitle('Crag Stats');
 		await expect(page.locator('#side-nav').getByRole('link', { name: 'Übersicht' })).toBeVisible();
 		await expect(page.getByText('Sportklettern').first()).toBeVisible();
+		await expect(page.getByRole('contentinfo')).toContainText('Selbst gehostete Kletteranalyse');
 
 		// Reload preserves language via cookie
 		await page.reload();
@@ -81,7 +83,7 @@ test.describe('app shell', () => {
 		await expect(page.locator('#side-nav').getByRole('link', { name: 'Übersicht' })).toBeVisible();
 
 		// Switch to French
-		await page.getByRole('button', { name: /^Language:/ }).click();
+		await page.locator('.top-actions .locale').click();
 		await expect(page.locator('html')).toHaveAttribute('lang', 'fr');
 		await expect(
 			page.locator('#side-nav').getByRole('link', { name: 'Tableau de bord' })

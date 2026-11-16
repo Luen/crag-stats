@@ -5,11 +5,11 @@ import { sql } from 'drizzle-orm';
 import { db, ensureSchema } from '#lib/server/db';
 import { ascents } from '#lib/server/db/schema';
 import { countActiveProjects } from '#lib/server/projects';
-import { getAppSetting, getDateFormat, getDisplayUnits, getSearchIndexing } from '#lib/server/appSettings';
+import { getDateFormat, getDisplayUnits, getSearchIndexing } from '#lib/server/appSettings';
 import { isAuthEnabled, authScope } from '#lib/server/auth';
 import { resolveDateDisplay } from '#lib/dates';
 import { DEFAULT_DISPLAY_UNITS } from '#lib/units';
-import { DEFAULT_LOCALE, matchSupportedLocale, resolveLocale } from '#lib/i18n';
+import { intlLocale, matchSupportedLocale } from '#lib/i18n';
 import { env } from '#lib/server/env';
 import { isNoindexPath } from '#lib/server/seo';
 import type { LayoutServerLoad } from './$types';
@@ -41,7 +41,7 @@ function navCounts(): { ascents: number; projects: number } {
 	}
 }
 
-export const load: LayoutServerLoad = async ({ locals, url, cookies, request }) => {
+export const load: LayoutServerLoad = async ({ locals, url, cookies }) => {
 	if (url.pathname === '/offline')
 		return {
 			appVersion: readAppVersion(),
@@ -54,10 +54,11 @@ export const load: LayoutServerLoad = async ({ locals, url, cookies, request }) 
 			navCounts: null,
 			dateDisplay: resolveDateDisplay('en-AU', 'UTC'),
 			displayUnits: DEFAULT_DISPLAY_UNITS,
-			locale: DEFAULT_LOCALE,
+			locale: locals.locale,
 			noindex: true
 		};
 
+	// `?locale=` is an explicit override, so remember it for later page views.
 	const queryLocale = matchSupportedLocale(url.searchParams.get('locale'));
 	if (queryLocale) {
 		cookies.set('cs_locale', queryLocale, {
@@ -67,14 +68,6 @@ export const load: LayoutServerLoad = async ({ locals, url, cookies, request }) 
 			httpOnly: false
 		});
 	}
-
-	const resolvedLocale = resolveLocale({
-		query: queryLocale,
-		cookie: cookies.get('cs_locale'),
-		stored: getAppSetting('locale'),
-		displayLocale: env('DISPLAY_LOCALE'),
-		acceptLanguage: request.headers.get('accept-language')
-	});
 
 	const authOn = isAuthEnabled();
 	const scope = authScope();
@@ -90,9 +83,14 @@ export const load: LayoutServerLoad = async ({ locals, url, cookies, request }) 
 		authScope: scope,
 		showSettings,
 		navCounts: gated ? null : navCounts(),
-		dateDisplay: resolveDateDisplay(env('DISPLAY_LOCALE'), env('TZ'), getDateFormat()),
+		dateDisplay: resolveDateDisplay(
+			// Intl formatting follows the interface language unless DISPLAY_LOCALE pins it.
+			env('DISPLAY_LOCALE') || intlLocale(locals.locale),
+			env('TZ'),
+			getDateFormat()
+		),
 		displayUnits: getDisplayUnits(),
-		locale: resolvedLocale,
+		locale: locals.locale,
 		noindex: isNoindexPath(url.pathname) || !getSearchIndexing().allowed
 	};
 };

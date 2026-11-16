@@ -53,12 +53,14 @@ import {
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ cookies }) => {
+	// Only a real language is a default; anything else (Auto, a stale tag) falls back to Auto.
+	const storedLocale = getAppSetting('locale');
 	return {
 		serverNow: Date.now(),
 		sync: getSyncStatus(),
 		hasApiKey: hasTheCragApiKey(),
 		syncConfiguration: getTheCragSyncConfiguration(),
-		siteLocale: getAppSetting('locale') ?? '',
+		siteLocale: isSupportedLocale(storedLocale) ? storedLocale : '',
 		supportedLocales: SUPPORTED_LOCALES,
 		localeMetadata: LOCALE_METADATA,
 		gradeSystems: getDisplayGradeSystems(),

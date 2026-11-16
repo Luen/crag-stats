@@ -37,10 +37,12 @@
 		"map": "Map & sectors",
 		"milestones": "Milestones",
 		"partners": "Partners",
+		"primaryNav": "Primary navigation",
 		"projects": "Projects",
 		"rewind": "Rewind",
 		"settings": "Settings",
 		"share": "Share",
+		"shareEmbed": "Share & embed",
 		"signIn": "Sign in",
 		"signOut": "Log out",
 		"toggleSidebar": "Toggle sidebar",
@@ -108,7 +110,7 @@
 		"searchIndexing": "Show in search engines",
 		"searchIndexingDesc": "Allow search engines to index public pages.",
 		"dashboardLayout": "Dashboard cards",
-		"dashboardLayoutDesc": "Drag or reorder cards to customize your dashboard layout.",
+		"dashboardLayoutDesc": "Drag or reorder cards to customise your dashboard layout.",
 		"saveDashboardLayout": "Save layout",
 		"resetDashboardLayout": "Reset layout",
 		"syncTitle": "theCrag logbook sync",
@@ -147,7 +149,7 @@
 		"firstAscents": "First ascents",
 		"partners": "Partners",
 		"karma": "Karma",
-		"customizeDashboard": "Customize dashboard"
+		"customizeDashboard": "Customise dashboard"
 	},
 	"logbook": {
 		"title": "Logbook",
@@ -180,5 +182,10 @@
 	"crowdin": {
 		"contribute": "Translate Crag Stats on Crowdin",
 		"contributeDesc": "Help make climbing analytics accessible to climbers worldwide by contributing translations on Crowdin."
+	},
+	"footer": {
+		"selfHosted": "Self-hosted climbing analytics",
+		"dataFrom": "Data from",
+		"offlineCopy": "Offline copy"
 	}
 }

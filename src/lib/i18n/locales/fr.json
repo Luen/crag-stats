@@ -37,10 +37,12 @@
 		"map": "Carte & secteurs",
 		"milestones": "Jalons",
 		"partners": "Partenaires",
+		"primaryNav": "Navigation principale",
 		"projects": "Projets",
 		"rewind": "Rétrospective",
 		"settings": "Paramètres",
 		"share": "Partager",
+		"shareEmbed": "Partager et intégrer",
 		"signIn": "Se connecter",
 		"signOut": "Se déconnecter",
 		"toggleSidebar": "Basculer la barre latérale",
@@ -180,5 +182,10 @@
 	"crowdin": {
 		"contribute": "Traduire Crag Stats sur Crowdin",
 		"contributeDesc": "Aidez à rendre les statistiques d'escalade accessibles aux grimpeurs du monde entier en contribuant aux traductions sur Crowdin."
+	},
+	"footer": {
+		"selfHosted": "Analyse d'escalade auto-hébergée",
+		"dataFrom": "Données de",
+		"offlineCopy": "Copie hors ligne"
 	}
 }

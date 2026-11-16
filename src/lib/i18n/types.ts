@@ -42,6 +42,14 @@ export function normalizeLocale(tag: string | null | undefined): SupportedLocale
 }
 
 /**
+ * BCP 47 tag for `Intl` number/date formatting. The `en` catalogue is Australian English, so
+ * English keeps the `en-AU` conventions the app always used instead of `en-US`.
+ */
+export function intlLocale(locale: SupportedLocale): string {
+	return locale === 'en' ? 'en-AU' : locale;
+}
+
+/**
  * Match an HTTP Accept-Language header (e.g. 'nl-NL, de-DE;q=0.9, en;q=0.8')
  * to the highest-priority supported locale, or return null if none match.
  */
@@ -85,9 +93,10 @@ export type ResolveLocaleInput = {
 
 /**
  * Resolve active locale using the priority order:
- * 1. ?locale= query param (one-off preview / explicit link override)
- * 2. cs_locale cookie (visitor preference)
- * 3. app_settings.locale (stored DB default when explicitly chosen by admin)
+ *
+ * 1. `?locale=` query param (explicit link override; the layout remembers it in the cookie)
+ * 2. `cs_locale` cookie (visitor preference)
+ * 3. `app_settings.locale` (stored DB default when explicitly chosen by admin)
  * 4. Accept-Language HTTP header (browser autodetection when stored is unset or auto)
  * 5. DISPLAY_LOCALE environment variable (fallback if browser language is unsupported)
  * 6. DEFAULT_LOCALE ('en')

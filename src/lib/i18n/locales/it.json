@@ -37,10 +37,12 @@
 		"map": "Mappa & settori",
 		"milestones": "Traguardi",
 		"partners": "Compagni",
+		"primaryNav": "Navigazione principale",
 		"projects": "Progetti",
 		"rewind": "Riavvolgi",
 		"settings": "Impostazioni",
 		"share": "Condividi",
+		"shareEmbed": "Condividi e incorpora",
 		"signIn": "Accedi",
 		"signOut": "Esci",
 		"toggleSidebar": "Attiva/disattiva barra",
@@ -90,7 +92,7 @@
 		"other": "Altro"
 	},
 	"styles": {
-		"sport": "Falesia",
+		"sport": "Sportiva",
 		"trad": "Tradizionale",
 		"boulder": "Boulder",
 		"toprope": "Moulinette",
@@ -180,5 +182,10 @@
 	"crowdin": {
 		"contribute": "Traduci Crag Stats su Crowdin",
 		"contributeDesc": "Aiuta a rendere l'analisi dell'arrampicata accessibile a tutti i climber del mondo contribuendo su Crowdin."
+	},
+	"footer": {
+		"selfHosted": "Analisi dell'arrampicata self-hosted",
+		"dataFrom": "Dati da",
+		"offlineCopy": "Copia offline"
 	}
 }

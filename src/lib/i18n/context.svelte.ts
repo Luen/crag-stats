@@ -66,15 +66,3 @@ export function useI18n(): I18nContext {
 		t: (key: MessageKey, params?: MessageParams) => formatMessage(DEFAULT_LOCALE, key, params)
 	};
 }
-
-/**
- * Convenience translation helper.
- * If `locale` is passed, formats for that locale.
- * Otherwise uses active context from `useI18n()`.
- */
-export function t(key: MessageKey, params?: MessageParams, locale?: SupportedLocale): string {
-	if (locale && isSupportedLocale(locale)) {
-		return formatMessage(locale, key, params);
-	}
-	return useI18n().t(key, params);
-}
