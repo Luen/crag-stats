@@ -44,6 +44,14 @@
 		mixed: 'cards.weatherConditions.labelMixed'
 	} as const;
 
+	const SHARE_LABEL_KEYS: Record<string, string> = {
+		perfect: 'cards.weatherConditions.sharePerfect',
+		rain: 'cards.weatherConditions.shareRain',
+		snow: 'cards.weatherConditions.shareSnow',
+		freeze: 'cards.weatherConditions.shareFreeze',
+		heat: 'cards.weatherConditions.shareHeat'
+	};
+
 	const withoutNote = $derived(
 		data.withoutWeather > 0
 			? ` ${i18n.t('cards.weatherConditions.noteWithoutUsableWeather', {
@@ -150,7 +158,11 @@
 			{#each data.shares as share (share.key)}
 				<li>
 					<a href={`/logbook?weather=${share.key}`}>
-						<span class="label">{share.label}</span>
+						<span class="label"
+							>{SHARE_LABEL_KEYS[share.key]
+								? i18n.t(SHARE_LABEL_KEYS[share.key])
+								: share.label}</span
+						>
 						<span class="value">
 							{formatNumber(share.pct, dateDisplay)}% · {formatNumber(share.days, dateDisplay)}
 							{i18n.t('cards.weatherConditions.unitDays', { count: share.days })}

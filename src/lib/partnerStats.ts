@@ -4,6 +4,7 @@
  */
 
 import { calendarDay as validDay } from '#lib/calendarDay';
+import { DEFAULT_LOCALE, formatMessage, type SupportedLocale } from '#lib/i18n';
 
 export type PartnerMetric = 'ascents' | 'sessions' | 'areas';
 
@@ -34,13 +35,20 @@ export function splitPartners(raw: string | null | undefined): string[] {
 }
 
 /** Readable attribution for one ascent, never an inferred day/route companion list. */
-export function ascentPartners(raw: string | null | undefined): string | null {
+export function ascentPartners(
+	raw: string | null | undefined,
+	locale: SupportedLocale = DEFAULT_LOCALE
+): string | null {
 	const names = new Map<string, string>();
 	for (const name of splitPartners(raw)) {
 		const key = name.toLowerCase();
 		if (!names.has(key)) names.set(key, name);
 	}
-	return names.size ? `Partners on this ascent: ${[...names.values()].join(', ')}` : null;
+	return names.size
+		? formatMessage(locale, 'cards.partnerLeaderboard.partnersOnThisAscent', {
+				names: [...names.values()].join(', ')
+			})
+		: null;
 }
 
 /** Crag grain for “areas” — skip blank / Unknown so they don’t dominate the ranking. */
@@ -75,10 +83,16 @@ export function topPartnersPerMetric<T extends PartnerStat>(partners: T[], limit
 	return partners.filter((p) => keep.has(p));
 }
 
-export function partnerMetricLabel(metric: PartnerMetric, count: number): string {
-	if (metric === 'sessions') return count === 1 ? 'session' : 'sessions';
-	if (metric === 'areas') return count === 1 ? 'area' : 'areas';
-	return count === 1 ? 'ascent' : 'ascents';
+export function partnerMetricLabel(
+	metric: PartnerMetric,
+	count: number,
+	locale: SupportedLocale = DEFAULT_LOCALE
+): string {
+	if (metric === 'sessions')
+		return formatMessage(locale, 'cards.partnerLeaderboard.unitSessions', { count });
+	if (metric === 'areas')
+		return formatMessage(locale, 'cards.partnerLeaderboard.unitAreas', { count });
+	return formatMessage(locale, 'cards.partnerLeaderboard.unitAscents', { count });
 }
 
 export function buildPartnerStats(rows: PartnerAscentInput[]): PartnerStat[] {

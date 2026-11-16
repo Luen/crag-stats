@@ -12,9 +12,12 @@
 		boulder: 'styles.boulder',
 		'top rope': 'styles.toprope',
 		toprope: 'styles.toprope',
+		'deep water solo': 'styles.deepWaterSolo',
 		alpine: 'styles.alpine',
 		aid: 'styles.aid',
-		unknown: 'styles.unknown'
+		solo: 'styles.solo',
+		unknown: 'styles.unknown',
+		other: 'styles.other'
 	};
 
 	const rawLabel = $derived((style || '').trim() || 'Unknown');

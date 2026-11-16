@@ -29,7 +29,7 @@ on:
   workflow_dispatch:
     inputs:
       languages:
-        description: 'Comma-separated target languages (blank = all configured)'
+        description: 'Comma-separated target languages (blank = de)'
         type: string
         default: ''
       download:
@@ -73,7 +73,9 @@ jobs:
 
       - name: Pull translations and open a PR
         # Nothing new means nothing to download — skip rather than open an empty PR.
-        if: steps.topup.outputs.added != '0' && inputs.download != false
+        # On schedule runs `inputs.download` is null, and `null != false` coerces both to 0 in
+        # GitHub Actions expressions, so check `event_name` before reading `inputs.download`.
+        if: steps.topup.outputs.added != '0' && (github.event_name != 'workflow_dispatch' || inputs.download)
         uses: crowdin/github-action@v2
         with:
           config: crowdin.yml

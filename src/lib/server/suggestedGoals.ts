@@ -7,6 +7,7 @@ import {
 	type SuggestedGoalAscent,
 	type SuggestedGradeGoal
 } from '#lib/suggestedGoals';
+import { DEFAULT_LOCALE, type SupportedLocale } from '#lib/i18n';
 import { getDisplayGradeSystems, getTickTypeSettings } from './appSettings';
 import { isTickCountedInProjectsAndGoals } from '#lib/tickSettings';
 import { db, ensureSchema } from './db';
@@ -37,11 +38,14 @@ function loadSuggestedAscentRows(): SuggestedGoalAscent[] {
 }
 
 /** Live suggestions for the Goals page. */
-export function listSuggestedGradeGoals(): SuggestedGradeGoal[] {
+export function listSuggestedGradeGoals(
+	locale: SupportedLocale = DEFAULT_LOCALE
+): SuggestedGradeGoal[] {
 	ensureSchema();
-	const goals = listGoals();
+	const goals = listGoals(locale);
 	return buildSuggestedOutdoorGradeGoals(loadSuggestedAscentRows(), {
 		gradeSystems: getDisplayGradeSystems(),
-		activeGoals: goals
+		activeGoals: goals,
+		locale
 	});
 }

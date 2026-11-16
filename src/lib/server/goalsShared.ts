@@ -1,4 +1,5 @@
 import { detectAndParseGrade } from '#lib/grades';
+import { DEFAULT_LOCALE, formatMessage, type SupportedLocale } from '#lib/i18n';
 import { sessionReadiness } from '#lib/readiness';
 import type { VenueScope } from './venue';
 
@@ -30,6 +31,7 @@ const GRADE_READY_ATTEMPT_FILL = 20;
 
 export type GradeGoalReadinessInput = {
 	formatScore?: (score: number) => string;
+	locale?: SupportedLocale;
 	target: number;
 	bestSend: number | null;
 	/** Distinct routes with a send in the N−1 score bucket. */
@@ -56,16 +58,16 @@ export type GradeGoalReadiness = {
 	attemptCount: number;
 };
 
-export function kindLabel(kind: string): string {
+export function kindLabel(kind: string, locale: SupportedLocale = DEFAULT_LOCALE): string {
 	switch (kind) {
 		case 'height_year':
-			return 'Height / year';
+			return formatMessage(locale, 'pages.goals.optionHeightYear');
 		case 'days_month':
-			return 'Days this month';
+			return formatMessage(locale, 'pages.goals.optionDaysThisMonth');
 		case 'grade':
-			return 'Grade this year';
+			return formatMessage(locale, 'pages.goals.optionGradeThisYear');
 		default:
-			return 'Custom';
+			return formatMessage(locale, 'pages.goals.optionCustom');
 	}
 }
 
@@ -108,14 +110,14 @@ function horizonFromGap(target: number, bestSend: number | null): GradeGoalHoriz
 	return 'long-haul';
 }
 
-function horizonLabel(horizon: GradeGoalHorizon): string {
+function horizonLabel(horizon: GradeGoalHorizon, locale: SupportedLocale = DEFAULT_LOCALE): string {
 	switch (horizon) {
 		case 'short-term':
-			return 'Short-term';
+			return formatMessage(locale, 'cards.projectReadiness.horizonShortTerm');
 		case 'medium':
-			return 'Medium';
+			return formatMessage(locale, 'cards.projectReadiness.horizonMedium');
 		case 'long-haul':
-			return 'Long-haul';
+			return formatMessage(locale, 'cards.projectReadiness.horizonLongHaul');
 	}
 }
 
@@ -126,6 +128,7 @@ function horizonLabel(horizon: GradeGoalHorizon): string {
  */
 export function gradeGoalReadiness(input: GradeGoalReadinessInput): GradeGoalReadiness {
 	const formatGoalScore = input.formatScore ?? defaultGoalScore;
+	const locale = input.locale ?? DEFAULT_LOCALE;
 	const target = input.target;
 	const n1Bucket = target - 1;
 	const n2Bucket = target - 2;
@@ -155,28 +158,49 @@ export function gradeGoalReadiness(input: GradeGoalReadinessInput): GradeGoalRea
 	});
 
 	if (!Number.isFinite(target)) {
-		return empty(0, 'No grade target', null);
+		return empty(0, formatMessage(locale, 'pages.goals.readinessNoGradeTarget'), null);
 	}
 
 	const horizon = horizonFromGap(target, best);
 	const attemptNeed = GRADE_GOAL_ATTEMPT_NEED[horizon];
 	const pyramidBits = [
-		`${n1Count}/${GRADE_GOAL_N1_NEED} at ${formatGoalScore(n1Bucket)}`,
-		`${n2Count}/${GRADE_GOAL_N2_NEED} at ${formatGoalScore(n2Bucket)}`,
-		horizonLabel(horizon)
+		formatMessage(locale, 'pages.goals.readinessPyramidStep', {
+			count: n1Count,
+			need: GRADE_GOAL_N1_NEED,
+			grade: formatGoalScore(n1Bucket)
+		}),
+		formatMessage(locale, 'pages.goals.readinessPyramidStep', {
+			count: n2Count,
+			need: GRADE_GOAL_N2_NEED,
+			grade: formatGoalScore(n2Bucket)
+		}),
+		horizonLabel(horizon, locale)
 	];
 	if (attemptCount > 0) {
 		pyramidBits.push(
-			`${attemptCount} attempt${attemptCount === 1 ? '' : 's'} on ≥${formatGoalScore(n1Bucket)}`
+			formatMessage(locale, 'pages.goals.readinessAttemptsNearTarget', {
+				count: attemptCount,
+				grade: formatGoalScore(n1Bucket)
+			})
 		);
 	}
 	if (sessionCount > 0)
 		pyramidBits.push(
-			`${sessionCount} qualifying sessions · +${Math.max(0, sessionCount - 1)} readiness points before the 99% cap`
+			formatMessage(locale, 'pages.goals.readinessQualifyingSessions', {
+				sessions: sessionCount,
+				points: Math.max(0, sessionCount - 1)
+			})
 		);
 
 	if (best != null && best >= target) {
-		return empty(100, `Best send ${formatGoalScore(best)} · done`, 'short-term', attemptNeed);
+		return empty(
+			100,
+			formatMessage(locale, 'pages.goals.readinessBestSendDone', {
+				grade: formatGoalScore(best)
+			}),
+			'short-term',
+			attemptNeed
+		);
 	}
 
 	let pct = 0;
@@ -191,6 +215,11 @@ export function gradeGoalReadiness(input: GradeGoalReadinessInput): GradeGoalRea
 	pct += GRADE_READY_ATTEMPT_FILL * Math.min(attemptCount / attemptNeed, 1);
 	pct = sessionReadiness(pct, sessionCount);
 
-	const bestBit = best != null ? `Best send ${formatGoalScore(best)}` : 'No qualifying send yet';
+	const bestBit =
+		best != null
+			? formatMessage(locale, 'pages.goals.readinessBestSend', {
+					grade: formatGoalScore(best)
+				})
+			: formatMessage(locale, 'pages.goals.readinessNoQualifyingSend');
 	return empty(pct, `${bestBit} · ${pyramidBits.join(' · ')}`, horizon, attemptNeed);
 }

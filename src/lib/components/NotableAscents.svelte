@@ -60,8 +60,8 @@
 				>{formatCalendarDate(row.hardestDate, dateDisplay)}</time
 			>
 		{/if}
-		{#if ascentPartners(row.hardestPartners)}
-			<span class="companions">{ascentPartners(row.hardestPartners)}</span>
+		{#if ascentPartners(row.hardestPartners, i18n.locale)}
+			<span class="companions">{ascentPartners(row.hardestPartners, i18n.locale)}</span>
 		{/if}
 	</div>
 {/snippet}

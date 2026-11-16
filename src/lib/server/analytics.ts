@@ -36,6 +36,7 @@ import {
 } from '#lib/grades';
 import type { DashboardStats, NotableRow, StylePyramid } from '#lib/types/dashboard';
 import { parseTagsJson, routeHasExactTag } from '#lib/routeTags';
+import { DEFAULT_LOCALE, type SupportedLocale } from '#lib/i18n';
 import { rockTypeBlurb, rockTypeInfo } from '#lib/rockTypes';
 import { resolveTheCragAvatar } from '#lib/thecragAvatar';
 import { theCragAscentUrl } from '#lib/thecragUrls';
@@ -289,10 +290,12 @@ export function getDashboardStats(
 		dateDisplay?: DateDisplay;
 		tickSettings?: TickTypeSettings;
 		displayUnits?: DisplayUnits;
+		locale?: SupportedLocale;
 	}
 ): DashboardStats {
 	const pyramidMode = opts?.pyramidMode ?? 'all';
 	const displayUnits = opts?.displayUnits ?? DEFAULT_DISPLAY_UNITS;
+	const locale = opts?.locale ?? DEFAULT_LOCALE;
 	ensureSchema();
 	// Cheap: fill missing ascent logbook links without a full re-parse
 	db.run(
@@ -816,11 +819,12 @@ export function getDashboardStats(
 	});
 	const extraRows = analyticsRows.map(toExtraRow);
 	const activityExtraRows = activityRows.map(toExtraRow);
-	const weatherConditions = buildWeatherConditionsView(extraRows, weatherByKey);
+	const weatherConditions = buildWeatherConditionsView(extraRows, weatherByKey, locale);
 	const weatherPerformance = buildWeatherPerformanceView(
 		extraRows,
 		weatherByKey,
-		displayUnits.temperature
+		displayUnits.temperature,
+		locale
 	);
 	const rockPerformance = buildRockPerformanceView(extraRows);
 	const monthly = buildMonthlyStats(extraRows);
@@ -829,7 +833,8 @@ export function getDashboardStats(
 		extraRows,
 		gradeSystems,
 		displayUnits,
-		opts?.dateDisplay ?? DEFAULT_DATE_DISPLAY
+		opts?.dateDisplay ?? DEFAULT_DATE_DISPLAY,
+		locale
 	);
 	const developerImpact = buildRouteDeveloperImpact();
 	// Badges describe what you did, so property/attempt ticks kept for projects and goals
@@ -837,14 +842,15 @@ export function getDashboardStats(
 	// badges fall behind the streaks card. `hide` still removes a tick type completely.
 	const badges = buildBadges(
 		activityExtraRows,
-		setterBadgeHits(undefined, undefined, opts?.dateDisplay),
-		communityAscentBadgeHits(developerImpact, opts?.dateDisplay),
+		setterBadgeHits(undefined, undefined, opts?.dateDisplay, locale),
+		communityAscentBadgeHits(developerImpact, opts?.dateDisplay, locale),
 		{
 			firstImport: getFirstImport(),
 			gradeSystems,
 			dateDisplay: opts?.dateDisplay,
 			displayUnits,
-			weatherByKey
+			weatherByKey,
+			locale
 		}
 	);
 	const trainingLoad = buildTrainingLoadView(activityExtraRows);
@@ -874,7 +880,7 @@ export function getDashboardStats(
 		})
 	);
 	const rockAgg = buildRockTypeStats(extraRows);
-	const rockBlurb = rockTypeBlurb(rockAgg.dominant, rockAgg.dominantPct);
+	const rockBlurb = rockTypeBlurb(rockAgg.dominant, rockAgg.dominantPct, locale);
 	const karma = buildKarmaStats();
 	const bestMonths = buildBestMonthsView(
 		analyticsRows.map((a) => ({
@@ -1058,7 +1064,8 @@ export function getDashboardStats(
 		weather: weatherConditions,
 		firstAscentCount: faMarks.size,
 		dateDisplay: opts?.dateDisplay,
-		displayUnits
+		displayUnits,
+		locale
 	});
 
 	return {
@@ -1218,7 +1225,7 @@ export function getDashboardStats(
 			types: rockAgg.types,
 			dominant: rockAgg.dominant,
 			dominantPct: rockAgg.dominantPct,
-			info: rockTypeInfo(rockAgg.dominant)
+			info: rockTypeInfo(rockAgg.dominant, locale)
 		},
 		pyramidMode,
 		routePopularity,
@@ -1237,7 +1244,9 @@ export function getDashboardStats(
 				cragName: r.cragName,
 				gearStyle: r.gearStyle,
 				ascentGearStyle: r.ascentGearStyle
-			}))
+			})),
+			undefined,
+			locale
 		)
 	};
 }

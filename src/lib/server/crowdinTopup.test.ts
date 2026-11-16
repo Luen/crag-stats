@@ -10,6 +10,7 @@ import {
 	parseBudgetSeconds,
 	parseList,
 	passDecision,
+	runExitCode,
 	sortLanguagesByProgress
 } from '../../../scripts/crowdinTopup.mjs';
 
@@ -177,5 +178,17 @@ describe('githubOutputLine', () => {
 	it('writes the single line the workflow reads', () => {
 		expect(githubOutputLine(0)).toBe('added=0\n');
 		expect(githubOutputLine(42)).toBe('added=42\n');
+	});
+});
+
+describe('runExitCode', () => {
+	it('exits 0 when quota is spent after finished passes or when strings were added', () => {
+		expect(runExitCode({ totalAdded: 0, failedPasses: 0, finishedPasses: 10 })).toBe(0);
+		expect(runExitCode({ totalAdded: 25, failedPasses: 1, finishedPasses: 3 })).toBe(0);
+		expect(runExitCode({ totalAdded: 0, failedPasses: 0, finishedPasses: 0 })).toBe(0);
+	});
+
+	it('exits 1 when every attempted pass failed or was cancelled without adding strings', () => {
+		expect(runExitCode({ totalAdded: 0, failedPasses: 5, finishedPasses: 0 })).toBe(1);
 	});
 });

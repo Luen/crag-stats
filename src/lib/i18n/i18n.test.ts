@@ -16,6 +16,34 @@ import {
 } from './types';
 import { formatMessage, LOCALES } from './format';
 import { parseRichText } from '../richText';
+import { DEFAULT_DASH_CARDS } from '../dashboardLayout';
+import { DATE_FORMAT_OPTIONS } from '../dates';
+import { eddingtonTiles } from '../eddingtonDisplay';
+import {
+	BOULDER_GRADE_SYSTEMS,
+	ROUTE_GRADE_SYSTEMS,
+	describeDisplaySystems
+} from '../grades/format';
+import { ascentPartners, partnerMetricLabel } from '../partnerStats';
+import { rockTypeBlurb, rockTypeInfo } from '../rockTypes';
+import { REPEAT_PERSONA_LABELS, REPEAT_PERSONA_LABEL_KEYS } from '../routeRepeats';
+import {
+	DISTANCE_UNIT_OPTIONS,
+	HEIGHT_UNIT_OPTIONS,
+	PRECIPITATION_UNIT_OPTIONS,
+	TEMPERATURE_UNIT_OPTIONS,
+	UNIT_PRESETS,
+	WIND_UNIT_OPTIONS
+} from '../units';
+import {
+	WEEKDAY_FULL,
+	WEEKDAY_FULL_KEYS,
+	WEEKDAY_LABELS,
+	WEEKDAY_LABEL_KEYS,
+	WEEKDAY_ORDER
+} from '../weekdayStats';
+import { BADGE_CATALOG, buildBadges } from '../server/badges';
+import { kindLabel } from '../server/goalsShared';
 
 function flattenLeaves(obj: Record<string, unknown>, prefix = ''): Record<string, string> {
 	const out: Record<string, string> = {};
@@ -374,5 +402,87 @@ describe('i18n context and reactivity', () => {
 		expect(formatMessage('en', 'common.days', { count: 12 })).toBe('12 days');
 		// Target catalogues may lag English; a missing key falls back to the English string.
 		expect(formatMessage('de', 'common.days', { count: 5 })).toBe('5 days');
+	});
+});
+
+describe('module-level copy and label tables (#495)', () => {
+	it('derives all .ts option and label tables from en.json', () => {
+		for (const card of DEFAULT_DASH_CARDS) {
+			expect(card.label).toBe(formatMessage('en', card.labelKey));
+		}
+		for (const preset of UNIT_PRESETS) {
+			expect(preset.label).toBe(formatMessage('en', preset.labelKey));
+			expect(preset.description).toBe(formatMessage('en', preset.descriptionKey));
+		}
+		for (const opt of [
+			...HEIGHT_UNIT_OPTIONS,
+			...DISTANCE_UNIT_OPTIONS,
+			...TEMPERATURE_UNIT_OPTIONS,
+			...WIND_UNIT_OPTIONS,
+			...PRECIPITATION_UNIT_OPTIONS,
+			...ROUTE_GRADE_SYSTEMS,
+			...BOULDER_GRADE_SYSTEMS
+		]) {
+			expect(opt.label).toBe(formatMessage('en', opt.labelKey));
+		}
+		for (const opt of DATE_FORMAT_OPTIONS) {
+			expect(opt.label).toBe(formatMessage('en', opt.labelKey));
+			expect(opt.hint).toBe(formatMessage('en', opt.hintKey));
+		}
+		for (const day of WEEKDAY_ORDER) {
+			expect(WEEKDAY_LABELS[day]).toBe(formatMessage('en', WEEKDAY_LABEL_KEYS[day]));
+			expect(WEEKDAY_FULL[day]).toBe(formatMessage('en', WEEKDAY_FULL_KEYS[day]));
+		}
+		for (const persona of ['explorer', 'repeater', 'mixed'] as const) {
+			expect(REPEAT_PERSONA_LABELS[persona]).toBe(
+				formatMessage('en', REPEAT_PERSONA_LABEL_KEYS[persona])
+			);
+		}
+		for (const badge of BADGE_CATALOG) {
+			expect(badge.title).not.toMatch(/^cards\.badges\./);
+			expect(badge.hint).not.toMatch(/^cards\.badges\./);
+		}
+	});
+
+	it('formats builder and helper strings with the active SupportedLocale', () => {
+		expect(describeDisplaySystems({ route: 'french', boulder: 'font' }, 'en')).toBe(
+			'French routes, Fontainebleau (Font) boulders'
+		);
+
+		const deBadges = buildBadges([], {}, [], { locale: 'de' });
+		expect(deBadges.locked.find((b) => b.id === 'band_intermediate')?.title).toBe(
+			'Fortgeschritten'
+		);
+
+		const sampleEdd = {
+			sends: { value: 12, next: 13, needed: 1, haveForNext: 12 },
+			vertical: { value: 3, next: 4, needed: 1, haveForNext: 3 },
+			routeGrade: { value: 20, next: 21, needed: 1, haveForNext: 20 },
+			boulderGrade: { value: 4, next: 5, needed: 2, haveForNext: 3 },
+			verticalUnitM: 100
+		};
+		const edd = eddingtonTiles(sampleEdd, 'en');
+		expect(edd[0]?.label).toBe('Send days');
+		expect(edd[0]?.means).toBe('12 days with 12+ sends');
+		expect(edd[0]?.next).toBe('1 more day of 13+ sends for 13');
+
+		const eddDe = eddingtonTiles(
+			{
+				...sampleEdd,
+				sends: { value: 1234, next: 1235, needed: 1, haveForNext: 1234 }
+			},
+			'de'
+		);
+		expect(eddDe[0]?.means).toBe('1.234 days with 1234+ sends');
+
+		expect(rockTypeInfo('granite', 'en')?.name).toBe('Granite');
+		expect(rockTypeBlurb('granite', 64, 'en')).toContain(
+			'I climb mostly on Granite (64% of tagged ascents).'
+		);
+
+		expect(kindLabel('height_year', 'en')).toBe('Height climbed this year');
+		expect(ascentPartners('@alice, @bob', 'en')).toBe('Partners on this ascent: alice, bob');
+		expect(partnerMetricLabel('sessions', 1, 'en')).toBe('session');
+		expect(partnerMetricLabel('sessions', 3, 'en')).toBe('sessions');
 	});
 });

@@ -42,6 +42,7 @@ import {
 	parseBudgetSeconds,
 	parseList,
 	passDecision,
+	runExitCode,
 	sortLanguagesByProgress
 } from './crowdinTopup.mjs';
 
@@ -287,11 +288,10 @@ async function runPass(language, promptId, fileId, deadline) {
 	for (;;) {
 		if (Date.now() > deadline) return 'timeout';
 		await sleep(POLL_INTERVAL_MS);
-		const { status, body } = await call(
-			'GET',
-			`/projects/${PROJECT}/pre-translations/${identifier}`
+		const body = requireOk(
+			await call('GET', `/projects/${PROJECT}/pre-translations/${identifier}`),
+			'pre-translation status check'
 		);
-		if (status !== 200) return `status-unavailable(${status})`;
 		const state = body?.data?.status;
 		if (state === 'finished' || state === 'failed' || state === 'canceled') return state;
 	}
@@ -331,7 +331,10 @@ async function translateLanguage(language, promptId, fileId, rotation, state, de
 			return { added, stopped: 'budget' };
 		}
 		if (outcome === 'failed' || outcome === 'canceled') {
+			state.failedPasses += 1;
 			warn(`${language}: Crowdin reported the pass ${outcome}`);
+		} else {
+			state.finishedPasses += 1;
 		}
 
 		const decision = passDecision({ added: gained, retried: state.retried });
@@ -361,7 +364,7 @@ async function translateLanguage(language, promptId, fileId, rotation, state, de
 	return { added, stopped: null };
 }
 
-async function finish(totalAdded, languages) {
+async function finish(totalAdded, languages, state = { failedPasses: 0, finishedPasses: 0 }) {
 	log(`\n+${totalAdded} strings this run`);
 	try {
 		await refreshProgress();
@@ -376,7 +379,11 @@ async function finish(totalAdded, languages) {
 	if (process.env.GITHUB_OUTPUT) {
 		appendFileSync(process.env.GITHUB_OUTPUT, githubOutputLine(totalAdded), 'utf-8');
 	}
-	return 0;
+	return runExitCode({
+		totalAdded,
+		failedPasses: state.failedPasses,
+		finishedPasses: state.finishedPasses
+	});
 }
 
 async function main() {
@@ -409,13 +416,16 @@ async function main() {
 		uid,
 		modelIndex:
 			prompt.model === rotation[0] ? 0 : await switchToUsable(uid, prompt.id, rotation, 0),
-		retried: false
+		retried: false,
+		failedPasses: 0,
+		finishedPasses: 0
 	};
 	if (state.modelIndex >= rotation.length) {
 		log('Crowdin rejected every model in the rotation — stopping');
 		return finish(
 			0,
-			languages.map((l) => l.languageId)
+			languages.map((l) => l.languageId),
+			state
 		);
 	}
 	log(`starting on ${rotation[state.modelIndex]}`);
@@ -439,7 +449,8 @@ async function main() {
 
 	return finish(
 		totalAdded,
-		languages.map((l) => l.languageId)
+		languages.map((l) => l.languageId),
+		state
 	);
 }
 

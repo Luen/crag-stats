@@ -16,13 +16,13 @@ import type { Actions, PageServerLoad } from './$types';
 const NOT_OWNER = { ok: false, message: 'Log in to change goals' };
 
 export const load: PageServerLoad = async ({ locals }) => {
-	const goals = listGoals();
+	const goals = listGoals(locals.locale);
 	return {
 		canEdit: locals.authed,
 		goals,
 		active: goals.filter((g) => !g.completed),
 		achieved: goals.filter((g) => g.completed),
-		suggestions: listSuggestedGradeGoals()
+		suggestions: listSuggestedGradeGoals(locals.locale)
 	};
 };
 

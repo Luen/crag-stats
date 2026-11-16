@@ -1,4 +1,5 @@
 import { calendarDay } from '#lib/calendarDay';
+import { DEFAULT_LOCALE, formatMessage, type SupportedLocale } from '#lib/i18n';
 import { sessionReadiness } from '#lib/readiness';
 import { usesVScale } from '#lib/grades';
 import { climbStyleLabel } from '#lib/climbStyle';
@@ -68,14 +69,30 @@ function readiness(
 	target: ProjectTarget,
 	rows: ProjectProgressRow[],
 	own: ProjectProgressRow[],
-	day: string
+	day: string,
+	locale: SupportedLocale = DEFAULT_LOCALE
 ) {
 	const support = evidence(target, rows, day);
 	const sent = own.some((row) => row.isSend);
-	if (sent) return { pct: 100, support, horizon: 'Sent' };
-	if (!support) return { pct: null, support, horizon: 'Unknown grade' };
+	if (sent)
+		return {
+			pct: 100,
+			support,
+			horizon: formatMessage(locale, 'cards.projectReadiness.horizonSent')
+		};
+	if (!support)
+		return {
+			pct: null,
+			support,
+			horizon: formatMessage(locale, 'cards.projectReadiness.horizonUnknownGrade')
+		};
 	const gap = support.best == null ? Infinity : target.gradeScore! - support.best;
-	const horizon = gap <= 1 ? 'Short-term' : gap <= 2 ? 'Medium' : 'Long-haul';
+	const horizon =
+		gap <= 1
+			? formatMessage(locale, 'cards.projectReadiness.horizonShortTerm')
+			: gap <= 2
+				? formatMessage(locale, 'cards.projectReadiness.horizonMedium')
+				: formatMessage(locale, 'cards.projectReadiness.horizonLongHaul');
 	const effortNeed = gap <= 1 ? 15 : gap <= 2 ? 35 : 75;
 	const tries = summarizeRouteAscents(own).tryCount;
 	const base = gap <= 0 ? 60 : gap <= 1 ? 35 : gap <= 2 ? 10 : 0;
@@ -103,7 +120,8 @@ function range(values: number[]): [number, number] {
 export function projectProgress(
 	target: ProjectTarget,
 	allRows: ProjectProgressRow[],
-	today: string
+	today: string,
+	locale: SupportedLocale = DEFAULT_LOCALE
 ) {
 	const rows = allRows.filter((row) => {
 		const day = calendarDay(row.ascentDate);
@@ -111,7 +129,7 @@ export function projectProgress(
 	});
 	const own = rows.filter((row) => row.routeId === target.routeId);
 	const stats = summarizeRouteAscents(own);
-	const current = readiness(target, rows, own, today);
+	const current = readiness(target, rows, own, today, locale);
 	const days = [...new Set(own.map((row) => calendarDay(row.ascentDate)!))].sort();
 	const sessions = days.map((day) => {
 		const entries = own.filter((row) => calendarDay(row.ascentDate) === day);
@@ -122,7 +140,7 @@ export function projectProgress(
 			failedTries: summarizeRouteAscents(entries).tryCount,
 			sends: entries.filter((row) => row.isSend).length,
 			cumulativeTries: summarizeRouteAscents(cumulative).tryCount,
-			readiness: readiness(target, rows, cumulative, day).pct
+			readiness: readiness(target, rows, cumulative, day, locale).pct
 		};
 	});
 	const comparable = new Map<number, ProjectProgressRow[]>();

@@ -12,7 +12,10 @@
 	import { STYLE_COLORS } from '#lib/ticks';
 	import {
 		pickMostActive,
+		WEEKDAY_FULL_KEYS,
+		WEEKDAY_LABEL_KEYS,
 		WEEKDAY_STYLE_KEYS,
+		type WeekdayId,
 		type WeekdayMetric,
 		type WeekdayStatsView,
 		type WeekdayStyleKey
@@ -85,6 +88,8 @@
 
 	const slice = $derived((range === 'last12' ? data.last12Weeks : data.allTime)[style]);
 	const most = $derived(pickMostActive(slice.rows, metric));
+	const shortDay = (wd: WeekdayId) => i18n.t(WEEKDAY_LABEL_KEYS[wd]);
+	const fullDay = (wd: WeekdayId) => i18n.t(WEEKDAY_FULL_KEYS[wd]);
 	const total = $derived(metric === 'sessions' ? slice.totalSessions : slice.totalAscents);
 	const unitFor = (count: number) =>
 		i18n.t(
@@ -140,7 +145,7 @@
 		const active = slice.rows
 			.map((r) => ({
 				weekday: r.weekday,
-				label: r.label,
+				label: shortDay(r.weekday),
 				value: metric === 'sessions' ? r.sessions : r.ascents,
 				color: DAY_COLORS[r.weekday] ?? 'var(--accent)'
 			}))
@@ -278,7 +283,7 @@
 							style: styleLabel
 						}
 					)}
-					tokens={{ day: { kind: 'strong', text: most.label } }}
+					tokens={{ day: { kind: 'strong', text: fullDay(most.weekday) } }}
 				/>
 			</p>
 		{/if}
@@ -300,7 +305,9 @@
 				{/each}
 				<circle class="hole" {cx} {cy} r={innerR - 1} />
 				{#if most}
-					<text class="center-day" x={cx} y={cy - 6} style="fill: var(--ink)">{most.label}</text>
+					<text class="center-day" x={cx} y={cy - 6} style="fill: var(--ink)"
+						>{fullDay(most.weekday)}</text
+					>
 					<text class="center-meta" x={cx} y={cy + 14} style="fill: var(--ink-muted)"
 						>{formatNumber(most.value, dateDisplay)}
 						{unitFor(most.value)}</text
@@ -312,6 +319,7 @@
 				{#each slice.rows as row (row.weekday)}
 					{@const value = metric === 'sessions' ? row.sessions : row.ascents}
 					{@const pct = total > 0 ? Math.round((value / total) * 1000) / 10 : 0}
+					{@const dayLabel = shortDay(row.weekday)}
 					<li
 						class={{
 							zero: value === 0,
@@ -327,7 +335,7 @@
 									? 'cards.weekdayStats.titleDayValuePct'
 									: 'cards.weekdayStats.titleDayValue',
 								{
-									day: row.label,
+									day: dayLabel,
 									count: formatNumber(value, dateDisplay),
 									unit: unitFor(value),
 									percent: pct
@@ -339,7 +347,7 @@
 							onblur={() => (hoverWeekday = null)}
 						>
 							<i style:background={DAY_COLORS[row.weekday]}></i>
-							<span class="lab">{row.label}</span>
+							<span class="lab">{dayLabel}</span>
 							<span class="val"
 								>{formatNumber(value, dateDisplay)}{#if value > 0}
 									<span class="pct"> · {pct}%</span>{/if}</span
@@ -378,7 +386,7 @@
 						{@const value = metric === 'sessions' ? row.sessions : row.ascents}
 						{@const pct = total > 0 ? Math.round((value / total) * 1000) / 10 : 0}
 						<tr>
-							<th scope="row">{row.label}</th>
+							<th scope="row">{shortDay(row.weekday)}</th>
 							<td>{formatNumber(row.sessions, dateDisplay)}</td>
 							<td>{formatNumber(row.ascents, dateDisplay)}</td>
 							<td>{value > 0 ? `${pct}%` : '—'}</td>

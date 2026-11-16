@@ -231,7 +231,7 @@
 				.split('; ')
 				.find((c) => c.startsWith('cs_locale='))
 				?.slice('cs_locale='.length);
-			const saved = matchSupportedLocale(cookiePart);
+			const saved = matchSupportedLocale(cookiePart, ENABLED_LOCALES);
 			if (saved) i18n.syncLocale(saved);
 		}
 

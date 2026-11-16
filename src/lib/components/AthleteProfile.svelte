@@ -43,6 +43,20 @@
 	const rings = [0.2, 0.4, 0.6, 0.8, 1];
 	const last90 = $derived(axes.map((a) => a.last90));
 	const last30 = $derived(axes.map((a) => a.last30));
+
+	const AXIS_LABEL_KEYS: Record<string, string> = {
+		volume: 'cards.athleteProfile.axisVolume',
+		intensity: 'cards.athleteProfile.axisIntensity',
+		consistency: 'cards.athleteProfile.axisConsistency',
+		onsight: 'cards.athleteProfile.axisOnsight',
+		variety: 'cards.athleteProfile.axisVariety',
+		endurance: 'cards.athleteProfile.axisEndurance'
+	};
+
+	function axisLabel(axis: Axis): string {
+		const key = AXIS_LABEL_KEYS[axis.key];
+		return key ? i18n.t(key) : axis.label;
+	}
 </script>
 
 <article class="panel">
@@ -76,7 +90,7 @@
 					y={lp.y}
 					dy={lp.y < cy - 2 ? '-0.2em' : lp.y > cy + 2 ? '0.75em' : '0.35em'}
 					text-anchor={lp.x < cx - 6 ? 'end' : lp.x > cx + 6 ? 'start' : 'middle'}
-					>{axis.label}</text
+					>{axisLabel(axis)}</text
 				>
 			{/each}
 			<polygon class="fill90" points={poly(last90)} />

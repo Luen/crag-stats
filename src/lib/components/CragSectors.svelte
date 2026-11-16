@@ -25,7 +25,7 @@
 </script>
 
 <section class="panel">
-	<h2>{i18n.t('cards.cragSectors.titleCragsAndSectorsCountPluralOne', { count: crags.length })}</h2>
+	<h2>{i18n.t('cards.cragSectors.titleCragsAndSectors', { count: crags.length })}</h2>
 	<p class="hint">{i18n.t('cards.cragSectors.hint')}</p>
 	{#if crags.length === 0}
 		<p class="empty">{i18n.t('cards.cragSectors.empty')}</p>

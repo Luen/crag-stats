@@ -84,7 +84,7 @@ Crowdin's automated project inspector (Context Advisor) checks six context areas
 Set on `src/lib/i18n/locales/en.json` (File ID `10`) via `PATCH /projects/946179/files/10` with path `/context`:
 
 - Describes product audience (rock climbers and boulderers at home or at the crag).
-- Maps all key prefixes to UI screens (`common.*`, `nav.*`, `theme.*`, `language.*`, `dashboard.*`, `logbook.*`, `projects.*`, `settings.*`, `badges.*`, `styles.*`, `ticks.*`, `grades.*`, `footer.*`, and `crowdin.*`).
+- Maps all key prefixes to UI screens (`common.*`, `nav.*`, `theme.*`, `language.*`, `grades.*`, `styles.*`, `ticks.*`, `footer.*`, `cards.*` (per dashboard component), and `pages.*` (per route)).
 - Notes mobile viewport constraints (≤860px).
 
 ### 2. Terminology & Glossary
@@ -157,4 +157,4 @@ With this configuration, the project maintains a clean **0-issue QA baseline**.
 - **Ellipses:** Always use the single-character ellipsis glyph **`…`** (`U+2026`), never three full stops `...`. All catalogs maintain 100% adherence.
 - **French Colons:** Place a space before colons in French (`theCrag : synchronisation`).
 - **Climbing Grades (Immutable):** Climbing grade scores and letters (`21`, `6b+`, `5.10a`, `V5`, `7A`) must remain untouched in all languages.
-- **English Source Style:** Title Case for labels and headings; target languages follow native capitalisation rules (sentence case for French/Spanish, noun capitalization for German).
+- **English Source Style:** Title Case for labels and headings; target languages follow native capitalisation rules (sentence case for French/Spanish, noun capitalisation for German).

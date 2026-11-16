@@ -1,6 +1,7 @@
 import { calendarDay as validDay } from '#lib/calendarDay';
 import { formatGradeLabel, usesVScale } from '#lib/grades';
 import { parseGoalGradeScale, parseScaledGoalGrade, type GoalGradeScale } from '#lib/goalGrades';
+import { DEFAULT_LOCALE, formatMessage, type SupportedLocale } from '#lib/i18n';
 import { isTickCountedInProjectsAndGoals } from '#lib/tickSettings';
 import { getDisplayGradeSystems, getDisplayUnits, getTickTypeSettings } from './appSettings';
 import { desc, eq } from 'drizzle-orm';
@@ -148,7 +149,8 @@ function gradeGoalSendEvidence(
 function enrichGoal(
 	g: Goal,
 	ascentRows: AscentRouteRow[] = [],
-	units: DisplayUnits = DEFAULT_DISPLAY_UNITS
+	units: DisplayUnits = DEFAULT_DISPLAY_UNITS,
+	locale: SupportedLocale = DEFAULT_LOCALE
 ): GoalView {
 	const venue = asVenue(g);
 	const targetNum = Number(g.targetValue);
@@ -166,6 +168,7 @@ function enrichGoal(
 		const evidence = gradeGoalSendEvidence(g, ascentRows, new Date().getFullYear());
 		const readiness = gradeGoalReadiness({
 			formatScore,
+			locale,
 			target,
 			bestSend: evidence.best,
 			routesAtNMinus1: evidence.routesAtNMinus1,
@@ -176,17 +179,47 @@ function enrichGoal(
 		pct = g.completed ? 100 : readiness.pct;
 		progressLabel = g.completed
 			? evidence.best != null
-				? `Best send ${formatScore(evidence.best)} · done`
-				: 'Done'
+				? formatMessage(locale, 'pages.goals.readinessBestSendDone', {
+						grade: formatScore(evidence.best)
+					})
+				: formatMessage(locale, 'pages.goals.statusDone')
 			: readiness.label;
-		targetLabel = Number.isFinite(target) ? `Send ≥ ${formatScore(target)}` : 'Grade goal';
+		targetLabel = Number.isFinite(target)
+			? formatMessage(locale, 'pages.goals.targetSendAtLeast', {
+					grade: formatScore(target)
+				})
+			: formatMessage(locale, 'pages.goals.targetGradeGoal');
 		if (g.year) targetLabel += ` · ${g.year}`;
 		if (!scale) {
 			pct = 0;
-			targetLabel = `Grade scale needed · target score ${target}${g.year ? ` · ${g.year}` : ''}`;
-			progressLabel = 'Choose route or boulder grades to calculate progress.';
+			targetLabel =
+				formatMessage(locale, 'pages.goals.targetGradeScaleNeeded', { target }) +
+				(g.year ? ` · ${g.year}` : '');
+			progressLabel = formatMessage(locale, 'pages.goals.progressChooseScale');
 		} else if (g.suggested) {
-			title = `Send${venue === 'any' ? '' : ` ${venue}`} ${formatScore(target)}${g.year ? ` in ${g.year}` : ''}`;
+			const grade = formatScore(target);
+			if (venue === 'outdoor') {
+				title = g.year
+					? formatMessage(locale, 'pages.goals.titleSendOutdoorYear', {
+							grade,
+							year: g.year
+						})
+					: formatMessage(locale, 'pages.goals.titleSendOutdoor', { grade });
+			} else if (venue === 'indoor') {
+				title = g.year
+					? formatMessage(locale, 'pages.goals.titleSendIndoorYear', {
+							grade,
+							year: g.year
+						})
+					: formatMessage(locale, 'pages.goals.titleSendIndoor', { grade });
+			} else {
+				title = g.year
+					? formatMessage(locale, 'pages.goals.titleSendAnyYear', {
+							grade,
+							year: g.year
+						})
+					: formatMessage(locale, 'pages.goals.titleSendAny', { grade });
+			}
 		}
 	} else if (g.kind === 'height_year') {
 		const metres = Number.isFinite(currentNum) ? currentNum : 0;
@@ -199,16 +232,21 @@ function enrichGoal(
 		const days = Number.isFinite(currentNum) ? currentNum : 0;
 		const target = Number.isFinite(targetNum) ? targetNum : 0;
 		pct = g.completed ? 100 : progressPct(days, target);
-		progressLabel = `${days} day${days === 1 ? '' : 's'}`;
-		targetLabel = `${target} days this month`;
+		progressLabel = formatMessage(locale, 'common.days', { count: days });
+		targetLabel = formatMessage(locale, 'pages.goals.targetDaysThisMonth', { target });
 	} else {
 		pct = g.completed ? 100 : 0;
-		progressLabel = g.completed ? 'Done' : g.progressValue || 'Manual';
-		targetLabel = g.targetValue || 'Custom';
+		progressLabel = g.completed
+			? formatMessage(locale, 'pages.goals.statusDone')
+			: g.progressValue || formatMessage(locale, 'pages.goals.statusManual');
+		targetLabel = g.targetValue || formatMessage(locale, 'pages.goals.optionCustom');
 	}
 
 	if (venue !== 'any') {
-		targetLabel += venue === 'outdoor' ? ' · outdoor' : ' · indoor';
+		targetLabel +=
+			venue === 'outdoor'
+				? ` · ${formatMessage(locale, 'pages.goals.venueOutdoor')}`
+				: ` · ${formatMessage(locale, 'pages.goals.venueIndoor')}`;
 	}
 
 	return {
@@ -219,11 +257,11 @@ function enrichGoal(
 		progressPct: pct,
 		progressLabel,
 		targetLabel,
-		kindLabel: kindLabel(g.kind)
+		kindLabel: kindLabel(g.kind, locale)
 	};
 }
 
-export function listGoals(): GoalView[] {
+export function listGoals(locale: SupportedLocale = DEFAULT_LOCALE): GoalView[] {
 	ensureSchema();
 	updateGoalProgress();
 	const ascentRows = loadAscentRouteRows();
@@ -233,11 +271,11 @@ export function listGoals(): GoalView[] {
 		.from(goals)
 		.orderBy(desc(goals.createdAt))
 		.all()
-		.map((g) => enrichGoal(g, ascentRows, units));
+		.map((g) => enrichGoal(g, ascentRows, units, locale));
 }
 
-export function listActiveGoals(limit = 3): GoalView[] {
-	return listGoals()
+export function listActiveGoals(limit = 3, locale: SupportedLocale = DEFAULT_LOCALE): GoalView[] {
+	return listGoals(locale)
 		.filter((g) => !g.completed)
 		.slice(0, limit);
 }

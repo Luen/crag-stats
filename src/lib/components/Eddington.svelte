@@ -7,7 +7,7 @@
 	let { data }: Props = $props();
 	const i18n = useI18n();
 
-	const tiles = $derived(eddingtonTiles(data));
+	const tiles = $derived(eddingtonTiles(data, i18n.locale));
 </script>
 
 <article class="panel">

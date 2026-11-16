@@ -128,7 +128,9 @@
 						>
 						<span class="value"
 							>{value}
-							{#if metricToggle}<span class="unit">{partnerMetricLabel(metric, value)}</span>{/if}
+							{#if metricToggle}<span class="unit"
+									>{partnerMetricLabel(metric, value, i18n.locale)}</span
+								>{/if}
 						</span>
 					</div>
 					<div class="track">

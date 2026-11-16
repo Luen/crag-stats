@@ -8,6 +8,8 @@
 
 import { calendarDay } from '#lib/calendarDay';
 import { matchesClimbStyle } from '#lib/climbStyle';
+import { formatMessage } from '#lib/i18n/format';
+import { DEFAULT_LOCALE, type SupportedLocale } from '#lib/i18n/types';
 
 export type RepeatStyleKey = 'all' | 'sport' | 'trad' | 'boulder';
 export type RepeatRange = 'all' | 'last12';
@@ -28,10 +30,16 @@ export const TOP_REPEATED_LIMIT = 5;
 /** "Last 12 months" is the 365-day window ending today (inclusive). */
 export const REPEAT_RECENT_DAYS = 365;
 
+export const REPEAT_PERSONA_LABEL_KEYS: Record<RepeatPersona, string> = {
+	explorer: 'cards.routeRepeats.labelExplorer',
+	repeater: 'cards.routeRepeats.labelRepeater',
+	mixed: 'cards.routeRepeats.labelMixed'
+};
+
 export const REPEAT_PERSONA_LABELS: Record<RepeatPersona, string> = {
-	explorer: 'Explorer',
-	repeater: 'Repeat climber',
-	mixed: 'A bit of both'
+	explorer: formatMessage(DEFAULT_LOCALE, REPEAT_PERSONA_LABEL_KEYS.explorer),
+	repeater: formatMessage(DEFAULT_LOCALE, REPEAT_PERSONA_LABEL_KEYS.repeater),
+	mixed: formatMessage(DEFAULT_LOCALE, REPEAT_PERSONA_LABEL_KEYS.mixed)
 };
 
 const DISCIPLINES = ['sport', 'trad', 'boulder'] as const;
@@ -141,7 +149,11 @@ type RouteAgg = {
 	row: RepeatAscentInput;
 };
 
-function buildSlice(items: Classified[], inRange: (day: string) => boolean): RepeatSlice {
+function buildSlice(
+	items: Classified[],
+	inRange: (day: string) => boolean,
+	locale: SupportedLocale = DEFAULT_LOCALE
+): RepeatSlice {
 	let newAscents = 0;
 	let repeatAscents = 0;
 	const byRoute = new Map<string, RouteAgg>();
@@ -170,6 +182,7 @@ function buildSlice(items: Classified[], inRange: (day: string) => boolean): Rep
 
 	const ascents = newAscents + repeatAscents;
 	const newPct = ascents > 0 ? Math.round((newAscents / ascents) * 100) : null;
+	const unnamedRoute = formatMessage(locale, 'cards.routeRepeats.unnamedRoute');
 
 	const top = [...byRoute.entries()]
 		.filter(([, agg]) => agg.repeats > 0)
@@ -184,7 +197,7 @@ function buildSlice(items: Classified[], inRange: (day: string) => boolean): Rep
 		.map(([key, agg]) => ({
 			key,
 			routeId: agg.row.routeId ?? null,
-			routeName: (agg.row.routeName ?? '').trim() || 'Unnamed route',
+			routeName: (agg.row.routeName ?? '').trim() || unnamedRoute,
 			cragName: (agg.row.cragName ?? '').trim() || null,
 			days: agg.days.size,
 			ascents: agg.ascents,
@@ -217,7 +230,8 @@ function emptyBuckets(): Record<RepeatStyleKey, Classified[]> {
  */
 export function buildRouteRepeats(
 	rows: readonly RepeatAscentInput[],
-	todayIso = new Date().toISOString().slice(0, 10)
+	todayIso = new Date().toISOString().slice(0, 10),
+	locale: SupportedLocale = DEFAULT_LOCALE
 ): RouteRepeatsView | null {
 	const dated: { key: string; day: string; row: RepeatAscentInput }[] = [];
 	const firstDay = new Map<string, string>();
@@ -249,10 +263,10 @@ export function buildRouteRepeats(
 		buckets: Record<RepeatStyleKey, Classified[]>,
 		inRange: (day: string) => boolean
 	): RepeatStyleSlices => ({
-		all: buildSlice(buckets.all, inRange),
-		sport: buildSlice(buckets.sport, inRange),
-		trad: buildSlice(buckets.trad, inRange),
-		boulder: buildSlice(buckets.boulder, inRange)
+		all: buildSlice(buckets.all, inRange, locale),
+		sport: buildSlice(buckets.sport, inRange, locale),
+		trad: buildSlice(buckets.trad, inRange, locale),
+		boulder: buildSlice(buckets.boulder, inRange, locale)
 	});
 
 	return {

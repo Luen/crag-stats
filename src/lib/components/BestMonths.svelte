@@ -5,7 +5,7 @@
 	let { data }: { data: BestMonthsView } = $props();
 	const i18n = useI18n();
 	const t = i18n.t;
-	const MONTHS = monthLabels(t);
+	const MONTHS = $derived(monthLabels(t));
 
 	function maxOf(values: number[]): number {
 		return Math.max(1, ...values);

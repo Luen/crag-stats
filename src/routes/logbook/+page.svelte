@@ -223,8 +223,8 @@
 		{/if}
 		{#if data.setter}
 			· {data.setter === 'me'
-				? t('pages.logbook.optionRoutesISet')
-				: t('pages.logbook.optionNoSetterCreditFound')}
+				? t('pages.logbook.routesISet')
+				: t('pages.logbook.noSetterCreditFound')}
 		{/if}
 		{#if data.weather}
 			· {t('pages.logbook.weatherDays', { label: labelFor(WEATHER_LABELS, data.weather) })}

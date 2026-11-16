@@ -98,12 +98,48 @@
 			: ''
 	);
 
+	const GROUP_LABEL_KEYS: Record<WeatherPerformanceDimension, string> = {
+		temperature: 'cards.weatherPerformance.groupDailyHigh',
+		conditions: 'cards.weatherPerformance.groupConditions'
+	};
+
+	const COND_BAND_KEYS: Record<string, string> = {
+		'cond:fair': 'cards.weatherPerformance.bandFair',
+		'cond:dry': 'cards.weatherPerformance.bandDry',
+		'cond:rain': 'cards.weatherConditions.shareRain',
+		'cond:snow': 'cards.weatherConditions.shareSnow',
+		'cond:heat': 'cards.weatherConditions.shareHeat',
+		'cond:freeze': 'cards.weatherConditions.shareFreeze',
+		'cond:calm': 'cards.weatherPerformance.bandCalm',
+		'cond:wind': 'cards.weatherPerformance.bandWindy'
+	};
+
+	function groupLabel(key: WeatherPerformanceDimension, fallback: string): string {
+		const k = GROUP_LABEL_KEYS[key];
+		return k ? i18n.t(k) : fallback;
+	}
+
+	function bandLabel(band: WeatherPerformanceBand): string {
+		if (band.id === 'temp:lt') {
+			return i18n.t('cards.weatherPerformance.bandUnder', {
+				temp: band.label.replace(/^Under\s+/i, '')
+			});
+		}
+		const key = COND_BAND_KEYS[band.id];
+		return key ? i18n.t(key) : band.label;
+	}
+
 	function daysPhrase(band: WeatherPerformanceBand): string {
+		const label = bandLabel(band);
 		if (dimension === 'conditions')
-			return i18n.t('cards.weatherPerformance.daysAfterLabel', { label: band.label.toLowerCase() });
-		return band.label.startsWith('Under')
-			? i18n.t('cards.weatherPerformance.daysBeforeLabel', { label: band.label.toLowerCase() })
-			: i18n.t('cards.weatherPerformance.daysAfterLabel', { label: band.label });
+			return i18n.t('cards.weatherPerformance.daysAfterLabel', {
+				label: label.toLocaleLowerCase(i18n.locale)
+			});
+		return band.id === 'temp:lt'
+			? i18n.t('cards.weatherPerformance.daysBeforeLabel', {
+					label: label.toLocaleLowerCase(i18n.locale)
+				})
+			: i18n.t('cards.weatherPerformance.daysAfterLabel', { label });
 	}
 
 	function rateText(rate: WeatherRate): string {
@@ -158,7 +194,7 @@
 							type="button"
 							class={{ active: dimension === g.key }}
 							aria-pressed={dimension === g.key}
-							onclick={() => select('group', g.key)}>{g.label}</button
+							onclick={() => select('group', g.key)}>{groupLabel(g.key, g.label)}</button
 						>
 					{/each}
 				</div>
@@ -214,7 +250,7 @@
 		{#if showDetails}
 			{#snippet bandBody(band: WeatherPerformanceBand)}
 				{@const r = band[metric]}
-				<span class="label">{band.label}</span>
+				<span class="label">{bandLabel(band)}</span>
 				<span class="value">
 					{#if r.pct == null}
 						{i18n.t('cards.weatherPerformance.valueNotEnoughData', { count: band.ascents })}
@@ -274,12 +310,14 @@
 					class="table-wrap"
 					tabindex="0"
 					role="region"
-					aria-label={i18n.t('cards.weatherPerformance.ariaBandValues', { group: group.label })}
+					aria-label={i18n.t('cards.weatherPerformance.ariaBandValues', {
+						group: groupLabel(group.key, group.label)
+					})}
 				>
 					<table>
 						<caption>
 							{i18n.t('cards.weatherPerformance.captionSendsByWeather', {
-								group: group.label
+								group: groupLabel(group.key, group.label)
 							})}
 						</caption>
 						<thead>
@@ -294,7 +332,7 @@
 						<tbody>
 							{#each group.bands as band (band.id)}
 								<tr>
-									<th scope="row">{band.label}</th>
+									<th scope="row">{bandLabel(band)}</th>
 									<td>{fmt(band.days)}</td>
 									{#each METRICS as m (m.key)}
 										{@const r = band[m.key]}

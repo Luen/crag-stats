@@ -30,6 +30,14 @@
 		draft = defaultLayout();
 	}
 
+	const WIDTH_KEYS = {
+		full: 'cards.dashboardLayoutEditor.widthFull',
+		half: 'cards.dashboardLayoutEditor.widthHalf',
+		quarter: 'cards.dashboardLayoutEditor.widthQuarter'
+	} as const;
+
+	const cardLabel = (id: DashLayoutItem['id']) => i18n.t(cardDef(id).labelKey);
+
 	const visibleCount = $derived(draft.filter((d) => d.enabled).length);
 </script>
 
@@ -42,8 +50,8 @@
 				<li>
 					<label class="en">
 						<input type="checkbox" checked={item.enabled} onchange={() => toggle(item.id)} />
-						<span>{cardDef(item.id).label}</span>
-						<em>{cardDef(item.id).width}</em>
+						<span>{cardLabel(item.id)}</span>
+						<em>{i18n.t(WIDTH_KEYS[cardDef(item.id).width])}</em>
 					</label>
 					<div class="movers">
 						<button
@@ -52,7 +60,7 @@
 							disabled={index === 0}
 							onclick={() => move(item.id, -1)}
 							aria-label={i18n.t('cards.dashboardLayoutEditor.ariaMoveUp', {
-								name: cardDef(item.id).label
+								name: cardLabel(item.id)
 							})}>↑</button
 						>
 						<button
@@ -61,7 +69,7 @@
 							disabled={index === draft.length - 1}
 							onclick={() => move(item.id, 1)}
 							aria-label={i18n.t('cards.dashboardLayoutEditor.ariaMoveDown', {
-								name: cardDef(item.id).label
+								name: cardLabel(item.id)
 							})}>↓</button
 						>
 					</div>

@@ -8,7 +8,7 @@
 
 	let { data }: PageProps = $props();
 	const i18n = useI18n();
-	const tiles = $derived(eddingtonTiles(data.stats));
+	const tiles = $derived(eddingtonTiles(data.stats, i18n.locale));
 </script>
 
 <svelte:head>

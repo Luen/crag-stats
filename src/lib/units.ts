@@ -5,6 +5,9 @@
  * unit conversions happen purely in the presentation layer.
  */
 
+import { formatMessage } from '#lib/i18n/format';
+import { DEFAULT_LOCALE } from '#lib/i18n/types';
+
 export type HeightUnit = 'm' | 'ft';
 export type DistanceUnit = 'km' | 'mi';
 export type TemperatureUnit = 'celsius' | 'fahrenheit';
@@ -32,15 +35,17 @@ export type UnitPresetId = 'metric' | 'imperial' | 'uk';
 export type UnitPreset = {
 	id: UnitPresetId;
 	label: string;
+	labelKey: string;
 	description: string;
+	descriptionKey: string;
 	units: DisplayUnits;
 };
 
-export const UNIT_PRESETS: readonly UnitPreset[] = [
+const UNIT_PRESET_SPECS: readonly Omit<UnitPreset, 'label' | 'description'>[] = [
 	{
 		id: 'metric',
-		label: 'Metric',
-		description: 'Metres (m), kilometres (km), Celsius (°C), km/h, mm',
+		labelKey: 'pages.settings.presetMetricLabel',
+		descriptionKey: 'pages.settings.presetMetricDesc',
 		units: {
 			height: 'm',
 			distance: 'km',
@@ -51,8 +56,8 @@ export const UNIT_PRESETS: readonly UnitPreset[] = [
 	},
 	{
 		id: 'imperial',
-		label: 'Imperial (US)',
-		description: 'Feet (ft), miles (mi), Fahrenheit (°F), mph, inches (in)',
+		labelKey: 'pages.settings.presetImperialLabel',
+		descriptionKey: 'pages.settings.presetImperialDesc',
 		units: {
 			height: 'ft',
 			distance: 'mi',
@@ -63,8 +68,8 @@ export const UNIT_PRESETS: readonly UnitPreset[] = [
 	},
 	{
 		id: 'uk',
-		label: 'UK (Mixed)',
-		description: 'Metres (m), miles (mi), Celsius (°C), mph, mm',
+		labelKey: 'pages.settings.presetUkLabel',
+		descriptionKey: 'pages.settings.presetUkDesc',
 		units: {
 			height: 'm',
 			distance: 'mi',
@@ -73,32 +78,47 @@ export const UNIT_PRESETS: readonly UnitPreset[] = [
 			precipitation: 'mm'
 		}
 	}
-] as const;
+];
 
-export const HEIGHT_UNIT_OPTIONS = [
-	{ id: 'm' as const, label: 'Metres (m)' },
-	{ id: 'ft' as const, label: 'Feet (ft)' }
-] as const;
+export const UNIT_PRESETS: readonly UnitPreset[] = UNIT_PRESET_SPECS.map((p) => ({
+	...p,
+	label: formatMessage(DEFAULT_LOCALE, p.labelKey),
+	description: formatMessage(DEFAULT_LOCALE, p.descriptionKey)
+}));
 
-export const DISTANCE_UNIT_OPTIONS = [
-	{ id: 'km' as const, label: 'Kilometres (km)' },
-	{ id: 'mi' as const, label: 'Miles (mi)' }
-] as const;
+function withLabels<T extends { labelKey: string }>(
+	items: readonly T[]
+): readonly (T & { label: string })[] {
+	return items.map((item) => ({
+		...item,
+		label: formatMessage(DEFAULT_LOCALE, item.labelKey)
+	}));
+}
 
-export const TEMPERATURE_UNIT_OPTIONS = [
-	{ id: 'celsius' as const, label: 'Celsius (°C)' },
-	{ id: 'fahrenheit' as const, label: 'Fahrenheit (°F)' }
-] as const;
+export const HEIGHT_UNIT_OPTIONS = withLabels([
+	{ id: 'm' as const, labelKey: 'pages.settings.unitMetres' },
+	{ id: 'ft' as const, labelKey: 'pages.settings.unitFeet' }
+] as const);
 
-export const WIND_UNIT_OPTIONS = [
-	{ id: 'kmh' as const, label: 'Kilometres per hour (km/h)' },
-	{ id: 'mph' as const, label: 'Miles per hour (mph)' }
-] as const;
+export const DISTANCE_UNIT_OPTIONS = withLabels([
+	{ id: 'km' as const, labelKey: 'pages.settings.unitKilometres' },
+	{ id: 'mi' as const, labelKey: 'pages.settings.unitMiles' }
+] as const);
 
-export const PRECIPITATION_UNIT_OPTIONS = [
-	{ id: 'mm' as const, label: 'Millimetres (mm)' },
-	{ id: 'in' as const, label: 'Inches (in)' }
-] as const;
+export const TEMPERATURE_UNIT_OPTIONS = withLabels([
+	{ id: 'celsius' as const, labelKey: 'pages.settings.unitCelsius' },
+	{ id: 'fahrenheit' as const, labelKey: 'pages.settings.unitFahrenheit' }
+] as const);
+
+export const WIND_UNIT_OPTIONS = withLabels([
+	{ id: 'kmh' as const, labelKey: 'pages.settings.unitKmh' },
+	{ id: 'mph' as const, labelKey: 'pages.settings.unitMph' }
+] as const);
+
+export const PRECIPITATION_UNIT_OPTIONS = withLabels([
+	{ id: 'mm' as const, labelKey: 'pages.settings.unitMm' },
+	{ id: 'in' as const, labelKey: 'pages.settings.unitInches' }
+] as const);
 
 export const METERS_TO_FEET = 3.280839895;
 export const FEET_TO_METERS = 0.3048;

@@ -4,6 +4,7 @@
 
 import { calendarDay as validDay } from '#lib/calendarDay';
 import { DEFAULT_DATE_DISPLAY, type DateDisplay } from '#lib/dates';
+import { DEFAULT_LOCALE, formatMessage, type SupportedLocale } from '#lib/i18n';
 import { eq } from 'drizzle-orm';
 import { climbersMentionLogin, historyTypeIsSetter } from './providers/thecrag/routeHistoryParse';
 import { db, ensureSchema } from './db';
@@ -95,7 +96,8 @@ export function countOwnerSetRoutes(provider = PROVIDER, login?: string | null):
 export function setterBadgeHits(
 	provider = PROVIDER,
 	login?: string | null,
-	display: DateDisplay = DEFAULT_DATE_DISPLAY
+	display: DateDisplay = DEFAULT_DATE_DISPLAY,
+	locale: SupportedLocale = DEFAULT_LOCALE
 ): SetterBadgeHit[] {
 	return listOwnerSetRoutes(provider, login).map((r, i) => {
 		const n = i + 1;
@@ -107,14 +109,8 @@ export function setterBadgeHits(
 				: null;
 		const prefix =
 			n === 1
-				? 'First route set'
-				: n === 5
-					? 'Route set #5'
-					: n === 10
-						? 'Route set #10'
-						: n === 25
-							? 'Route set #25'
-							: `Route set #${n}`;
+				? formatMessage(locale, 'cards.badges.detailFirstRouteSet')
+				: formatMessage(locale, 'cards.badges.detailRouteSetNumber', { count: n });
 		return {
 			date,
 			routeName: r.routeName,

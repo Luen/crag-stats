@@ -246,7 +246,7 @@
 		color: var(--ink);
 		border: 1px solid var(--line);
 	}
-	.warn :global(code) {
+	.head :global(code) {
 		font-size: 0.9em;
 	}
 </style>

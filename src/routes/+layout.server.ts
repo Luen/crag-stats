@@ -9,7 +9,7 @@ import { getDateFormat, getDisplayUnits, getSearchIndexing } from '#lib/server/a
 import { isAuthEnabled, authScope } from '#lib/server/auth';
 import { resolveDateDisplay } from '#lib/dates';
 import { DEFAULT_DISPLAY_UNITS } from '#lib/units';
-import { intlLocale, matchSupportedLocale } from '#lib/i18n';
+import { ENABLED_LOCALES, intlLocale, matchSupportedLocale } from '#lib/i18n';
 import { env } from '#lib/server/env';
 import { isNoindexPath } from '#lib/server/seo';
 import type { LayoutServerLoad } from './$types';
@@ -59,7 +59,7 @@ export const load: LayoutServerLoad = async ({ locals, url, cookies }) => {
 		};
 
 	// `?locale=` is an explicit override, so remember it for later page views.
-	const queryLocale = matchSupportedLocale(url.searchParams.get('locale'));
+	const queryLocale = matchSupportedLocale(url.searchParams.get('locale'), ENABLED_LOCALES);
 	if (queryLocale) {
 		cookies.set('cs_locale', queryLocale, {
 			path: '/',

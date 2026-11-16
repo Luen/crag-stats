@@ -11,7 +11,7 @@
 	import { DEFAULT_DATE_DISPLAY, formatNumber, type DateDisplay } from '#lib/dates';
 	import {
 		REPEAT_LABEL_MIN_ASCENTS,
-		REPEAT_PERSONA_LABELS,
+		REPEAT_PERSONA_LABEL_KEYS,
 		REPEAT_STYLE_KEYS,
 		type RepeatPersona,
 		type RepeatRange,
@@ -149,7 +149,7 @@
 	{:else}
 		{#if slice.persona}
 			<p class="lead">
-				<strong class="persona">{REPEAT_PERSONA_LABELS[slice.persona]}</strong>
+				<strong class="persona">{i18n.t(REPEAT_PERSONA_LABEL_KEYS[slice.persona])}</strong>
 				{i18n.t(PERSONA_TEXT_KEYS[slice.persona])}
 			</p>
 		{:else}

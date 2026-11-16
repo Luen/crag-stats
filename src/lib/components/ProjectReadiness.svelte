@@ -3,6 +3,16 @@
 
 	let { pct, horizon }: { pct: number | null; horizon: string } = $props();
 	const i18n = useI18n();
+
+	const HORIZON_KEYS: Record<string, string> = {
+		Sent: 'cards.projectReadiness.horizonSent',
+		'Unknown grade': 'cards.projectReadiness.horizonUnknownGrade',
+		'Short-term': 'cards.projectReadiness.horizonShortTerm',
+		Medium: 'cards.projectReadiness.horizonMedium',
+		'Long-haul': 'cards.projectReadiness.horizonLongHaul'
+	};
+
+	const horizonLabel = $derived(HORIZON_KEYS[horizon] ? i18n.t(HORIZON_KEYS[horizon]) : horizon);
 </script>
 
 <div class="readiness">
@@ -22,7 +32,7 @@
 		>
 	{/if}
 	{#if pct !== 100}<span class="horizon"
-			>{horizon} · {i18n.t('cards.projectReadiness.estimateNote')}</span
+			>{horizonLabel} · {i18n.t('cards.projectReadiness.estimateNote')}</span
 		>{/if}
 </div>
 

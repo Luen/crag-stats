@@ -16,7 +16,9 @@
 	const i18n = useI18n();
 
 	let snapshot = $state<OfflineSnapshot | null>(null);
-	let message = $state(i18n.t('pages.offline.statusPreparing'));
+	let statusKey = $state<string | null>('pages.offline.statusPreparing');
+	let rawError = $state('');
+	const message = $derived(statusKey ? i18n.t(statusKey) : rawError);
 	let busy = $state(true);
 	let ready = $state(false);
 	let online = $state(true);
@@ -40,15 +42,19 @@
 				throw new Error(result.error);
 			}
 			snapshot = result.snapshot ?? null;
-			message =
+			statusKey =
 				type === 'CLEAR'
-					? i18n.t('pages.offline.statusClearedPaused')
+					? 'pages.offline.statusClearedPaused'
 					: snapshot
-						? i18n.t('pages.offline.statusSavedCopyReady')
-						: i18n.t('pages.offline.statusNoOfflineCopy');
+						? 'pages.offline.statusSavedCopyReady'
+						: 'pages.offline.statusNoOfflineCopy';
 		} catch (error) {
-			message =
-				error instanceof Error ? error.message : i18n.t('pages.offline.statusStorageUnavailable');
+			if (error instanceof Error) {
+				statusKey = null;
+				rawError = error.message;
+			} else {
+				statusKey = 'pages.offline.statusStorageUnavailable';
+			}
 		} finally {
 			busy = false;
 		}
@@ -72,7 +78,7 @@
 		const cleared = (event: MessageEvent) => {
 			if (event.data?.type === 'OFFLINE_CLEARED') {
 				snapshot = null;
-				message = i18n.t('pages.offline.statusClearedDownloadAgain');
+				statusKey = 'pages.offline.statusClearedDownloadAgain';
 			}
 			if (event.data?.type === 'OFFLINE_SAVED' && ready) void command('READ');
 		};
@@ -82,7 +88,7 @@
 		navigator.serviceWorker?.addEventListener('message', cleared);
 		void (async () => {
 			if (!('serviceWorker' in navigator) || !window.isSecureContext) {
-				message = i18n.t('pages.offline.statusNeedsHttps');
+				statusKey = 'pages.offline.statusNeedsHttps';
 				busy = false;
 				return;
 			}
@@ -107,7 +113,7 @@
 				await command('READ');
 				if (online && snapshot) await command('SAVE');
 			} catch {
-				message = i18n.t('pages.offline.statusCouldNotPrepare');
+				statusKey = 'pages.offline.statusCouldNotPrepare';
 				busy = false;
 			}
 		})();

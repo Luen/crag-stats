@@ -73,7 +73,11 @@
 						{:else if p.ungraded}
 							<NewRouteBadge />
 						{/if}
-						<span class={['badge', { sent: p.status === 'sent' }]}>{p.status}</span>
+						<span class={['badge', { sent: p.status === 'sent' }]}
+							>{p.status === 'sent'
+								? i18n.t('pages.projects.labelSent')
+								: i18n.t('pages.projects.labelOpen')}</span
+						>
 					</div>
 					{#if p.areaLabel}
 						<p class="meta">{p.areaLabel}</p>

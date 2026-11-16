@@ -6,6 +6,18 @@
 	let { tables }: Props = $props();
 	const i18n = useI18n();
 
+	const TABLE_LABEL_KEYS: Record<string, string> = {
+		sends: 'cards.eddington.labelSendDays',
+		vertical: 'cards.eddington.labelVerticalDays',
+		routeGrade: 'cards.eddington.labelRouteGrade',
+		boulderGrade: 'cards.eddington.labelBoulderGrade'
+	};
+
+	function tableLabel(table: EddingtonMilestoneTable): string {
+		const key = TABLE_LABEL_KEYS[table.key];
+		return key ? i18n.t(key) : table.label;
+	}
+
 	function thresholdLabel(table: EddingtonMilestoneTable, target: number): string {
 		if (table.key === 'vertical') {
 			const m = target * table.unit;
@@ -26,7 +38,7 @@
 	<div class="grid">
 		{#each tables as table (table.key)}
 			<article class="panel">
-				<h3>{table.label}</h3>
+				<h3>{tableLabel(table)}</h3>
 				<table>
 					<thead>
 						<tr>

@@ -305,7 +305,7 @@
 			<h2>{i18n.t('pages.dashboard.titleGradePyramids')}</h2>
 			<p>
 				{i18n.t('pages.dashboard.leadPyramids', {
-					systems: describeDisplaySystems(data.gradeSystems)
+					systems: describeDisplaySystems(data.gradeSystems, i18n.locale)
 				})}
 			</p>
 			<nav class="pyramid-toggles" aria-label={i18n.t('pages.dashboard.ariaPyramidFilter')}>
@@ -383,8 +383,8 @@
 								{/if}
 								· <TickTypeIcon tick={climb.tickType} />
 							</div>
-							{#if ascentPartners(climb.partners)}
-								<div class="sub companions">{ascentPartners(climb.partners)}</div>
+							{#if ascentPartners(climb.partners, i18n.locale)}
+								<div class="sub companions">{ascentPartners(climb.partners, i18n.locale)}</div>
 							{/if}
 						</div>
 						<GradeChip grade={climb.gradeLabel ?? climb.gradeRaw} band={climb.gradeBand} />
@@ -424,8 +424,8 @@
 							>
 								{#each climb.styleLabels as style (style)}<StyleBadge {style} />{/each}
 							</div>
-							{#if ascentPartners(climb.partners)}
-								<div class="sub companions">{ascentPartners(climb.partners)}</div>
+							{#if ascentPartners(climb.partners, i18n.locale)}
+								<div class="sub companions">{ascentPartners(climb.partners, i18n.locale)}</div>
 							{/if}
 							<TagChips tags={climb.tags} />
 							<WeatherChips

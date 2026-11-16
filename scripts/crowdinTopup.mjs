@@ -160,3 +160,18 @@ export function sortLanguagesByProgress(entries) {
 export function githubOutputLine(added) {
 	return `added=${added}\n`;
 }
+
+/**
+ * Exit code for the top-up run.
+ *
+ * Spending every model's quota (`finishedPasses > 0` with `totalAdded === 0`) is a normal end of
+ * day and exits 0. When every attempted pass ended in `failed` or `canceled` without adding a
+ * single string, the provider or prompt itself is broken and the run must fail loudly.
+ *
+ * @param {{ totalAdded: number, failedPasses: number, finishedPasses: number }} summary
+ * @returns {0 | 1}
+ */
+export function runExitCode({ totalAdded, failedPasses, finishedPasses }) {
+	if (failedPasses > 0 && finishedPasses === 0 && totalAdded <= 0) return 1;
+	return 0;
+}

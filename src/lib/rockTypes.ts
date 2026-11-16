@@ -1,3 +1,5 @@
+import { DEFAULT_LOCALE, formatMessage, type SupportedLocale } from '#lib/i18n';
+
 /** Curated climbing-oriented notes for theCrag “Rock type” tags. */
 export type RockTypeInfo = {
 	name: string;
@@ -5,93 +7,115 @@ export type RockTypeInfo = {
 	tips: string;
 };
 
-const ROCK_TYPES: Record<string, RockTypeInfo> = {
+type RockTypeKeys = {
+	nameKey: string;
+	summaryKey: string;
+	tipsKey: string;
+};
+
+const ROCK_TYPE_KEYS: Record<string, RockTypeKeys> = {
 	granite: {
-		name: 'Granite',
-		summary:
-			'Hard igneous rock with quartz and feldspar — famous for friction slabs, crystals, and splitter cracks (think Yosemite-style).',
-		tips: 'Often condition-dependent: grippy when cool, slicker when hot. Sharp crystals can be hard on skin.'
+		nameKey: 'cards.rockTypePanel.graniteName',
+		summaryKey: 'cards.rockTypePanel.graniteSummary',
+		tipsKey: 'cards.rockTypePanel.graniteTips'
 	},
 	sandstone: {
-		name: 'Sandstone',
-		summary:
-			'Sedimentary rock of cemented sand grains — rough friction, pockets, and dramatic desert features.',
-		tips: 'Avoid climbing when wet: soft sandstone can break holds. Let it dry thoroughly after rain.'
+		nameKey: 'cards.rockTypePanel.sandstoneName',
+		summaryKey: 'cards.rockTypePanel.sandstoneSummary',
+		tipsKey: 'cards.rockTypePanel.sandstoneTips'
 	},
 	limestone: {
-		name: 'Limestone',
-		summary:
-			'Calcium-carbonate rock that forms pockets, tufas, caves, and steep sport walls common in Europe.',
-		tips: 'Popular routes polish easily. Cracks are less common than on granite, so many crags are bolted.'
+		nameKey: 'cards.rockTypePanel.limestoneName',
+		summaryKey: 'cards.rockTypePanel.limestoneSummary',
+		tipsKey: 'cards.rockTypePanel.limestoneTips'
 	},
 	gritstone: {
-		name: 'Gritstone',
-		summary:
-			'Coarse, hard sandstone (UK Peak District classic) with outstanding friction on rounded breaks and arêtes.',
-		tips: 'Trad ethic is strong; fragile when wet — stay off after rain.'
+		nameKey: 'cards.rockTypePanel.gritstoneName',
+		summaryKey: 'cards.rockTypePanel.gritstoneSummary',
+		tipsKey: 'cards.rockTypePanel.gritstoneTips'
 	},
 	volcanic: {
-		name: 'Volcanic',
-		summary:
-			'Basalt and related volcanics — often solid with positive edges, columns, or blocky features.',
-		tips: 'Quality varies by flow; some areas are bombproof, others loose on the edges.'
+		nameKey: 'cards.rockTypePanel.volcanicName',
+		summaryKey: 'cards.rockTypePanel.volcanicSummary',
+		tipsKey: 'cards.rockTypePanel.volcanicTips'
 	},
 	basalt: {
-		name: 'Basalt',
-		summary: 'Fine-grained volcanic rock, often forming columns, faces, and solid cracks.',
-		tips: 'Usually sounder when wet than sandstone, but check local loose blocks.'
+		nameKey: 'cards.rockTypePanel.basaltName',
+		summaryKey: 'cards.rockTypePanel.basaltSummary',
+		tipsKey: 'cards.rockTypePanel.basaltTips'
 	},
 	quartzite: {
-		name: 'Quartzite',
-		summary: 'Metamorphosed sandstone — very hard, often sharp and friction-rich.',
-		tips: 'Can be abrasive on skin and shoes; holds tend to be positive when featured.'
+		nameKey: 'cards.rockTypePanel.quartziteName',
+		summaryKey: 'cards.rockTypePanel.quartziteSummary',
+		tipsKey: 'cards.rockTypePanel.quartziteTips'
 	},
 	conglomerate: {
-		name: 'Conglomerate',
-		summary: 'Pebbles cemented in a matrix — climbing on glued-in cobbles and weird features.',
-		tips: 'Trust holds carefully; matrix quality varies wildly between crags.'
+		nameKey: 'cards.rockTypePanel.conglomerateName',
+		summaryKey: 'cards.rockTypePanel.conglomerateSummary',
+		tipsKey: 'cards.rockTypePanel.conglomerateTips'
 	},
 	dolomite: {
-		name: 'Dolomite',
-		summary: 'Carbonate rock related to limestone, often forming steep alpine walls and towers.',
-		tips: 'Can be polished or friable depending on the formation — treat like limestone for wet conditions.'
+		nameKey: 'cards.rockTypePanel.dolomiteName',
+		summaryKey: 'cards.rockTypePanel.dolomiteSummary',
+		tipsKey: 'cards.rockTypePanel.dolomiteTips'
 	},
 	slate: {
-		name: 'Slate',
-		summary: 'Fine metamorphic rock with smooth, often technical faces and small edges.',
-		tips: 'Friction can feel glassy; careful footwork matters more than raw strength.'
+		nameKey: 'cards.rockTypePanel.slateName',
+		summaryKey: 'cards.rockTypePanel.slateSummary',
+		tipsKey: 'cards.rockTypePanel.slateTips'
 	},
 	gneiss: {
-		name: 'Gneiss',
-		summary: 'Banded metamorphic rock with mixed crystal textures and solid alpine faces.',
-		tips: 'Quality varies by banding; often similar feel to granite with more variety in holds.'
+		nameKey: 'cards.rockTypePanel.gneissName',
+		summaryKey: 'cards.rockTypePanel.gneissSummary',
+		tipsKey: 'cards.rockTypePanel.gneissTips'
 	},
 	choss: {
-		name: 'Choss',
-		summary: 'Loose, poorly cemented rock — adventure climbing more than textbook geology.',
-		tips: 'Helmets, careful testing of holds, and ground-up caution are the game.'
+		nameKey: 'cards.rockTypePanel.chossName',
+		summaryKey: 'cards.rockTypePanel.chossSummary',
+		tipsKey: 'cards.rockTypePanel.chossTips'
 	}
 };
 
-export function rockTypeInfo(name: string | null | undefined): RockTypeInfo | null {
-	if (!name) return null;
-	const key = name.trim().toLowerCase();
-	if (ROCK_TYPES[key]) return ROCK_TYPES[key];
-	for (const [k, info] of Object.entries(ROCK_TYPES)) {
-		if (key.includes(k) || k.includes(key)) return info;
-	}
+function resolveRockInfo(keys: RockTypeKeys, locale: SupportedLocale): RockTypeInfo {
 	return {
-		name: name.trim(),
-		summary: `Tagged as ${name.trim()} on theCrag — rock character varies by area.`,
-		tips: 'Check local topos and ethics; conditions (especially wet rock) matter for softer rock types.'
+		name: formatMessage(locale, keys.nameKey),
+		summary: formatMessage(locale, keys.summaryKey),
+		tips: formatMessage(locale, keys.tipsKey)
 	};
 }
 
-export function rockTypeBlurb(dominant: string | null, pct: number | null): string | null {
+export function rockTypeInfo(
+	name: string | null | undefined,
+	locale: SupportedLocale = DEFAULT_LOCALE
+): RockTypeInfo | null {
+	if (!name) return null;
+	const key = name.trim().toLowerCase();
+	if (ROCK_TYPE_KEYS[key]) return resolveRockInfo(ROCK_TYPE_KEYS[key], locale);
+	for (const [k, keys] of Object.entries(ROCK_TYPE_KEYS)) {
+		if (key.includes(k) || k.includes(key)) return resolveRockInfo(keys, locale);
+	}
+	const trimmed = name.trim();
+	return {
+		name: trimmed,
+		summary: formatMessage(locale, 'cards.rockTypePanel.fallbackSummary', { name: trimmed }),
+		tips: formatMessage(locale, 'cards.rockTypePanel.fallbackTips')
+	};
+}
+
+export function rockTypeBlurb(
+	dominant: string | null,
+	pct: number | null,
+	locale: SupportedLocale = DEFAULT_LOCALE
+): string | null {
 	if (!dominant) return null;
-	const info = rockTypeInfo(dominant);
+	const info = rockTypeInfo(dominant, locale);
 	if (!info) return null;
-	const share =
-		pct != null && Number.isFinite(pct) ? ` (${Math.round(pct)}% of tagged ascents)` : '';
-	return `I climb mostly on ${info.name}${share}. ${info.summary} ${info.tips}`;
+	const lead =
+		pct != null && Number.isFinite(pct)
+			? formatMessage(locale, 'cards.rockTypePanel.blurbWithPct', {
+					name: info.name,
+					percent: Math.round(pct)
+				})
+			: formatMessage(locale, 'cards.rockTypePanel.blurbNoPct', { name: info.name });
+	return `${lead} ${info.summary} ${info.tips}`;
 }

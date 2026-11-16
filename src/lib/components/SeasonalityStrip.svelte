@@ -2,7 +2,7 @@
 	import { monthLabels, useI18n } from '#lib/i18n';
 	let { values, month, name }: { values: number[]; month: number; name: string } = $props();
 	const i18n = useI18n();
-	const MONTHS = monthLabels(i18n.t);
+	const MONTHS = $derived(monthLabels(i18n.t));
 	const peak = $derived(Math.max(0, ...values) || 1);
 </script>
 

@@ -11,6 +11,18 @@
 	const unpartneredPct = $derived(
 		data.totalAscents ? Math.round((data.unpartnered / data.totalAscents) * 100) : 0
 	);
+
+	const SOLO_KIND_KEYS: Record<string, string> = {
+		toprope: 'cards.soloClimbing.kindToprope',
+		lead: 'cards.soloClimbing.kindLead',
+		free: 'cards.soloClimbing.kindFree',
+		dws: 'cards.soloClimbing.kindDws'
+	};
+
+	function kindLabel(kind: string, fallback: string): string {
+		const key = SOLO_KIND_KEYS[kind];
+		return key ? i18n.t(key) : fallback;
+	}
 </script>
 
 <article class="panel">
@@ -20,14 +32,15 @@
 	{:else}
 		<ul class="kinds">
 			{#each data.kinds as k (k.kind)}
+				{@const label = kindLabel(k.kind, k.label)}
 				<li>
 					<div class="head">
 						<a
 							class="kind-link"
 							href={`/logbook?solo=${k.kind}`}
 							aria-label={i18n.t('cards.soloClimbing.ariaViewClimbsInLogbook', {
-								kind: k.label
-							})}><strong>{k.label}</strong></a
+								kind: label
+							})}><strong>{label}</strong></a
 						>
 						<span class="count">{k.count}</span>
 					</div>

@@ -6,7 +6,7 @@ import type { PageServerLoad } from './$types';
 export const load: PageServerLoad = ({ params, locals }) => {
 	if (!/^[1-9]\d*$/.test(params.routeId)) error(404, 'Project not found');
 	refreshProjects();
-	const details = getProjectDetails(Number(params.routeId));
+	const details = getProjectDetails(Number(params.routeId), new Date(), locals.locale);
 	if (!details) error(404, 'Project not found');
 	return { ...details, canManageProjects: locals.authed };
 };

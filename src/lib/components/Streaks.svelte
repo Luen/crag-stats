@@ -68,13 +68,11 @@
 			{i18n.t('cards.streaks.lastAscent')}
 			<strong>{formatCalendarDate(lastActiveDate, dateDisplay)}</strong>
 			{#if daysSinceLastActive != null}
-				· <strong>{daysSinceLastActive}</strong>
-				{i18n.t('common.days', { count: daysSinceLastActive })}
+				· {i18n.t('common.days', { count: daysSinceLastActive })}
 				{i18n.t('common.since')}
 			{/if}
 			·
 		{/if}
-		<strong>{activeDays}</strong>
 		{i18n.t('common.activeDays', { count: activeDays })}
 	</p>
 </article>

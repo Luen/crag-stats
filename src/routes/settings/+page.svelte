@@ -278,7 +278,8 @@
 				<span>{i18n.t('pages.settings.labelRouteGrades')}</span>
 				<select name="routeSystem">
 					{#each ROUTE_GRADE_SYSTEMS as opt (opt.id)}
-						<option value={opt.id} selected={data.gradeSystems.route === opt.id}>{opt.label}</option
+						<option value={opt.id} selected={data.gradeSystems.route === opt.id}
+							>{i18n.t(opt.labelKey)}</option
 						>
 					{/each}
 				</select>
@@ -289,7 +290,7 @@
 				<select name="boulderSystem">
 					{#each BOULDER_GRADE_SYSTEMS as opt (opt.id)}
 						<option value={opt.id} selected={data.gradeSystems.boulder === opt.id}
-							>{opt.label}</option
+							>{i18n.t(opt.labelKey)}</option
 						>
 					{/each}
 				</select>
@@ -299,7 +300,9 @@
 				<span>{i18n.t('pages.settings.labelDateFormat')}</span>
 				<select name="dateFormat">
 					{#each DATE_FORMAT_OPTIONS as opt (opt.id)}
-						<option value={opt.id} selected={data.dateFormat === opt.id}>{opt.label}</option>
+						<option value={opt.id} selected={data.dateFormat === opt.id}
+							>{i18n.t(opt.labelKey)}</option
+						>
 					{/each}
 				</select>
 				<small class="hint">{i18n.t('pages.settings.hintDateFormat')}</small>
@@ -311,10 +314,10 @@
 					<button
 						type="button"
 						class="preset-btn"
-						title={preset.description}
+						title={i18n.t(preset.descriptionKey)}
 						onclick={() => applyUnitPreset(preset.id)}
 					>
-						{preset.label}
+						{i18n.t(preset.labelKey)}
 					</button>
 				{/each}
 			</div>
@@ -322,7 +325,7 @@
 				<span>{i18n.t('pages.settings.labelHeight')}</span>
 				<select name="unitHeight" bind:value={unitHeight}>
 					{#each HEIGHT_UNIT_OPTIONS as opt (opt.id)}
-						<option value={opt.id}>{opt.label}</option>
+						<option value={opt.id}>{i18n.t(opt.labelKey)}</option>
 					{/each}
 				</select>
 				<small class="hint">{i18n.t('pages.settings.hintHeight')}</small>
@@ -331,7 +334,7 @@
 				<span>{i18n.t('pages.settings.labelDistance')}</span>
 				<select name="unitDistance" bind:value={unitDistance}>
 					{#each DISTANCE_UNIT_OPTIONS as opt (opt.id)}
-						<option value={opt.id}>{opt.label}</option>
+						<option value={opt.id}>{i18n.t(opt.labelKey)}</option>
 					{/each}
 				</select>
 				<small class="hint">{i18n.t('pages.settings.hintDistance')}</small>
@@ -340,7 +343,7 @@
 				<span>{i18n.t('pages.settings.labelTemperature')}</span>
 				<select name="unitTemperature" bind:value={unitTemperature}>
 					{#each TEMPERATURE_UNIT_OPTIONS as opt (opt.id)}
-						<option value={opt.id}>{opt.label}</option>
+						<option value={opt.id}>{i18n.t(opt.labelKey)}</option>
 					{/each}
 				</select>
 				<small class="hint">{i18n.t('pages.settings.hintTemperature')}</small>
@@ -349,7 +352,7 @@
 				<span>{i18n.t('pages.settings.labelWindSpeed')}</span>
 				<select name="unitWind" bind:value={unitWind}>
 					{#each WIND_UNIT_OPTIONS as opt (opt.id)}
-						<option value={opt.id}>{opt.label}</option>
+						<option value={opt.id}>{i18n.t(opt.labelKey)}</option>
 					{/each}
 				</select>
 				<small class="hint">{i18n.t('pages.settings.hintWindSpeed')}</small>
@@ -358,7 +361,7 @@
 				<span>{i18n.t('pages.settings.labelPrecipitation')}</span>
 				<select name="unitPrecipitation" bind:value={unitPrecipitation}>
 					{#each PRECIPITATION_UNIT_OPTIONS as opt (opt.id)}
-						<option value={opt.id}>{opt.label}</option>
+						<option value={opt.id}>{i18n.t(opt.labelKey)}</option>
 					{/each}
 				</select>
 				<small class="hint">{i18n.t('pages.settings.hintPrecipitation')}</small>
