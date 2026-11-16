@@ -30,6 +30,8 @@
 	import StylePyramid from '#lib/components/StylePyramid.svelte';
 	import TagChips from '#lib/components/TagChips.svelte';
 	import { describeDisplaySystems } from '#lib/grades';
+	import { formatCalendarDate } from '#lib/dates';
+	import { formatDistance } from '#lib/units';
 	import TickTypeIcon from '#lib/components/TickTypeIcon.svelte';
 	import StyleBadge from '#lib/components/StyleBadge.svelte';
 	import TrainingLoad from '#lib/components/TrainingLoad.svelte';
@@ -138,6 +140,7 @@
 			preferences={data.cardPreferences}
 			data={s.heatmap}
 			dateDisplay={data.dateDisplay}
+			displayUnits={data.displayUnits}
 		/>
 	{:else if id === 'volume'}
 		<article class="panel">
@@ -186,9 +189,19 @@
 			/>
 		</article>
 	{:else if id === 'monthly'}
-		<MonthlyStats months={s.monthly.months} years={s.monthly.years} />
+		<MonthlyStats
+			months={s.monthly.months}
+			years={s.monthly.years}
+			displayUnits={data.displayUnits}
+		/>
 	{:else if id === 'yearly'}
-		<YearlyStats preferences={data.cardPreferences} years={s.yearly.years} days={s.heatmap} />
+		<YearlyStats
+			preferences={data.cardPreferences}
+			years={s.yearly.years}
+			days={s.heatmap}
+			displayUnits={data.displayUnits}
+			dateDisplay={data.dateDisplay}
+		/>
 	{:else if id === 'bestMonths'}
 		<BestMonths data={s.bestMonths} />
 	{:else if id === 'badges'}
@@ -202,9 +215,14 @@
 	{:else if id === 'goals'}
 		<GoalsProgress goals={data.activeGoals} canEdit={data.showSettings} />
 	{:else if id === 'projects'}
-		<ProjectsHighlight projects={data.dashboardProjects} />
+		<ProjectsHighlight projects={data.dashboardProjects} dateDisplay={data.dateDisplay} />
 	{:else if id === 'trainingLoad'}
-		<TrainingLoad load={s.trainingLoad} gradeSystems={data.gradeSystems} />
+		<TrainingLoad
+			load={s.trainingLoad}
+			gradeSystems={data.gradeSystems}
+			displayUnits={data.displayUnits}
+			dateDisplay={data.dateDisplay}
+		/>
 	{:else if id === 'sessionsPerWeek'}
 		<SessionsPerWeek years={s.sessionsPerWeek.years} byYear={s.sessionsPerWeek.byYear} />
 	{:else if id === 'weekday'}
@@ -214,11 +232,15 @@
 			dateDisplay={data.dateDisplay}
 		/>
 	{:else if id === 'weatherConditions' && s.weatherConditions}
-		<WeatherConditions data={s.weatherConditions} dateDisplay={data.dateDisplay} />
+		<WeatherConditions
+			data={s.weatherConditions}
+			dateDisplay={data.dateDisplay}
+			displayUnits={data.displayUnits}
+		/>
 	{:else if id === 'weatherPerformance' && s.weatherPerformance}
 		<WeatherPerformance data={s.weatherPerformance} dateDisplay={data.dateDisplay} />
 	{:else if id === 'milestones'}
-		<Milestones items={s.milestones.items} limit={6} />
+		<Milestones items={s.milestones.items} limit={6} dateDisplay={data.dateDisplay} />
 	{:else if id === 'styleMix'}
 		<StyleMixChart months={s.styleMix.months} />
 	{:else if id === 'partners'}
@@ -275,7 +297,11 @@
 			{/each}
 		</div>
 	{:else if id === 'notable'}
-		<NotableAscents byStyle={s.notableByStyle} byArea={s.notableByArea} />
+		<NotableAscents
+			byStyle={s.notableByStyle}
+			byArea={s.notableByArea}
+			dateDisplay={data.dateDisplay}
+		/>
 	{:else if id === 'cpr'}
 		<header class="section-head">
 			<h2>CPR timelines</h2>
@@ -334,7 +360,9 @@
 								{/if}
 							</strong>
 							<div class="sub">
-								{(climb.ascentDate || '').slice(0, 10)} · <TickTypeIcon tick={climb.tickType} /> ·
+								{formatCalendarDate(climb.ascentDate, data.dateDisplay)} · <TickTypeIcon
+									tick={climb.tickType}
+								/> ·
 								{#if climb.cragName}
 									<a href="/logbook?crag={encodeURIComponent(climb.cragName)}">{climb.cragName}</a>
 								{/if}
@@ -353,6 +381,7 @@
 								location={climb.weatherLocation}
 								chips={climb.weatherChips}
 								dateDisplay={data.dateDisplay}
+								displayUnits={data.displayUnits}
 							/>
 						</div>
 						<GradeChip grade={climb.gradeLabel ?? climb.gradeRaw} band={climb.gradeBand} />
@@ -431,7 +460,7 @@
 			<span>successful ascents</span>
 		</div>
 		<div class="metric panel">
-			<strong>{s.heightKm} km</strong>
+			<strong>{formatDistance(s.heightKm, data.displayUnits.distance)}</strong>
 			<span>distance climbed</span>
 		</div>
 		<div class="metric panel">

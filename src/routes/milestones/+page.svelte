@@ -21,7 +21,7 @@
 	</p>
 </section>
 
-<Milestones items={data.items} titleHref={null} />
+<Milestones items={data.items} titleHref={null} dateDisplay={data.dateDisplay} />
 
 <style>
 	.head {

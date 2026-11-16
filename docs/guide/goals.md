@@ -13,6 +13,8 @@ Goals turn a target in your theCrag logbook into a progress bar on the dashboard
 
 Venue scope (outdoor / indoor / any) filters which ascents count. Grade goals default to **outdoor**.
 
+Height goals always **store metres**. The create form asks for the target in your selected height unit (metres or feet) and converts feet before saving, and the progress and target labels follow that unit too. Switching units later relabels the goal without changing the stored target. See [Display settings](/docs/display-settings).
+
 Grade goals keep their **Routes** or **Boulders** scale. Targets and progress labels follow the corresponding grade system in Settings; changing the display system does not change the target or percentage. Suggested-goal titles follow Settings too, while custom titles stay as entered. In a goal's **Grade preferences**, you can choose its scale and whether to use an automatic title.
 
 If a goal says **Grade scale needed**, its progress is unavailable until the owner chooses **Routes** or **Boulders**. Its title and saved target are preserved; a title mentioning a grade does not decide its scale.

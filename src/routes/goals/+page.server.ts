@@ -1,5 +1,6 @@
 import { fail } from '@sveltejs/kit';
 import { parseGoalGradeScale, parseScaledGoalGrade } from '#lib/goalGrades';
+import { feetToMeters } from '#lib/units';
 import {
 	createGoal,
 	deleteGoal,
@@ -31,12 +32,25 @@ export const actions: Actions = {
 		const form = await request.formData();
 		const kind = String(form.get('kind') || 'custom') as GoalKind;
 		const title = String(form.get('title') || '').trim();
-		const targetValue = String(form.get('targetValue') || '').trim() || null;
+		let targetValue = String(form.get('targetValue') || '').trim() || null;
 		const yearRaw = String(form.get('year') || '').trim();
 		const gradeRaw = String(form.get('targetGradeScore') || form.get('grade') || '').trim();
 		const gradeScale = parseGoalGradeScale(form.get('gradeScale'));
 		const venueScope = String(form.get('venueScope') || '').trim() || null;
 		if (!title) return fail(400, { ok: false, message: 'Title is required' });
+
+		// Height goals store metres; the form may ask for feet when the owner uses imperial (#483).
+		if (kind === 'height_year' && targetValue) {
+			const unit = String(form.get('heightUnit') || 'm') === 'ft' ? 'ft' : 'm';
+			const entered = Number(targetValue.replace(/,/g, ''));
+			if (!Number.isFinite(entered) || entered < 0) {
+				return fail(400, {
+					ok: false,
+					message: `Enter a target height in ${unit === 'ft' ? 'feet' : 'metres'}`
+				});
+			}
+			targetValue = String(unit === 'ft' ? Math.round(feetToMeters(entered)) : entered);
+		}
 
 		const year = yearRaw ? Number(yearRaw) : null;
 		if (kind === 'grade' && !gradeScale)

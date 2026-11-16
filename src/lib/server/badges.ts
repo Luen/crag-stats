@@ -17,7 +17,22 @@ import {
 	type DisplayGradeSystems
 } from '#lib/grades';
 import { tickKind } from '#lib/ticks';
-import { DEFAULT_DATE_DISPLAY, formatDateTime, formatNumber, type DateDisplay } from '#lib/dates';
+import {
+	DEFAULT_DATE_DISPLAY,
+	formatCalendarDate,
+	formatDateTime,
+	formatNumber,
+	type DateDisplay
+} from '#lib/dates';
+import {
+	DEFAULT_DISPLAY_UNITS,
+	formatDistance,
+	formatHeight,
+	formatPrecipitation,
+	formatTemperature,
+	formatWind,
+	type DisplayUnits
+} from '#lib/units';
 import {
 	isFairWeather,
 	isFreezeWeather,
@@ -62,6 +77,8 @@ export type BadgeDef = {
 	id: string;
 	title: string;
 	hint: string;
+	/** Hint wording for the owner's unit settings; thresholds stay metric (#484). */
+	hintForUnits?: (units: DisplayUnits) => string;
 	icon: BadgeIcon;
 	tone: BadgeTone;
 };
@@ -124,23 +141,23 @@ function isWeekend(iso: string): boolean {
 	return day === 0 || day === 6;
 }
 
-/** Short date for badge cards, e.g. Aug 27, 2018 */
-export function formatBadgeDate(iso: string | null | undefined): string {
+/** Short calendar date for badge cards, e.g. "27 Aug 2018" or the owner's configured format. */
+export function formatBadgeDate(
+	iso: string | null | undefined,
+	display: DateDisplay = DEFAULT_DATE_DISPLAY
+): string {
 	const key = dayKey(iso);
 	if (!key) return '';
-	const d = new Date(`${key}T12:00:00Z`);
-	if (Number.isNaN(d.getTime())) return key;
-	return d.toLocaleDateString('en-US', {
-		month: 'short',
-		day: 'numeric',
-		year: 'numeric',
-		timeZone: 'UTC'
-	});
+	return formatCalendarDate(key, display);
 }
 
-function routeLine(name: string | null | undefined, date: string | null): string {
+function routeLine(
+	name: string | null | undefined,
+	date: string | null,
+	display: DateDisplay
+): string {
 	const n = (name || '').trim();
-	const when = formatBadgeDate(date);
+	const when = formatBadgeDate(date, display);
 	if (n && when) return `${n}, ${when}`;
 	if (n) return n;
 	if (when) return when;
@@ -158,6 +175,17 @@ export function isGreenpoint(row: DashboardExtraRow): boolean {
 		['onsight', 'flash', 'redpoint', 'pinkpoint', 'groundupredpoint', 'lead'].includes(tick)
 	);
 }
+
+/** Cumulative height thresholds in metres (#484): one catalogue, metric thresholds. */
+const HEIGHT_BADGES = [
+	{ id: 'height_1km', m: 1000, title: 'Kilometre Climber', tone: 'warm' as const },
+	{ id: 'height_5km', m: 5000, title: 'Five K Vertical', tone: 'green' as const },
+	{ id: 'height_10km', m: 10000, title: 'Ten K Vertical', tone: 'blue' as const },
+	{ id: 'height_20km', m: 20000, title: 'Twenty K Vertical', tone: 'purple' as const },
+	{ id: 'height_50km', m: 50000, title: 'Fifty K Vertical', tone: 'warm' as const },
+	{ id: 'height_100km', m: 100000, title: 'Hundred K Vertical', tone: 'green' as const },
+	{ id: 'height_150km', m: 150000, title: 'One-Fifty K Vertical', tone: 'blue' as const }
+];
 
 /** Static catalog — order is display order for locked badges. */
 export const BADGE_CATALOG: readonly BadgeDef[] = [
@@ -299,6 +327,8 @@ export const BADGE_CATALOG: readonly BadgeDef[] = [
 		id: 'weather_heat',
 		title: 'Heat Wave',
 		hint: 'Climb outdoors when the day’s high is 35°C or hotter',
+		hintForUnits: (units) =>
+			`Climb outdoors when the day’s high is ${formatTemperature(35, units.temperature)} or hotter`,
 		icon: 'thermometer',
 		tone: 'warm'
 	},
@@ -306,6 +336,8 @@ export const BADGE_CATALOG: readonly BadgeDef[] = [
 		id: 'weather_freeze',
 		title: 'Freeze Frame',
 		hint: 'Climb outdoors when the day’s low is 0°C or colder',
+		hintForUnits: (units) =>
+			`Climb outdoors when the day’s low is ${formatTemperature(0, units.temperature)} or colder`,
 		icon: 'snowflake',
 		tone: 'blue'
 	},
@@ -313,6 +345,8 @@ export const BADGE_CATALOG: readonly BadgeDef[] = [
 		id: 'weather_rain',
 		title: 'Rain Check',
 		hint: 'Climb outdoors on a day with at least 1 mm of rain',
+		hintForUnits: (units) =>
+			`Climb outdoors on a day with at least ${formatPrecipitation(1, units.precipitation)} of rain`,
 		icon: 'droplet',
 		tone: 'blue'
 	},
@@ -327,6 +361,8 @@ export const BADGE_CATALOG: readonly BadgeDef[] = [
 		id: 'weather_wind',
 		title: 'Blown Away',
 		hint: 'Climb outdoors when the day’s max wind is 50 km/h or stronger',
+		hintForUnits: (units) =>
+			`Climb outdoors when the day’s max wind is ${formatWind(50, units.wind)} or stronger`,
 		icon: 'wind',
 		tone: 'slate'
 	},
@@ -334,6 +370,8 @@ export const BADGE_CATALOG: readonly BadgeDef[] = [
 		id: 'weather_bluebird',
 		title: 'Bluebird',
 		hint: 'Climb outdoors on a pleasant dry day (high 15–25°C, little precip)',
+		hintForUnits: (units) =>
+			`Climb outdoors on a pleasant dry day (high ${formatTemperature(15, units.temperature)} to ${formatTemperature(25, units.temperature)}, little precip)`,
 		icon: 'sun',
 		tone: 'blue'
 	},
@@ -348,6 +386,8 @@ export const BADGE_CATALOG: readonly BadgeDef[] = [
 		id: 'weather_storm_send',
 		title: 'Storm Send',
 		hint: 'Send outdoors on a day with at least 10 mm of non-snow rain',
+		hintForUnits: (units) =>
+			`Send outdoors on a day with at least ${formatPrecipitation(10, units.precipitation)} of non-snow rain`,
 		icon: 'bolt',
 		tone: 'purple'
 	},
@@ -428,59 +468,19 @@ export const BADGE_CATALOG: readonly BadgeDef[] = [
 		icon: 'calendar',
 		tone: 'blue'
 	},
-	{
-		id: 'height_1km',
-		title: 'Kilometre Climber',
-		hint: 'Climb a cumulative 1 km',
+	...HEIGHT_BADGES.map((b): BadgeDef => ({
+		id: b.id,
+		title: b.title,
+		hint: `Climb a cumulative ${formatDistance(b.m / 1000, 'km')}`,
+		hintForUnits: (units) => `Climb a cumulative ${formatDistance(b.m / 1000, units.distance)}`,
 		icon: 'mountain',
-		tone: 'warm'
-	},
-	{
-		id: 'height_5km',
-		title: 'Five K Vertical',
-		hint: 'Climb a cumulative 5 km',
-		icon: 'mountain',
-		tone: 'green'
-	},
-	{
-		id: 'height_10km',
-		title: 'Ten K Vertical',
-		hint: 'Climb a cumulative 10 km',
-		icon: 'mountain',
-		tone: 'blue'
-	},
-	{
-		id: 'height_20km',
-		title: 'Twenty K Vertical',
-		hint: 'Climb a cumulative 20 km',
-		icon: 'mountain',
-		tone: 'purple'
-	},
-	{
-		id: 'height_50km',
-		title: 'Fifty K Vertical',
-		hint: 'Climb a cumulative 50 km',
-		icon: 'mountain',
-		tone: 'warm'
-	},
-	{
-		id: 'height_100km',
-		title: 'Hundred K Vertical',
-		hint: 'Climb a cumulative 100 km',
-		icon: 'mountain',
-		tone: 'green'
-	},
-	{
-		id: 'height_150km',
-		title: 'One-Fifty K Vertical',
-		hint: 'Climb a cumulative 150 km',
-		icon: 'mountain',
-		tone: 'blue'
-	},
+		tone: b.tone
+	})),
 	{
 		id: 'day_height_250',
 		title: '250m Day',
 		hint: 'Climb 250 m in a single day',
+		hintForUnits: (units) => `Climb ${formatHeight(250, units.height)} in a single day`,
 		icon: 'mountain',
 		tone: 'green'
 	},
@@ -873,16 +873,6 @@ const SESSION_BADGES = [
 	{ id: 'sessions_100', n: 100 }
 ];
 
-const HEIGHT_BADGES = [
-	{ id: 'height_1km', m: 1000, label: '1 km climbed' },
-	{ id: 'height_5km', m: 5000, label: '5 km climbed' },
-	{ id: 'height_10km', m: 10000, label: '10 km climbed' },
-	{ id: 'height_20km', m: 20000, label: '20 km climbed' },
-	{ id: 'height_50km', m: 50000, label: '50 km climbed' },
-	{ id: 'height_100km', m: 100000, label: '100 km climbed' },
-	{ id: 'height_150km', m: 150000, label: '150 km climbed' }
-];
-
 /** Distinct routes logged (sends or attempts), keyed by provider route id. */
 const DISTINCT_ROUTE_BADGES = [
 	{ id: 'distinct_routes_50', n: 50 },
@@ -990,17 +980,17 @@ function pitchCredit(row: DashboardExtraRow): PitchCredit | null {
 		: null;
 }
 
-function hitAt(row: DashboardExtraRow, prefix: string): Hit {
+function makeHit(row: DashboardExtraRow, prefix: string, display: DateDisplay): Hit {
 	const date = dayKey(row.ascentDate)!;
 	const routeName = (row.routeName || '').trim() || null;
 	const href = row.ascentUrl || row.url || null;
-	const tail = routeLine(routeName, date);
+	const tail = routeLine(routeName, date, display);
 	return {
 		date,
 		routeName,
 		href,
 		detail: [
-			tail ? `${prefix} · ${tail}` : `${prefix} · ${formatBadgeDate(date)}`,
+			tail ? `${prefix} · ${tail}` : `${prefix} · ${formatBadgeDate(date, display)}`,
 			ascentPartners(row.partners)
 		]
 			.filter(Boolean)
@@ -1025,10 +1015,16 @@ export function buildBadges(
 		firstImport?: FirstImport | null;
 		gradeSystems?: DisplayGradeSystems;
 		dateDisplay?: DateDisplay;
+		/** Display units for hint/detail wording; thresholds stay metric (#484). */
+		displayUnits?: DisplayUnits;
 		/** Cached Open-Meteo days keyed by lat|lon|day (#268). */
 		weatherByKey?: ReadonlyMap<string, WeatherSnapshot>;
 	} = {}
 ): BadgesResult {
+	const dateDisplay = context.dateDisplay ?? DEFAULT_DATE_DISPLAY;
+	const units = context.displayUnits ?? DEFAULT_DISPLAY_UNITS;
+	const hit = (row: DashboardExtraRow, prefix: string) => makeHit(row, prefix, dateDisplay);
+
 	// Chronological by day, then stable ascent id — never alphabetise route names
 	// (that made “Nacho Libre” beat earlier same-day climbs like “Torched”).
 	const dated = [...rows]
@@ -1056,8 +1052,8 @@ export function buildBadges(
 		const day = new Date(Date.parse(`${run.start}T00:00:00Z`) + (threshold - 1) * 86400000)
 			.toISOString()
 			.slice(0, 10);
-		const hit = dated.find((r) => r.day === day)!;
-		mark(`streak_days_${threshold}`, hitAt(hit.row, `Climbed on ${threshold} consecutive days`));
+		const runHit = dated.find((r) => r.day === day)!;
+		mark(`streak_days_${threshold}`, hit(runHit.row, `Climbed on ${threshold} consecutive days`));
 	}
 
 	let ascentCount = 0;
@@ -1120,12 +1116,12 @@ export function buildBadges(
 				ascentGearStyle: row.ascentGearStyle ?? null
 			});
 			if (solo === 'lead' && soloStyle !== 'Top rope')
-				mark('first_lead_rope_solo', hitAt(row, 'First completed lead rope solo'));
+				mark('first_lead_rope_solo', hit(row, 'First completed lead rope solo'));
 			if (solo === 'toprope')
-				mark('first_top_rope_solo', hitAt(row, 'First completed top-rope solo'));
+				mark('first_top_rope_solo', hit(row, 'First completed top-rope solo'));
 		}
 
-		if (isGreenpoint(row)) mark('greenpoint', hitAt(row, 'Sport route led on trad protection'));
+		if (isGreenpoint(row)) mark('greenpoint', hit(row, 'Sport route led on trad protection'));
 		const outdoor =
 			row.outdoor !== false &&
 			!isLikelyIndoorRoute({
@@ -1135,24 +1131,21 @@ export function buildBadges(
 				tagsJson: row.tagsJson
 			});
 		if (outdoor && isSunFacingSummer(row))
-			mark(
-				'sun_facing_summer',
-				hitAt(row, 'Sunny exposure in local summer · tag/aspect heuristic')
-			);
+			mark('sun_facing_summer', hit(row, 'Sunny exposure in local summer · tag/aspect heuristic'));
 		const monthDay = day.slice(5); // MM-DD from calendar dayKey — no local TZ
 
 		if (sessions.size === 1 && !earned.has('first_session')) {
-			mark('first_session', hitAt(row, 'First session done'));
+			mark('first_session', hit(row, 'First session done'));
 		}
 
 		// Holiday badges: any logged ascent that calendar day (attempts count).
 		if (monthDay === '12-25') {
-			mark('holiday_christmas', hitAt(row, 'Climbed on Christmas Day'));
+			mark('holiday_christmas', hit(row, 'Climbed on Christmas Day'));
 		}
 		if (monthDay === '12-31' || monthDay === '01-01') {
 			mark(
 				'holiday_new_year',
-				hitAt(row, monthDay === '12-31' ? 'Climbed on New Year’s Eve' : 'Climbed on New Year’s Day')
+				hit(row, monthDay === '12-31' ? 'Climbed on New Year’s Eve' : 'Climbed on New Year’s Day')
 			);
 		}
 
@@ -1163,33 +1156,48 @@ export function buildBadges(
 				: lookupAscentWeather(context.weatherByKey, { ...row, outdoor });
 		if (weather) {
 			if (isHeatWeather(weather)) {
-				mark('weather_heat', hitAt(row, `Hot day · ${Math.round(weather.tempMaxC!)}°C high`));
+				mark(
+					'weather_heat',
+					hit(row, `Hot day · ${formatTemperature(weather.tempMaxC, units.temperature)} high`)
+				);
 			}
 			if (isFreezeWeather(weather)) {
-				mark('weather_freeze', hitAt(row, `Cold day · ${Math.round(weather.tempMinC!)}°C low`));
+				mark(
+					'weather_freeze',
+					hit(row, `Cold day · ${formatTemperature(weather.tempMinC, units.temperature)} low`)
+				);
 			}
 			if (isSnowWeather(weather)) {
-				mark('weather_snow', hitAt(row, 'Climbed in the snow'));
+				mark('weather_snow', hit(row, 'Climbed in the snow'));
 			} else if (isRainWeather(weather)) {
-				mark('weather_rain', hitAt(row, `Rainy day · ${weather.precipMm!.toFixed(1)} mm`));
+				mark(
+					'weather_rain',
+					hit(row, `Rainy day · ${formatPrecipitation(weather.precipMm, units.precipitation)}`)
+				);
 			}
 			if (isWindyWeather(weather)) {
-				mark('weather_wind', hitAt(row, `Windy day · ${Math.round(weather.windMaxKmh!)} km/h max`));
+				mark(
+					'weather_wind',
+					hit(row, `Windy day · ${formatWind(weather.windMaxKmh, units.wind)} max`)
+				);
 			}
 			if (isFairWeather(weather)) {
 				mark(
 					'weather_bluebird',
-					hitAt(row, `Bluebird day · ${Math.round(weather.tempMaxC!)}°C high`)
+					hit(row, `Bluebird day · ${formatTemperature(weather.tempMaxC, units.temperature)} high`)
 				);
 			}
 			if (isStickyHumidity(weather)) {
 				mark(
 					'weather_sticky',
-					hitAt(row, `Sticky day · ${Math.round(weather.humidityMean!)}% humidity`)
+					hit(row, `Sticky day · ${Math.round(weather.humidityMean!)}% humidity`)
 				);
 			}
 			if (send && isStormPrecip(weather)) {
-				mark('weather_storm_send', hitAt(row, `Storm send · ${weather.precipMm!.toFixed(1)} mm`));
+				mark(
+					'weather_storm_send',
+					hit(row, `Storm send · ${formatPrecipitation(weather.precipMm, units.precipitation)}`)
+				);
 			}
 			if (
 				earned.has('weather_heat') &&
@@ -1198,14 +1206,14 @@ export function buildBadges(
 				earned.has('weather_snow') &&
 				!earned.has('weather_four_seasons')
 			) {
-				mark('weather_four_seasons', hitAt(row, 'Heat, freeze, rain, and snow'));
+				mark('weather_four_seasons', hit(row, 'Heat, freeze, rain, and snow'));
 			}
 		}
 
 		// Partner / multipitch / travel / persistence badges (#279), from existing row fields.
 		const partnerNames = new Set(splitPartners(row.partners).map((n) => n.toLowerCase()));
 		if (partnerNames.size >= 3) {
-			mark('partners_crowded_belay', hitAt(row, `Crowded belay · ${partnerNames.size} partners`));
+			mark('partners_crowded_belay', hit(row, `Crowded belay · ${partnerNames.size} partners`));
 		}
 
 		if (send || row.sentPitchNumbers != null) {
@@ -1222,7 +1230,7 @@ export function buildBadges(
 					(n, p) => n + Math.max(p.whole, p.labels.size),
 					0
 				);
-				if (total >= 3) mark('multipitch_day', hitAt(row, `Multipitch day · ${total} pitches`));
+				if (total >= 3) mark('multipitch_day', hit(row, `Multipitch day · ${total} pitches`));
 			}
 		}
 
@@ -1234,7 +1242,7 @@ export function buildBadges(
 				while (cragEvents.length && cragEvents[0]!.t < t - 6) cragEvents.shift();
 				const distinct = new Set(cragEvents.map((e) => e.crag));
 				if (distinct.size >= 4) {
-					mark('travel_week', hitAt(row, `Travel week · ${distinct.size} crags in 7 days`));
+					mark('travel_week', hit(row, `Travel week · ${distinct.size} crags in 7 days`));
 				}
 			}
 		}
@@ -1247,7 +1255,7 @@ export function buildBadges(
 			if (send && !routeSent.has(row.routeId)) {
 				routeSent.add(row.routeId);
 				if (days.size >= 4) {
-					mark('route_persistence', hitAt(row, `Sent after ${days.size} days on it`));
+					mark('route_persistence', hit(row, `Sent after ${days.size} days on it`));
 				}
 			}
 		}
@@ -1257,7 +1265,7 @@ export function buildBadges(
 			if (!firstDay) {
 				routeFirstDay.set(row.routeKey, day);
 				for (const b of DISTINCT_ROUTE_BADGES) {
-					if (routeFirstDay.size === b.n) mark(b.id, hitAt(row, `Different route #${b.n}`));
+					if (routeFirstDay.size === b.n) mark(b.id, hit(row, `Different route #${b.n}`));
 				}
 			}
 			const days = keyedRouteDays.get(row.routeKey) ?? new Set<string>();
@@ -1265,7 +1273,7 @@ export function buildBadges(
 			keyedRouteDays.set(row.routeKey, days);
 			maxRouteDays = Math.max(maxRouteDays, days.size);
 			if (days.size === ROUTE_DAYS_TARGET) {
-				mark('route_days_10', hitAt(row, `Day ${ROUTE_DAYS_TARGET} on the same route`));
+				mark('route_days_10', hit(row, `Day ${ROUTE_DAYS_TARGET} on the same route`));
 			}
 			// A repeat is any ascent on a later day than the route's first logged day.
 			if (firstDay && day > firstDay && crag && crag !== 'unknown') {
@@ -1275,30 +1283,29 @@ export function buildBadges(
 				if (n === HOME_TURF_TARGET) {
 					mark(
 						'home_turf_25',
-						hitAt(row, `${HOME_TURF_TARGET} repeat ascents at ${row.cragName!.trim()}`)
+						hit(row, `${HOME_TURF_TARGET} repeat ascents at ${row.cragName!.trim()}`)
 					);
 				}
 			}
 		}
 
 		for (const b of COUNT_BADGES) {
-			if (ascentCount === b.n) mark(b.id, hitAt(row, b.label(b.n)));
+			if (ascentCount === b.n) mark(b.id, hit(row, b.label(b.n)));
 		}
 		for (const b of SESSION_BADGES) {
-			if (sessions.size === b.n) mark(b.id, hitAt(row, `Day out #${b.n}`));
+			if (sessions.size === b.n) mark(b.id, hit(row, `Day out #${b.n}`));
 		}
 		for (const b of HEIGHT_BADGES) {
-			if (cumHeight >= b.m && !earned.has(b.id)) mark(b.id, hitAt(row, b.label));
+			if (cumHeight >= b.m && !earned.has(b.id)) {
+				mark(b.id, hit(row, `${formatDistance(b.m / 1000, units.distance)} climbed`));
+			}
 		}
 		if (dayHeight >= 250 && !earned.has('day_height_250')) {
-			mark('day_height_250', hitAt(row, '250 m in one day'));
+			mark('day_height_250', hit(row, `${formatHeight(250, units.height)} in one day`));
 		}
 		for (const b of COUNTRY_BADGES) {
 			if (countries.size === b.n && country) {
-				mark(
-					b.id,
-					hitAt(row, b.n === 1 ? `Climbed in ${country}` : `${b.n} countries · ${country}`)
-				);
+				mark(b.id, hit(row, b.n === 1 ? `Climbed in ${country}` : `${b.n} countries · ${country}`));
 			}
 		}
 
@@ -1316,62 +1323,62 @@ export function buildBadges(
 								? 'Red point'
 								: 'Pink point'
 					: null;
-			mark('first_send', hitAt(row, how ? `First send (${how})` : 'First send'));
+			mark('first_send', hit(row, how ? `First send (${how})` : 'First send'));
 		}
 		for (const b of SEND_BADGES) {
-			if (sendCount === b.n) mark(b.id, hitAt(row, `Send #${b.n}`));
+			if (sendCount === b.n) mark(b.id, hit(row, `Send #${b.n}`));
 		}
 
 		if (kind === 'onsight') {
 			onsightCount += 1;
-			if (onsightCount === 1) mark('first_onsight', hitAt(row, 'First onsight'));
+			if (onsightCount === 1) mark('first_onsight', hit(row, 'First onsight'));
 			for (const b of ONSIGHT_BADGES) {
-				if (onsightCount === b.n) mark(b.id, hitAt(row, `Onsighted your ${b.n}th route`));
+				if (onsightCount === b.n) mark(b.id, hit(row, `Onsighted your ${b.n}th route`));
 			}
 		}
 		if (kind === 'flash') {
 			flashCount += 1;
-			if (flashCount === 1) mark('first_flash', hitAt(row, 'First flash'));
+			if (flashCount === 1) mark('first_flash', hit(row, 'First flash'));
 			for (const b of FLASH_BADGES) {
-				if (flashCount === b.n) mark(b.id, hitAt(row, `Flashed your ${b.n}th route`));
+				if (flashCount === b.n) mark(b.id, hit(row, `Flashed your ${b.n}th route`));
 			}
 		}
 
 		if (isWeekend(day)) {
 			weekendSendCount += 1;
-			if (weekendSendCount === 5) mark('weekend_5', hitAt(row, 'Your 5th weekend send'));
-			if (weekendSendCount === 15) mark('weekend_15', hitAt(row, 'Your 15th weekend send'));
+			if (weekendSendCount === 5) mark('weekend_5', hit(row, 'Your 5th weekend send'));
+			if (weekendSendCount === 15) mark('weekend_15', hit(row, 'Your 15th weekend send'));
 		}
 
 		const style = (row.gearStyle || '').toLowerCase();
 		if (style.includes('sport') && !earned.has('style_sport')) {
-			mark('style_sport', hitAt(row, 'First sport send'));
+			mark('style_sport', hit(row, 'First sport send'));
 		}
 		if (style.includes('trad') && !earned.has('style_trad')) {
-			mark('style_trad', hitAt(row, 'First trad send'));
+			mark('style_trad', hit(row, 'First trad send'));
 		}
 		if (style.includes('boulder') && !earned.has('style_boulder')) {
-			mark('style_boulder', hitAt(row, 'First boulder send'));
+			mark('style_boulder', hit(row, 'First boulder send'));
 		}
 
 		const band = row.gradeBand;
-		if (band === 2) mark('band_intermediate', hitAt(row, 'First Intermediate-band send'));
-		if (band === 3) mark('band_experienced', hitAt(row, 'First Experienced-band send'));
-		if (band === 4) mark('band_expert', hitAt(row, 'First Expert-band send'));
-		if (band === 5) mark('band_elite', hitAt(row, 'First Elite-band send'));
+		if (band === 2) mark('band_intermediate', hit(row, 'First Intermediate-band send'));
+		if (band === 3) mark('band_experienced', hit(row, 'First Experienced-band send'));
+		if (band === 4) mark('band_expert', hit(row, 'First Expert-band send'));
+		if (band === 5) mark('band_elite', hit(row, 'First Elite-band send'));
 
 		// First send of a route the owner marked FA/FFA dates that first ascent (#194).
 		if (row.firstAscent && row.routeId != null && !faRoutes.has(row.routeId)) {
 			faRoutes.add(row.routeId);
 			const what = row.firstAscent === 'FFA' ? 'First free ascent' : 'First ascent';
-			mark(row.firstAscent === 'FFA' ? 'first_ffa' : 'first_fa', hitAt(row, what));
+			mark(row.firstAscent === 'FFA' ? 'first_ffa' : 'first_fa', hit(row, what));
 			for (const b of FA_COUNT_BADGES) {
-				if (faRoutes.size === b.n) mark(b.id, hitAt(row, `${what} #${b.n}`));
+				if (faRoutes.size === b.n) mark(b.id, hit(row, `${what} #${b.n}`));
 			}
 			if (row.firstAscent === 'FFA') {
 				ffaCount += 1;
 				for (const b of FFA_COUNT_BADGES) {
-					if (ffaCount === b.n) mark(b.id, hitAt(row, `First free ascent #${b.n}`));
+					if (ffaCount === b.n) mark(b.id, hit(row, `First free ascent #${b.n}`));
 				}
 			}
 			const faStyle = displayStyle(row.gearStyle);
@@ -1380,7 +1387,7 @@ export function buildBadges(
 				const n = styleFaCounts[faStyle];
 				for (const b of STYLE_FA_BADGES) {
 					if (b.style === faStyle && n === b.n) {
-						mark(b.id, hitAt(row, `${b.n} ${faStyle.toLowerCase()} first ascents · ${what}`));
+						mark(b.id, hit(row, `${b.n} ${faStyle.toLowerCase()} first ascents · ${what}`));
 					}
 				}
 			}
@@ -1398,7 +1405,7 @@ export function buildBadges(
 						true,
 						context.gradeSystems ?? DEFAULT_DISPLAY_SYSTEMS
 					);
-					mark('new_high', hitAt(row, `New boulder high · ${label}`));
+					mark('new_high', hit(row, `New boulder high · ${label}`));
 					// Allow new_high to update to latest? Catalog is single badge — keep first high only via mark()
 				}
 			} else if (n > maxRoute) {
@@ -1406,7 +1413,7 @@ export function buildBadges(
 				if (!earned.has('new_high')) {
 					mark(
 						'new_high',
-						hitAt(
+						hit(
 							row,
 							`New route high · ${formatGradeLabel(score, false, context.gradeSystems ?? DEFAULT_DISPLAY_SYSTEMS)}`
 						)
@@ -1418,12 +1425,12 @@ export function buildBadges(
 
 	for (let i = 0; i < setterHits.length; i++) {
 		const n = i + 1;
-		const hit = setterHits[i]!;
+		const setterHit = setterHits[i]!;
 		const badgeHit: Hit = {
-			date: hit.date,
-			routeName: hit.routeName,
-			href: hit.href,
-			detail: hit.detail
+			date: setterHit.date,
+			routeName: setterHit.routeName,
+			href: setterHit.href,
+			detail: setterHit.detail
 		};
 		if (n === 1) mark('first_setter', badgeHit);
 		if (n === 5) mark('setter_5', badgeHit);
@@ -1431,13 +1438,13 @@ export function buildBadges(
 		if (n === 25) mark('setter_25', badgeHit);
 	}
 
-	for (const hit of communityHits) {
+	for (const communityHit of communityHits) {
 		// Aggregate cache — never invent an earned day from a stale counter (#146).
-		mark(hit.id, {
+		mark(communityHit.id, {
 			date: null,
 			routeName: null,
 			href: null,
-			detail: hit.detail
+			detail: communityHit.detail
 		});
 	}
 
@@ -1461,12 +1468,13 @@ export function buildBadges(
 	}
 
 	const cards: BadgeCard[] = BADGE_CATALOG.map((def) => {
-		const hit = earned.get(def.id);
-		if (!hit) {
+		const earnedHit = earned.get(def.id);
+		const hint = def.hintForUnits?.(units) ?? def.hint;
+		if (!earnedHit) {
 			return {
 				id: def.id,
 				title: def.title,
-				hint: def.hint,
+				hint,
 				icon: def.icon,
 				tone: def.tone,
 				earned: false,
@@ -1479,14 +1487,14 @@ export function buildBadges(
 		return {
 			id: def.id,
 			title: def.title,
-			hint: def.hint,
+			hint,
 			icon: def.icon,
 			tone: def.tone,
 			earned: true,
-			detail: hit.detail,
-			date: hit.date,
-			routeName: hit.routeName,
-			href: hit.href
+			detail: earnedHit.detail,
+			date: earnedHit.date,
+			routeName: earnedHit.routeName,
+			href: earnedHit.href
 		};
 	});
 

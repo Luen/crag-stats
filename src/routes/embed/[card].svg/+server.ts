@@ -1,17 +1,23 @@
 import { error } from '@sveltejs/kit';
 import { applyDisplaySystemOverrides } from '#lib/grades';
+import { applyDisplayUnitOverrides } from '#lib/units';
 import { getDashboardStats } from '#lib/server/analytics';
-import { getDisplayGradeSystems } from '#lib/server/appSettings';
+import { getDisplayGradeSystems, getDisplayUnits } from '#lib/server/appSettings';
 import { isEmbedCard, parseEmbedTheme, renderEmbedCard } from '#lib/server/embedCards';
 import type { RequestHandler } from './$types';
 
 /** Dynamic SVG stat card for `<img>` embeds (see /share). */
 export const GET: RequestHandler = ({ params, url }) => {
 	if (!isEmbedCard(params.card)) error(404, 'Unknown card');
-	const stats = getDashboardStats(
-		applyDisplaySystemOverrides(getDisplayGradeSystems(), url.searchParams)
+	const gradeSystems = applyDisplaySystemOverrides(getDisplayGradeSystems(), url.searchParams);
+	const units = applyDisplayUnitOverrides(getDisplayUnits(), url.searchParams);
+	const stats = getDashboardStats(gradeSystems, { displayUnits: units });
+	const svg = renderEmbedCard(
+		params.card,
+		stats,
+		parseEmbedTheme(url.searchParams.get('theme')),
+		units
 	);
-	const svg = renderEmbedCard(params.card, stats, parseEmbedTheme(url.searchParams.get('theme')));
 	return new Response(svg, {
 		headers: {
 			'content-type': 'image/svg+xml; charset=utf-8',

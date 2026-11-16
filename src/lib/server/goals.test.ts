@@ -5,6 +5,8 @@ import {
 	parseGoalGradeScore,
 	progressPct
 } from './goalsShared';
+import { createGoal, listGoals } from './goals';
+import { deleteAppSetting, setAppSetting } from './appSettings';
 import { matchesVenueScope, normalizeVenueScope } from './venue';
 
 describe('parseGoalGradeScore', () => {
@@ -178,6 +180,29 @@ describe('gradeGoalReadiness', () => {
 		});
 		expect(longHaul.horizon).toBe('long-haul');
 		expect(longHaul.label).toContain('Long-haul');
+	});
+});
+
+describe('height goal display units', () => {
+	it('keeps stored metres while labels follow the unit setting', () => {
+		const goal = createGoal({
+			kind: 'height_year',
+			title: 'Vertical year',
+			targetValue: '5000',
+			year: 2026
+		});
+		expect(goal.targetValue).toBe('5000');
+		expect(goal.targetLabel).toContain('5000 m');
+
+		setAppSetting('unit_height', 'ft');
+		try {
+			const again = listGoals().find((g) => g.id === goal.id)!;
+			expect(again.targetValue).toBe('5000');
+			expect(again.progressLabel).toMatch(/ft$/);
+			expect(again.targetLabel).toContain('16404 ft');
+		} finally {
+			deleteAppSetting('unit_height');
+		}
 	});
 });
 

@@ -31,7 +31,12 @@
 
 {#if data.conditions}
 	<section id="conditions" aria-label="Weather conditions">
-		<WeatherConditions data={data.conditions} dateDisplay={data.dateDisplay} compact={false} />
+		<WeatherConditions
+			data={data.conditions}
+			dateDisplay={data.dateDisplay}
+			displayUnits={data.displayUnits}
+			compact={false}
+		/>
 	</section>
 {:else}
 	<section id="conditions" class="panel empty">

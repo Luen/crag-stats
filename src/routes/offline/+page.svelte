@@ -1,8 +1,17 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { formatDateTime, formatNumber, DEFAULT_DATE_DISPLAY } from '#lib/dates';
+	import {
+		formatCalendarDate,
+		formatDateTime,
+		formatNumber,
+		DEFAULT_DATE_DISPLAY
+	} from '#lib/dates';
+	import { formatHeight } from '#lib/units';
 	import { snapshotIsFresh, type OfflineSnapshot } from '#lib/offline';
 	import { offlineCommand } from '#lib/offlineClient';
+	import type { PageProps } from './$types';
+
+	let { data }: PageProps = $props();
 
 	let snapshot = $state<OfflineSnapshot | null>(null);
 	let message = $state('Preparing offline storage…');
@@ -157,8 +166,8 @@
 				<dd>{fmt(snapshot.summary.sends)}</dd>
 			</div>
 			<div>
-				<dt>Metres climbed</dt>
-				<dd>{fmt(snapshot.summary.heightM)}</dd>
+				<dt>Height climbed</dt>
+				<dd>{formatHeight(snapshot.summary.heightM, data.displayUnits.height)}</dd>
 			</div>
 		</dl>
 	</section>
@@ -188,9 +197,10 @@
 					></thead
 				><tbody>
 					{#each matching.slice(0, limit) as row (row.id)}<tr
-							><td>{row.date?.slice(0, 10) ?? 'Unknown'}</td><td>{row.name}<br />{row.crag}</td><td
-								>{row.grade ?? '—'}</td
-							><td>{row.tick ?? '—'}</td><td>{row.partners ?? '—'}</td></tr
+							><td>{formatCalendarDate(row.date, data.dateDisplay) || 'Unknown'}</td><td
+								>{row.name}<br />{row.crag}</td
+							><td>{row.grade ?? '—'}</td><td>{row.tick ?? '—'}</td><td>{row.partners ?? '—'}</td
+							></tr
 						>{/each}
 				</tbody>
 			</table>

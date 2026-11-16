@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { BADGE_CATALOG, buildBadges, formatBadgeDate } from './badges';
 import { buildMilestones, firstAscentSends, type DashboardExtraRow } from './dashboardExtras';
+import { UNIT_PRESETS } from '#lib/units';
 
 function row(partial: Partial<DashboardExtraRow> & { ascentDate: string }): DashboardExtraRow {
 	return {
@@ -12,9 +13,14 @@ function row(partial: Partial<DashboardExtraRow> & { ascentDate: string }): Dash
 }
 
 describe('formatBadgeDate', () => {
-	it('formats ISO dates with year', () => {
-		expect(formatBadgeDate('2018-04-22')).toBe('Apr 22, 2018');
-		expect(formatBadgeDate('2024-08-27')).toBe('Aug 27, 2024');
+	it('formats ISO dates in the configured display format', () => {
+		expect(formatBadgeDate('2018-04-22')).toBe('22 Apr 2018');
+		expect(formatBadgeDate('2024-08-27')).toBe('27 Aug 2024');
+		const base = { locale: 'en-AU', timeZone: 'UTC' as const };
+		expect(formatBadgeDate('2024-08-27', { ...base, dateFormat: 'dd/mm/yyyy' })).toBe('27/08/2024');
+		expect(formatBadgeDate('2024-08-27', { ...base, dateFormat: 'mm/dd/yyyy' })).toBe('08/27/2024');
+		expect(formatBadgeDate('2024-08-27', { ...base, dateFormat: 'yyyy-mm-dd' })).toBe('2024-08-27');
+		expect(formatBadgeDate(null)).toBe('');
 	});
 });
 
@@ -66,6 +72,48 @@ describe('buildBadges', () => {
 		expect(empty.earnedCount).toBe(0);
 		expect(empty.totalCount).toBe(BADGE_CATALOG.length);
 		expect(empty.locked.length).toBe(BADGE_CATALOG.length);
+	});
+
+	it('converts hint wording without changing badge ids or thresholds (#484)', () => {
+		const imperial = UNIT_PRESETS.find((p) => p.id === 'imperial')!.units;
+		const metric = UNIT_PRESETS.find((p) => p.id === 'metric')!.units;
+		const hints = (units: typeof imperial) =>
+			Object.fromEntries(
+				BADGE_CATALOG.map((d) => [d.id, (d.hintForUnits ?? (() => d.hint))(units)])
+			);
+		const imperialHints = hints(imperial);
+		expect(imperialHints.weather_heat).toContain('95°F or hotter');
+		expect(imperialHints.weather_freeze).toContain('32°F or colder');
+		expect(imperialHints.weather_rain).toContain('0.04 in of rain');
+		expect(imperialHints.weather_wind).toContain('31 mph or stronger');
+		expect(imperialHints.weather_storm_send).toContain('0.39 in');
+		expect(imperialHints.height_1km).toContain('0.6 mi');
+		expect(imperialHints.day_height_250).toContain('820 ft');
+		expect(hints(metric).weather_heat).toContain('35°C or hotter');
+		expect(hints(metric).height_50km).toContain('50 km');
+
+		// Thresholds and ids stay metric: the same rows earn the same badge ids.
+		const rows = Array.from({ length: 10 }, (_, i) =>
+			row({
+				ascentDate: `2024-01-${String(i + 1).padStart(2, '0')}`,
+				isSend: true,
+				tickType: 'Red point',
+				heightM: 4000
+			})
+		);
+		const ids = (units: typeof imperial) =>
+			buildBadges(rows, [], [], { displayUnits: units })
+				.earned.map((b) => b.id)
+				.sort();
+		expect(ids(imperial)).toEqual(ids(metric));
+
+		const imperialBadges = buildBadges(rows, [], [], { displayUnits: imperial }).earned;
+		expect(imperialBadges.find((b) => b.id === 'height_10km')?.detail).toContain('6.2 mi');
+		const mileMilestone = buildMilestones(rows, undefined, imperial).items.find(
+			(i) => i.id === 'height:10000'
+		);
+		expect(mileMilestone?.label).toBe('6.2 mi climbed');
+		expect(mileMilestone?.detail).toContain('6.2 mi');
 	});
 
 	it('earns first moves, session, and send from logbook order', () => {
@@ -384,7 +432,7 @@ describe('buildBadges', () => {
 		const earned = buildBadges(rows, [], [], { weatherByKey }).earned;
 		expect(earned.find((b) => b.id === 'weather_bluebird')?.detail).toMatch(/20°C/);
 		expect(earned.find((b) => b.id === 'weather_sticky')?.detail).toMatch(/90%/);
-		expect(earned.find((b) => b.id === 'weather_storm_send')?.detail).toMatch(/12\.0 mm/);
+		expect(earned.find((b) => b.id === 'weather_storm_send')?.detail).toMatch(/12 mm/);
 		expect(earned.find((b) => b.id === 'weather_four_seasons')?.date).toBe('2024-02-04');
 		// Attempt on a storm day does not unlock Storm Send.
 		const attemptOnly = buildBadges(

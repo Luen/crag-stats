@@ -19,6 +19,7 @@ import {
 	type WeatherLookupMap,
 	type WeatherSnapshot
 } from './weatherKeys';
+import { celsiusToFahrenheit, type TemperatureUnit } from '#lib/units';
 
 export type WeatherAscentRow = {
 	ascentDate: string | null;
@@ -93,12 +94,13 @@ const HIST_STEP = 5;
 const HIST_MIN = 0;
 const HIST_MAX = 35;
 
-export function histogramBinLabel(index: number): string {
+export function histogramBinLabel(index: number, unit: TemperatureUnit = 'celsius'): string {
 	const bins = (HIST_MAX - HIST_MIN) / HIST_STEP + 2; // <0, 0–4 … 30–34, 35+
-	if (index <= 0) return `<${HIST_MIN}°`;
-	if (index >= bins - 1) return `${HIST_MAX}°+`;
+	const shown = (c: number) => (unit === 'fahrenheit' ? celsiusToFahrenheit(c) : c);
+	if (index <= 0) return `<${shown(HIST_MIN)}°`;
+	if (index >= bins - 1) return `${shown(HIST_MAX)}°+`;
 	const from = HIST_MIN + (index - 1) * HIST_STEP;
-	return `${from}–${from + HIST_STEP - 1}°`;
+	return `${shown(from)}–<${shown(from + HIST_STEP)}°`;
 }
 
 /** Logbook drill-down using the same exact Celsius edges as the histogram. */

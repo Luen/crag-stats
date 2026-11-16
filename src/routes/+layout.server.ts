@@ -5,9 +5,10 @@ import { sql } from 'drizzle-orm';
 import { db, ensureSchema } from '#lib/server/db';
 import { ascents } from '#lib/server/db/schema';
 import { countActiveProjects } from '#lib/server/projects';
-import { getSearchIndexing } from '#lib/server/appSettings';
+import { getDateFormat, getDisplayUnits, getSearchIndexing } from '#lib/server/appSettings';
 import { isAuthEnabled, authScope } from '#lib/server/auth';
 import { resolveDateDisplay } from '#lib/dates';
+import { DEFAULT_DISPLAY_UNITS } from '#lib/units';
 import { env } from '#lib/server/env';
 import { isNoindexPath } from '#lib/server/seo';
 import type { LayoutServerLoad } from './$types';
@@ -51,6 +52,7 @@ export const load: LayoutServerLoad = async ({ locals, url, cookies }) => {
 			showSettings: false,
 			navCounts: null,
 			dateDisplay: resolveDateDisplay('en-AU', 'UTC'),
+			displayUnits: DEFAULT_DISPLAY_UNITS,
 			noindex: true
 		};
 	const authOn = isAuthEnabled();
@@ -67,7 +69,8 @@ export const load: LayoutServerLoad = async ({ locals, url, cookies }) => {
 		authScope: scope,
 		showSettings,
 		navCounts: gated ? null : navCounts(),
-		dateDisplay: resolveDateDisplay(env('DISPLAY_LOCALE'), env('TZ')),
+		dateDisplay: resolveDateDisplay(env('DISPLAY_LOCALE'), env('TZ'), getDateFormat()),
+		displayUnits: getDisplayUnits(),
 		noindex: isNoindexPath(url.pathname) || !getSearchIndexing().allowed
 	};
 };

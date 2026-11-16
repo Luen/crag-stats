@@ -8,11 +8,21 @@ import {
 } from '#lib/dashboardLayout';
 import { wipeAllData } from '#lib/server/analytics';
 import { parseBoulderGradeSystem, parseRouteGradeSystem } from '#lib/grades';
+import { parseDateFormat } from '#lib/dates';
 import { sameTickTypeSettings, type TickTypeSettings } from '#lib/tickSettings';
+import {
+	parseDistanceUnit,
+	parseHeightUnit,
+	parsePrecipitationUnit,
+	parseTemperatureUnit,
+	parseWindUnit
+} from '#lib/units';
 import {
 	deleteAppSetting,
 	getAppSetting,
+	getDateFormat,
 	getDisplayGradeSystems,
+	getDisplayUnits,
 	getSearchIndexing,
 	getShowNotes,
 	getTickTypeSettings,
@@ -48,6 +58,8 @@ export const load: PageServerLoad = async ({ cookies }) => {
 		hasApiKey: hasTheCragApiKey(),
 		syncConfiguration: getTheCragSyncConfiguration(),
 		gradeSystems: getDisplayGradeSystems(),
+		dateFormat: getDateFormat(),
+		displayUnits: getDisplayUnits(),
 		searchIndexing: getSearchIndexing(),
 		showNotes: getShowNotes(),
 		tickSettings: getTickTypeSettings(),
@@ -90,6 +102,33 @@ export const actions: Actions = {
 		setAppSetting(
 			'boulder_grade_system',
 			parseBoulderGradeSystem(String(form.get('boulderSystem') ?? '')) ?? current.boulder
+		);
+		const currentDateFormat = getDateFormat();
+		setAppSetting(
+			'date_format',
+			parseDateFormat(String(form.get('dateFormat') ?? '')) ?? currentDateFormat
+		);
+		const currentUnits = getDisplayUnits();
+		setAppSetting(
+			'unit_height',
+			parseHeightUnit(String(form.get('unitHeight') ?? '')) ?? currentUnits.height
+		);
+		setAppSetting(
+			'unit_distance',
+			parseDistanceUnit(String(form.get('unitDistance') ?? '')) ?? currentUnits.distance
+		);
+		setAppSetting(
+			'unit_temperature',
+			parseTemperatureUnit(String(form.get('unitTemperature') ?? '')) ?? currentUnits.temperature
+		);
+		setAppSetting(
+			'unit_wind',
+			parseWindUnit(String(form.get('unitWind') ?? '')) ?? currentUnits.wind
+		);
+		setAppSetting(
+			'unit_precipitation',
+			parsePrecipitationUnit(String(form.get('unitPrecipitation') ?? '')) ??
+				currentUnits.precipitation
 		);
 		// Checkbox: absent when unticked. Ignored while AUTH_SCOPE=all forces it off.
 		if (!getSearchIndexing().forcedOff) {

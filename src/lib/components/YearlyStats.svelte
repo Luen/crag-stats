@@ -7,6 +7,13 @@
 		type CardPreferences
 	} from '#lib/cardPreferences';
 	import type { HeatmapDay } from '#lib/types/dashboard';
+	import { formatCalendarDate, DEFAULT_DATE_DISPLAY, type DateDisplay } from '#lib/dates';
+	import {
+		convertHeight,
+		DEFAULT_DISPLAY_UNITS,
+		formatHeight,
+		type DisplayUnits
+	} from '#lib/units';
 	import { yearLineFractions } from '#lib/yearlyStatsLines';
 
 	type YearRow = {
@@ -27,12 +34,16 @@
 		days?: HeatmapDay[];
 		/** Dashboard links to `/activity` when that route exists; omit/null to skip. */
 		titleHref?: string | null;
+		displayUnits?: DisplayUnits;
+		dateDisplay?: DateDisplay;
 	};
 	let {
 		preferences = EMPTY_CARD_PREFERENCES,
 		years,
 		days = [],
-		titleHref = null
+		titleHref = null,
+		displayUnits = DEFAULT_DISPLAY_UNITS,
+		dateDisplay = DEFAULT_DATE_DISPLAY
 	}: Props = $props();
 
 	type Metric = 'ascents' | 'sends' | 'heightM';
@@ -107,8 +118,10 @@
 	/** Y-scale for thin within-year lines (each year starts at 0). */
 	const maxYear = $derived(Math.max(1, ...values.map((v) => v.value)));
 
+	const heightUnit = $derived(displayUnits.height);
+
 	const metricLabel = $derived(
-		metric === 'ascents' ? 'Ascents' : metric === 'sends' ? 'Sends' : 'Height (m)'
+		metric === 'ascents' ? 'Ascents' : metric === 'sends' ? 'Sends' : `Height (${heightUnit})`
 	);
 
 	const chartLabel = $derived(
@@ -116,14 +129,14 @@
 	);
 
 	function formatValue(v: number): string {
-		if (metric === 'heightM') return `${Math.round(v)} m`;
+		if (metric === 'heightM') return formatHeight(v, heightUnit);
 		return String(Math.round(v));
 	}
 
 	function fmtDelta(n: number | null, suffix = ''): string {
 		if (n == null) return '—';
 		const sign = n > 0 ? '+' : '';
-		const shown = metric === 'heightM' ? Math.round(n) : n;
+		const shown = suffix ? Math.round(convertHeight(n, heightUnit)) : n;
 		return `${sign}${shown}${suffix}`;
 	}
 
@@ -132,7 +145,7 @@
 		return n > 0 ? 'up' : 'down';
 	}
 
-	const deltaSuffix = $derived(metric === 'heightM' ? ' m' : '');
+	const deltaSuffix = $derived(metric === 'heightM' ? ` ${heightUnit}` : '');
 
 	function dayMetric(d: HeatmapDay): number {
 		if (metric === 'sends') return d.sends;
@@ -306,7 +319,7 @@
 						type="button"
 						class={{ active: metric === 'heightM' }}
 						aria-pressed={metric === 'heightM'}
-						onclick={() => (metric = 'heightM')}>Height (m)</button
+						onclick={() => (metric = 'heightM')}>Height ({heightUnit})</button
 					>
 				</div>
 			</div>
@@ -348,13 +361,14 @@
 						opacity="0.75"
 					/>
 					{#each yl.dots as dot (dot.date)}
+						{@const dayLabel = formatCalendarDate(dot.date, dateDisplay)}
 						<a
 							href="/logbook?day={encodeURIComponent(dot.date)}"
-							aria-label="{dot.date}: {formatValue(dot.value)} {metricLabel} — open logbook"
+							aria-label="{dayLabel}: {formatValue(dot.value)} {metricLabel} — open logbook"
 							onmouseenter={() => onDotEnter(yl.year, dot.date, dot.value, dot.x, dot.y, yl.color)}
 							onmouseleave={onDotLeave}
 						>
-							<title>{dot.date}: {formatValue(dot.value)} {metricLabel}</title>
+							<title>{dayLabel}: {formatValue(dot.value)} {metricLabel}</title>
 							<circle class="hit" cx={dot.x} cy={dot.y} r="8" fill="transparent" />
 						</a>
 					{/each}
@@ -413,7 +427,7 @@
 			</svg>
 			{#if hover}
 				<p class="hover-label" style:color={hover.color}>
-					{hover.date} · {hover.year} · {formatValue(hover.value)}
+					{formatCalendarDate(hover.date, dateDisplay)} · {hover.year} · {formatValue(hover.value)}
 					{metricLabel.toLowerCase()}
 				</p>
 			{:else if yearLines.length > 0}
@@ -502,8 +516,10 @@
 								<td>{row.sends}</td>
 								<td>{row.onsights}</td>
 								<td class={deltaClass(row.deltaOnsights)}>{fmtDelta(row.deltaOnsights)}</td>
-								<td>{Math.round(row.heightM)} m</td>
-								<td class={deltaClass(row.deltaHeightM)}>{fmtDelta(row.deltaHeightM, ' m')}</td>
+								<td>{formatHeight(row.heightM, heightUnit)}</td>
+								<td class={deltaClass(row.deltaHeightM)}
+									>{fmtDelta(row.deltaHeightM, ` ${heightUnit}`)}</td
+								>
 							</tr>
 						{/each}
 					</tbody>

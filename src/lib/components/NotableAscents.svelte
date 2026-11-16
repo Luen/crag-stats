@@ -2,11 +2,16 @@
 	import GradeChip from '#lib/components/GradeChip.svelte';
 	import StyleBadge from '#lib/components/StyleBadge.svelte';
 	import TickTypeIcon from '#lib/components/TickTypeIcon.svelte';
+	import { DEFAULT_DATE_DISPLAY, formatCalendarDate, type DateDisplay } from '#lib/dates';
 	import type { NotableRow } from '#lib/types/dashboard';
 	import { ascentPartners } from '#lib/partnerStats';
 
-	type Props = { byStyle: NotableRow[]; byArea: NotableRow[] };
-	let { byStyle, byArea }: Props = $props();
+	type Props = {
+		byStyle: NotableRow[];
+		byArea: NotableRow[];
+		dateDisplay?: DateDisplay;
+	};
+	let { byStyle, byArea, dateDisplay = DEFAULT_DATE_DISPLAY }: Props = $props();
 
 	function bandWidth(row: NotableRow, bandId: number) {
 		const total = Math.max(
@@ -49,7 +54,9 @@
 			{row.hardestRoute}
 		{/if}
 		{#if row.hardestDate}
-			<span class="ago">{row.hardestDate}</span>
+			<time class="ago" datetime={row.hardestDate}
+				>{formatCalendarDate(row.hardestDate, dateDisplay)}</time
+			>
 		{/if}
 		{#if ascentPartners(row.hardestPartners)}
 			<span class="companions">{ascentPartners(row.hardestPartners)}</span>

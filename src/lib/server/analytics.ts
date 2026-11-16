@@ -51,8 +51,9 @@ import { buildCprTimeline } from './cpr';
 import { sentPitchNumbersFromRaw, buildBadges } from './badges';
 import { getFirstImport } from './firstImport';
 import { communityAscentBadgeHits } from './communityBadges';
-import type { DateDisplay } from '#lib/dates';
+import { DEFAULT_DATE_DISPLAY, type DateDisplay } from '#lib/dates';
 import { buildClimberBlurb } from './climberBlurb';
+import { DEFAULT_DISPLAY_UNITS, type DisplayUnits } from '#lib/units';
 import { buildRouteDeveloperImpact } from './routeDeveloperImpact';
 import { countOwnerSetRoutes, listOwnerSetRoutes, setterBadgeHits } from './routeSetters';
 import { countActiveProjects } from './projects';
@@ -287,9 +288,11 @@ export function getDashboardStats(
 		pyramidMode?: PyramidMode;
 		dateDisplay?: DateDisplay;
 		tickSettings?: TickTypeSettings;
+		displayUnits?: DisplayUnits;
 	}
 ): DashboardStats {
 	const pyramidMode = opts?.pyramidMode ?? 'all';
+	const displayUnits = opts?.displayUnits ?? DEFAULT_DISPLAY_UNITS;
 	ensureSchema();
 	// Cheap: fill missing ascent logbook links without a full re-parse
 	db.run(
@@ -814,23 +817,33 @@ export function getDashboardStats(
 	const extraRows = analyticsRows.map(toExtraRow);
 	const activityExtraRows = activityRows.map(toExtraRow);
 	const weatherConditions = buildWeatherConditionsView(extraRows, weatherByKey);
-	const weatherPerformance = buildWeatherPerformanceView(extraRows, weatherByKey);
+	const weatherPerformance = buildWeatherPerformanceView(
+		extraRows,
+		weatherByKey,
+		displayUnits.temperature
+	);
 	const rockPerformance = buildRockPerformanceView(extraRows);
 	const monthly = buildMonthlyStats(extraRows);
 	const yearly = buildYearlyStats(extraRows);
-	const milestones = buildMilestones(extraRows, gradeSystems);
+	const milestones = buildMilestones(
+		extraRows,
+		gradeSystems,
+		displayUnits,
+		opts?.dateDisplay ?? DEFAULT_DATE_DISPLAY
+	);
 	const developerImpact = buildRouteDeveloperImpact();
 	// Badges describe what you did, so property/attempt ticks kept for projects and goals
 	// still count: otherwise "Persistence Pays" needs four *send* days and session/streak
 	// badges fall behind the streaks card. `hide` still removes a tick type completely.
 	const badges = buildBadges(
 		activityExtraRows,
-		setterBadgeHits(),
+		setterBadgeHits(undefined, undefined, opts?.dateDisplay),
 		communityAscentBadgeHits(developerImpact, opts?.dateDisplay),
 		{
 			firstImport: getFirstImport(),
 			gradeSystems,
 			dateDisplay: opts?.dateDisplay,
+			displayUnits,
 			weatherByKey
 		}
 	);
@@ -1044,7 +1057,8 @@ export function getDashboardStats(
 		putUpRoutes: developerImpact.routes,
 		weather: weatherConditions,
 		firstAscentCount: faMarks.size,
-		dateDisplay: opts?.dateDisplay
+		dateDisplay: opts?.dateDisplay,
+		displayUnits
 	});
 
 	return {
@@ -1065,6 +1079,7 @@ export function getDashboardStats(
 		distinctRoutes: routeSet.size,
 		distinctCrags: cragMap.size,
 		gradeSystems,
+		displayUnits,
 		gradeRecords,
 		heatmap,
 		styleShare,

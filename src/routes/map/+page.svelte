@@ -51,7 +51,7 @@
 		</p>{/if}
 </section>
 <div id="sectors" class="values">
-	<CragSectors crags={data.crags} dateDisplay={data.dateDisplay} />
+	<CragSectors crags={data.crags} dateDisplay={data.dateDisplay} displayUnits={data.displayUnits} />
 </div>
 <section class="panel values">
 	<h2>All mapped places</h2>

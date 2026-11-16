@@ -3,6 +3,7 @@
  */
 
 import { calendarDay as validDay } from '#lib/calendarDay';
+import { DEFAULT_DATE_DISPLAY, type DateDisplay } from '#lib/dates';
 import { eq } from 'drizzle-orm';
 import { climbersMentionLogin, historyTypeIsSetter } from './providers/thecrag/routeHistoryParse';
 import { db, ensureSchema } from './db';
@@ -91,14 +92,18 @@ export function countOwnerSetRoutes(provider = PROVIDER, login?: string | null):
 }
 
 /** Chronological setter milestones for the badge carousel. */
-export function setterBadgeHits(provider = PROVIDER, login?: string | null): SetterBadgeHit[] {
+export function setterBadgeHits(
+	provider = PROVIDER,
+	login?: string | null,
+	display: DateDisplay = DEFAULT_DATE_DISPLAY
+): SetterBadgeHit[] {
 	return listOwnerSetRoutes(provider, login).map((r, i) => {
 		const n = i + 1;
 		const date = r.date;
 		const tail = r.routeName
-			? `${r.routeName}${r.date ? ` · ${formatBadgeDate(r.date)}` : ''}`
+			? `${r.routeName}${r.date ? ` · ${formatBadgeDate(r.date, display)}` : ''}`
 			: r.date
-				? formatBadgeDate(r.date)
+				? formatBadgeDate(r.date, display)
 				: null;
 		const prefix =
 			n === 1

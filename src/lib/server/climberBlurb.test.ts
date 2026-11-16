@@ -514,4 +514,33 @@ describe('describeWeatherPersonality (#275)', () => {
 		});
 		expect(without.paragraphs.some((p) => /cold|snow|heat|rain/i.test(p))).toBe(false);
 	});
+
+	it('formats distance and weather with custom display units', () => {
+		const blurb = buildClimberBlurb({
+			firstDate: '2020-01-01',
+			activeDays: 100,
+			totalAscents: 300,
+			totalSends: 250,
+			onsightCount: 50,
+			flashCount: 10,
+			redpointCount: 80,
+			pinkpointCount: 5,
+			climberType: 'Sport climber',
+			heightM: 5000,
+			distinctRoutes: 200,
+			distinctCrags: 3,
+			outdoorAscents: 250,
+			indoorAscents: 50,
+			displayUnits: {
+				height: 'ft',
+				distance: 'mi',
+				temperature: 'fahrenheit',
+				wind: 'mph',
+				precipitation: 'in'
+			},
+			weather: view({ shares: withShare('heat', 9, 30) })
+		});
+		expect(blurb.paragraphs.some((p) => p.includes('3.1 mi of rock'))).toBe(true);
+		expect(blurb.paragraphs.some((p) => p.includes('95°F or more'))).toBe(true);
+	});
 });

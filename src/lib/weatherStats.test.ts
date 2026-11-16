@@ -136,7 +136,9 @@ describe('buildWeatherConditionsView', () => {
 
 	it('bins daily highs into 5° steps with open ends', () => {
 		expect(histogramBinLabel(0)).toBe('<0°');
-		expect(histogramBinLabel(1)).toBe('0–4°');
+		expect(histogramBinLabel(1)).toBe('0–<5°');
+		expect(histogramBinLabel(histogramBinIndex(4.9), 'fahrenheit')).toBe('32–<41°');
+		expect(histogramBinLabel(histogramBinIndex(5), 'fahrenheit')).toBe('41–<50°');
 		expect(histogramBinLabel(8)).toBe('35°+');
 		expect(histogramBinIndex(-1)).toBe(0);
 		expect(histogramBinIndex(0)).toBe(1);
@@ -159,7 +161,7 @@ describe('buildWeatherConditionsView', () => {
 			],
 			map
 		)!;
-		expect(view.histogram.find((b) => b.label === '20–24°')?.days).toBe(2);
+		expect(view.histogram.find((b) => b.label === '20–<25°')?.days).toBe(2);
 		expect(view.histogram.find((b) => b.label === '35°+')?.days).toBe(1);
 		expect(view.histogram.reduce((n, b) => n + b.days, 0)).toBe(3);
 	});

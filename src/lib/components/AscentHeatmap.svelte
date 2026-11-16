@@ -7,20 +7,27 @@
 		type CardPreferences
 	} from '#lib/cardPreferences';
 	import { GRADE_BANDS } from '#lib/grades/bands';
+	import { DEFAULT_DATE_DISPLAY, formatCalendarDate, type DateDisplay } from '#lib/dates';
 	import {
-		DEFAULT_DATE_DISPLAY,
-		formatCalendarDate,
-		formatNumber,
-		type DateDisplay
-	} from '#lib/dates';
+		DEFAULT_DISPLAY_UNITS,
+		formatPrecipitation,
+		formatTemperature,
+		type DisplayUnits
+	} from '#lib/units';
 	import type { HeatmapDay } from '#lib/types/dashboard';
 	import type { CalendarWeather, CalendarWeatherKind } from '#lib/weatherKeys';
 
-	type Props = { preferences?: CardPreferences; data: HeatmapDay[]; dateDisplay?: DateDisplay };
+	type Props = {
+		preferences?: CardPreferences;
+		data: HeatmapDay[];
+		dateDisplay?: DateDisplay;
+		displayUnits?: DisplayUnits;
+	};
 	let {
 		preferences = EMPTY_CARD_PREFERENCES,
 		data,
-		dateDisplay = DEFAULT_DATE_DISPLAY
+		dateDisplay = DEFAULT_DATE_DISPLAY,
+		displayUnits = DEFAULT_DISPLAY_UNITS
 	}: Props = $props();
 
 	type Mode = 'intensity' | 'grade' | 'weather';
@@ -43,14 +50,17 @@
 	const hasWeather = $derived(data.some((d) => d.weather != null));
 	const activeMode = $derived<Mode>(mode === 'weather' && !hasWeather ? 'intensity' : mode);
 
-	const WEATHER_KINDS: { kind: CalendarWeatherKind; label: string }[] = [
+	const WEATHER_KINDS: { kind: CalendarWeatherKind; label: string }[] = $derived([
 		{ kind: 'snow', label: 'Snow' },
 		{ kind: 'rain', label: 'Rain' },
-		{ kind: 'heat', label: 'Hot (35°C+)' },
+		{
+			kind: 'heat',
+			label: `Hot (${displayUnits.temperature === 'fahrenheit' ? '95°F+' : '35°C+'})`
+		},
 		{ kind: 'freeze', label: 'Freezing' },
 		{ kind: 'fair', label: 'Fair' },
 		{ kind: 'mild', label: 'Mild' }
-	];
+	]);
 	const kindLabel = (k: CalendarWeatherKind) => WEATHER_KINDS.find((w) => w.kind === k)?.label ?? k;
 
 	const years = $derived(
@@ -163,12 +173,12 @@
 	};
 
 	const tempText = (n: number | null) =>
-		n == null ? '—' : `${formatNumber(Math.round(n), dateDisplay)}°C`;
+		n == null ? '—' : formatTemperature(n, displayUnits.temperature);
 
 	function weatherSummary(w: CalendarWeather): string {
 		const rain =
 			w.precipMm != null && w.precipMm >= 1
-				? `, ${formatNumber(Math.round(w.precipMm * 10) / 10, dateDisplay)} mm`
+				? `, ${formatPrecipitation(w.precipMm, displayUnits.precipitation)}`
 				: '';
 		return `${kindLabel(w.kind)} · high ${tempText(w.tempMaxC)}, low ${tempText(w.tempMinC)}${rain}`;
 	}
@@ -188,7 +198,7 @@
 				? `${head} · ${weatherSummary(cell.weather)}`
 				: `${head} · no weather data`;
 		}
-		const base = `${cell.date}: ${cell.count} ascent${cell.count === 1 ? '' : 's'} (${cell.sends} send${cell.sends === 1 ? '' : 's'})`;
+		const base = `${formatCalendarDate(cell.date, dateDisplay)}: ${cell.count} ascent${cell.count === 1 ? '' : 's'} (${cell.sends} send${cell.sends === 1 ? '' : 's'})`;
 		if (activeMode !== 'grade' || cell.maxBand == null) return base;
 		const name = GRADE_BANDS.find((b) => b.id === cell.maxBand)?.name ?? `band ${cell.maxBand}`;
 		return `${base} · hardest send ${name}`;
@@ -327,7 +337,7 @@
 									<td>
 										{day.weather!.precipMm == null
 											? '—'
-											: `${formatNumber(Math.round(day.weather!.precipMm * 10) / 10, dateDisplay)} mm`}
+											: formatPrecipitation(day.weather!.precipMm, displayUnits.precipitation)}
 									</td>
 								</tr>
 							{/each}
