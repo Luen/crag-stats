@@ -15,7 +15,12 @@ import { fileURLToPath } from 'node:url';
 const repo = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const verbose = process.argv.includes('--verbose');
 
-const ATTRIBUTES = ['aria-label', 'title', 'placeholder', 'alt'];
+const ATTRIBUTES = [
+	['aria-label', /\saria-label="([^"]+)"/g],
+	['title', /\stitle="([^"]+)"/g],
+	['placeholder', /\splaceholder="([^"]+)"/g],
+	['alt', /\salt="([^"]+)"/g]
+];
 
 function svelteFiles(dir, out = []) {
 	for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -30,12 +35,64 @@ function svelteFiles(dir, out = []) {
 	return out;
 }
 
+function stripBlocks(source, tag) {
+	const haystack = source.toLowerCase();
+	const open = `<${tag}`;
+	const close = `</${tag}>`;
+	let out = '';
+	let i = 0;
+	while (true) {
+		const start = haystack.indexOf(open, i);
+		if (start === -1) {
+			out += source.slice(i);
+			break;
+		}
+		out += source.slice(i, start);
+		const end = haystack.indexOf(close, start);
+		if (end === -1) break;
+		i = end + close.length;
+	}
+	return out;
+}
+
+function stripBraceExpressions(source) {
+	let out = '';
+	let depth = 0;
+	for (const char of source) {
+		if (char === '{') {
+			depth += 1;
+			continue;
+		}
+		if (char === '}') {
+			if (depth > 0) depth -= 1;
+			else out += char;
+			continue;
+		}
+		if (depth === 0) out += char;
+	}
+	return out;
+}
+
+function stripComments(source) {
+	let out = '';
+	let i = 0;
+	while (true) {
+		const start = source.indexOf('<!--', i);
+		if (start === -1) {
+			out += source.slice(i);
+			break;
+		}
+		out += source.slice(i, start);
+		const end = source.indexOf('-->', start);
+		if (end === -1) break;
+		i = end + 3;
+	}
+	return out;
+}
+
 function stripNonMarkup(source) {
-	return source
-		.replace(/<script[\s\S]*?<\/script>/g, '')
-		.replace(/<style[\s\S]*?<\/style>/g, '')
-		.replace(/<!--[\s\S]*?-->/g, '')
-		.replace(/\{[^{}]*\}/g, ' ');
+	const withoutBlocks = stripBlocks(stripBlocks(source, 'script'), 'style');
+	return stripBraceExpressions(stripComments(withoutBlocks));
 }
 
 const looksLikeProse = (text) => /[A-Za-z]{2}/.test(text) && !/^[\s·×—–%.,:;/|()\-+]+$/.test(text);
@@ -52,8 +109,7 @@ for (const file of svelteFiles(path.join(repo, 'src')).sort()) {
 		const text = match[1].replace(/\s+/g, ' ').trim();
 		if (text && looksLikeProse(text)) found.push(text);
 	}
-	for (const attr of ATTRIBUTES) {
-		const pattern = new RegExp(`\\s${attr}="([^"]+)"`, 'g');
+	for (const [attr, pattern] of ATTRIBUTES) {
 		for (const match of markup.matchAll(pattern)) {
 			const text = match[1].trim();
 			if (text && looksLikeProse(text)) found.push(`[${attr}] ${text}`);
