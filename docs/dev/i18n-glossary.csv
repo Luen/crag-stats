@@ -26,8 +26,8 @@ route data,Routendaten,données de voie,datos de la vía,dati della via,Data and
 route popularity,Routenbeliebtheit,popularité de la voie,popularidad de la vía,popolarità della via,Popularity metric of a climbing route
 pitch,Seillänge,longueur,largo,tiro,A section of a route climbed between two belays
 multipitch,Mehrseillängen,grande voie,varios largos,via lunga,A climbing route consisting of multiple pitches
-send,Durchstieg,enchaînement,encadene,chiusura,Successfully climbing a route without falling or resting on gear
-sends,Durchstiege,enchaînements,encadenes,chiusure,Multiple successful climbs without falling
+send,Durchstieg,enchaînement,encadenado,chiuso,Successfully climbing a route without falling or resting on gear
+sends,Durchstiege,enchaînements,encadenados,chiusi,Multiple successful climbs without falling
 climbed,Gekletterte,grimpé,escalado,scalato,Climbed routes or pitches
 project,Projekt,projet,proyecto,progetto,A difficult route a climber is practicing to send
 projects,Projekte,projets,proyectos,progetti,Multiple routes being worked on as projects

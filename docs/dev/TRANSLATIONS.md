@@ -137,6 +137,13 @@ src/lib/i18n/locales/en.json  ──push to main──▶  Crowdin  ──transl
 - **Idempotency:** Only untranslated strings are submitted (`scope: untranslated`); human reviews and existing translations are never overwritten.
 - When new translations are added, it pulls them and opens or updates the pull request on `chore/crowdin-translations`.
 
+### Editing translations and glossary terms over the API
+
+Both syncs run with `skip_untranslated_strings: true`, so a target value that exists only in the repo is not durable: the next download rebuilds the file from the Crowdin strings and drops the key. Before merging a branch that adds or corrects target-language copy, write it to Crowdin first (or expect the sync PR to revert it).
+
+- **One translation:** `POST /projects/{id}/translations` with `{ stringId, languageId, text }` returns `201` and _replaces_ that string's translation for the language, which is also how a reviewer corrects shipped copy. `PATCH /projects/{id}/translations` only accepts JSON Patch operations, and there is no `PUT .../translations/{translationId}` edit path.
+- **Glossary terms:** `PATCH /glossaries/{id}/terms/{termId}` rejects field updates (`jsonPatchInvalid`), so a correction is `DELETE` on the term followed by `POST /glossaries/{id}/terms` with `{ conceptId, languageId, text }`. A `POST` without `conceptId` opens a new concept; the response returns the `conceptId` for the remaining languages.
+
 ---
 
 ## Adding New UI Strings

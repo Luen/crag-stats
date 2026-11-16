@@ -237,7 +237,7 @@ describe('formatMessage', () => {
 		expect(formatMessage('es', 'nav.logbook')).toBe('Libro de vías');
 
 		expect(formatMessage('it', 'nav.dashboard')).toBe('Dashboard');
-		expect(formatMessage('it', 'nav.logbook')).toBe('Logbook');
+		expect(formatMessage('it', 'nav.logbook')).toBe('Diario');
 	});
 
 	it('interpolates parameters correctly', () => {
@@ -286,8 +286,24 @@ describe('formatMessage', () => {
 		expect(formatMessage('es', 'ticks.onsight')).toBe('A vista');
 		expect(formatMessage('de', 'ticks.redpoint')).toBe('Rotpunkt');
 		expect(formatMessage('fr', 'ticks.redpoint')).toBe('Après travail');
-		expect(formatMessage('es', 'ticks.send')).toBe('Encadene');
-		expect(formatMessage('it', 'ticks.send')).toBe('Chiusura');
+		expect(formatMessage('es', 'ticks.send')).toBe('Encadenado');
+		expect(formatMessage('es', 'ticks.toprope')).toBe('En polea');
+		expect(formatMessage('it', 'ticks.send')).toBe('Chiuso');
+		expect(formatMessage('it', 'styles.sport')).toBe('Sportiva');
+	});
+
+	it('translates grade bands with a distinct name per level in every locale', () => {
+		const order = ['beginner', 'intermediate', 'experienced', 'expert', 'elite'];
+		for (const locale of ['en', 'de', 'fr', 'es', 'it'] as const) {
+			const names = order.map((band) => formatMessage(locale, `grades.bands.${band}`));
+			expect(new Set(names).size, `${locale} repeats a band name: ${names.join(' / ')}`).toBe(
+				names.length
+			);
+		}
+		// Italian previously labelled Experienced "Esperto" and Expert "Avanzato", which reads
+		// backwards: the harder band must not sound milder than the one below it (#493).
+		expect(formatMessage('it', 'grades.bands.experienced')).toBe('Avanzato');
+		expect(formatMessage('it', 'grades.bands.expert')).toBe('Esperto');
 	});
 });
 

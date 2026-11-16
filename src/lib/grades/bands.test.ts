@@ -106,6 +106,8 @@ describe('getBandName', () => {
 		expect(getBandName(1, 'de')).toBe('Anfänger');
 		expect(getBandName(2, 'fr')).toBe('Intermédiaire');
 		expect(getBandName(3, 'es')).toBe('Experimentado');
-		expect(getBandName(4, 'it')).toBe('Avanzato');
+		// Italian must read mildest-to-hardest down the ladder (#493).
+		expect(getBandName(3, 'it')).toBe('Avanzato');
+		expect(getBandName(4, 'it')).toBe('Esperto');
 	});
 });

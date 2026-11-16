@@ -12,8 +12,8 @@
 		"bands": {
 			"beginner": "Principiante",
 			"elite": "Élite",
-			"experienced": "Esperto",
-			"expert": "Avanzato",
+			"experienced": "Avanzato",
+			"expert": "Esperto",
 			"intermediate": "Intermedio"
 		}
 	},
@@ -32,7 +32,7 @@
 		"githubRepo": "Repository GitHub",
 		"goals": "Obiettivi",
 		"installedVersion": "Versione installata",
-		"logbook": "Logbook",
+		"logbook": "Diario",
 		"map": "Mappa & settori",
 		"milestones": "Traguardi",
 		"partners": "Compagni",
@@ -53,7 +53,7 @@
 	"styles": {
 		"aid": "Artificiale",
 		"alpine": "Alpinismo",
-		"boulder": "Boulder",
+		"boulder": "Blocco",
 		"sport": "Sportiva",
 		"toprope": "Moulinette",
 		"trad": "Tradizionale",
@@ -73,7 +73,7 @@
 		"pinkpoint": "Pinkpoint",
 		"redpoint": "Rotpunkt",
 		"repeat": "Ripetizione",
-		"send": "Chiusura",
+		"send": "Chiuso",
 		"tick": "Tick",
 		"toprope": "Moulinette"
 	}
