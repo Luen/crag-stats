@@ -120,11 +120,7 @@
 	}
 
 	function bandLabel(band: WeatherPerformanceBand): string {
-		if (band.id === 'temp:lt') {
-			return i18n.t('cards.weatherPerformance.bandUnder', {
-				temp: band.label.replace(/^Under\s+/i, '')
-			});
-		}
+		// Temperature labels are already localised by the server builder.
 		const key = COND_BAND_KEYS[band.id];
 		return key ? i18n.t(key) : band.label;
 	}

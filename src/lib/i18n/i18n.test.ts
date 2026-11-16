@@ -449,17 +449,18 @@ describe('module-level copy and label tables (#495)', () => {
 			'French routes, Fontainebleau (Font) boulders'
 		);
 
-		const deBadges = buildBadges([], {}, [], { locale: 'de' });
+		const deBadges = buildBadges([], [], [], { locale: 'de' });
 		expect(deBadges.locked.find((b) => b.id === 'band_intermediate')?.title).toBe(
 			'Fortgeschritten'
 		);
 
 		const sampleEdd = {
-			sends: { value: 12, next: 13, needed: 1, haveForNext: 12 },
-			vertical: { value: 3, next: 4, needed: 1, haveForNext: 3 },
-			routeGrade: { value: 20, next: 21, needed: 1, haveForNext: 20 },
-			boulderGrade: { value: 4, next: 5, needed: 2, haveForNext: 3 },
-			verticalUnitM: 100
+			sends: { value: 12, next: 13, needed: 1 },
+			vertical: { value: 3, next: 4, needed: 1 },
+			routeGrade: { value: 20, next: 21, needed: 1 },
+			boulderGrade: { value: 4, next: 5, needed: 2 },
+			verticalUnitM: 100,
+			activeDays: 12
 		};
 		const edd = eddingtonTiles(sampleEdd, 'en');
 		expect(edd[0]?.label).toBe('Send days');
@@ -469,7 +470,7 @@ describe('module-level copy and label tables (#495)', () => {
 		const eddDe = eddingtonTiles(
 			{
 				...sampleEdd,
-				sends: { value: 1234, next: 1235, needed: 1, haveForNext: 1234 }
+				sends: { value: 1234, next: 1235, needed: 1 }
 			},
 			'de'
 		);
