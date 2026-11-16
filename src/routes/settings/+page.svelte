@@ -2,6 +2,7 @@
 	import { useI18n } from '#lib/i18n';
 	import { onMount, untrack } from 'svelte';
 	import DashboardLayoutEditor from '#lib/components/DashboardLayoutEditor.svelte';
+	import RichText from '#lib/components/RichText.svelte';
 	import { DATE_FORMAT_OPTIONS, formatDateTime } from '#lib/dates';
 	import { BOULDER_GRADE_SYSTEMS, ROUTE_GRADE_SYSTEMS } from '#lib/grades';
 	import TickTypeIcon from '#lib/components/TickTypeIcon.svelte';
@@ -368,14 +369,22 @@
 					disabled={data.searchIndexing.forcedOff}
 				/>
 				<span>
-					<strong>Show in search engines</strong>
+					<strong>{i18n.t('pages.settings.titleShowInSearchEngines')}</strong>
 					<small class="hint">
 						{#if data.searchIndexing.forcedOff}
-							Off — the whole site is password protected (<code>AUTH_SCOPE=all</code>).
+							<RichText
+								message={i18n.t('pages.settings.hintSearchIndexingForcedOff')}
+								tokens={{ authScope: { kind: 'code', text: 'AUTH_SCOPE=all' } }}
+							/>
 						{:else}
-							Untick to ask Google &amp; co. not to index this site (<code>robots.txt</code>,
-							<code>noindex</code> meta tag and <code>X-Robots-Tag</code> header). Settings and login
-							are never indexed.
+							<RichText
+								message={i18n.t('pages.settings.hintSearchIndexing')}
+								tokens={{
+									robots: { kind: 'code', text: 'robots.txt' },
+									noindex: { kind: 'code', text: 'noindex' },
+									xRobotsTag: { kind: 'code', text: 'X-Robots-Tag' }
+								}}
+							/>
 						{/if}
 					</small>
 				</span>
@@ -383,16 +392,17 @@
 			<label class="check">
 				<input type="checkbox" name="notes" checked={data.showNotes.enabled} />
 				<span>
-					<strong>Show my private ascent notes</strong>
+					<strong>{i18n.t('pages.settings.titleShowPrivateNotes')}</strong>
 					<small class="hint">
-						Shows the notes from your theCrag ticks in the logbook, and lets logbook search match
-						them.
+						{i18n.t('pages.settings.hintNotes')}
 						{#if data.authEnabled}
-							Only shown while you're logged in. Visitors never see them.
+							{i18n.t('pages.settings.hintNotesSignedIn')}
 						{:else}
-							<strong
-								>No <code>APP_PASSWORD</code> is set, so anyone who can open this site will see them.</strong
-							> Best for offline or home-network installs.
+							<RichText
+								message={i18n.t('pages.settings.hintNotesNoPassword')}
+								tokens={{ appPassword: { kind: 'code', text: 'APP_PASSWORD' } }}
+							/>
+							{i18n.t('pages.settings.hintNotesNoPasswordTail')}
 						{/if}
 					</small>
 				</span>
@@ -522,9 +532,16 @@
 				</div>
 				{#if leftoverChoices.length > 0}
 					<p class="hint tick-leftovers">
-						Saved for tick types with no logged ascents — these stay live for future climbs but are
-						not listed above: <strong>{leftoverLabel}</strong>. Choose
-						<strong>All logged ticks</strong> and save to clear them.
+						<RichText
+							message={i18n.t('pages.settings.hintTickLeftovers')}
+							tokens={{
+								leftover: { kind: 'strong', text: leftoverLabel },
+								allTicks: {
+									kind: 'strong',
+									text: i18n.t('pages.settings.buttonAllLoggedTicks')
+								}
+							}}
+						/>
 					</p>
 				{/if}
 			</fieldset>
@@ -543,10 +560,17 @@
 	<article class="panel">
 		<h2>{i18n.t('pages.settings.titleCSVImport')}</h2>
 		<p class="hint">
-			For everyone without supporter API access. Export from theCrag:
-			<em>Action → Export logbook as CSV</em>, then upload the file here whenever you want to
-			refresh. CSV import upserts rows but does <strong>not</strong> remove missing entries. API
-			sync reconciles deletions. <a href="/docs/logbook-sync">Logbook sync options</a>
+			<RichText
+				message={i18n.t('pages.settings.hintCsvImport')}
+				tokens={{
+					action: { kind: 'em', text: i18n.t('pages.settings.csvExportAction') },
+					syncOptions: {
+						kind: 'link',
+						text: i18n.t('pages.settings.linkLogbookSyncOptions'),
+						href: '/docs/logbook-sync'
+					}
+				}}
+			/>
 		</p>
 		<form method="POST" action="?/importCsv" enctype="multipart/form-data" class="csv-import">
 			<input
@@ -563,15 +587,21 @@
 	<article class="panel">
 		<h2>{i18n.t('pages.settings.titleTheCragLogbookSync')}</h2>
 		<p class="hint">
-			Uses <code>THECRAG_API_KEY</code> from your environment. Keys grant read access to private
-			notes — treat them like passwords.
-			<a href="https://www.thecrag.com/en/article/logbookreadapi" target="_blank" rel="noreferrer"
-				>API docs</a
-			>
+			<RichText
+				message={i18n.t('pages.settings.hintApiKeyIntro')}
+				tokens={{
+					key: { kind: 'code', text: 'THECRAG_API_KEY' },
+					docs: {
+						kind: 'link',
+						text: i18n.t('pages.settings.linkApiDocs'),
+						href: 'https://www.thecrag.com/en/article/logbookreadapi',
+						external: true
+					}
+				}}
+			/>
 		</p>
 		<p class="hint">
-			<strong>Upstream is source of truth.</strong> Each sync pulls the full logbook, updates changed
-			ascents (comments, grades, ticks), and deletes local rows that were removed on theCrag.
+			<RichText message={i18n.t('pages.settings.hintUpstreamSourceOfTruth')} />
 		</p>
 		<p class="status">
 			<span class={['pill', { ok: data.sync.status === 'idle', err: data.sync.status === 'error' }]}
@@ -602,8 +632,13 @@
 			</div>
 		{:else}
 			<p class="hint">
-				No API key configured. Set <code>THECRAG_API_KEY</code> in <code>.env</code>, or use
-				<strong>CSV import</strong> above to upload your logbook export by hand.
+				<RichText
+					message={i18n.t('pages.settings.hintNoApiKey')}
+					tokens={{
+						key: { kind: 'code', text: 'THECRAG_API_KEY' },
+						env: { kind: 'code', text: '.env' }
+					}}
+				/>
 			</p>
 		{/if}
 	</article>
@@ -611,28 +646,45 @@
 	<article class="panel">
 		<h2>{i18n.t('pages.settings.titleImportRouteData')}</h2>
 		<p class="hint">
-			Caches route details for routes in your logbook from theCrag (popularity, ascent counts,
-			quality, seasonality, beta, location, pitches and flags) along with their public history. FA /
-			FFA entries that name your <code>@login</code> are marked as yours.
+			<RichText
+				message={i18n.t('pages.settings.hintRouteDataIntro')}
+				tokens={{ login: { kind: 'code', text: '@login' } }}
+			/>
 			{#if rh.refreshDays}
-				Route data is queued for refresh after {rh.refreshDays} days.
+				{i18n.t('pages.settings.hintRouteDataRefreshCycle', { days: rh.refreshDays })}
 			{:else}
-				Each route is checked once unless you request a refresh.
+				{i18n.t('pages.settings.hintRouteDataFetchOnce')}
 			{/if}
-			Up to {rh.perRun} routes per run, at most one request a second, after each logbook sync. When weather
-			import is on, remaining requests also check crag/sector locations, including for CSV imports.
-			<a href="/docs/first-ascents">How first ascents work</a>
+			<RichText
+				message={i18n.t('pages.settings.hintRouteDataTail', { count: rh.perRun })}
+				tokens={{
+					docs: {
+						kind: 'link',
+						text: i18n.t('pages.settings.linkHowFirstAscentsWork'),
+						href: '/docs/first-ascents'
+					}
+				}}
+			/>
 		</p>
 		{#if !rh.enabled}
 			<p class="hint">
-				Off. To turn it on, set <code>ROUTE_DATA_IMPORT=true</code> in <code>.env</code> and
-				restart. theCrag blocks plain server requests to its route API, so this uses browser
-				impersonation (<code>impers</code>). It's at your own risk under theCrag's terms; manual FA
-				marks always work. Renamed from <code>ROUTE_HISTORY_IMPORT</code>, which no longer has any
-				effect.
+				<RichText
+					message={i18n.t('pages.settings.hintRouteDataDisabled')}
+					tokens={{
+						import: { kind: 'code', text: 'ROUTE_DATA_IMPORT=true' },
+						env: { kind: 'code', text: '.env' },
+						impers: { kind: 'code', text: 'impers' },
+						oldImport: { kind: 'code', text: 'ROUTE_HISTORY_IMPORT' }
+					}}
+				/>
 			</p>
 		{:else if !rh.hasApiKey}
-			<p class="hint">Needs <code>THECRAG_API_KEY</code> (the same key as API sync).</p>
+			<p class="hint">
+				<RichText
+					message={i18n.t('pages.settings.hintRouteDataNeedsKey')}
+					tokens={{ key: { kind: 'code', text: 'THECRAG_API_KEY' } }}
+				/>
+			</p>
 		{:else}
 			<p class="status">
 				<span
@@ -715,14 +767,25 @@
 				</form>
 				<form method="POST" action="?/refreshRouteHistory" class="stack">
 					<p class="hint">
-						Check every route again, still {data.routeHistory.perRun} per run. Only useful if theCrag's
-						history was corrected. After re-fetching, use
-						<strong>Re-apply from saved history</strong>
-						(tick
-						<strong>Replace existing</strong> if you want corrected history to overwrite current marks).
+						<RichText
+							message={i18n.t('pages.settings.hintRefreshAllRoutes', {
+								count: data.routeHistory.perRun
+							})}
+							tokens={{
+								reapply: {
+									kind: 'strong',
+									text: i18n.t('pages.settings.buttonReApplyFromSavedHistory')
+								}
+							}}
+						/>
 					</p>
 					<label class="field">
-						<span>Type <code>REFRESH</code> to confirm</span>
+						<span>
+							<RichText
+								message={i18n.t('pages.settings.labelTypeRefreshToConfirm')}
+								tokens={{ refresh: { kind: 'code', text: 'REFRESH' } }}
+							/>
+						</span>
 						<input name="confirm" autocomplete="off" />
 					</label>
 					<button type="submit" class="secondary"
@@ -740,15 +803,26 @@
 			>
 		</p>
 		<p class="hint">
-			Caches daily outdoor weather (Open-Meteo) for logbook days that have a usable route/crag
-			weather location. Powers heat, freeze, rain, snow and wind badges. Up to {wx.perRun} days per run,
-			at most one request a second, after each logbook sync.
-			<a href="/docs/weather">How weather works</a>
+			<RichText
+				message={i18n.t('pages.settings.hintWeatherIntro', { count: wx.perRun })}
+				tokens={{
+					docs: {
+						kind: 'link',
+						text: i18n.t('pages.settings.linkHowWeatherWorks'),
+						href: '/docs/weather'
+					}
+				}}
+			/>
 		</p>
 		{#if !wx.enabled}
 			<p class="hint">
-				Off. To turn it on, set <code>WEATHER_IMPORT=true</code> in <code>.env</code> and restart. Uses
-				Open-Meteo's free non-commercial archive API — fine for personal self-hosted installs.
+				<RichText
+					message={i18n.t('pages.settings.hintWeatherDisabled')}
+					tokens={{
+						import: { kind: 'code', text: 'WEATHER_IMPORT=true' },
+						env: { kind: 'code', text: '.env' }
+					}}
+				/>
 			</p>
 		{:else}
 			<p class="status">
@@ -787,13 +861,18 @@
 			{/if}
 			{#if wx.totalPending === 0 && wx.cachedOk === 0}
 				<p class="hint">
-					No weather days ready to fetch. Weather needs a usable route/crag location and a valid
-					past climbing date.
+					{i18n.t('pages.settings.hintWeatherNoDays')}
 					{#if wx.unresolvedRoutes > 0}
-						Check pending route data and weather locations above, then <a
-							href="/settings/weather-locations">review missing locations</a
-						>. CSV imports can use the configured supporter key for crag/sector lookups when route
-						data import is enabled.
+						<RichText
+							message={i18n.t('pages.settings.hintWeatherUnresolved')}
+							tokens={{
+								review: {
+									kind: 'link',
+									text: i18n.t('pages.settings.linkReviewMissingLocations'),
+									href: '/settings/weather-locations'
+								}
+							}}
+						/>
 					{/if}
 				</p>
 			{/if}
@@ -821,9 +900,16 @@
 	<article class="panel">
 		<h2>{i18n.t('pages.settings.titlePrivacyDataControl')}</h2>
 		<p class="hint">
-			Revoking a theCrag key does not delete data already synced here. Wipe only removes the
-			<strong>local</strong> SQLite copy on this machine — it never deletes your theCrag logbook.
-			See <a href="https://github.com/Luen/crag-stats/blob/main/docs/PRIVACY.md">PRIVACY.md</a>.
+			<RichText
+				message={i18n.t('pages.settings.hintPrivacy')}
+				tokens={{
+					privacy: {
+						kind: 'link',
+						text: i18n.t('pages.settings.linkPrivacyMd'),
+						href: 'https://github.com/Luen/crag-stats/blob/main/docs/PRIVACY.md'
+					}
+				}}
+			/>
 		</p>
 		<div class="backup">
 			<a class="btn secondary" href="/settings/export" download>
