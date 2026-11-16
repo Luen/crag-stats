@@ -233,6 +233,7 @@ describe('listLogbook FA and history filters', () => {
 		expect(partner.rows.every((r) => (r.partners || '').includes('Partner A'))).toBe(true);
 
 		const hardProject = listLogbook({ q: 'Hard Project' }).rows[0];
+		expect(hardProject.quality).toBeNull();
 		db.update(routes)
 			.set({
 				tagsJson: JSON.stringify([{ category: 'Rock type', name: 'Granite' }])

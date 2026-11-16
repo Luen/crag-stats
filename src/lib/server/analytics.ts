@@ -51,7 +51,7 @@ import { buildCprTimeline } from './cpr';
 import { sentPitchNumbersFromRaw, buildBadges } from './badges';
 import { getFirstImport } from './firstImport';
 import { communityAscentBadgeHits } from './communityBadges';
-import type { DateDisplay } from '#lib/dates';
+import { DEFAULT_DATE_DISPLAY, type DateDisplay } from '#lib/dates';
 import { buildClimberBlurb } from './climberBlurb';
 import { DEFAULT_DISPLAY_UNITS, type DisplayUnits } from '#lib/units';
 import { buildRouteDeveloperImpact } from './routeDeveloperImpact';
@@ -817,23 +817,33 @@ export function getDashboardStats(
 	const extraRows = analyticsRows.map(toExtraRow);
 	const activityExtraRows = activityRows.map(toExtraRow);
 	const weatherConditions = buildWeatherConditionsView(extraRows, weatherByKey);
-	const weatherPerformance = buildWeatherPerformanceView(extraRows, weatherByKey);
+	const weatherPerformance = buildWeatherPerformanceView(
+		extraRows,
+		weatherByKey,
+		displayUnits.temperature
+	);
 	const rockPerformance = buildRockPerformanceView(extraRows);
 	const monthly = buildMonthlyStats(extraRows);
 	const yearly = buildYearlyStats(extraRows);
-	const milestones = buildMilestones(extraRows, gradeSystems);
+	const milestones = buildMilestones(
+		extraRows,
+		gradeSystems,
+		displayUnits,
+		opts?.dateDisplay ?? DEFAULT_DATE_DISPLAY
+	);
 	const developerImpact = buildRouteDeveloperImpact();
 	// Badges describe what you did, so property/attempt ticks kept for projects and goals
 	// still count: otherwise "Persistence Pays" needs four *send* days and session/streak
 	// badges fall behind the streaks card. `hide` still removes a tick type completely.
 	const badges = buildBadges(
 		activityExtraRows,
-		setterBadgeHits(),
+		setterBadgeHits(undefined, undefined, opts?.dateDisplay),
 		communityAscentBadgeHits(developerImpact, opts?.dateDisplay),
 		{
 			firstImport: getFirstImport(),
 			gradeSystems,
 			dateDisplay: opts?.dateDisplay,
+			displayUnits,
 			weatherByKey
 		}
 	);

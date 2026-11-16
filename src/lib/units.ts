@@ -1,7 +1,7 @@
 /**
  * Granular display units of measurement (#469).
  *
- * Local SQLite stores canonical values (meters, Celsius, km/h, mm);
+ * Local SQLite stores canonical values (metres, Celsius, km/h, mm);
  * unit conversions happen purely in the presentation layer.
  */
 
@@ -40,7 +40,7 @@ export const UNIT_PRESETS: readonly UnitPreset[] = [
 	{
 		id: 'metric',
 		label: 'Metric',
-		description: 'Meters (m), kilometers (km), Celsius (°C), km/h, mm',
+		description: 'Metres (m), kilometres (km), Celsius (°C), km/h, mm',
 		units: {
 			height: 'm',
 			distance: 'km',
@@ -64,7 +64,7 @@ export const UNIT_PRESETS: readonly UnitPreset[] = [
 	{
 		id: 'uk',
 		label: 'UK (Mixed)',
-		description: 'Meters (m), miles (mi), Celsius (°C), mph, mm',
+		description: 'Metres (m), miles (mi), Celsius (°C), mph, mm',
 		units: {
 			height: 'm',
 			distance: 'mi',
@@ -76,12 +76,12 @@ export const UNIT_PRESETS: readonly UnitPreset[] = [
 ] as const;
 
 export const HEIGHT_UNIT_OPTIONS = [
-	{ id: 'm' as const, label: 'Meters (m)' },
+	{ id: 'm' as const, label: 'Metres (m)' },
 	{ id: 'ft' as const, label: 'Feet (ft)' }
 ] as const;
 
 export const DISTANCE_UNIT_OPTIONS = [
-	{ id: 'km' as const, label: 'Kilometers (km)' },
+	{ id: 'km' as const, label: 'Kilometres (km)' },
 	{ id: 'mi' as const, label: 'Miles (mi)' }
 ] as const;
 
@@ -91,16 +91,17 @@ export const TEMPERATURE_UNIT_OPTIONS = [
 ] as const;
 
 export const WIND_UNIT_OPTIONS = [
-	{ id: 'kmh' as const, label: 'Kilometers per hour (km/h)' },
+	{ id: 'kmh' as const, label: 'Kilometres per hour (km/h)' },
 	{ id: 'mph' as const, label: 'Miles per hour (mph)' }
 ] as const;
 
 export const PRECIPITATION_UNIT_OPTIONS = [
-	{ id: 'mm' as const, label: 'Millimeters (mm)' },
+	{ id: 'mm' as const, label: 'Millimetres (mm)' },
 	{ id: 'in' as const, label: 'Inches (in)' }
 ] as const;
 
 export const METERS_TO_FEET = 3.280839895;
+export const FEET_TO_METERS = 0.3048;
 export const KM_TO_MILES = 0.621371192;
 export const MM_TO_INCHES = 0.0393700787;
 
@@ -178,6 +179,11 @@ export function convertHeight(meters: number, unit: HeightUnit): number {
 	return unit === 'ft' ? meters * METERS_TO_FEET : meters;
 }
 
+/** Inverse of {@link convertHeight} for owner-entered feet (#483). */
+export function feetToMeters(feet: number): number {
+	return feet * FEET_TO_METERS;
+}
+
 export function formatHeight(meters: number | null | undefined, unit: HeightUnit = 'm'): string {
 	if (meters == null || !Number.isFinite(meters)) return '';
 	if (unit === 'ft') {
@@ -237,6 +243,21 @@ export function formatTemperature(
 
 export function temperatureUnitLabel(unit: TemperatureUnit): string {
 	return unit === 'fahrenheit' ? '°F' : '°C';
+}
+
+/**
+ * Detail formatting for cached readings (logbook Weather column): convert to the display
+ * unit but keep the stored precision instead of rounding to whole numbers.
+ */
+export function formatTemperatureDetail(
+	c: number | null | undefined,
+	unit: TemperatureUnit = 'celsius'
+): string {
+	if (c == null || !Number.isFinite(c)) return '';
+	if (unit === 'fahrenheit') {
+		return `${Math.round(celsiusToFahrenheit(c) * 10) / 10}°F`;
+	}
+	return `${Math.round(c * 10) / 10}°C`;
 }
 
 // ---------------- Wind helpers ----------------

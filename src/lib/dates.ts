@@ -10,7 +10,7 @@ export const DATE_FORMAT_OPTIONS = [
 	{
 		id: 'auto' as const,
 		label: 'Auto (Locale-based)',
-		hint: 'Derives format from your display locale or browser'
+		hint: 'Derives format from the configured display locale'
 	},
 	{
 		id: 'dd/mm/yyyy' as const,
@@ -137,6 +137,11 @@ export function formatCalendarDate(
 	const month = raw10.slice(5, 7);
 	const dayNum = raw10.slice(8, 10);
 
+	// Reject impossible calendar days (e.g. 2018-00-00, non-leap 2019-02-29) before custom
+	// formatting, using the same strict UTC round-trip as `calendarDay`.
+	const d = new Date(`${raw10}T12:00:00Z`);
+	if (Number.isNaN(d.getTime()) || d.toISOString().slice(0, 10) !== raw10) return raw10;
+
 	const fmt = display.dateFormat ?? 'auto';
 	if (fmt === 'dd/mm/yyyy') {
 		return `${dayNum}/${month}/${year}`;
@@ -148,8 +153,6 @@ export function formatCalendarDate(
 		return `${year}-${month}-${dayNum}`;
 	}
 
-	const d = new Date(`${raw10}T12:00:00Z`);
-	if (Number.isNaN(d.getTime())) return raw10;
 	try {
 		return new Intl.DateTimeFormat(display.locale, { dateStyle: 'medium', timeZone: 'UTC' }).format(
 			d

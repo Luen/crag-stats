@@ -2,7 +2,7 @@ import { calendarDay as validDay } from '#lib/calendarDay';
 import { formatGradeLabel, usesVScale } from '#lib/grades';
 import { parseGoalGradeScale, parseScaledGoalGrade, type GoalGradeScale } from '#lib/goalGrades';
 import { isTickCountedInProjectsAndGoals } from '#lib/tickSettings';
-import { getDisplayGradeSystems, getTickTypeSettings } from './appSettings';
+import { getDisplayGradeSystems, getDisplayUnits, getTickTypeSettings } from './appSettings';
 import { desc, eq } from 'drizzle-orm';
 import { db, ensureSchema } from './db';
 import { ascents, goals, routes, type Goal } from './db/schema';
@@ -14,6 +14,7 @@ import {
 	type GoalKind
 } from './goalsShared';
 import { matchesVenueScope, normalizeVenueScope, type VenueScope } from './venue';
+import { DEFAULT_DISPLAY_UNITS, formatHeight, type DisplayUnits } from '#lib/units';
 
 export type { GoalKind } from './goalsShared';
 export {
@@ -144,7 +145,11 @@ function gradeGoalSendEvidence(
 	};
 }
 
-function enrichGoal(g: Goal, ascentRows: AscentRouteRow[] = []): GoalView {
+function enrichGoal(
+	g: Goal,
+	ascentRows: AscentRouteRow[] = [],
+	units: DisplayUnits = DEFAULT_DISPLAY_UNITS
+): GoalView {
 	const venue = asVenue(g);
 	const targetNum = Number(g.targetValue);
 	const currentNum = Number(g.progressValue);
@@ -187,8 +192,9 @@ function enrichGoal(g: Goal, ascentRows: AscentRouteRow[] = []): GoalView {
 		const metres = Number.isFinite(currentNum) ? currentNum : 0;
 		const target = Number.isFinite(targetNum) ? targetNum : 0;
 		pct = g.completed ? 100 : progressPct(metres, target);
-		progressLabel = `${Math.round(metres)} m`;
-		targetLabel = `${Math.round(target)} m${g.year ? ` · ${g.year}` : ''}`;
+		// Stored metres stay canonical; only the label follows the display unit (#483).
+		progressLabel = formatHeight(metres, units.height);
+		targetLabel = `${formatHeight(target, units.height)}${g.year ? ` · ${g.year}` : ''}`;
 	} else if (g.kind === 'days_month') {
 		const days = Number.isFinite(currentNum) ? currentNum : 0;
 		const target = Number.isFinite(targetNum) ? targetNum : 0;
@@ -221,12 +227,13 @@ export function listGoals(): GoalView[] {
 	ensureSchema();
 	updateGoalProgress();
 	const ascentRows = loadAscentRouteRows();
+	const units = getDisplayUnits();
 	return db
 		.select()
 		.from(goals)
 		.orderBy(desc(goals.createdAt))
 		.all()
-		.map((g) => enrichGoal(g, ascentRows));
+		.map((g) => enrichGoal(g, ascentRows, units));
 }
 
 export function listActiveGoals(limit = 3): GoalView[] {
@@ -289,7 +296,11 @@ export function createGoal(input: {
 
 	updateGoalProgress();
 	const ascentRows = loadAscentRouteRows();
-	return enrichGoal(db.select().from(goals).where(eq(goals.id, inserted.id)).get()!, ascentRows);
+	return enrichGoal(
+		db.select().from(goals).where(eq(goals.id, inserted.id)).get()!,
+		ascentRows,
+		getDisplayUnits()
+	);
 }
 
 export function deleteGoal(id: number) {

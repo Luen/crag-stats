@@ -2,6 +2,7 @@
 	import NewRouteBadge from '#lib/components/NewRouteBadge.svelte';
 	import ProjectReadiness from '#lib/components/ProjectReadiness.svelte';
 	import ProjectRouteBadge from '#lib/components/ProjectRouteBadge.svelte';
+	import { DEFAULT_DATE_DISPLAY, formatCalendarDate, type DateDisplay } from '#lib/dates';
 
 	type ProjectCard = {
 		id: number;
@@ -20,8 +21,8 @@
 		progress: { pct: number | null; horizon: string };
 	};
 
-	type Props = { projects: ProjectCard[] };
-	let { projects }: Props = $props();
+	type Props = { projects: ProjectCard[]; dateDisplay?: DateDisplay };
+	let { projects, dateDisplay = DEFAULT_DATE_DISPLAY }: Props = $props();
 
 	function sessionsLabel(n: number) {
 		return n === 1 ? '1 session' : `${n} sessions`;
@@ -33,16 +34,7 @@
 
 	function when(iso: string | null) {
 		if (!iso) return '';
-		const d = iso.slice(0, 10);
-		if (!/^\d{4}-\d{2}-\d{2}$/.test(d)) return '';
-		const dt = new Date(`${d}T12:00:00Z`);
-		if (Number.isNaN(dt.getTime())) return d;
-		return dt.toLocaleDateString('en-US', {
-			month: 'short',
-			day: 'numeric',
-			year: 'numeric',
-			timeZone: 'UTC'
-		});
+		return formatCalendarDate(iso, dateDisplay);
 	}
 </script>
 

@@ -25,6 +25,8 @@
 <TrainingLoad
 	load={data.trainingLoad}
 	gradeSystems={data.gradeSystems}
+	displayUnits={data.displayUnits}
+	dateDisplay={data.dateDisplay}
 	weeksShown={26}
 	titleHref={null}
 	showDaily

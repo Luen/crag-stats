@@ -25,6 +25,11 @@ export const DOC_PAGES: readonly DocPage[] = [
 		summary: 'Logbook milestones and the automatic First Moves import date.'
 	},
 	{
+		slug: 'display-settings',
+		title: 'Display settings',
+		summary: 'Date formats, granular units, and the metric thresholds that stay fixed.'
+	},
+	{
 		slug: 'weather',
 		title: 'Weather',
 		summary:

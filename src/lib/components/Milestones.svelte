@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { DEFAULT_DATE_DISPLAY, formatCalendarDate, type DateDisplay } from '#lib/dates';
+
 	type Item = {
 		id: string;
 		kind: string;
@@ -13,8 +15,14 @@
 		limit?: number;
 		/** Dashboard links to `/milestones`; pass `null` on the full page to skip the title link. */
 		titleHref?: string | null;
+		dateDisplay?: DateDisplay;
 	};
-	let { items, limit, titleHref = '/milestones' }: Props = $props();
+	let {
+		items,
+		limit,
+		titleHref = '/milestones',
+		dateDisplay = DEFAULT_DATE_DISPLAY
+	}: Props = $props();
 
 	const sorted = $derived(
 		[...items].sort((a, b) => String(b.date ?? '').localeCompare(String(a.date ?? '')))
@@ -48,7 +56,7 @@
 						{/if}
 					</div>
 					{#if item.date}
-						<time datetime={item.date}>{item.date}</time>
+						<time datetime={item.date}>{formatCalendarDate(item.date, dateDisplay)}</time>
 					{/if}
 				</li>
 			{/each}

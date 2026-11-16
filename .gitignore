@@ -47,3 +47,6 @@ __pycache__/
 
 # Claude Code worktrees (local only)
 /.claude/worktrees/
+
+# Personal theCrag logbook exports (manual uploads, never commit)
+/*-logbook-*.csv

@@ -14,6 +14,7 @@ import {
 	NEAR_LIMIT_STEP
 } from './performanceBaseline';
 import { tickKind } from './ticks';
+import { celsiusToFahrenheit, type TemperatureUnit } from './units';
 import {
 	ascentWeatherKey,
 	isCalmWeather,
@@ -131,14 +132,21 @@ type BandDef = {
 /** Daily-high edges (°C). Bands include their lower edge and exclude their upper edge. */
 export const TEMPERATURE_EDGES = [10, 18, 25, 30] as const;
 
-function temperatureBands(): BandDef[] {
+function temperatureBands(unit: TemperatureUnit = 'celsius'): BandDef[] {
 	const edges = TEMPERATURE_EDGES;
+	// Labels follow the display unit; band tests and logbook links stay Celsius.
+	// Print the converted edge exactly (one decimal at most) and mark the upper edge
+	// exclusive, so a day rounded to 64°F never sits under a "50–63°" label (#486).
+	const shown = (c: number) => {
+		const converted = unit === 'fahrenheit' ? celsiusToFahrenheit(c) : c;
+		return String(Math.round(converted * 10) / 10);
+	};
 	const high = (w: WeatherSnapshot) =>
 		w.tempMaxC != null && Number.isFinite(w.tempMaxC) ? w.tempMaxC : null;
 	const out: BandDef[] = [
 		{
 			id: 'temp:lt',
-			label: `Under ${edges[0]}°`,
+			label: `Under ${shown(edges[0])}°`,
 			href: `/logbook?weatherHighMax=${edges[0]}`,
 			test: (w) => {
 				const t = high(w);
@@ -151,7 +159,7 @@ function temperatureBands(): BandDef[] {
 		const to = edges[i + 1]!;
 		out.push({
 			id: `temp:${from}`,
-			label: `${from}–${to - 1}°`,
+			label: `${shown(from)}–<${shown(to)}°`,
 			href: `/logbook?weatherHighMin=${from}&weatherHighMax=${to}`,
 			test: (w) => {
 				const t = high(w);
@@ -162,7 +170,7 @@ function temperatureBands(): BandDef[] {
 	const last = edges[edges.length - 1]!;
 	out.push({
 		id: 'temp:gte',
-		label: `${last}°+`,
+		label: `${shown(last)}°+`,
 		href: `/logbook?weatherHighMin=${last}`,
 		test: (w) => {
 			const t = high(w);
@@ -260,7 +268,8 @@ export function compareRates(band: readonly Cluster[], rest: readonly Cluster[])
  */
 export function buildWeatherPerformanceView(
 	rows: readonly WeatherPerformanceRow[],
-	weatherByKey: WeatherLookupMap | null | undefined
+	weatherByKey: WeatherLookupMap | null | undefined,
+	temperatureUnit: TemperatureUnit = 'celsius'
 ): WeatherPerformanceView | null {
 	if (!weatherByKey || weatherByKey.size === 0) return null;
 
@@ -354,7 +363,7 @@ export function buildWeatherPerformanceView(
 						key: 'temperature',
 						label: 'Daily high',
 						overlapping: false,
-						bands: buildBands(temperatureBands())
+						bands: buildBands(temperatureBands(temperatureUnit))
 					},
 					{
 						key: 'conditions',

@@ -204,6 +204,7 @@
 			years={s.yearly.years}
 			days={s.heatmap}
 			displayUnits={data.displayUnits}
+			dateDisplay={data.dateDisplay}
 		/>
 	{:else if id === 'bestMonths'}
 		<BestMonths data={s.bestMonths} />
@@ -218,12 +219,13 @@
 	{:else if id === 'goals'}
 		<GoalsProgress goals={data.activeGoals} canEdit={data.showSettings} />
 	{:else if id === 'projects'}
-		<ProjectsHighlight projects={data.dashboardProjects} />
+		<ProjectsHighlight projects={data.dashboardProjects} dateDisplay={data.dateDisplay} />
 	{:else if id === 'trainingLoad'}
 		<TrainingLoad
 			load={s.trainingLoad}
 			gradeSystems={data.gradeSystems}
 			displayUnits={data.displayUnits}
+			dateDisplay={data.dateDisplay}
 		/>
 	{:else if id === 'sessionsPerWeek'}
 		<SessionsPerWeek years={s.sessionsPerWeek.years} byYear={s.sessionsPerWeek.byYear} />
@@ -242,7 +244,7 @@
 	{:else if id === 'weatherPerformance' && s.weatherPerformance}
 		<WeatherPerformance data={s.weatherPerformance} dateDisplay={data.dateDisplay} />
 	{:else if id === 'milestones'}
-		<Milestones items={s.milestones.items} limit={6} />
+		<Milestones items={s.milestones.items} limit={6} dateDisplay={data.dateDisplay} />
 	{:else if id === 'styleMix'}
 		<StyleMixChart months={s.styleMix.months} />
 	{:else if id === 'partners'}
@@ -299,7 +301,11 @@
 			{/each}
 		</div>
 	{:else if id === 'notable'}
-		<NotableAscents byStyle={s.notableByStyle} byArea={s.notableByArea} />
+		<NotableAscents
+			byStyle={s.notableByStyle}
+			byArea={s.notableByArea}
+			dateDisplay={data.dateDisplay}
+		/>
 	{:else if id === 'cpr'}
 		<header class="section-head">
 			<h2>CPR timelines</h2>
@@ -379,6 +385,7 @@
 								location={climb.weatherLocation}
 								chips={climb.weatherChips}
 								dateDisplay={data.dateDisplay}
+								displayUnits={data.displayUnits}
 							/>
 						</div>
 						<GradeChip grade={climb.gradeLabel ?? climb.gradeRaw} band={climb.gradeBand} />

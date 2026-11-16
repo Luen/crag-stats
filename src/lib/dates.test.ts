@@ -81,6 +81,31 @@ describe('formatCalendarDate', () => {
 		expect(formatCalendarDate('')).toBe('');
 		expect(formatCalendarDate('invalid')).toBe('invalid');
 	});
+
+	it('rejects impossible calendar days in every format (#469 follow-up)', () => {
+		const formats = ['auto', 'dd/mm/yyyy', 'mm/dd/yyyy', 'yyyy-mm-dd'] as const;
+		for (const dateFormat of formats) {
+			expect(
+				formatCalendarDate('2018-00-00', { locale: 'en-AU', timeZone: 'UTC', dateFormat })
+			).toBe('2018-00-00');
+			expect(
+				formatCalendarDate('2018-13-01', { locale: 'en-AU', timeZone: 'UTC', dateFormat })
+			).toBe('2018-13-01');
+			expect(
+				formatCalendarDate('2019-02-29', { locale: 'en-AU', timeZone: 'UTC', dateFormat })
+			).toBe('2019-02-29');
+		}
+	});
+
+	it('formats valid February 29 dates in custom formats', () => {
+		expect(
+			formatCalendarDate('2024-02-29', {
+				locale: 'en-AU',
+				timeZone: 'UTC',
+				dateFormat: 'dd/mm/yyyy'
+			})
+		).toBe('29/02/2024');
+	});
 });
 
 describe('formatNumber / resolveDateDisplay', () => {

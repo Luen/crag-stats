@@ -11,6 +11,7 @@ import {
 	formatHeight,
 	formatPrecipitation,
 	formatTemperature,
+	formatTemperatureDetail,
 	formatWind,
 	parseDistanceUnit,
 	parseHeightUnit,
@@ -134,6 +135,14 @@ describe('temperature conversions and formatting', () => {
 		expect(formatTemperature(0, 'fahrenheit')).toBe('32°F');
 		expect(formatTemperature(35, 'fahrenheit')).toBe('95°F');
 		expect(formatTemperature(null)).toBe('');
+	});
+
+	it('keeps cached reading precision for detail surfaces (logbook Weather column)', () => {
+		expect(formatTemperatureDetail(24.9, 'celsius')).toBe('24.9°C');
+		expect(formatTemperatureDetail(25, 'celsius')).toBe('25°C');
+		expect(formatTemperatureDetail(-2, 'celsius')).toBe('-2°C');
+		expect(formatTemperatureDetail(24.9, 'fahrenheit')).toBe('76.8°F');
+		expect(formatTemperatureDetail(null)).toBe('');
 	});
 });
 

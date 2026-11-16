@@ -25,6 +25,8 @@ The distinction is deliberate. Headline totals filter what you send, while badge
 
 Height badges count the total height of your logged climbs: 1, 5, 10, 20, 50, 100, and 150 km. Each one is dated by the climb that takes your running total past the mark. **250m Day** instead sums the height climbed on a single calendar day.
 
+Badge thresholds are defined in metric and never change with the display-unit setting. Only the wording converts: with imperial units selected, **1 km climbed** reads in miles and **250m Day** reads in feet. The same climbs earn exactly the same badges in either unit system. See [Display settings](/docs/display-settings).
+
 ## Weather
 
 **Heat Wave**, **Freeze Frame**, **Rain Check**, **Climbing in the Snow**, **Blown Away**, **Bluebird**, **Sticky**, **Storm Send**, and **Four Seasons** need the optional outdoor weather cache (`WEATHER_IMPORT`). See [Weather](/docs/weather). Until those days are fetched, the badges stay locked. **Storm Send** requires a successful send on a heavy-rain day; attempts alone do not count.

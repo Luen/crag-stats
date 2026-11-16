@@ -54,7 +54,7 @@ The dashboard **Weather conditions** card appears once at least one outdoor clim
 - **Hottest / coldest climb** use the day's maximum and minimum temperature. The link goes to the earliest-logged ascent that day on theCrag.
 - **Share of days** shows perfect, rainy, snowy, freezing and hot days as a share of days with cached weather, using the same rules as the badges above (rain ≥ 1 mm and not snow, snow codes, low ≤ 0°C, high ≥ 35°C). A day can appear in more than one row, for example a freezing, snowy day.
 - A **Perfect** day is a fair day (high 15–25°C, dry, no snow or thunderstorm) that is also calm (max wind under 25 km/h), not humid (mean humidity under 85%) and stayed above freezing overnight. If the wind, humidity or low is missing for a day, it is not counted as perfect.
-- **Daily high** is a small histogram of each day's maximum temperature in 5° bins.
+- **Daily high** is a small histogram of each day's maximum temperature in 5°C bins, labelled in your chosen temperature unit. Ranges include the lower edge and exclude the upper edge (for example, 0–<5°C or 32–<41°F).
 
 These are model values for the nearest grid cell, not official climate normals or a measurement at the wall.
 

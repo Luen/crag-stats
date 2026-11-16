@@ -5,7 +5,7 @@ import { ascentWeatherKey } from '#lib/weatherKeys';
 import { calendarDay } from '#lib/calendarDay';
 import { theCragAscentUrl } from '#lib/thecragUrls';
 import { isTickCountedInAnalytics, type TickTypeSettings } from '#lib/tickSettings';
-import { getTickTypeSettings } from './appSettings';
+import { getTickTypeSettings, getDisplayUnits } from './appSettings';
 import { db, ensureSchema } from './db';
 import { ascents, routes } from './db/schema';
 import { loadWeatherSnapshotMap, loadWeatherCachedKeys } from './weatherEngine';
@@ -70,7 +70,7 @@ export function getWeatherPageData(tickSettings?: TickTypeSettings) {
 	}
 	return {
 		conditions: buildWeatherConditionsView(rows, weather),
-		performance: buildWeatherPerformanceView(rows, weather),
+		performance: buildWeatherPerformanceView(rows, weather, getDisplayUnits().temperature),
 		coverage: {
 			resolvedDays: keys.size,
 			cachedDays: [...keys].filter((key) => weather.has(key)).length,

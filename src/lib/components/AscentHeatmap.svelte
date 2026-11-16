@@ -8,12 +8,7 @@
 	} from '#lib/cardPreferences';
 	import { getBandName, GRADE_BANDS } from '#lib/grades/bands';
 	import { useI18n } from '#lib/i18n';
-	import {
-		DEFAULT_DATE_DISPLAY,
-		formatCalendarDate,
-		formatNumber,
-		type DateDisplay
-	} from '#lib/dates';
+	import { DEFAULT_DATE_DISPLAY, formatCalendarDate, type DateDisplay } from '#lib/dates';
 	import {
 		DEFAULT_DISPLAY_UNITS,
 		formatPrecipitation,
@@ -35,6 +30,7 @@
 		dateDisplay = DEFAULT_DATE_DISPLAY,
 		displayUnits = DEFAULT_DISPLAY_UNITS
 	}: Props = $props();
+
 	const i18n = useI18n();
 
 	type Mode = 'intensity' | 'grade' | 'weather';
@@ -205,7 +201,7 @@
 				? `${head} · ${weatherSummary(cell.weather)}`
 				: `${head} · no weather data`;
 		}
-		const base = `${cell.date}: ${cell.count} ascent${cell.count === 1 ? '' : 's'} (${cell.sends} send${cell.sends === 1 ? '' : 's'})`;
+		const base = `${formatCalendarDate(cell.date, dateDisplay)}: ${cell.count} ascent${cell.count === 1 ? '' : 's'} (${cell.sends} send${cell.sends === 1 ? '' : 's'})`;
 		if (activeMode !== 'grade' || cell.maxBand == null) return base;
 		const band = GRADE_BANDS.find((b) => b.id === cell.maxBand);
 		const name = band ? getBandName(band, i18n.locale) : `band ${cell.maxBand}`;
@@ -345,7 +341,7 @@
 									<td>
 										{day.weather!.precipMm == null
 											? '—'
-											: `${formatNumber(Math.round(day.weather!.precipMm * 10) / 10, dateDisplay)} mm`}
+											: formatPrecipitation(day.weather!.precipMm, displayUnits.precipitation)}
 									</td>
 								</tr>
 							{/each}

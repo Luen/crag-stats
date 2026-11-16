@@ -1,5 +1,7 @@
 # Yearly stats
 
+The year-over-year table always shows ascent and onsight differences as counts, and height differences in your selected height unit, independently of the chart metric.
+
 The **Yearly stats** dashboard card (and the charts on **[Activity](/activity)** when that page is enabled) show how your volume changes year by year.
 
 ## Per year

@@ -68,6 +68,7 @@
 		days={data.heatmap}
 		titleHref={null}
 		displayUnits={data.displayUnits}
+		dateDisplay={data.dateDisplay}
 	/>
 </div>
 
