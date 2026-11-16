@@ -96,7 +96,11 @@ Internationalisation in Crag Stats leverages native Svelte 5 runes (`$state`) co
 
 ### Current coverage
 
-The shell (navigation, footer, theme and language controls), difficulty-band names in the dashboard, ascent calendar, CPR timeline and doc tables, style badges, and tick icons use catalogue keys. Every other page and card still renders English copy inline, so a non-English locale currently shows a translated shell around mostly English content. Extracting the remaining page and card copy is tracked in [#492](https://github.com/Luen/crag-stats/issues/492); add catalogue keys as each surface is converted rather than machine-translating whole pages. Native review of the seeded catalogues is [#493](https://github.com/Luen/crag-stats/issues/493).
+Extracted: the shell (navigation, footer, theme and language controls), difficulty-band names, style badges, tick icons, the doc table blocks, and the dashboard card chrome — component titles, hints, legends, empty states, buttons, and accessible labels across `src/lib/components/`. Page chrome for the dashboard, logbook filters, goals, projects, seasonality, weather, settings, share, map, activity, badges, offline, login, and the weather-location picker also reads from the catalogue.
+
+Still hard-coded English: long prose inside cards (for example the Yearly stats and Weather performance bodies), most of the Settings form copy (labels and descriptions around inputs), project detail tables, and copy generated in server modules (climbing story paragraphs, Eddington tile captions, badge names and details, goal progress labels, project readiness horizons, and the milestones list). Those server builders have no locale, so translating them needs the resolved locale passed into the builder rather than a component change.
+
+Run `node scripts/i18n-audit.mjs` for the current list; `node scripts/i18n-audit.mjs --verbose` prints sample strings per file. The count is a heuristic (text nodes and literal `aria-label`/`title`/`placeholder`/`alt` values), so treat it as a worklist, not a target of zero. Extracting the rest is tracked in [#492](https://github.com/Luen/crag-stats/issues/492); convert one surface at a time rather than machine-translating whole pages. Native review of the seeded catalogues is [#493](https://github.com/Luen/crag-stats/issues/493).
 
 ---
 
@@ -157,18 +161,22 @@ Follow these steps when writing new UI features:
    <script lang="ts">
    	import { useI18n } from '#lib/i18n';
 
-   	const { t } = useI18n();
+   	const i18n = useI18n();
    	let count = $state(5);
    </script>
 
-   <h2>{t('logbook.filterTitle')}</h2><p>{t('logbook.ascentsCount', { count })}</p>
+   <h2>{i18n.t('logbook.filterTitle')}</h2><p>{i18n.t('logbook.ascentsCount', { count })}</p>
    ```
+
+   Keep the whole context object rather than destructuring `t`: `locale` is a getter over reactive state, and keeping one reference makes it obvious where copy comes from.
 
 3. **Fallback guarantee:**
    If a string key is missing in a target language, it automatically falls back to the English source string. If missing from English, it safely renders the key name itself (e.g. `logbook.filterTitle`) to prevent crashes while remaining easy to spot during testing.
 
 4. **Run the coverage test:**
-   `src/lib/i18n/i18n.test.ts` scans `src/**/*.{svelte,ts}` for dotted string literals whose first segment is a catalogue section, and fails when one is missing from `en.json`. It also requires every catalogue to carry the same leaf keys. Add the key to `en.json` first; Crowdin fills the translations later.
+   `src/lib/i18n/i18n.test.ts` scans `src/**/*.{svelte,ts}` for dotted string literals whose first segment is a catalogue section, and fails when one is missing from `en.json`. Add the key to `en.json` first; Crowdin fills the translations later.
+
+   Catalogue parity is one-way on purpose: a target catalogue may **omit** keys that English defines (it falls back until Crowdin syncs), but it must never **add** keys English does not define, because a renamed key would otherwise linger and never render. Do not hand-write target values to make a test pass — a fake translation is worse than the English fallback, and the next Crowdin pull overwrites it.
 
 ---
 
@@ -188,7 +196,7 @@ Keep the file and the Crowdin glossary in sync when adding new terms of art (`PO
 
 ## File Context
 
-The source catalog, `src/lib/i18n/locales/en.json`, carries a file description in Crowdin (`PATCH /projects/{id}/files/{fileId}`, path `/context`) that explains the product purpose, target audience, mobile screen constraints, and screen mapping per key prefix (`common.*`, `nav.*`, `theme.*`, `language.*`, `dashboard.*`, `logbook.*`, `projects.*`, `settings.*`, `badges.*`, `styles.*`, `ticks.*`, `grades.*`, `footer.*`, and `crowdin.*`). Update it whenever a new top-level domain prefix is introduced.
+The source catalog, `src/lib/i18n/locales/en.json`, carries a file description in Crowdin (`PATCH /projects/{id}/files/{fileId}`, path `/context`) that explains the product purpose, target audience, mobile screen constraints, and screen mapping per key prefix (`common.*`, `nav.*`, `theme.*`, `language.*`, `dashboard.*`, `cards.*` (per dashboard component), `pages.*` (per route), `logbook.*`, `projects.*`, `settings.*`, `badges.*`, `styles.*`, `ticks.*`, `grades.*`, `footer.*`, and `crowdin.*`). Update it whenever a new top-level domain prefix is introduced.
 
 ---
 
