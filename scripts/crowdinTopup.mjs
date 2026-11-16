@@ -1,5 +1,5 @@
 /**
- * Pure helpers for scripts/crowdin_topup.mjs, unit-tested in src/lib/server/crowdinTopup.test.ts.
+ * Pure helpers for scripts/crowdin-topup.mjs, unit-tested in src/lib/server/crowdinTopup.test.ts.
  *
  * Nothing here touches the network or `process.env`, so the quota state machine — the part that
  * silently wastes a day of Gemini allowance when it is wrong — is testable offline. See

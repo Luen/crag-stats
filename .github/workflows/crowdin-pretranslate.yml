@@ -4,7 +4,7 @@ name: Crowdin AI Pre-translate
 #
 # Crowdin's AI pre-translate spends roughly one Gemini request per batch of strings, and the AI
 # Studio free tier meters requests per day *per model*: the full Flash tier gets ~20 requests/day
-# each. scripts/crowdin_topup.mjs works around that by rotating models - when a pass adds
+# each. scripts/crowdin-topup.mjs works around that by rotating models - when a pass adds
 # nothing, it switches the Crowdin prompt to the next model, which has its own untouched
 # allowance. Every entry in that rotation is a full Flash model; the Flash Lite tier has a much
 # larger allowance but translates ICU plurals, {placeholders}, and glossary terms less reliably.
@@ -63,7 +63,7 @@ jobs:
 
       - name: Top up AI pre-translation
         id: topup
-        run: node scripts/crowdin_topup.mjs
+        run: node scripts/crowdin-topup.mjs
         env:
           CROWDIN_PROJECT_ID: ${{ secrets.CROWDIN_PROJECT_ID }}
           CROWDIN_PERSONAL_TOKEN: ${{ secrets.CROWDIN_PERSONAL_TOKEN }}

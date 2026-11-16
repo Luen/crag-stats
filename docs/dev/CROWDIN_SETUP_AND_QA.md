@@ -22,7 +22,7 @@ GitHub Repository (main)
 - **Runtime engine:** Lightweight, reactive Svelte 5 context (`#lib/i18n`) with full ICU pluralisation support (`{count, plural, one {# ascent} other {# ascents}}`). Zero runtime third-party npm dependencies.
 - **Automated Workflows:**
   - `.github/workflows/crowdin-sync.yml`: Path-filtered to `en.json` to avoid bot loops. Pushes source changes on `main` and opens a PR back with community translations.
-  - `.github/workflows/crowdin-pretranslate.yml`: Daily automated top-up with Google Gemini AI (`scripts/crowdin_topup.mjs`).
+  - `.github/workflows/crowdin-pretranslate.yml`: Daily automated top-up with Google Gemini AI (`scripts/crowdin-topup.mjs`).
 
 ---
 
@@ -61,7 +61,7 @@ Google AI Studio's free tier meters requests **per day per model** (Requests Per
 - **Gemini 4 Hydrogen:** the strongest free-tier model available to the prompt, so the rotation starts there.
 - **Flash Lite tier:** deliberately **excluded**, despite ~500 requests/day each. The catalogue is short UI strings carrying ICU plurals, `{placeholders}`, glossary terms, and hard `maxLength` caps, which is where a small model drifts; a cheap translation that has to be re-reviewed costs more than a second day of quota.
 
-`scripts/crowdin_topup.mjs` leverages this by rotating through models sequentially. When a pass adds 0 strings after waiting out the 65-second rate window, it patches the prompt to the next model via `PATCH /users/{userId}/ai/prompts/{promptId}` with `[{"op": "replace", "path": "/aiModelId", "value": model}]`.
+`scripts/crowdin-topup.mjs` leverages this by rotating through models sequentially. When a pass adds 0 strings after waiting out the 65-second rate window, it patches the prompt to the next model via `PATCH /users/{userId}/ai/prompts/{promptId}` with `[{"op": "replace", "path": "/aiModelId", "value": model}]`.
 
 Because one day's rotation covers roughly one catalogue, `.github/workflows/crowdin-pretranslate.yml` pre-translates a single target language per scheduled run (`CROWDIN_LANGUAGES`, currently `de`). Translating every target at once splits the allowance and leaves each language half-done, so the next language is added to that line and to `ENABLED_LOCALES` in `src/lib/i18n/types.ts` only once the previous one is shipped. Retired model ids must be removed rather than left as a fallback: a dead id costs a failed pass plus a 65-second retry before the rotation moves on.
 

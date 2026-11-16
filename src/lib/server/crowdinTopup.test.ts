@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore -- plain JS module shared with scripts/crowdin_topup.mjs (no .d.ts)
+// @ts-ignore -- plain JS module shared with scripts/crowdin-topup.mjs (no .d.ts)
 import {
 	DEFAULT_BUDGET_SECONDS,
 	DEFAULT_MODELS,

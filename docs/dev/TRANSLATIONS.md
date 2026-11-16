@@ -74,7 +74,7 @@ crowdin.yml                              # Crowdin project configuration
   crowdin-pretranslate.yml               # Automated Gemini AI pre-translation top-up
   SETUP.md                               # Secrets, token scopes, and workflow setup guide
 scripts/
-  crowdin_topup.mjs                     # AI pre-translate quota manager & Gemini model rotator
+  crowdin-topup.mjs                     # AI pre-translate quota manager & Gemini model rotator
 src/lib/i18n/
   locales/
     en.json                              # Source catalogue of truth (English)
@@ -141,13 +141,13 @@ src/lib/i18n/locales/en.json  ──push to main──▶  Crowdin  ──transl
 - **Bot loop prevention:** Path filtering ensures the workflow runs only when the source catalogue changes. Because Crowdin pull requests only modify target files (`de.json`, `fr.json`, etc.), merging a translation PR never triggers `crowdin-sync.yml` again.
 - Uploads the source file and pulls completed translations into branch `chore/crowdin-translations`, opening or updating a single consolidated PR.
 
-### 2. `crowdin-pretranslate.yml` & `scripts/crowdin_topup.mjs` (Daily Scheduled AI Top-up)
+### 2. `crowdin-pretranslate.yml` & `scripts/crowdin-topup.mjs` (Daily Scheduled AI Top-up)
 
 - Runs daily at 08:15 UTC (after midnight Pacific, catching fresh Google AI Studio free quotas).
 - Calls Crowdin's API to run AI pre-translation passes against untranslated strings using Google Gemini.
 - **One language per run:** the workflow pre-translates a single target (`CROWDIN_LANGUAGES`, currently `de`) because a day's rotation covers about one catalogue. Translating every target at once splits the allowance and leaves each language half-done, so the next language is added to that line and to `ENABLED_LOCALES` only after the previous one ships.
-- **Model Rotation:** Google AI Studio free quotas are metered per model. When a model's minute or daily quota is reached, `scripts/crowdin_topup.mjs` automatically rotates to the next model in the hierarchy (`gemini-4-hydrogen` → `gemini-3.8-flash` → `gemini-3.6-flash` → `gemini-3.5-flash` → `gemini-3-flash-preview`). Every entry is a full Flash model: the Flash Lite tier has ~25× the daily allowance but drifts on ICU plurals, `{placeholders}`, and glossary terms, and a translation that needs re-review costs more than another day of quota. The list lives in `DEFAULT_MODELS`; confirm an id against `GET /users/{userId}/ai/providers/{providerId}/models` before adding it, because Crowdin rejects retired ids. Delete retired ids rather than keeping them as a fallback — a dead id costs one failed pass plus a 65 s retry before the rotation moves on. Crowdin's model list can outlive Google's: a model Crowdin still lists may already be retired upstream.
-- **Testable decisions:** The quota state machine lives in `scripts/crowdinTopup.mjs` (no network, no `process.env`) and is covered by `src/lib/server/crowdinTopup.test.ts`, the same pattern as `scripts/serverOrigin.mjs`. Adding a branch to the rotation logic means adding a test there; the CLI in `crowdin_topup.mjs` only wires those decisions to the API.
+- **Model Rotation:** Google AI Studio free quotas are metered per model. When a model's minute or daily quota is reached, `scripts/crowdin-topup.mjs` automatically rotates to the next model in the hierarchy (`gemini-4-hydrogen` → `gemini-3.8-flash` → `gemini-3.6-flash` → `gemini-3.5-flash` → `gemini-3-flash-preview`). Every entry is a full Flash model: the Flash Lite tier has ~25× the daily allowance but drifts on ICU plurals, `{placeholders}`, and glossary terms, and a translation that needs re-review costs more than another day of quota. The list lives in `DEFAULT_MODELS`; confirm an id against `GET /users/{userId}/ai/providers/{providerId}/models` before adding it, because Crowdin rejects retired ids. Delete retired ids rather than keeping them as a fallback — a dead id costs one failed pass plus a 65 s retry before the rotation moves on. Crowdin's model list can outlive Google's: a model Crowdin still lists may already be retired upstream.
+- **Testable decisions:** The quota state machine lives in `scripts/crowdinTopup.mjs` (no network, no `process.env`) and is covered by `src/lib/server/crowdinTopup.test.ts`, the same pattern as `scripts/serverOrigin.mjs`. Adding a branch to the rotation logic means adding a test there; the CLI in `crowdin-topup.mjs` only wires those decisions to the API.
 - **Budget:** `CROWDIN_TOPUP_BUDGET` caps the wall clock (default 3000 s) so the run always leaves room for the download and PR steps. `CROWDIN_LANGUAGES` / `CROWDIN_MODELS` override the project targets / rotation for a one-off manual run.
 - **Idempotency:** Only untranslated strings are submitted (`scope: untranslated`); human reviews and existing translations are never overwritten.
 - When new translations are added, it pulls them and opens or updates the pull request on `chore/crowdin-translations`.

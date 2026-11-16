@@ -56,7 +56,7 @@ How the internationalisation architecture works is documented in [`docs/dev/TRAN
    - **Name**: `Crag Stats pre-translate`
    - **Action**: Select `Pre-translate`
    - **AI Provider**: Google Gemini
-   - **AI Model**: Select `gemini-4-hydrogen` (the rotation start). `scripts/crowdin_topup.mjs` rotates through the full Flash models automatically; Flash Lite is excluded on purpose, and retired ids must be deleted rather than kept as a fallback.
+   - **AI Model**: Select `gemini-4-hydrogen` (the rotation start). `scripts/crowdin-topup.mjs` rotates through the full Flash models automatically; Flash Lite is excluded on purpose, and retired ids must be deleted rather than kept as a fallback.
    - **Prompt Message**:
      ```text
      You are translating climbing analytics software (Crag Stats) for rock climbers and mountaineers.
