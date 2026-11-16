@@ -188,6 +188,26 @@ Follow these steps when writing new UI features:
 
    Catalogue parity is one-way on purpose: a target catalogue may **omit** keys that English defines (it falls back until Crowdin syncs), but it must never **add** keys English does not define, because a renamed key would otherwise linger and never render. Do not hand-write target values to make a test pass — a fake translation is worse than the English fallback, and the next Crowdin pull overwrites it.
 
+5. **Inline markup inside a sentence:**
+   Keep one whole sentence in one key so a translator can move its parts. `RichText.svelte` renders two kinds of inline content without `{@html}`, so catalogue text can never inject markup:
+
+   - `**bold**`, `*italic*`, and `` `code` `` wrap words that need translating in place, for example `CSV import upserts rows but does **not** remove missing entries.`
+   - `{name}` tokens mark content that must not be translated, supplied by the call site: environment variables, file names, and links whose label and target come from elsewhere.
+
+   ```svelte
+   <RichText
+   	message={i18n.t('pages.settings.hintNoApiKey')}
+   	tokens={{
+   		key: { kind: 'code', text: 'THECRAG_API_KEY' },
+   		env: { kind: 'code', text: '.env' }
+   	}}
+   />
+   ```
+
+   Tokens may sit inside emphasis (`**No {appPassword} is set.**`), because markup is parsed first and tokens are substituted into the resulting text. An unknown `{name}` stays literal rather than disappearing, and an unmatched marker stays as text, so a damaged translation is visible but never breaks the layout. `src/lib/richText.test.ts` covers the parser, and `src/lib/i18n/i18n.test.ts` fails if an English sentence leaves an unbalanced `**` or backtick.
+
+   Paths, environment-variable names, and property names must be tokens (not backticked literals), so Crowdin's placeholder protection keeps them intact. Brand names and ordinary words belong in the sentence.
+
 ---
 
 ## Translation Style Guide

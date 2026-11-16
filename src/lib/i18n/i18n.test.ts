@@ -13,6 +13,7 @@ import {
 	resolveLocale
 } from './types';
 import { formatMessage, LOCALES } from './format';
+import { parseRichText } from '../richText';
 
 function flattenLeaves(obj: Record<string, unknown>, prefix = ''): Record<string, string> {
 	const out: Record<string, string> = {};
@@ -316,6 +317,22 @@ describe('formatMessage', () => {
 		// backwards: the harder band must not sound milder than the one below it (#493).
 		expect(formatMessage('it', 'grades.bands.experienced')).toBe('Avanzato');
 		expect(formatMessage('it', 'grades.bands.expert')).toBe('Esperto');
+	});
+
+	it('leaves no unbalanced inline markup in any English sentence', () => {
+		const walk = (nodes: ReturnType<typeof parseRichText>, key: string) => {
+			for (const node of nodes) {
+				if (node.kind === 'text') {
+					// An unmatched `**` or backtick survives as text and would show up in the UI.
+					expect(node.text, key).not.toMatch(/\*\*|`/);
+				} else {
+					walk(node.children, key);
+				}
+			}
+		};
+		for (const [key, text] of Object.entries(flattenLeaves(LOCALES.en))) {
+			walk(parseRichText(text), key);
+		}
 	});
 });
 

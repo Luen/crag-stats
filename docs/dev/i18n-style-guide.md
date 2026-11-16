@@ -74,7 +74,7 @@ Many strings are compact labels in navigation rails, stat cards, pyramid charts,
 
 - Keep every `{placeholder}` exactly as written (`{count}`, `{name}`, `{style}`, `{grade}`) — same braces, same identifier. Never translate the variable inside the braces.
 - ICU plural syntax (e.g., `{count, plural, one {# ascent} other {# ascents}}`) must be preserved and adapted to the plural categories of the target language.
-- Inline HTML tags (like `<b>`, `</b>`, `<a>`, `</a>`) must remain intact and wrap the corresponding localised text.
+- Inline emphasis markers `**bold**`, `*italic*`, and `` `code` `` must stay balanced and wrap the equivalent localised words. Move them if the target language puts those words in a different order, but never drop a pair or translate the marker characters.
 
 ---
 
