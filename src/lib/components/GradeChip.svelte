@@ -1,5 +1,6 @@
 <script lang="ts">
-	import { bandById } from '#lib/grades';
+	import { bandById, getBandName } from '#lib/grades';
+	import { useI18n } from '#lib/i18n';
 
 	type Props = {
 		grade: string | null | undefined;
@@ -7,6 +8,7 @@
 	};
 
 	let { grade, band = null }: Props = $props();
+	const i18n = useI18n();
 
 	const meta = $derived(bandById(band ?? 0));
 	const label = $derived(grade?.trim() || '—');
@@ -15,7 +17,7 @@
 <span
 	class="grade-chip"
 	style:--chip={meta?.color ?? 'var(--style-unknown)'}
-	title={meta?.name ?? 'Unknown band'}
+	title={meta ? getBandName(meta, i18n.locale) : i18n.t('cards.gradeChip.unknownBand')}
 >
 	{#if meta}
 		<span class="dot" style:background={meta.color}></span>

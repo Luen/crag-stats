@@ -13,6 +13,8 @@ import {
 	performanceGradeScore,
 	NEAR_LIMIT_STEP
 } from './performanceBaseline';
+import { formatMessage } from '#lib/i18n/format';
+import { DEFAULT_LOCALE, type SupportedLocale } from '#lib/i18n/types';
 import { tickKind } from './ticks';
 import { celsiusToFahrenheit, type TemperatureUnit } from './units';
 import {
@@ -132,7 +134,10 @@ type BandDef = {
 /** Daily-high edges (°C). Bands include their lower edge and exclude their upper edge. */
 export const TEMPERATURE_EDGES = [10, 18, 25, 30] as const;
 
-function temperatureBands(unit: TemperatureUnit = 'celsius'): BandDef[] {
+function temperatureBands(
+	unit: TemperatureUnit = 'celsius',
+	locale: SupportedLocale = DEFAULT_LOCALE
+): BandDef[] {
 	const edges = TEMPERATURE_EDGES;
 	// Labels follow the display unit; band tests and logbook links stay Celsius.
 	// Print the converted edge exactly (one decimal at most) and mark the upper edge
@@ -146,7 +151,9 @@ function temperatureBands(unit: TemperatureUnit = 'celsius'): BandDef[] {
 	const out: BandDef[] = [
 		{
 			id: 'temp:lt',
-			label: `Under ${shown(edges[0])}°`,
+			label: formatMessage(locale, 'cards.weatherPerformance.bandUnder', {
+				temp: `${shown(edges[0])}°`
+			}),
 			href: `/logbook?weatherHighMax=${edges[0]}`,
 			test: (w) => {
 				const t = high(w);
@@ -186,16 +193,58 @@ export function isDryWeather(w: WeatherSnapshot): boolean {
 	return p != null && Number.isFinite(p) && p >= 0 && p < 1 && !isSnowWeather(w);
 }
 
-const CONDITION_BANDS: BandDef[] = [
-	{ id: 'cond:fair', label: 'Fair', href: '/logbook?weather=fair', test: isFairWeather },
-	{ id: 'cond:dry', label: 'Dry', href: null, test: isDryWeather },
-	{ id: 'cond:rain', label: 'Rainy', href: '/logbook?weather=rain', test: isRainWeather },
-	{ id: 'cond:snow', label: 'Snowy', href: '/logbook?weather=snow', test: isSnowWeather },
-	{ id: 'cond:heat', label: 'Hot', href: '/logbook?weather=heat', test: isHeatWeather },
-	{ id: 'cond:freeze', label: 'Freezing', href: '/logbook?weather=freeze', test: isFreezeWeather },
-	{ id: 'cond:calm', label: 'Calm', href: '/logbook?weather=calm', test: isCalmWeather },
-	{ id: 'cond:wind', label: 'Windy', href: '/logbook?weather=wind', test: isWindyWeather }
-];
+function conditionBands(locale: SupportedLocale = DEFAULT_LOCALE): BandDef[] {
+	return [
+		{
+			id: 'cond:fair',
+			label: formatMessage(locale, 'cards.weatherPerformance.bandFair'),
+			href: '/logbook?weather=fair',
+			test: isFairWeather
+		},
+		{
+			id: 'cond:dry',
+			label: formatMessage(locale, 'cards.weatherPerformance.bandDry'),
+			href: null,
+			test: isDryWeather
+		},
+		{
+			id: 'cond:rain',
+			label: formatMessage(locale, 'cards.weatherConditions.shareRain'),
+			href: '/logbook?weather=rain',
+			test: isRainWeather
+		},
+		{
+			id: 'cond:snow',
+			label: formatMessage(locale, 'cards.weatherConditions.shareSnow'),
+			href: '/logbook?weather=snow',
+			test: isSnowWeather
+		},
+		{
+			id: 'cond:heat',
+			label: formatMessage(locale, 'cards.weatherConditions.shareHeat'),
+			href: '/logbook?weather=heat',
+			test: isHeatWeather
+		},
+		{
+			id: 'cond:freeze',
+			label: formatMessage(locale, 'cards.weatherConditions.shareFreeze'),
+			href: '/logbook?weather=freeze',
+			test: isFreezeWeather
+		},
+		{
+			id: 'cond:calm',
+			label: formatMessage(locale, 'cards.weatherPerformance.bandCalm'),
+			href: '/logbook?weather=calm',
+			test: isCalmWeather
+		},
+		{
+			id: 'cond:wind',
+			label: formatMessage(locale, 'cards.weatherPerformance.bandWindy'),
+			href: '/logbook?weather=wind',
+			test: isWindyWeather
+		}
+	];
+}
 
 /** Per location-day tallies; one cluster in the robust variance. */
 type DayTally = {
@@ -269,7 +318,8 @@ export function compareRates(band: readonly Cluster[], rest: readonly Cluster[])
 export function buildWeatherPerformanceView(
 	rows: readonly WeatherPerformanceRow[],
 	weatherByKey: WeatherLookupMap | null | undefined,
-	temperatureUnit: TemperatureUnit = 'celsius'
+	temperatureUnit: TemperatureUnit = 'celsius',
+	locale: SupportedLocale = DEFAULT_LOCALE
 ): WeatherPerformanceView | null {
 	if (!weatherByKey || weatherByKey.size === 0) return null;
 
@@ -361,15 +411,15 @@ export function buildWeatherPerformanceView(
 			? [
 					{
 						key: 'temperature',
-						label: 'Daily high',
+						label: formatMessage(locale, 'cards.weatherPerformance.groupDailyHigh'),
 						overlapping: false,
-						bands: buildBands(temperatureBands(temperatureUnit))
+						bands: buildBands(temperatureBands(temperatureUnit, locale))
 					},
 					{
 						key: 'conditions',
-						label: 'Conditions',
+						label: formatMessage(locale, 'cards.weatherPerformance.groupConditions'),
 						overlapping: true,
-						bands: buildBands(CONDITION_BANDS)
+						bands: buildBands(conditionBands(locale))
 					}
 				]
 			: []

@@ -19,6 +19,8 @@ import {
 	type WeatherLookupMap,
 	type WeatherSnapshot
 } from './weatherKeys';
+import { formatMessage } from '#lib/i18n/format';
+import { DEFAULT_LOCALE, type SupportedLocale } from '#lib/i18n/types';
 import { celsiusToFahrenheit, type TemperatureUnit } from '#lib/units';
 
 export type WeatherAscentRow = {
@@ -202,7 +204,8 @@ function extreme(
  */
 export function buildWeatherConditionsView(
 	rows: readonly WeatherAscentRow[],
-	weatherByKey: WeatherLookupMap | null | undefined
+	weatherByKey: WeatherLookupMap | null | undefined,
+	locale: SupportedLocale = DEFAULT_LOCALE
 ): WeatherConditionsView | null {
 	if (!weatherByKey || weatherByKey.size === 0) return null;
 
@@ -260,11 +263,31 @@ export function buildWeatherConditionsView(
 			(a, b) => a < b
 		),
 		shares: [
-			shareOf('perfect', 'Perfect', count(isPerfectWeather)),
-			shareOf('rain', 'Rainy', count(isRainWeather)),
-			shareOf('snow', 'Snowy', count(isSnowWeather)),
-			shareOf('freeze', 'Freezing', count(isFreezeWeather)),
-			shareOf('heat', 'Hot', count(isHeatWeather))
+			shareOf(
+				'perfect',
+				formatMessage(locale, 'cards.weatherConditions.sharePerfect'),
+				count(isPerfectWeather)
+			),
+			shareOf(
+				'rain',
+				formatMessage(locale, 'cards.weatherConditions.shareRain'),
+				count(isRainWeather)
+			),
+			shareOf(
+				'snow',
+				formatMessage(locale, 'cards.weatherConditions.shareSnow'),
+				count(isSnowWeather)
+			),
+			shareOf(
+				'freeze',
+				formatMessage(locale, 'cards.weatherConditions.shareFreeze'),
+				count(isFreezeWeather)
+			),
+			shareOf(
+				'heat',
+				formatMessage(locale, 'cards.weatherConditions.shareHeat'),
+				count(isHeatWeather)
+			)
 		],
 		histogram,
 		fairWeather: buildFairWeatherMetric(withData.map((d) => d.weather!))

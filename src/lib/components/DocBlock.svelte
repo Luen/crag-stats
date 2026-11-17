@@ -7,11 +7,14 @@
 		ewbankToFrench,
 		ewbankToYds,
 		formatVScaleLabel,
+		getBandName,
 		GRADE_BANDS
 	} from '#lib/grades';
+	import { useI18n } from '#lib/i18n';
 
 	/** Generated tables embedded in docs pages via `<!-- component:name -->`. */
 	let { name }: { name: string } = $props();
+	const i18n = useI18n();
 
 	const routeRows = Array.from({ length: 39 }, (_, i) => i + 1).map((ew) => ({
 		ew,
@@ -38,12 +41,19 @@
 	<div class="table-wrap">
 		<table>
 			<thead>
-				<tr><th>Band</th><th>Routes (Ewbank)</th><th>Boulders</th><th>What it means</th></tr>
+				<tr>
+					<th>{i18n.t('cards.docBlock.thBand')}</th>
+					<th>{i18n.t('cards.docBlock.thRoutesEwbank')}</th>
+					<th>{i18n.t('cards.docBlock.thBoulders')}</th>
+					<th>{i18n.t('cards.docBlock.thWhatItMeans')}</th>
+				</tr>
 			</thead>
 			<tbody>
 				{#each GRADE_BANDS as band (band.id)}
 					<tr>
-						<td><span class="band" style:--c={band.color}>{band.name}</span></td>
+						<td
+							><span class="band" style:--c={band.color}>{getBandName(band, i18n.locale)}</span></td
+						>
 						<td class="num">{BAND_DOCS[band.id].routes}</td>
 						<td class="num">{BAND_DOCS[band.id].boulders}</td>
 						<td>{BAND_DOCS[band.id].text}</td>
@@ -55,16 +65,28 @@
 {:else if name === 'route-conversions'}
 	<!-- Scrollable region: focusable so keyboard users can scroll it (axe). -->
 	<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-	<div class="table-wrap tall" tabindex="0" role="region" aria-label="Route grade conversions">
+	<div
+		class="table-wrap tall"
+		tabindex="0"
+		role="region"
+		aria-label={i18n.t('cards.docBlock.ariaRouteGradeConversions')}
+	>
 		<table>
-			<thead><tr><th>Ewbank</th><th>French</th><th>YDS</th><th>Band</th></tr></thead>
+			<thead>
+				<tr>
+					<th>{i18n.t('cards.docBlock.thEwbank')}</th>
+					<th>{i18n.t('cards.docBlock.thFrench')}</th>
+					<th>{i18n.t('cards.docBlock.thYds')}</th>
+					<th>{i18n.t('cards.docBlock.thBand')}</th>
+				</tr>
+			</thead>
 			<tbody>
 				{#each routeRows as r (r.ew)}
 					<tr style:--c={r.band?.color}>
 						<td class="num strong">{r.ew}</td>
 						<td class="num">{r.fr}</td>
 						<td class="num">{r.yds}</td>
-						<td><span class="dot"></span>{r.band?.name}</td>
+						<td><span class="dot"></span>{r.band ? getBandName(r.band, i18n.locale) : ''}</td>
 					</tr>
 				{/each}
 			</tbody>
@@ -73,15 +95,26 @@
 {:else if name === 'boulder-conversions'}
 	<!-- Scrollable region: focusable so keyboard users can scroll it (axe). -->
 	<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-	<div class="table-wrap tall" tabindex="0" role="region" aria-label="Boulder grade conversions">
+	<div
+		class="table-wrap tall"
+		tabindex="0"
+		role="region"
+		aria-label={i18n.t('cards.docBlock.ariaBoulderGradeConversions')}
+	>
 		<table>
-			<thead><tr><th>V-scale</th><th>Font</th><th>Band</th></tr></thead>
+			<thead>
+				<tr>
+					<th>{i18n.t('cards.docBlock.thVScale')}</th>
+					<th>{i18n.t('cards.docBlock.thFont')}</th>
+					<th>{i18n.t('cards.docBlock.thBand')}</th>
+				</tr>
+			</thead>
 			<tbody>
 				{#each boulderRows as r (r.v)}
 					<tr style:--c={r.band?.color}>
 						<td class="num strong">{r.v}</td>
 						<td class="num">{r.font}</td>
-						<td><span class="dot"></span>{r.band?.name}</td>
+						<td><span class="dot"></span>{r.band ? getBandName(r.band, i18n.locale) : ''}</td>
 					</tr>
 				{/each}
 			</tbody>
@@ -98,7 +131,9 @@
 							<td class="strong nowrap">{t.name}</td>
 							<td>{t.meaning}</td>
 							<td class="nowrap"
-								><span class="kind" class:send={t.send}>{t.send ? 'Send' : 'Attempt'}</span></td
+								><span class="kind" class:send={t.send}
+									>{t.send ? i18n.t('ticks.send') : i18n.t('ticks.attempt')}</span
+								></td
 							>
 						</tr>
 					{/each}

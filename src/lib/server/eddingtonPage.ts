@@ -1,6 +1,7 @@
 import { calendarDay as validDay } from '#lib/calendarDay';
 import { eq } from 'drizzle-orm';
 import { usesVScale } from '#lib/grades';
+import { DEFAULT_LOCALE, type SupportedLocale } from '#lib/i18n';
 import { isTickCountedInAnalytics, type TickTypeSettings } from '#lib/tickSettings';
 import type {
 	EddingtonMilestoneTable,
@@ -65,11 +66,11 @@ export type EddingtonPageData = {
 	milestones: EddingtonMilestoneTable[];
 };
 
-export function getEddingtonPageData(): EddingtonPageData {
+export function getEddingtonPageData(locale: SupportedLocale = DEFAULT_LOCALE): EddingtonPageData {
 	const rows = listEddingtonRows();
 	return {
 		stats: buildEddington(rows),
 		timeline: buildEddingtonTimeline(rows),
-		milestones: buildEddingtonMilestoneTables(rows)
+		milestones: buildEddingtonMilestoneTables(rows, 5, locale)
 	};
 }

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
 	import { DEFAULT_DATE_DISPLAY, formatNumber, type DateDisplay } from '#lib/dates';
 	import type { WeatherChip, WeatherLocation } from '#lib/weatherKeys';
 	import {
@@ -21,6 +22,7 @@
 		dateDisplay = DEFAULT_DATE_DISPLAY,
 		displayUnits = DEFAULT_DISPLAY_UNITS
 	}: Props = $props();
+	const i18n = useI18n();
 
 	function label(chip: WeatherChip): string {
 		if (chip.value == null || chip.unit == null) return chip.name;
@@ -39,21 +41,27 @@
 </script>
 
 {#if chips && chips.length}
-	<ul class="weather-chips" aria-label="Weather on the day">
+	<ul class="weather-chips" aria-label={i18n.t('cards.weatherChips.ariaWeatherOnTheDay')}>
 		{#each chips as chip (chip.key)}
-			<li class="chip {chip.key}" title="Weather on the day (Open-Meteo)">{label(chip)}</li>
+			<li class="chip {chip.key}" title={i18n.t('cards.weatherChips.titleWeatherOnTheDayOpen')}>
+				{label(chip)}
+			</li>
 		{/each}
 	</ul>
 {/if}
 
 {#if location && location.source !== 'route'}<p class="location">
-		Weather location: {location.source === 'place'
-			? 'Approximate nearby place'
-			: location.source === 'polygon'
-				? 'Approximate area polygon'
-				: location.source === 'cached'
-					? 'Cached point'
-					: 'Approximate crag/sector'} · {location.name}
+		{i18n.t('cards.weatherChips.locationSource', {
+			source:
+				location.source === 'place'
+					? i18n.t('pages.logbook.weatherSourcePlace')
+					: location.source === 'polygon'
+						? i18n.t('pages.logbook.weatherSourcePolygon')
+						: location.source === 'cached'
+							? i18n.t('pages.logbook.weatherSourceCached')
+							: i18n.t('pages.logbook.weatherSourceCrag'),
+			name: location.name
+		})}
 	</p>{/if}
 
 <style>

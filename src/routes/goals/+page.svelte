@@ -1,9 +1,11 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
 	import { formatCalendarDate } from '#lib/dates';
 	import { heightUnitLabel } from '#lib/units';
 	import type { PageProps } from './$types';
 
 	let { data, form }: PageProps = $props();
+	const i18n = useI18n();
 
 	let kind = $state('grade');
 	let venueScope = $state('outdoor');
@@ -25,7 +27,7 @@
 				aria-valuenow={g.progressPct}
 				aria-valuemin={0}
 				aria-valuemax={100}
-				aria-label="{g.title} progress"
+				aria-label={i18n.t('pages.goals.ariaGoalProgress', { title: g.title })}
 			>
 				<span style:width="{g.progressPct}%"></span>
 			</div>
@@ -35,27 +37,35 @@
 			</p>
 			{#if data.canEdit && g.kind === 'grade'}
 				<details>
-					<summary>{g.gradeScale ? 'Grade preferences' : 'Choose grade scale'}</summary>
+					<summary
+						>{g.gradeScale
+							? i18n.t('pages.goals.summaryGradePreferences')
+							: i18n.t('pages.goals.summaryChooseGradeScale')}</summary
+					>
 					<form method="POST" action="?/scale" class="scale-form">
 						<input type="hidden" name="id" value={g.id} />
 						<label>
-							Grade scale
+							{i18n.t('pages.goals.labelGradeScale')}
 							<select name="gradeScale" required value={g.gradeScale ?? ''}>
-								<option value="" disabled>Choose a scale</option>
-								<option value="route">Routes</option>
-								<option value="boulder">Boulders</option>
+								<option value="" disabled>{i18n.t('pages.goals.optionChooseAScale')}</option>
+								<option value="route">{i18n.t('pages.goals.optionRoutes')}</option>
+								<option value="boulder">{i18n.t('pages.goals.optionBoulders')}</option>
 							</select>
 						</label>
 						<label>
 							<input type="checkbox" name="suggested" value="1" checked={g.suggested} />
-							Use automatic goal title
+							{i18n.t('pages.goals.labelUseAutomaticGoalTitle')}
 						</label>
-						<button type="submit">Save grade preferences</button>
+						<button type="submit">{i18n.t('pages.goals.buttonSaveGradePreferences')}</button>
 					</form>
 				</details>
 			{/if}
 			{#if g.completed && g.achievedAt}
-				<p class="achieved">Achieved {formatCalendarDate(g.achievedAt, data.dateDisplay)}</p>
+				<p class="achieved">
+					{i18n.t('pages.goals.labelAchievedOn', {
+						date: formatCalendarDate(g.achievedAt, data.dateDisplay)
+					})}
+				</p>
 			{/if}
 		</div>
 		{#if data.canEdit}
@@ -63,17 +73,19 @@
 				{#if g.completed}
 					<form method="POST" action="?/reopen">
 						<input type="hidden" name="id" value={g.id} />
-						<button type="submit" class="secondary">Reopen</button>
+						<button type="submit" class="secondary">{i18n.t('pages.goals.buttonReopen')}</button>
 					</form>
 				{:else}
 					<form method="POST" action="?/complete">
 						<input type="hidden" name="id" value={g.id} />
-						<button type="submit" class="secondary">Mark complete</button>
+						<button type="submit" class="secondary"
+							>{i18n.t('pages.goals.buttonMarkComplete')}</button
+						>
 					</form>
 				{/if}
 				<form method="POST" action="?/delete">
 					<input type="hidden" name="id" value={g.id} />
-					<button type="submit" class="danger">Delete</button>
+					<button type="submit" class="danger">{i18n.t('common.delete')}</button>
 				</form>
 			</div>
 		{/if}
@@ -81,12 +93,10 @@
 {/snippet}
 
 <section class="panel head">
-	<h1>Goals</h1>
+	<h1>{i18n.t('pages.goals.titleGoals')}</h1>
 	<p>
-		Progress fills from your theCrag logbook. Grade goals track a send ≥ target this year (outdoor
-		by default); the bar is approximate readiness from nearby distinct-route sends (~2 at one grade
-		under, ~4 at two under), not best÷target. Height and days stay linear. Custom goals stay manual.
-		<a class="how" href="/docs/goals">How it works</a>
+		{i18n.t('pages.goals.lead')}
+		<a class="how" href="/docs/goals">{i18n.t('common.howItWorks')}</a>
 	</p>
 </section>
 
@@ -96,10 +106,9 @@
 
 {#if data.suggestions.length > 0}
 	<section class="panel suggest-panel">
-		<h2>Suggested</h2>
+		<h2>{i18n.t('pages.goals.titleSuggested')}</h2>
 		<p class="suggest-intro">
-			Next outdoor send based on your hardest send in the last two years. Suggestions never create a
-			goal until you add them.
+			{i18n.t('pages.goals.hintSuggested')}
 		</p>
 		<ul class="suggest-list">
 			{#each data.suggestions as s (s.family)}
@@ -109,7 +118,7 @@
 						<p>{s.blurb}</p>
 					</div>
 					{#if s.alreadyTracking}
-						<span class="tracking">Already tracking</span>
+						<span class="tracking">{i18n.t('pages.goals.labelAlreadyTracking')}</span>
 					{:else if data.canEdit}
 						<form method="POST" action="?/create">
 							<input type="hidden" name="kind" value="grade" />
@@ -120,7 +129,7 @@
 							<input type="hidden" name="year" value={s.year} />
 							<input type="hidden" name="targetGradeScore" value={s.targetScore} />
 							<input type="hidden" name="grade" value={s.targetLabel} />
-							<button type="submit">Add goal</button>
+							<button type="submit">{i18n.t('pages.goals.buttonAddGoal')}</button>
 						</form>
 					{/if}
 				</li>
@@ -131,63 +140,74 @@
 
 {#if data.canEdit}
 	<section class="panel form-panel">
-		<h2>Add goal</h2>
+		<h2>{i18n.t('pages.goals.titleAddGoal')}</h2>
 		<form method="POST" action="?/create" class="form">
 			<label>
-				Kind
+				{i18n.t('pages.goals.labelKind')}
 				<select name="kind" bind:value={kind}>
-					<option value="grade">Grade this year (send ≥ X)</option>
-					<option value="height_year">Height this year ({heightUnit})</option>
-					<option value="days_month">Climbing days this month</option>
-					<option value="custom">Custom (manual)</option>
+					<option value="grade">{i18n.t('pages.goals.optionGradeThisYearSendX')}</option>
+					<option value="height_year"
+						>{i18n.t('pages.goals.optionHeightThisYear', { unit: heightUnit })}</option
+					>
+					<option value="days_month">{i18n.t('pages.goals.optionClimbingDaysThisMonth')}</option>
+					<option value="custom">{i18n.t('pages.goals.optionCustomManual')}</option>
 				</select>
 			</label>
 			<label>
-				Title
+				{i18n.t('pages.goals.labelTitle')}
 				<input
 					name="title"
 					required
 					placeholder={kind === 'grade'
-						? 'e.g. Lead outdoor 25 this year'
+						? i18n.t('pages.goals.placeholderTitleGradeExample')
 						: kind === 'height_year'
-							? `e.g. ${heightPlaceholder} ${heightUnit} vertical in 2026`
-							: 'e.g. a short title'}
+							? i18n.t('pages.goals.placeholderTitleHeightExample', {
+									value: heightPlaceholder,
+									unit: heightUnit
+								})
+							: i18n.t('pages.goals.placeholderTitleExample')}
 				/>
 			</label>
 			<label>
-				Venue
+				{i18n.t('pages.goals.labelVenue')}
 				<select name="venueScope" bind:value={venueScope}>
-					<option value="outdoor">Outdoor</option>
-					<option value="indoor">Indoor / gym</option>
-					<option value="any">Any</option>
+					<option value="outdoor">{i18n.t('pages.goals.optionOutdoor')}</option>
+					<option value="indoor">{i18n.t('pages.goals.optionIndoorGym')}</option>
+					<option value="any">{i18n.t('pages.goals.optionAny')}</option>
 				</select>
 			</label>
 			{#if kind === 'grade'}
 				<label>
-					Grade scale
+					{i18n.t('pages.goals.labelGradeScale')}
 					<select name="gradeScale">
-						<option value="route">Routes</option>
-						<option value="boulder">Boulders</option>
+						<option value="route">{i18n.t('pages.goals.optionRoutes')}</option>
+						<option value="boulder">{i18n.t('pages.goals.optionBoulders')}</option>
 					</select>
 				</label>
 				<label>
-					Target grade
-					<input name="grade" required placeholder="25 · 7a · V5 · 5.12a" />
+					{i18n.t('pages.goals.labelTargetGrade')}
+					<input
+						name="grade"
+						required
+						placeholder={i18n.t('pages.goals.placeholderGradeExamples')}
+					/>
 				</label>
 				<label>
-					Year
+					{i18n.t('pages.goals.labelYear')}
 					<input name="year" type="number" value={new Date().getFullYear()} />
 				</label>
 			{:else if kind === 'height_year' || kind === 'days_month' || kind === 'custom'}
 				<label>
-					{kind === 'height_year' ? `Target height (${heightUnit})` : 'Target'}
+					{kind === 'height_year'
+						? i18n.t('pages.goals.labelTargetHeight', { unit: heightUnit })
+						: i18n.t('pages.goals.labelTarget')}
 					<input
 						name="targetValue"
 						placeholder={kind === 'height_year'
 							? heightPlaceholder
 							: kind === 'days_month'
 								? '8'
-								: 'anything'}
+								: i18n.t('pages.goals.placeholderTargetCustom')}
 					/>
 				</label>
 				{#if kind === 'height_year'}
@@ -196,22 +216,22 @@
 			{/if}
 			{#if kind === 'height_year'}
 				<label>
-					Year
+					{i18n.t('pages.goals.labelYear')}
 					<input name="year" type="number" value={new Date().getFullYear()} />
 				</label>
 			{/if}
-			<button type="submit">Add</button>
+			<button type="submit">{i18n.t('pages.goals.buttonAdd')}</button>
 		</form>
 	</section>
 {/if}
 
 <section class="panel">
 	<div class="section-head">
-		<h2>Active</h2>
+		<h2>{i18n.t('pages.goals.titleActive')}</h2>
 		<span class="count">{data.active.length}</span>
 	</div>
 	{#if data.active.length === 0}
-		<p class="empty">No active goals — add one above.</p>
+		<p class="empty">{i18n.t('pages.goals.emptyNoActiveGoals')}</p>
 	{:else}
 		<div class="list">
 			{#each data.active as g (g.id)}
@@ -223,11 +243,11 @@
 
 <section class="panel achieved-panel">
 	<div class="section-head">
-		<h2>Achieved</h2>
+		<h2>{i18n.t('pages.goals.titleAchieved')}</h2>
 		<span class="count muted">{data.achieved.length}</span>
 	</div>
 	{#if data.achieved.length === 0}
-		<p class="empty">Completed goals land here.</p>
+		<p class="empty">{i18n.t('pages.goals.emptyCompletedGoalsLandHere')}</p>
 	{:else}
 		<div class="list">
 			{#each data.achieved as g (g.id)}

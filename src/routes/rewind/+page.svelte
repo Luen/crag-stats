@@ -1,22 +1,24 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
 	import { formatCalendarDate } from '#lib/dates';
 	import { formatDistance, formatHeight } from '#lib/units';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
+	const i18n = useI18n();
 	const s = $derived(data.summary);
 	const year = $derived(s.year ?? data.year);
 </script>
 
 <section class="panel head">
-	<h1>Rewind {year}</h1>
-	<p>Your {year} climbing snapshot from your synced logbook.</p>
+	<h1>{i18n.t('pages.rewind.titleRewind', { year })}</h1>
+	<p>{i18n.t('pages.rewind.lead', { year })}</p>
 </section>
 
 <section class="panel controls">
 	<form method="GET" class="year-form">
 		<label>
-			Year
+			{i18n.t('pages.rewind.labelYear')}
 			<select name="year" value={data.year} onchange={(e) => e.currentTarget.form?.requestSubmit()}>
 				{#if data.years.length === 0}
 					<option value={data.year}>{data.year}</option>
@@ -27,25 +29,25 @@
 				{/if}
 			</select>
 		</label>
-		<noscript><button type="submit">Go</button></noscript>
+		<noscript><button type="submit">{i18n.t('pages.rewind.buttonGo')}</button></noscript>
 	</form>
 </section>
 
 <section class="stats">
 	<article class="panel metric">
-		<span class="label">Ascents in {year}</span>
+		<span class="label">{i18n.t('pages.rewind.labelAscents', { year })}</span>
 		<strong>{s.ascents}</strong>
 	</article>
 	<article class="panel metric">
-		<span class="label">Sends in {year}</span>
+		<span class="label">{i18n.t('pages.rewind.labelSends', { year })}</span>
 		<strong>{s.sends}</strong>
 	</article>
 	<article class="panel metric">
-		<span class="label">Onsights in {year}</span>
+		<span class="label">{i18n.t('pages.rewind.labelOnsights', { year })}</span>
 		<strong>{s.onsights}</strong>
 	</article>
 	<article class="panel metric">
-		<span class="label">Height in {year}</span>
+		<span class="label">{i18n.t('pages.rewind.labelHeight', { year })}</span>
 		<strong>{formatDistance(s.heightKm, data.displayUnits.distance)}</strong>
 		<span class="sub">{formatHeight(s.heightM, data.displayUnits.height)}</span>
 	</article>
@@ -53,9 +55,9 @@
 
 <section class="grid">
 	<article class="panel">
-		<h2>Top crags of {year}</h2>
+		<h2>{i18n.t('pages.rewind.titleTopCrags', { year })}</h2>
 		{#if s.topCrags.length === 0}
-			<p class="empty">No ascents in {s.year}.</p>
+			<p class="empty">{i18n.t('pages.rewind.emptyNoAscents', { year: s.year })}</p>
 		{:else}
 			<ol>
 				{#each s.topCrags as c (c.crag)}
@@ -68,9 +70,9 @@
 		{/if}
 	</article>
 	<article class="panel">
-		<h2>Hardest send in {year}</h2>
+		<h2>{i18n.t('pages.rewind.titleHardestSend', { year })}</h2>
 		{#if !s.hardestSend}
-			<p class="empty">No sends logged in {s.year}.</p>
+			<p class="empty">{i18n.t('pages.rewind.emptyNoSends', { year: s.year })}</p>
 		{:else}
 			<p class="hard">
 				{#if s.hardestSend.href}

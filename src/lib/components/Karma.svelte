@@ -1,47 +1,48 @@
 <script lang="ts">
 	import { formatNumber, DEFAULT_DATE_DISPLAY, type DateDisplay } from '#lib/dates';
+	import { useI18n } from '#lib/i18n';
 	import type { KarmaStats } from '#lib/types/karma';
 
 	type Props = { data: KarmaStats; dateDisplay?: DateDisplay };
 	let { data, dateDisplay = DEFAULT_DATE_DISPLAY }: Props = $props();
+	const i18n = useI18n();
 </script>
 
 <article class="panel">
 	<header>
-		<h2>Karma</h2>
-		<a class="how" href="/docs/karma">How it works</a>
+		<h2>{i18n.t('cards.karma.titleKarma')}</h2>
+		<a class="how" href="/docs/karma">{i18n.t('common.howItWorks')}</a>
 	</header>
 
-	<p class="lead">
-		Approximate theCrag contribution score from your logbook. Ascents use their once-per-route rule;
-		guide-edit points are not in the logbook API yet.
-	</p>
+	<p class="lead">{i18n.t('cards.karma.lead')}</p>
 
 	<div class="tiles">
 		<div class="tile">
 			<strong>{formatNumber(data.totalPoints, dateDisplay)}</strong>
-			<span>ascent karma (approx)</span>
+			<span>{i18n.t('cards.karma.ascentKarma')}</span>
 		</div>
 		<div class="tile">
 			<strong>{formatNumber(data.routesLogged, dateDisplay)}</strong>
-			<span>local route{data.routesLogged === 1 ? '' : 's'} logged</span>
+			<span>{i18n.t('cards.karma.routesLogged', { count: data.routesLogged })}</span>
 		</div>
 		<div class="tile muted">
 			<strong>—</strong>
-			<span>edit karma unavailable</span>
+			<span>{i18n.t('cards.karma.editUnavailable')}</span>
 		</div>
 	</div>
 
 	<p class="foot">
-		1 point per distinct route logged (theCrag “Log Ascent”).
+		{i18n.t('cards.karma.pointRule')}
 		{#if data.ascentSource === 'account'}
-			Ascent total uses your theCrag <code>routesTicked</code> account figure.
+			{i18n.t('cards.karma.sourceAccountBefore')}<code>routesTicked</code>{i18n.t(
+				'cards.karma.sourceAccountAfter'
+			)}
 		{:else}
-			Ascent total uses distinct routes with locally logged ascents.
+			{i18n.t('cards.karma.sourceLocal')}
 		{/if}
-		Real karma also waits in a review queue (~1 week) and includes guide edits we cannot see yet.
+		{i18n.t('cards.karma.queueNote')}
 		<a href="https://www.thecrag.com/article/cragkarma" target="_blank" rel="noreferrer"
-			>theCrag Karma article</a
+			>{i18n.t('cards.karma.articleLink')}</a
 		>.
 	</p>
 </article>

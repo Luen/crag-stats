@@ -2,39 +2,184 @@
 	import favicon from '#lib/assets/favicon.svg';
 	import '../app.css';
 	import { onMount, tick } from 'svelte';
-	import { afterNavigate } from '$app/navigation';
+	import { afterNavigate, goto, invalidateAll } from '$app/navigation';
 	import { page } from '$app/state';
 	import { formatNumber } from '#lib/dates';
 	import { startOfflineRefresh } from '#lib/offlineClient';
 	import NavIcon, { type NavIconName } from '#lib/components/NavIcon.svelte';
+	import {
+		ENABLED_LOCALES,
+		initI18n,
+		LOCALE_METADATA,
+		matchSupportedLocale,
+		type SupportedLocale
+	} from '#lib/i18n';
 	import type { LayoutProps } from './$types';
 
 	let { children, data }: LayoutProps = $props();
+
+	const i18n = initI18n(() => data.locale);
+	const t = i18n.t;
+
+	let lastDataLocale: string | undefined;
+	let lastQueryLocale: string | null | undefined;
+	$effect(() => {
+		const queryLocale = matchSupportedLocale(page.url.searchParams.get('locale'), ENABLED_LOCALES);
+		if (data.locale !== lastDataLocale || queryLocale !== lastQueryLocale) {
+			lastDataLocale = data.locale;
+			lastQueryLocale = queryLocale;
+			i18n.syncLocale(queryLocale ?? data.locale, { persistCookie: queryLocale != null });
+		}
+	});
+
+	const currentLocale = $derived(i18n.locale);
+	const currentLocaleName = $derived(LOCALE_METADATA[currentLocale].nativeName);
+
+	/**
+	 * The header language control is a menu rather than a cycling button: with more than a couple
+	 * of locales, cycling makes the last one several clicks away and hides the rest (#494).
+	 */
+	let localeMenuOpen = $state(false);
+	let localeWrap = $state<HTMLDivElement>();
+	let localeTrigger = $state<HTMLButtonElement>();
+	let localeItems = $state<HTMLButtonElement[]>([]);
+	let localeFocusIndex = $state(0);
+
+	async function openLocaleMenu() {
+		localeMenuOpen = true;
+		localeFocusIndex = Math.max(
+			(ENABLED_LOCALES as readonly SupportedLocale[]).indexOf(currentLocale),
+			0
+		);
+		await tick();
+		localeItems[localeFocusIndex]?.focus();
+	}
+
+	function closeLocaleMenu(restoreFocus = true) {
+		if (!localeMenuOpen) return;
+		localeMenuOpen = false;
+		if (restoreFocus) localeTrigger?.focus();
+	}
+
+	function focusLocaleItem(index: number) {
+		const count = ENABLED_LOCALES.length;
+		localeFocusIndex = ((index % count) + count) % count;
+		localeItems[localeFocusIndex]?.focus();
+	}
+
+	function onLocaleTriggerKeydown(event: KeyboardEvent) {
+		if (event.key === 'ArrowDown' || event.key === 'ArrowUp') {
+			event.preventDefault();
+			if (localeMenuOpen) focusLocaleItem(localeFocusIndex + (event.key === 'ArrowDown' ? 1 : -1));
+			else void openLocaleMenu();
+		} else if (event.key === 'Escape' && localeMenuOpen) {
+			event.preventDefault();
+			closeLocaleMenu();
+		}
+	}
+
+	function onLocaleMenuKeydown(event: KeyboardEvent) {
+		if (event.key === 'ArrowDown') {
+			event.preventDefault();
+			focusLocaleItem(localeFocusIndex + 1);
+		} else if (event.key === 'ArrowUp') {
+			event.preventDefault();
+			focusLocaleItem(localeFocusIndex - 1);
+		} else if (event.key === 'Home') {
+			event.preventDefault();
+			focusLocaleItem(0);
+		} else if (event.key === 'End') {
+			event.preventDefault();
+			focusLocaleItem(ENABLED_LOCALES.length - 1);
+		} else if (event.key === 'Escape') {
+			event.preventDefault();
+			closeLocaleMenu();
+		} else if (event.key === 'Tab') {
+			// Tab is navigation, not selection: close without stealing focus back.
+			closeLocaleMenu(false);
+		}
+	}
+
+	function onWindowPointerDown(event: PointerEvent) {
+		if (!localeMenuOpen) return;
+		const target = event.target;
+		if (target instanceof Node && localeWrap?.contains(target)) return;
+		closeLocaleMenu(false);
+	}
+
+	async function chooseLocale(next: SupportedLocale) {
+		localeMenuOpen = false;
+		if (next === currentLocale) {
+			localeTrigger?.focus();
+			return;
+		}
+		await refreshLocale(next);
+		localeTrigger?.focus();
+	}
+
+	/**
+	 * Persist the choice in `cs_locale`, translate client-rendered copy immediately, then re-run
+	 * the loaders so server-rendered copy (titles, story, docs) follows the same language.
+	 *
+	 * The `?locale=` URL override is a one-off: the layout remembers it in the cookie, and it wins
+	 * every resolution while it stays in the address bar. After an explicit switch the cookie owns
+	 * the choice, so drop the query parameter before reloading — otherwise the next load would
+	 * resolve back to the old URL locale and revert this switch (with the cookie rewritten too).
+	 */
+	async function refreshLocale(next: SupportedLocale) {
+		i18n.setLocale(next);
+		lastDataLocale = next;
+		lastQueryLocale = null;
+		const url = new URL(page.url.href);
+		url.searchParams.delete('locale');
+		try {
+			if (url.href === page.url.href) await invalidateAll();
+			else await goto(url, { replaceState: true });
+		} catch {
+			// Offline: client-rendered copy already switched; the rest catches up on reconnect.
+		}
+	}
+
+	$effect(() => {
+		if (typeof document !== 'undefined') {
+			document.documentElement.lang = currentLocale;
+		}
+	});
 
 	type NavLink = { href: string; label: string; icon: NavIconName; count?: number };
 
 	/** Dreeve-style groups, separated by dividers in the sidebar. */
 	const groups = $derived(
 		[
-			[{ href: '/', label: 'Dashboard', icon: 'dashboard' }],
+			[{ href: '/', label: t('nav.dashboard'), icon: 'dashboard' }],
 			[
-				{ href: '/logbook', label: 'Logbook', icon: 'logbook', count: data.navCounts?.ascents },
-				{ href: '/projects', label: 'Projects', icon: 'projects', count: data.navCounts?.projects },
-				{ href: '/map', label: 'Map & sectors', icon: 'map' },
-				{ href: '/partners', label: 'Partners', icon: 'partners' }
+				{
+					href: '/logbook',
+					label: t('nav.logbook'),
+					icon: 'logbook',
+					count: data.navCounts?.ascents
+				},
+				{
+					href: '/projects',
+					label: t('nav.projects'),
+					icon: 'projects',
+					count: data.navCounts?.projects
+				},
+				{ href: '/map', label: t('nav.map'), icon: 'map' },
+				{ href: '/partners', label: t('nav.partners'), icon: 'partners' }
 			],
 			[
-				{ href: '/goals', label: 'Goals', icon: 'goals' },
-				{ href: '/activity', label: 'Activity', icon: 'activity' },
-				{ href: '/badges', label: 'Badges', icon: 'badges' },
-				{ href: '/eddington', label: 'Eddington', icon: 'eddington' },
-				{ href: '/training-load', label: 'Training load', icon: 'training' },
-				{ href: '/weather', label: 'Weather', icon: 'sun' },
-				{ href: '/milestones', label: 'Milestones', icon: 'milestones' },
-				{ href: '/rewind', label: 'Rewind', icon: 'rewind' },
-				{ href: '/share', label: 'Share', icon: 'share' }
+				{ href: '/goals', label: t('nav.goals'), icon: 'goals' },
+				{ href: '/activity', label: t('nav.activity'), icon: 'activity' },
+				{ href: '/badges', label: t('nav.badges'), icon: 'badges' },
+				{ href: '/eddington', label: t('nav.eddington'), icon: 'eddington' },
+				{ href: '/training-load', label: t('nav.trainingLoad'), icon: 'training' },
+				{ href: '/weather', label: t('nav.weather'), icon: 'sun' },
+				{ href: '/milestones', label: t('nav.milestones'), icon: 'milestones' },
+				{ href: '/rewind', label: t('nav.rewind'), icon: 'rewind' },
+				{ href: '/share', label: t('nav.share'), icon: 'share' }
 			],
-			[{ href: '/docs', label: 'Docs', icon: 'docs' }]
+			[{ href: '/docs', label: t('nav.docs'), icon: 'docs' }]
 		].filter((g) => g.length > 0) as NavLink[][]
 	);
 
@@ -45,9 +190,9 @@
 	const current = $derived(
 		groups.flat().find((l) => isActive(l.href)) ??
 			(isActive('/settings')
-				? { label: 'Settings' }
+				? { label: t('nav.settings') }
 				: page.url.pathname === '/login'
-					? { label: 'Sign in' }
+					? { label: t('nav.signIn') }
 					: null)
 	);
 
@@ -60,10 +205,16 @@
 	// Theme: follow the OS ("system") unless the user picked light/dark (#43).
 	type Theme = 'system' | 'light' | 'dark';
 	const THEME_ORDER: Theme[] = ['system', 'light', 'dark'];
-	const THEME_LABEL: Record<Theme, string> = { system: 'System', light: 'Light', dark: 'Dark' };
 	const THEME_ICON: Record<Theme, NavIconName> = { system: 'monitor', light: 'sun', dark: 'moon' };
+	const THEME_LABEL_KEY = {
+		system: 'theme.system',
+		light: 'theme.light',
+		dark: 'theme.dark'
+	} as const;
 	let theme = $state<Theme>('system');
 	const nextTheme = $derived(THEME_ORDER[(THEME_ORDER.indexOf(theme) + 1) % THEME_ORDER.length]);
+	const themeLabel = $derived(t(THEME_LABEL_KEY[theme]));
+	const nextThemeLabel = $derived(t(THEME_LABEL_KEY[nextTheme]));
 
 	let toggleBtn: HTMLButtonElement | undefined = $state();
 	let sideEl: HTMLElement | undefined = $state();
@@ -75,6 +226,14 @@
 		mini = root.dataset.sidebar === 'mini';
 		const t = root.dataset.theme;
 		theme = t === 'light' || t === 'dark' ? t : 'system';
+		if (page.url.pathname === '/offline') {
+			const cookiePart = document.cookie
+				.split('; ')
+				.find((c) => c.startsWith('cs_locale='))
+				?.slice('cs_locale='.length);
+			const saved = matchSupportedLocale(cookiePart, ENABLED_LOCALES);
+			if (saved) i18n.syncLocale(saved);
+		}
 
 		const mq = matchMedia('(max-width: 860px)');
 		isMobile = mq.matches;
@@ -88,6 +247,7 @@
 
 	afterNavigate(() => {
 		drawerOpen = false;
+		localeMenuOpen = false;
 	});
 
 	function save(key: string, value: string | null) {
@@ -179,13 +339,12 @@
 		<meta name="twitter:card" content="summary_large_image" />
 	{/if}
 	<title
-		>{current && current.label !== 'Dashboard'
-			? `${current.label} · Crag Stats`
-			: 'Crag Stats'}</title
+		>{current && page.url.pathname !== '/' ? `${current.label} · Crag Stats` : 'Crag Stats'}</title
 	>
 </svelte:head>
 
 <svelte:window
+	onpointerdown={onWindowPointerDown}
 	onkeydown={(e) => {
 		if (e.key === 'Escape') closeDrawer();
 		else trapFocus(e);
@@ -204,10 +363,14 @@
 			type="button"
 			class="icon-btn"
 			onclick={toggleSidebar}
-			aria-label={drawerOpen ? 'Close menu' : mini ? 'Expand sidebar' : 'Collapse sidebar'}
+			aria-label={drawerOpen
+				? t('nav.closeMenu')
+				: mini
+					? t('nav.expandSidebar')
+					: t('nav.collapseSidebar')}
 			aria-expanded={isMobile ? drawerOpen : !mini}
 			aria-controls="side-nav"
-			title={mini ? 'Expand sidebar' : 'Collapse sidebar'}
+			title={mini ? t('nav.expandSidebar') : t('nav.collapseSidebar')}
 		>
 			<NavIcon name="sidebar" />
 		</button>
@@ -216,7 +379,12 @@
 			<span class="wordmark">Crag <span>Stats</span></span>
 		</a>
 		<div class="top-actions">
-			<a class="icon-btn" href="/share" title="Share & embed" aria-label="Share & embed">
+			<a
+				class="icon-btn"
+				href="/share"
+				title={t('nav.shareEmbed')}
+				aria-label={t('nav.shareEmbed')}
+			>
 				<NavIcon name="share" />
 			</a>
 			<a
@@ -224,8 +392,8 @@
 				href={data.githubUrl}
 				target="_blank"
 				rel="noreferrer"
-				title="GitHub repository"
-				aria-label="GitHub repository"
+				title={t('nav.githubRepo')}
+				aria-label={t('nav.githubRepo')}
 			>
 				<NavIcon name="github" />
 			</a>
@@ -233,19 +401,76 @@
 				type="button"
 				class="icon-btn"
 				onclick={cycleTheme}
-				title="Theme: {THEME_LABEL[theme]} — switch to {THEME_LABEL[nextTheme]}"
-				aria-label="Theme: {THEME_LABEL[theme]}. Switch to {THEME_LABEL[nextTheme]}"
+				title={t('theme.themeLabel', { current: themeLabel, next: nextThemeLabel })}
+				aria-label={t('theme.themeLabel', { current: themeLabel, next: nextThemeLabel })}
 			>
 				<NavIcon name={THEME_ICON[theme]} />
 			</button>
+			<div class="locale-wrap" bind:this={localeWrap}>
+				<button
+					type="button"
+					class="icon-btn locale"
+					aria-haspopup="menu"
+					aria-expanded={localeMenuOpen}
+					aria-controls="header-locale-menu"
+					aria-label={t('language.triggerLabel', { current: currentLocaleName })}
+					title={t('language.triggerLabel', { current: currentLocaleName })}
+					bind:this={localeTrigger}
+					onclick={() => {
+						if (localeMenuOpen) closeLocaleMenu();
+						else void openLocaleMenu();
+					}}
+					onkeydown={onLocaleTriggerKeydown}
+				>
+					<NavIcon name="globe" />
+				</button>
+				{#if localeMenuOpen}
+					<div
+						id="header-locale-menu"
+						class="locale-menu"
+						role="menu"
+						tabindex="-1"
+						aria-label={t('language.menuLabel')}
+						onkeydown={onLocaleMenuKeydown}
+					>
+						{#each ENABLED_LOCALES as locale, index (locale)}
+							<button
+								type="button"
+								class="locale-item"
+								role="menuitemradio"
+								aria-checked={locale === currentLocale}
+								tabindex={index === localeFocusIndex ? 0 : -1}
+								bind:this={localeItems[index]}
+								onfocus={() => (localeFocusIndex = index)}
+								onclick={() => void chooseLocale(locale)}
+							>
+								<span>{LOCALE_METADATA[locale].nativeName}</span>
+								{#if locale === currentLocale}
+									<span class="tick" aria-hidden="true">✓</span>
+								{/if}
+							</button>
+						{/each}
+					</div>
+				{/if}
+			</div>
 			{#if data.showSettings}
-				<a class="icon-btn" href="/settings" title="Settings & sync" aria-label="Settings & sync">
+				<a
+					class="icon-btn"
+					href="/settings"
+					title={t('settings.title')}
+					aria-label={t('settings.title')}
+				>
 					<NavIcon name="settings" />
 				</a>
 			{/if}
 			{#if data.authEnabled && data.authed}
 				<form method="POST" action="/logout" class="logout">
-					<button type="submit" class="icon-btn" title="Log out" aria-label="Log out">
+					<button
+						type="submit"
+						class="icon-btn"
+						title={t('nav.signOut')}
+						aria-label={t('nav.signOut')}
+					>
 						<NavIcon name="logout" />
 					</button>
 				</form>
@@ -263,7 +488,7 @@
 		}}
 		class="side"
 		id="side-nav"
-		aria-label="Primary"
+		aria-label={t('nav.primaryNav')}
 		inert={isMobile && !drawerOpen}
 	>
 		<nav>
@@ -289,18 +514,23 @@
 			<!-- The top bar drops its GitHub icon on narrow screens; keep the link reachable here. -->
 			<a class="gh-drawer" href={data.githubUrl} target="_blank" rel="noreferrer">
 				<NavIcon name="github" size={16} />
-				<span>GitHub</span>
+				<span>{t('nav.github')}</span>
 			</a>
 			<a
 				class="ver"
 				href="{data.githubUrl}/releases"
 				target="_blank"
 				rel="noreferrer"
-				title="Installed app version">{data.appVersion}</a
+				title={t('nav.installedVersion')}>{data.appVersion}</a
 			>
 		</div>
 	</aside>
-	<button type="button" class="backdrop" tabindex="-1" aria-label="Close menu" onclick={closeDrawer}
+	<button
+		type="button"
+		class="backdrop"
+		tabindex="-1"
+		aria-label={t('nav.closeMenu')}
+		onclick={closeDrawer}
 	></button>
 
 	<div class="content">
@@ -315,11 +545,12 @@
 		</main>
 		<footer>
 			<p>
-				Self-hosted climbing analytics · AGPL-3.0 · Data from
-				<a href="https://www.thecrag.com/" target="_blank" rel="noreferrer">theCrag</a>
+				{t('footer.selfHosted')} · AGPL-3.0 · {t('footer.dataFrom')}
+				<a href="https://www.thecrag.com/" target="_blank" rel="noreferrer">{t('footer.theCrag')}</a
+				>
 				·
 				<a href={data.githubUrl} target="_blank" rel="noreferrer">{data.appVersion}</a>
-				· <a href="/offline" data-sveltekit-reload>Offline copy</a>
+				· <a href="/offline" data-sveltekit-reload>{t('footer.offlineCopy')}</a>
 			</p>
 		</footer>
 	</div>
@@ -390,6 +621,57 @@
 	.icon-btn:hover {
 		background: var(--surface-3);
 		color: var(--ink);
+	}
+	.locale-wrap {
+		position: relative;
+		display: flex;
+	}
+	.locale-menu {
+		position: absolute;
+		top: calc(100% - 0.15rem);
+		right: 0;
+		z-index: 60;
+		min-width: 10.5rem;
+		margin: 0;
+		padding: 0.3rem;
+		display: grid;
+		gap: 0.1rem;
+		background: var(--paper);
+		border: 1px solid var(--line);
+		border-radius: 0.7rem;
+		box-shadow: var(--shadow);
+	}
+	.locale-item {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.75rem;
+		width: 100%;
+		padding: 0.5rem 0.6rem;
+		border: 0;
+		border-radius: 0.45rem;
+		background: transparent;
+		color: var(--ink);
+		font: inherit;
+		font-size: 0.9rem;
+		text-align: left;
+		cursor: pointer;
+	}
+	.locale-item:hover,
+	.locale-item:focus-visible {
+		background: var(--surface-3);
+		color: var(--ink);
+	}
+	.locale-item:focus-visible {
+		outline: 2px solid var(--accent);
+		outline-offset: -2px;
+	}
+	.locale-item[aria-checked='true'] {
+		font-weight: 700;
+	}
+	.tick {
+		color: var(--accent);
+		font-size: 0.85rem;
 	}
 	.logout {
 		display: contents;

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
 	import Self from './SectorTreeList.svelte';
 	import type { SectorNode } from '#lib/types/sectors';
 
@@ -11,6 +12,7 @@
 	};
 
 	let { cragName, sectors, nested, depth = 0, parentPath = [] }: Props = $props();
+	const i18n = useI18n();
 </script>
 
 <ul class="sectors" class:nested={depth > 0} style:--depth={depth}>
@@ -24,17 +26,22 @@
 					)}">{sector.name}</a
 				>
 				<span class="meta">
-					{sector.routeCount} routes · {sector.ascentCount} ascents
+					{i18n.t('cards.sectorTreeList.meta', {
+						routes: sector.routeCount,
+						ascents: sector.ascentCount
+					})}
 					{#if sector.multipitchRouteCount}
-						<span class="tag" title="Routes with 2+ pitches from route API"
-							>· {sector.multipitchRouteCount} multipitch</span
+						<span class="tag" title={i18n.t('cards.sectorTreeList.titlePitchesHint')}
+							>· {i18n.t('cards.sectorTreeList.metaMultipitch', {
+								count: sector.multipitchRouteCount
+							})}</span
 						>
 					{/if}
 					{#if sector.styleMismatchRouteCount}
-						<span
-							class="tag warn"
-							title="Logbook style differs from route IsSport/IsTrad/IsBoulder flags"
-							>· {sector.styleMismatchRouteCount} style flag ≠ gear</span
+						<span class="tag warn" title={i18n.t('cards.sectorTreeList.titleStyleFlagsHint')}
+							>· {i18n.t('cards.sectorTreeList.metaStyleFlags', {
+								count: sector.styleMismatchRouteCount
+							})}</span
 						>
 					{/if}
 				</span>

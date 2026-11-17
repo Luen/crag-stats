@@ -1,7 +1,9 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
 	import favicon from '#lib/assets/favicon.svg';
 	import type { PageProps } from './$types';
 	let { data, form }: PageProps = $props();
+	const i18n = useI18n();
 </script>
 
 <section class="panel">
@@ -9,24 +11,24 @@
 		<img src={favicon} alt="" width="52" height="52" />
 		<h1>Crag <span>Stats</span></h1>
 	</div>
-	<p class="lede">Enter the app password to continue.</p>
+	<p class="lede">{i18n.t('pages.login.lead')}</p>
 	{#if form?.message}
 		<p class="err" role="alert">{form.message}</p>
 	{/if}
 	<form method="POST">
 		<input type="hidden" name="next" value={data.next} />
-		<label class="sr-only" for="password">Password</label>
+		<label class="sr-only" for="password">{i18n.t('pages.login.placeholderPassword')}</label>
 		<input
 			id="password"
 			type="password"
 			name="password"
-			placeholder="Password"
+			placeholder={i18n.t('pages.login.placeholderPassword')}
 			required
 			autocomplete="current-password"
 			autocapitalize="off"
 			spellcheck="false"
 		/>
-		<button type="submit">Unlock</button>
+		<button type="submit">{i18n.t('pages.login.buttonUnlock')}</button>
 	</form>
 </section>
 

@@ -17,6 +17,7 @@ import {
 	parseTemperatureUnit,
 	parseWindUnit
 } from '#lib/units';
+import { isEnabledLocale, LOCALE_METADATA, ENABLED_LOCALES, resolveLocale } from '#lib/i18n';
 import {
 	deleteAppSetting,
 	getAppSetting,
@@ -30,7 +31,7 @@ import {
 	setAppSetting,
 	setTickTypeSettings
 } from '#lib/server/appSettings';
-import { hasTheCragApiKey, getTheCragSyncConfiguration } from '#lib/server/env';
+import { env, hasTheCragApiKey, getTheCragSyncConfiguration } from '#lib/server/env';
 import { beginFirstImport, completeFirstImport } from '#lib/server/firstImport';
 import { db } from '#lib/server/db';
 import { upsertAscents } from '#lib/server/ingest';
@@ -52,11 +53,18 @@ import {
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ cookies }) => {
+	// Only a real language is a default; anything else (Auto, a stale tag) falls back to Auto.
+	const storedLocale = getAppSetting('locale');
 	return {
 		serverNow: Date.now(),
 		sync: getSyncStatus(),
 		hasApiKey: hasTheCragApiKey(),
 		syncConfiguration: getTheCragSyncConfiguration(),
+		// Only an enabled language is a real default; anything else (Auto, a disabled or stale
+		// tag) falls back to Auto.
+		siteLocale: isEnabledLocale(storedLocale) ? storedLocale : '',
+		supportedLocales: ENABLED_LOCALES,
+		localeMetadata: LOCALE_METADATA,
 		gradeSystems: getDisplayGradeSystems(),
 		dateFormat: getDateFormat(),
 		displayUnits: getDisplayUnits(),
@@ -90,9 +98,30 @@ export const actions: Actions = {
 		cookies.delete(DASH_LAYOUT_COOKIE, { path: '/' });
 		return { ok: true, layoutSaved: true };
 	},
-	savePreferences: async ({ request, locals }) => {
+	savePreferences: async ({ request, cookies, locals, url }) => {
 		if (!locals.authed) return fail(403);
 		const form = await request.formData();
+		const rawLocale = String(form.get('locale') ?? '').trim();
+		if (rawLocale === '' || rawLocale === 'auto') {
+			deleteAppSetting('locale');
+			cookies.delete('cs_locale', { path: '/' });
+		} else if (isEnabledLocale(rawLocale)) {
+			setAppSetting('locale', rawLocale);
+			cookies.set('cs_locale', rawLocale, {
+				path: '/',
+				maxAge: 31536000,
+				sameSite: 'lax',
+				httpOnly: false
+			});
+		}
+		// A native form POST renders its response in the same request, without re-running hooks.
+		locals.locale = resolveLocale({
+			query: url.searchParams.get('locale'),
+			cookie: cookies.get('cs_locale'),
+			stored: getAppSetting('locale'),
+			displayLocale: env('DISPLAY_LOCALE'),
+			acceptLanguage: request.headers.get('accept-language')
+		});
 		// Split keys; the legacy `grade_system` row stays as the fallback for older builds.
 		const current = getDisplayGradeSystems();
 		setAppSetting(

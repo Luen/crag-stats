@@ -1,46 +1,57 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
 	import { formatNumber, DEFAULT_DATE_DISPLAY, type DateDisplay } from '#lib/dates';
 	import type { RoutePopularityStats } from '#lib/types/routePopularity';
 
 	type Props = { data: RoutePopularityStats; dateDisplay?: DateDisplay };
 	let { data, dateDisplay = DEFAULT_DATE_DISPLAY }: Props = $props();
+	const i18n = useI18n();
 </script>
 
 <article class="panel">
 	<header>
-		<h2>Route popularity</h2>
-		<a class="how" href="/docs/route-popularity">How it works</a>
+		<h2>{i18n.t('cards.routePopularity.titleRoutePopularity')}</h2>
+		<a class="how" href="/docs/route-popularity">{i18n.t('common.howItWorks')}</a>
 	</header>
 
 	<p class="lead">
-		Among {formatNumber(data.withData, dateDisplay)} ascents with community stats, how often you tick
-		busy classics vs quieter lines.
+		{i18n.t('cards.routePopularity.lead', {
+			count: formatNumber(data.withData, dateDisplay)
+		})}
 	</p>
 
 	<div class="split">
 		<div class="bucket busy">
-			<span class="k">Beaten track</span>
+			<span class="k">{i18n.t('cards.routePopularity.labelBeatenTrack')}</span>
 			<strong>{data.busy.pct}%</strong>
-			<span class="n">{formatNumber(data.busy.count, dateDisplay)} ticks</span>
+			<span class="n"
+				>{i18n.t('cards.routePopularity.labelTicks', {
+					count: formatNumber(data.busy.count, dateDisplay)
+				})}</span
+			>
 			<div class="track" aria-hidden="true">
 				<div class="fill" style:width="{data.busy.pct}%"></div>
 			</div>
-			<p class="hint">Popularity ≥ 50</p>
+			<p class="hint">{i18n.t('cards.routePopularity.hintPopularityAtLeast50')}</p>
 		</div>
 		<div class="bucket quiet">
-			<span class="k">Off the beaten track</span>
+			<span class="k">{i18n.t('cards.routePopularity.labelOffTheBeatenTrack')}</span>
 			<strong>{data.quiet.pct}%</strong>
-			<span class="n">{formatNumber(data.quiet.count, dateDisplay)} ticks</span>
+			<span class="n"
+				>{i18n.t('cards.routePopularity.labelTicks', {
+					count: formatNumber(data.quiet.count, dateDisplay)
+				})}</span
+			>
 			<div class="track" aria-hidden="true">
 				<div class="fill" style:width="{data.quiet.pct}%"></div>
 			</div>
-			<p class="hint">Popularity &lt; 50</p>
+			<p class="hint">{i18n.t('cards.routePopularity.hintPopularityLt50')}</p>
 		</div>
 	</div>
 
 	{#if data.hiddenGems.length > 0}
 		<section class="gems">
-			<h3>Hidden gems you've sent</h3>
+			<h3>{i18n.t('cards.routePopularity.titleHiddenGems')}</h3>
 			<ul>
 				{#each data.hiddenGems as gem (gem.routeId)}
 					<li>

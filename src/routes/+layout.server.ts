@@ -9,6 +9,7 @@ import { getDateFormat, getDisplayUnits, getSearchIndexing } from '#lib/server/a
 import { isAuthEnabled, authScope } from '#lib/server/auth';
 import { resolveDateDisplay } from '#lib/dates';
 import { DEFAULT_DISPLAY_UNITS } from '#lib/units';
+import { ENABLED_LOCALES, intlLocale, matchSupportedLocale } from '#lib/i18n';
 import { env } from '#lib/server/env';
 import { isNoindexPath } from '#lib/server/seo';
 import type { LayoutServerLoad } from './$types';
@@ -53,8 +54,21 @@ export const load: LayoutServerLoad = async ({ locals, url, cookies }) => {
 			navCounts: null,
 			dateDisplay: resolveDateDisplay('en-AU', 'UTC'),
 			displayUnits: DEFAULT_DISPLAY_UNITS,
+			locale: locals.locale,
 			noindex: true
 		};
+
+	// `?locale=` is an explicit override, so remember it for later page views.
+	const queryLocale = matchSupportedLocale(url.searchParams.get('locale'), ENABLED_LOCALES);
+	if (queryLocale) {
+		cookies.set('cs_locale', queryLocale, {
+			path: '/',
+			maxAge: 31536000,
+			sameSite: 'lax',
+			httpOnly: false
+		});
+	}
+
 	const authOn = isAuthEnabled();
 	const scope = authScope();
 	const showSettings = !authOn || locals.authed;
@@ -69,8 +83,14 @@ export const load: LayoutServerLoad = async ({ locals, url, cookies }) => {
 		authScope: scope,
 		showSettings,
 		navCounts: gated ? null : navCounts(),
-		dateDisplay: resolveDateDisplay(env('DISPLAY_LOCALE'), env('TZ'), getDateFormat()),
+		dateDisplay: resolveDateDisplay(
+			// Intl formatting follows the interface language unless DISPLAY_LOCALE pins it.
+			env('DISPLAY_LOCALE') || intlLocale(locals.locale),
+			env('TZ'),
+			getDateFormat()
+		),
 		displayUnits: getDisplayUnits(),
+		locale: locals.locale,
 		noindex: isNoindexPath(url.pathname) || !getSearchIndexing().allowed
 	};
 };

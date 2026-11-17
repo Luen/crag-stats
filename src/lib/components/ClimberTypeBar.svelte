@@ -1,26 +1,62 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
+
 	type Share = { style: string; count: number; pct: number; color: string };
 	type Props = { shares: Share[]; climberType: string };
 	let { shares, climberType }: Props = $props();
+	const i18n = useI18n();
+
+	const CLIMBER_TYPE_KEYS: Record<string, string> = {
+		'sport climber': 'cards.climberTypeBar.typeSport',
+		'trad climber': 'cards.climberTypeBar.typeTrad',
+		boulderer: 'cards.climberTypeBar.typeBoulderer',
+		'boulder climber': 'cards.climberTypeBar.typeBoulderer',
+		'rock climber': 'cards.climberTypeBar.typeRock'
+	};
+
+	const STYLE_KEYS: Record<string, string> = {
+		sport: 'styles.sport',
+		trad: 'styles.trad',
+		boulder: 'styles.boulder',
+		'top rope': 'styles.toprope',
+		toprope: 'styles.toprope',
+		'deep water solo': 'styles.deepWaterSolo',
+		alpine: 'styles.alpine',
+		aid: 'styles.aid',
+		solo: 'styles.solo',
+		unknown: 'styles.unknown',
+		other: 'styles.other'
+	};
+
+	const displayClimberType = $derived.by(() => {
+		const key = CLIMBER_TYPE_KEYS[(climberType || '').trim().toLowerCase()];
+		return key ? i18n.t(key) : climberType;
+	});
+
+	function displayStyle(style: string): string {
+		const key = STYLE_KEYS[(style || '').trim().toLowerCase()];
+		return key ? i18n.t(key) : style;
+	}
 </script>
 
 <article class="panel">
 	<header>
-		<h2>Climber type</h2>
-		<strong class="type">{climberType}</strong>
+		<h2>{i18n.t('cards.climberTypeBar.titleClimberType')}</h2>
+		<strong class="type">{displayClimberType}</strong>
 	</header>
-	<p class="hint"><a href="/docs/climber-type">How is this decided?</a></p>
+	<p class="hint"><a href="/docs/climber-type">{i18n.t('cards.climberTypeBar.howDecided')}</a></p>
 	{#if shares.length}
-		<div class="bar" role="img" aria-label="Climbing style distribution">
+		<div
+			class="bar"
+			role="img"
+			aria-label={i18n.t('cards.climberTypeBar.ariaClimbingStyleDistribution')}
+		>
 			{#each shares as s (s.style)}
+				{@const label = displayStyle(s.style)}
 				{#if s.pct >= 2}
-					<span
-						class="seg"
-						style:flex={s.pct}
-						style:background={s.color}
-						title="{s.style}: {s.pct}%"
+					<span class="seg" style:flex={s.pct} style:background={s.color} title="{label}: {s.pct}%"
 						>{#if s.pct >= 8}<span class="seg-label"
-								><span class="seg-name">{s.style.toUpperCase()}</span>
+								><span class="seg-name">{label.toUpperCase()}</span>
 								<span class="seg-pct">{Math.round(s.pct)}%</span></span
 							>{/if}</span
 					>
@@ -29,7 +65,7 @@
 		</div>
 		<ul class="legend">
 			{#each shares as s (s.style)}
-				<li><i style:background={s.color}></i>{s.style} · {s.pct}% ({s.count})</li>
+				<li><i style:background={s.color}></i>{displayStyle(s.style)} · {s.pct}% ({s.count})</li>
 			{/each}
 		</ul>
 	{/if}

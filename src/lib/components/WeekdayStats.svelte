@@ -1,5 +1,7 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
 	import { onMount } from 'svelte';
+	import RichText from '#lib/components/RichText.svelte';
 	import {
 		EMPTY_CARD_PREFERENCES,
 		migrateCardPreference,
@@ -10,7 +12,10 @@
 	import { STYLE_COLORS } from '#lib/ticks';
 	import {
 		pickMostActive,
+		WEEKDAY_FULL_KEYS,
+		WEEKDAY_LABEL_KEYS,
 		WEEKDAY_STYLE_KEYS,
+		type WeekdayId,
 		type WeekdayMetric,
 		type WeekdayStatsView,
 		type WeekdayStyleKey
@@ -29,6 +34,7 @@
 		data,
 		dateDisplay = DEFAULT_DATE_DISPLAY
 	}: Props = $props();
+	const i18n = useI18n();
 
 	const RANGE_KEY = 'cs_weekday_range';
 	const METRIC_KEY = 'cs_weekday_metric';
@@ -82,13 +88,24 @@
 
 	const slice = $derived((range === 'last12' ? data.last12Weeks : data.allTime)[style]);
 	const most = $derived(pickMostActive(slice.rows, metric));
+	const shortDay = (wd: WeekdayId) => i18n.t(WEEKDAY_LABEL_KEYS[wd]);
+	const fullDay = (wd: WeekdayId) => i18n.t(WEEKDAY_FULL_KEYS[wd]);
 	const total = $derived(metric === 'sessions' ? slice.totalSessions : slice.totalAscents);
-	const unit = $derived(metric === 'sessions' ? 'session' : 'ascent');
-	const unitPlural = $derived(`${unit}s`);
+	const unitFor = (count: number) =>
+		i18n.t(
+			metric === 'sessions' ? 'cards.weekdayStats.unitSessions' : 'cards.weekdayStats.unitAscents',
+			{ count }
+		);
 
-	const styleLabel = $derived(
-		style === 'all' ? '' : style === 'sport' ? 'Sport' : style === 'trad' ? 'Trad' : 'Boulder'
-	);
+	const STYLE_LABEL_KEYS: Record<WeekdayStyleKey, string> = {
+		all: 'cards.weekdayStats.styleAll',
+		sport: 'styles.sport',
+		trad: 'styles.trad',
+		boulder: 'styles.boulder'
+	};
+
+	const styleLabel = $derived(style === 'all' ? '' : i18n.t(STYLE_LABEL_KEYS[style]));
+	const styleWord = $derived(styleLabel.toLocaleLowerCase(i18n.locale));
 
 	const size = 220;
 	const cx = size / 2;
@@ -128,7 +145,7 @@
 		const active = slice.rows
 			.map((r) => ({
 				weekday: r.weekday,
-				label: r.label,
+				label: shortDay(r.weekday),
 				value: metric === 'sessions' ? r.sessions : r.ascents,
 				color: DAY_COLORS[r.weekday] ?? 'var(--accent)'
 			}))
@@ -188,39 +205,40 @@
 >
 	<header>
 		<div class="titles">
-			<h2>Weekday</h2>
-			<a class="how" href="/docs/weekday">How it works</a>
+			<h2>{i18n.t('cards.weekdayStats.titleWeekday')}</h2>
+			<a class="how" href="/docs/weekday">{i18n.t('common.howItWorks')}</a>
 		</div>
 		<div class="controls">
-			<div class="toggles" role="group" aria-label="Weekday range">
+			<div class="toggles" role="group" aria-label={i18n.t('cards.weekdayStats.ariaWeekdayRange')}>
 				<button
 					type="button"
 					class={{ active: range === 'all' }}
 					aria-pressed={range === 'all'}
-					onclick={() => setRange('all')}>All time</button
+					onclick={() => setRange('all')}>{i18n.t('cards.weekdayStats.rangeAllTime')}</button
 				>
 				<button
 					type="button"
 					class={{ active: range === 'last12' }}
 					aria-pressed={range === 'last12'}
-					onclick={() => setRange('last12')}>Last 12 weeks</button
+					onclick={() => setRange('last12')}>{i18n.t('cards.weekdayStats.rangeLast12Weeks')}</button
 				>
 			</div>
-			<div class="toggles" role="group" aria-label="Weekday metric">
+			<div class="toggles" role="group" aria-label={i18n.t('cards.weekdayStats.ariaWeekdayMetric')}>
 				<button
 					type="button"
 					class={{ active: metric === 'sessions' }}
 					aria-pressed={metric === 'sessions'}
-					onclick={() => setMetric('sessions')}>Sessions</button
+					onclick={() => setMetric('sessions')}
+					>{i18n.t('cards.weekdayStats.metricSessions')}</button
 				>
 				<button
 					type="button"
 					class={{ active: metric === 'ascents' }}
 					aria-pressed={metric === 'ascents'}
-					onclick={() => setMetric('ascents')}>Ascents</button
+					onclick={() => setMetric('ascents')}>{i18n.t('cards.weekdayStats.metricAscents')}</button
 				>
 			</div>
-			<div class="toggles" role="group" aria-label="Climbing style">
+			<div class="toggles" role="group" aria-label={i18n.t('cards.weekdayStats.ariaClimbingStyle')}>
 				{#each WEEKDAY_STYLE_KEYS as key (key)}
 					{@const chip = styleChipColor(key)}
 					<button
@@ -228,14 +246,7 @@
 						class={{ active: style === key }}
 						aria-pressed={style === key}
 						style:--chip={chip ?? 'var(--accent)'}
-						onclick={() => setStyle(key)}
-						>{key === 'all'
-							? 'All'
-							: key === 'sport'
-								? 'Sport'
-								: key === 'trad'
-									? 'Trad'
-									: 'Boulder'}</button
+						onclick={() => setStyle(key)}>{i18n.t(STYLE_LABEL_KEYS[key])}</button
 					>
 				{/each}
 			</div>
@@ -245,15 +256,35 @@
 	{#if total === 0}
 		<p class="empty">
 			{range === 'last12'
-				? `No ${styleLabel ? styleLabel.toLowerCase() + ' ' : ''}${unitPlural} in the last 12 weeks.`
-				: `No dated ${styleLabel ? styleLabel.toLowerCase() + ' ' : ''}${unitPlural} yet.`}
+				? i18n.t(
+						style === 'all'
+							? 'cards.weekdayStats.emptyLast12'
+							: 'cards.weekdayStats.emptyLast12Style',
+						{ unit: unitFor(2), style: styleWord }
+					)
+				: i18n.t(
+						style === 'all'
+							? 'cards.weekdayStats.emptyAllTime'
+							: 'cards.weekdayStats.emptyAllTimeStyle',
+						{ unit: unitFor(2), style: styleWord }
+					)}
 		</p>
 	{:else}
 		{#if most}
 			<p class="lead">
-				Your most active day is <strong>{most.label}</strong>
-				({formatNumber(most.value, dateDisplay)}
-				{most.value === 1 ? unit : unitPlural}{styleLabel ? ` · ${styleLabel}` : ''}).
+				<RichText
+					message={i18n.t(
+						style === 'all'
+							? 'cards.weekdayStats.leadMostActiveAll'
+							: 'cards.weekdayStats.leadMostActiveStyle',
+						{
+							count: formatNumber(most.value, dateDisplay),
+							unit: unitFor(most.value),
+							style: styleLabel
+						}
+					)}
+					tokens={{ day: { kind: 'strong', text: fullDay(most.weekday) } }}
+				/>
 			</p>
 		{/if}
 
@@ -274,10 +305,12 @@
 				{/each}
 				<circle class="hole" {cx} {cy} r={innerR - 1} />
 				{#if most}
-					<text class="center-day" x={cx} y={cy - 6} style="fill: var(--ink)">{most.label}</text>
+					<text class="center-day" x={cx} y={cy - 6} style="fill: var(--ink)"
+						>{fullDay(most.weekday)}</text
+					>
 					<text class="center-meta" x={cx} y={cy + 14} style="fill: var(--ink-muted)"
 						>{formatNumber(most.value, dateDisplay)}
-						{most.value === 1 ? unit : unitPlural}</text
+						{unitFor(most.value)}</text
 					>
 				{/if}
 			</svg>
@@ -286,6 +319,7 @@
 				{#each slice.rows as row (row.weekday)}
 					{@const value = metric === 'sessions' ? row.sessions : row.ascents}
 					{@const pct = total > 0 ? Math.round((value / total) * 1000) / 10 : 0}
+					{@const dayLabel = shortDay(row.weekday)}
 					<li
 						class={{
 							zero: value === 0,
@@ -296,16 +330,24 @@
 							type="button"
 							class="legend-btn"
 							disabled={value === 0}
-							title="{row.label}: {formatNumber(value, dateDisplay)} {value === 1
-								? unit
-								: unitPlural}{value > 0 ? ` (${pct}%)` : ''}"
+							title={i18n.t(
+								value > 0
+									? 'cards.weekdayStats.titleDayValuePct'
+									: 'cards.weekdayStats.titleDayValue',
+								{
+									day: dayLabel,
+									count: formatNumber(value, dateDisplay),
+									unit: unitFor(value),
+									percent: pct
+								}
+							)}
 							onmouseenter={() => (hoverWeekday = value > 0 ? row.weekday : null)}
 							onmouseleave={() => (hoverWeekday = null)}
 							onfocus={() => (hoverWeekday = value > 0 ? row.weekday : null)}
 							onblur={() => (hoverWeekday = null)}
 						>
 							<i style:background={DAY_COLORS[row.weekday]}></i>
-							<span class="lab">{row.label}</span>
+							<span class="lab">{dayLabel}</span>
 							<span class="val"
 								>{formatNumber(value, dateDisplay)}{#if value > 0}
 									<span class="pct"> · {pct}%</span>{/if}</span
@@ -317,18 +359,26 @@
 		</div>
 
 		<details class="values">
-			<summary>View weekday values</summary>
+			<summary>{i18n.t('cards.weekdayStats.summaryViewWeekdayValues')}</summary>
 			<table>
 				<caption
-					>Weekday {unitPlural}{styleLabel ? ` · ${styleLabel}` : ''} ·
-					{range === 'last12' ? 'last 12 weeks' : 'all time'}</caption
+					>{i18n.t(
+						style === 'all'
+							? range === 'last12'
+								? 'cards.weekdayStats.captionLast12Weeks'
+								: 'cards.weekdayStats.captionAllTime'
+							: range === 'last12'
+								? 'cards.weekdayStats.captionStyleLast12Weeks'
+								: 'cards.weekdayStats.captionStyleAllTime',
+						{ unit: unitFor(2), style: styleLabel }
+					)}</caption
 				>
 				<thead>
 					<tr>
-						<th scope="col">Day</th>
-						<th scope="col">Sessions</th>
-						<th scope="col">Ascents</th>
-						<th scope="col">Share</th>
+						<th scope="col">{i18n.t('cards.weekdayStats.thDay')}</th>
+						<th scope="col">{i18n.t('cards.weekdayStats.metricSessions')}</th>
+						<th scope="col">{i18n.t('cards.weekdayStats.metricAscents')}</th>
+						<th scope="col">{i18n.t('cards.weekdayStats.thShare')}</th>
 					</tr>
 				</thead>
 				<tbody>
@@ -336,7 +386,7 @@
 						{@const value = metric === 'sessions' ? row.sessions : row.ascents}
 						{@const pct = total > 0 ? Math.round((value / total) * 1000) / 10 : 0}
 						<tr>
-							<th scope="row">{row.label}</th>
+							<th scope="row">{shortDay(row.weekday)}</th>
 							<td>{formatNumber(row.sessions, dateDisplay)}</td>
 							<td>{formatNumber(row.ascents, dateDisplay)}</td>
 							<td>{value > 0 ? `${pct}%` : '—'}</td>
@@ -347,15 +397,20 @@
 		</details>
 
 		<p class="hint">
-			{#if metric === 'sessions'}
-				A session is a calendar day with at least one{styleLabel
-					? ` ${styleLabel.toLowerCase()}`
-					: ''} ascent
-			{:else}
-				Slices count every{styleLabel ? ` ${styleLabel.toLowerCase()}` : ''} logged ascent
-			{/if}
-			· {formatNumber(total, dateDisplay)}
-			{total === 1 ? unit : unitPlural} in this range.
+			{i18n.t(
+				metric === 'sessions'
+					? style === 'all'
+						? 'cards.weekdayStats.hintSessions'
+						: 'cards.weekdayStats.hintSessionsStyle'
+					: style === 'all'
+						? 'cards.weekdayStats.hintAscents'
+						: 'cards.weekdayStats.hintAscentsStyle',
+				{
+					count: formatNumber(total, dateDisplay),
+					unit: unitFor(total),
+					style: styleWord
+				}
+			)}
 		</p>
 	{/if}
 </article>
@@ -415,7 +470,7 @@
 		font-size: 0.92rem;
 		color: var(--ink-muted);
 	}
-	.lead strong {
+	.lead :global(strong) {
 		color: var(--ink);
 		font-weight: 700;
 	}

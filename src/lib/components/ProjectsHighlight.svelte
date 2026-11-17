@@ -1,7 +1,9 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
 	import NewRouteBadge from '#lib/components/NewRouteBadge.svelte';
 	import ProjectReadiness from '#lib/components/ProjectReadiness.svelte';
 	import ProjectRouteBadge from '#lib/components/ProjectRouteBadge.svelte';
+	import RichText from '#lib/components/RichText.svelte';
 	import { DEFAULT_DATE_DISPLAY, formatCalendarDate, type DateDisplay } from '#lib/dates';
 
 	type ProjectCard = {
@@ -23,13 +25,14 @@
 
 	type Props = { projects: ProjectCard[]; dateDisplay?: DateDisplay };
 	let { projects, dateDisplay = DEFAULT_DATE_DISPLAY }: Props = $props();
+	const i18n = useI18n();
 
 	function sessionsLabel(n: number) {
-		return n === 1 ? '1 session' : `${n} sessions`;
+		return i18n.t('cards.projectsHighlight.sessionsCount', { count: n });
 	}
 
 	function triesLabel(n: number) {
-		return n === 1 ? '1 try' : `${n} tries`;
+		return i18n.t('cards.projectsHighlight.triesCount', { count: n });
 	}
 
 	function when(iso: string | null) {
@@ -40,14 +43,22 @@
 
 <article class="panel">
 	<header>
-		<h2>Projects</h2>
-		<a href="/projects">All projects</a>
+		<h2>{i18n.t('cards.projectsHighlight.titleProjects')}</h2>
+		<a href="/projects">{i18n.t('cards.projectsHighlight.linkAllProjects')}</a>
 	</header>
 
 	{#if projects.length === 0}
 		<p class="empty">
-			No open projects — log attempts on a route and it shows up on
-			<a href="/projects">Projects</a>.
+			<RichText
+				message={i18n.t('cards.projectsHighlight.emptyNoOpenProjects')}
+				tokens={{
+					projects: {
+						kind: 'link',
+						text: i18n.t('cards.projectsHighlight.titleProjects'),
+						href: '/projects'
+					}
+				}}
+			/>
 		</p>
 	{:else}
 		<ul>
@@ -62,7 +73,11 @@
 						{:else if p.ungraded}
 							<NewRouteBadge />
 						{/if}
-						<span class={['badge', { sent: p.status === 'sent' }]}>{p.status}</span>
+						<span class={['badge', { sent: p.status === 'sent' }]}
+							>{p.status === 'sent'
+								? i18n.t('pages.projects.labelSent')
+								: i18n.t('pages.projects.labelOpen')}</span
+						>
 					</div>
 					{#if p.areaLabel}
 						<p class="meta">{p.areaLabel}</p>
@@ -153,7 +168,7 @@
 		color: var(--ink-muted);
 		font-size: 0.82rem;
 	}
-	.empty a {
+	.empty :global(a) {
 		color: var(--accent);
 		font-weight: 600;
 	}

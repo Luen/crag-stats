@@ -1,11 +1,14 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
 	import GradeChip from '#lib/components/GradeChip.svelte';
+	import RichText from '#lib/components/RichText.svelte';
 	import StyleBadge from '#lib/components/StyleBadge.svelte';
 	import type { FirstAscentStats } from '#lib/types/dashboard';
 	import { formatDateTime, formatNumber, DEFAULT_DATE_DISPLAY, type DateDisplay } from '#lib/dates';
 
 	type Props = { data: FirstAscentStats; canEdit: boolean; dateDisplay?: DateDisplay };
 	let { data, canEdit, dateDisplay = DEFAULT_DATE_DISPLAY }: Props = $props();
+	const i18n = useI18n();
 
 	const years = $derived(
 		data.firstYear == null
@@ -26,46 +29,58 @@
 </script>
 
 <article class="panel">
-	<h2><a href="/logbook?fa=any">First ascents</a></h2>
+	<h2><a href="/logbook?fa=any">{i18n.t('cards.firstAscents.titleFirstAscents')}</a></h2>
 	{#if data.total === 0 && data.routesSet === 0}
 		<p class="empty">
-			No first ascents recorded yet. Import them from public theCrag route history, or mark yours
-			from the <a href="/logbook">logbook</a> (hover a row, then <strong>Mark FA</strong>).
+			<RichText
+				message={i18n.t('cards.firstAscents.emptyNoFirstAscents')}
+				tokens={{
+					logbook: {
+						kind: 'link',
+						text: i18n.t('cards.firstAscents.linkLogbook'),
+						href: '/logbook'
+					}
+				}}
+			/>
 		</p>
 	{:else}
 		<div class="tiles">
 			{#if data.total > 0}
 				<div class="tile">
 					<strong>{data.total}</strong>
-					<span>first ascent{data.total === 1 ? '' : 's'}</span>
+					<span>{i18n.t('cards.firstAscents.tileFirstAscents', { count: data.total })}</span>
 				</div>
 			{/if}
 			{#if data.routesSet > 0}
 				<div class="tile">
 					<strong>{data.routesSet}</strong>
-					<span>route{data.routesSet === 1 ? '' : 's'} set</span>
+					<span>{i18n.t('cards.firstAscents.tileRoutesSet', { count: data.routesSet })}</span>
 				</div>
 			{/if}
 			{#if data.routesWithCommunityData > 0}
 				<div class="tile">
 					<strong>{formatNumber(data.communityAscents, dateDisplay)}</strong>
-					<span>community ascents (estimate)</span>
+					<span>{i18n.t('cards.firstAscents.tileCommunityAscents')}</span>
 				</div>
 				<div class="tile">
 					<strong>{formatNumber(data.sportOrBoltedCommunityAscents, dateDisplay)}</strong>
-					<span>on sport / bolted</span>
+					<span>{i18n.t('cards.firstAscents.tileOnSportBolted')}</span>
 				</div>
 			{/if}
 			{#if data.ffa > 0}
 				<div class="tile">
 					<strong>{data.fa} / {data.ffa}</strong>
-					<span>FA / FFA</span>
+					<span>{i18n.t('cards.firstAscents.tileFaFfa')}</span>
 				</div>
 			{/if}
 			{#if years}
 				<div class="tile">
 					<strong>{years}</strong>
-					<span>{data.firstYear === data.latestYear ? 'year' : 'years'}</span>
+					<span
+						>{i18n.t('cards.firstAscents.tileYears', {
+							count: data.firstYear === data.latestYear ? 1 : 2
+						})}</span
+					>
 				</div>
 			{/if}
 		</div>
@@ -73,7 +88,7 @@
 		{#if data.routeRange || data.boulderRange}
 			<dl class="ranges">
 				{#if data.routeRange}
-					<dt>Routes</dt>
+					<dt>{i18n.t('cards.firstAscents.labelRoutes')}</dt>
 					<dd>
 						<GradeChip grade={data.routeRange.min} band={data.routeRange.minBand} />
 						{#if data.routeRange.max !== data.routeRange.min}
@@ -83,7 +98,7 @@
 					</dd>
 				{/if}
 				{#if data.boulderRange}
-					<dt>Boulders</dt>
+					<dt>{i18n.t('cards.firstAscents.labelBoulders')}</dt>
 					<dd>
 						<GradeChip grade={data.boulderRange.min} band={data.boulderRange.minBand} />
 						{#if data.boulderRange.max !== data.boulderRange.min}
@@ -113,7 +128,7 @@
 		{/if}
 
 		{#if latestPreview.length > 0}
-			<h3>Latest</h3>
+			<h3>{i18n.t('cards.firstAscents.titleLatest')}</h3>
 			<ul class="list">
 				{#each latestPreview as r (r.routeId)}
 					<li>
@@ -136,13 +151,17 @@
 			</ul>
 			{#if latestMore > 0}
 				<p class="more">
-					<a href="/logbook?fa=any">+{formatNumber(latestMore, dateDisplay)} more in the logbook</a>
+					<a href="/logbook?fa=any"
+						>{i18n.t('cards.firstAscents.moreInLogbook', {
+							count: formatNumber(latestMore, dateDisplay)
+						})}</a
+					>
 				</p>
 			{/if}
 		{/if}
 
 		{#if communityPreview.length > 0}
-			<h3>Community by route</h3>
+			<h3>{i18n.t('cards.firstAscents.titleCommunityByRoute')}</h3>
 			<ul class="list community">
 				{#each communityPreview as r (r.routeExternalId)}
 					<li>
@@ -158,23 +177,27 @@
 							</strong>
 							<span class="credits">
 								{#if r.faKind}<span class="kind">{r.faKind}</span>{/if}
-								{#if r.fromSetter}<span class="kind setter">Set</span>{/if}
+								{#if r.fromSetter}<span class="kind setter"
+										>{i18n.t('cards.firstAscents.labelSet')}</span
+									>{/if}
 								{#if r.styleLabel}<StyleBadge style={r.styleLabel} />{/if}
 							</span>
 							<div class="sub">
 								{#if r.ascentCountFetchedAt}
-									Count fetched {formatDateTime(r.ascentCountFetchedAt, dateDisplay, {
-										dateStyle: 'medium'
+									{i18n.t('cards.firstAscents.countFetched', {
+										date: formatDateTime(r.ascentCountFetchedAt, dateDisplay, {
+											dateStyle: 'medium'
+										})
 									})}
 								{:else if r.othersAscents == null}
-									No paired count yet
+									{i18n.t('cards.firstAscents.noPairedCountYet')}
 								{:else}
-									Fetch time unknown
+									{i18n.t('cards.firstAscents.fetchTimeUnknown')}
 								{/if}
 							</div>
 						</div>
 						{#if r.othersAscents == null}
-							<span class="missing">Unavailable</span>
+							<span class="missing">{i18n.t('cards.firstAscents.labelUnavailable')}</span>
 						{:else}
 							<strong class="est">{formatNumber(r.othersAscents, dateDisplay)}</strong>
 						{/if}
@@ -182,25 +205,34 @@
 				{/each}
 			</ul>
 			{#if communityMore > 0}
-				<p class="more">+{formatNumber(communityMore, dateDisplay)} more credited routes</p>
+				<p class="more">
+					{i18n.t('cards.firstAscents.moreCreditedRoutes', {
+						count: formatNumber(communityMore, dateDisplay)
+					})}
+				</p>
 			{/if}
 		{/if}
 	{/if}
 	<p class="foot">
 		{#if data.imported > 0 || data.routesSet > 0}
-			Includes credits imported from theCrag route history.
+			{i18n.t('cards.firstAscents.footIncludesCredits')}
 		{/if}
 		{#if data.routesWithCommunityData > 0}
-			Cached community estimate covers {formatNumber(data.routesWithCommunityData, dateDisplay)} of
-			{formatNumber(data.routesPutUp, dateDisplay)} credited logbook routes and excludes your ticks at
-			each fetch.
-			{#if data.routesWithCommunityData < data.routesPutUp}Some route counts are unavailable.{/if}
+			{i18n.t('cards.firstAscents.footCommunityCoverage', {
+				routesWithCommunityData: formatNumber(data.routesWithCommunityData, dateDisplay),
+				routesPutUp: formatNumber(data.routesPutUp, dateDisplay)
+			})}
+			{#if data.routesWithCommunityData < data.routesPutUp}{i18n.t(
+					'cards.firstAscents.footSomeUnavailable'
+				)}{/if}
 		{:else if data.routesPutUp > 0}
-			Community ascents unavailable: 0 of {formatNumber(data.routesPutUp, dateDisplay)} credited logbook
-			routes have a paired count snapshot.
-			{#if canEdit}<a href="/settings">Import or refresh route history in Settings</a>.{/if}
+			{i18n.t('cards.firstAscents.footCommunityUnavailable', {
+				count: formatNumber(data.routesPutUp, dateDisplay)
+			})}
+			{#if canEdit}<a href="/settings">{i18n.t('cards.firstAscents.linkImportRouteHistory')}</a
+				>.{/if}
 		{/if}
-		<a class="how" href="/docs/first-ascents">How it works</a>
+		<a class="how" href="/docs/first-ascents">{i18n.t('common.howItWorks')}</a>
 	</p>
 </article>
 
@@ -234,8 +266,8 @@
 		color: var(--ink-muted);
 		font-size: 0.9rem;
 	}
-	.empty a,
-	.foot a {
+	.empty :global(a),
+	.foot :global(a) {
 		text-decoration: underline;
 	}
 	.tiles {

@@ -1,37 +1,51 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
 	import type { EddingtonMilestoneTable } from '#lib/types/dashboard';
 
 	type Props = { tables: EddingtonMilestoneTable[] };
 	let { tables }: Props = $props();
+	const i18n = useI18n();
+
+	const TABLE_LABEL_KEYS: Record<string, string> = {
+		sends: 'cards.eddington.labelSendDays',
+		vertical: 'cards.eddington.labelVerticalDays',
+		routeGrade: 'cards.eddington.labelRouteGrade',
+		boulderGrade: 'cards.eddington.labelBoulderGrade'
+	};
+
+	function tableLabel(table: EddingtonMilestoneTable): string {
+		const key = TABLE_LABEL_KEYS[table.key];
+		return key ? i18n.t(key) : table.label;
+	}
 
 	function thresholdLabel(table: EddingtonMilestoneTable, target: number): string {
 		if (table.key === 'vertical') {
 			const m = target * table.unit;
-			return `${target} days · ${m}+ m`;
+			return i18n.t('cards.eddingtonMilestones.thresholdVertical', { days: target, height: m });
 		}
-		if (table.key === 'boulderGrade') return `V${target}+ · ${target} problems`;
-		if (table.key === 'routeGrade') return `Ewbank ${target}+ · ${target} routes`;
-		return `${target}+ sends · ${target} days`;
+		if (table.key === 'boulderGrade')
+			return i18n.t('cards.eddingtonMilestones.thresholdBoulderGrade', { target });
+		if (table.key === 'routeGrade')
+			return i18n.t('cards.eddingtonMilestones.thresholdRouteGrade', { target });
+		return i18n.t('cards.eddingtonMilestones.thresholdSends', { target });
 	}
 </script>
 
 <section class="milestones">
-	<h2>Upcoming milestones</h2>
-	<p class="lead">
-		How many qualifying days or routes you already have toward the next Eddington numbers.
-	</p>
+	<h2>{i18n.t('cards.eddingtonMilestones.titleUpcomingMilestones')}</h2>
+	<p class="lead">{i18n.t('cards.eddingtonMilestones.lead')}</p>
 
 	<div class="grid">
 		{#each tables as table (table.key)}
 			<article class="panel">
-				<h3>{table.label}</h3>
+				<h3>{tableLabel(table)}</h3>
 				<table>
 					<thead>
 						<tr>
-							<th scope="col">Target E</th>
-							<th scope="col">Have</th>
-							<th scope="col">Need</th>
-							<th scope="col">Progress</th>
+							<th scope="col">{i18n.t('cards.eddingtonMilestones.thTargetE')}</th>
+							<th scope="col">{i18n.t('cards.eddingtonMilestones.thHave')}</th>
+							<th scope="col">{i18n.t('cards.eddingtonMilestones.thNeed')}</th>
+							<th scope="col">{i18n.t('cards.eddingtonMilestones.thProgress')}</th>
 						</tr>
 					</thead>
 					<tbody>
@@ -47,7 +61,12 @@
 									<div class="bar" role="presentation">
 										<div class="fill" style:width="{row.progress * 100}%"></div>
 									</div>
-									<span class="sr">{Math.round(row.progress * 100)}% toward {row.target}</span>
+									<span class="sr"
+										>{i18n.t('cards.eddingtonMilestones.srProgress', {
+											percent: Math.round(row.progress * 100),
+											target: row.target
+										})}</span
+									>
 								</td>
 							</tr>
 						{/each}

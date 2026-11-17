@@ -1,16 +1,30 @@
+import { formatMessage } from '#lib/i18n';
 import { isPrivateHost } from '#lib/privateHost';
 import { EMBED_CARDS } from '#lib/server/embedCards';
 import type { PageServerLoad } from './$types';
 
-const LABELS: Record<(typeof EMBED_CARDS)[number], { title: string; alt: string }> = {
-	summary: { title: 'Summary', alt: 'My climbing stats' },
-	eddington: { title: 'Eddington numbers', alt: 'My climbing Eddington numbers' },
-	hardest: { title: 'Hardest sends', alt: 'My hardest climbing sends' }
+const LABEL_KEYS: Record<(typeof EMBED_CARDS)[number], { titleKey: string; altKey: string }> = {
+	summary: {
+		titleKey: 'pages.share.cardSummaryTitle',
+		altKey: 'pages.share.cardSummaryAlt'
+	},
+	eddington: {
+		titleKey: 'pages.share.cardEddingtonTitle',
+		altKey: 'pages.share.cardEddingtonAlt'
+	},
+	hardest: {
+		titleKey: 'pages.share.cardHardestTitle',
+		altKey: 'pages.share.cardHardestAlt'
+	}
 };
 
-export const load: PageServerLoad = ({ url }) => ({
+export const load: PageServerLoad = ({ url, locals }) => ({
 	origin: url.origin,
 	// Links and embeds built from this origin won't load for anyone outside this network.
 	privateHost: isPrivateHost(url.hostname),
-	cards: EMBED_CARDS.map((id) => ({ id, ...LABELS[id] }))
+	cards: EMBED_CARDS.map((id) => ({
+		id,
+		title: formatMessage(locals.locale, LABEL_KEYS[id].titleKey),
+		alt: formatMessage(locals.locale, LABEL_KEYS[id].altKey)
+	}))
 });

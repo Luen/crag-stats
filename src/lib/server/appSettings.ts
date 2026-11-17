@@ -38,6 +38,7 @@ export type AppSettingKey =
 	| 'dashboard_layout'
 	| 'show_notes'
 	| 'offline_revision'
+	| 'locale'
 	| 'counted_tick_types'
 	| 'date_format'
 	| 'unit_height'

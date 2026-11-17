@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
 	import {
 		DEFAULT_DASH_CARDS,
 		cardDef,
@@ -12,6 +13,7 @@
 	};
 
 	let { layout }: Props = $props();
+	const i18n = useI18n();
 
 	// Editable copy of the saved layout; resets when a save reloads `layout`.
 	let draft = $derived(structuredClone(layout));
@@ -28,14 +30,19 @@
 		draft = defaultLayout();
 	}
 
+	const WIDTH_KEYS = {
+		full: 'cards.dashboardLayoutEditor.widthFull',
+		half: 'cards.dashboardLayoutEditor.widthHalf',
+		quarter: 'cards.dashboardLayoutEditor.widthQuarter'
+	} as const;
+
+	const cardLabel = (id: DashLayoutItem['id']) => i18n.t(cardDef(id).labelKey);
+
 	const visibleCount = $derived(draft.filter((d) => d.enabled).length);
 </script>
 
 <div class="editor">
-	<p class="hint">
-		Choose which dashboard cards to show and their order. The hero and summary metrics stay fixed.
-		Saved for the whole site, so every visitor sees this layout.
-	</p>
+	<p class="hint">{i18n.t('cards.dashboardLayoutEditor.hint')}</p>
 	<form method="POST" action="?/saveDashboardLayout" class="form">
 		<input type="hidden" name="layout" value={JSON.stringify(draft)} />
 		<ul>
@@ -43,8 +50,8 @@
 				<li>
 					<label class="en">
 						<input type="checkbox" checked={item.enabled} onchange={() => toggle(item.id)} />
-						<span>{cardDef(item.id).label}</span>
-						<em>{cardDef(item.id).width}</em>
+						<span>{cardLabel(item.id)}</span>
+						<em>{i18n.t(WIDTH_KEYS[cardDef(item.id).width])}</em>
 					</label>
 					<div class="movers">
 						<button
@@ -52,28 +59,41 @@
 							class="icon"
 							disabled={index === 0}
 							onclick={() => move(item.id, -1)}
-							aria-label="Move {cardDef(item.id).label} up">↑</button
+							aria-label={i18n.t('cards.dashboardLayoutEditor.ariaMoveUp', {
+								name: cardLabel(item.id)
+							})}>↑</button
 						>
 						<button
 							type="button"
 							class="icon"
 							disabled={index === draft.length - 1}
 							onclick={() => move(item.id, 1)}
-							aria-label="Move {cardDef(item.id).label} down">↓</button
+							aria-label={i18n.t('cards.dashboardLayoutEditor.ariaMoveDown', {
+								name: cardLabel(item.id)
+							})}>↓</button
 						>
 					</div>
 				</li>
 			{/each}
 		</ul>
 		<div class="actions">
-			<button type="submit">Save layout</button>
-			<button type="button" class="secondary" onclick={resetDraft}>Reset draft</button>
+			<button type="submit">{i18n.t('cards.dashboardLayoutEditor.buttonSaveLayout')}</button>
+			<button type="button" class="secondary" onclick={resetDraft}
+				>{i18n.t('cards.dashboardLayoutEditor.buttonResetDraft')}</button
+			>
 		</div>
 	</form>
 	<form method="POST" action="?/resetDashboardLayout" class="reset-form">
-		<button type="submit" class="secondary">Clear saved layout</button>
+		<button type="submit" class="secondary"
+			>{i18n.t('cards.dashboardLayoutEditor.buttonClearSavedLayout')}</button
+		>
 	</form>
-	<p class="meta">{DEFAULT_DASH_CARDS.length} cards · {visibleCount} visible</p>
+	<p class="meta">
+		{i18n.t('cards.dashboardLayoutEditor.metaCardsVisible', {
+			cards: DEFAULT_DASH_CARDS.length,
+			visible: visibleCount
+		})}
+	</p>
 </div>
 
 <style>

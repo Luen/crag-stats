@@ -4,6 +4,7 @@ import { ascents, routes, weatherDays } from './db/schema';
 import { wipeAllData } from './wipe';
 import { getDashboardStats } from './analytics';
 import { getWeatherPageData } from './weatherPage';
+import { LOCALES } from '#lib/i18n';
 
 beforeEach(() => {
 	ensureSchema();
@@ -85,4 +86,18 @@ it('shares dashboard analytics, deduplicates location-days and separates coverag
 	expect(view.conditions).toEqual(dashboard.weatherConditions);
 	expect(view.performance).toEqual(dashboard.weatherPerformance);
 	expect(JSON.stringify(view)).not.toContain('PRIVATE-WEATHER-TEST');
+	// Synthetic translations exercise locale plumbing even while Crowdin targets lag.
+	const previous = LOCALES.de['cards.weatherConditions.shareHeat'];
+	LOCALES.de['cards.weatherConditions.shareHeat'] = 'TEST-HITZE';
+	try {
+		const translated = getWeatherPageData(undefined, 'de');
+		expect(translated.conditions?.shares.find((s) => s.key === 'heat')?.label).toBe('TEST-HITZE');
+		expect(translated.coverage).toEqual(view.coverage);
+		expect(translated.conditions?.shares.map((s) => [s.key, s.days])).toEqual(
+			view.conditions?.shares.map((s) => [s.key, s.days])
+		);
+	} finally {
+		if (previous === undefined) delete LOCALES.de['cards.weatherConditions.shareHeat'];
+		else LOCALES.de['cards.weatherConditions.shareHeat'] = previous;
+	}
 });

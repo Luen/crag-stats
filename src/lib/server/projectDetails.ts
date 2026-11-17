@@ -1,6 +1,7 @@
 import { eq } from 'drizzle-orm';
 import { calendarDay } from '#lib/calendarDay';
 import { formatClimbGrade } from '#lib/grades';
+import { DEFAULT_LOCALE, type SupportedLocale } from '#lib/i18n';
 import { isTickCountedInProjectsAndGoals } from '#lib/tickSettings';
 import { getDisplayGradeSystems, getTickTypeSettings } from './appSettings';
 import { db, ensureSchema } from './db';
@@ -8,7 +9,11 @@ import { ascents, routes } from './db/schema';
 import { isLikelyIndoorRoute, listProjects } from './projects';
 import { projectProgress } from './projectProgress';
 
-export function getProjectDetails(routeId: number, now = new Date()) {
+export function getProjectDetails(
+	routeId: number,
+	now = new Date(),
+	locale: SupportedLocale = DEFAULT_LOCALE
+) {
 	ensureSchema();
 	const project = listProjects().find((p) => p.routeId === routeId);
 	if (!project) return null;
@@ -17,7 +22,7 @@ export function getProjectDetails(routeId: number, now = new Date()) {
 	const rows = loadProjectProgressRows();
 	const today = now.toISOString().slice(0, 10);
 	const gradeSystems = getDisplayGradeSystems();
-	const progress = projectProgress({ routeId, ...target }, rows, today);
+	const progress = projectProgress({ routeId, ...target }, rows, today, locale);
 	const attempts = rows
 		.filter((row) => row.routeId === routeId)
 		.map((row) => ({

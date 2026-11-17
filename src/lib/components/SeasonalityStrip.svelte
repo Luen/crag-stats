@@ -1,11 +1,13 @@
 <script lang="ts">
-	import { MONTH_LABELS } from '#lib/bestMonths';
+	import { monthLabels, useI18n } from '#lib/i18n';
 	let { values, month, name }: { values: number[]; month: number; name: string } = $props();
+	const i18n = useI18n();
+	const MONTHS = $derived(monthLabels(i18n.t));
 	const peak = $derived(Math.max(0, ...values) || 1);
 </script>
 
 <div class="strip" aria-hidden="true">
-	{#each MONTH_LABELS as label, i (label)}
+	{#each MONTHS as label, i (label)}
 		<div class="month" class:selected={i === month - 1}>
 			<span class="bar" style:height={`${Math.max(2, (values[i] / peak) * 32)}px`}></span>
 			<span>{label}</span>
@@ -13,16 +15,22 @@
 	{/each}
 </div>
 <details>
-	<summary>Monthly values for {name}</summary>
+	<summary>{i18n.t('cards.seasonalityStrip.summary', { name })}</summary>
 	<table>
-		<caption>{name}: theCrag seasonality</caption>
-		<thead><tr><th scope="col">Month</th><th scope="col">Value</th></tr></thead>
+		<caption>{i18n.t('cards.seasonalityStrip.caption', { name })}</caption>
+		<thead
+			><tr
+				><th scope="col">{i18n.t('cards.seasonalityStrip.month')}</th><th scope="col"
+					>{i18n.t('cards.seasonalityStrip.value')}</th
+				></tr
+			></thead
+		>
 		<tbody
-			>{#each MONTH_LABELS as label, i (label)}
+			>{#each MONTHS as label, i (label)}
 				<tr
-					><th scope="row">{label}{i === month - 1 ? ' (selected)' : ''}</th><td
-						>{values[i].toFixed(1)}</td
-					></tr
+					><th scope="row"
+						>{label}{i === month - 1 ? ` ${i18n.t('cards.seasonalityStrip.selected')}` : ''}</th
+					><td>{values[i].toFixed(1)}</td></tr
 				>
 			{/each}</tbody
 		>

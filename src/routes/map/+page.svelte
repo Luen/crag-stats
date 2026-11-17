@@ -1,65 +1,93 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
 	import CragSectors from '#lib/components/CragSectors.svelte';
 	import WorldClimbingMap from '#lib/components/WorldClimbingMap.svelte';
 	import { formatCalendarDate, formatNumber } from '#lib/dates';
 	import { LOGBOOK_STYLES, includeSelectedOptions } from '#lib/logbookFilters';
 	import type { PageProps } from './$types';
 	let { data }: PageProps = $props();
+	const i18n = useI18n();
+
+	/** Map style names render through the shared style labels, falling back to the raw value. */
+	const STYLE_KEYS: Record<string, string> = {
+		Sport: 'styles.sport',
+		Trad: 'styles.trad',
+		Boulder: 'styles.boulder',
+		'Top rope': 'styles.toprope',
+		'Deep water solo': 'styles.deepWaterSolo',
+		Aid: 'styles.aid',
+		Alpine: 'styles.alpine',
+		Solo: 'styles.solo',
+		Unknown: 'styles.unknown',
+		Other: 'styles.other'
+	};
+	const styleLabel = (style: string) => (STYLE_KEYS[style] ? i18n.t(STYLE_KEYS[style]) : style);
 </script>
 
 <svelte:head
-	><title>Map &amp; sectors · Crag Stats</title><meta
+	><title>{i18n.t('pages.map.pageTitle')}</title><meta
 		name="description"
-		content="Your climbing places around the world, sized by logged ascents."
+		content={i18n.t('pages.map.pageDescription')}
 	/></svelte:head
 >
 <section class="panel">
-	<h1>Climbing around the world</h1>
+	<h1>{i18n.t('pages.map.titleClimbingAroundTheWorld')}</h1>
 	<p>
-		{formatNumber(data.mapped, data.dateDisplay)} of {formatNumber(data.total, data.dateDisplay)} ascents
-		mapped across {formatNumber(data.places.length, data.dateDisplay)} places. {formatNumber(
-			data.missing,
-			data.dateDisplay
-		)} ascents have no usable location. <a class="how" href="/docs/climbing-map">How it works</a>
+		{i18n.t('pages.map.lead', {
+			mapped: formatNumber(data.mapped, data.dateDisplay),
+			total: formatNumber(data.total, data.dateDisplay),
+			places: formatNumber(data.places.length, data.dateDisplay),
+			missing: formatNumber(data.missing, data.dateDisplay)
+		})}
+		<a class="how" href="/docs/climbing-map">{i18n.t('common.howItWorks')}</a>
 	</p>
 	<form method="GET" class="filters">
-		<label>From <input type="date" name="from" value={data.filters.from} /></label><label
-			>To <input type="date" name="to" value={data.filters.to} /></label
+		<label
+			>{i18n.t('common.from')} <input type="date" name="from" value={data.filters.from} /></label
+		><label
+			>{i18n.t('pages.map.labelTo')} <input type="date" name="to" value={data.filters.to} /></label
 		>
 		<label
-			>Style <select name="style" value={data.filters.style}
-				><option value="">All styles</option
+			>{i18n.t('pages.map.labelStyle')}
+			<select name="style" value={data.filters.style}
+				><option value="">{i18n.t('pages.map.optionAllStyles')}</option
 				>{#each includeSelectedOptions( LOGBOOK_STYLES, [data.filters.style] ) as style (style)}<option
-						value={style}>{style}</option
+						value={style}>{styleLabel(style)}</option
 					>{/each}</select
 			></label
 		>
 		<label
-			>Venues <select name="venue" value={data.filters.venue}
-				><option value="all">All venues</option><option value="outdoor">Outdoor</option><option
-					value="indoor">Indoor</option
-				></select
+			>{i18n.t('pages.map.labelVenues')}
+			<select name="venue" value={data.filters.venue}
+				><option value="all">{i18n.t('pages.map.optionAllVenues')}</option><option value="outdoor"
+					>{i18n.t('pages.map.optionOutdoor')}</option
+				><option value="indoor">{i18n.t('pages.map.optionIndoor')}</option></select
 			></label
 		>
-		<button type="submit">Apply filters</button><a href="/map">Reset</a>
+		<button type="submit">{i18n.t('pages.map.buttonApplyFilters')}</button><a href="/map"
+			>{i18n.t('pages.map.linkReset')}</a
+		>
 	</form>
 	{#if data.places.length}<WorldClimbingMap
 			places={data.places}
 			dateDisplay={data.dateDisplay}
 		/>{:else}<p>
-			No places to map for these filters. Sync routes with usable coordinates to show them here.
+			{i18n.t('pages.map.emptyNoPlaces')}
 		</p>{/if}
 </section>
 <div id="sectors" class="values">
 	<CragSectors crags={data.crags} dateDisplay={data.dateDisplay} displayUnits={data.displayUnits} />
 </div>
 <section class="panel values">
-	<h2>All mapped places</h2>
-	<p>The same exact counts are available here without using the map.</p>
+	<h2>{i18n.t('pages.map.titleAllMappedPlaces')}</h2>
+	<p>{i18n.t('pages.map.leadValues')}</p>
 	<div class="table-wrap">
 		<table>
 			<thead
-				><tr><th>Place</th><th>Ascents</th><th>Routes</th><th>First day</th><th>Last day</th></tr
+				><tr
+					><th>{i18n.t('pages.map.thPlace')}</th><th>{i18n.t('pages.map.thAscents')}</th><th
+						>{i18n.t('pages.map.thRoutes')}</th
+					><th>{i18n.t('pages.map.thFirstDay')}</th><th>{i18n.t('pages.map.thLastDay')}</th></tr
 				></thead
 			><tbody
 				>{#each data.places as p (p.key)}<tr

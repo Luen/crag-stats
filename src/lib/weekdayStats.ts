@@ -6,6 +6,8 @@
 
 import { calendarDay as validWeekdayDay } from '#lib/calendarDay';
 import { matchesClimbStyle } from '#lib/climbStyle';
+import { formatMessage } from '#lib/i18n/format';
+import { DEFAULT_LOCALE } from '#lib/i18n/types';
 
 export { validWeekdayDay };
 
@@ -21,24 +23,44 @@ const DISCIPLINE_KEYS = ['sport', 'trad', 'boulder'] as const;
 /** Display order Monday → Sunday. */
 export const WEEKDAY_ORDER: readonly WeekdayId[] = [1, 2, 3, 4, 5, 6, 0];
 
+export const WEEKDAY_LABEL_KEYS: Record<WeekdayId, string> = {
+	0: 'cards.weekdayStats.shortSun',
+	1: 'cards.weekdayStats.shortMon',
+	2: 'cards.weekdayStats.shortTue',
+	3: 'cards.weekdayStats.shortWed',
+	4: 'cards.weekdayStats.shortThu',
+	5: 'cards.weekdayStats.shortFri',
+	6: 'cards.weekdayStats.shortSat'
+};
+
 export const WEEKDAY_LABELS: Record<WeekdayId, string> = {
-	0: 'Sun',
-	1: 'Mon',
-	2: 'Tue',
-	3: 'Wed',
-	4: 'Thu',
-	5: 'Fri',
-	6: 'Sat'
+	0: formatMessage(DEFAULT_LOCALE, WEEKDAY_LABEL_KEYS[0]),
+	1: formatMessage(DEFAULT_LOCALE, WEEKDAY_LABEL_KEYS[1]),
+	2: formatMessage(DEFAULT_LOCALE, WEEKDAY_LABEL_KEYS[2]),
+	3: formatMessage(DEFAULT_LOCALE, WEEKDAY_LABEL_KEYS[3]),
+	4: formatMessage(DEFAULT_LOCALE, WEEKDAY_LABEL_KEYS[4]),
+	5: formatMessage(DEFAULT_LOCALE, WEEKDAY_LABEL_KEYS[5]),
+	6: formatMessage(DEFAULT_LOCALE, WEEKDAY_LABEL_KEYS[6])
+};
+
+export const WEEKDAY_FULL_KEYS: Record<WeekdayId, string> = {
+	0: 'cards.weekdayStats.fullSun',
+	1: 'cards.weekdayStats.fullMon',
+	2: 'cards.weekdayStats.fullTue',
+	3: 'cards.weekdayStats.fullWed',
+	4: 'cards.weekdayStats.fullThu',
+	5: 'cards.weekdayStats.fullFri',
+	6: 'cards.weekdayStats.fullSat'
 };
 
 export const WEEKDAY_FULL: Record<WeekdayId, string> = {
-	0: 'Sunday',
-	1: 'Monday',
-	2: 'Tuesday',
-	3: 'Wednesday',
-	4: 'Thursday',
-	5: 'Friday',
-	6: 'Saturday'
+	0: formatMessage(DEFAULT_LOCALE, WEEKDAY_FULL_KEYS[0]),
+	1: formatMessage(DEFAULT_LOCALE, WEEKDAY_FULL_KEYS[1]),
+	2: formatMessage(DEFAULT_LOCALE, WEEKDAY_FULL_KEYS[2]),
+	3: formatMessage(DEFAULT_LOCALE, WEEKDAY_FULL_KEYS[3]),
+	4: formatMessage(DEFAULT_LOCALE, WEEKDAY_FULL_KEYS[4]),
+	5: formatMessage(DEFAULT_LOCALE, WEEKDAY_FULL_KEYS[5]),
+	6: formatMessage(DEFAULT_LOCALE, WEEKDAY_FULL_KEYS[6])
 };
 
 export const WEEKDAY_STYLE_KEYS: readonly WeekdayStyleKey[] = [

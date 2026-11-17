@@ -1,11 +1,31 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
 	import { styleBadgeColor } from '#lib/ticks';
 
 	type Props = { style: string | null | undefined };
 	let { style }: Props = $props();
+	const i18n = useI18n();
 
-	const label = $derived((style || '').trim() || 'Unknown');
-	const color = $derived(styleBadgeColor(label));
+	const STYLE_KEYS: Record<string, string> = {
+		sport: 'styles.sport',
+		trad: 'styles.trad',
+		boulder: 'styles.boulder',
+		'top rope': 'styles.toprope',
+		toprope: 'styles.toprope',
+		'deep water solo': 'styles.deepWaterSolo',
+		alpine: 'styles.alpine',
+		aid: 'styles.aid',
+		solo: 'styles.solo',
+		unknown: 'styles.unknown',
+		other: 'styles.other'
+	};
+
+	const rawLabel = $derived((style || '').trim() || 'Unknown');
+	const color = $derived(styleBadgeColor(rawLabel));
+	const label = $derived.by(() => {
+		const key = STYLE_KEYS[rawLabel.toLowerCase()];
+		return key ? i18n.t(key) : rawLabel;
+	});
 </script>
 
 <span class="badge" style:--badge={color}>{label}</span>
