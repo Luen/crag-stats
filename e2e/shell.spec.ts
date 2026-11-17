@@ -121,6 +121,27 @@ test.describe('app shell', () => {
 		await expect(page.locator('#side-nav').getByRole('link', { name: 'Dashboard' })).toBeVisible();
 	});
 
+	test('German pages render translated headings without unresolved message syntax', async ({
+		page
+	}) => {
+		try {
+			for (const [path, heading] of [
+				['/logbook', 'Tourenbuch'],
+				['/weather', 'Wetter'],
+				['/settings', 'Einstellungen']
+			]) {
+				await page.goto(`${path}?locale=de`);
+				await expect(page.locator('html')).toHaveAttribute('lang', 'de');
+				await expect(page.getByRole('heading', { level: 1 })).toHaveText(heading);
+				expect(await page.locator('main').innerText()).not.toMatch(
+					/\{(?:count|days|total|name|range|percent)[,}]/
+				);
+			}
+		} finally {
+			await page.goto('/?locale=en');
+		}
+	});
+
 	test('saving a language applies to the immediate native form response', async ({
 		request,
 		baseURL
