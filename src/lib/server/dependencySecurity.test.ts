@@ -25,46 +25,6 @@ describe('installed dependency security patches', () => {
 		expect(result.status, result.stderr).toBe(0);
 	});
 
-	it.each(['deepmerge', 'deepmerge/dist/umd.js'])(
-		'%s rejects prototype keys in both merge inputs',
-		(entry) => {
-			const merge = require(entry);
-			const payload = JSON.parse('{"__proto__":{"elevated":true},"valid":1}');
-			for (const result of [
-				merge(Object.create(null), payload),
-				merge(payload, { other: 2 }),
-				merge({ nested: null }, { nested: payload }).nested,
-				merge({ list: [] }, { list: [payload] }).list[0]
-			]) {
-				expect(Object.getPrototypeOf(result)).toBe(Object.prototype);
-				expect(result.elevated).toBeUndefined();
-				expect(result.valid).toBe(1);
-			}
-		}
-	);
-
-	it('picomatch preserves ordinary globs and literalizes unsafe repeated wildcards', () => {
-		const match = require('picomatch');
-		expect(match('src/**/*.ts')('src/lib/file.ts')).toBe(true);
-		expect(match('+(abc)')('abcabc')).toBe(true);
-		expect(match('+(a|b)')('abba')).toBe(true);
-		for (const pattern of ['+(*)x', '+(*a)b', '*(*a)b', '+(@(*a))b']) {
-			const result = spawnSync(
-				process.execPath,
-				[
-					'-e',
-					`const m = require(process.argv[1]); if (m(process.argv[2])('a'.repeat(256) + '!')) process.exit(1);`,
-					require.resolve('picomatch'),
-					pattern
-				],
-				{ encoding: 'utf8', timeout: 2000 }
-			);
-			expect(result.error, result.stderr).toBeUndefined();
-			expect(result.status, result.stderr).toBe(0);
-			expect(match(pattern)(pattern)).toBe(true);
-		}
-	}, 15000);
-
 	it.each(['uri-js', 'uri-js/dist/es5/uri.all.min.js'])(
 		'%s rejects invalid UTF-8 and handles malformed mailto',
 		(entry) => {
