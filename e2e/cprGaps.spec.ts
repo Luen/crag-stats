@@ -33,6 +33,11 @@ test('CPR timelines can show empty quarters and break the curve across them', as
 		await expect(toggle).not.toBeChecked();
 		// Compact view: the 2019 and 2021 quarters sit side by side and one curve bridges them.
 		const compactColumns = await card.locator('.vcol').count();
+		// Volume links are named by quarter and count, not by their bare number (#498).
+		await expect(card.getByRole('link', { name: '2019-Q1: 1 ascent — open logbook' })).toHaveCount(
+			1
+		);
+		await expect(card.getByRole('link', { name: '1', exact: true })).toHaveCount(0);
 		await expect(card.getByTitle('Gap in time').first()).toBeVisible();
 		await expect(card.locator('path.line')).toHaveCount(1);
 
@@ -40,9 +45,12 @@ test('CPR timelines can show empty quarters and break the curve across them', as
 		await expect(toggle).toBeChecked();
 		// 2019-Q1/Q2 and 2021-Q3/Q4 have ascents; everything between them does not, so every
 		// skipped quarter gets its own column with a volume baseline and no candles.
-		await expect(card.locator('.vcol.empty[title="2019-Q3: no logged ascents"]')).toHaveCount(1);
-		await expect(card.locator('.vcol.empty[title="2020-Q1: no logged ascents"]')).toHaveCount(1);
-		await expect(card.locator('.vcol.empty[title="2021-Q2: no logged ascents"]')).toHaveCount(1);
+		await expect(card.locator('.col.empty[title="2019-Q3: no logged ascents"]')).toHaveCount(1);
+		await expect(card.locator('.col.empty[title="2020-Q1: no logged ascents"]')).toHaveCount(1);
+		await expect(card.locator('.col.empty[title="2021-Q2: no logged ascents"]')).toHaveCount(1);
+		// The placeholder text is real content for assistive tech, not just a hover tooltip.
+		await expect(card.getByText('2019-Q3: no logged ascents', { exact: true })).toBeAttached();
+		await expect(card.getByText('2020-Q1: no logged ascents', { exact: true })).toBeAttached();
 		expect(await card.locator('.vcol').count()).toBeGreaterThan(compactColumns);
 		// Expanded view: each unbroken stretch keeps its own segment, and nothing is drawn
 		// through the empty quarters between them.

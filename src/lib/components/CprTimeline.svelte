@@ -16,7 +16,7 @@
 	} from '#lib/grades';
 	import { useI18n } from '#lib/i18n';
 	import { styleBadgeColor } from '#lib/ticks';
-	import type { CprTimelineData } from '#lib/types/dashboard';
+	import type { CprTimelineData, TimelineBucket } from '#lib/types/dashboard';
 
 	type Props = {
 		title: string;
@@ -227,6 +227,13 @@
 				})
 			)
 		].join('\n');
+
+	/**
+	 * Accessible name for a volume link. The bar and its hover count are decoration, so screen
+	 * readers get the quarter, its count, and where the link goes (#498).
+	 */
+	const volumeLabel = (bucket: TimelineBucket) =>
+		i18n.t('cards.cprTimeline.titleVolumeLink', { label: bucket.label, count: bucket.volume });
 </script>
 
 <article class="panel">
@@ -293,6 +300,7 @@
 						{#each columns as column, i (column.period)}
 							<div
 								class={['col', { gap: xLabels[i].gap, empty: column.bucket == null }]}
+								aria-hidden={column.bucket == null ? 'true' : undefined}
 								title={column.bucket
 									? colTitle(column.bucket)
 									: i18n.t('cards.cprTimeline.titleNoAscents', { label: column.period })}
@@ -343,22 +351,22 @@
 						<a
 							class="vcol"
 							href="/logbook?style={encodeURIComponent(style)}&year={column.period.slice(0, 4)}"
-							title={i18n.t('cards.cprTimeline.titleVolumeLink', {
-								label: column.bucket.label,
-								count: column.bucket.volume
-							})}
+							aria-label={volumeLabel(column.bucket)}
 						>
 							<span
 								class="vbar"
+								aria-hidden="true"
+								title={volumeLabel(column.bucket)}
 								style:height="{Math.max(6, (column.bucket.volume / maxVol) * 100)}%"
 							></span>
-							<span class="vn">{column.bucket.volume}</span>
+							<span class="vn" aria-hidden="true">{column.bucket.volume}</span>
 						</a>
 					{:else}
-						<span
-							class="vcol empty"
-							title={i18n.t('cards.cprTimeline.titleNoAscents', { label: column.period })}
-						></span>
+						<span class="vcol empty">
+							<span class="sr-only">
+								{i18n.t('cards.cprTimeline.titleNoAscents', { label: column.period })}
+							</span>
+						</span>
 					{/if}
 				{/each}
 			</div>
@@ -455,6 +463,14 @@
 	.empty {
 		color: var(--ink-muted);
 		margin: 0;
+	}
+	.sr-only {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		overflow: hidden;
+		clip: rect(0 0 0 0);
+		white-space: nowrap;
 	}
 
 	.track.wide {
