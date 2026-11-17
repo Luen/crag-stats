@@ -403,6 +403,8 @@
 			"empty": "Not enough data for a CPR timeline yet.",
 			"footnoteApi": "Curve from theCrag's API (decayed CPR); candles show your ticks.",
 			"footnoteApprox": "Approximate CPR: power factor 5, tick shifts, ~0.7 grade/year decay.",
+			"footnoteGaps": "Empty quarters with no ascents break the curve.",
+			"gapsToggle": "Show empty quarters",
 			"howCprWorks": "How CPR works",
 			"labelCurrent": "Current",
 			"labelPeak": "Peak",
@@ -415,6 +417,7 @@
 			"titleCandle": "{family} {min}–{max} ({count})",
 			"titleCprGrade": "CPR ≈ {grade}",
 			"titleGapInTime": "Gap in time",
+			"titleNoAscents": "{label}: no logged ascents",
 			"titleSourceApi": "CPR curve from theCrag's API",
 			"titleSourceApprox": "Approximate CPR model (see Docs)",
 			"titleVolumeLink": "{label}: {count, plural, one {# ascent} other {# ascents}} — open logbook"

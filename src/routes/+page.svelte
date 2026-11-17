@@ -339,18 +339,21 @@
 			title={i18n.t('pages.dashboard.titleSport')}
 			style="Sport"
 			data={s.cpr.sport}
+			preferences={data.cardPreferences}
 			gradeSystems={data.gradeSystems}
 		/>
 		<CprTimeline
 			title={i18n.t('pages.dashboard.titleTrad')}
 			style="Trad"
 			data={s.cpr.trad}
+			preferences={data.cardPreferences}
 			gradeSystems={data.gradeSystems}
 		/>
 		<CprTimeline
 			title={i18n.t('pages.dashboard.titleBoulder')}
 			style="Boulder"
 			data={s.cpr.boulder}
+			preferences={data.cardPreferences}
 			gradeSystems={data.gradeSystems}
 		/>
 	{:else if id === 'hardest'}

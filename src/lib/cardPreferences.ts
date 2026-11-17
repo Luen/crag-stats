@@ -7,7 +7,8 @@ const VALUES = {
 	cs_yearly_chart: ['year', 'cumulative'],
 	cs_heatmap_mode: ['intensity', 'grade', 'weather'],
 	cs_repeats_range: ['all', 'last12'],
-	cs_repeats_style: ['all', 'sport', 'trad', 'boulder']
+	cs_repeats_style: ['all', 'sport', 'trad', 'boulder'],
+	cs_cpr_gaps: ['compact', 'all']
 } as const;
 export type CardPreferenceKey = keyof typeof VALUES;
 /** Keep in sync with the pre-paint migration check in src/app.html. */
