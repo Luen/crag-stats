@@ -140,6 +140,7 @@ src/lib/i18n/locales/en.json  ──push to main──▶  Crowdin  ──transl
 - Triggers whenever `src/lib/i18n/locales/en.json`, `crowdin.yml`, or `.github/workflows/crowdin-sync.yml` changes on `main`.
 - **Bot loop prevention:** Path filtering ensures the workflow runs only when the source catalogue changes. Because Crowdin pull requests only modify target files (`de.json`, `fr.json`, etc.), merging a translation PR never triggers `crowdin-sync.yml` again.
 - Uploads the source file and pulls completed translations into branch `chore/crowdin-translations`, opening or updating a single consolidated PR.
+- `export_languages` in `crowdin.yml` limits downloads to the registered target catalogues (`de`, `fr`, `es-ES`, and `it`). Add a language there when adding its application catalogue. Do not enable a second GitHub integration in Crowdin: it creates a duplicate source branch and competing PRs.
 
 ### 2. `crowdin-pretranslate.yml` & `scripts/crowdin-topup.mjs` (Daily Scheduled AI Top-up)
 

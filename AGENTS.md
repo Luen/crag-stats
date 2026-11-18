@@ -1,5 +1,7 @@
 # AGENTS.md — Crag Stats
 
+- Crowdin maintenance (18 November 2026): `crowdin.yml` exports only `de`, `fr`, `es-ES`, and `it`, matching the registered target catalogues. Keep the GitHub Actions sync as the sole PR producer; enabling Crowdin's GitHub integration creates another source branch and duplicate PRs. String context must explain screen, purpose, and placeholders rather than repeat the key path. Screenshots must use synthetic sample data, never the owner's logbook. Context and QA evidence: `docs/dev/CROWDIN_SETUP_AND_QA.md`.
+
 > **Living document.** Future AI agents (and humans) should read this before changing the repo, and **update it** when they learn something new, correct a mistake, or retire outdated guidance. Prefer short, actionable notes over essays. Remove stale info rather than commenting it out.
 
 Self-hosted climbing analytics for [theCrag](https://www.thecrag.com/), inspired by [Dreeve](https://dreeve.app/) (Stats for Strava) and [RoxClimbs](https://roxclimbs.com/). AGPL-3.0 licensed.
