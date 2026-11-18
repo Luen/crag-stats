@@ -1,4 +1,4 @@
-# Begehungsstile
+# Tick types
 
 Ein **Begehungsstil** hält fest, _wie_ du etwas geklettert bist, nicht nur, ob du oben angekommen bist. Ein Onsight ist mehr wert als ein Rotpunkt derselben Route. Deshalb halten theCrag (und Crag Stats) sie getrennt.
 
@@ -13,7 +13,7 @@ In den folgenden Tabellen bedeutet **Durchstieg**, dass Crag Stats den Tick als 
 - **Projekte** sind Routen mit Versuchen, aber noch ohne Durchstieg. Eine Route, die du auf Anhieb durchstiegen hast (Onsight oder Flash), ist niemals ein Projekt.
 - **Trainingsbelastung** zählt Versuche mit dem 0,8-fachen eines Durchstiegs, da das Ausbouldern und Projektieren einer Route ebenfalls anstrengende Arbeit ist; siehe [Trainingsbelastung](/docs/training-load).
 
-## Gezählte Begehungsstile in Statistiken
+## Counted tick types in analytics
 
 Auf theCrag werden auch Versuche ohne Durchstieg (wie `Working`, `Attempt`, `Hang dog` oder `Retreat`) als Begehungen erfasst. Wenn du beim Projektieren zahlreiche Versuche loggst, kann das Zählen jedes einzelnen Versuchs deine Hauptbegehungszahl, deinen Disziplinanteil und deinen Klettertyp verzerren.
 

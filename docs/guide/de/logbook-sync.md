@@ -15,7 +15,9 @@ Das CSV aus den Einstellungen stammt aus Crag Stats, nicht aus einem Live-Abruf 
 
 ## Was eine manuelle Synchronisierung importiert hat
 
-Nach erfolgreichem **Jetzt synchronisieren** oder **Vollständig neu synchronisieren** zeigen die Einstellungen verarbeitete Begehungen, neue Begehungen, aktualisierte bestehende Begehungen, neue Routen und entfernte Begehungen/Routen an. Eine Route, die von mehreren Begehungen geteilt wird, zählt als eine neue Route. „Aktualisiert“ bedeutet, dass eine bestehende Begehung erneut verarbeitet wurde; es bedeutet nicht zwangsläufig, dass sich ihr Inhalt geändert hat. Ein unverändertes Tourenbuch zeigt daher null Hinzufügungen/Entfernungen und aktualisierte bestehende Begehungen an. Übersprungene Durchläufe und Fehler zeigen eigene Meldungen statt einer Erfolgsübersicht.
+Nach erfolgreichem **Jetzt synchronisieren** oder **Vollständig neu synchronisieren** zeigen die Einstellungen verarbeitete Begehungen, neue Begehungen, aktualisierte bestehende Begehungen, neue Routen und entfernte Begehungen/Routen an.
+Eine Route, die von mehreren Begehungen geteilt wird, zählt als eine neue Route. „Aktualisiert“ bedeutet, dass eine bestehende Begehung erneut verarbeitet wurde; es bedeutet nicht zwangsläufig, dass sich ihr Inhalt geändert hat.
+Ein unverändertes Tourenbuch zeigt daher null Hinzufügungen/Entfernungen und aktualisierte bestehende Begehungen an. Übersprungene Durchläufe und Fehler zeigen eigene Meldungen statt einer Erfolgsübersicht.
 
 Manuelle CSV-Uploads zeigen ebenfalls Zähler für verarbeitet/neu/aktualisiert, entfernen jedoch niemals fehlende Einträge. Routenhistorie und Wetteranreicherung sind separate Hintergrundimporte und in diesen Tourenbuch-Zählern nicht enthalten. Die Zusammenfassung beschreibt die abgeschlossene Aktion; sie ist kein dauerhafter Synchronisierungsverlauf.
 
@@ -39,21 +41,21 @@ Kein Unterstützer-Schlüssel? Öffne auf theCrag dein Tourenbuch, wähle **Akti
 
 Manuelle Uploads fügen Begehungen hinzu und aktualisieren sie, entfernen jedoch niemals Einträge, die in der Datei fehlen. Um gelöschte Ticks zu entfernen, führe **Alle lokalen Daten löschen** aus und lade einen frischen Export hoch. Das CSV enthält weniger Felder als die API, darunter weniger Profil-, Routen-Metadaten- und Mehrseillängen-Informationen, und beinhaltet nicht theCrags private Begehungsnotizen (`privateMarkdown`); lediglich die öffentliche Kommentar-Spalte wird importiert. Australische reine Ziffern bei Bouldern nutzen Land / Pfad als AU-Hinweis, damit daraus keine fehlerhaften V-Grade entstehen.
 
-Der Routendaten-Import gleicht Erstbegeher-Angaben mit deinem theCrag-Benutzernamen ab. Die API-Synchronisierung übernimmt ihn aus deinem Profil, und `THECRAG_USERNAME` wird in diesem Modus ignoriert; eine reine CSV-Installation setzt ihn stattdessen. Ohne Login stoppt der Import vor dem Abruf von Daten. Setze ihn daher (oder trage Erstbegehungen manuell im Tourenbuch ein).
+Route data import matches FA/FFA credits against your theCrag username. Die API-Synchronisierung übernimmt ihn aus deinem Profil, und `THECRAG_USERNAME` wird in diesem Modus ignoriert; eine reine CSV-Installation setzt ihn stattdessen. Ohne Login stoppt der Import vor dem Abruf von Daten.
 
 ## CSV-Tourenbuch mit Routendaten
 
-Du kannst dein Tourenbuch per CSV pflegen und trotzdem Routendaten und automatische FA/FFA-Markierungen erhalten. Setze diese drei Werte:
+Du kannst dein Tourenbuch per CSV pflegen und trotzdem Routendaten und automatische FA/FFA-Markierungen erhalten. Set:
 
-- `CSV_INGEST_TOKEN`: ein langer Zufallswert für CSV-Uploads. Sobald er gesetzt ist, sind Uploads die Quelle des Tourenbuchs. Die API-Synchronisierung läuft dann nicht, löscht keine hochgeladenen Begehungen und überschreibt dein Kletterprofil nicht.
+- `CSV_INGEST_TOKEN`: ein langer Zufallswert für CSV-Uploads. It is what lets a container or script send you a CSV export, so it also tells Crag Stats that uploads are the logbook source: no API sync runs, so uploaded ascents are never removed, and the sync never writes the key holder's climber profile.
 - `THECRAG_API_KEY`: dein Unterstützer-Schlüssel, der in diesem Modus nur für Routendaten und Standortabfragen verwendet wird.
 - `THECRAG_USERNAME`: dein theCrag-Benutzername für den Abgleich von FA/FFA-Einträgen.
 
-Ohne `CSV_INGEST_TOKEN` synchronisiert der API-Schlüssel weiterhin das Tourenbuch. Routendaten- und Wetterimporte folgen unabhängig davon `IMPORT_CRON` (standardmäßig täglich). Unter **Einstellungen → Routendaten importieren** kannst du einen Lauf starten und den Fortschritt sehen.
+That is the whole configuration: three values, no mode switch. Ohne `CSV_INGEST_TOKEN` synchronisiert der API-Schlüssel weiterhin das Tourenbuch. Routendaten- und Wetterimporte folgen unabhängig davon `IMPORT_CRON` (standardmäßig täglich). Unter **Einstellungen → Routendaten importieren** kannst du einen Lauf starten und den Fortschritt sehen.
 
 ## CSV aus einem anderen Container hochladen
 
-Nach dem Setzen von `CSV_INGEST_TOKEN` und einem Neustart akzeptiert `POST /api/logbook/csv` einen vorhandenen Export:
+Uploading by hand is fine for occasional refreshes. If you keep your export somewhere your network can read — a shared folder, a Nextcloud or Dropbox share, or a small companion container that uploads each new export — Crag Stats can accept it over HTTP instead. Set `CSV_INGEST_TOKEN` to a long random value, restart, and then `POST` the file:
 
 ```bash
 curl -X POST https://cragstats.example.com/api/logbook/csv \
@@ -62,6 +64,24 @@ curl -X POST https://cragstats.example.com/api/logbook/csv \
   --data-binary @thecrag-logbook.csv
 ```
 
-Ein Multipart-Upload mit dem Feld `file` funktioniert ebenfalls. Ein falscher Token wird mit `401` abgewiesen. Leere Dateien, HTML-Anmeldeseiten und Dateien über 25 MB werden nicht importiert. Erfolgreiche Antworten enthalten `ok`, `imported` und `created` mit den Zählern für Routen und Begehungen. Wie beim Upload in den Einstellungen werden fehlende Begehungen niemals gelöscht.
+Ein Multipart-Upload mit dem Feld `file` funktioniert ebenfalls. Requests without the token are rejected, and a successful response reports how many ascents were processed and how many were new:
 
-Crag Stats lädt keine CSV-Exporte von theCrag herunter und meldet sich nicht auf dessen Website an. Erstelle den Export selbst im Browser; automatisierte Zugriffe auf theCrag müssen dessen API verwenden.
+```json
+{ "ok": true, "imported": 412, "created": { "routes": 318, "ascents": 412 } }
+```
+
+To check an install without importing anything, send a body that is not an export:
+
+```bash
+curl -s -o /dev/null -w '%{http_code}\n' -X POST https://cragstats.example.com/api/logbook/csv \
+  -H "Authorization: Bearer $CSV_INGEST_TOKEN" \
+  -H "Content-Type: text/csv" --data-binary 'x'
+```
+
+`400` means the endpoint is reachable and the token was accepted: it rejected the body, so nothing was written. `401` means the token did not match, while `404` means that image predates this endpoint. On a whole-UI-gated install (`AUTH_SCOPE=all`), an older image answers `401` for any unknown `/api/` path, so read `401` as "token or image".
+
+Leere Dateien, HTML-Anmeldeseiten und Dateien über 25 MB werden nicht importiert. This endpoint does the same upsert-only import as the Settings form, so it never removes ascents that are missing from the file. It makes no request to theCrag: the export still has to come from your own browser or another tool you control.
+
+## Why there are no automatic CSV downloads
+
+Crag Stats lädt keine CSV-Exporte von theCrag herunter und meldet sich nicht auf dessen Website an. theCrag's [terms](https://www.thecrag.com/terms#ownership-and-licenses) require all programmatic access to go through the API, and every export is a full logbook dump that is costly for their servers. Exporting and uploading the CSV yourself is fine.

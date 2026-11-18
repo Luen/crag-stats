@@ -230,12 +230,12 @@ export function docPages(locale?: SupportedLocale | null): DocPage[] {
 export const BAND_DOCS: Record<number, { routes: string; boulders: string; text: string }> = {
 	1: {
 		routes: '1–12',
-		boulders: 'VB- to VB+',
+		boulders: 'VB-–VB+',
 		text: 'Your first days of climbing, often seconding or top-roping. Many people manage these on day one, though a few climbs at this level are still serious.'
 	},
 	2: {
 		routes: '13–18',
-		boulders: 'V0- to V0+',
+		boulders: 'V0-–V0+',
 		text: 'Typical for climbers in their first year. Most outdoor climbing happens in this band, and plenty of experienced climbers come back to it for fun.'
 	},
 	3: {
@@ -404,8 +404,14 @@ const TICK_DOCS_META: TickGroupMeta[] = [
 			{ nameKey: 'ticks.flash', meaningKey: 'cards.docBlock.tickMeaningLeadFlash' },
 			{ nameKey: 'ticks.redpoint', meaningKey: 'cards.docBlock.tickMeaningLeadRedPoint' },
 			{ nameKey: 'ticks.pinkpoint', meaningKey: 'cards.docBlock.tickMeaningLeadPinkPoint' },
-			{ meaningKey: 'cards.docBlock.tickMeaningLeadGreenPoint' },
-			{ meaningKey: 'cards.docBlock.tickMeaningLeadGroundUpRedPoint' },
+			{
+				nameKey: 'cards.docBlock.tickNameGreenPoint',
+				meaningKey: 'cards.docBlock.tickMeaningLeadGreenPoint'
+			},
+			{
+				nameKey: 'cards.docBlock.tickNameGroundUpRedPoint',
+				meaningKey: 'cards.docBlock.tickMeaningLeadGroundUpRedPoint'
+			},
 			{
 				nameKey: 'ticks.allfreewithrest',
 				meaningKey: 'cards.docBlock.tickMeaningLeadAllFreeWithRest'

@@ -52,5 +52,7 @@ describe('docs', () => {
 		expect(redpoint).toBeDefined();
 		expect(redpoint?.send).toBe(true);
 		expect(redpoint?.meaning).toContain('Vorstieg');
+		expect(lead?.ticks.map((t) => t.name)).toContain('Grünpunkt');
+		expect(lead?.ticks.map((t) => t.name)).toContain('Rotpunkt von unten');
 	});
 });

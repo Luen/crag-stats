@@ -14,6 +14,13 @@ describe('docs Markdown rendering', () => {
 		expect(wrapTables('<p>No tables here.</p>')).toBe('<p>No tables here.</p>');
 	});
 
+	it('localises the accessible name of rendered Markdown tables', () => {
+		const { segments } = renderMarkdown('# Tabelle\n\n| A | B |\n| - | - |\n| 1 | 2 |\n', 'de');
+		expect(segments.some((s) => s.kind === 'html' && s.html.includes('aria-label="Tabelle"'))).toBe(
+			true
+		);
+	});
+
 	it('loads English documentation by default', () => {
 		const doc = loadDoc('climber-type');
 		expect(doc).not.toBeNull();

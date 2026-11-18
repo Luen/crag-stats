@@ -543,7 +543,10 @@
 			"tickMeaningTopRopeHangDog": "Reached the top but fell or rested on the rope.",
 			"tickMeaningTopRopeOnsight": "Clean on the first try with no beta.",
 			"tickMeaningTopRopeRopedSolo": "Top-roped alone on a self-belay rope fixed from above.",
-			"tickMeaningWorking": "Projecting the route or problem."
+			"tickMeaningWorking": "Projecting the route or problem.",
+			"ariaTable": "Table",
+			"tickNameGreenPoint": "Green point",
+			"tickNameGroundUpRedPoint": "Ground up red point"
 		},
 		"eddington": {
 			"foot": "Like cycling's Eddington number: the biggest E you've hit E times.",
