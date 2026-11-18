@@ -11,9 +11,9 @@ export function startScheduler() {
 	if (typeof process === 'undefined') return;
 
 	const logbookConfigured = getTheCragSyncConfiguration().configured;
-	// Route data and weather can run without a logbook key: a CSV-only install keeps
-	// THECRAG_API_KEY unset (so the API sync never prunes the CSV rows) while
-	// ROUTE_DATA_API_KEY still authorises route lookups.
+	// Route data and weather can run without a logbook sync: when CSV uploads are the
+	// logbook source, the API sync is suppressed but THECRAG_API_KEY still authorises
+	// route lookups, so the scheduler has to start for the imports alone.
 	const importsConfigured = isRouteHistoryImportEnabled() || isWeatherImportEnabled();
 	if (!logbookConfigured && !importsConfigured) return;
 	started = true;

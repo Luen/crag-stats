@@ -404,12 +404,7 @@ export async function runRouteHistoryImportOnce(
 	if (!config.enabled) {
 		return result(false, 'disabled', 'Route data import is off (set ROUTE_DATA_IMPORT=true).');
 	}
-	if (!config.apiKey)
-		return result(
-			false,
-			'no-key',
-			'Set ROUTE_DATA_API_KEY (or THECRAG_API_KEY) to import route data.'
-		);
+	if (!config.apiKey) return result(false, 'no-key', 'Set THECRAG_API_KEY to import route data.');
 	if (running) return result(false, 'busy', 'A route data import run is already in progress.');
 
 	const now = deps.now();
