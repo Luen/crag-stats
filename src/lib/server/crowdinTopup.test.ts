@@ -17,6 +17,39 @@ import {
 } from '../../../scripts/crowdinTopup.mjs';
 
 describe('Crowdin CLI permission failures', () => {
+	it('stops when its selected file is complete even when the project is incomplete', () => {
+		const mock = `globalThis.fetch = async (url, options) => {
+			if (options.method !== 'GET') throw Error('Unexpected mutation for a complete file');
+			const path = new URL(url).pathname;
+			if (path.endsWith('/user')) return Response.json({ data: { id: 1 } });
+			if (path.endsWith('/ai/prompts')) return Response.json({ data: [{ data: { id: 2, name: 'Crag Stats pre-translate', action: 'pre_translate', aiModelId: 'gemini-4-hydrogen' } }] });
+			if (path.endsWith('/files')) return Response.json({ data: [{ data: { id: 3, path: '/src/lib/i18n/locales/en.json' } }] });
+			if (path.endsWith('/files/3/languages/progress')) return Response.json({ data: [{ data: { languageId: 'de', phrases: { translated: 2, total: 2 } } }] });
+			if (path.endsWith('/languages/progress')) return Response.json({ data: [{ data: { languageId: 'de', phrases: { translated: 2, total: 100 } } }] });
+			throw Error('Unexpected request');
+		};`;
+		const result = spawnSync(
+			process.execPath,
+			[
+				'--import',
+				`data:text/javascript,${encodeURIComponent(mock)}`,
+				fileURLToPath(new URL('../../../scripts/crowdin-topup.mjs', import.meta.url))
+			],
+			{
+				encoding: 'utf8',
+				timeout: 5000,
+				env: {
+					CROWDIN_PROJECT_ID: '1',
+					CROWDIN_PERSONAL_TOKEN: 'test-only',
+					CROWDIN_LANGUAGES: 'de'
+				}
+			}
+		);
+		expect(result.error).toBeUndefined();
+		expect(result.status, result.stderr).toBe(0);
+		expect(result.stdout).toContain('de: already complete (2/2)');
+		expect(result.stdout).toContain('+0 strings this run');
+	});
 	it.each([
 		[
 			'Endpoint requires the project.status.progress:read scope.',

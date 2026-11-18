@@ -234,12 +234,12 @@ function models() {
 	return override.length > 0 ? override : [...DEFAULT_MODELS];
 }
 
-/** Translation progress for every target language, refreshed in one API call. */
+/** Progress for the selected source file only; other guides and branches are out of scope. */
 let progressByLanguage = new Map();
 
-async function refreshProgress() {
+async function refreshProgress(fileId) {
 	const body = requireOk(
-		await call('GET', `/projects/${PROJECT}/languages/progress?limit=100`),
+		await call('GET', `/projects/${PROJECT}/files/${fileId}/languages/progress?limit=100`),
 		'progress check'
 	);
 	const next = new Map();
@@ -325,7 +325,7 @@ async function translateLanguage(language, promptId, fileId, rotation, state, de
 
 		const outcome = await runPass(language, promptId, fileId, deadline);
 		const before = entry.translated;
-		await refreshProgress();
+		await refreshProgress(fileId);
 		entry = progressFor(language);
 		const gained = entry.translated - before;
 		added += gained;
@@ -372,10 +372,15 @@ async function translateLanguage(language, promptId, fileId, rotation, state, de
 	return { added, stopped: null };
 }
 
-async function finish(totalAdded, languages, state = { failedPasses: 0, finishedPasses: 0 }) {
+async function finish(
+	totalAdded,
+	languages,
+	fileId,
+	state = { failedPasses: 0, finishedPasses: 0 }
+) {
 	log(`\n+${totalAdded} strings this run`);
 	try {
-		await refreshProgress();
+		await refreshProgress(fileId);
 	} catch (err) {
 		log(`  progress summary unavailable (${err?.message ?? err})`);
 	}
@@ -410,7 +415,7 @@ async function main() {
 		return 1;
 	}
 
-	await refreshProgress();
+	await refreshProgress(fileId);
 	const languages = sortLanguagesByProgress(
 		(await targetLanguages()).map((language) => progressFor(language))
 	);
@@ -433,6 +438,7 @@ async function main() {
 		return finish(
 			0,
 			languages.map((l) => l.languageId),
+			fileId,
 			state
 		);
 	}
@@ -458,6 +464,7 @@ async function main() {
 	return finish(
 		totalAdded,
 		languages.map((l) => l.languageId),
+		fileId,
 		state
 	);
 }
