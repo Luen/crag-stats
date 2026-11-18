@@ -428,7 +428,7 @@ export async function runRouteHistoryImportOnce(
 		return result(
 			false,
 			'no-login',
-			'No theCrag login to match FA/FFA credits. Sync the logbook with an API key, or set THECRAG_OWNER_LOGIN when the logbook arrives by CSV.'
+			'No theCrag login to match FA/FFA credits. Sync the logbook with an API key, or set THECRAG_USERNAME when the logbook arrives by CSV.'
 		);
 	}
 	const pending = pendingRouteIds(ROUTES_PER_RUN, config.refreshDays, now);

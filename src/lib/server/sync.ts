@@ -31,7 +31,7 @@ export async function runTheCragSync(opts?: { full?: boolean }) {
 	if (!configuration.configured) {
 		throw new Error(
 			configuration.mode === 'csv'
-				? 'Logbook sync is off (THECRAG_LOGBOOK_MODE=csv). Upload a CSV export instead.'
+				? 'Logbook sync is off: CSV uploads are enabled (CSV_INGEST_TOKEN). Upload a CSV export instead.'
 				: 'THECRAG_API_KEY is not set'
 		);
 	}

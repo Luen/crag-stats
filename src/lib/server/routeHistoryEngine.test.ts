@@ -185,7 +185,7 @@ describe('route history import', () => {
 	});
 
 	it('accepts a configured login when a CSV-only logbook has no saved profile', async () => {
-		// CSV ingest never writes a provider profile, so THECRAG_OWNER_LOGIN is the only
+		// CSV ingest never writes a provider profile, so THECRAG_USERNAME is the only
 		// identity available for FA/FFA matching.
 		db.delete(profiles).run();
 		const h = harness({ [routeId(0)]: fa(routeId(0), '@csv-owner') });

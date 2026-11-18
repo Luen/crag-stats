@@ -8,14 +8,9 @@ export const variables = defineEnvVars({
 		description: 'Personal theCrag Logbook Read API key (Supporters)',
 		schema: optionalString
 	},
-	THECRAG_LOGBOOK_MODE: {
+	THECRAG_USERNAME: {
 		description:
-			'Logbook source: api (default, uses THECRAG_API_KEY) or csv (upload/ingest only; THECRAG_API_KEY is then used for route data and area lookups only)',
-		schema: optionalString
-	},
-	THECRAG_OWNER_LOGIN: {
-		description:
-			'Opt-in: theCrag @login used for FA/FFA matching when the logbook arrives by CSV instead of API sync',
+			'theCrag username (no @) for FA/FFA matching when the logbook arrives by CSV upload instead of API sync',
 		schema: optionalString
 	},
 	APP_PASSWORD: {
@@ -60,7 +55,7 @@ export const variables = defineEnvVars({
 	},
 	CSV_INGEST_TOKEN: {
 		description:
-			'Opt-in: bearer token for POST /api/logbook/csv, so a companion uploader can submit a CSV export (unset disables the endpoint)',
+			'Opt-in: bearer token for POST /api/logbook/csv, so a companion uploader can submit a CSV export (unset disables the endpoint). Setting it makes CSV uploads the logbook source: THECRAG_API_KEY is then used only for route data and area lookups',
 		schema: optionalString
 	},
 	DISPLAY_LOCALE: {

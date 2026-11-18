@@ -47,21 +47,21 @@ No supporter key? On theCrag, open your logbook and choose **Action → Export l
 
 Manual uploads add and update ascents but never remove ascents that are missing from the file. To drop deleted ticks, **Wipe all local data** and upload a fresh export. The CSV has fewer fields than the API, including less profile, route metadata, and multipitch information, and it does not include theCrag's private ascent notes (`privateMarkdown`); only the public Comment column is imported. Australian bare boulder digits use Country / path as an AU hint so they do not become fake V-grades.
 
-Route data import matches FA/FFA credits against your theCrag `@login`. API sync saves it from your profile; a CSV-only install sets it with `THECRAG_OWNER_LOGIN`. Without it the import stops before fetching anything, so set it (or mark first ascents by hand in the logbook).
+Route data import matches FA/FFA credits against your theCrag username. API sync saves it from your profile; a CSV-only install sets it with `THECRAG_USERNAME`. Without it the import stops before fetching anything, so set it (or mark first ascents by hand in the logbook).
 
 ## CSV logbook with route data
 
 You can keep the logbook in CSV and still have route data (popularity, ascent counts, quality, seasonality, pitches) and automatic FA/FFA marks. Set:
 
-- `THECRAG_LOGBOOK_MODE=csv`: the logbook stays CSV-only. No API sync runs, so uploaded ascents are never removed, and the sync never writes the key holder's climber profile.
-- `THECRAG_API_KEY`: the same supporter logbook read key, now used only for route data and crag/sector location lookups.
-- `THECRAG_OWNER_LOGIN`: your theCrag `@login`, so FA/FFA history matches you (CSV exports don't include it).
+- `CSV_INGEST_TOKEN`: a long random value. It is what lets a container or script send you a CSV export, so it also tells Crag Stats that uploads are the logbook source: no API sync runs, so uploaded ascents are never removed, and the sync never writes the key holder's climber profile.
+- `THECRAG_API_KEY`: your supporter logbook read key, now used only for route data and crag/sector location lookups.
+- `THECRAG_USERNAME`: your theCrag username, so FA/FFA history matches you (CSV exports don't include it).
 
-With `THECRAG_LOGBOOK_MODE` unset, or set to `api`, `THECRAG_API_KEY` syncs the logbook and route data shares the same key. Background route and weather imports follow `IMPORT_CRON` (daily by default) rather than the logbook schedule, so a weekly or monthly `SYNC_CRON` still gets route data daily. Settings → **Import route data** shows progress and starts a run by hand.
+That is the whole configuration: three values, no mode switch. Without `CSV_INGEST_TOKEN`, `THECRAG_API_KEY` syncs the logbook and route data shares the same key. Background route and weather imports follow `IMPORT_CRON` (daily by default) rather than the logbook schedule, so a weekly or monthly `SYNC_CRON` still gets route data daily. Settings → **Import route data** shows progress and starts a run by hand.
 
 ## Uploading a CSV from another container
 
-Uploading by hand is fine for occasional refreshes. If you keep your export somewhere your network can read — a shared folder, a Nextcloud or Dropbox share, or a small companion container that watches for a new file — Crag Stats can accept it over HTTP instead. Set `CSV_INGEST_TOKEN` to a long random value, restart, and then `POST` the file:
+Uploading by hand is fine for occasional refreshes. If you keep your export somewhere your network can read — a shared folder, a Nextcloud or Dropbox share, or a small companion container that uploads each new export — Crag Stats can accept it over HTTP instead. Set `CSV_INGEST_TOKEN` to a long random value, restart, and then `POST` the file:
 
 ```bash
 curl -X POST https://cragstats.example.com/api/logbook/csv \

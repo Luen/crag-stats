@@ -1,7 +1,6 @@
 import {
 	THECRAG_API_KEY,
-	THECRAG_LOGBOOK_MODE,
-	THECRAG_OWNER_LOGIN,
+	THECRAG_USERNAME,
 	APP_PASSWORD,
 	AUTH_SCOPE,
 	SESSION_SECRET,
@@ -19,8 +18,7 @@ import {
 
 const cache: Record<string, string | undefined> = {
 	THECRAG_API_KEY,
-	THECRAG_LOGBOOK_MODE,
-	THECRAG_OWNER_LOGIN,
+	THECRAG_USERNAME,
 	APP_PASSWORD,
 	AUTH_SCOPE,
 	SESSION_SECRET,
@@ -52,17 +50,27 @@ export function hasTheCragApiKey() {
 export type LogbookMode = 'api' | 'csv';
 
 /**
+ * Whether this install accepts CSV uploads from a companion sender. The token is the only
+ * thing that means "CSVs arrive here", so it also selects the logbook source: the next API
+ * sync prunes every ascent it did not see, so an upload token and an API logbook cannot
+ * both own the same rows.
+ */
+export function csvUploadConfigured() {
+	return Boolean(env('CSV_INGEST_TOKEN').trim());
+}
+
+/**
  * Logbook source. `csv` keeps THECRAG_API_KEY available for route data and area lookups
  * while the logbook arrives by CSV upload, so the API sync never runs and never prunes
  * uploaded ascents.
  */
 export function logbookMode(): LogbookMode {
-	return env('THECRAG_LOGBOOK_MODE').trim().toLowerCase() === 'csv' ? 'csv' : 'api';
+	return csvUploadConfigured() ? 'csv' : 'api';
 }
 
-/** @login for FA/FFA matching when no API-synced profile exists (CSV-only logbooks). */
-export function routeDataOwnerLogin(): string | null {
-	return env('THECRAG_OWNER_LOGIN').trim() || null;
+/** theCrag username (no `@`) for FA/FFA matching when the logbook arrives by CSV. */
+export function theCragUsername(): string | null {
+	return env('THECRAG_USERNAME').trim() || null;
 }
 
 /** Safe for Settings: never expose the configured key. Logbook sync uses theCrag's API only. */
@@ -75,12 +83,12 @@ export function getTheCragSyncConfiguration(): { configured: boolean; mode: Logb
 export function getRouteDataConfiguration(): {
 	mode: LogbookMode;
 	hasApiKey: boolean;
-	hasOwnerLogin: boolean;
+	hasUsername: boolean;
 } {
 	return {
 		mode: logbookMode(),
 		hasApiKey: hasTheCragApiKey(),
-		hasOwnerLogin: Boolean(routeDataOwnerLogin())
+		hasUsername: Boolean(theCragUsername())
 	};
 }
 

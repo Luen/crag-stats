@@ -4,8 +4,7 @@
  * into the cache of `src/lib/server/env.ts`.
  */
 export const THECRAG_API_KEY = process.env.THECRAG_API_KEY ?? '';
-export const THECRAG_LOGBOOK_MODE = process.env.THECRAG_LOGBOOK_MODE ?? '';
-export const THECRAG_OWNER_LOGIN = process.env.THECRAG_OWNER_LOGIN ?? '';
+export const THECRAG_USERNAME = process.env.THECRAG_USERNAME ?? '';
 export const APP_PASSWORD = process.env.APP_PASSWORD ?? '';
 export const AUTH_SCOPE = process.env.AUTH_SCOPE ?? 'settings';
 export const SESSION_SECRET = process.env.SESSION_SECRET ?? '';
