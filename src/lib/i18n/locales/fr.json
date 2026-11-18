@@ -403,6 +403,8 @@
 			"empty": "Pas encore assez de données pour une chronologie du CPR.",
 			"footnoteApi": "Courbe issue de l'API theCrag (CPR régressif) ; les chandeliers montrent vos ascensions.",
 			"footnoteApprox": "CPR approximatif : facteur de puissance 5, décalages d'ascension, baisse de ~0,7 cotation/an.",
+			"footnoteGaps": "",
+			"gapsToggle": "",
 			"howCprWorks": "Comment fonctionne le CPR",
 			"labelCurrent": "Actuel",
 			"labelPeak": "Sommet",
@@ -415,6 +417,7 @@
 			"titleCandle": "{family} {min}–{max} ({count})",
 			"titleCprGrade": "CPR ≈ {grade}",
 			"titleGapInTime": "Écart temporel",
+			"titleNoAscents": "",
 			"titleSourceApi": "Courbe CPR issue de l'API theCrag",
 			"titleSourceApprox": "Modèle CPR approximatif (voir la doc)",
 			"titleVolumeLink": "{label} : {count, plural, one {# ascension} other {# ascensions}} — ouvrir le carnet de croix"

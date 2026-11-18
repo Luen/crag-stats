@@ -403,6 +403,8 @@
 			"empty": "Aún no hay suficientes datos para la cronología del CPR.",
 			"footnoteApi": "Curva de la API de theCrag (CPR atenuado); las velas muestran tus ascensos.",
 			"footnoteApprox": "CPR aproximado: factor de potencia 5, desfases de encadenamiento, atenuación de ~0,7 grados/año.",
+			"footnoteGaps": "",
+			"gapsToggle": "",
 			"howCprWorks": "Cómo funciona el CPR",
 			"labelCurrent": "Actual",
 			"labelPeak": "Pico",
@@ -415,6 +417,7 @@
 			"titleCandle": "{family} {min}–{max} ({count})",
 			"titleCprGrade": "CPR ≈ {grade}",
 			"titleGapInTime": "Pausa en el tiempo",
+			"titleNoAscents": "",
 			"titleSourceApi": "Curva de CPR de la API de theCrag",
 			"titleSourceApprox": "Modelo de CPR aproximado (ver documentación)",
 			"titleVolumeLink": "{label}: {count, plural, one {# ascensión} other {# ascensiones}} — abrir libro de vías"

@@ -403,6 +403,8 @@
 			"empty": "Dati insufficienti per una cronologia CPR.",
 			"footnoteApi": "Curva dall'API di theCrag (CPR decaduto); le candele mostrano i tuoi tick.",
 			"footnoteApprox": "CPR approssimativo: fattore potenza 5, spostamento tick, decadimento ~0.7 gradi/anno.",
+			"footnoteGaps": "",
+			"gapsToggle": "",
 			"howCprWorks": "Come funciona il CPR",
 			"labelCurrent": "Attuale",
 			"labelPeak": "Picco",
@@ -415,6 +417,7 @@
 			"titleCandle": "{family} {min}–{max} ({count})",
 			"titleCprGrade": "CPR ≈ {grade}",
 			"titleGapInTime": "Pausa temporale",
+			"titleNoAscents": "",
 			"titleSourceApi": "Curva CPR dall'API di theCrag",
 			"titleSourceApprox": "Modello CPR approssimativo (vedi Doc)",
 			"titleVolumeLink": "{label}: {count, plural, one {# salita} other {# salite}} — apri libro di vie"

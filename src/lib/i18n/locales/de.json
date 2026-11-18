@@ -403,6 +403,8 @@
 			"empty": "Noch nicht genügend Daten für eine CPR-Zeitleiste.",
 			"footnoteApi": "Kurve aus der API von theCrag (abgefallener CPR); Kerzen zeigen deine Begehungen.",
 			"footnoteApprox": "Ungefährer CPR: Leistungsfaktor 5, Begehungsverschiebungen, ~0,7 Grad/Jahr Abfall.",
+			"footnoteGaps": "",
+			"gapsToggle": "",
 			"howCprWorks": "Wie CPR funktioniert",
 			"labelCurrent": "Aktuell",
 			"labelPeak": "Höchstwert",
@@ -415,6 +417,7 @@
 			"titleCandle": "{family} {min}–{max} ({count})",
 			"titleCprGrade": "CPR ≈ {grade}",
 			"titleGapInTime": "Zeitlücke",
+			"titleNoAscents": "",
 			"titleSourceApi": "CPR-Kurve aus der API von theCrag",
 			"titleSourceApprox": "Ungefähres CPR-Modell (siehe Doku)",
 			"titleVolumeLink": "{label}: {count, plural, one {# Begehung} other {# Begehungen}} — Tourenbuch öffnen"
