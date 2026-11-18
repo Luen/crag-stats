@@ -42,10 +42,13 @@ How the internationalisation architecture works is documented in [`docs/dev/TRAN
 1. Go to your Crowdin **Account Settings** (avatar in top right) → **API** → **Personal Access Tokens**.
 2. Click **New token** and name it (e.g. `GitHub Actions - Crag Stats`).
 3. Grant the following scopes:
-   - **Projects** (read & write)
-   - **Source files & translations** (read & write)
-   - **AI** (read & write — required for `crowdin-pretranslate.yml` to trigger AI pre-translation passes and rotate models)
+   - **Projects → Projects (List, Get, Create, Edit)** (read only)
+   - **Projects → Source files & strings** (File management and String management: read & write), plus **Projects → Translations** (read & write)
+   - **Projects → Translation status → Project progress** (read only — `project.status.progress:read`, required by AI pre-translation progress checks)
+   - **AI → AI prompts** (read & write — required for `crowdin-pretranslate.yml` to trigger AI pre-translation passes and rotate models)
 4. Click **Create** and **copy the token immediately** (it is only displayed once).
+
+A successful Crowdin Sync run does not validate AI pre-translation scopes. If the AI workflow fails with HTTP 403 mentioning `project.status.progress:read`, enable **Translation status → Project progress → Read only** on its token. If Crowdin requires creating a replacement token, update GitHub's `CROWDIN_PERSONAL_TOKEN` secret, then rerun the failed workflow. Retain the other scopes above; never paste a token into logs or PR comments.
 
 ### Step 4: Configure Gemini AI & Pre-Translate Prompt (Optional, for `crowdin-pretranslate.yml`)
 

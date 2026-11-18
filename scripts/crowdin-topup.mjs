@@ -147,6 +147,14 @@ async function call(method, path, body, { retries = 2 } = {}) {
 }
 
 function requireOk({ status, body }, what) {
+	if (status === 403 && body?.error?.message?.includes('project.status.progress:read')) {
+		throw new CrowdinError(
+			'Crowdin token is missing Translation status > Project progress > Read only (project.status.progress:read). ' +
+				'Enable that scope on the token used by GitHub Actions secret CROWDIN_PERSONAL_TOKEN; ' +
+				'if a new token is required, replace that secret, then rerun the workflow. ' +
+				'See .github/workflows/SETUP.md. This is a permissions error, not exhausted AI quota.'
+		);
+	}
 	if (status < 200 || status >= 300) {
 		throw new CrowdinError(`${what} failed: HTTP ${status} ${describe(body)}`);
 	}

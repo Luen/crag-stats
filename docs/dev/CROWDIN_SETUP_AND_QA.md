@@ -34,9 +34,10 @@ GitHub Repository (main)
 
 The personal access token stored in GitHub Secret `CROWDIN_PERSONAL_TOKEN` requires the following scopes:
 
-- **Projects** (read & write)
-- **Source files & translations** (read & write)
-- **AI** (read & write — required for triggering AI pre-translation passes and rotating models via API)
+- **Projects → Projects (List, Get, Create, Edit)** (read only)
+- **Projects → Source files & strings** (File management and String management: read & write), plus **Projects → Translations** (read & write)
+- **Projects → Translation status → Project progress** (read only — `project.status.progress:read`; required even when ordinary catalogue sync succeeds)
+- **AI → AI prompts** (read & write — required for triggering AI pre-translation passes and rotating models via API)
 
 ### Google Gemini Provider Type (`google_gemini_ai_studio`)
 
