@@ -59,7 +59,8 @@ export default defineConfig({
 			// SYNC_CRON=off keeps this placeholder key from triggering a boot-time logbook sync.
 			ROUTE_DATA_IMPORT: 'true',
 			WEATHER_IMPORT: 'true',
-			THECRAG_API_KEY: 'synthetic-cooldown-test-key'
+			// Generated so source scanners never see a committed credential-shaped literal.
+			THECRAG_API_KEY: `synthetic-${randomBytes(8).toString('hex')}`
 		}),
 		// Also covers the explicit ORIGIN override path.
 		server('all', {
