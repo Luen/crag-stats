@@ -1,6 +1,7 @@
 # AGENTS.md — Crag Stats
 
 - Dependency compatibility (18 November 2026): keep TypeScript on 6.x until `svelte-check` and `typescript-eslint` publish support for 7.x. The minimatch v10-range override is 11.0.9; its regression permits only the exact `RangeError` for bounded globstar-parent expansion, and tests both ESLint and typescript-estree callers. prettier-plugin-svelte 4.2 requires a formatting pass across existing components.
+- Crowdin maintenance (18 November 2026): `crowdin.yml` exports only `de`, `fr`, `es-ES`, and `it`, matching the registered target catalogues. Keep the GitHub Actions sync as the sole PR producer; enabling Crowdin's GitHub integration creates another source branch and duplicate PRs. String context must explain screen, purpose, and placeholders rather than repeat the key path. Screenshots must use synthetic sample data, never the owner's logbook. Context and QA evidence: `docs/dev/CROWDIN_SETUP_AND_QA.md`.
 
 > **Living document.** Future AI agents (and humans) should read this before changing the repo, and **update it** when they learn something new, correct a mistake, or retire outdated guidance. Prefer short, actionable notes over essays. Remove stale info rather than commenting it out.
 

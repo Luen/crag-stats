@@ -16,6 +16,10 @@ base_path: '.'
 # same tree they were uploaded from.
 preserve_hierarchy: true
 
+# Export only catalogues registered in SUPPORTED_LOCALES. Other languages can
+# continue being translated in Crowdin without generating unused files here.
+export_languages: [de, fr, es-ES, it]
+
 files:
   - source: /src/lib/i18n/locales/en.json
     # %two_letters_code% yields de / fr / es / it whether the project stores the
