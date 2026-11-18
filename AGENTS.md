@@ -1,5 +1,7 @@
 # AGENTS.md — Crag Stats
 
+- Crowdin AI top-up requires **Translation status → Project progress → Read only** (`project.status.progress:read`) on `CROWDIN_PERSONAL_TOKEN`, in addition to catalogue and AI scopes. A 403 naming that scope is a credential configuration failure, not exhausted model quota; correct the token permissions and rerun. Ordinary Crowdin Sync does not exercise this permission.
+
 - Documentation localisation (#506): Crowdin owns `docs/guide/<locale>/*.md` and the UI catalogue. Import initial translations before the first download; Markdown imports can leave unmatched sentences in English, so inspect the exported result and QA. Guide exports retain English for untranslated passages. Preserve `<!-- component:name -->` markers (unit-tested). Header language changes must invalidate all loaders even when removing `?locale=`, or the guide body stays in its previous language.
 
 - Dependency compatibility (18 November 2026): keep TypeScript on 6.x until `svelte-check` and `typescript-eslint` publish support for 7.x. The minimatch v10-range override is 11.0.9; its regression permits only the exact `RangeError` for bounded globstar-parent expansion, and tests both ESLint and typescript-estree callers. prettier-plugin-svelte 4.2 requires a formatting pass across existing components.
