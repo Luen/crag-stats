@@ -186,7 +186,7 @@ test.describe('app shell', () => {
 		await expect(page.locator('.toc a.active')).toHaveText('Übersicht');
 		await page.goto('/docs/climber-type?locale=de');
 		await expect(page.locator('.prose h1')).toHaveText('Klettertyp');
-		await page.goto('/');
+		await page.goto('/?locale=en');
 		await page.getByRole('link', { name: 'How is this decided?' }).click();
 		await expect(page).toHaveURL(/\/docs\/climber-type$/);
 	});
