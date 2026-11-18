@@ -403,12 +403,26 @@ describe('formatMessage', () => {
 describe('i18n context and reactivity', () => {
 	it('preserves interpolation and plural variables in downloaded translations', () => {
 		const variables = (text: string) =>
-			[...new Set([...text.matchAll(/\{(\w+)(?:\}|,\s*plural,)/g)].map((m) => m[1]))].sort();
+			[
+				...new Set(
+					[
+						...text
+							.replace(
+								/(\{\w+,\s*plural,\s*|\}\s*)(?:zero|one|two|few|many|other|=\d+)\s*\{/g,
+								'$1'
+							)
+							.matchAll(/\{(\w+)(?:\}|,\s*plural,)/g)
+					].map((m) => m[1])
+				)
+			].sort();
+		expect(variables('{count, plural, one {year} other {years}}')).toEqual(['count']);
+		expect(variables('at least one {style} ascent')).toEqual(['style']);
 		const source = flattenLeaves(LOCALES.en);
 		for (const locale of SUPPORTED_LOCALES.filter((l) => l !== 'en')) {
 			for (const [key, text] of Object.entries(flattenLeaves(LOCALES[locale]))) {
 				if (!text.trim()) continue; // Untranslated Crowdin entries use English fallback.
 				expect(variables(text), `${locale}: ${key}`).toEqual(variables(source[key] ?? ''));
+				if (!source[key]?.includes('#')) expect(text, `${locale}: ${key}`).not.toContain('#');
 			}
 		}
 	});
