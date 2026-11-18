@@ -61,3 +61,34 @@ describe('logbook source (#504)', () => {
 		expect(env.getRouteDataConfiguration().hasUsername).toBe(false);
 	});
 });
+
+/**
+ * `.env.example` ships both schedules commented out, so the daily 06:00 default lives in
+ * code only. A key left behind with no value must therefore mean "use the default", not
+ * "invalid expression, disable the schedule".
+ */
+describe('schedule defaults (#504)', () => {
+	afterEach(() => {
+		delete process.env.SYNC_CRON;
+		delete process.env.IMPORT_CRON;
+		vi.resetModules();
+	});
+
+	it('falls back to the daily default when the key is present but blank', async () => {
+		process.env.SYNC_CRON = '';
+		process.env.IMPORT_CRON = '';
+		vi.resetModules();
+		const env = await import('./env');
+		expect(env.env('SYNC_CRON', '0 6 * * *')).toBe('0 6 * * *');
+		expect(env.env('IMPORT_CRON', '0 6 * * *')).toBe('0 6 * * *');
+	});
+
+	it('keeps an explicit expression, and keeps `off` meaning off', async () => {
+		process.env.SYNC_CRON = '0 4 * * *';
+		process.env.IMPORT_CRON = 'off';
+		vi.resetModules();
+		const env = await import('./env');
+		expect(env.env('SYNC_CRON', '0 6 * * *')).toBe('0 4 * * *');
+		expect(env.env('IMPORT_CRON', '0 6 * * *')).toBe('off');
+	});
+});
