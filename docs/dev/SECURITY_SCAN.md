@@ -60,3 +60,42 @@ The dependency scan also reported that the organisation had reached its monthly 
 Alert #11 (GHSA-g3hv-75wg-m249): minimatch 10.2.6 is replaced by 11.0.4 through a range-scoped pnpm override for the current ESLint/config-array/typescript-estree callers. Upstream v11 removes makeRe, AST and RegExp-based set entries; these callers use the retained minimatch function and Minimatch.match API. The installed-package regression exercises those APIs and bounds the advisory's globstar-parent preprocessing reproducer in a subprocess. Remove the override when the owning tools adopt a fixed release. Full lint/type/unit/build/browser checks validate this override; this is not a blanket override of older majors.
 
 Alert #10 (GHSA-gcqx-w48m-w2h4 / CVE-2026-93753) names the same deepmerge flaw already addressed by the version-pinned patch in #227. npm still has no upstream fixed release. Installed CJS/UMD exploit tests cover null-prototype targets, malicious source and target inputs, nested merges and arrays. Keep #174 and the version-level alert open; no advisory dismissal or scanner ignore is added. The affected package remains build-only and excluded by the container smoke test.
+
+## Quota recheck — 17 November 2026
+
+The monthly private-test allowance resets on the 14th. The PR check that failed on #311 on 31 October with `You have used your limit of private tests` now reports **success** on PR #468 head `80e51f8` (16 November 2026), described as `No manifest changes detected in 1 project`. That description means the PR changed no manifest, so no test ran: it is not a recorded clean scan. The results below come from the CLI instead.
+
+| Scan (Snyk CLI 1.1304.0, 17 November 2026) | Dependencies | Advisories | Vulnerable paths |
+| ------------------------------------------ | ------------ | ---------- | ---------------- |
+| Application lockfile graph                 | 306          | 3          | 15               |
+| Boot/config lockfile graph                 | 15           | 0          | 0                |
+
+All three application advisories are `uri-js` 4.4.1 through ESLint → Ajv: [infinite loop `SNYK-JS-URIJS-19963963`](https://security.snyk.io/vuln/SNYK-JS-URIJS-19963963) (high), [decoding `SNYK-JS-URIJS-19963961`](https://security.snyk.io/vuln/SNYK-JS-URIJS-19963961) and [mailto exception `SNYK-JS-URIJS-20341609`](https://security.snyk.io/vuln/SNYK-JS-URIJS-20341609) (medium). Snyk still lists no fixed version, so the versions stay flagged while the version-pinned pnpm patch covers the behaviours (#176).
+
+### Revoked advisories
+
+Two advisories from the 28 October table are gone because Snyk revoked them, not because this repository changed anything:
+
+- deepmerge `SNYK-JS-DEEPMERGE-19964053`: "The advisory has been revoked - it doesn't affect any version of package deepmerge". CVE-2026-93753 was rejected by the CVE List.
+- picomatch `SNYK-JS-PICOMATCH-21248802`: "The advisory has been revoked - it doesn't affect any version of package picomatch". CVE-2026-112366 was disputed by the maintainer.
+
+`snyk test deepmerge@4.3.1` and `snyk test picomatch@4.0.7` both return no findings for the published packages, so this is the advisory database rather than the projected lockfile hiding the patched keys. Keep #174 and #175 open; deleting their pnpm patches is a separate change with its own installed-package regressions, and nothing here added an ignore or dismissed a finding.
+
+### Source scan
+
+`snyk code test` returned six results: one error, two warnings and three notes. Generating the Playwright placeholder key removed the only error, leaving five results with no error severity.
+
+| Severity | Rule                                | Location                                     | Disposition                                                                                                                                        |
+| -------- | ----------------------------------- | -------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| error    | `HardcodedNonCryptoSecret`          | `playwright.config.ts:57`                    | Synthetic placeholder key that makes the cooldown UI treat theCrag as configured. Now generated per run, so the literal is gone.                   |
+| note     | `HardcodedNonCryptoSecret`          | `src/lib/server/weatherAreaCache.test.ts:42` | Offline fake-client value; the test makes no provider request and it is not a deployment credential.                                               |
+| warning  | `HttpToHttps`                       | `scripts/container-smoke.mjs:88`             | Synthetic importer fixture bound to `127.0.0.1`. Plain HTTP on loopback is deliberate.                                                             |
+| warning  | `IndirectCommandInjection`          | `scripts/docker-entrypoint.mjs:24`           | Intentional container entrypoint: `spawn(executable, argumentArray)` with Node's default `shell: false`. No HTTP request reaches it.               |
+| note     | `InsufficientPostmessageValidation` | `src/service-worker/index.ts:194`            | Service-worker `message` events come from same-origin clients. The handler rejects unknown message types and replies only on the caller's port.    |
+| note     | `WebCookieSecureDisabledByDefault`  | `src/lib/i18n/context.svelte.ts:18`          | `cs_locale` stores a display preference, and the `Secure` attribute would break the documented plain-HTTP LAN deployment. No credential is stored. |
+
+### Quota mechanics
+
+Test limits apply to private repositories, but the CLI treats these scans as private. The projected lockfiles live under the OS temp directory with no Git remote, so both reports carry `isPrivate: true`; passing `--remote-repo-url=https://github.com/Luen/crag-stats` to `snyk test` did not change that in 1.1304.0. Snyk's documented route to free open-source tests is `snyk monitor` followed by setting the project's Git remote URL in the Snyk UI. Until a project is classified that way, budget two Open Source tests (application and boot) and one Snyk Code test per recheck, and do not re-scan in a loop.
+
+If the PR check shows `You have used your limit of private tests` again, treat the scan as unavailable: it is neither evidence of a clean codebase nor a new vulnerability. Wait for the monthly reset, rerun the commands in "Reproducing both lockfile graph scans", and record what they return. Do not deactivate the project, add ignores, or downgrade dependencies to make the status green.

@@ -131,4 +131,6 @@ Images are tagged with the semantic version number, major/minor variants, and `l
 
 # Snyk Code Quota Note
 
-The repository includes a Snyk status check (`security/snyk`). On free or limited Snyk plans, Snyk may report `You have used your limit of private tests` when monthly test allowances are exhausted. This is an external SaaS quota constraint rather than a code defect.
+The repository includes a Snyk status check (`security/snyk`). On free or limited Snyk plans, Snyk may report `You have used your limit of private tests` when the monthly test allowance is exhausted. This is an external SaaS quota constraint rather than a code defect. The allowance resets on the 14th of each month.
+
+Treat the message as an unavailable scan, not a clean result, and never add ignores or deactivate the project to clear it. Recorded rechecks, the current findings and the CLI commands that produced them live in [`docs/dev/SECURITY_SCAN.md`](../../docs/dev/SECURITY_SCAN.md).
