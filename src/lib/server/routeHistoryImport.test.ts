@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Only the flags these tests set; everything else reads as unset.
 const vars: Record<string, string> = {};
@@ -6,10 +6,18 @@ const vars: Record<string, string> = {};
 vi.mock('./env', () => ({
 	env: (name: string, fallback = '') => vars[name] ?? fallback,
 	envFlag: (name: string) => ['1', 'true', 'yes', 'on'].includes((vars[name] ?? '').toLowerCase()),
-	getTheCragSyncConfiguration: () => ({ configured: true })
+	csvUploadConfigured: () => Boolean((vars.CSV_INGEST_TOKEN ?? '').trim()),
+	logbookMode: () => ((vars.CSV_INGEST_TOKEN ?? '').trim() ? 'csv' : 'api'),
+	theCragUsername: () => (vars.THECRAG_USERNAME ?? '').trim() || null,
+	getTheCragSyncConfiguration: () => {
+		const mode = (vars.CSV_INGEST_TOKEN ?? '').trim() ? 'csv' : 'api';
+		return { configured: mode === 'api' && Boolean((vars.THECRAG_API_KEY ?? '').trim()), mode };
+	}
 }));
 
-const { isRouteHistoryImportEnabled, getRouteHistoryStatus } = await import('./routeHistoryImport');
+const { isRouteHistoryImportEnabled, getRouteHistoryStatus, routeHistoryConfig } =
+	await import('./routeHistoryImport');
+const { getTheCragSyncConfiguration } = await import('./env');
 
 afterEach(() => {
 	for (const key of Object.keys(vars)) delete vars[key];
@@ -47,4 +55,51 @@ describe('route data import flag (#353)', () => {
 			expect(getRouteHistoryStatus().enabled).toBe(enabled);
 		}
 	);
+});
+
+describe('CSV logbook mode (#504)', () => {
+	beforeEach(() => {
+		vars.ROUTE_DATA_IMPORT = 'true';
+	});
+
+	it('keeps route data on THECRAG_API_KEY while the logbook stays CSV', () => {
+		vars.CSV_INGEST_TOKEN = 'upload-token';
+		vars.THECRAG_API_KEY = 'shared-key';
+		expect(getRouteHistoryStatus().hasApiKey).toBe(true);
+		expect(getTheCragSyncConfiguration()).toEqual({ configured: false, mode: 'csv' });
+	});
+
+	it('ignores THECRAG_USERNAME when choosing the logbook source', () => {
+		// The name predates this feature (it was the removed website-login sync), so it
+		// must never switch the logbook away from the API on its own.
+		vars.THECRAG_USERNAME = 'sample-climber';
+		vars.THECRAG_API_KEY = 'shared-key';
+		expect(getTheCragSyncConfiguration()).toEqual({ configured: true, mode: 'api' });
+	});
+
+	it.each(['', ' ', '\t'])('CSV_INGEST_TOKEN=%j leaves the API logbook alone', (value) => {
+		vars.CSV_INGEST_TOKEN = value;
+		vars.THECRAG_API_KEY = 'shared-key';
+		expect(getTheCragSyncConfiguration()).toEqual({ configured: true, mode: 'api' });
+	});
+
+	it('still needs a key for route data in CSV mode', () => {
+		vars.CSV_INGEST_TOKEN = 'upload-token';
+		expect(getRouteHistoryStatus().hasApiKey).toBe(false);
+	});
+
+	it('passes THECRAG_USERNAME as the FA/FFA identity for CSV logbooks', () => {
+		vars.CSV_INGEST_TOKEN = 'upload-token';
+		vars.THECRAG_USERNAME = ' sample-climber ';
+		expect(routeHistoryConfig().ownerLogin).toBe('sample-climber');
+		expect(routeHistoryConfig().apiKey).toBe('');
+	});
+
+	it('ignores THECRAG_USERNAME when the logbook comes from the API', () => {
+		// The name predates this feature, so a leftover value on an API install must not
+		// become an identity that has to match the synced profile (or stop FA matching).
+		vars.THECRAG_API_KEY = 'shared-key';
+		vars.THECRAG_USERNAME = 'someone-else';
+		expect(routeHistoryConfig().ownerLogin).toBeNull();
+	});
 });

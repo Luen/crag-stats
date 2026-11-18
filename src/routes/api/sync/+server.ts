@@ -1,19 +1,14 @@
 import { json } from '@sveltejs/kit';
-import { verifySharedSecret } from '#lib/server/auth';
-import { env } from '#lib/server/env';
+import { canTriggerSync } from '#lib/server/auth';
 import { runTheCragSync } from '#lib/server/sync';
 import type { RequestHandler } from './$types';
 
-function authorized(request: Request) {
-	return verifySharedSecret(request.headers.get('x-worker-secret'), env('SESSION_SECRET'));
-}
-
-export const POST: RequestHandler = async ({ request, url }) => {
-	// Allow form-triggered sync from settings via same-origin cookie auth (hooks),
-	// or worker via shared secret header.
-	const fromWorker = authorized(request);
-	if (!fromWorker && request.headers.get('sec-fetch-site') === null) {
-		// still allow when hooks already authenticated the session
+export const POST: RequestHandler = async ({ request, url, locals }) => {
+	// The Docker worker sends x-worker-secret; a signed-in owner may also use it on a
+	// password-protected install. Without APP_PASSWORD, `locals.authed` is true for every
+	// visitor, so it cannot authorise anything: anonymous installs fail closed (#505).
+	if (!canTriggerSync(request.headers.get('x-worker-secret'), locals.authed)) {
+		return json({ ok: false, error: 'Unauthorized' }, { status: 401 });
 	}
 
 	const full = url.searchParams.get('full') === '1';

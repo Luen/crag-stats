@@ -76,7 +76,7 @@ jobs:
         # On schedule runs `inputs.download` is null, and `null != false` coerces both to 0 in
         # GitHub Actions expressions, so check `event_name` before reading `inputs.download`.
         if: steps.topup.outputs.added != '0' && (github.event_name != 'workflow_dispatch' || inputs.download)
-        uses: crowdin/github-action@v2
+        uses: crowdin/github-action@v3
         with:
           config: crowdin.yml
           upload_sources: false
