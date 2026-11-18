@@ -12,6 +12,8 @@ export const TEST_PASSWORD = (process.env.CRAG_STATS_E2E_PASSWORD ||=
 	randomBytes(24).toString('hex'));
 const sessionSecret = (process.env.CRAG_STATS_E2E_SESSION_SECRET ||=
 	randomBytes(32).toString('hex'));
+// Shared with workers so the sync endpoint's worker-secret path can be exercised.
+export const TEST_SESSION_SECRET = sessionSecret;
 // Bearer token for POST /api/logbook/csv, generated so no credential-shaped literal is committed.
 export const TEST_CSV_TOKEN = (process.env.CRAG_STATS_E2E_CSV_TOKEN ||=
 	randomBytes(24).toString('hex'));

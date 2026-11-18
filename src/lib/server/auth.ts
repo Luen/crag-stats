@@ -44,6 +44,16 @@ export function verifyPassword(password: string) {
 
 export { safeRedirectPath } from './safeRedirect';
 
+/**
+ * `POST /api/sync` auth: the Docker worker's shared secret, or an owner session on a
+ * password-protected install. When `APP_PASSWORD` is unset every visitor is `authed`, so a
+ * session proves nothing there; only the secret may start a sync (#505).
+ */
+export function canTriggerSync(provided: string | null, sessionAuthed: boolean) {
+	if (verifySharedSecret(provided, env('SESSION_SECRET'))) return true;
+	return isAuthEnabled() && sessionAuthed;
+}
+
 export function createSessionToken() {
 	const exp = Date.now() + 1000 * 60 * 60 * 24 * 30; // 30 days
 	const payload = `ok.${exp}`;
