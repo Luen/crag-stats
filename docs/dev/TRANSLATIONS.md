@@ -4,6 +4,8 @@ Crag Stats supports multiple languages so climbers worldwide can analyse their c
 
 For detailed API automation, Gemini AI configuration, quota rotation, and QA check baselines, see [`CROWDIN_SETUP_AND_QA.md`](CROWDIN_SETUP_AND_QA.md).
 
+Documentation sources under `docs/guide/*.md` are also uploaded to Crowdin. Localised guides are exported under `docs/guide/<locale>/`; missing files fall back to the English guide, and Crowdin retains English for untranslated Markdown passages. The `skip_untranslated_strings` option only affects supported catalogue formats, not Markdown. Preserve links, code examples, environment variable names, and `<!-- component:name -->` markers. Import seed translations before downloading, then inspect the round trip: Markdown import matching can leave individual headings or sentences untranslated even when the input guide was fully translated. The initial German review is AI-assisted.
+
 ---
 
 ## Initial Priority Languages
@@ -75,6 +77,9 @@ crowdin.yml                              # Crowdin project configuration
   SETUP.md                               # Secrets, token scopes, and workflow setup guide
 scripts/
   crowdin-topup.mjs                     # AI pre-translate quota manager & Gemini model rotator
+docs/guide/
+  *.md                                   # User documentation guides (English source)
+  de/*.md                                # German localized guides (falls back to English when absent)
 src/lib/i18n/
   locales/
     en.json                              # Source catalogue of truth (English)
@@ -110,6 +115,7 @@ Internationalisation in Crag Stats leverages native Svelte 5 runes (`$state`) co
 Extracted:
 
 - **Every `.svelte` surface (#492):** the shell (navigation, footer, theme and language controls), difficulty-band names, style badges, tick icons, the doc table blocks, all dashboard cards (titles, hints, legends, empty states, buttons, accessible labels), and every page (dashboard, logbook and its facets, goals, projects and project detail, seasonality, weather, settings and the weather-location picker, share, map and sectors, activity, badges, eddington, milestones, rewind, training load, partners, offline, login, docs). Facet labels that double as URL values keep the provider value in the URL and map it to a key for display, so `?style=Sport` still filters correctly in every language.
+- **In-app documentation (/docs):** user guides in `docs/guide/<slug>.md` are localized in `docs/guide/<locale>/<slug>.md` (with seamless fallback to English when a guide is untranslated). Manifest titles and summaries are localized through `docPages(locale)` with keys in `pages.docsPages.*`. Generated tables in `DocBlock.svelte` translate band descriptions (`cards.docBlock.bandText*`) and tick types/meanings (`cards.docBlock.tickGroup*`, `cards.docBlock.tickMeaning*`, `ticks.*`). `crowdin.yml` configures `/docs/guide/*.md` to synchronize guides with Crowdin.
 - **Every server builder and `.ts` label table (#495):** copy generated in server modules (`climberBlurb.ts` climbing story paragraphs, `eddington.ts` and `eddingtonDisplay.ts` tile captions and milestones, `badges.ts` + `communityBadges.ts` + `routeSetters.ts` catalogue titles, hints, and earned details, `goals.ts` + `goalsShared.ts` + `suggestedGoals.ts` progress and readiness labels, `projectProgress.ts` + `projectDetails.ts` readiness horizons, `dashboardExtras.ts` milestones, `rockTypes.ts` profiles and blurbs, and `share/+page.server.ts` embed card titles/alts) and label tables in plain `.ts` modules (`dashboardLayout.ts` card names, `units.ts` presets and unit labels, `dates.ts` date formats, `grades/format.ts` system names, `weekdayStats.ts` weekday names, `partnerStats.ts` metric nouns, `weatherStats.ts` + `weatherPerformance.ts` band labels, and `routeRepeats.ts` persona labels). Builders receive the resolved `locals.locale` (defaulting to `DEFAULT_LOCALE` for unit tests), and exported `.ts` constant tables derive their default English labels directly from `en.json` via `formatMessage`.
 
 Run `node scripts/i18n-audit.mjs` for the current list; `node scripts/i18n-audit.mjs --verbose` prints sample strings per file. The script reports both `.svelte` markup (only symbols, the `Crag Stats` brand lockup, and provider values remain) and the 25 module-level builder/label files (`0` hard-coded module copy strings). Keep both counts there: a new prose hit means copy slipped back into markup or a `.ts` builder. Two rules that keep the audit honest — `<style>`/`<script>` detection must match a real element (a component such as `<StyleBadge>` is not a style block), and month names come from `monthLabels(t)` rather than `Intl` or a local array. Sentences with inline links, code, or emphasis go through `RichText.svelte`; because the anchor or `<strong>` then belongs to that child component, the parent's scoped CSS needs `:global(a)`/`:global(strong)` or the link loses its styling. Native review of the seeded catalogues is [#493](https://github.com/Luen/crag-stats/issues/493).

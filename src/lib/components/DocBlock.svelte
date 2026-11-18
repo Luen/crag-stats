@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { BAND_DOCS, TICK_DOCS } from '#lib/docs';
+	import { BAND_DOCS, getBandDocText, getTickDocs } from '#lib/docs';
 	import {
 		bandFromEwbank,
 		bandFromVScale,
@@ -35,6 +35,7 @@
 		font: convertFromVScale(v, 'font'),
 		band: bandFromVScale(v)
 	}));
+	const tickGroups = $derived(getTickDocs(i18n.locale));
 </script>
 
 {#if name === 'grade-bands'}
@@ -56,7 +57,7 @@
 						</td>
 						<td class="num">{BAND_DOCS[band.id].routes}</td>
 						<td class="num">{BAND_DOCS[band.id].boulders}</td>
-						<td>{BAND_DOCS[band.id].text}</td>
+						<td>{getBandDocText(band.id, i18n.locale)}</td>
 					</tr>
 				{/each}
 			</tbody>
@@ -121,7 +122,7 @@
 		</table>
 	</div>
 {:else if name === 'tick-types'}
-	{#each TICK_DOCS as g (g.group)}
+	{#each tickGroups as g (g.group)}
 		<h3>{g.group} <small>{g.styles}</small></h3>
 		<div class="table-wrap">
 			<table>

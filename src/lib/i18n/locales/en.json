@@ -492,6 +492,11 @@
 		"docBlock": {
 			"ariaBoulderGradeConversions": "Boulder grade conversions",
 			"ariaRouteGradeConversions": "Route grade conversions",
+			"bandText1": "Your first days of climbing, often seconding or top-roping. Many people manage these on day one, though a few climbs at this level are still serious.",
+			"bandText2": "Typical for climbers in their first year. Most outdoor climbing happens in this band, and plenty of experienced climbers come back to it for fun.",
+			"bandText3": "Within reach after a couple of years of regular climbing; casual climbers become rare here.",
+			"bandText4": "Needs focused, structured training; relatively few climbers get here.",
+			"bandText5": "Professional level: the best climbers in the world.",
 			"thBand": "Band",
 			"thBoulders": "Boulders",
 			"thEwbank": "Ewbank",
@@ -500,7 +505,48 @@
 			"thRoutesEwbank": "Routes (Ewbank)",
 			"thVScale": "V-scale",
 			"thWhatItMeans": "What it means",
-			"thYds": "YDS"
+			"thYds": "YDS",
+			"tickGroupAid": "Aid & free solo",
+			"tickGroupAidStyles": "Aid, free solo",
+			"tickGroupAttempts": "Attempts",
+			"tickGroupAttemptsStyles": "All styles",
+			"tickGroupBouldering": "Bouldering",
+			"tickGroupBoulderingStyles": "Boulder",
+			"tickGroupGeneral": "General",
+			"tickGroupGeneralStyles": "Most styles",
+			"tickGroupLead": "Lead",
+			"tickGroupLeadStyles": "Sport, trad, deep-water solo, and ice",
+			"tickGroupTopRope": "Top rope & seconding",
+			"tickGroupTopRopeStyles": "Top rope, second",
+			"tickMeaningAidSolo": "Aided the route alone.",
+			"tickMeaningAidTick": "Aided the route using fixed or placed protection.",
+			"tickMeaningAttempt": "Tried but did not complete it.",
+			"tickMeaningBoulderDab": "Topped, but touched the ground or a spotter on the way.",
+			"tickMeaningBoulderFlash": "Topped first try, with beta.",
+			"tickMeaningBoulderOnsight": "Topped first try with no beta (rare in bouldering).",
+			"tickMeaningBoulderRepeat": "Topped a problem you had already done.",
+			"tickMeaningBoulderSend": "Topped cleanly after earlier attempts.",
+			"tickMeaningFreeSolo": "Climbed without a rope (onsight, flash, or red point).",
+			"tickMeaningGeneralTick": "Climbed it; used for alpine, via ferrata, or when you forget how.",
+			"tickMeaningLeadAllFreeWithRest": "Climbed free but rested or fell; only accepted in some regions (e.g. Saxony).",
+			"tickMeaningLeadFlash": "Led clean on the first try, but with beta or inspection.",
+			"tickMeaningLeadGreenPoint": "A bolted route led on trad gear only; counts as trad.",
+			"tickMeaningLeadGroundUpRedPoint": "Red point where every failed try was lowered off and pulled, with no working.",
+			"tickMeaningLeadHangDog": "Led to the top but fell or rested on gear.",
+			"tickMeaningLeadOnsight": "Led clean on the first try with no prior beta or inspection.",
+			"tickMeaningLeadPinkPoint": "Red point with the gear or draws already in place.",
+			"tickMeaningLeadRedPoint": "Led clean after earlier attempts (includes repeats).",
+			"tickMeaningLeadSolo": "Led alone using a self-belay device.",
+			"tickMeaningRetreat": "Backed off (too hard, weather, gear, injury…).",
+			"tickMeaningTopRopeClean": "Clean after earlier attempts (includes repeats).",
+			"tickMeaningTopRopeFlash": "Clean on the first try, with beta.",
+			"tickMeaningTopRopeHangDog": "Reached the top but fell or rested on the rope.",
+			"tickMeaningTopRopeOnsight": "Clean on the first try with no beta.",
+			"tickMeaningTopRopeRopedSolo": "Top-roped alone on a self-belay rope fixed from above.",
+			"tickMeaningWorking": "Projecting the route or problem.",
+			"ariaTable": "Table",
+			"tickNameGreenPoint": "Green point",
+			"tickNameGroundUpRedPoint": "Ground up red point"
 		},
 		"eddington": {
 			"foot": "Like cycling's Eddington number: the biggest E you've hit E times.",
@@ -1273,9 +1319,131 @@
 			"titleTrad": "Trad",
 			"titleVolume": "Volume"
 		},
+		"docs": {
+			"pageDescription": "How Crag Stats works out your climbing stats.",
+			"pageTitle": "Docs"
+		},
 		"docsLayout": {
 			"ariaDocs": "Docs",
 			"linkOverview": "Overview"
+		},
+		"docsPages": {
+			"activity": {
+				"summary": "Monthly and yearly volume beyond the dashboard cards — full per-month tables and YoY deltas.",
+				"title": "Activity"
+			},
+			"ascentCalendar": {
+				"summary": "Year heatmap of logged days; Intensity scales by volume, Grade by hardest send band that day.",
+				"title": "Ascent calendar"
+			},
+			"badges": {
+				"summary": "Logbook milestones and the automatic First Moves import date.",
+				"title": "Badges"
+			},
+			"bestMonths": {
+				"summary": "theCrag seasonality for your top crags, weighted by your ticks, compared with when you climb there.",
+				"title": "Best months"
+			},
+			"climberProfile": {
+				"summary": "Radar axes for volume, variety, density, height, intensity, and consistency over 30 vs 90 days.",
+				"title": "Climber profile"
+			},
+			"climberType": {
+				"summary": "How the dashboard decides whether you are a sport, trad, boulder, or rock climber.",
+				"title": "Climber type"
+			},
+			"climbingMap": {
+				"summary": "Worldwide places, glowing ascent-density markers, filters, and location coverage.",
+				"title": "Climbing map"
+			},
+			"climbingStory": {
+				"summary": "First-person blurb from your logbook: tenure, put-up routes, home crag, partners, and other strong signals.",
+				"title": "Climbing story"
+			},
+			"cpr": {
+				"summary": "theCrag's Climber Performance Rating, how it's calculated, and how to read the timeline.",
+				"title": "CPR"
+			},
+			"displaySettings": {
+				"summary": "Date formats, granular units, and the metric thresholds that stay fixed.",
+				"title": "Display settings"
+			},
+			"eddington": {
+				"summary": "Cycling's Eddington number adapted to climbing: send days, vertical days, and grade indexes.",
+				"title": "Eddington numbers"
+			},
+			"firstAscents": {
+				"summary": "Marking your FAs and FFAs, routes you set, and community ticks on lines you put up.",
+				"title": "First ascents"
+			},
+			"goals": {
+				"summary": "Yearly grade, height, and day targets; grade bars use pyramid readiness instead of best÷target.",
+				"title": "Goals"
+			},
+			"grades": {
+				"summary": "Beginner → Elite bands, how grade systems are compared, and conversion tables.",
+				"title": "Grades & grade bands"
+			},
+			"karma": {
+				"summary": "Approximate ascent karma from routes logged; guide-edit points wait on a theCrag API.",
+				"title": "Karma"
+			},
+			"logbookSync": {
+				"summary": "For the server owner: scheduled API sync with a supporter key, or manual CSV uploads.",
+				"title": "Logbook sync"
+			},
+			"offline": {
+				"summary": "Download a read-only public stats and logbook snapshot for this browser.",
+				"title": "Offline mode"
+			},
+			"partners": {
+				"summary": "Who you climb with — rank by shared ascents, sessions (days), or distinct crags.",
+				"title": "Partners"
+			},
+			"projects": {
+				"summary": "Auto-detected projects, public guidebook excerpts on cards, and how that differs from private notes.",
+				"title": "Projects"
+			},
+			"repeats": {
+				"summary": "First visits versus return days on the same route, with Explorer and Repeat climber labels.",
+				"title": "Repeats vs new routes"
+			},
+			"rockTypes": {
+				"summary": "Rock type tags from theCrag, the volume card, and send rate / near-limit by rock.",
+				"title": "Rock types"
+			},
+			"routePopularity": {
+				"summary": "Busy vs quiet ticks from theCrag popularity, plus hidden gems (high quality, low traffic).",
+				"title": "Route popularity"
+			},
+			"sessionsPerWeek": {
+				"summary": "Climbing days per ISO week and the yearly average session rate.",
+				"title": "Sessions per week"
+			},
+			"solo": {
+				"summary": "Top-rope, lead, free, and deep water soloing, and ascents with no partner tagged.",
+				"title": "Solo climbing"
+			},
+			"tickTypes": {
+				"summary": "Onsight, flash, red point, attempts, and the rest, and which count as sends.",
+				"title": "Tick types"
+			},
+			"trainingLoad": {
+				"summary": "The intensity-weighted acute:chronic load model behind the Training load card.",
+				"title": "Training load"
+			},
+			"weather": {
+				"summary": "Optional Open-Meteo outdoor day cache and heat / freeze / rain / snow / wind badges (opt-in WEATHER_IMPORT).",
+				"title": "Weather"
+			},
+			"weekday": {
+				"summary": "Which days of the week you climb — sessions and ascents Mon–Sun, all-time or last 12 weeks.",
+				"title": "Weekday"
+			},
+			"yearlyStats": {
+				"summary": "Per-year bars or cumulative career totals for ascents, sends, and height, with optional within-year lines.",
+				"title": "Yearly stats"
+			}
 		},
 		"eddington": {
 			"lead": "Consistency metrics inspired by cycling's Eddington number — how your send days, vertical, and grade indexes grew over time.",
@@ -1778,6 +1946,8 @@
 			"hintColumnProjectsGoals": "Out of totals",
 			"hintCountedTickTypes": "Configure which tick types count in dashboard and page totals, projects, and goals. The logbook always lists every logged ascent.",
 			"hintCsvImport": "For everyone without supporter API access. Export from theCrag: {action}, then upload the file here whenever you want to refresh. CSV import upserts rows but does **not** remove missing entries. API sync reconciles deletions. {syncOptions}",
+			"hintCsvLogbook": "CSV uploads are your logbook source because {token} is set, so no API sync runs and uploaded ascents are never pruned. Use **CSV import** above whenever you want to refresh.",
+			"hintCsvOnlyRouteData": "{key} is still used for route data and area lookups. The key holder's logbook is never synced over your uploads.",
 			"hintDateFormat": "Controls date layout across the logbook, heatmaps, and charts.",
 			"hintDatesAreDisplayOnly": "Dates and measurements are display-only: stored data, badge thresholds, and filters stay metric.",
 			"hintDistance": "Cumulative vertical distance climbed.",
@@ -1786,9 +1956,6 @@
 			"hintIntro": "Sync, display preferences, search visibility, imports and local data control.",
 			"hintLanguage": "Default interface language. Set to Auto to match each visitor's browser language. Visitors can also change their preferred language via the header.",
 			"hintNoApiKey": "No API key configured. Set {key} in {env}, or use **CSV import** above to upload your logbook export by hand.",
-			"hintCsvLogbook": "CSV uploads are your logbook source because {token} is set, so no API sync runs and uploaded ascents are never pruned. Use **CSV import** above whenever you want to refresh.",
-			"hintCsvOnlyRouteData": "{key} is still used for route data and area lookups. The key holder's logbook is never synced over your uploads.",
-			"hintRouteDataNeedsOwnerLogin": "CSV imports don't carry your {login}, so set {ownerLogin} to your theCrag username. Without it, FA / FFA credits are never matched.",
 			"hintNotes": "Shows the notes from your theCrag ticks in the logbook, and lets logbook search match them.",
 			"hintNotesNoPassword": "**No {appPassword} is set, so anyone who can open this site will see them.**",
 			"hintNotesNoPasswordTail": "Best for offline or home-network installs.",
@@ -1803,6 +1970,7 @@
 			"hintRouteDataFetchOnce": "Each route is checked once unless you request a refresh.",
 			"hintRouteDataIntro": "Caches route details for routes in your logbook from theCrag (popularity, ascent counts, quality, seasonality, beta, location, pitches, and flags) along with their public history. FA / FFA entries that name your {login} are marked as yours.",
 			"hintRouteDataNeedsKey": "Needs {key}.",
+			"hintRouteDataNeedsOwnerLogin": "CSV imports don't carry your {login}, so set {ownerLogin} to your theCrag username. Without it, FA / FFA credits are never matched.",
 			"hintRouteDataRefresh": "Reload this page to update route data availability.",
 			"hintRouteDataRefreshCycle": "Route data is queued for refresh after {days} days.",
 			"hintRouteDataTail": "Up to {count} routes per run, at most one request a second, after each logbook sync and on the background import schedule. When weather import is on, remaining requests also check crag/sector locations, including for CSV imports. {docs}",

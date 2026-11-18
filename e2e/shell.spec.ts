@@ -182,9 +182,27 @@ test.describe('app shell', () => {
 		}
 		await expect(page.locator('.prose table').first()).toBeVisible();
 		expect((await page.goto('/docs/nope'))?.status()).toBe(404);
-		await page.goto('/');
+		await page.goto('/docs?locale=de');
+		await expect(page.locator('.toc a.active')).toHaveText('Übersicht');
+		await page.goto('/docs/climber-type?locale=de');
+		await expect(page.locator('.prose h1')).toHaveText('Klettertyp');
+		await page.goto('/?locale=en');
 		await page.getByRole('link', { name: 'How is this decided?' }).click();
 		await expect(page).toHaveURL(/\/docs\/climber-type$/);
+	});
+
+	test('documentation follows header language changes from an explicit locale link', async ({
+		page
+	}) => {
+		await page.goto('/docs/climber-type?locale=en');
+		await expect(page.locator('.prose h1')).toHaveText('Climber type');
+		await page.locator('.top-actions .locale').click();
+		await page.getByRole('menuitemradio', { name: 'Deutsch', exact: true }).click();
+		await expect(page.locator('.prose h1')).toHaveText('Klettertyp');
+		await expect(page).toHaveURL(/\/docs\/climber-type$/);
+		await page.locator('.top-actions .locale').click();
+		await page.getByRole('menuitemradio', { name: 'English', exact: true }).click();
+		await expect(page.locator('.prose h1')).toHaveText('Climber type');
 	});
 
 	test('pages render with seeded data and a CSP header', async ({ page }) => {

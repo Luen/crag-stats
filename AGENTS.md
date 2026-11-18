@@ -1,5 +1,7 @@
 # AGENTS.md — Crag Stats
 
+- Documentation localisation (#506): Crowdin owns `docs/guide/<locale>/*.md` and the UI catalogue. Import initial translations before the first download; Markdown imports can leave unmatched sentences in English, so inspect the exported result and QA. Guide exports retain English for untranslated passages. Preserve `<!-- component:name -->` markers (unit-tested). Header language changes must invalidate all loaders even when removing `?locale=`, or the guide body stays in its previous language.
+
 - Dependency compatibility (18 November 2026): keep TypeScript on 6.x until `svelte-check` and `typescript-eslint` publish support for 7.x. The minimatch v10-range override is 11.0.9; its regression permits only the exact `RangeError` for bounded globstar-parent expansion, and tests both ESLint and typescript-estree callers. prettier-plugin-svelte 4.2 requires a formatting pass across existing components.
 - Crowdin maintenance (18 November 2026): `crowdin.yml` exports only `de`, `fr`, `es-ES`, and `it`, matching the registered target catalogues. Keep the GitHub Actions sync as the sole PR producer; enabling Crowdin's GitHub integration creates another source branch and duplicate PRs. String context must explain screen, purpose, and placeholders rather than repeat the key path. Screenshots must use synthetic sample data, never the owner's logbook. Context and QA evidence: `docs/dev/CROWDIN_SETUP_AND_QA.md`.
 
@@ -187,7 +189,7 @@ Components: `TickTypeIcon.svelte`, `StyleBadge.svelte`. Keep icons SVG-inline so
 
 ## In-app docs (/docs)
 
-- User-facing explanations live in **`docs/guide/<slug>.md`** and are rendered at `/docs/<slug>` (bundled at build time via `import.meta.glob`, rendered with `marked`). Order/titles come from `DOC_PAGES` in `src/lib/docs.ts`; add new pages there.
+- User-facing explanations live in **`docs/guide/<slug>.md`** (with localized versions in `docs/guide/<locale>/<slug>.md`) and are rendered at `/docs/<slug>` (bundled at build time via `import.meta.glob`, rendered with `marked`). Order/titles come from `DOC_PAGES` in `src/lib/docs.ts`, localized via `docPages(locale)` with keys in `pages.docsPages.*`. Unlocalized guides fall back gracefully to the English source.
 - `<!-- component:name -->` markers embed generated tables from `DocBlock.svelte` (grade bands, conversions, tick types) so docs never drift from code. `docs.test.ts` checks tick-type send/attempt labels against `classifyTick()`.
 - **When you change an analytic (climber type, CPR, training load, grades), update its doc page in the same PR.** Dashboard cards link to their page ("How it works").
 - Paraphrase theCrag articles and link the source; don't paste their text.

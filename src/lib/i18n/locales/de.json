@@ -492,6 +492,11 @@
 		"docBlock": {
 			"ariaBoulderGradeConversions": "Boulder-Grade-Umrechnung",
 			"ariaRouteGradeConversions": "Routen-Grade-Umrechnung",
+			"bandText1": "Deine ersten Klettertage, oft im Nachstieg oder Toprope. Viele schaffen dies am ersten Tag, auch wenn manche Routen auf diesem Niveau ernsthaft sein können.",
+			"bandText2": "Typisch für Kletterer im ersten Jahr. Das meiste Klettern am Fels findet in diesem Band statt, und viele erfahrene Kletterer kehren zum Spaß dorthin zurück.",
+			"bandText3": "Nach ein paar Jahren regelmäßigen Kletterns erreichbar; Gelegenheitskletterer werden hier selten.",
+			"bandText4": "Erfordert gezieltes, strukturiertes Training; verhältnismäßig wenige Kletterer erreichen dieses Niveau.",
+			"bandText5": "Profiliga: die weltbesten Kletterer.",
 			"thBand": "Bereich",
 			"thBoulders": "Boulder",
 			"thEwbank": "Ewbank",
@@ -500,7 +505,48 @@
 			"thRoutesEwbank": "Routen (Ewbank)",
 			"thVScale": "V-Skala",
 			"thWhatItMeans": "Bedeutung",
-			"thYds": "YDS"
+			"thYds": "YDS",
+			"tickGroupAid": "Technisch & Free Solo",
+			"tickGroupAidStyles": "Technisches Klettern, Free Solo",
+			"tickGroupAttempts": "Versuche",
+			"tickGroupAttemptsStyles": "Alle Stile",
+			"tickGroupBouldering": "Bouldern",
+			"tickGroupBoulderingStyles": "Boulder",
+			"tickGroupGeneral": "Allgemein",
+			"tickGroupGeneralStyles": "Die meisten Stile",
+			"tickGroupLead": "Vorstieg",
+			"tickGroupLeadStyles": "Sportklettern, Trad, Deep-Water-Soloing und Eisklettern",
+			"tickGroupTopRope": "Toprope & Nachstieg",
+			"tickGroupTopRopeStyles": "Toprope, Nachstieg",
+			"tickMeaningAidSolo": "Die Route technisch allein bewältigt.",
+			"tickMeaningAidTick": "Die Route unter Verwendung fixer oder gelegter technischer Sicherungsmittel bewältigt.",
+			"tickMeaningAttempt": "Probiert, aber nicht vollendet.",
+			"tickMeaningBoulderDab": "Getoppt, aber unterwegs den Boden oder Spotter berührt.",
+			"tickMeaningBoulderFlash": "Im ersten Versuch mit Beta getoppt.",
+			"tickMeaningBoulderOnsight": "Im ersten Versuch ohne Beta getoppt (beim Bouldern selten).",
+			"tickMeaningBoulderRepeat": "Ein zuvor bereits begangenes Boulderproblem erneut getoppt.",
+			"tickMeaningBoulderSend": "Nach vorherigen Versuchen sauber getoppt.",
+			"tickMeaningFreeSolo": "Ohne Seil geklettert (Onsight, Flash oder Rotpunkt).",
+			"tickMeaningGeneralTick": "Geklettert; verwendet für Alpinrouten, Klettersteige oder wenn man den genauen Stil vergessen hat.",
+			"tickMeaningLeadAllFreeWithRest": "Frei geklettert, aber gerastet oder gestürzt; nur in bestimmten Regionen anerkannt (z. B. Sachsen).",
+			"tickMeaningLeadFlash": "Im ersten Versuch mit Beta sauber im Vorstieg geklettert.",
+			"tickMeaningLeadGreenPoint": "Eine eingebohrte Route rein mit mobilen Trad-Sicherungen vorgestiegen; zählt als Trad.",
+			"tickMeaningLeadGroundUpRedPoint": "Rotpunkt, bei dem nach jedem Fehlversuch bis zum Boden abgelassen und das Seil abgezogen wurde, ohne Ausbouldern.",
+			"tickMeaningLeadHangDog": "Bis zum Umlenker geklettert, aber in die Sicherung gestürzt oder gerastet.",
+			"tickMeaningLeadOnsight": "Sauber im ersten Versuch im Vorstieg ohne vorherige Beta oder Inspektion geklettert.",
+			"tickMeaningLeadPinkPoint": "Rotpunkt mit bereits eingehängten Expressschlingen oder gelegten Sicherungen.",
+			"tickMeaningLeadRedPoint": "Sauber nach vorherigen Versuchen im Vorstieg geklettert (beinhaltet Wiederholungen).",
+			"tickMeaningLeadSolo": "Allein mit einem Selbstsicherungsgerät vorgestiegen.",
+			"tickMeaningRetreat": "Abgebrochen (zu schwer, Wetter, Material, Verletzung…).",
+			"tickMeaningTopRopeClean": "Nach vorherigen Versuchen sauber im Toprope geklettert (beinhaltet Wiederholungen).",
+			"tickMeaningTopRopeFlash": "Im ersten Versuch mit Beta sauber im Toprope geklettert.",
+			"tickMeaningTopRopeHangDog": "Den Umlenker erreicht, aber ins Seil gestürzt oder gerastet.",
+			"tickMeaningTopRopeOnsight": "Im ersten Versuch ohne Beta sauber im Toprope geklettert.",
+			"tickMeaningTopRopeRopedSolo": "Allein an einem von oben fixierten Selbstsicherungsseil im Toprope geklettert.",
+			"tickMeaningWorking": "Die Route oder das Boulderproblem projektiert.",
+			"ariaTable": "Tabelle",
+			"tickNameGreenPoint": "Grünpunkt",
+			"tickNameGroundUpRedPoint": "Rotpunkt von unten"
 		},
 		"eddington": {
 			"foot": "Wie die Eddington-Zahl beim Radfahren: die höchste Zahl E, die du E-mal erreicht hast.",
@@ -1273,9 +1319,131 @@
 			"titleTrad": "Trad-Klettern",
 			"titleVolume": "Volumen"
 		},
+		"docs": {
+			"pageDescription": "Wie Crag Stats deine Kletterstatistiken berechnet.",
+			"pageTitle": "Dokumentation"
+		},
 		"docsLayout": {
 			"ariaDocs": "Doku",
 			"linkOverview": "Übersicht"
+		},
+		"docsPages": {
+			"activity": {
+				"summary": "Monats- und Jahresvolumen jenseits der Dashboard-Karten – vollständige Monatstabellen und Jahresvergleiche.",
+				"title": "Aktivität"
+			},
+			"ascentCalendar": {
+				"summary": "Jahres-Heatmap geloggter Tage; Intensität skaliert nach Volumen, Grad nach dem schwersten Durchstiegsband des Tages.",
+				"title": "Begehungskalender"
+			},
+			"badges": {
+				"summary": "Tourenbuch-Meilensteine und das automatische Erstbegehungs-Importdatum.",
+				"title": "Abzeichen"
+			},
+			"bestMonths": {
+				"summary": "theCrag-Saisonalität für deine Top-Gebiete, gewichtet nach deinen Ticks, verglichen mit deiner Kletterzeit dort.",
+				"title": "Beste Monate"
+			},
+			"climberProfile": {
+				"summary": "Radar-Achsen für Volumen, Vielfalt, Dichte, Höhe, Intensität und Beständigkeit über 30 vs. 90 Tage.",
+				"title": "Klettererprofil"
+			},
+			"climberType": {
+				"summary": "Wie die Übersicht ermittelt, ob du Sportkletterer, Trad-Kletterer, Boulderer oder Allrounder bist.",
+				"title": "Klettertyp"
+			},
+			"climbingMap": {
+				"summary": "Weltweite Orte, leuchtende Begehungsdichte-Marker, Filter und Standortabdeckung.",
+				"title": "Kletterkarte"
+			},
+			"climbingStory": {
+				"summary": "Kurzbeschreibung aus deinem Tourenbuch in der Ich-Form: Kletterjahre, erstbegangene Routen, Hausgebiet, Partner und andere Signale.",
+				"title": "Klettergeschichte"
+			},
+			"cpr": {
+				"summary": "theCrags Climber Performance Rating, wie es berechnet wird und wie man die Zeitleiste liest.",
+				"title": "CPR"
+			},
+			"displaySettings": {
+				"summary": "Datumsformate, granulare Einheiten und metrische Schwellenwerte, die fest bleiben.",
+				"title": "Anzeigeeinstellungen"
+			},
+			"eddington": {
+				"summary": "Die aus dem Radsport adaptierte Eddington-Zahl fürs Klettern: Durchstiegstage, Höhenmeter-Tage und Grad-Indizes.",
+				"title": "Eddington-Zahlen"
+			},
+			"firstAscents": {
+				"summary": "Markierung deiner FAs und FFAs, von dir eingerichtete Routen und Community-Ticks auf deinen Erstbegehungen.",
+				"title": "Erstbegehungen"
+			},
+			"goals": {
+				"summary": "Jährliche Grad-, Höhen- und Tagesziele; Gradbalken nutzen Pyramiden-Bereitschaft statt Bestwert÷Ziel.",
+				"title": "Ziele"
+			},
+			"grades": {
+				"summary": "Bänder von Anfänger bis Elite, wie Gradsysteme verglichen werden und Umrechnungstabellen.",
+				"title": "Schwierigkeitsgrade & Grade-Bänder"
+			},
+			"karma": {
+				"summary": "Ungefähres Begehungs-Karma aus geloggten Routen; Kletterführer-Bearbeitungspunkte warten auf eine theCrag-API.",
+				"title": "Karma"
+			},
+			"logbookSync": {
+				"summary": "Für den Server-Betreiber: geplante API-Synchronisierung mit Unterstützer-Schlüssel oder manuelle CSV-Uploads.",
+				"title": "Tourenbuch-Sync"
+			},
+			"offline": {
+				"summary": "Lade einen schreibgeschützten Snapshot deiner öffentlichen Statistiken und deines Tourenbuchs für diesen Browser herunter.",
+				"title": "Offline-Modus"
+			},
+			"partners": {
+				"summary": "Mit wem du kletterst – Rangliste nach gemeinsamen Begehungen, Sessions (Tagen) oder verschiedenen Klettergebieten.",
+				"title": "Kletterpartner"
+			},
+			"projects": {
+				"summary": "Automatisch erkannte Projekte, öffentliche Kletterführer-Auszüge auf Karten und wie sich das von privaten Notizen unterscheidet.",
+				"title": "Projekte"
+			},
+			"repeats": {
+				"summary": "Erstbesuche im Vergleich zu Wiederholungstagen auf derselben Route, mit Entdecker- und Wiederholer-Status.",
+				"title": "Wiederholungen vs. neue Routen"
+			},
+			"rockTypes": {
+				"summary": "Gesteins-Tags von theCrag, die Volumenkarte und Durchstiegsrate / Leistungsgrenze nach Gestein.",
+				"title": "Gesteinsarten"
+			},
+			"routePopularity": {
+				"summary": "Viel vs. wenig begangene Ticks nach theCrag-Beliebtheit, plus Geheimtipps (hohe Qualität, wenig Frequenz).",
+				"title": "Routen-Beliebtheit"
+			},
+			"sessionsPerWeek": {
+				"summary": "Klettertage pro ISO-Woche und die jährliche durchschnittliche Session-Rate.",
+				"title": "Klettertage pro Woche"
+			},
+			"solo": {
+				"summary": "Toprope-, Vorstiegs-, Free- und Deep-Water-Soloing sowie Begehungen ohne eingetragenen Partner.",
+				"title": "Soloklettern"
+			},
+			"tickTypes": {
+				"summary": "Onsight, Flash, Rotpunkt, Versuche und weitere Stile, und welche als Durchstieg zählen.",
+				"title": "Begehungsstile"
+			},
+			"trainingLoad": {
+				"summary": "Das intensitätsgewichtete akut-chronische Belastungsmodell hinter der Trainingsbelastungskarte.",
+				"title": "Trainingsbelastung"
+			},
+			"weather": {
+				"summary": "Optionaler Open-Meteo-Outdoor-Tagescache sowie Hitze-, Frost-, Regen-, Schnee- und Windabzeichen (optionales WEATHER_IMPORT).",
+				"title": "Wetter"
+			},
+			"weekday": {
+				"summary": "An welchen Wochentagen du kletterst – Sessions und Begehungen Mo–So, aller Zeiten oder der letzten 12 Wochen.",
+				"title": "Wochentag"
+			},
+			"yearlyStats": {
+				"summary": "Jahresbalken oder kumulative Gesamtwerte für Begehungen, Durchstiege und Klettermeter, mit optionalen Verlaufslinien.",
+				"title": "Jahresstatistiken"
+			}
 		},
 		"eddington": {
 			"lead": "Konstanz-Metriken inspiriert von der Eddington-Zahl des Radsports — wie deine Durchstiegs-Tage, Klettermeter und Schwierigkeitsindizes im Laufe der Zeit gewachsen sind.",
@@ -1778,6 +1946,8 @@
 			"hintColumnProjectsGoals": "Nicht in Gesamtsummen",
 			"hintCountedTickTypes": "Konfiguriere, welche Begehungsarten in den Gesamtsummen von Dashboard und Seiten sowie bei Projekten und Zielen gezählt werden. Das Tourenbuch listet immer jede eingetragene Begehung auf.",
 			"hintCsvImport": "Für alle ohne Supporter-API-Zugriff. Exportiere aus theCrag: {action}, und lade die Datei hier hoch, wann immer du aktualisieren möchtest. Der CSV-Import aktualisiert/fügt Zeilen hinzu, entfernt aber **keine** fehlenden Einträge. Die API-Synchronisierung bereinigt Löschungen. {syncOptions}",
+			"hintCsvLogbook": "",
+			"hintCsvOnlyRouteData": "",
 			"hintDateFormat": "Steuert das Datumsformat im Tourenbuch, in Heatmaps und in Diagrammen.",
 			"hintDatesAreDisplayOnly": "Datums- und Maßeinheiten gelten nur für die Anzeige: Gespeicherte Daten, Schwellenwerte für Abzeichen und Filter bleiben metrisch.",
 			"hintDistance": "Kumulierte gekletterte Höhenmeter.",
@@ -1786,9 +1956,6 @@
 			"hintIntro": "Synchronisierung, Anzeigeeinstellungen, Suchsichtbarkeit, Importe und Kontrolle über lokale Daten.",
 			"hintLanguage": "Standardsprache der Benutzeroberfläche. Auf „Auto“ stellen, um die Browsersprache der jeweiligen Besucher zu übernehmen. Besucher können ihre bevorzugte Sprache auch über die Kopfzeile ändern.",
 			"hintNoApiKey": "Kein API-Schlüssel konfiguriert. Lege {key} in {env} fest oder nutze oben den **CSV-Import**, um deinen Tourenbuch-Export manuell hochzuladen.",
-			"hintCsvLogbook": "",
-			"hintCsvOnlyRouteData": "",
-			"hintRouteDataNeedsOwnerLogin": "",
 			"hintNotes": "Zeigt die Notizen deiner theCrag-Begehungen im Tourenbuch an und bezieht sie in die Tourenbuch-Suche ein.",
 			"hintNotesNoPassword": "**Es ist kein {appPassword} festgelegt, sodass jeder, der diese Seite öffnen kann, sie sieht.**",
 			"hintNotesNoPasswordTail": "Am besten für Offline- oder Heimnetzwerk-Installationen.",
@@ -1803,6 +1970,7 @@
 			"hintRouteDataFetchOnce": "Jede Route wird einmal geprüft, es sei denn, du forderst eine Aktualisierung an.",
 			"hintRouteDataIntro": "Speichert Routendetails für Routen in deinem Tourenbuch von theCrag im Cache (Beliebtheit, Begehungszahlen, Qualität, Saisonalität, Beta, Standort, Seillängen und Markierungen) zusammen mit ihrer öffentlichen Historie. EB / EFB-Einträge, die deinen {login} nennen, werden als deine markiert.",
 			"hintRouteDataNeedsKey": "",
+			"hintRouteDataNeedsOwnerLogin": "",
 			"hintRouteDataRefresh": "Lade diese Seite neu, um die Verfügbarkeit der Routendaten zu aktualisieren.",
 			"hintRouteDataRefreshCycle": "Routendaten werden nach {days} Tagen zur Aktualisierung eingereiht.",
 			"hintRouteDataTail": "",

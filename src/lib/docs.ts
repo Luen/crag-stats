@@ -1,3 +1,6 @@
+import { formatMessage, type MessageKey } from '#lib/i18n/format';
+import type { SupportedLocale } from '#lib/i18n/types';
+
 /**
  * In-app docs (/docs). Page bodies are Markdown in docs/guide/<slug>.md; this manifest gives
  * order, titles and summaries. `<!-- component:name -->` markers in the Markdown are replaced
@@ -170,20 +173,69 @@ export const DOC_PAGES: readonly DocPage[] = [
 	}
 ];
 
-export function docPage(slug: string): DocPage | undefined {
-	return DOC_PAGES.find((d) => d.slug === slug);
+const DOC_KEYS: Record<string, string> = {
+	'logbook-sync': 'logbookSync',
+	offline: 'offline',
+	badges: 'badges',
+	'display-settings': 'displaySettings',
+	weather: 'weather',
+	'climbing-map': 'climbingMap',
+	'climber-type': 'climberType',
+	'climbing-story': 'climbingStory',
+	'climber-profile': 'climberProfile',
+	grades: 'grades',
+	'tick-types': 'tickTypes',
+	cpr: 'cpr',
+	'training-load': 'trainingLoad',
+	'ascent-calendar': 'ascentCalendar',
+	activity: 'activity',
+	'sessions-per-week': 'sessionsPerWeek',
+	weekday: 'weekday',
+	'best-months': 'bestMonths',
+	eddington: 'eddington',
+	'yearly-stats': 'yearlyStats',
+	'first-ascents': 'firstAscents',
+	goals: 'goals',
+	projects: 'projects',
+	solo: 'solo',
+	'rock-types': 'rockTypes',
+	partners: 'partners',
+	'route-popularity': 'routePopularity',
+	repeats: 'repeats',
+	karma: 'karma'
+};
+
+export function docPage(slug: string, locale?: SupportedLocale | null): DocPage | undefined {
+	const page = DOC_PAGES.find((d) => d.slug === slug);
+	if (!page) return undefined;
+	if (!locale || locale === 'en') return page;
+	const key = DOC_KEYS[slug];
+	if (!key) return page;
+	const titleKey = `pages.docsPages.${key}.title` as MessageKey;
+	const summaryKey = `pages.docsPages.${key}.summary` as MessageKey;
+	const title = formatMessage(locale, titleKey);
+	const summary = formatMessage(locale, summaryKey);
+	return {
+		slug,
+		title: title && title !== titleKey ? title : page.title,
+		summary: summary && summary !== summaryKey ? summary : page.summary
+	};
+}
+
+export function docPages(locale?: SupportedLocale | null): DocPage[] {
+	return DOC_PAGES.map((p) => docPage(p.slug, locale)!);
 }
 
 /** Band descriptions, paraphrased from theCrag's grades article. */
 export const BAND_DOCS: Record<number, { routes: string; boulders: string; text: string }> = {
 	1: {
 		routes: '1–12',
-		boulders: 'VB- to VB+',
+		boulders: 'VB-–VB+',
 		text: 'Your first days of climbing, often seconding or top-roping. Many people manage these on day one, though a few climbs at this level are still serious.'
 	},
 	2: {
 		routes: '13–18',
-		boulders: 'V0- to V0+',
+		boulders: 'V0-–V0+',
 		text: 'Typical for climbers in their first year. Most outdoor climbing happens in this band, and plenty of experienced climbers come back to it for fun.'
 	},
 	3: {
@@ -202,6 +254,15 @@ export const BAND_DOCS: Record<number, { routes: string; boulders: string; text:
 		text: 'Professional level: the best climbers in the world.'
 	}
 };
+
+export function getBandDocText(bandId: number, locale?: SupportedLocale | null): string {
+	if (locale && locale !== 'en') {
+		const key = `cards.docBlock.bandText${bandId}` as MessageKey;
+		const text = formatMessage(locale, key);
+		if (text && text !== key) return text;
+	}
+	return BAND_DOCS[bandId]?.text ?? '';
+}
 
 export type TickDoc = { name: string; meaning: string; send: boolean };
 export type TickGroup = { group: string; styles: string; ticks: TickDoc[] };
@@ -322,3 +383,109 @@ export const TICK_DOCS: readonly TickGroup[] = [
 		]
 	}
 ];
+
+type TickDocMeta = {
+	nameKey?: MessageKey;
+	meaningKey: MessageKey;
+};
+
+type TickGroupMeta = {
+	groupKey: MessageKey;
+	stylesKey: MessageKey;
+	ticks: TickDocMeta[];
+};
+
+const TICK_DOCS_META: TickGroupMeta[] = [
+	{
+		groupKey: 'cards.docBlock.tickGroupLead',
+		stylesKey: 'cards.docBlock.tickGroupLeadStyles',
+		ticks: [
+			{ nameKey: 'ticks.onsight', meaningKey: 'cards.docBlock.tickMeaningLeadOnsight' },
+			{ nameKey: 'ticks.flash', meaningKey: 'cards.docBlock.tickMeaningLeadFlash' },
+			{ nameKey: 'ticks.redpoint', meaningKey: 'cards.docBlock.tickMeaningLeadRedPoint' },
+			{ nameKey: 'ticks.pinkpoint', meaningKey: 'cards.docBlock.tickMeaningLeadPinkPoint' },
+			{
+				nameKey: 'cards.docBlock.tickNameGreenPoint',
+				meaningKey: 'cards.docBlock.tickMeaningLeadGreenPoint'
+			},
+			{
+				nameKey: 'cards.docBlock.tickNameGroundUpRedPoint',
+				meaningKey: 'cards.docBlock.tickMeaningLeadGroundUpRedPoint'
+			},
+			{
+				nameKey: 'ticks.allfreewithrest',
+				meaningKey: 'cards.docBlock.tickMeaningLeadAllFreeWithRest'
+			},
+			{ nameKey: 'ticks.leadsolo', meaningKey: 'cards.docBlock.tickMeaningLeadSolo' },
+			{ nameKey: 'ticks.hangdog', meaningKey: 'cards.docBlock.tickMeaningLeadHangDog' }
+		]
+	},
+	{
+		groupKey: 'cards.docBlock.tickGroupBouldering',
+		stylesKey: 'cards.docBlock.tickGroupBoulderingStyles',
+		ticks: [
+			{ nameKey: 'ticks.onsight', meaningKey: 'cards.docBlock.tickMeaningBoulderOnsight' },
+			{ nameKey: 'ticks.flash', meaningKey: 'cards.docBlock.tickMeaningBoulderFlash' },
+			{ nameKey: 'ticks.send', meaningKey: 'cards.docBlock.tickMeaningBoulderSend' },
+			{ nameKey: 'ticks.repeat', meaningKey: 'cards.docBlock.tickMeaningBoulderRepeat' },
+			{ nameKey: 'ticks.dab', meaningKey: 'cards.docBlock.tickMeaningBoulderDab' }
+		]
+	},
+	{
+		groupKey: 'cards.docBlock.tickGroupTopRope',
+		stylesKey: 'cards.docBlock.tickGroupTopRopeStyles',
+		ticks: [
+			{ nameKey: 'ticks.onsight', meaningKey: 'cards.docBlock.tickMeaningTopRopeOnsight' },
+			{ nameKey: 'ticks.flash', meaningKey: 'cards.docBlock.tickMeaningTopRopeFlash' },
+			{ nameKey: 'ticks.clean', meaningKey: 'cards.docBlock.tickMeaningTopRopeClean' },
+			{ nameKey: 'ticks.ropedsolo', meaningKey: 'cards.docBlock.tickMeaningTopRopeRopedSolo' },
+			{ nameKey: 'ticks.hangdog', meaningKey: 'cards.docBlock.tickMeaningTopRopeHangDog' }
+		]
+	},
+	{
+		groupKey: 'cards.docBlock.tickGroupAid',
+		stylesKey: 'cards.docBlock.tickGroupAidStyles',
+		ticks: [
+			{ nameKey: 'ticks.tick', meaningKey: 'cards.docBlock.tickMeaningAidTick' },
+			{ nameKey: 'ticks.aidsolo', meaningKey: 'cards.docBlock.tickMeaningAidSolo' },
+			{ nameKey: 'ticks.freesolo', meaningKey: 'cards.docBlock.tickMeaningFreeSolo' }
+		]
+	},
+	{
+		groupKey: 'cards.docBlock.tickGroupAttempts',
+		stylesKey: 'cards.docBlock.tickGroupAttemptsStyles',
+		ticks: [
+			{ nameKey: 'ticks.working', meaningKey: 'cards.docBlock.tickMeaningWorking' },
+			{ nameKey: 'ticks.attempt', meaningKey: 'cards.docBlock.tickMeaningAttempt' },
+			{ nameKey: 'ticks.retreat', meaningKey: 'cards.docBlock.tickMeaningRetreat' }
+		]
+	},
+	{
+		groupKey: 'cards.docBlock.tickGroupGeneral',
+		stylesKey: 'cards.docBlock.tickGroupGeneralStyles',
+		ticks: [{ nameKey: 'ticks.tick', meaningKey: 'cards.docBlock.tickMeaningGeneralTick' }]
+	}
+];
+
+export function getTickDocs(locale?: SupportedLocale | null): readonly TickGroup[] {
+	if (!locale || locale === 'en') return TICK_DOCS;
+	return TICK_DOCS.map((g, gi) => {
+		const metaG = TICK_DOCS_META[gi];
+		const groupName = metaG ? formatMessage(locale, metaG.groupKey) : g.group;
+		const styles = metaG ? formatMessage(locale, metaG.stylesKey) : g.styles;
+		return {
+			group: groupName || g.group,
+			styles: styles || g.styles,
+			ticks: g.ticks.map((t, ti) => {
+				const metaT = metaG?.ticks[ti];
+				const name = metaT?.nameKey ? formatMessage(locale, metaT.nameKey) : t.name;
+				const meaning = metaT?.meaningKey ? formatMessage(locale, metaT.meaningKey) : t.meaning;
+				return {
+					name: name || t.name,
+					meaning: meaning || t.meaning,
+					send: t.send
+				};
+			})
+		};
+	});
+}

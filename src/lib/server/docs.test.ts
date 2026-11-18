@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { renderMarkdown, wrapTables } from './docs';
+import { loadDoc, renderMarkdown, wrapTables } from './docs';
 
 describe('docs Markdown rendering', () => {
 	it('wraps Markdown tables in a focusable scroll region', () => {
@@ -12,5 +12,43 @@ describe('docs Markdown rendering', () => {
 
 	it('leaves table-free HTML untouched', () => {
 		expect(wrapTables('<p>No tables here.</p>')).toBe('<p>No tables here.</p>');
+	});
+
+	it('localises the accessible name of rendered Markdown tables', () => {
+		const { segments } = renderMarkdown('# Tabelle\n\n| A | B |\n| - | - |\n| 1 | 2 |\n', 'de');
+		expect(segments.some((s) => s.kind === 'html' && s.html.includes('aria-label="Tabelle"'))).toBe(
+			true
+		);
+	});
+
+	it('loads English documentation by default', () => {
+		const doc = loadDoc('climber-type');
+		expect(doc).not.toBeNull();
+		expect(doc?.title).toBe('Climber type');
+		expect(doc?.slug).toBe('climber-type');
+	});
+
+	it('loads localized documentation when available', () => {
+		const doc = loadDoc('climber-type', 'de');
+		expect(doc).not.toBeNull();
+		expect(doc?.title).toBe('Klettertyp');
+		expect(doc?.slug).toBe('climber-type');
+	});
+
+	it.each([undefined, '', ' \n\t '])(
+		'falls back to English for a missing or empty guide (%j)',
+		(target) => {
+			const sources = { '/docs/guide/training-load.md': '# Training load\n\nEnglish fallback.' };
+			if (target !== undefined)
+				Object.assign(sources, { '/docs/guide/de/training-load.md': target });
+			const doc = loadDoc('training-load', 'de', sources);
+			expect(doc).not.toBeNull();
+			expect(doc?.title).toBe('Training load');
+		}
+	);
+
+	it('returns null for unknown slugs', () => {
+		expect(loadDoc('non-existent-slug')).toBeNull();
+		expect(loadDoc('non-existent-slug', 'de')).toBeNull();
 	});
 });
