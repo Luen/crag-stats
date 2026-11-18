@@ -13,7 +13,7 @@ describe('card preferences', () => {
 		const second = readCardPreferences(() => '<script>');
 		expect(first.cs_partners_metric).toBe('sessions');
 		expect(Object.values(second).every((v) => v === null)).toBe(true);
-		expect(Object.keys(second)).toHaveLength(8);
+		expect(Object.keys(second)).toHaveLength(9);
 	});
 	it('migrates legacy chart tabs and rejects unsupported values', () => {
 		for (const old of ['byYear', 'career'])

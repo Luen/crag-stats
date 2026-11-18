@@ -27,6 +27,7 @@ theCrag keeps a decayed and an undecayed rating for each of sport, trad and boul
 - The **coloured background** shows the grade bands (Beginner → Elite) at their real grade boundaries.
 - **Bars** underneath show how many ascents you logged that quarter. Click one to open those ascents in the logbook.
 - A **dashed divider** with **⋯** on the time axis marks a gap of more than one quarter.
+- **Show empty quarters** gives every quarter its own column between your first and last logged quarter. Quarters with no ascents stay empty and **break the black line**, so a long layoff no longer reads as steady progress. The chart scrolls sideways when the extra columns need more room. Leave it unticked to keep the compact view, where only quarters with ascents get a column.
 
 theCrag notes that a **grey top** above the line (failed attempts at a higher grade) often comes just before a jump up a grade.
 
