@@ -8,7 +8,7 @@ test('solo cards open matching logbook ascents', async ({ page }) => {
 	try {
 		const fixtures = [
 			['toprope', 'Roped_Solo', 'Sport', 'Top-rope solo'],
-			['lead', 'leadsolo', 'Sport', 'Lead solo'],
+			['lead', 'leadsolo', 'Sport', 'Lead rope solo'],
 			['free', 'Onsight', 'solo', 'Free solo'],
 			['dws', 'Red point', 'dws', 'Deep water solo'],
 			['aid', 'Aid solo', 'Sport', 'Aid solo']

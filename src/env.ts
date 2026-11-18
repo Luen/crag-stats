@@ -8,6 +8,11 @@ export const variables = defineEnvVars({
 		description: 'Personal theCrag Logbook Read API key (Supporters)',
 		schema: optionalString
 	},
+	THECRAG_USERNAME: {
+		description:
+			'theCrag username (no @) for FA/FFA matching when the logbook arrives by CSV upload instead of API sync',
+		schema: optionalString
+	},
 	APP_PASSWORD: {
 		description: 'Optional password gate for the UI',
 		schema: optionalString
@@ -28,6 +33,11 @@ export const variables = defineEnvVars({
 		description: 'node-cron expression for daily sync',
 		schema: optionalString
 	},
+	IMPORT_CRON: {
+		description:
+			'node-cron expression for background route data and weather imports (default daily; off disables)',
+		schema: optionalString
+	},
 	ROUTE_DATA_IMPORT: {
 		description:
 			'Opt-in: fetch route data (details + public FA/FFA history) from theCrag in the background, 100 routes per run (default false). Replaces ROUTE_HISTORY_IMPORT, which is ignored',
@@ -41,6 +51,11 @@ export const variables = defineEnvVars({
 	WEATHER_IMPORT: {
 		description:
 			'Opt-in: fetch daily outdoor weather from Open-Meteo for badge enrichment (default false; non-commercial self-host OK)',
+		schema: optionalString
+	},
+	CSV_INGEST_TOKEN: {
+		description:
+			'Opt-in: bearer token for POST /api/logbook/csv, so a companion uploader can submit a CSV export (unset disables the endpoint). Setting it makes CSV uploads the logbook source: THECRAG_API_KEY is then used only for route data and area lookups',
 		schema: optionalString
 	},
 	DISPLAY_LOCALE: {

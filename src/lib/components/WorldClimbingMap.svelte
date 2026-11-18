@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
 	import land from '#lib/assets/world-land.json';
 	import {
 		clusterMapPlaces,
@@ -14,10 +15,12 @@
 		formatNumber,
 		type DateDisplay
 	} from '#lib/dates';
+	import RichText from './RichText.svelte';
 	let {
 		places,
 		dateDisplay = DEFAULT_DATE_DISPLAY
 	}: { places: ClimbingPlace[]; dateDisplay?: DateDisplay } = $props();
+	const i18n = useI18n();
 	const centre = $derived(longitudeCentre(places));
 	let customView = $state<MapView | null>(null);
 	const view = $derived(customView ?? fitMapPlaces(places, centre));
@@ -58,42 +61,65 @@
 		};
 		selectedKey = null;
 	}
-	const label = (c: (typeof clusters)[number]) =>
-		`${c.places.length === 1 ? c.places[0].name : `${c.places.length} places`} · ${formatNumber(c.count, dateDisplay)} ascents`;
+	const label = (c: (typeof clusters)[number]) => {
+		const ascents = formatNumber(c.count, dateDisplay);
+		return c.places.length === 1
+			? i18n.t('cards.worldClimbingMap.labelMarkerSingle', { place: c.places[0].name, ascents })
+			: i18n.t('cards.worldClimbingMap.labelMarkerCluster', {
+					places: c.places.length,
+					ascents
+				});
+	};
 </script>
 
 <div class="controls">
-	<div role="group" aria-label="Map navigation">
-		<button type="button" onclick={() => zoom(0.6)} aria-label="Zoom in">+</button><button
+	<div role="group" aria-label={i18n.t('cards.worldClimbingMap.ariaMapNavigation')}>
+		<button
+			type="button"
+			onclick={() => zoom(0.6)}
+			aria-label={i18n.t('cards.worldClimbingMap.ariaZoomIn')}>+</button
+		><button
 			type="button"
 			onclick={() => zoom(1 / 0.6)}
-			aria-label="Zoom out">−</button
+			aria-label={i18n.t('cards.worldClimbingMap.ariaZoomOut')}>−</button
 		>
-		<button type="button" onclick={() => pan(-1, 0)} aria-label="Pan west">←</button><button
+		<button
+			type="button"
+			onclick={() => pan(-1, 0)}
+			aria-label={i18n.t('cards.worldClimbingMap.ariaPanWest')}>←</button
+		><button
 			type="button"
 			onclick={() => pan(1, 0)}
-			aria-label="Pan east">→</button
-		><button type="button" onclick={() => pan(0, -1)} aria-label="Pan north">↑</button><button
+			aria-label={i18n.t('cards.worldClimbingMap.ariaPanEast')}>→</button
+		><button
+			type="button"
+			onclick={() => pan(0, -1)}
+			aria-label={i18n.t('cards.worldClimbingMap.ariaPanNorth')}>↑</button
+		><button
 			type="button"
 			onclick={() => pan(0, 1)}
-			aria-label="Pan south">↓</button
+			aria-label={i18n.t('cards.worldClimbingMap.ariaPanSouth')}>↓</button
 		>
 		<button
 			type="button"
 			onclick={() => {
 				customView = null;
 				selectedKey = null;
-			}}>Fit places</button
+			}}>{i18n.t('cards.worldClimbingMap.buttonFitPlaces')}</button
 		><button
 			type="button"
 			onclick={() => {
 				customView = { x: 0, y: 0, width: 1000, height: 500 };
 				selectedKey = null;
-			}}>World</button
+			}}>{i18n.t('cards.worldClimbingMap.buttonWorld')}</button
 		>
 	</div>
 </div>
-<div class="world-map" role="group" aria-label="Worldwide climbing places">
+<div
+	class="world-map"
+	role="group"
+	aria-label={i18n.t('cards.worldClimbingMap.ariaWorldwideClimbingPlaces')}
+>
 	<svg
 		viewBox={`${view.x} ${view.y} ${view.width} ${view.height}`}
 		preserveAspectRatio="none"
@@ -117,11 +143,14 @@
 	{/each}
 </div>
 <p class="legend">
-	Larger, brighter glows mean more logged ascents. Nearby places cluster at this zoom. Select a
-	marker for details.
+	{i18n.t('cards.worldClimbingMap.legend')}
 </p>
 {#if selected}
-	<section class="selection" aria-label="Selected map places" aria-live="polite">
+	<section
+		class="selection"
+		aria-label={i18n.t('cards.worldClimbingMap.ariaSelectedMapPlaces')}
+		aria-live="polite"
+	>
 		<h2>{label(selected)}</h2>
 		{#if selected.places.length > 1}<button
 				type="button"
@@ -129,28 +158,42 @@
 					// Small floor so close places separate; the spread padding keeps all of them in view.
 					customView = fitMapPlaces(selected.places, centre, 8);
 					selectedKey = null;
-				}}>Zoom to these places</button
+				}}>{i18n.t('cards.worldClimbingMap.buttonZoomToThesePlaces')}</button
 			>{/if}
 		<ul>
 			{#each selected.places as p (p.key)}<li>
 					<a href={p.href}
-						>{p.name}{p.country ? ` · ${p.country}` : ''}: {formatNumber(p.count, dateDisplay)} ascents</a
+						>{i18n.t('cards.worldClimbingMap.linkPlaceAscents', {
+							name: p.name,
+							country: p.country ? ` · ${p.country}` : '',
+							ascents: formatNumber(p.count, dateDisplay)
+						})}</a
 					>
-					· {p.routes} routes · {p.firstDay
-						? formatCalendarDate(p.firstDay, dateDisplay)
-						: 'Date unknown'}–{p.lastDay
-						? formatCalendarDate(p.lastDay, dateDisplay)
-						: 'date unknown'}
+					· {i18n.t('cards.worldClimbingMap.metaRoutesAndDates', {
+						routes: p.routes,
+						first: p.firstDay
+							? formatCalendarDate(p.firstDay, dateDisplay)
+							: i18n.t('cards.worldClimbingMap.labelDateUnknown'),
+						last: p.lastDay
+							? formatCalendarDate(p.lastDay, dateDisplay)
+							: i18n.t('cards.worldClimbingMap.labelDateUnknownLower')
+					})}
 				</li>{/each}
 		</ul>
 	</section>
 {/if}
 <p class="credit">
-	Outline: <a
-		href="https://www.naturalearthdata.com/about/terms-of-use/"
-		target="_blank"
-		rel="noreferrer">Natural Earth</a
-	> (public domain). Locations are from your cached logbook and may be approximate.
+	<RichText
+		message={i18n.t('cards.worldClimbingMap.credit')}
+		tokens={{
+			naturalEarth: {
+				kind: 'link',
+				text: i18n.t('cards.worldClimbingMap.linkNaturalEarth'),
+				href: 'https://www.naturalearthdata.com/about/terms-of-use/',
+				external: true
+			}
+		}}
+	/>
 </p>
 
 <style>
@@ -245,7 +288,7 @@
 	.selection li {
 		margin: 0.5rem 0;
 	}
-	.credit a,
+	.credit :global(a),
 	.selection a {
 		color: inherit;
 		text-decoration: underline;

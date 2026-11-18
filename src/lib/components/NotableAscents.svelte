@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
 	import GradeChip from '#lib/components/GradeChip.svelte';
 	import StyleBadge from '#lib/components/StyleBadge.svelte';
 	import TickTypeIcon from '#lib/components/TickTypeIcon.svelte';
@@ -12,6 +13,7 @@
 		dateDisplay?: DateDisplay;
 	};
 	let { byStyle, byArea, dateDisplay = DEFAULT_DATE_DISPLAY }: Props = $props();
+	const i18n = useI18n();
 
 	function bandWidth(row: NotableRow, bandId: number) {
 		const total = Math.max(
@@ -58,8 +60,8 @@
 				>{formatCalendarDate(row.hardestDate, dateDisplay)}</time
 			>
 		{/if}
-		{#if ascentPartners(row.hardestPartners)}
-			<span class="companions">{ascentPartners(row.hardestPartners)}</span>
+		{#if ascentPartners(row.hardestPartners, i18n.locale)}
+			<span class="companions">{ascentPartners(row.hardestPartners, i18n.locale)}</span>
 		{/if}
 	</div>
 {/snippet}
@@ -75,7 +77,7 @@
 {/snippet}
 
 <article class="panel">
-	<h2>Notable ascents</h2>
+	<h2>{i18n.t('cards.notableAscents.titleNotableAscents')}</h2>
 
 	<div class="groups groups-columns">
 		{#each styleGroups as g (g.group)}
@@ -99,7 +101,7 @@
 		{/each}
 	</div>
 
-	<h3>By area</h3>
+	<h3>{i18n.t('cards.notableAscents.titleByArea')}</h3>
 	<div class="groups groups-columns">
 		{#each areaGroups as g (g.group)}
 			<section class="group-block">

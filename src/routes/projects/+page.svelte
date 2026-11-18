@@ -1,26 +1,29 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
 	import NewRouteBadge from '#lib/components/NewRouteBadge.svelte';
 	import ProjectReadiness from '#lib/components/ProjectReadiness.svelte';
 	import ProjectSelection from '#lib/components/ProjectSelection.svelte';
 	import ProjectRouteBeta from '#lib/components/ProjectRouteBeta.svelte';
 	import ProjectRouteBadge from '#lib/components/ProjectRouteBadge.svelte';
+	import RichText from '#lib/components/RichText.svelte';
 	import type { PageProps } from './$types';
 
 	let { data, form }: PageProps = $props();
+	const i18n = useI18n();
 
 	type ProjectCard = (typeof data.workingOn)[number];
 
 	function sessionsLabel(n: number) {
-		return n === 1 ? '1 session' : `${n} sessions`;
+		return i18n.t('pages.projects.sessionCount', { count: n });
 	}
 
 	function triesLabel(n: number) {
-		return n === 1 ? '1 try logged' : `${n} tries logged`;
+		return i18n.t('pages.projects.tryCount', { count: n });
 	}
 
 	function starTitle(stars: number | null | undefined) {
-		if (stars == null || stars <= 0) return 'Unrated';
-		return `${stars} star${stars === 1 ? '' : 's'}`;
+		if (stars == null || stars <= 0) return i18n.t('pages.projects.titleUnrated');
+		return i18n.t('pages.projects.titleStars', { count: stars });
 	}
 </script>
 
@@ -45,7 +48,9 @@
 					<NewRouteBadge />
 				{/if}
 				<span class={['badge', { open: p.status === 'open', muted: p.status === 'sent' }]}>
-					{p.status === 'sent' ? 'sent' : 'open'}
+					{p.status === 'sent'
+						? i18n.t('pages.projects.labelSent')
+						: i18n.t('pages.projects.labelOpen')}
 				</span>
 			</div>
 		</div>
@@ -72,8 +77,12 @@
 
 		<p class="footer">{sessionsLabel(p.sessionCount)} · {triesLabel(p.tryCount)}</p>
 		<ProjectReadiness pct={p.progress.pct} horizon={p.progress.horizon} />
-		<a class="doc-link" href={`/logbook?route=${p.routeId}`}>All logged climbs →</a>
-		{#if p.selection === 'include'}<p class="selection-label">Selected by you</p>{/if}
+		<a class="doc-link" href={`/logbook?route=${p.routeId}`}
+			>{i18n.t('pages.projects.linkAllLoggedClimbs')}</a
+		>
+		{#if p.selection === 'include'}<p class="selection-label">
+				{i18n.t('pages.projects.labelSelectedByYou')}
+			</p>{/if}
 		{#if data.canManageProjects}
 			<ProjectSelection
 				provider={p.routeProvider}
@@ -86,16 +95,23 @@
 {/snippet}
 
 <section class="head">
-	<p class="eyebrow">Outdoor routes</p>
-	<h1>Projects</h1>
+	<p class="eyebrow">{i18n.t('pages.projects.eyebrowOutdoorRoutes')}</p>
+	<h1>{i18n.t('pages.projects.titleProjects')}</h1>
 	<p class="blurb">
-		Auto-detected from theCrag: open projects need unsent attempts on two separate climbing days.
-		Completed projects include sends after work across days or at least two failed tries that day
-		(shown for six months). Routes untouched for a year drop off. First-try sends are not projects.
-		<a class="doc-link" href="/docs/projects">Guidebook text &amp; privacy</a>
+		{i18n.t('pages.projects.lead')}
+		<a class="doc-link" href="/docs/projects">{i18n.t('pages.projects.linkGuidebookTextPrivacy')}</a
+		>
 		{#if data.canManageProjects}
-			Include or dismiss routes with Project selection here or in the <a href="/logbook">logbook</a
-			>.{/if}
+			<RichText
+				message={i18n.t('pages.projects.leadIncludeDismiss')}
+				tokens={{
+					logbook: {
+						kind: 'link',
+						text: i18n.t('pages.projects.linkLogbook'),
+						href: '/logbook'
+					}
+				}}
+			/>{/if}
 	</p>
 </section>
 
@@ -103,13 +119,13 @@
 
 <section class="block">
 	<div class="section-head">
-		<h2>Working on</h2>
-		<span class="count">{data.workingOn.length} route{data.workingOn.length === 1 ? '' : 's'}</span>
+		<h2>{i18n.t('pages.projects.titleWorkingOn')}</h2>
+		<span class="count"
+			>{i18n.t('pages.projects.countRoutes', { count: data.workingOn.length })}</span
+		>
 	</div>
 	{#if data.workingOn.length === 0}
-		<p class="empty">
-			No open projects yet. Log unsent attempts on two different climbing days on theCrag.
-		</p>
+		<p class="empty">{i18n.t('pages.projects.emptyNoOpenProjects')}</p>
 	{:else}
 		<div class="cards">
 			{#each data.workingOn as p (p.id)}
@@ -121,10 +137,8 @@
 
 {#if data.earlierSelected.length}
 	<section class="block">
-		<div class="section-head"><h2>Earlier selected sends</h2></div>
-		<p class="empty">
-			Routes you selected whose send is outside the six-month window or has no valid date.
-		</p>
+		<div class="section-head"><h2>{i18n.t('pages.projects.titleEarlierSelectedSends')}</h2></div>
+		<p class="empty">{i18n.t('pages.projects.emptyRoutesYouSelectedWhoseSend')}</p>
 		<div class="cards">
 			{#each data.earlierSelected as p (p.id)}{@render projectCard(p)}{/each}
 		</div>
@@ -133,13 +147,13 @@
 
 <section class="block">
 	<div class="section-head">
-		<h2>Recently sent</h2>
+		<h2>{i18n.t('pages.projects.titleRecentlySent')}</h2>
 		<span class="count muted"
-			>{data.recentlySent.length} route{data.recentlySent.length === 1 ? '' : 's'}</span
+			>{i18n.t('pages.projects.countRoutes', { count: data.recentlySent.length })}</span
 		>
 	</div>
 	{#if data.recentlySent.length === 0}
-		<p class="empty">No fought-then-sent projects in the past six months.</p>
+		<p class="empty">{i18n.t('pages.projects.emptyNoFoughtThenSentProjects')}</p>
 	{:else}
 		<div class="cards">
 			{#each data.recentlySent as p (p.id)}

@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
+
 	type GoalCard = {
 		id: number;
 		title: string;
@@ -11,24 +13,26 @@
 
 	type Props = { goals: GoalCard[]; canEdit?: boolean };
 	let { goals, canEdit = false }: Props = $props();
+	const i18n = useI18n();
 </script>
 
 <article class="panel">
 	<header>
-		<h2>Active goals</h2>
+		<h2>{i18n.t('cards.goalsProgress.titleActiveGoals')}</h2>
 		<span class="links">
-			<a class="how" href="/docs/goals">How it works</a>
-			<a href="/goals">All goals</a>
+			<a class="how" href="/docs/goals">{i18n.t('common.howItWorks')}</a>
+			<a href="/goals">{i18n.t('cards.goalsProgress.allGoals')}</a>
 		</span>
 	</header>
 
 	{#if goals.length === 0}
 		<p class="empty">
 			{#if canEdit}
-				No active goals — <a href="/goals">set one</a>. Grade bars show readiness from nearby sends
-				and attempts; height and days stay linear.
+				{i18n.t('cards.goalsProgress.emptyBeforeLink')}<a href="/goals"
+					>{i18n.t('cards.goalsProgress.emptyLink')}</a
+				>{i18n.t('cards.goalsProgress.emptyAfterLink')}
 			{:else}
-				No active goals right now.
+				{i18n.t('cards.goalsProgress.emptyReadOnly')}
 			{/if}
 		</p>
 	{:else}
@@ -46,7 +50,10 @@
 						aria-valuenow={g.progressPct}
 						aria-valuemin={0}
 						aria-valuemax={100}
-						aria-label="{g.title} {g.progressPct} percent"
+						aria-label={i18n.t('cards.goalsProgress.ariaTitlePctPercent', {
+							title: g.title,
+							pct: g.progressPct
+						})}
 					>
 						<span style:width="{g.progressPct}%"></span>
 					</div>

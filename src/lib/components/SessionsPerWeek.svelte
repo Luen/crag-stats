@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
 	import { addDays, averageSessionsPerWeek, type SessionsWeek } from '#lib/sessionsPerWeek';
 
 	type Props = {
@@ -6,6 +7,7 @@
 		byYear: Record<string, SessionsWeek[]>;
 	};
 	let { years, byYear }: Props = $props();
+	const i18n = useI18n();
 
 	let selectedYear = $state<string | null>(null);
 	const year = $derived(
@@ -19,13 +21,13 @@
 <article class="panel">
 	<header>
 		<div class="titles">
-			<h2>Sessions per week</h2>
-			<a class="how" href="/docs/sessions-per-week">How it works</a>
+			<h2>{i18n.t('cards.sessionsPerWeek.titleSessionsPerWeek')}</h2>
+			<a class="how" href="/docs/sessions-per-week">{i18n.t('common.howItWorks')}</a>
 		</div>
 		{#if years.length > 1}
 			<select
 				value={year}
-				aria-label="Sessions year"
+				aria-label={i18n.t('cards.sessionsPerWeek.yearAria')}
 				onchange={(e) => {
 					selectedYear = e.currentTarget.value;
 				}}
@@ -40,18 +42,24 @@
 	</header>
 
 	{#if !weeks.length}
-		<p class="empty">No dated climbing days yet</p>
+		<p class="empty">{i18n.t('cards.sessionsPerWeek.empty')}</p>
 	{:else}
-		<div class="chart" style:--n={weeks.length} aria-label="Sessions per week in {year}">
+		<div
+			class="chart"
+			style:--n={weeks.length}
+			aria-label={i18n.t('cards.sessionsPerWeek.chartAria', { year })}
+		>
 			{#each weeks as w (w.weekStart)}
 				<a
 					class="col"
 					href="/logbook?from={encodeURIComponent(w.weekStart)}&to={encodeURIComponent(
 						addDays(w.weekStart, 6)
 					)}"
-					title="Week {w.week} starting {w.weekStart}: {w.sessions} session{w.sessions === 1
-						? ''
-						: 's'}"
+					title={i18n.t('cards.sessionsPerWeek.weekTitle', {
+						week: w.week,
+						start: w.weekStart,
+						count: w.sessions
+					})}
 				>
 					<span
 						class="bar"
@@ -61,8 +69,8 @@
 				</a>
 			{/each}
 		</div>
-		<p class="avg">Average {avg} sessions / week</p>
-		<p class="hint">A session is a calendar day with at least one ascent.</p>
+		<p class="avg">{i18n.t('cards.sessionsPerWeek.average', { avg })}</p>
+		<p class="hint">{i18n.t('cards.sessionsPerWeek.hint')}</p>
 	{/if}
 </article>
 

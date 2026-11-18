@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
 	import LogbookAutocomplete from '#lib/components/LogbookAutocomplete.svelte';
 	import LogbookDateRange from '#lib/components/LogbookDateRange.svelte';
 	import { SOLO_KINDS } from '#lib/soloKind';
@@ -18,10 +19,76 @@
 		LOGBOOK_TICKS
 	} from '#lib/logbookFilters';
 	import { logbookStyleLabels } from '#lib/logbookStyle';
+	import RichText from '#lib/components/RichText.svelte';
 	import { enhance } from '$app/forms';
 	import type { PageProps } from './$types';
 
 	let { data, form }: PageProps = $props();
+	const i18n = useI18n();
+	const t = i18n.t;
+
+	/**
+	 * Facet checkbox labels theCrag's canonical values (`?style=Sport`, `?tick=Red point` …). The
+	 * value stays the URL parameter; only the visible label follows the catalogue.
+	 */
+	const TICK_KEYS: Record<string, string> = {
+		Onsight: 'ticks.onsight',
+		Flash: 'ticks.flash',
+		'Red point': 'ticks.redpoint',
+		'Pink point': 'ticks.pinkpoint',
+		Tick: 'ticks.tick',
+		Send: 'ticks.send',
+		Clean: 'ticks.clean',
+		Attempt: 'ticks.attempt',
+		'Hang dog': 'ticks.hangdog',
+		Working: 'ticks.working',
+		Retreat: 'ticks.retreat',
+		Repeat: 'ticks.repeat',
+		'Top rope': 'ticks.toprope',
+		Lead: 'ticks.lead',
+		'Free solo': 'ticks.freesolo',
+		Solo: 'ticks.solo',
+		'Roped solo': 'ticks.ropedsolo',
+		'Lead solo': 'ticks.leadsolo',
+		'Aid solo': 'ticks.aidsolo',
+		'All free with rest': 'ticks.allfreewithrest',
+		Dab: 'ticks.dab',
+		Hit: 'ticks.hit',
+		Target: 'ticks.target',
+		Mark: 'ticks.mark'
+	};
+	const STYLE_KEYS: Record<string, string> = {
+		Sport: 'styles.sport',
+		Trad: 'styles.trad',
+		Boulder: 'styles.boulder',
+		'Top rope': 'styles.toprope',
+		'Deep water solo': 'styles.deepWaterSolo',
+		Aid: 'styles.aid',
+		Alpine: 'styles.alpine',
+		Solo: 'styles.solo',
+		Unknown: 'styles.unknown',
+		Other: 'styles.other'
+	};
+	const QUALITY_KEYS: Record<string, string> = {
+		'Mega Classic': 'pages.logbook.qualityMegaClassic',
+		Classic: 'pages.logbook.qualityClassic',
+		'Very Good': 'pages.logbook.qualityVeryGood',
+		Good: 'pages.logbook.qualityGood',
+		Average: 'pages.logbook.qualityAverage',
+		"Don't Bother": 'pages.logbook.qualityDontBother',
+		Crap: 'pages.logbook.qualityCrap'
+	};
+	const SOLO_KEYS: Record<string, string> = {
+		toprope: 'solo.toprope',
+		lead: 'solo.lead',
+		free: 'solo.free',
+		dws: 'solo.dws',
+		aid: 'solo.aid'
+	};
+
+	/** Fall back to the provider value so an unmapped name still renders something. */
+	const labelFor = (keys: Record<string, string>, value: string) =>
+		keys[value] ? t(keys[value]) : value;
 
 	function filterParams() {
 		// Query builder for hrefs, rebuilt when called.
@@ -102,16 +169,16 @@
 		return data.order === 'asc' ? ' ↑' : ' ↓';
 	}
 
-	const WEATHER_LABELS = {
-		heat: 'hot',
-		freeze: 'freezing',
-		rain: 'rainy',
-		snow: 'snowy',
-		fair: 'fair-weather',
-		perfect: 'perfect-weather',
-		wind: 'windy',
-		calm: 'calm/still'
-	} as const;
+	const WEATHER_LABELS: Record<string, string> = {
+		heat: 'pages.logbook.weatherHeat',
+		freeze: 'pages.logbook.weatherFreeze',
+		rain: 'pages.logbook.weatherRain',
+		snow: 'pages.logbook.weatherSnow',
+		fair: 'pages.logbook.weatherFair',
+		perfect: 'pages.logbook.weatherPerfect',
+		wind: 'pages.logbook.weatherWind',
+		calm: 'pages.logbook.weatherCalm'
+	};
 
 	function checked(list: string[], value: string) {
 		return list.includes(value);
@@ -119,63 +186,65 @@
 </script>
 
 <section class="panel head">
-	<h1>Logbook</h1>
+	<h1>{i18n.t('pages.logbook.titleLogbook')}</h1>
 	{#if form?.message}<p role="alert">{form.message}</p>{/if}
 	{#if data.place}<p>
-			Climbing map place filter · <a href="/map">Back to map</a> ·
-			<a href="/logbook">Clear place</a>
+			{t('pages.logbook.placeFilter')} · <a href="/map">{t('pages.logbook.backToMap')}</a> ·
+			<a href="/logbook">{t('pages.logbook.clearPlace')}</a>
 		</p>{/if}
 	<p>
-		{data.total} ascent{data.total === 1 ? '' : 's'}
+		{t('pages.logbook.ascentCount', { count: data.total })}
 		{#if data.route}
-			· selected climb · <a href="/logbook">Clear climb</a>{/if}
+			· {t('pages.logbook.selectedClimb')} ·
+			<a href="/logbook">{t('pages.logbook.clearClimb')}</a>{/if}
 		{#if data.score !== ''}
-			· grade score {data.score}
+			· {t('pages.logbook.gradeScore', { score: data.score })}
 		{/if}
 		{#if data.tcMin !== '' && data.tcMax !== ''}
-			· one pyramid grade row
+			· {t('pages.logbook.onePyramidGradeRow')}
 		{/if}
 		{#if data.day}
 			· {formatCalendarDate(data.day, data.dateDisplay)}
 		{/if}
 		{#if data.sector}
-			· sector {data.sector}
+			· {t('pages.logbook.sectorValue', { sector: data.sector })}
 		{/if}
 		{#if data.sectorPath.length}
-			· sector {data.sectorPath.join(' → ')} · <a href="/logbook">Clear sector</a>{/if}
+			· {t('pages.logbook.sectorValue', { sector: data.sectorPath.join(' → ') })} ·
+			<a href="/logbook">{t('pages.logbook.clearSector')}</a>{/if}
 		{#if data.fa}
 			· FA {data.fa}
 		{/if}
 		{#if data.history === 'pending'}
-			· history pending
+			· {t('pages.logbook.historyPending')}
 		{/if}
 		{#if data.project}
-			· {data.project === 'yes' ? 'projects' : 'not projects'}
+			· {data.project === 'yes' ? t('pages.logbook.projectsOnly') : t('pages.logbook.notProjects')}
 		{/if}
 		{#if data.setter}
-			· {data.setter === 'me' ? 'routes I set' : 'no setter credit found'}
+			· {data.setter === 'me'
+				? t('pages.logbook.routesISet')
+				: t('pages.logbook.noSetterCreditFound')}
 		{/if}
 		{#if data.weather}
-			· {WEATHER_LABELS[data.weather]} days
+			· {t('pages.logbook.weatherDays', { label: labelFor(WEATHER_LABELS, data.weather) })}
 		{/if}
 		{#if data.weatherHighMin !== ''}
-			· daily high ≥{formatTemperature(
-				Number(data.weatherHighMin),
-				data.displayUnits.temperature
-			)}{/if}
+			· {t('pages.logbook.dailyHighAtLeast', {
+				value: formatTemperature(Number(data.weatherHighMin), data.displayUnits.temperature)
+			})}{/if}
 		{#if data.weatherHighMax !== ''}
-			· daily high &lt;{formatTemperature(
-				Number(data.weatherHighMax),
-				data.displayUnits.temperature
-			)}{/if}
+			· {t('pages.logbook.dailyHighBelow', {
+				value: formatTemperature(Number(data.weatherHighMax), data.displayUnits.temperature)
+			})}{/if}
 		{#if data.weatherHighMin !== '' || data.weatherHighMax !== ''}<a href={clearWeatherRangeHref()}
-				>Clear weather range</a
+				>{t('pages.logbook.clearWeatherRange')}</a
 			>{/if}
 		{#if data.rock}
-			· rock {data.rock}
+			· {t('pages.logbook.rockValue', { rock: data.rock })}
 		{/if}
 		{#if data.tagExact.length}
-			· tag {data.tagExact.join(', ')}
+			· {t('pages.logbook.tagValue', { tags: data.tagExact.join(', ') })}
 		{/if}
 	</p>
 </section>
@@ -196,19 +265,19 @@
 		/>{/if}
 	<div class="filter-row names-row">
 		<label class="filter-field search-field"
-			>Search
+			>{t('pages.logbook.labelSearch')}
 			<input
 				name="q"
 				value={data.q}
 				placeholder={data.notesShown
-					? 'Search route, crag, partners, notes…'
-					: 'Search route, crag, partners…'}
+					? t('pages.logbook.placeholderSearchNotes')
+					: t('pages.logbook.placeholderSearch')}
 			/>
 		</label>
 		{#key data}
 			<LogbookAutocomplete
 				name="routeName"
-				label="Route"
+				label={t('pages.logbook.labelRoute')}
 				value={data.options.routes.find((r) => r.key === String(data.route))?.value ??
 					data.routeName}
 				keyName="route"
@@ -217,7 +286,7 @@
 			/>
 			<LogbookAutocomplete
 				name="crag"
-				label="Crag"
+				label={t('pages.logbook.labelCrag')}
 				value={data.crag}
 				keyName="cragKey"
 				keyValue={data.cragKey}
@@ -232,7 +301,7 @@
 		{#key data}
 			<LogbookAutocomplete
 				name="sector"
-				label="Sector / parent"
+				label={t('pages.logbook.labelSectorParent')}
 				value={data.sector}
 				keyName="sectorKey"
 				keyValue={data.sectorKey}
@@ -240,29 +309,35 @@
 			/>
 			<LogbookAutocomplete
 				name="with"
-				label="With (partner name)"
+				label={t('pages.logbook.labelWithPartner')}
 				value={data.with}
 				options={data.options.partners}
 			/>
 		{/key}
 		<label class="filter-field"
-			>Partner match
-			<select name="partnerMatch" aria-label="Partner match" value={data.partnerMatch}>
-				<option value="contains">Partner name contains</option>
-				<option value="exact">Exact partner name</option>
+			>{t('pages.logbook.labelPartnerMatch')}
+			<select
+				name="partnerMatch"
+				aria-label={i18n.t('pages.logbook.ariaPartnerMatch')}
+				value={data.partnerMatch}
+			>
+				<option value="contains">{i18n.t('pages.logbook.optionPartnerNameContains')}</option>
+				<option value="exact">{i18n.t('pages.logbook.optionExactPartnerName')}</option>
 			</select>
 		</label>
 		<label class="rock-filter"
-			>Rock type
+			>{t('pages.logbook.labelRockType')}
 			<select
 				name="rock"
-				aria-label="Rock type"
+				aria-label={i18n.t('pages.logbook.ariaRockType')}
 				value={data.rock}
 				aria-describedby={data.options.rocks.length ? undefined : 'rock-help'}
 			>
-				<option value="">Any rock type</option>
+				<option value="">{i18n.t('pages.logbook.optionAnyRockType')}</option>
 				{#if data.rock && !data.options.rocks.some((r) => r.value === data.rock)}
-					<option value={data.rock}>{data.rock} (not in cached logbook)</option>
+					<option value={data.rock}
+						>{t('pages.logbook.notInCachedLogbook', { rock: data.rock })}</option
+					>
 				{/if}
 				{#each data.options.rocks as rock (rock.value)}<option value={rock.value}
 						>{rock.label}</option
@@ -272,7 +347,7 @@
 	</div>
 
 	{#if !data.options.rocks.length}<p class="filter-help" id="rock-help">
-			No rock type tags cached for logged routes yet.
+			{t('pages.logbook.noRockTagsCached')}
 		</p>{/if}
 
 	<div class="filter-row">
@@ -286,115 +361,145 @@
 	</div>
 
 	<div class="filter-row">
-		<select name="solo" aria-label="Solo type" value={data.solo}>
-			<option value="">Any solo type</option>
+		<select name="solo" aria-label={i18n.t('pages.logbook.ariaSoloType')} value={data.solo}>
+			<option value="">{i18n.t('pages.logbook.optionAnySoloType')}</option>
 			{#each SOLO_KINDS as kind (kind.kind)}
-				<option value={kind.kind}>{kind.label}</option>
+				<option value={kind.kind}>{labelFor(SOLO_KEYS, kind.kind)}</option>
 			{/each}
 		</select>
-		<select name="band" aria-label="Grade band" value={String(data.band)}>
-			<option value="">Any band</option>
-			<option value="1">Beginner</option>
-			<option value="2">Intermediate</option>
-			<option value="3">Experienced</option>
-			<option value="4">Expert</option>
-			<option value="5">Elite</option>
+		<select
+			name="band"
+			aria-label={i18n.t('pages.logbook.ariaGradeBand')}
+			value={String(data.band)}
+		>
+			<option value="">{i18n.t('pages.logbook.optionAnyBand')}</option>
+			<option value="1">{i18n.t('pages.logbook.optionBeginner')}</option>
+			<option value="2">{i18n.t('pages.logbook.optionIntermediate')}</option>
+			<option value="3">{i18n.t('pages.logbook.optionExperienced')}</option>
+			<option value="4">{i18n.t('pages.logbook.optionExpert')}</option>
+			<option value="5">{i18n.t('pages.logbook.optionElite')}</option>
 		</select>
-		<select name="minScore" aria-label="Minimum route grade" value={String(data.minScore)}>
-			<option value="">Min route grade</option>
+		<select
+			name="minScore"
+			aria-label={i18n.t('pages.logbook.ariaMinimumRouteGrade')}
+			value={String(data.minScore)}
+		>
+			<option value="">{i18n.t('pages.logbook.optionMinRouteGrade')}</option>
 			{#each data.gradeOptions as g (g.score)}
 				<option value={g.score}>{g.label}</option>
 			{/each}
 		</select>
-		<select name="maxScore" aria-label="Maximum route grade" value={String(data.maxScore)}>
-			<option value="">Max route grade</option>
+		<select
+			name="maxScore"
+			aria-label={i18n.t('pages.logbook.ariaMaximumRouteGrade')}
+			value={String(data.maxScore)}
+		>
+			<option value="">{i18n.t('pages.logbook.optionMaxRouteGrade')}</option>
 			{#each data.gradeOptions as g (g.score)}
 				<option value={g.score}>{g.label}</option>
 			{/each}
 		</select>
-		<select name="fa" aria-label="First ascent mark" value={data.fa}>
-			<option value="">Any FA mark</option>
-			<option value="any">My FA or FFA</option>
-			<option value="FA">My FA</option>
-			<option value="FFA">My FFA</option>
-			<option value="none">No FA/FFA mark</option>
+		<select name="fa" aria-label={i18n.t('pages.logbook.ariaFirstAscentMark')} value={data.fa}>
+			<option value="">{i18n.t('pages.logbook.optionAnyFaMark')}</option>
+			<option value="any">{i18n.t('pages.logbook.optionMyFaOrFfa')}</option>
+			<option value="FA">{i18n.t('pages.logbook.optionMyFa')}</option>
+			<option value="FFA">{i18n.t('pages.logbook.optionMyFfa')}</option>
+			<option value="none">{i18n.t('pages.logbook.optionNoFaFfaMark')}</option>
 		</select>
-		<select name="setter" aria-label="Route setter" value={data.setter}>
-			<option value="">Any setter</option>
-			<option value="me">Routes I set</option>
-			<option value="none">No setter credit found</option>
+		<select name="setter" aria-label={i18n.t('pages.logbook.ariaRouteSetter')} value={data.setter}>
+			<option value="">{i18n.t('pages.logbook.optionAnySetter')}</option>
+			<option value="me">{i18n.t('pages.logbook.optionRoutesISet')}</option>
+			<option value="none">{i18n.t('pages.logbook.optionNoSetterCreditFound')}</option>
 		</select>
-		<select name="project" aria-label="theCrag project flag" value={data.project}>
-			<option value="">Any project flag</option>
-			<option value="yes">Project</option>
-			<option value="no">Not a project</option>
+		<select
+			name="project"
+			aria-label={i18n.t('pages.logbook.ariaTheCragProjectFlag')}
+			value={data.project}
+		>
+			<option value="">{i18n.t('pages.logbook.optionAnyProjectFlag')}</option>
+			<option value="yes">{i18n.t('pages.logbook.optionProject')}</option>
+			<option value="no">{i18n.t('pages.logbook.optionNotAProject')}</option>
 		</select>
 		{#if data.historyFilter}
-			<select name="history" aria-label="Route history import" value={data.history}>
-				<option value="">Any history status</option>
-				<option value="pending">History not checked yet</option>
+			<select
+				name="history"
+				aria-label={i18n.t('pages.logbook.ariaRouteHistoryImport')}
+				value={data.history}
+			>
+				<option value="">{i18n.t('pages.logbook.optionAnyHistoryStatus')}</option>
+				<option value="pending">{i18n.t('pages.logbook.optionHistoryNotCheckedYet')}</option>
 			</select>
 		{/if}
 		{#if data.weatherAvailable || data.weather}
-			<select name="weather" aria-label="Weather on the day" value={data.weather}>
-				<option value="">Any weather</option>
+			<select
+				name="weather"
+				aria-label={i18n.t('pages.logbook.ariaWeatherOnTheDay')}
+				value={data.weather}
+			>
+				<option value="">{i18n.t('pages.logbook.optionAnyWeather')}</option>
 				<option value="fair"
-					>Fair day ({data.displayUnits.temperature === 'fahrenheit' ? '59–77°F' : '15–25°C'}, dry)</option
+					>{data.displayUnits.temperature === 'fahrenheit'
+						? t('pages.logbook.optionFairDayImperial')
+						: t('pages.logbook.optionFairDayMetric')}</option
 				>
-				<option value="perfect">Perfect day (fair, calm, not humid)</option>
+				<option value="perfect">{i18n.t('pages.logbook.optionPerfectDayFairCalmNot')}</option>
 				<option value="heat"
-					>Hot day ({data.displayUnits.temperature === 'fahrenheit' ? '95°F+' : '35°C+'})</option
+					>{data.displayUnits.temperature === 'fahrenheit'
+						? t('pages.logbook.optionHotDayImperial')
+						: t('pages.logbook.optionHotDayMetric')}</option
 				>
 				<option value="freeze"
-					>Freezing ({data.displayUnits.temperature === 'fahrenheit'
-						? 'low 32°F or below'
-						: 'low 0°C or below'})</option
+					>{data.displayUnits.temperature === 'fahrenheit'
+						? t('pages.logbook.optionFreezingImperial')
+						: t('pages.logbook.optionFreezingMetric')}</option
 				>
-				<option value="rain">Rainy day</option>
-				<option value="snow">Snowy day</option>
+				<option value="rain">{i18n.t('pages.logbook.optionRainyDay')}</option>
+				<option value="snow">{i18n.t('pages.logbook.optionSnowyDay')}</option>
 				<option value="wind"
-					>Windy day ({data.displayUnits.wind === 'mph' ? '31 mph+' : '50 km/h+'})</option
+					>{data.displayUnits.wind === 'mph'
+						? t('pages.logbook.optionWindyDayImperial')
+						: t('pages.logbook.optionWindyDayMetric')}</option
 				>
 				<option value="calm"
-					>Calm / still day ({data.displayUnits.wind === 'mph'
-						? 'under 16 mph'
-						: 'under 25 km/h'})</option
+					>{data.displayUnits.wind === 'mph'
+						? t('pages.logbook.optionStillDayImperial')
+						: t('pages.logbook.optionStillDayMetric')}</option
 				>
 			</select>
 		{/if}
-		<select name="partners" aria-label="Partners" value={data.partners}>
-			<option value="">Any partners</option>
-			<option value="has">Has partners</option>
-			<option value="missing">Missing partners</option>
+		<select name="partners" aria-label={i18n.t('pages.logbook.ariaPartners')} value={data.partners}>
+			<option value="">{i18n.t('pages.logbook.optionAnyPartners')}</option>
+			<option value="has">{i18n.t('pages.logbook.optionHasPartners')}</option>
+			<option value="missing">{i18n.t('pages.logbook.optionMissingPartners')}</option>
 		</select>
 	</div>
 
 	<fieldset class="facet">
-		<legend>Style</legend>
+		<legend>{t('pages.logbook.facetStyle')}</legend>
 		<div class="checks">
 			{#each includeSelectedOptions(LOGBOOK_STYLES, data.styles) as style (style)}
 				<label class="check">
 					<input type="checkbox" name="style" value={style} checked={checked(data.styles, style)} />
-					{style}
+					{labelFor(STYLE_KEYS, style)}
 				</label>
 			{/each}
 		</div>
 	</fieldset>
 
 	<fieldset class="facet">
-		<legend>Tick type</legend>
+		<legend>{t('pages.logbook.facetTick')}</legend>
 		<div class="checks">
 			{#each includeSelectedOptions(LOGBOOK_TICKS, data.ticks) as tick (tick)}
 				<label class="check">
 					<input type="checkbox" name="tick" value={tick} checked={checked(data.ticks, tick)} />
-					{tick}
+					{labelFor(TICK_KEYS, tick)}
 				</label>
 			{/each}
 		</div>
 	</fieldset>
 
 	<fieldset class="facet">
-		<legend>Quality</legend>
+		<legend>{t('pages.logbook.facetQuality')}</legend>
 		<div class="checks">
 			{#each LOGBOOK_QUALITIES as quality (quality)}
 				<label class="check">
@@ -404,18 +509,18 @@
 						value={quality}
 						checked={checked(data.qualities, quality)}
 					/>
-					{quality}
+					{labelFor(QUALITY_KEYS, quality)}
 				</label>
 			{/each}
 		</div>
 	</fieldset>
 
 	<fieldset class="facet">
-		<legend>Min stars</legend>
+		<legend>{t('pages.logbook.facetMinStars')}</legend>
 		<div class="checks">
 			<label class="check">
 				<input type="radio" name="minStars" value="" checked={data.minStars === ''} />
-				Any
+				{t('pages.logbook.optionAny')}
 			</label>
 			<label class="check">
 				<input type="radio" name="minStars" value="1" checked={data.minStars === 1} />
@@ -433,7 +538,7 @@
 	</fieldset>
 
 	<fieldset class="facet">
-		<legend>Missing route data</legend>
+		<legend>{t('pages.logbook.facetMissing')}</legend>
 		<div class="checks">
 			<label class="check">
 				<input
@@ -442,7 +547,7 @@
 					value="height"
 					checked={checked(data.missing, 'height')}
 				/>
-				Missing height
+				{t('pages.logbook.missingHeight')}
 			</label>
 			<label class="check">
 				<input
@@ -451,7 +556,7 @@
 					value="bolts"
 					checked={checked(data.missing, 'bolts')}
 				/>
-				Missing bolts
+				{t('pages.logbook.missingBolts')}
 			</label>
 			<label class="check">
 				<input
@@ -460,7 +565,7 @@
 					value="pitch"
 					checked={checked(data.missing, 'pitch')}
 				/>
-				No pitch list cached
+				{t('pages.logbook.missingPitch')}
 			</label>
 			{#if data.canFilterMissingWeather}
 				<label class="check">
@@ -470,14 +575,19 @@
 						value="weather"
 						checked={checked(data.missing, 'weather')}
 					/>
-					No weather cached
+					{t('pages.logbook.missingWeather')}
 				</label>
 			{/if}
 		</div>
 	</fieldset>
 
 	<div class="filter-row">
-		<input name="tag" value={data.tag} placeholder="Tag contains…" aria-label="Route tag" />
+		<input
+			name="tag"
+			value={data.tag}
+			placeholder={i18n.t('pages.logbook.placeholderTagContains')}
+			aria-label={i18n.t('pages.logbook.ariaRouteTag')}
+		/>
 		{#each data.tagExact as exact, i (exact)}
 			{#if i > 0}
 				<input type="hidden" name="tagExact" value={exact} />
@@ -486,15 +596,15 @@
 		<input
 			name="tagExact"
 			value={data.tagExact[0] ?? ''}
-			placeholder="Exact tag (Steepness:Vertical)"
-			aria-label="Exact route tag Category:Name"
+			placeholder={i18n.t('pages.logbook.placeholderExactTagSteepnessVertical')}
+			aria-label={i18n.t('pages.logbook.ariaExactRouteTagCategoryName')}
 		/>
 	</div>
 
 	<div class="filter-row actions">
 		<label class="check">
 			<input type="checkbox" name="multipitch" value="1" checked={data.multipitch} />
-			Multipitch only
+			{t('pages.logbook.multipitchOnly')}
 		</label>
 		{#if data.tcMin !== '' && data.tcMax !== ''}
 			<input type="hidden" name="tcMin" value={data.tcMin} />
@@ -509,63 +619,57 @@
 		{#if data.day}
 			<input type="hidden" name="day" value={data.day} />
 		{/if}
-		<select name="sort" aria-label="Sort by" value={data.sort}>
-			<option value="date">Sort: Date</option>
-			<option value="grade">Sort: Grade</option>
-			<option value="quality">Sort: Quality</option>
-			<option value="stars">Sort: Stars</option>
-			<option value="style">Sort: Style</option>
-			<option value="tick">Sort: Tick</option>
-			<option value="ascents">Sort: My ascents on route</option>
-			<option value="popularity">Sort: Popularity</option>
+		<select name="sort" aria-label={i18n.t('pages.logbook.ariaSortBy')} value={data.sort}>
+			<option value="date">{i18n.t('pages.logbook.optionSortDate')}</option>
+			<option value="grade">{i18n.t('pages.logbook.optionSortGrade')}</option>
+			<option value="quality">{i18n.t('pages.logbook.optionSortQuality')}</option>
+			<option value="stars">{i18n.t('pages.logbook.optionSortStars')}</option>
+			<option value="style">{i18n.t('pages.logbook.optionSortStyle')}</option>
+			<option value="tick">{i18n.t('pages.logbook.optionSortTick')}</option>
+			<option value="ascents">{i18n.t('pages.logbook.optionSortMyAscentsOnRoute')}</option>
+			<option value="popularity">{i18n.t('pages.logbook.optionSortPopularity')}</option>
 		</select>
-		<select name="order" aria-label="Sort order" value={data.order}>
-			<option value="desc">Descending</option>
-			<option value="asc">Ascending</option>
+		<select name="order" aria-label={i18n.t('pages.logbook.ariaSortOrder')} value={data.order}>
+			<option value="desc">{i18n.t('pages.logbook.optionDescending')}</option>
+			<option value="asc">{i18n.t('pages.logbook.optionAscending')}</option>
 		</select>
-		<button type="submit">Apply filters</button>
+		<button type="submit">{i18n.t('pages.logbook.buttonApplyFilters')}</button>
 	</div>
 	<p class="hint">
-		From/to dates are inclusive. Unknown style finds missing, blank, or literal Unknown route
-		styles, even with an ascent protection override; Other finds present, unsupported route styles.
-		Route grade min/max use your display system and exclude boulders (filter style for those).
-		Missing route data finds routes without a recorded height, bolt count, or cached pitch list
-		after route info was fetched. No pitch list cached also matches single-pitch and boulder routes
-		when theCrag omits pitches, so it is not a list of multipitch routes missing data. The
-		pitch-list filter excludes routes whose route info was never fetched (History not checked is a
-		separate, route-history filter); Tag contains searches tag names; Exact tag matches
-		Category:Name (case-insensitive, repeat <code>tagExact</code> in the URL for AND). Categories include
-		Rock type, Steepness, Aspect, Style, Weather, Walk in time, Legality, and Condition when shown on
-		chips. Project filters exclude unknown flags. No setter credit found includes routes whose history
-		has not been imported. Weather filters use the opt-in Open-Meteo cache and only match outdoor ascents
-		with cached weather for that day; the owner can also list outdoor ascents with no weather cached yet.
+		<RichText message={t('pages.logbook.hint')} />
 	</p>
 </form>
 
 <!-- Keyboard users need to reach the horizontally scrollable table wrapper above the mobile breakpoint. -->
 <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-<section class="panel table-wrap" aria-label="Logbook ascents" tabindex="0">
+<section
+	class="panel table-wrap"
+	aria-label={i18n.t('pages.logbook.ariaLogbookAscents')}
+	tabindex="0"
+>
 	<table>
 		<thead>
 			<tr>
 				<th
-					><a href={sortHref('date')} class:active={data.sort === 'date'}>Date{sortMark('date')}</a
+					><a href={sortHref('date')} class:active={data.sort === 'date'}
+						>{t('pages.logbook.thDate')}{sortMark('date')}</a
 					></th
 				>
-				<th>Route</th>
-				<th class="weather-cell">Weather</th>
+				<th>{t('pages.logbook.thRoute')}</th>
+				<th class="weather-cell">{t('pages.logbook.thWeather')}</th>
 				<th
 					><a href={sortHref('grade')} class:active={data.sort === 'grade'}
-						>Grade{sortMark('grade')}</a
+						>{t('pages.logbook.thGrade')}{sortMark('grade')}</a
 					></th
 				>
 				<th
-					><a href={sortHref('tick')} class:active={data.sort === 'tick'}>Tick{sortMark('tick')}</a
+					><a href={sortHref('tick')} class:active={data.sort === 'tick'}
+						>{t('pages.logbook.thTick')}{sortMark('tick')}</a
 					></th
 				>
 				<th
 					><a href={sortHref('quality')} class:active={data.sort === 'quality'}
-						>Quality{sortMark('quality')}</a
+						>{t('pages.logbook.thQuality')}{sortMark('quality')}</a
 					></th
 				>
 				<th
@@ -576,18 +680,19 @@
 					><a
 						href={sortHref('ascents')}
 						class:active={data.sort === 'ascents'}
-						title="Your ascents on this route">×{sortMark('ascents')}</a
+						title={i18n.t('pages.logbook.titleYourAscentsOnThisRoute')}>×{sortMark('ascents')}</a
 					></th
 				>
 				<th
 					><a
 						href={sortHref('popularity')}
 						class:active={data.sort === 'popularity'}
-						title="Community popularity">Pop.{sortMark('popularity')}</a
+						title={i18n.t('pages.logbook.titleCommunityPopularity')}
+						>{t('pages.logbook.thPopularity')}{sortMark('popularity')}</a
 					></th
 				>
-				<th>With</th>
-				<th>Crag / sector</th>
+				<th>{t('pages.logbook.thWith')}</th>
+				<th>{t('pages.logbook.thCragSector')}</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -605,15 +710,18 @@
 								{#if row.firstAscent}
 									<span
 										class="chip fa"
-										title={row.firstAscent === 'FFA' ? 'First free ascent' : 'First ascent'}
-										>{row.firstAscent}</span
+										title={row.firstAscent === 'FFA'
+											? t('pages.logbook.firstFreeAscentTitle')
+											: t('pages.logbook.firstAscentTitle')}>{row.firstAscent}</span
 									>
 								{/if}
 								{#if row.pitchLabel}
 									<span class="chip">{row.pitchLabel}</span>
 								{/if}
 								{#if row.numberAttempts != null && row.numberAttempts > 1}
-									<span class="chip">{row.numberAttempts} attempts</span>
+									<span class="chip"
+										>{t('pages.logbook.attempts', { count: row.numberAttempts })}</span
+									>
 								{/if}
 							</div>
 							<div class="mobile-grade">
@@ -626,19 +734,21 @@
 							{#if row.cragName}
 								·&nbsp;<a
 									href="/logbook?crag={encodeURIComponent(row.cragName)}"
-									title="Filter logbook to this crag">{row.cragName}</a
+									title={i18n.t('pages.logbook.titleFilterLogbookToThisCrag')}>{row.cragName}</a
 								>{#if row.cragUrl}<a
 										class="ext"
 										href={row.cragUrl}
 										target="_blank"
 										rel="noreferrer"
-										aria-label="Open {row.cragName} on theCrag">&nbsp;↗</a
+										aria-label={t('pages.logbook.ariaOpenOnTheCrag', {
+											name: row.cragName
+										})}>&nbsp;↗</a
 									>{/if}
 							{/if}
 							{#if row.parentName}
 								·&nbsp;<a
 									href="/logbook?sector={encodeURIComponent(row.parentName)}"
-									title="Filter logbook to this sector">{row.parentName}</a
+									title={i18n.t('pages.logbook.titleFilterLogbookToThisSector')}>{row.parentName}</a
 								>
 							{/if}
 							{#if row.quality}
@@ -648,21 +758,29 @@
 								·&nbsp;<span>★ {row.stars}</span>
 							{/if}
 							{#if row.myAscentsOnRoute > 1}
-								·&nbsp;<span title="Your ascents on this route">×{row.myAscentsOnRoute}</span>
+								·&nbsp;<span title={i18n.t('pages.logbook.titleYourAscentsOnThisRoute')}
+									>×{row.myAscentsOnRoute}</span
+								>
 							{/if}
 							{#if row.routePopularity != null}
-								·&nbsp;<span title="Community popularity"
+								·&nbsp;<span title={i18n.t('pages.logbook.titleCommunityPopularity')}
 									>Pop {Math.round(row.routePopularity)}</span
 								>
 							{/if}
 						</div>
-						<div class="mobile-styles" role="group" aria-label="Climb styles">
+						<div
+							class="mobile-styles"
+							role="group"
+							aria-label={i18n.t('pages.logbook.ariaClimbStyles')}
+						>
 							{#each logbookStyleLabels(row) as label (label)}
 								<StyleBadge style={label} />
 							{/each}
 						</div>
 						{#if row.partners}
-							<div class="mobile-partners">Partners on this ascent: {row.partners}</div>
+							<div class="mobile-partners">
+								{t('pages.logbook.partnersOnAscent', { partners: row.partners })}
+							</div>
 						{/if}
 						<TagChips tags={row.tags} />
 						<!-- Narrow screens hide the Weather column; keep chips beside the route there. -->
@@ -691,19 +809,25 @@
 								<input type="hidden" name="provider" value={row.routeProvider} />
 								<input type="hidden" name="route" value={row.routeExternalId} />
 								{#if row.firstAscent}
-									<button type="submit" name="kind" value="">Unmark {row.firstAscent}</button>
+									<button type="submit" name="kind" value=""
+										>{t('pages.logbook.unmark', { mark: row.firstAscent })}</button
+									>
 								{:else}
 									<button
 										type="submit"
 										name="kind"
 										value="FA"
-										aria-label="Mark FA: {row.displayName} as my first ascent">Mark FA</button
+										aria-label={t('pages.logbook.ariaMarkFa', {
+											name: row.displayName
+										})}>{t('pages.logbook.markFa')}</button
 									>
 									<button
 										type="submit"
 										name="kind"
 										value="FFA"
-										aria-label="Mark FFA: {row.displayName} as my first free ascent">FFA</button
+										aria-label={t('pages.logbook.ariaMarkFfa', {
+											name: row.displayName
+										})}>{t('pages.logbook.markFfa')}</button
 									>
 								{/if}
 							</form>
@@ -721,39 +845,49 @@
 						{#if row.weather}
 							<div class="weather-values">
 								{#if row.weatherLocation}<span title={row.weatherLocation.precision}
-										>Location: {row.weatherLocation.source === 'place'
-											? 'Approximate nearby place'
-											: row.weatherLocation.source === 'route'
-												? 'Route'
-												: row.weatherLocation.source === 'polygon'
-													? 'Approximate area polygon'
-													: row.weatherLocation.source === 'cached'
-														? 'Cached point'
-														: 'Approximate crag/sector'} · {row.weatherLocation.name}</span
+										>{t('pages.logbook.locationPrefix', {
+											source:
+												row.weatherLocation.source === 'place'
+													? t('pages.logbook.weatherSourcePlace')
+													: row.weatherLocation.source === 'route'
+														? t('pages.logbook.weatherSourceRoute')
+														: row.weatherLocation.source === 'polygon'
+															? t('pages.logbook.weatherSourcePolygon')
+															: row.weatherLocation.source === 'cached'
+																? t('pages.logbook.weatherSourceCached')
+																: t('pages.logbook.weatherSourceCrag'),
+											name: row.weatherLocation.name
+										})}</span
 									>{/if}
 								<span
-									>High {row.weather.tempMaxC == null
-										? '—'
-										: formatTemperatureDetail(
-												row.weather.tempMaxC,
-												data.displayUnits.temperature
-											)}</span
+									>{t('pages.logbook.weatherHigh', {
+										value:
+											row.weather.tempMaxC == null
+												? '—'
+												: formatTemperatureDetail(
+														row.weather.tempMaxC,
+														data.displayUnits.temperature
+													)
+									})}</span
 								>
 								<span
-									>Low {row.weather.tempMinC == null
-										? '—'
-										: formatTemperatureDetail(
-												row.weather.tempMinC,
-												data.displayUnits.temperature
-											)}</span
+									>{t('pages.logbook.weatherLow', {
+										value:
+											row.weather.tempMinC == null
+												? '—'
+												: formatTemperatureDetail(
+														row.weather.tempMinC,
+														data.displayUnits.temperature
+													)
+									})}</span
 								>
 								<span
-									>Rain {row.weather.precipMm == null
-										? '—'
-										: formatPrecipitation(
-												row.weather.precipMm,
-												data.displayUnits.precipitation
-											)}</span
+									>{t('pages.logbook.weatherRainfall', {
+										value:
+											row.weather.precipMm == null
+												? '—'
+												: formatPrecipitation(row.weather.precipMm, data.displayUnits.precipitation)
+									})}</span
 								>
 							</div>
 							<WeatherChips
@@ -778,10 +912,14 @@
 					</td>
 					<td class="muted desktop-cell">{row.quality || '—'}</td>
 					<td class="muted desktop-cell">{row.stars != null ? row.stars : '—'}</td>
-					<td class="muted num desktop-cell" title="Your ascents on this route"
-						>{row.myAscentsOnRoute}</td
+					<td
+						class="muted num desktop-cell"
+						title={i18n.t('pages.logbook.titleYourAscentsOnThisRoute')}>{row.myAscentsOnRoute}</td
 					>
-					<td class="muted num desktop-cell" title="Community popularity">
+					<td
+						class="muted num desktop-cell"
+						title={i18n.t('pages.logbook.titleCommunityPopularity')}
+					>
 						{row.routePopularity != null ? Math.round(row.routePopularity) : '—'}
 					</td>
 					<td class="muted desktop-cell">{row.partners || '—'}</td>
@@ -789,7 +927,7 @@
 						{#if row.cragName}
 							<a
 								href="/logbook?crag={encodeURIComponent(row.cragName)}"
-								title="Filter logbook to this crag">{row.cragName}</a
+								title={i18n.t('pages.logbook.titleFilterLogbookToThisCrag')}>{row.cragName}</a
 							>
 							{#if row.cragUrl}
 								<a class="ext" href={row.cragUrl} target="_blank" rel="noreferrer">↗</a>
@@ -810,11 +948,11 @@
 {#if data.pages > 1}
 	<nav class="pager">
 		{#if data.page > 1}
-			<a href={pageHref(data.page - 1)}>← Prev</a>
+			<a href={pageHref(data.page - 1)}>{t('pages.logbook.buttonPrev')}</a>
 		{/if}
-		<span>Page {data.page} / {data.pages}</span>
+		<span>{t('pages.logbook.pageOf', { page: data.page, pages: data.pages })}</span>
 		{#if data.page < data.pages}
-			<a href={pageHref(data.page + 1)}>Next →</a>
+			<a href={pageHref(data.page + 1)}>{t('pages.logbook.buttonNext')}</a>
 		{/if}
 	</nav>
 {/if}

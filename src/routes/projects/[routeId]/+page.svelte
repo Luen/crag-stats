@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
 	import ProjectReadiness from '#lib/components/ProjectReadiness.svelte';
 	import ProjectSelection from '#lib/components/ProjectSelection.svelte';
 	import ProjectRouteBeta from '#lib/components/ProjectRouteBeta.svelte';
@@ -7,6 +8,7 @@
 	import { formatCalendarDate, formatNumber } from '#lib/dates';
 	import type { PageProps } from './$types';
 	let { data }: PageProps = $props();
+	const i18n = useI18n();
 	const p = $derived(data.project);
 	const progress = $derived(data.progress);
 	function count(n: number) {
@@ -17,18 +19,26 @@
 	}
 </script>
 
-<svelte:head><title>{p.routeName} · Projects · Crag Stats</title></svelte:head>
+<svelte:head
+	><title>{i18n.t('pages.projectDetail.pageTitle', { name: p.routeName })}</title></svelte:head
+>
 
-<a class="back" href="/projects">← All projects</a>
+<a class="back" href="/projects">{i18n.t('pages.projectDetail.linkAllProjects')}</a>
 <header class="head">
-	<p class="eyebrow">{p.status === 'sent' ? 'Sent project' : 'Working on'}</p>
+	<p class="eyebrow">
+		{p.status === 'sent'
+			? i18n.t('pages.projectDetail.eyebrowSentProject')
+			: i18n.t('pages.projects.titleWorkingOn')}
+	</p>
 	<h1>
 		{p.routeName}{#if p.gradeLabel}
 			· {p.gradeLabel}{/if}
 	</h1>
 	<p class="muted">{p.areaLabel}</p>
 	{#if p.gearStyle}<StyleBadge style={p.gearStyle} />{/if}
-	{#if p.href}<a href={p.href} target="_blank" rel="noreferrer">View on theCrag ↗</a>{/if}
+	{#if p.href}<a href={p.href} target="_blank" rel="noreferrer"
+			>{i18n.t('pages.projectDetail.linkViewOnTheCrag')}</a
+		>{/if}
 </header>
 
 {#if data.canManageProjects}
@@ -42,46 +52,53 @@
 
 <div class="overview">
 	<section class="panel" aria-labelledby="readiness-title">
-		<h2 id="readiness-title">Project progression</h2>
+		<h2 id="readiness-title">{i18n.t('pages.projectDetail.titleProjectProgression')}</h2>
 		<ProjectReadiness pct={progress.pct} horizon={progress.horizon} />
 		<p class="totals">
-			{count(progress.stats.sessionCount)} sessions · {count(progress.stats.tryCount)} unsuccessful tries
-			· {count(progress.stats.sendCount)} sends
+			{i18n.t('pages.projectDetail.summaryTotals', {
+				sessions: progress.stats.sessionCount,
+				tries: progress.stats.tryCount,
+				sends: progress.stats.sendCount
+			})}
 		</p>
 		{#if progress.support}
 			<p class="muted">
-				Supporting pyramid in the past 365 days, in this discipline and grade scale: {count(
-					progress.support.n1
-				)}/2 distinct routes one grade step below; {count(progress.support.n2)}/4 two steps below.
+				{i18n.t('pages.projectDetail.leadSupportingPyramid', {
+					n1: count(progress.support.n1),
+					n2: count(progress.support.n2)
+				})}
 			</p>
 		{/if}
 		{#if progress.excludedEntries > 0}<p class="muted">
-				{count(progress.excludedEntries)} entries with missing, invalid or future dates are excluded from
-				progression and estimates.
+				{i18n.t('pages.projectDetail.hintExcludedEntries', {
+					count: count(progress.excludedEntries)
+				})}
 			</p>{/if}
-		<a href="#method">How the estimate works ↓</a>
+		<a href="#method">{i18n.t('pages.projectDetail.linkHowTheEstimateWorks')}</a>
 	</section>
 	<section class="panel" aria-labelledby="forecast-title">
-		<h2 id="forecast-title">Estimated work remaining</h2>
+		<h2 id="forecast-title">{i18n.t('pages.projectDetail.titleEstimatedWorkRemaining')}</h2>
 		{#if progress.forecast}
 			{@const forecast = progress.forecast}
 			{#if forecast.sessions}<p class="estimate">
-					{range(forecast.sessions)} more {forecast.sessions[1] === 1 ? 'session' : 'sessions'}
-				</p>{:else}<p>Not enough comparable projects for a session estimate.</p>{/if}
+					{i18n.t('pages.projectDetail.estimateSessions', {
+						range: range(forecast.sessions),
+						count: forecast.sessions[1]
+					})}
+				</p>{:else}<p>{i18n.t('pages.projectDetail.estimateNoSessionData')}</p>{/if}
 			{#if forecast.tries}<p class="estimate">
-					{range(forecast.tries)} more tries, including the send
-				</p>{:else}<p>Not enough comparable projects for an attempt estimate.</p>{/if}
+					{i18n.t('pages.projectDetail.estimateTries', { range: range(forecast.tries) })}
+				</p>{:else}<p>{i18n.t('pages.projectDetail.estimateNoAttemptData')}</p>{/if}
 			<p class="muted">
-				Historical comparison: {count(forecast.sampleCount)} completed outdoor projects in the same discipline
-				and scale, within one grade step. Session and attempt estimates need at least three projects that
-				took more work than you have logged so far.
+				{i18n.t('pages.projectDetail.leadHistoricalComparison', {
+					count: count(forecast.sampleCount)
+				})}
 			</p>
 			<p class="muted">
-				This is a rough comparison with completed projects, not a prediction. Unsent projects and
-				unlogged tries are absent; a send can come earlier or much later.
+				{i18n.t('pages.projectDetail.noteRoughComparison')}
 			</p>
 		{:else}<p>
-				This project is sent. The session history below records the work and later repeats.
+				{i18n.t('pages.projectDetail.noteProjectSent')}
 			</p>{/if}
 	</section>
 </div>
@@ -89,40 +106,48 @@
 {#if p.publicBeta}<div class="panel beta"><ProjectRouteBeta beta={p.publicBeta} /></div>{/if}
 
 <section class="panel history" aria-labelledby="sessions-title">
-	<h2 id="sessions-title">Session progression</h2>
+	<h2 id="sessions-title">{i18n.t('pages.projectDetail.titleSessionProgression')}</h2>
 	<p class="muted">
-		Readiness is recalculated using evidence available by each climbing day. Logged effort measures
-		practice, not moves completed.
+		{i18n.t('pages.projectDetail.leadReadinessRecalculated')}
 	</p>
 	{#if progress.sessions.length}
 		<!-- Mobile table overflow must be scrollable with a keyboard. -->
 		<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-		<div class="table-scroll" role="region" aria-label="Session progression table" tabindex="0">
+		<div
+			class="table-scroll"
+			role="region"
+			aria-label={i18n.t('pages.projectDetail.ariaSessionProgressionTable')}
+			tabindex="0"
+		>
 			<table>
 				<thead
 					><tr
-						><th>Climbing day</th><th>Failed tries</th><th>Cumulative failed tries</th><th>Sends</th
-						><th>Approximate readiness</th></tr
+						><th>{i18n.t('pages.projectDetail.thClimbingDay')}</th><th
+							>{i18n.t('pages.projectDetail.thFailedTries')}</th
+						><th>{i18n.t('pages.projectDetail.thCumulativeFailedTries')}</th><th
+							>{i18n.t('pages.projectDetail.thSends')}</th
+						><th>{i18n.t('cards.projectReadiness.approximate')}</th></tr
 					></thead
 				><tbody>
 					{#each progress.sessions as session (session.day)}<tr>
 							<td>{formatCalendarDate(session.day, data.dateDisplay)}</td><td
 								>{count(session.failedTries)}</td
 							><td>{count(session.cumulativeTries)}</td><td>{count(session.sends)}</td><td
-								>{session.readiness == null ? 'Unknown grade' : `${count(session.readiness)}%`}</td
+								>{session.readiness == null
+									? i18n.t('pages.projectDetail.labelUnknownGrade')
+									: `${count(session.readiness)}%`}</td
 							>
 						</tr>{/each}
 				</tbody>
 			</table>
 		</div>
-	{:else}<p>No valid dated sessions yet.</p>{/if}
+	{:else}<p>{i18n.t('pages.projectDetail.emptyNoValidDatedSessions')}</p>{/if}
 </section>
 
 <section class="panel history" aria-labelledby="tries-title">
-	<h2 id="tries-title">Previous tries &amp; sends</h2>
+	<h2 id="tries-title">{i18n.t('pages.projectDetail.titlePreviousTriesAndSends')}</h2>
 	<p class="muted">
-		Newest first. Attempt counts on send entries include the successful try and can overlap
-		separately logged failures.
+		{i18n.t('pages.projectDetail.leadNewestFirst')}
 	</p>
 	<ul class="tries">
 		{#each data.attempts as attempt (attempt.id)}
@@ -130,12 +155,14 @@
 				<span
 					>{attempt.day
 						? formatCalendarDate(attempt.day, data.dateDisplay)
-						: 'Unknown climbing day'}</span
+						: i18n.t('pages.projectDetail.labelUnknownClimbingDay')}</span
 				>
 				<TickTypeIcon tick={attempt.tickLabel || attempt.tickType} />
 				{#if attempt.numberAttempts != null && attempt.numberAttempts > 0}<span
 						>{count(attempt.numberAttempts)}
-						{attempt.isSend ? 'tries including send' : 'tries logged'}</span
+						{attempt.isSend
+							? i18n.t('pages.projectDetail.triesIncludingSend')
+							: i18n.t('pages.projectDetail.triesLogged')}</span
 					>{/if}
 				{#if attempt.grade}<span>{attempt.grade}</span>{/if}
 				{#if attempt.pitchLabel}<span>{attempt.pitchLabel}</span>{/if}
@@ -145,37 +172,26 @@
 </section>
 
 <details id="method" class="panel method">
-	<summary>How approximate readiness and estimates work</summary>
+	<summary>{i18n.t('pages.projectDetail.summary')}</summary>
 	<p>
-		Readiness uses the past 365 days of outdoor sends on distinct routes in the same discipline and
-		grade scale. A best send at this grade or above contributes 60 points, one step below 35, or two
-		steps below 10. Up to 20 points come from two routes one step below, and 25 from four routes two
-		steps below.
+		{i18n.t('pages.projectDetail.methodReadiness')}
 	</p>
 	<p>
-		Up to 15 points come from unsuccessful tries on this project, against a soft target of 15
-		(short-term), 35 (medium) or 75 (long-haul). The horizon follows the gap to your best recent
-		send: at most one step, two steps, or more. The base model caps at 94%. The first session
-		establishes the baseline; each additional valid climbing day on this route adds one readiness
-		point, up to 99%. Only a logged send reaches 100%. An unknown grade has no readiness estimate.
+		{i18n.t('pages.projectDetail.methodPoints')}
 	</p>
 	<p>
-		Remaining-work ranges are the middle half of your comparable completed projects, after
-		subtracting your logged work. At least three longer projects are required for each range;
-		estimates disappear when there is too little evidence or you have exceeded that history. These
-		are personal historical comparisons, with no claim of scientific validation.
+		{i18n.t('pages.projectDetail.methodRanges')}
 	</p>
 	<p>
-		One session is one valid written calendar day. Failed tries use the logged attempt count, or one
-		when missing. A send count includes its successful try; its implied failures and separate
-		failure entries use the larger total to avoid double counting. Invalid and future dates do not
-		contribute to estimates. Private comments are never used.
+		{i18n.t('pages.projectDetail.methodSessions')}
 	</p>
-	<a href="/docs/projects">Read the Projects guide →</a>
+	<a href="/docs/projects">{i18n.t('pages.projectDetail.linkReadProjectsGuide')}</a>
 </details>
 
 <footer class="logbook-link">
-	<a href={`/logbook?route=${p.routeId}`}>View all logged climbs on {p.routeName} →</a>
+	<a href={`/logbook?route=${p.routeId}`}
+		>{i18n.t('pages.projectDetail.linkViewAllLoggedClimbs', { name: p.routeName })}</a
+	>
 </footer>
 
 <style>

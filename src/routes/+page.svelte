@@ -7,6 +7,7 @@
 	import CprTimeline from '#lib/components/CprTimeline.svelte';
 	import HelpLink from '#lib/components/HelpLink.svelte';
 	import GradeChip from '#lib/components/GradeChip.svelte';
+	import RichText from '#lib/components/RichText.svelte';
 	import Badges from '#lib/components/Badges.svelte';
 	import BestMonths from '#lib/components/BestMonths.svelte';
 	import GoalsProgress from '#lib/components/GoalsProgress.svelte';
@@ -29,9 +30,10 @@
 	import StyleMixChart from '#lib/components/StyleMixChart.svelte';
 	import StylePyramid from '#lib/components/StylePyramid.svelte';
 	import TagChips from '#lib/components/TagChips.svelte';
-	import { describeDisplaySystems } from '#lib/grades';
+	import { describeDisplaySystems, getBandName } from '#lib/grades';
 	import { formatCalendarDate } from '#lib/dates';
 	import { formatDistance } from '#lib/units';
+	import { useI18n } from '#lib/i18n';
 	import TickTypeIcon from '#lib/components/TickTypeIcon.svelte';
 	import StyleBadge from '#lib/components/StyleBadge.svelte';
 	import TrainingLoad from '#lib/components/TrainingLoad.svelte';
@@ -47,6 +49,7 @@
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
+	const i18n = useI18n();
 	const s = $derived(data.stats);
 	// Visitors don't get an empty First ascents card; the owner sees how to mark one.
 	const rows = $derived(
@@ -90,10 +93,26 @@
 	);
 
 	const pyramidModes = [
-		{ id: 'all', label: 'All' },
-		{ id: 'sends', label: 'Sends only' },
-		{ id: 'onsight', label: 'Onsight only' }
+		{ id: 'all', key: 'pages.dashboard.optionAll' },
+		{ id: 'sends', key: 'pages.dashboard.optionSendsOnly' },
+		{ id: 'onsight', key: 'pages.dashboard.optionOnsightOnly' }
 	] as const;
+
+	// Grade-record tiles carry translated headings and empty states, so build them beside the locale.
+	const gradeRecordSummaries = $derived([
+		{
+			id: 'send',
+			label: i18n.t('pages.dashboard.labelHardestSend'),
+			records: s.gradeRecords.sends,
+			empty: i18n.t('pages.dashboard.emptyNoGradedSends')
+		},
+		{
+			id: 'onsightFlash',
+			label: i18n.t('pages.dashboard.labelHardestOnsightFlash'),
+			records: s.gradeRecords.onsightFlash,
+			empty: i18n.t('pages.dashboard.emptyNoGradedOnsights')
+		}
+	]);
 
 	// Recent rows carry tags, so they run taller than Hardest sends beside them; a short
 	// list keeps the two cards level instead of leaving a blank column under the shorter one.
@@ -144,20 +163,25 @@
 		/>
 	{:else if id === 'volume'}
 		<article class="panel">
-			<h2>Volume</h2>
+			<h2>{i18n.t('pages.dashboard.titleVolume')}</h2>
 			<VolumeChart data={s.volumeByMonth} />
 		</article>
 	{:else if id === 'gradeBands'}
 		<article class="panel">
 			<div class="card-title">
-				<h2>Grade bands</h2>
-				<HelpLink href="/docs/grades" label="About grade bands" />
+				<h2>{i18n.t('pages.dashboard.titleGradeBands')}</h2>
+				<HelpLink href="/docs/grades" label={i18n.t('pages.dashboard.ariaAboutGradeBands')} />
 			</div>
-			<p class="hint">Colours match theCrag: Beginner → Elite</p>
+			<p class="hint">
+				{i18n.t('pages.dashboard.hintGradeBandColours', {
+					from: getBandName(1, i18n.locale),
+					to: getBandName(5, i18n.locale)
+				})}
+			</p>
 			<BarList
 				items={s.bandBreakdown.map((b) => ({
 					id: `band:${b.band}`,
-					label: b.name,
+					label: getBandName(b.band, i18n.locale),
 					value: b.count,
 					color: b.color
 				}))}
@@ -165,13 +189,15 @@
 		</article>
 	{:else if id === 'topCrags'}
 		<article class="panel">
-			<h2>Top crags</h2>
+			<h2>{i18n.t('pages.dashboard.titleTopCrags')}</h2>
 			<BarList
 				items={s.topCrags.map((c) => ({
 					id: `crag:${c.crag}`,
 					label: c.crag,
 					value: c.count,
-					meta: c.maxGrade ? `up to ${c.maxGrade}` : undefined,
+					meta: c.maxGrade
+						? i18n.t('pages.dashboard.metaUpToGrade', { grade: c.maxGrade })
+						: undefined,
 					color: 'var(--accent-2)',
 					href: `/logbook?crag=${encodeURIComponent(c.crag)}`
 				}))}
@@ -179,7 +205,7 @@
 		</article>
 	{:else if id === 'tickTypes'}
 		<article class="panel">
-			<h2>Tick types</h2>
+			<h2>{i18n.t('pages.dashboard.titleTickTypes')}</h2>
 			<BarList
 				items={s.tickBreakdown.slice(0, 12).map((t) => ({
 					id: `tick:${t.tick}`,
@@ -276,17 +302,19 @@
 		<Karma data={s.karma} dateDisplay={data.dateDisplay} />
 	{:else if id === 'pyramids'}
 		<header class="section-head">
-			<h2>Grade pyramids</h2>
+			<h2>{i18n.t('pages.dashboard.titleGradePyramids')}</h2>
 			<p>
-				Split by style · {describeDisplaySystems(data.gradeSystems)}
+				{i18n.t('pages.dashboard.leadPyramids', {
+					systems: describeDisplaySystems(data.gradeSystems, i18n.locale)
+				})}
 			</p>
-			<nav class="pyramid-toggles" aria-label="Pyramid filter">
+			<nav class="pyramid-toggles" aria-label={i18n.t('pages.dashboard.ariaPyramidFilter')}>
 				{#each pyramidModes as mode (mode.id)}
 					<button
 						type="button"
 						class={{ active: pyramidMode === mode.id }}
 						aria-pressed={pyramidMode === mode.id}
-						onclick={() => (pyramidOverride = mode.id)}>{mode.label}</button
+						onclick={() => (pyramidOverride = mode.id)}>{i18n.t(mode.key)}</button
 					>
 				{/each}
 			</nav>
@@ -304,20 +332,39 @@
 		/>
 	{:else if id === 'cpr'}
 		<header class="section-head">
-			<h2>CPR timelines</h2>
-			<p>Sport · Trad · Boulder performance over time</p>
+			<h2>{i18n.t('pages.dashboard.titleCPRTimelines')}</h2>
+			<p>{i18n.t('pages.dashboard.leadCpr')}</p>
 		</header>
-		<CprTimeline title="Sport" data={s.cpr.sport} gradeSystems={data.gradeSystems} />
-		<CprTimeline title="Trad" data={s.cpr.trad} gradeSystems={data.gradeSystems} />
-		<CprTimeline title="Boulder" data={s.cpr.boulder} gradeSystems={data.gradeSystems} />
+		<CprTimeline
+			title={i18n.t('pages.dashboard.titleSport')}
+			style="Sport"
+			data={s.cpr.sport}
+			gradeSystems={data.gradeSystems}
+		/>
+		<CprTimeline
+			title={i18n.t('pages.dashboard.titleTrad')}
+			style="Trad"
+			data={s.cpr.trad}
+			gradeSystems={data.gradeSystems}
+		/>
+		<CprTimeline
+			title={i18n.t('pages.dashboard.titleBoulder')}
+			style="Boulder"
+			data={s.cpr.boulder}
+			gradeSystems={data.gradeSystems}
+		/>
 	{:else if id === 'hardest'}
 		{@const mixed = new Set(s.hardestSends.map((c) => c.discipline)).size > 1}
 		<article class="panel">
-			<h2>Hardest sends</h2>
+			<h2>{i18n.t('pages.dashboard.titleHardestSends')}</h2>
 			<ul class="list">
 				{#each s.hardestSends as climb, i (climb.id)}
 					{#if mixed && climb.discipline !== s.hardestSends[i - 1]?.discipline}
-						<li class="group-label">{climb.discipline === 'boulder' ? 'Boulders' : 'Routes'}</li>
+						<li class="group-label">
+							{climb.discipline === 'boulder'
+								? i18n.t('pages.dashboard.labelBoulders')
+								: i18n.t('pages.dashboard.labelRoutes')}
+						</li>
 					{/if}
 					<li>
 						<div>
@@ -336,8 +383,8 @@
 								{/if}
 								· <TickTypeIcon tick={climb.tickType} />
 							</div>
-							{#if ascentPartners(climb.partners)}
-								<div class="sub companions">{ascentPartners(climb.partners)}</div>
+							{#if ascentPartners(climb.partners, i18n.locale)}
+								<div class="sub companions">{ascentPartners(climb.partners, i18n.locale)}</div>
 							{/if}
 						</div>
 						<GradeChip grade={climb.gradeLabel ?? climb.gradeRaw} band={climb.gradeBand} />
@@ -347,7 +394,7 @@
 		</article>
 	{:else if id === 'recent'}
 		<article class="panel">
-			<h2>Recent activities</h2>
+			<h2>{i18n.t('pages.dashboard.titleRecentActivities')}</h2>
 			<ul class="list">
 				{#each s.recent.slice(0, RECENT_LIMIT) as climb (climb.id)}
 					<li>
@@ -370,11 +417,15 @@
 									· {climb.quality}
 								{/if}
 							</div>
-							<div class="recent-styles" role="group" aria-label="Climb styles">
+							<div
+								class="recent-styles"
+								role="group"
+								aria-label={i18n.t('pages.dashboard.ariaClimbStyles')}
+							>
 								{#each climb.styleLabels as style (style)}<StyleBadge {style} />{/each}
 							</div>
-							{#if ascentPartners(climb.partners)}
-								<div class="sub companions">{ascentPartners(climb.partners)}</div>
+							{#if ascentPartners(climb.partners, i18n.locale)}
+								<div class="sub companions">{ascentPartners(climb.partners, i18n.locale)}</div>
 							{/if}
 							<TagChips tags={climb.tags} />
 							<WeatherChips
@@ -389,7 +440,7 @@
 				{/each}
 			</ul>
 			{#if s.recent.length > RECENT_LIMIT}
-				<a class="more" href="/logbook">All ascents in the logbook →</a>
+				<a class="more" href="/logbook">{i18n.t('pages.dashboard.linkAllAscents')}</a>
 			{/if}
 		</article>
 	{/if}
@@ -401,37 +452,62 @@
 			<img class="avatar" src={s.avatar} alt="" width="72" height="72" />
 		{/if}
 		<div>
-			<p class="eyebrow">Personal climbing analytics</p>
-			<h1>{s.profileName ? `${s.profileName}'s crag year` : 'Your climbing, quantified'}</h1>
+			<p class="eyebrow">{i18n.t('pages.dashboard.eyebrowPersonalAnalytics')}</p>
+			<h1>
+				{s.profileName
+					? i18n.t('pages.dashboard.titleCragYear', { name: s.profileName })
+					: i18n.t('pages.dashboard.titleClimbingQuantified')}
+			</h1>
 			<p class="lede">
-				{s.climberType}. Turn theCrag history into performance analytics, projects, and training
-				focus.
+				{i18n.t('pages.dashboard.leadTagline', { climberType: s.climberType })}
 			</p>
 		</div>
 	</div>
 	{#if data.showSettings && data.sync.status === 'error'}
-		<a class="sync-alert" href="/settings">Last sync failed — open Settings</a>
+		<a class="sync-alert" href="/settings">{i18n.t('pages.dashboard.linkLastSyncFailed')}</a>
 	{/if}
 </section>
 
 {#if s.totalLogged === 0}
 	<section class="panel empty">
-		<h2>Get started</h2>
+		<h2>{i18n.t('pages.dashboard.titleGetStarted')}</h2>
 		<ol>
-			<li>Add <code>THECRAG_API_KEY</code> for Supporters, or</li>
 			<li>
-				Upload a theCrag CSV export
+				<RichText
+					message={i18n.t('pages.dashboard.stepAddApiKey')}
+					tokens={{ apiKey: { kind: 'code', text: 'THECRAG_API_KEY' } }}
+				/>
+			</li>
+			<li>
 				{#if data.showSettings}
-					on <a href="/settings">Settings</a>
+					<RichText
+						message={i18n.t('pages.dashboard.stepUploadCsvOnSettings')}
+						tokens={{
+							settings: {
+								kind: 'link',
+								text: i18n.t('nav.settings'),
+								href: '/settings'
+							}
+						}}
+					/>
 				{:else}
-					via Settings (sign in at <a href="/login?next=/settings">/login</a>)
+					<RichText
+						message={i18n.t('pages.dashboard.stepUploadCsvViaSettings')}
+						tokens={{
+							login: {
+								kind: 'link',
+								text: '/login',
+								href: '/login?next=/settings'
+							}
+						}}
+					/>
 				{/if}
 			</li>
 		</ol>
 	</section>
 {:else}
 	<section class="metrics">
-		{#each [{ label: 'Hardest send', records: s.gradeRecords.sends, empty: 'No graded sends yet' }, { label: 'Hardest onsight / flash', records: s.gradeRecords.onsightFlash, empty: 'No graded onsights or flashes yet' }] as summary (summary.label)}
+		{#each gradeRecordSummaries as summary (summary.id)}
 			<article class="metric panel accent grade-record" aria-label={summary.label}>
 				<h2>{summary.label}</h2>
 				{#each summary.records as record (record.discipline)}
@@ -444,7 +520,11 @@
 								>
 							{:else}{record.grade}{/if}
 						</strong>
-						<span>{record.discipline === 'route' ? 'Routes' : 'Boulders'} · {record.tick}</span>
+						<span
+							>{record.discipline === 'route'
+								? i18n.t('pages.dashboard.labelRoutes')
+								: i18n.t('pages.dashboard.labelBoulders')} · {record.tick}</span
+						>
 					</div>
 				{:else}
 					<strong>—</strong><span>{summary.empty}</span>
@@ -453,37 +533,45 @@
 		{/each}
 		<div class="metric panel accent">
 			<strong>{s.onsightCount}</strong>
-			<span>onsighted</span>
+			<span>{i18n.t('pages.dashboard.labelOnsighted')}</span>
 		</div>
 		<div class="metric panel">
 			<strong>{s.totalSends}</strong>
-			<span>successful ascents</span>
+			<span>{i18n.t('pages.dashboard.labelSuccessfulAscents')}</span>
 		</div>
 		<div class="metric panel">
 			<strong>{formatDistance(s.heightKm, data.displayUnits.distance)}</strong>
-			<span>distance climbed</span>
+			<span>{i18n.t('pages.dashboard.labelDistanceClimbed')}</span>
 		</div>
 		<div class="metric panel">
 			<strong>{s.totalAscents}</strong>
-			<span>{s.isFiltered ? 'counted ascents' : 'total logged'}</span>
+			<span
+				>{s.isFiltered
+					? i18n.t('pages.dashboard.labelCountedAscents')
+					: i18n.t('pages.dashboard.labelTotalLogged')}</span
+			>
 			{#if s.isFiltered}
-				<span class="sub">{s.totalLogged} total logged</span>
+				<span class="sub"
+					>{i18n.t('pages.dashboard.labelTotalLoggedCount', { count: s.totalLogged })}</span
+				>
 			{/if}
 		</div>
 		{#if s.outdoorAscents != null || s.indoorAscents != null}
 			<div class="metric panel">
 				<strong>{s.outdoorAscents ?? '—'}</strong>
-				<span>outdoor</span>
+				<span>{i18n.t('pages.dashboard.labelOutdoor')}</span>
 			</div>
 			<div class="metric panel">
 				<strong>{s.indoorAscents ?? '—'}</strong>
-				<span>indoor</span>
+				<span>{i18n.t('pages.dashboard.labelIndoor')}</span>
 			</div>
 		{/if}
 	</section>
 
 	{#if data.showSettings}
-		<p class="customize"><a href="/settings#dashboard">Customize dashboard</a></p>
+		<p class="customize">
+			<a href="/settings#dashboard">{i18n.t('pages.dashboard.linkCustomizeDashboard')}</a>
+		</p>
 	{/if}
 
 	{#each rows as row, ri (ri)}

@@ -1,0 +1,30 @@
+# Crowdin configuration for Crag Stats.
+#
+# Credentials are read from the environment (project_id_env / api_token_env), so
+# this file carries no secrets and is safe to commit.
+#
+# CI wiring:  .github/workflows/crowdin-sync.yml
+# Setup docs: .github/workflows/SETUP.md
+# Workflow:   docs/dev/TRANSLATIONS.md
+
+project_id_env: CROWDIN_PROJECT_ID
+api_token_env: CROWDIN_PERSONAL_TOKEN
+
+base_path: '.'
+
+# Required by crowdin/github-action so downloaded translations land back in the
+# same tree they were uploaded from.
+preserve_hierarchy: true
+
+files:
+  - source: /src/lib/i18n/locales/en.json
+    # %two_letters_code% yields de / fr / es / it whether the project stores the
+    # target as "de" or "de-DE", so committed filenames stay stable if a regional
+    # variant is added later.
+    #
+    # Caveat: two targets that share a language code collide. Adding pt-BR beside
+    # pt-PT would have both write src/lib/i18n/locales/pt.json. Switch this to
+    # /src/lib/i18n/locales/%locale%.json (es-ES.json, pt-PT.json, pt-BR.json) and
+    # rename the committed catalogues at the same time as the first variant is
+    # added; see the "Adding a locale" section in docs/dev/TRANSLATIONS.md.
+    translation: /src/lib/i18n/locales/%two_letters_code%.json

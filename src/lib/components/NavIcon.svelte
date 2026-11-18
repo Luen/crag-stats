@@ -22,7 +22,8 @@
 		| 'logout'
 		| 'share'
 		| 'activity'
-		| 'badges';
+		| 'badges'
+		| 'globe';
 </script>
 
 <script lang="ts">
@@ -134,6 +135,10 @@
 			<path
 				d="M12 3.6l2.4 4.86 5.36.78-3.88 3.78.92 5.34L12 16.9l-4.8 2.52.92-5.34-3.88-3.78 5.36-.78L12 3.6z"
 			/>
+		{:else if name === 'globe'}
+			<circle cx="12" cy="12" r="10" />
+			<path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20" />
+			<path d="M2 12h20" />
 		{/if}
 	</svg>
 {/if}

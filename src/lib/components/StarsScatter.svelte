@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
 	import { DEFAULT_DISPLAY_SYSTEMS, formatGradeLabel, type DisplayGradeSystems } from '#lib/grades';
 	import { scatterQualityY } from '#lib/qualityScore';
 
@@ -13,6 +14,7 @@
 
 	type Props = { points: Point[]; gradeSystems?: DisplayGradeSystems };
 	let { points, gradeSystems = DEFAULT_DISPLAY_SYSTEMS }: Props = $props();
+	const i18n = useI18n();
 
 	type Kind = Point['kind'];
 
@@ -145,58 +147,72 @@
 		const n = b.names.length;
 		const qualityPart = useQualityAxis
 			? b.qualityScore != null
-				? `${Math.round(b.qualityScore)} quality`
+				? i18n.t('cards.starsScatter.labelQuality', { score: Math.round(b.qualityScore) })
 				: b.stars != null
-					? `${b.stars}★ (est.)`
-					: `${b.y} quality`
+					? i18n.t('cards.starsScatter.labelStarsEstimated', { stars: b.stars })
+					: i18n.t('cards.starsScatter.labelQuality', { score: b.y })
 			: `${b.y}★`;
-		const head = `${gradeLabel(b.score)} · ${qualityPart} · ${n} send${n === 1 ? '' : 's'}`;
-		const more = n > 5 ? ` +${n - 5} more` : '';
+		const head = i18n.t('cards.starsScatter.titleBubble', {
+			grade: gradeLabel(b.score),
+			quality: qualityPart,
+			count: n
+		});
+		const more = n > 5 ? ` ${i18n.t('cards.starsScatter.labelMore', { count: n - 5 })}` : '';
 		return `${head}\n${b.names.slice(0, 5).join(', ')}${more}`;
 	}
 </script>
 
 <article class="panel">
 	<header>
-		<h2>{useQualityAxis ? 'Quality vs grade' : 'Stars vs grade'}</h2>
+		<h2>
+			{useQualityAxis
+				? i18n.t('cards.starsScatter.titleQualityVsGrade')
+				: i18n.t('cards.starsScatter.titleStarsVsGrade')}
+		</h2>
 		{#if counts.route && counts.boulder}
-			<div class="toggles" role="group" aria-label="Climb type">
+			<div class="toggles" role="group" aria-label={i18n.t('cards.starsScatter.ariaClimbType')}>
 				<button
 					type="button"
 					class={{ active: kind === 'route' }}
 					aria-pressed={kind === 'route'}
-					onclick={() => (kindOverride = 'route')}>Routes</button
+					onclick={() => (kindOverride = 'route')}
+					>{i18n.t('cards.starsScatter.buttonRoutes')}</button
 				>
 				<button
 					type="button"
 					class={{ active: kind === 'boulder' }}
 					aria-pressed={kind === 'boulder'}
-					onclick={() => (kindOverride = 'boulder')}>Boulders</button
+					onclick={() => (kindOverride = 'boulder')}
+					>{i18n.t('cards.starsScatter.buttonBoulders')}</button
 				>
 			</div>
 		{/if}
 	</header>
 
 	{#if shown.length === 0}
-		<p class="empty">No rated routes yet.</p>
+		<p class="empty">{i18n.t('cards.starsScatter.empty')}</p>
 	{:else}
 		<p class="summary">
-			{shown.length} rated sends ·
+			{i18n.t('cards.starsScatter.summaryRatedSends', { count: shown.length })}
 			{#if useQualityAxis}
-				average {Math.round(meanQuality)} quality
+				{i18n.t('cards.starsScatter.summaryAverageQuality', { score: Math.round(meanQuality) })}
 				{#if meanStars > 0}
-					<span class="muted"> ({meanStars.toFixed(1)}★ where no score)</span>
+					<span class="muted"
+						>{i18n.t('cards.starsScatter.summaryStarsWhereNoScore', {
+							stars: meanStars.toFixed(1)
+						})}</span
+					>
 				{/if}
 			{:else}
-				average {meanStars.toFixed(1)}★
+				{i18n.t('cards.starsScatter.summaryAverageStars', { stars: meanStars.toFixed(1) })}
 			{/if}
 		</p>
 		<svg
 			viewBox="0 0 {w} {h}"
 			role="group"
 			aria-label={useQualityAxis
-				? 'Sends by grade and theCrag quality score; larger bubbles hold more sends'
-				: 'Sends by grade and star rating; larger bubbles hold more sends'}
+				? i18n.t('cards.starsScatter.ariaSendsByQuality')
+				: i18n.t('cards.starsScatter.ariaSendsByStars')}
 		>
 			{#each yTicks as tick (tick)}
 				<line
@@ -233,10 +249,13 @@
 			{/each}
 		</svg>
 		<p class="legend">
-			<span class="swatch dot-swatch"></span> bubble size = sends
+			<span class="swatch dot-swatch"></span>
+			{i18n.t('cards.starsScatter.legendBubbleSize')}
 			<span class="swatch trend-swatch"></span>
-			{useQualityAxis ? 'average quality per grade' : 'average stars per grade'} ({TREND_MIN_SENDS}+
-			sends)
+			{useQualityAxis
+				? i18n.t('cards.starsScatter.legendAverageQualityPerGrade')
+				: i18n.t('cards.starsScatter.legendAverageStarsPerGrade')}
+			{i18n.t('cards.starsScatter.legendTrendSends', { count: TREND_MIN_SENDS })}
 		</p>
 	{/if}
 </article>

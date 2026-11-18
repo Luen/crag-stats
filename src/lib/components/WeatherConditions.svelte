@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
 	import {
 		DEFAULT_DATE_DISPLAY,
 		formatCalendarDate,
@@ -13,6 +14,7 @@
 	} from '#lib/weatherStats';
 	import { DEFAULT_DISPLAY_UNITS, formatTemperature, type DisplayUnits } from '#lib/units';
 	import BarList from './BarList.svelte';
+	import RichText from './RichText.svelte';
 
 	type Props = {
 		data: WeatherConditionsView;
@@ -26,6 +28,7 @@
 		displayUnits = DEFAULT_DISPLAY_UNITS,
 		compact = true
 	}: Props = $props();
+	const i18n = useI18n();
 
 	const SHARE_COLORS: Record<string, string> = {
 		perfect: 'var(--accent-2)',
@@ -35,11 +38,34 @@
 		heat: 'var(--accent)'
 	};
 
-	const FAIR_LABELS = {
-		'fair-leaning': 'Fair-weather leaning',
-		'all-weather': 'All-weather climber',
-		mixed: 'A bit of both'
+	const FAIR_LABEL_KEYS = {
+		'fair-leaning': 'cards.weatherConditions.labelFairLeaning',
+		'all-weather': 'cards.weatherConditions.labelAllWeather',
+		mixed: 'cards.weatherConditions.labelMixed'
 	} as const;
+
+	const SHARE_LABEL_KEYS: Record<string, string> = {
+		perfect: 'cards.weatherConditions.sharePerfect',
+		rain: 'cards.weatherConditions.shareRain',
+		snow: 'cards.weatherConditions.shareSnow',
+		freeze: 'cards.weatherConditions.shareFreeze',
+		heat: 'cards.weatherConditions.shareHeat'
+	};
+
+	const withoutNote = $derived(
+		data.withoutWeather > 0
+			? ` ${i18n.t('cards.weatherConditions.noteWithoutUsableWeather', {
+					count: formatNumber(data.withoutWeather, dateDisplay)
+				})}`
+			: ''
+	);
+	const fairRange = $derived(
+		i18n.t(
+			displayUnits.temperature === 'fahrenheit'
+				? 'cards.weatherConditions.rangeFairImperial'
+				: 'cards.weatherConditions.rangeFairMetric'
+		)
+	);
 
 	const histogram = $derived(
 		data.histogram.map((b, index) => ({
@@ -59,15 +85,17 @@
 			<strong>{formatTemperature(e.tempC, displayUnits.temperature)}</strong>
 			<span class="meta">
 				{#if e.href}
-					<a href={e.href} target="_blank" rel="noreferrer">{e.routeName ?? 'Ascent'}</a>
+					<a href={e.href} target="_blank" rel="noreferrer"
+						>{e.routeName ?? i18n.t('cards.weatherConditions.labelAscent')}</a
+					>
 				{:else}
-					{e.routeName ?? 'Ascent'}
+					{e.routeName ?? i18n.t('cards.weatherConditions.labelAscent')}
 				{/if}
 				· {formatCalendarDate(e.date, dateDisplay)}
 			</span>
 		{:else}
 			<strong>—</strong>
-			<span class="meta">No data</span>
+			<span class="meta">{i18n.t('cards.weatherConditions.labelNoData')}</span>
 		{/if}
 	</div>
 {/snippet}
@@ -75,55 +103,69 @@
 <article class="panel">
 	<header>
 		<h2>
-			{#if compact}<a href="/weather#conditions">Weather conditions</a>{:else}Weather conditions{/if}
+			{#if compact}<a href="/weather#conditions"
+					>{i18n.t('cards.weatherConditions.titleWeatherConditions')}</a
+				>{:else}{i18n.t('cards.weatherConditions.titleWeatherConditions')}{/if}
 		</h2>
-		<a class="how" href="/docs/weather">How it works</a>
+		<a class="how" href="/docs/weather">{i18n.t('common.howItWorks')}</a>
 	</header>
 
 	<p class="lead">
-		Weather is cached for {formatNumber(data.withWeather, dateDisplay)} of
-		{formatNumber(data.outdoorDays, dateDisplay)} outdoor location-days with a resolved location{data.withoutWeather >
-		0
-			? ` (${formatNumber(data.withoutWeather, dateDisplay)} without usable weather)`
-			: ''}.
+		{i18n.t('cards.weatherConditions.leadCached', {
+			withWeather: formatNumber(data.withWeather, dateDisplay),
+			outdoorDays: formatNumber(data.outdoorDays, dateDisplay),
+			without: withoutNote
+		})}
 	</p>
 
 	<div class="extremes">
-		{@render extreme('Hottest climb', data.hottest)}
-		{@render extreme('Coldest climb', data.coldest)}
+		{@render extreme(i18n.t('cards.weatherConditions.labelHottestClimb'), data.hottest)}
+		{@render extreme(i18n.t('cards.weatherConditions.labelColdestClimb'), data.coldest)}
 	</div>
 
 	{#if data.fairWeather}
 		{@const f = data.fairWeather}
 		<div class="fair">
-			<span class="k">Fair-weather rate</span>
+			<span class="k">{i18n.t('cards.weatherConditions.labelFairWeatherRate')}</span>
 			<strong>{formatNumber(f.fairPct, dateDisplay)}%</strong>
 			<span class="meta">
-				{FAIR_LABELS[f.label]}: {formatNumber(f.fairDays, dateDisplay)} of {formatNumber(
-					f.days,
-					dateDisplay
-				)}
-				days were fair ({displayUnits.temperature === 'fahrenheit' ? '59–77°F' : '15–25°C'} and dry);
-				{formatNumber(f.toughPct, dateDisplay)}% were hot, freezing, wet, or windy.
-				<a href="/logbook?weather=fair">Fair days in the logbook</a>
+				<RichText
+					message={i18n.t('cards.weatherConditions.fairSummary', {
+						label: i18n.t(FAIR_LABEL_KEYS[f.label]),
+						fairDays: formatNumber(f.fairDays, dateDisplay),
+						days: formatNumber(f.days, dateDisplay),
+						range: fairRange,
+						toughPct: formatNumber(f.toughPct, dateDisplay)
+					})}
+					tokens={{
+						logbookLink: {
+							kind: 'link',
+							text: i18n.t('cards.weatherConditions.linkFairDaysInLogbook'),
+							href: '/logbook?weather=fair'
+						}
+					}}
+				/>
 			</span>
 		</div>
 	{/if}
 
 	<p class="hint">
-		Weather can use an approximate crag, area polygon or owner-selected nearby place. The logbook
-		shows each location source.
+		{i18n.t('cards.weatherConditions.hintLocationQuality')}
 	</p>
 	{#if !compact}
-		<h3>Share of days</h3>
+		<h3>{i18n.t('cards.weatherConditions.titleShareOfDays')}</h3>
 		<ul class="shares">
 			{#each data.shares as share (share.key)}
 				<li>
 					<a href={`/logbook?weather=${share.key}`}>
-						<span class="label">{share.label}</span>
+						<span class="label"
+							>{SHARE_LABEL_KEYS[share.key]
+								? i18n.t(SHARE_LABEL_KEYS[share.key])
+								: share.label}</span
+						>
 						<span class="value">
 							{formatNumber(share.pct, dateDisplay)}% · {formatNumber(share.days, dateDisplay)}
-							{share.days === 1 ? 'day' : 'days'}
+							{i18n.t('cards.weatherConditions.unitDays', { count: share.days })}
 						</span>
 						<div class="track" aria-hidden="true">
 							<div
@@ -137,14 +179,19 @@
 			{/each}
 		</ul>
 
-		<h3>Daily high ({displayUnits.temperature === 'fahrenheit' ? '°F' : '°C'})</h3>
+		<h3>
+			{i18n.t('cards.weatherConditions.titleDailyHigh', {
+				unit: displayUnits.temperature === 'fahrenheit' ? '°F' : '°C'
+			})}
+		</h3>
 		<BarList items={histogram} maxBars={histogram.length} wholeRowLinks />
 		<p class="hint">
-			Days per bin · open-meteo.com daily maximum at your crag's cached location (not official
-			climate normals).
+			{i18n.t('cards.weatherConditions.hintDaysPerBin')}
 		</p>
 	{:else}
-		<a href="/weather#conditions">Explore weather conditions</a>
+		<a href="/weather#conditions"
+			>{i18n.t('cards.weatherConditions.linkExploreWeatherConditions')}</a
+		>
 	{/if}
 </article>
 
@@ -207,11 +254,11 @@
 		color: var(--ink-muted);
 		overflow-wrap: anywhere;
 	}
-	.meta a {
+	.meta :global(a) {
 		text-decoration: underline;
 		text-underline-offset: 2px;
 	}
-	.meta a:hover {
+	.meta :global(a:hover) {
 		color: var(--accent);
 	}
 	.fair {
@@ -226,7 +273,7 @@
 		font-size: 1.5rem;
 		font-variant-numeric: tabular-nums;
 	}
-	.fair a {
+	.fair :global(a) {
 		color: var(--accent);
 		font-weight: 600;
 		text-decoration: underline;

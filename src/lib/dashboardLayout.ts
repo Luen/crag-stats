@@ -3,6 +3,9 @@
  * Site-wide preferences live in app_settings; cs_dash_layout is a legacy fallback.
  */
 
+import { formatMessage } from '#lib/i18n/format';
+import { DEFAULT_LOCALE } from '#lib/i18n/types';
+
 export const DASH_LAYOUT_COOKIE = 'cs_dash_layout';
 
 export type DashWidth = 'full' | 'half' | 'quarter';
@@ -50,6 +53,7 @@ export type DashCardId =
 export type DashCardDef = {
 	id: DashCardId;
 	label: string;
+	labelKey: string;
 	width: DashWidth;
 	defaultEnabled?: boolean;
 };
@@ -59,47 +63,204 @@ export type DashLayoutItem = {
 	enabled: boolean;
 };
 
+const DASH_CARD_SPECS: readonly Omit<DashCardDef, 'label'>[] = [
+	{
+		id: 'climberType',
+		labelKey: 'cards.dashboardLayoutEditor.cards.climberType',
+		width: 'full'
+	},
+	{
+		id: 'recent',
+		labelKey: 'cards.dashboardLayoutEditor.cards.recent',
+		width: 'half'
+	},
+	{
+		id: 'blurb',
+		labelKey: 'cards.dashboardLayoutEditor.cards.blurb',
+		width: 'half'
+	},
+	{
+		id: 'badges',
+		labelKey: 'cards.dashboardLayoutEditor.cards.badges',
+		width: 'half'
+	},
+	{
+		id: 'athleteProfile',
+		labelKey: 'cards.dashboardLayoutEditor.cards.athleteProfile',
+		width: 'half'
+	},
+	{
+		id: 'streaks',
+		labelKey: 'cards.dashboardLayoutEditor.cards.streaks',
+		width: 'half'
+	},
+	{
+		id: 'eddington',
+		labelKey: 'cards.dashboardLayoutEditor.cards.eddington',
+		width: 'half'
+	},
+	{
+		id: 'firstAscents',
+		labelKey: 'cards.dashboardLayoutEditor.cards.firstAscents',
+		width: 'half'
+	},
+	{
+		id: 'hardest',
+		labelKey: 'cards.dashboardLayoutEditor.cards.hardest',
+		width: 'half'
+	},
+	{
+		id: 'solo',
+		labelKey: 'cards.dashboardLayoutEditor.cards.solo',
+		width: 'full'
+	},
+	{
+		id: 'heatmap',
+		labelKey: 'cards.dashboardLayoutEditor.cards.heatmap',
+		width: 'full'
+	},
+	{
+		id: 'volume',
+		labelKey: 'cards.dashboardLayoutEditor.cards.volume',
+		width: 'quarter'
+	},
+	{
+		id: 'gradeBands',
+		labelKey: 'cards.dashboardLayoutEditor.cards.gradeBands',
+		width: 'quarter'
+	},
+	{
+		id: 'topCrags',
+		labelKey: 'cards.dashboardLayoutEditor.cards.topCrags',
+		width: 'quarter'
+	},
+	{
+		id: 'tickTypes',
+		labelKey: 'cards.dashboardLayoutEditor.cards.tickTypes',
+		width: 'quarter'
+	},
+	{
+		id: 'monthly',
+		labelKey: 'cards.dashboardLayoutEditor.cards.monthly',
+		width: 'half'
+	},
+	{
+		id: 'yearly',
+		labelKey: 'cards.dashboardLayoutEditor.cards.yearly',
+		width: 'half'
+	},
+	{
+		id: 'weekday',
+		labelKey: 'cards.dashboardLayoutEditor.cards.weekday',
+		width: 'half'
+	},
+	{
+		id: 'sessionsPerWeek',
+		labelKey: 'cards.dashboardLayoutEditor.cards.sessionsPerWeek',
+		width: 'half'
+	},
+	{
+		id: 'bestMonths',
+		labelKey: 'cards.dashboardLayoutEditor.cards.bestMonths',
+		width: 'full'
+	},
+	{
+		id: 'goals',
+		labelKey: 'cards.dashboardLayoutEditor.cards.goals',
+		width: 'half'
+	},
+	{
+		id: 'projects',
+		labelKey: 'cards.dashboardLayoutEditor.cards.projects',
+		width: 'half'
+	},
+	{
+		id: 'trainingLoad',
+		labelKey: 'cards.dashboardLayoutEditor.cards.trainingLoad',
+		width: 'half'
+	},
+	{
+		id: 'milestones',
+		labelKey: 'cards.dashboardLayoutEditor.cards.milestones',
+		width: 'half'
+	},
+	{
+		id: 'weatherConditions',
+		labelKey: 'cards.dashboardLayoutEditor.cards.weatherConditions',
+		width: 'half'
+	},
+	{
+		id: 'weatherPerformance',
+		labelKey: 'cards.dashboardLayoutEditor.cards.weatherPerformance',
+		width: 'half'
+	},
+	{
+		id: 'styleMix',
+		labelKey: 'cards.dashboardLayoutEditor.cards.styleMix',
+		width: 'full'
+	},
+	{
+		id: 'partners',
+		labelKey: 'cards.dashboardLayoutEditor.cards.partners',
+		width: 'quarter'
+	},
+	{
+		id: 'rockTypes',
+		labelKey: 'cards.dashboardLayoutEditor.cards.rockTypes',
+		width: 'quarter'
+	},
+	{
+		id: 'stars',
+		labelKey: 'cards.dashboardLayoutEditor.cards.stars',
+		width: 'quarter'
+	},
+	{
+		id: 'quality',
+		labelKey: 'cards.dashboardLayoutEditor.cards.quality',
+		width: 'quarter'
+	},
+	{
+		id: 'rockPerformance',
+		labelKey: 'cards.dashboardLayoutEditor.cards.rockPerformance',
+		width: 'half'
+	},
+	{
+		id: 'routePopularity',
+		labelKey: 'cards.dashboardLayoutEditor.cards.routePopularity',
+		width: 'half'
+	},
+	{
+		id: 'routeRepeats',
+		labelKey: 'cards.dashboardLayoutEditor.cards.routeRepeats',
+		width: 'half'
+	},
+	{
+		id: 'karma',
+		labelKey: 'cards.dashboardLayoutEditor.cards.karma',
+		width: 'half'
+	},
+	{
+		id: 'pyramids',
+		labelKey: 'cards.dashboardLayoutEditor.cards.pyramids',
+		width: 'full'
+	},
+	{
+		id: 'notable',
+		labelKey: 'cards.dashboardLayoutEditor.cards.notable',
+		width: 'full'
+	},
+	{
+		id: 'cpr',
+		labelKey: 'cards.dashboardLayoutEditor.cards.cpr',
+		width: 'full'
+	}
+];
+
 /** Default order/visibility — Dreeve-style: recent left, climbing story right near the top. */
-export const DEFAULT_DASH_CARDS: readonly DashCardDef[] = [
-	{ id: 'climberType', label: 'Climber type', width: 'full' },
-	{ id: 'recent', label: 'Recent activities', width: 'half' },
-	{ id: 'blurb', label: 'Climbing story', width: 'half' },
-	{ id: 'badges', label: 'Badges', width: 'half' },
-	{ id: 'athleteProfile', label: 'Athlete profile', width: 'half' },
-	{ id: 'streaks', label: 'Streaks', width: 'half' },
-	{ id: 'eddington', label: 'Eddington numbers', width: 'half' },
-	{ id: 'firstAscents', label: 'First ascents', width: 'half' },
-	{ id: 'hardest', label: 'Hardest sends', width: 'half' },
-	{ id: 'solo', label: 'Solo climbing', width: 'full' },
-	{ id: 'heatmap', label: 'Ascent calendar', width: 'full' },
-	{ id: 'volume', label: 'Volume', width: 'quarter' },
-	{ id: 'gradeBands', label: 'Grade bands', width: 'quarter' },
-	{ id: 'topCrags', label: 'Top crags', width: 'quarter' },
-	{ id: 'tickTypes', label: 'Tick types', width: 'quarter' },
-	{ id: 'monthly', label: 'Monthly stats', width: 'half' },
-	{ id: 'yearly', label: 'Yearly stats', width: 'half' },
-	{ id: 'weekday', label: 'Weekday', width: 'half' },
-	{ id: 'sessionsPerWeek', label: 'Sessions per week', width: 'half' },
-	{ id: 'bestMonths', label: 'Best months', width: 'full' },
-	{ id: 'goals', label: 'Active goals', width: 'half' },
-	{ id: 'projects', label: 'Projects', width: 'half' },
-	{ id: 'trainingLoad', label: 'Training load', width: 'half' },
-	{ id: 'milestones', label: 'Milestones', width: 'half' },
-	{ id: 'weatherConditions', label: 'Weather conditions', width: 'half' },
-	{ id: 'weatherPerformance', label: 'Weather & performance', width: 'half' },
-	{ id: 'styleMix', label: 'Style mix', width: 'full' },
-	{ id: 'partners', label: 'Partners', width: 'quarter' },
-	{ id: 'rockTypes', label: 'Rock types', width: 'quarter' },
-	{ id: 'stars', label: 'Stars scatter', width: 'quarter' },
-	{ id: 'quality', label: 'Quality', width: 'quarter' },
-	{ id: 'rockPerformance', label: 'Rock & performance', width: 'half' },
-	{ id: 'routePopularity', label: 'Route popularity', width: 'half' },
-	{ id: 'routeRepeats', label: 'Repeats vs new routes', width: 'half' },
-	{ id: 'karma', label: 'Karma', width: 'half' },
-	{ id: 'pyramids', label: 'Grade pyramids', width: 'full' },
-	{ id: 'notable', label: 'Notable ascents', width: 'full' },
-	{ id: 'cpr', label: 'CPR timelines', width: 'full' }
-] as const;
+export const DEFAULT_DASH_CARDS: readonly DashCardDef[] = DASH_CARD_SPECS.map((c) => ({
+	...c,
+	label: formatMessage(DEFAULT_LOCALE, c.labelKey)
+}));
 
 const DEF_BY_ID = new Map(DEFAULT_DASH_CARDS.map((c) => [c.id, c]));
 
@@ -108,7 +269,14 @@ export function defaultLayout(): DashLayoutItem[] {
 }
 
 export function cardDef(id: DashCardId): DashCardDef {
-	return DEF_BY_ID.get(id) ?? { id, label: id, width: 'full' };
+	return (
+		DEF_BY_ID.get(id) ?? {
+			id,
+			label: id,
+			labelKey: `cards.dashboardLayoutEditor.cards.${id}`,
+			width: 'full'
+		}
+	);
 }
 
 /** Preserve saved choices, drop unknown IDs and append missing cards with catalog defaults. */

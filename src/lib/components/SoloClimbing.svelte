@@ -1,34 +1,51 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
 	import GradeChip from '#lib/components/GradeChip.svelte';
 	import type { SoloStats } from '#lib/types/dashboard';
 
 	type Props = { data: SoloStats };
 	let { data }: Props = $props();
+	const i18n = useI18n();
 
 	const year = (d: string | null) => (d ? d.slice(0, 4) : null);
 	const unpartneredPct = $derived(
 		data.totalAscents ? Math.round((data.unpartnered / data.totalAscents) * 100) : 0
 	);
+
+	const SOLO_KIND_KEYS: Record<string, string> = {
+		toprope: 'cards.soloClimbing.kindToprope',
+		lead: 'cards.soloClimbing.kindLead',
+		free: 'cards.soloClimbing.kindFree',
+		dws: 'cards.soloClimbing.kindDws'
+	};
+
+	function kindLabel(kind: string, fallback: string): string {
+		const key = SOLO_KIND_KEYS[kind];
+		return key ? i18n.t(key) : fallback;
+	}
 </script>
 
 <article class="panel">
-	<h2>Solo climbing</h2>
+	<h2>{i18n.t('cards.soloClimbing.titleSoloClimbing')}</h2>
 	{#if data.total === 0}
-		<p class="empty">No solo ascents logged yet: top-rope solo, lead solo or free solo.</p>
+		<p class="empty">{i18n.t('cards.soloClimbing.empty')}</p>
 	{:else}
 		<ul class="kinds">
 			{#each data.kinds as k (k.kind)}
+				{@const label = kindLabel(k.kind, k.label)}
 				<li>
 					<div class="head">
 						<a
 							class="kind-link"
 							href={`/logbook?solo=${k.kind}`}
-							aria-label={`View ${k.label} climbs in the logbook`}><strong>{k.label}</strong></a
+							aria-label={i18n.t('cards.soloClimbing.ariaViewClimbsInLogbook', {
+								kind: label
+							})}><strong>{label}</strong></a
 						>
 						<span class="count">{k.count}</span>
 					</div>
 					<p class="meta">
-						{k.sends} send{k.sends === 1 ? '' : 's'}
+						{i18n.t('cards.soloClimbing.unitSends', { count: k.sends })}
 						{#if k.first}
 							· {year(k.first) === year(k.latest)
 								? year(k.first)
@@ -37,7 +54,7 @@
 					</p>
 					{#if k.hardest}
 						<p class="hardest">
-							<span class="label">Hardest</span>
+							<span class="label">{i18n.t('cards.soloClimbing.labelHardest')}</span>
 							{#if k.hardest.url}
 								<a href={k.hardest.url} target="_blank" rel="noreferrer">{k.hardest.routeName}</a>
 							{:else}
@@ -51,10 +68,13 @@
 		</ul>
 	{/if}
 	<p class="foot">
-		<strong>{data.unpartnered}</strong> ascent{data.unpartnered === 1 ? '' : 's'}
-		({data.unpartneredSends} send{data.unpartneredSends === 1 ? '' : 's'}, {unpartneredPct}%) have
-		no partner tagged on theCrag.
-		<a class="how" href="/docs/solo">How it works</a>
+		<strong>{data.unpartnered}</strong>
+		{i18n.t('cards.soloClimbing.footNoPartner', {
+			ascents: data.unpartnered,
+			sends: data.unpartneredSends,
+			percent: unpartneredPct
+		})}
+		<a class="how" href="/docs/solo">{i18n.t('common.howItWorks')}</a>
 	</p>
 </article>
 

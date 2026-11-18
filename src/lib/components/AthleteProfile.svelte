@@ -1,9 +1,11 @@
 <script lang="ts">
 	import HelpLink from '#lib/components/HelpLink.svelte';
+	import { useI18n } from '#lib/i18n';
 
 	type Axis = { key: string; label: string; last30: number; last90: number };
 	type Props = { axes: Axis[] };
 	let { axes }: Props = $props();
+	const i18n = useI18n();
 
 	const size = 220;
 	const pad = 38;
@@ -41,17 +43,31 @@
 	const rings = [0.2, 0.4, 0.6, 0.8, 1];
 	const last90 = $derived(axes.map((a) => a.last90));
 	const last30 = $derived(axes.map((a) => a.last30));
+
+	const AXIS_LABEL_KEYS: Record<string, string> = {
+		volume: 'cards.athleteProfile.axisVolume',
+		intensity: 'cards.athleteProfile.axisIntensity',
+		consistency: 'cards.athleteProfile.axisConsistency',
+		onsight: 'cards.athleteProfile.axisOnsight',
+		variety: 'cards.athleteProfile.axisVariety',
+		endurance: 'cards.athleteProfile.axisEndurance'
+	};
+
+	function axisLabel(axis: Axis): string {
+		const key = AXIS_LABEL_KEYS[axis.key];
+		return key ? i18n.t(key) : axis.label;
+	}
 </script>
 
 <article class="panel">
 	<header>
 		<div class="title">
-			<h2>Climber profile</h2>
-			<HelpLink href="/docs/climber-profile" label="How climber profile works" />
+			<h2>{i18n.t('cards.athleteProfile.titleClimberProfile')}</h2>
+			<HelpLink href="/docs/climber-profile" label={i18n.t('cards.athleteProfile.helpLabel')} />
 		</div>
 		<div class="legend">
-			<span class="l90">last 90 days</span>
-			<span class="l30">last 30 days</span>
+			<span class="l90">{i18n.t('cards.athleteProfile.last90')}</span>
+			<span class="l30">{i18n.t('cards.athleteProfile.last30')}</span>
 		</div>
 	</header>
 	{#if axes.length}
@@ -59,7 +75,7 @@
 			viewBox="{-pad} {-pad} {size + pad * 2} {size + pad * 2}"
 			class="radar"
 			role="img"
-			aria-label="Climber profile radar"
+			aria-label={i18n.t('cards.athleteProfile.ariaClimberProfileRadar')}
 		>
 			{#each rings as ring (ring)}
 				<polygon class="ring" points={poly(axes.map(() => ring * 100))} />
@@ -74,14 +90,14 @@
 					y={lp.y}
 					dy={lp.y < cy - 2 ? '-0.2em' : lp.y > cy + 2 ? '0.75em' : '0.35em'}
 					text-anchor={lp.x < cx - 6 ? 'end' : lp.x > cx + 6 ? 'start' : 'middle'}
-					>{axis.label}</text
+					>{axisLabel(axis)}</text
 				>
 			{/each}
 			<polygon class="fill90" points={poly(last90)} />
 			<polygon class="fill30" points={poly(last30)} />
 		</svg>
 	{:else}
-		<p class="empty">Not enough recent ascents</p>
+		<p class="empty">{i18n.t('cards.athleteProfile.empty')}</p>
 	{/if}
 </article>
 

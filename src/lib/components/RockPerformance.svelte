@@ -1,4 +1,6 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
+	import RichText from '#lib/components/RichText.svelte';
 	import { DEFAULT_DATE_DISPLAY, formatNumber, type DateDisplay } from '#lib/dates';
 	import {
 		MIN_RATE_ASCENTS,
@@ -12,22 +14,23 @@
 
 	type Props = { data: RockPerformanceView; dateDisplay?: DateDisplay };
 	let { data, dateDisplay = DEFAULT_DATE_DISPLAY }: Props = $props();
+	const i18n = useI18n();
 
-	const METRICS: { key: RockPerformanceMetric; label: string; help: string }[] = [
+	const METRICS: { key: RockPerformanceMetric; labelKey: string; helpKey: string }[] = [
 		{
 			key: 'sendRate',
-			label: 'Send rate',
-			help: 'Sends as a share of your logged sends and attempts on tagged rock.'
+			labelKey: 'cards.rockPerformance.labelSendRate',
+			helpKey: 'cards.rockPerformance.helpSendRate'
 		},
 		{
 			key: 'nearLimit',
-			label: 'Near-limit',
-			help: 'Sends within 2 grades (1 V-grade) of your hardest same-style send in the year before.'
+			labelKey: 'cards.rockPerformance.labelNearLimit',
+			helpKey: 'cards.rockPerformance.helpNearLimit'
 		},
 		{
 			key: 'onsightFlash',
-			label: 'Onsight/flash',
-			help: 'Onsights and flashes as a share of your sends on that rock.'
+			labelKey: 'cards.rockPerformance.labelOnsightFlash',
+			helpKey: 'cards.rockPerformance.helpOnsightFlash'
 		}
 	];
 
@@ -40,7 +43,9 @@
 	const fmt = (n: number) => formatNumber(n, dateDisplay);
 	const coverageNote = $derived(
 		data.allAscents > data.ascents
-			? ` (${fmt(data.allAscents - data.ascents)} more sends and attempts have no rock type tag)`
+			? ` ${i18n.t('cards.rockPerformance.noteUntaggedSends', {
+					count: fmt(data.allAscents - data.ascents)
+				})}`
 			: ''
 	);
 
@@ -49,48 +54,70 @@
 	}
 
 	function sampleText(rate: RockRate): string {
-		return `${fmt(rate.count)} of ${fmt(rate.total)}`;
+		return i18n.t('cards.rockPerformance.sampleCountOfTotal', {
+			count: fmt(rate.count),
+			total: fmt(rate.total)
+		});
 	}
 </script>
 
 <article class="panel rock-performance">
 	<header>
-		<h2>Rock &amp; performance</h2>
-		<a class="how" href="/docs/rock-types">How it works</a>
+		<h2>{i18n.t('cards.rockPerformance.titleRockPerformance')}</h2>
+		<a class="how" href="/docs/rock-types">{i18n.t('common.howItWorks')}</a>
 	</header>
 
 	{#if !data.ready}
 		<p class="lead">
-			This card compares your sends across rock types once {fmt(data.minDays)} climbing days have a Rock
-			type tag. So far: {fmt(data.days)}.
+			{i18n.t('cards.rockPerformance.leadNotReady', {
+				minDays: fmt(data.minDays),
+				days: fmt(data.days)
+			})}
 		</p>
 	{:else}
 		<p class="lead">
-			{fmt(data.ascents)} sends and attempts with a Rock type tag across {fmt(data.days)} days and
-			{fmt(data.rockCount)} rock{data.rockCount === 1 ? '' : 's'}{coverageNote}.
+			{i18n.t('cards.rockPerformance.leadCounts', {
+				ascents: fmt(data.ascents),
+				days: fmt(data.days),
+				rockCount: data.rockCount,
+				coverage: coverageNote
+			})}
 		</p>
 
-		<div class="toggles" role="group" aria-label="Performance measure">
+		<div
+			class="toggles"
+			role="group"
+			aria-label={i18n.t('cards.rockPerformance.ariaPerformanceMeasure')}
+		>
 			{#each METRICS as m (m.key)}
 				<button
 					type="button"
 					class={{ active: metric === m.key }}
 					aria-pressed={metric === m.key}
-					onclick={() => (metric = m.key)}>{m.label}</button
+					onclick={() => (metric = m.key)}>{i18n.t(m.labelKey)}</button
 				>
 			{/each}
 		</div>
-		<p class="hint">{metricDef.help}</p>
+		<p class="hint">{i18n.t(metricDef.helpKey)}</p>
 
 		<p class="summary" aria-live="polite">
 			{#if standout}
 				{@const r = standout[metric]}
-				{metricDef.label} is <strong>{r.signal === 'higher' ? 'higher' : 'lower'}</strong> on
-				{standout.label}: {fmt(r.pct!)}% vs {fmt(Math.round((r.pct! - r.diffPts!) * 10) / 10)}% on
-				your other rock.
+				<RichText
+					message={i18n.t(
+						r.signal === 'higher'
+							? 'cards.rockPerformance.summaryHigher'
+							: 'cards.rockPerformance.summaryLower',
+						{
+							metric: i18n.t(metricDef.labelKey),
+							rock: standout.label,
+							percent: fmt(r.pct!),
+							other: fmt(Math.round((r.pct! - r.diffPts!) * 10) / 10)
+						}
+					)}
+				/>
 			{:else}
-				No rock type stands out from your other tagged climbs yet; the differences below are within
-				normal day-to-day variation.
+				{i18n.t('cards.rockPerformance.summaryNoStandout')}
 			{/if}
 		</p>
 
@@ -99,13 +126,16 @@
 			<span class="label">{band.label}</span>
 			<span class="value">
 				{#if r.pct == null}
-					Not enough data · {fmt(band.ascents)}
-					{band.ascents === 1 ? 'ascent' : 'ascents'}
+					{i18n.t('cards.rockPerformance.valueNotEnoughData', { count: band.ascents })}
 				{:else}
 					{fmt(r.pct)}% · {sampleText(r)}
 				{/if}
 				{#if r.signal}
-					<span class="signal {r.signal}">{r.signal === 'higher' ? '↑ Higher' : '↓ Lower'}</span>
+					<span class="signal {r.signal}"
+						>{r.signal === 'higher'
+							? i18n.t('cards.rockPerformance.labelHigher')
+							: i18n.t('cards.rockPerformance.labelLower')}</span
+					>
 				{/if}
 			</span>
 			<div class="track" aria-hidden="true">
@@ -132,27 +162,34 @@
 
 		<p class="hint">
 			{#if overall != null}
-				Overall {metricDef.label.toLowerCase()} on tagged rock: {fmt(overall)}% (the line on each
-				bar).
+				{i18n.t('cards.rockPerformance.hintOverallLine', {
+					metric: i18n.t(metricDef.labelKey).toLowerCase(),
+					percent: fmt(overall)
+				})}
 			{/if}
-			“Higher” or “Lower” marks a rock that differs from your other tagged days by more than day-to-day
-			variation explains, with at least {fmt(MIN_RATE_ASCENTS)} ascents over
-			{fmt(MIN_SIGNAL_DAYS)} days on each side. Crag choice and trips confound rock type, so treat this
-			as a pattern, not a cause.
+			{i18n.t('cards.rockPerformance.hintSignalThreshold', {
+				minAscents: fmt(MIN_RATE_ASCENTS),
+				minDays: fmt(MIN_SIGNAL_DAYS)
+			})}
 		</p>
 
 		<details class="values">
-			<summary>View values</summary>
+			<summary>{i18n.t('cards.rockPerformance.summaryViewValues')}</summary>
 			<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
-			<div class="table-wrap" tabindex="0" role="region" aria-label="Rock performance values">
+			<div
+				class="table-wrap"
+				tabindex="0"
+				role="region"
+				aria-label={i18n.t('cards.rockPerformance.ariaRockPerformanceValues')}
+			>
 				<table>
-					<caption>Rock types: sends by rock (count of total)</caption>
+					<caption>{i18n.t('cards.rockPerformance.captionSendsByRock')}</caption>
 					<thead>
 						<tr>
-							<th scope="col">Rock</th>
-							<th scope="col">Days</th>
+							<th scope="col">{i18n.t('cards.rockPerformance.thRock')}</th>
+							<th scope="col">{i18n.t('cards.rockPerformance.thDays')}</th>
 							{#each METRICS as m (m.key)}
-								<th scope="col">{m.label}</th>
+								<th scope="col">{i18n.t(m.labelKey)}</th>
 							{/each}
 						</tr>
 					</thead>
@@ -166,7 +203,10 @@
 									<td>
 										{rateText(r)}
 										<span class="n">({sampleText(r)})</span>
-										{#if r.signal}<span class="visually-hidden">, {r.signal} than other rock</span
+										{#if r.signal}<span class="visually-hidden"
+												>{r.signal === 'higher'
+													? i18n.t('cards.rockPerformance.visuallyHiddenHigher')
+													: i18n.t('cards.rockPerformance.visuallyHiddenLower')}</span
 											>{/if}
 									</td>
 								{/each}

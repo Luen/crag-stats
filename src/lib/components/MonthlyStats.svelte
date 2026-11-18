@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { useI18n, monthLabels } from '#lib/i18n';
 	import { innerWidth } from 'svelte/reactivity/window';
 	import { DEFAULT_DISPLAY_UNITS, formatHeight, type DisplayUnits } from '#lib/units';
 
@@ -19,6 +20,7 @@
 	};
 
 	let { months, years, titleHref = null, displayUnits = DEFAULT_DISPLAY_UNITS }: Props = $props();
+	const i18n = useI18n();
 
 	type Metric = 'ascents' | 'sends' | 'heightM';
 
@@ -54,27 +56,18 @@
 	const heightUnit = $derived(displayUnits.height);
 
 	const metricLabel = $derived(
-		metric === 'ascents' ? 'Ascents' : metric === 'sends' ? 'Sends' : `Height (${heightUnit})`
+		metric === 'ascents'
+			? i18n.t('cards.monthlyStats.metricAscents')
+			: metric === 'sends'
+				? i18n.t('cards.monthlyStats.metricSends')
+				: i18n.t('cards.monthlyStats.metricHeight', { unit: heightUnit })
 	);
 
 	const narrow = $derived((innerWidth.current ?? 900) < 700);
 	const sparseLabels = $derived(values.length > (narrow ? 12 : 18));
 	const showYearInLabel = $derived(yearFilter === 'all' || yearFilter === 'last12');
 
-	const MONTH_NAMES = [
-		'Jan',
-		'Feb',
-		'Mar',
-		'Apr',
-		'May',
-		'Jun',
-		'Jul',
-		'Aug',
-		'Sep',
-		'Oct',
-		'Nov',
-		'Dec'
-	];
+	const MONTH_NAMES = $derived(monthLabels(i18n.t));
 
 	function axisLabel(month: string, index: number): string | null {
 		const isYearStart = month.endsWith('-01') || index === 0;
@@ -104,47 +97,48 @@
 <article class="panel">
 	<h2>
 		{#if titleHref}
-			<a href={titleHref}>Monthly stats</a>
+			<a href={titleHref}>{i18n.t('cards.monthlyStats.titleMonthlyStats')}</a>
 		{:else}
-			Monthly stats
+			{i18n.t('cards.monthlyStats.titleMonthlyStats')}
 		{/if}
 	</h2>
 
 	{#if months.length === 0}
-		<p class="empty">No monthly data yet.</p>
+		<p class="empty">{i18n.t('cards.monthlyStats.empty')}</p>
 	{:else}
 		<div class="controls">
 			<label>
-				<span class="sr">Range</span>
+				<span class="sr">{i18n.t('cards.monthlyStats.labelRange')}</span>
 				<select bind:value={yearFilter}>
-					<option value="last12">Past 12 months</option>
-					<option value="all">All years</option>
+					<option value="last12">{i18n.t('cards.monthlyStats.optionPast12Months')}</option>
+					<option value="all">{i18n.t('cards.monthlyStats.optionAllYears')}</option>
 					{#each [...years].reverse() as y (y)}
 						<option value={String(y)}>{y}</option>
 					{/each}
 				</select>
 			</label>
-			<div class="toggles" role="group" aria-label="Metric">
+			<div class="toggles" role="group" aria-label={i18n.t('cards.monthlyStats.ariaMetric')}>
 				<button
 					type="button"
 					class={{ active: metric === 'ascents' }}
-					onclick={() => (metric = 'ascents')}>Ascents</button
+					onclick={() => (metric = 'ascents')}>{i18n.t('cards.monthlyStats.metricAscents')}</button
 				>
 				<button
 					type="button"
 					class={{ active: metric === 'sends' }}
-					onclick={() => (metric = 'sends')}>Sends</button
+					onclick={() => (metric = 'sends')}>{i18n.t('cards.monthlyStats.metricSends')}</button
 				>
 				<button
 					type="button"
 					class={{ active: metric === 'heightM' }}
-					onclick={() => (metric = 'heightM')}>Height ({heightUnit})</button
+					onclick={() => (metric = 'heightM')}
+					>{i18n.t('cards.monthlyStats.metricHeight', { unit: heightUnit })}</button
 				>
 			</div>
 		</div>
 
 		{#if values.length === 0}
-			<p class="empty">No months in this range.</p>
+			<p class="empty">{i18n.t('cards.monthlyStats.noMonthsInThisRange')}</p>
 		{:else}
 			<div class="chart-scroll">
 				<div class="chart" style:--n={values.length}>

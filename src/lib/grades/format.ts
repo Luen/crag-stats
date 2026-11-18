@@ -1,3 +1,4 @@
+import { DEFAULT_LOCALE, formatMessage, type SupportedLocale } from '#lib/i18n';
 import { convertFromEwbank, convertFromVScale, formatVScaleLabel } from './conversions';
 import { usesVScale } from './bands';
 
@@ -11,16 +12,34 @@ export type DisplayGradeSystems = { route: RouteGradeSystem; boulder: BoulderGra
 
 export const DEFAULT_DISPLAY_SYSTEMS: DisplayGradeSystems = { route: 'ewbank', boulder: 'v_scale' };
 
-export const ROUTE_GRADE_SYSTEMS: readonly { id: RouteGradeSystem; label: string }[] = [
-	{ id: 'ewbank', label: 'Ewbank (AU/NZ)' },
-	{ id: 'french', label: 'French' },
-	{ id: 'yds', label: 'YDS (US)' }
+const ROUTE_GRADE_SYSTEM_SPECS: readonly { id: RouteGradeSystem; labelKey: string }[] = [
+	{ id: 'ewbank', labelKey: 'grades.systems.ewbank' },
+	{ id: 'french', labelKey: 'grades.systems.french' },
+	{ id: 'yds', labelKey: 'grades.systems.yds' }
 ];
 
-export const BOULDER_GRADE_SYSTEMS: readonly { id: BoulderGradeSystem; label: string }[] = [
-	{ id: 'v_scale', label: 'V-scale (Hueco)' },
-	{ id: 'font', label: 'Fontainebleau (Font)' }
+export const ROUTE_GRADE_SYSTEMS: readonly {
+	id: RouteGradeSystem;
+	label: string;
+	labelKey: string;
+}[] = ROUTE_GRADE_SYSTEM_SPECS.map((s) => ({
+	...s,
+	label: formatMessage(DEFAULT_LOCALE, s.labelKey)
+}));
+
+const BOULDER_GRADE_SYSTEM_SPECS: readonly { id: BoulderGradeSystem; labelKey: string }[] = [
+	{ id: 'v_scale', labelKey: 'grades.systems.v_scale' },
+	{ id: 'font', labelKey: 'grades.systems.font' }
 ];
+
+export const BOULDER_GRADE_SYSTEMS: readonly {
+	id: BoulderGradeSystem;
+	label: string;
+	labelKey: string;
+}[] = BOULDER_GRADE_SYSTEM_SPECS.map((s) => ({
+	...s,
+	label: formatMessage(DEFAULT_LOCALE, s.labelKey)
+}));
 
 export function parseRouteGradeSystem(raw: string | null | undefined): RouteGradeSystem | null {
 	const v = (raw || '').trim().toLowerCase();
@@ -80,11 +99,15 @@ export function applyDisplaySystemOverrides(
 }
 
 /** Human label, e.g. "French routes, Fontainebleau (Font) boulders". */
-export function describeDisplaySystems(systems: DisplayGradeSystems): string {
-	const route = ROUTE_GRADE_SYSTEMS.find((s) => s.id === systems.route)?.label ?? systems.route;
-	const boulder =
-		BOULDER_GRADE_SYSTEMS.find((s) => s.id === systems.boulder)?.label ?? systems.boulder;
-	return `${route} routes, ${boulder} boulders`;
+export function describeDisplaySystems(
+	systems: DisplayGradeSystems,
+	locale: SupportedLocale = DEFAULT_LOCALE
+): string {
+	const routeDef = ROUTE_GRADE_SYSTEMS.find((s) => s.id === systems.route);
+	const boulderDef = BOULDER_GRADE_SYSTEMS.find((s) => s.id === systems.boulder);
+	const route = routeDef ? formatMessage(locale, routeDef.labelKey) : systems.route;
+	const boulder = boulderDef ? formatMessage(locale, boulderDef.labelKey) : systems.boulder;
+	return formatMessage(locale, 'grades.systems.describe', { route, boulder });
 }
 
 /**

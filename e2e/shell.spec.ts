@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { DOC_PAGES } from '../src/lib/docs';
+import { expectAxeClean } from './axe';
 
 test.describe('app shell', () => {
 	test('Settings remains in the header without a duplicate sidebar entry', async ({ page }) => {
@@ -58,6 +59,116 @@ test.describe('app shell', () => {
 		await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
 		await page.getByRole('button', { name: /^Theme:/ }).click();
 		await expect(page.locator('html')).not.toHaveAttribute('data-theme', /.+/);
+	});
+
+	test('language menu lists every enabled locale and switches in one interaction', async ({
+		page
+	}) => {
+		await page.goto('/');
+		// The button is named in the active language, so select it by class.
+		const trigger = page.locator('.top-actions .locale');
+		await expect(page.locator('html')).toHaveAttribute('lang', 'en');
+
+		await trigger.click();
+		const menu = page.getByRole('menu');
+		await expect(menu).toBeVisible();
+		// Every enabled locale is one interaction away (#494). Only German ships while the other
+		// catalogues are still being translated, so a catalogue that exists but is not enabled
+		// must not appear here.
+		await expect(menu.getByRole('menuitemradio')).toHaveCount(2);
+		await expect(menu.getByRole('menuitemradio', { name: 'Deutsch', exact: true })).toBeVisible();
+		await expect(menu.getByRole('menuitemradio', { name: 'Français', exact: true })).toHaveCount(0);
+		await expect(menu.getByRole('menuitemradio', { name: 'English', exact: true })).toHaveAttribute(
+			'aria-checked',
+			'true'
+		);
+		await expect(menu.getByRole('menuitemradio', { name: 'English', exact: true })).toBeFocused();
+		await expectAxeClean(page, { include: ['.topbar'] });
+
+		// Escape closes the menu and hands focus back to the trigger.
+		await page.keyboard.press('Escape');
+		await expect(menu).toHaveCount(0);
+		await expect(trigger).toBeFocused();
+
+		// ArrowDown opens on the current locale; the next ArrowDown moves into the list.
+		await trigger.press('ArrowDown');
+		await expect(menu.getByRole('menuitemradio', { name: 'English', exact: true })).toBeFocused();
+		await page.keyboard.press('ArrowDown');
+		await expect(menu.getByRole('menuitemradio', { name: 'Deutsch', exact: true })).toBeFocused();
+		await page.keyboard.press('Enter');
+
+		// German: shell copy and the server-rendered <html lang> follow immediately.
+		await expect(page.locator('html')).toHaveAttribute('lang', 'de');
+		await expect(page.locator('#side-nav').getByRole('link', { name: 'Übersicht' })).toBeVisible();
+		await expect(page.getByRole('contentinfo')).toContainText('Selbst gehostete Kletteranalyse');
+
+		// Reload preserves the language via the cookie.
+		await page.reload();
+		await expect(page.locator('html')).toHaveAttribute('lang', 'de');
+		await expect(page.locator('#side-nav').getByRole('link', { name: 'Übersicht' })).toBeVisible();
+
+		// Reset to English via ?locale=en, then confirm a disabled catalogue is not reachable by
+		// link: ?locale=fr keeps English rather than serving a half-translated catalogue.
+		await page.goto('/?locale=en');
+		await expect(page.locator('html')).toHaveAttribute('lang', 'en');
+		await page.goto('/?locale=fr');
+		await expect(page.locator('html')).toHaveAttribute('lang', 'en');
+		await expect(page.locator('#side-nav').getByRole('link', { name: 'Dashboard' })).toBeVisible();
+
+		// The choice persists across reload.
+		await page.goto('/');
+		await expect(page.locator('html')).toHaveAttribute('lang', 'en');
+		await expect(page.locator('#side-nav').getByRole('link', { name: 'Dashboard' })).toBeVisible();
+	});
+
+	test('German pages render translated headings without unresolved message syntax', async ({
+		page
+	}) => {
+		try {
+			for (const [path, heading] of [
+				['/logbook', 'Tourenbuch'],
+				['/weather', 'Wetter'],
+				['/settings', 'Einstellungen']
+			]) {
+				await page.goto(`${path}?locale=de`);
+				await expect(page.locator('html')).toHaveAttribute('lang', 'de');
+				await expect(page.getByRole('heading', { level: 1 })).toHaveText(heading);
+				expect(await page.locator('main').innerText()).not.toMatch(
+					/\{(?:count|days|total|name|range|percent)[,}]/
+				);
+			}
+		} finally {
+			await page.goto('/?locale=en');
+		}
+	});
+
+	test('saving a language applies to the immediate native form response', async ({
+		request,
+		baseURL
+	}) => {
+		try {
+			const saved = await request.post('/settings?/savePreferences', {
+				form: { locale: 'de' },
+				headers: {
+					accept: 'text/html',
+					'accept-language': 'en-AU',
+					origin: new URL(baseURL!).origin
+				}
+			});
+			expect(saved.status()).toBe(200);
+			expect(await saved.text()).toMatch(/<html[^>]*lang="de"/);
+		} finally {
+			const reset = await request.post('/settings?/savePreferences', {
+				form: { locale: 'auto' },
+				headers: {
+					accept: 'text/html',
+					'accept-language': 'en-AU',
+					origin: new URL(baseURL!).origin
+				}
+			});
+			expect(reset.status()).toBe(200);
+			expect(await reset.text()).toMatch(/<html[^>]*lang="en"/);
+		}
 	});
 
 	test('docs: every page renders and the dashboard links into them', async ({ page }) => {

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
 	import EddingtonMilestones from '#lib/components/EddingtonMilestones.svelte';
 	import EddingtonTimelineChart from '#lib/components/EddingtonTimelineChart.svelte';
 	import { eddingtonTiles } from '#lib/eddingtonDisplay';
@@ -6,26 +7,25 @@
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
-	const tiles = $derived(eddingtonTiles(data.stats));
+	const i18n = useI18n();
+	const tiles = $derived(eddingtonTiles(data.stats, i18n.locale));
 </script>
 
 <svelte:head>
-	<title>Eddington numbers · Crag Stats</title>
-	<meta
-		name="description"
-		content="Send-day, vertical, and grade-index Eddington numbers from your climbing logbook."
-	/>
+	<title>{i18n.t('pages.eddington.pageTitle')}</title>
+	<meta name="description" content={i18n.t('pages.eddington.pageDescription')} />
 </svelte:head>
 
 <section class="panel head">
-	<h1>Eddington numbers</h1>
+	<h1>{i18n.t('pages.eddington.titleEddingtonNumbers')}</h1>
 	<p>
-		Consistency metrics inspired by cycling's Eddington number — how your send days, vertical, and
-		grade indexes grew over time.
-		<a class="how" href="/docs/eddington">How it works</a>
+		{i18n.t('pages.eddington.lead')}
+		<a class="how" href="/docs/eddington">{i18n.t('common.howItWorks')}</a>
 	</p>
 	<p class="meta">
-		{formatNumber(data.stats.activeDays, data.dateDisplay)} active logbook days in total.
+		{i18n.t('pages.eddington.metaActiveDays', {
+			count: formatNumber(data.stats.activeDays, data.dateDisplay)
+		})}
 	</p>
 </section>
 

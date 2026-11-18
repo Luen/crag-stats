@@ -1,24 +1,43 @@
 import cron from 'node-cron';
 import { env, getTheCragSyncConfiguration } from './env';
-import { triggerRouteHistoryImport } from './routeHistoryImport';
+import { isRouteHistoryImportEnabled, triggerRouteHistoryImport } from './routeHistoryImport';
 import { getSyncStatus, runTheCragSync } from './sync';
-import { triggerWeatherImport } from './weatherImport';
+import { isWeatherImportEnabled, triggerWeatherImport } from './weatherImport';
 
 let started = false;
 
 export function startScheduler() {
 	if (started) return;
 	if (typeof process === 'undefined') return;
-	if (!getTheCragSyncConfiguration().configured) return;
 
+	const logbookConfigured = getTheCragSyncConfiguration().configured;
+	// Route data and weather can run without a logbook sync: when CSV uploads are the
+	// logbook source, the API sync is suppressed but THECRAG_API_KEY still authorises
+	// route lookups, so the scheduler has to start for the imports alone.
+	const importsConfigured = isRouteHistoryImportEnabled() || isWeatherImportEnabled();
+	if (!logbookConfigured && !importsConfigured) return;
+	started = true;
+
+	if (logbookConfigured) {
+		startLogbookSync();
+	} else {
+		console.log('[crag-stats] logbook sync off (CSV mode or no key); background imports stay on');
+		resumePendingImports();
+	}
+
+	if (importsConfigured) scheduleImportRuns();
+}
+
+/** Logbook pull on SYNC_CRON. Without a valid expression, no sync is scheduled. */
+function startLogbookSync() {
 	const expr = env('SYNC_CRON', '0 6 * * *').trim();
 	// Explicit opt-out: no scheduled or boot-time sync; Settings → Sync now still works.
 	if (expr.toLowerCase() === 'off') {
-		console.log('[crag-stats] SYNC_CRON=off, scheduler not started');
+		console.log('[crag-stats] SYNC_CRON=off, logbook sync not scheduled');
 		return;
 	}
 	if (!cron.validate(expr)) {
-		console.warn(`[crag-stats] Invalid SYNC_CRON "${expr}", scheduler not started`);
+		console.warn(`[crag-stats] Invalid SYNC_CRON "${expr}", logbook sync not scheduled`);
 		return;
 	}
 
@@ -30,10 +49,29 @@ export function startScheduler() {
 			);
 		});
 	});
-	started = true;
 	console.log(`[crag-stats] sync scheduler started (${expr})`);
 
 	runInitialSyncIfNeeded();
+}
+
+/**
+ * Background route data / weather on IMPORT_CRON, independent of the logbook schedule so a
+ * CSV-only or monthly-sync install still drains its queue. The engines' own run gap and
+ * back-off make a tick with nothing pending a no-op request-wise.
+ */
+function scheduleImportRuns() {
+	const expr = env('IMPORT_CRON', '0 6 * * *').trim();
+	if (expr.toLowerCase() === 'off') {
+		console.log('[crag-stats] IMPORT_CRON=off, background imports not scheduled');
+		return;
+	}
+	if (!cron.validate(expr)) {
+		console.warn(`[crag-stats] Invalid IMPORT_CRON "${expr}", background imports not scheduled`);
+		return;
+	}
+
+	cron.schedule(expr, () => resumePendingImports());
+	console.log(`[crag-stats] background import scheduler started (${expr})`);
 }
 
 /**

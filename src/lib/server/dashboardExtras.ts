@@ -10,6 +10,7 @@ import {
 	usesVScale,
 	type DisplayGradeSystems
 } from '#lib/grades';
+import { DEFAULT_LOCALE, formatMessage, type SupportedLocale } from '#lib/i18n';
 import {
 	buildPartnerStats,
 	ascentPartners,
@@ -311,13 +312,15 @@ export function buildMilestones(
 	rows: DashboardExtraRow[],
 	systems: DisplayGradeSystems = DEFAULT_DISPLAY_SYSTEMS,
 	units: DisplayUnits = DEFAULT_DISPLAY_UNITS,
-	display: DateDisplay = DEFAULT_DATE_DISPLAY
+	display: DateDisplay = DEFAULT_DATE_DISPLAY,
+	locale: SupportedLocale = DEFAULT_LOCALE
 ): { items: MilestoneItem[] } {
 	const dated = [...rows]
 		.filter((r) => dayKey(r.ascentDate))
 		.sort((a, b) => (a.ascentDate || '').localeCompare(b.ascentDate || ''));
 
 	const items: MilestoneItem[] = [];
+	const unknownRoute = formatMessage(locale, 'cards.milestones.unknownRoute');
 
 	// Grade breakthroughs (sends only): first time a new integer score is reached.
 	const seenInt = new Set<string>();
@@ -338,13 +341,13 @@ export function buildMilestones(
 		seenInt.add(key);
 		if (n <= prevMax) continue;
 		const label = formatGradeLabel(score, boulder, systems);
-		const name = (row.routeName || 'Unknown').trim() || 'Unknown';
+		const name = (row.routeName || '').trim() || unknownRoute;
 		gradeItems.push({
 			id: `grade:${key}`,
 			kind: 'grade',
-			label: `First ${label}`,
+			label: formatMessage(locale, 'cards.milestones.firstGrade', { grade: label }),
 			date: dayKey(row.ascentDate),
-			detail: [name, ascentPartners(row.partners)].filter(Boolean).join(' · ')
+			detail: [name, ascentPartners(row.partners, locale)].filter(Boolean).join(' · ')
 		});
 	}
 	items.push(...gradeItems.slice(-MAX_GRADE_BREAKTHROUGHS));
@@ -360,9 +363,11 @@ export function buildMilestones(
 				items.push({
 					id: `count:${mark}`,
 					kind: 'count',
-					label: `${formatNumber(mark, display)} ascents`,
+					label: formatMessage(locale, 'cards.milestones.countLabel', {
+						count: formatNumber(mark, display)
+					}),
 					date: dayKey(row.ascentDate),
-					detail: `Ascent #${mark}`
+					detail: formatMessage(locale, 'cards.milestones.countDetail', { count: mark })
 				});
 			}
 		}
@@ -380,9 +385,9 @@ export function buildMilestones(
 				items.push({
 					kind: 'height',
 					id: `height:${mark}`,
-					label: `${climbed} climbed`,
+					label: formatMessage(locale, 'cards.milestones.heightLabel', { distance: climbed }),
 					date: dayKey(row.ascentDate),
-					detail: `Cumulative height reached ${climbed}`
+					detail: formatMessage(locale, 'cards.milestones.heightDetail', { distance: climbed })
 				});
 			}
 		}
@@ -398,8 +403,13 @@ export function buildMilestones(
 		Trad: 0,
 		Boulder: 0
 	};
+	const styleFaKeys: Record<(typeof STYLE_FA_STYLES)[number], string> = {
+		Sport: 'cards.milestones.faSportCount',
+		Trad: 'cards.milestones.faTradCount',
+		Boulder: 'cards.milestones.faBoulderCount'
+	};
 	for (const fa of firstAscentSends(rows)) {
-		const name = (fa.row.routeName || 'Unknown').trim() || 'Unknown';
+		const name = (fa.row.routeName || '').trim() || unknownRoute;
 		faCombined += 1;
 		if (fa.kind === 'FA') {
 			faOnly += 1;
@@ -407,9 +417,9 @@ export function buildMilestones(
 				items.push({
 					kind: 'fa',
 					id: 'fa:first',
-					label: 'First ascent',
+					label: formatMessage(locale, 'cards.milestones.firstAscent'),
 					date: fa.day,
-					detail: [name, ascentPartners(fa.row.partners)].filter(Boolean).join(' · ')
+					detail: [name, ascentPartners(fa.row.partners, locale)].filter(Boolean).join(' · ')
 				});
 			}
 		} else {
@@ -418,9 +428,9 @@ export function buildMilestones(
 				items.push({
 					kind: 'fa',
 					id: 'ffa:first',
-					label: 'First free ascent',
+					label: formatMessage(locale, 'cards.milestones.firstFreeAscent'),
 					date: fa.day,
-					detail: [name, ascentPartners(fa.row.partners)].filter(Boolean).join(' · ')
+					detail: [name, ascentPartners(fa.row.partners, locale)].filter(Boolean).join(' · ')
 				});
 			}
 			for (const mark of FFA_COUNT_LANDMARKS) {
@@ -428,9 +438,9 @@ export function buildMilestones(
 					items.push({
 						kind: 'fa',
 						id: `ffa:${mark}`,
-						label: `${mark} first free ascents`,
+						label: formatMessage(locale, 'cards.milestones.ffaCount', { count: mark }),
 						date: fa.day,
-						detail: [name, ascentPartners(fa.row.partners)].filter(Boolean).join(' · ')
+						detail: [name, ascentPartners(fa.row.partners, locale)].filter(Boolean).join(' · ')
 					});
 				}
 			}
@@ -440,9 +450,9 @@ export function buildMilestones(
 				items.push({
 					kind: 'fa',
 					id: `fa:${mark}`,
-					label: `${mark} first ascents`,
+					label: formatMessage(locale, 'cards.milestones.faCount', { count: mark }),
 					date: fa.day,
-					detail: [name, ascentPartners(fa.row.partners)].filter(Boolean).join(' · ')
+					detail: [name, ascentPartners(fa.row.partners, locale)].filter(Boolean).join(' · ')
 				});
 			}
 		}
@@ -455,9 +465,9 @@ export function buildMilestones(
 					items.push({
 						kind: 'fa',
 						id: `fa:${key.toLowerCase()}:${mark}`,
-						label: `${mark} ${key.toLowerCase()} first ascents`,
+						label: formatMessage(locale, styleFaKeys[key], { count: mark }),
 						date: fa.day,
-						detail: [name, ascentPartners(fa.row.partners)].filter(Boolean).join(' · ')
+						detail: [name, ascentPartners(fa.row.partners, locale)].filter(Boolean).join(' · ')
 					});
 				}
 			}

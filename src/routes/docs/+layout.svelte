@@ -1,9 +1,11 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
 	import { page } from '$app/state';
 	import { DOC_PAGES } from '#lib/docs';
 	import type { LayoutProps } from './$types';
 
 	let { children }: LayoutProps = $props();
+	const i18n = useI18n();
 
 	/**
 	 * On phones the tab strip scrolls sideways; bring the current page's tab into view
@@ -18,8 +20,10 @@
 </script>
 
 <div class="docs">
-	<nav class="toc panel" aria-label="Docs" {@attach scrollActiveTab}>
-		<a href="/docs" class={{ active: page.url.pathname === '/docs' }}>Overview</a>
+	<nav class="toc panel" aria-label={i18n.t('pages.docsLayout.ariaDocs')} {@attach scrollActiveTab}>
+		<a href="/docs" class={{ active: page.url.pathname === '/docs' }}
+			>{i18n.t('pages.docsLayout.linkOverview')}</a
+		>
 		{#each DOC_PAGES as d (d.slug)}
 			<a href="/docs/{d.slug}" class={{ active: page.url.pathname === `/docs/${d.slug}` }}
 				>{d.title}</a

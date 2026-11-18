@@ -4,30 +4,39 @@
  * zone even when the container runs in UTC.
  */
 
+import { formatMessage } from '#lib/i18n/format';
+import { DEFAULT_LOCALE } from '#lib/i18n/types';
+
 export type DateFormat = 'auto' | 'dd/mm/yyyy' | 'mm/dd/yyyy' | 'yyyy-mm-dd';
 
-export const DATE_FORMAT_OPTIONS = [
+const DATE_FORMAT_SPECS = [
 	{
 		id: 'auto' as const,
-		label: 'Auto (Locale-based)',
-		hint: 'Derives format from the configured display locale'
+		labelKey: 'pages.settings.dateFormatAutoLabel',
+		hintKey: 'pages.settings.dateFormatAutoHint'
 	},
 	{
 		id: 'dd/mm/yyyy' as const,
-		label: 'DD/MM/YYYY (Day first)',
-		hint: 'UK, Australia, Europe, and Latin America'
+		labelKey: 'pages.settings.dateFormatDmyLabel',
+		hintKey: 'pages.settings.dateFormatDmyHint'
 	},
 	{
 		id: 'mm/dd/yyyy' as const,
-		label: 'MM/DD/YYYY (Month first)',
-		hint: 'United States'
+		labelKey: 'pages.settings.dateFormatMdyLabel',
+		hintKey: 'pages.settings.dateFormatMdyHint'
 	},
 	{
 		id: 'yyyy-mm-dd' as const,
-		label: 'YYYY-MM-DD (ISO 8601)',
-		hint: 'Unambiguous international standard'
+		labelKey: 'pages.settings.dateFormatIsoLabel',
+		hintKey: 'pages.settings.dateFormatIsoHint'
 	}
 ] as const;
+
+export const DATE_FORMAT_OPTIONS = DATE_FORMAT_SPECS.map((opt) => ({
+	...opt,
+	label: formatMessage(DEFAULT_LOCALE, opt.labelKey),
+	hint: formatMessage(DEFAULT_LOCALE, opt.hintKey)
+}));
 
 export type DateDisplay = {
 	locale: string;

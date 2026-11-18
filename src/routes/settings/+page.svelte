@@ -1,7 +1,9 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
 	import { onMount, untrack } from 'svelte';
 	import DashboardLayoutEditor from '#lib/components/DashboardLayoutEditor.svelte';
-	import { DATE_FORMAT_OPTIONS, formatDateTime, formatNumber } from '#lib/dates';
+	import RichText from '#lib/components/RichText.svelte';
+	import { DATE_FORMAT_OPTIONS, formatDateTime } from '#lib/dates';
 	import { BOULDER_GRADE_SYSTEMS, ROUTE_GRADE_SYSTEMS } from '#lib/grades';
 	import TickTypeIcon from '#lib/components/TickTypeIcon.svelte';
 	import {
@@ -35,6 +37,7 @@
 	import type { PageProps } from './$types';
 
 	let { data, form }: PageProps = $props();
+	const i18n = useI18n();
 
 	// Seed from SSR data so the selects render the stored choice without JS.
 	let unitHeight = $state<HeightUnit>(untrack(() => data.displayUnits.height));
@@ -68,9 +71,6 @@
 				? { count: form.imported, created: form.created, pruned: null }
 				: null
 	);
-	function countLabel(n: number, singular: string, plural = `${singular}s`): string {
-		return `${formatNumber(n, data.dateDisplay)} ${n === 1 ? singular : plural}`;
-	}
 	type ImportSnapshot = ImportProgressSnapshot<
 		PageProps['data']['routeHistory'],
 		PageProps['data']['weatherImport']
@@ -150,7 +150,9 @@
 			.join(', ')
 	);
 	function behaviorLabel(behavior: Exclude<TickBehavior, 'enable'>): string {
-		return behavior === 'projects_goals' ? 'Projects & goals only' : 'Hide';
+		return behavior === 'projects_goals'
+			? i18n.t('pages.settings.thProjectsGoals')
+			: i18n.t('pages.settings.thHide');
 	}
 
 	function applyPreset(preset: TickPreset) {
@@ -178,28 +180,31 @@
 </script>
 
 <section class="panel head">
-	<h1>Settings</h1>
-	<p>Sync, display preferences, search visibility, imports and local data control.</p>
+	<h1>{i18n.t('pages.settings.titleSettings')}</h1>
+	<p>{i18n.t('pages.settings.hintIntro')}</p>
 </section>
 
 {#if form?.routeHistoryWaiting}
 	<p class="banner hint">
 		{retrySeconds > 0
-			? `Route data can be checked again in ${retryLabel}.`
-			: 'Route data is ready to check again.'}
+			? i18n.t('pages.settings.bannerRouteDataWaiting', { when: retryLabel })
+			: i18n.t('pages.settings.bannerRouteDataReady')}
 	</p>
 {:else if form?.weatherWaiting}
 	<p class="banner hint">
 		{weatherRetrySeconds > 0
-			? `Weather import can run again in ${weatherRetryLabel}.`
-			: 'Weather import is ready to run again.'}
+			? i18n.t('pages.settings.bannerWeatherWaiting', { when: weatherRetryLabel })
+			: i18n.t('pages.settings.bannerWeatherReady')}
 	</p>
 {:else if form?.message}
 	<p class="banner err">{form.message}</p>
 {:else if form?.layoutSaved}
-	<p class="banner ok">Dashboard layout saved. <a href="/">View dashboard</a></p>
+	<p class="banner ok">
+		{i18n.t('pages.settings.bannerDashboardLayoutSaved')}
+		<a href="/">{i18n.t('pages.settings.linkViewDashboard')}</a>
+	</p>
 {:else if form?.saved}
-	<p class="banner ok">Preferences saved.</p>
+	<p class="banner ok">{i18n.t('pages.settings.bannerPreferencesSaved')}</p>
 {:else if form?.routeHistoryMessage}
 	<p class="banner ok">{form.routeHistoryMessage}</p>
 {:else if form?.weatherMessage}
@@ -207,134 +212,159 @@
 {:else if form?.result?.skipped}
 	<p class="banner hint" role="status">{form.result.reason}</p>
 {:else if importResult}
-	<div class="banner ok" role="status" aria-label="Import summary">
-		<strong>{importResult.pruned ? 'Logbook sync complete.' : 'CSV import complete.'}</strong>
-		<p>Processed {countLabel(importResult.count, 'ascent')}.</p>
+	<div class="banner ok" role="status" aria-label={i18n.t('pages.settings.ariaImportSummary')}>
+		<strong
+			>{importResult.pruned
+				? i18n.t('pages.settings.bannerSyncComplete')
+				: i18n.t('pages.settings.bannerCsvComplete')}</strong
+		>
+		<p>{i18n.t('pages.settings.summaryProcessed', { count: importResult.count })}</p>
 		<ul>
-			<li>{countLabel(importResult.created.routes, 'new route')}</li>
-			<li>{countLabel(importResult.created.ascents, 'new ascent')}</li>
+			<li>{i18n.t('pages.settings.summaryNewRoutes', { count: importResult.created.routes })}</li>
+			<li>{i18n.t('pages.settings.summaryNewAscents', { count: importResult.created.ascents })}</li>
 			<li>
-				{countLabel(
-					importResult.count - importResult.created.ascents,
-					'existing ascent refreshed',
-					'existing ascents refreshed'
-				)}
+				{i18n.t('pages.settings.summaryRefreshedAscents', {
+					count: importResult.count - importResult.created.ascents
+				})}
 			</li>
 			{#if importResult.pruned}
 				<li>
-					{countLabel(importResult.pruned.deletedAscents, 'ascent removed', 'ascents removed')}
+					{i18n.t('pages.settings.summaryRemovedAscents', {
+						count: importResult.pruned.deletedAscents
+					})}
 				</li>
-				<li>{countLabel(importResult.pruned.deletedRoutes, 'route removed', 'routes removed')}</li>
+				<li>
+					{i18n.t('pages.settings.summaryRemovedRoutes', {
+						count: importResult.pruned.deletedRoutes
+					})}
+				</li>
 			{/if}
 		</ul>
 		<p class="summary-note">
 			{importResult.pruned
-				? 'Route data and weather imports run separately when enabled.'
-				: 'Manual CSV uploads do not remove missing entries.'}
+				? i18n.t('pages.settings.bannerImportsRunSeparately')
+				: i18n.t('pages.settings.bannerCsvDoesNotRemove')}
 		</p>
 	</div>
 {:else if form?.ok}
-	<p class="banner ok">Done.</p>
+	<p class="banner ok">{i18n.t('pages.settings.bannerDone')}</p>
 {/if}
 
 <section class="grid">
 	<article class="panel">
-		<h2>Display & visibility</h2>
+		<h2>{i18n.t('pages.settings.titleDisplayVisibility')}</h2>
 		<p class="hint">
-			Dates and measurements are display-only: stored data, badge thresholds, and filters stay
-			metric. <a href="/docs/display-settings">How display settings work</a>
+			{i18n.t('pages.settings.hintDatesAreDisplayOnly')}
+			<a href="/docs/display-settings">{i18n.t('pages.settings.linkHowDisplaySettingsWork')}</a>
 		</p>
 		<form method="POST" action="?/savePreferences" class="prefs">
 			<label class="field">
-				<span>Route grades</span>
+				<span>{i18n.t('pages.settings.labelLanguage')}</span>
+				<select name="locale">
+					<option value="" selected={!data.siteLocale}
+						>{i18n.t('pages.settings.optionAutoBrowserLanguage')}</option
+					>
+					{#each data.supportedLocales as loc (loc)}
+						<option value={loc} selected={data.siteLocale === loc}>
+							{data.localeMetadata[loc].nativeName} ({data.localeMetadata[loc].name})
+						</option>
+					{/each}
+				</select>
+				<small class="hint">
+					{i18n.t('pages.settings.hintLanguage')}
+				</small>
+			</label>
+			<label class="field">
+				<span>{i18n.t('pages.settings.labelRouteGrades')}</span>
 				<select name="routeSystem">
 					{#each ROUTE_GRADE_SYSTEMS as opt (opt.id)}
-						<option value={opt.id} selected={data.gradeSystems.route === opt.id}>{opt.label}</option
+						<option value={opt.id} selected={data.gradeSystems.route === opt.id}
+							>{i18n.t(opt.labelKey)}</option
 						>
 					{/each}
 				</select>
-				<small class="hint">Sport, trad, top rope, and other roped climbing.</small>
+				<small class="hint">{i18n.t('pages.settings.hintRouteGrades')}</small>
 			</label>
 			<label class="field">
-				<span>Boulder grades</span>
+				<span>{i18n.t('pages.settings.labelBoulderGrades')}</span>
 				<select name="boulderSystem">
 					{#each BOULDER_GRADE_SYSTEMS as opt (opt.id)}
 						<option value={opt.id} selected={data.gradeSystems.boulder === opt.id}
-							>{opt.label}</option
+							>{i18n.t(opt.labelKey)}</option
 						>
 					{/each}
 				</select>
-				<small class="hint"
-					>Boulders and V-graded highballs. Both choices apply for every visitor.</small
-				>
+				<small class="hint">{i18n.t('pages.settings.hintBoulderGrades')}</small>
 			</label>
 			<label class="field">
-				<span>Date format</span>
+				<span>{i18n.t('pages.settings.labelDateFormat')}</span>
 				<select name="dateFormat">
 					{#each DATE_FORMAT_OPTIONS as opt (opt.id)}
-						<option value={opt.id} selected={data.dateFormat === opt.id}>{opt.label}</option>
+						<option value={opt.id} selected={data.dateFormat === opt.id}
+							>{i18n.t(opt.labelKey)}</option
+						>
 					{/each}
 				</select>
-				<small class="hint">Controls date layout across the logbook, heatmaps, and charts.</small>
+				<small class="hint">{i18n.t('pages.settings.hintDateFormat')}</small>
 			</label>
-			<h3 class="subheading">Units of measurement</h3>
+			<h3 class="subheading">{i18n.t('pages.settings.labelUnitsOfMeasurement')}</h3>
 			<div class="presets-row">
-				<span>Presets:</span>
+				<span>{i18n.t('pages.settings.labelPresets')}</span>
 				{#each UNIT_PRESETS as preset (preset.id)}
 					<button
 						type="button"
 						class="preset-btn"
-						title={preset.description}
+						title={i18n.t(preset.descriptionKey)}
 						onclick={() => applyUnitPreset(preset.id)}
 					>
-						{preset.label}
+						{i18n.t(preset.labelKey)}
 					</button>
 				{/each}
 			</div>
 			<label class="field">
-				<span>Height</span>
+				<span>{i18n.t('pages.settings.labelHeight')}</span>
 				<select name="unitHeight" bind:value={unitHeight}>
 					{#each HEIGHT_UNIT_OPTIONS as opt (opt.id)}
-						<option value={opt.id}>{opt.label}</option>
+						<option value={opt.id}>{i18n.t(opt.labelKey)}</option>
 					{/each}
 				</select>
-				<small class="hint">Route, pitch, and crag heights.</small>
+				<small class="hint">{i18n.t('pages.settings.hintHeight')}</small>
 			</label>
 			<label class="field">
-				<span>Distance</span>
+				<span>{i18n.t('pages.settings.labelDistance')}</span>
 				<select name="unitDistance" bind:value={unitDistance}>
 					{#each DISTANCE_UNIT_OPTIONS as opt (opt.id)}
-						<option value={opt.id}>{opt.label}</option>
+						<option value={opt.id}>{i18n.t(opt.labelKey)}</option>
 					{/each}
 				</select>
-				<small class="hint">Cumulative vertical distance climbed.</small>
+				<small class="hint">{i18n.t('pages.settings.hintDistance')}</small>
 			</label>
 			<label class="field">
-				<span>Temperature</span>
+				<span>{i18n.t('pages.settings.labelTemperature')}</span>
 				<select name="unitTemperature" bind:value={unitTemperature}>
 					{#each TEMPERATURE_UNIT_OPTIONS as opt (opt.id)}
-						<option value={opt.id}>{opt.label}</option>
+						<option value={opt.id}>{i18n.t(opt.labelKey)}</option>
 					{/each}
 				</select>
-				<small class="hint">Daily highs, lows, and weather conditions.</small>
+				<small class="hint">{i18n.t('pages.settings.hintTemperature')}</small>
 			</label>
 			<label class="field">
-				<span>Wind speed</span>
+				<span>{i18n.t('pages.settings.labelWindSpeed')}</span>
 				<select name="unitWind" bind:value={unitWind}>
 					{#each WIND_UNIT_OPTIONS as opt (opt.id)}
-						<option value={opt.id}>{opt.label}</option>
+						<option value={opt.id}>{i18n.t(opt.labelKey)}</option>
 					{/each}
 				</select>
-				<small class="hint">Windy and calm day weather filters.</small>
+				<small class="hint">{i18n.t('pages.settings.hintWindSpeed')}</small>
 			</label>
 			<label class="field">
-				<span>Precipitation</span>
+				<span>{i18n.t('pages.settings.labelPrecipitation')}</span>
 				<select name="unitPrecipitation" bind:value={unitPrecipitation}>
 					{#each PRECIPITATION_UNIT_OPTIONS as opt (opt.id)}
-						<option value={opt.id}>{opt.label}</option>
+						<option value={opt.id}>{i18n.t(opt.labelKey)}</option>
 					{/each}
 				</select>
-				<small class="hint">Rainfall and weather chips.</small>
+				<small class="hint">{i18n.t('pages.settings.hintPrecipitation')}</small>
 			</label>
 			<label class="check">
 				<input
@@ -344,14 +374,22 @@
 					disabled={data.searchIndexing.forcedOff}
 				/>
 				<span>
-					<strong>Show in search engines</strong>
+					<strong>{i18n.t('pages.settings.titleShowInSearchEngines')}</strong>
 					<small class="hint">
 						{#if data.searchIndexing.forcedOff}
-							Off — the whole site is password protected (<code>AUTH_SCOPE=all</code>).
+							<RichText
+								message={i18n.t('pages.settings.hintSearchIndexingForcedOff')}
+								tokens={{ authScope: { kind: 'code', text: 'AUTH_SCOPE=all' } }}
+							/>
 						{:else}
-							Untick to ask Google &amp; co. not to index this site (<code>robots.txt</code>,
-							<code>noindex</code> meta tag and <code>X-Robots-Tag</code> header). Settings and login
-							are never indexed.
+							<RichText
+								message={i18n.t('pages.settings.hintSearchIndexing')}
+								tokens={{
+									robots: { kind: 'code', text: 'robots.txt' },
+									noindex: { kind: 'code', text: 'noindex' },
+									xRobotsTag: { kind: 'code', text: 'X-Robots-Tag' }
+								}}
+							/>
 						{/if}
 					</small>
 				</span>
@@ -359,79 +397,82 @@
 			<label class="check">
 				<input type="checkbox" name="notes" checked={data.showNotes.enabled} />
 				<span>
-					<strong>Show my private ascent notes</strong>
+					<strong>{i18n.t('pages.settings.titleShowPrivateNotes')}</strong>
 					<small class="hint">
-						Shows the notes from your theCrag ticks in the logbook, and lets logbook search match
-						them.
+						{i18n.t('pages.settings.hintNotes')}
 						{#if data.authEnabled}
-							Only shown while you're logged in. Visitors never see them.
+							{i18n.t('pages.settings.hintNotesSignedIn')}
 						{:else}
-							<strong
-								>No <code>APP_PASSWORD</code> is set, so anyone who can open this site will see them.</strong
-							> Best for offline or home-network installs.
+							<RichText
+								message={i18n.t('pages.settings.hintNotesNoPassword')}
+								tokens={{ appPassword: { kind: 'code', text: 'APP_PASSWORD' } }}
+							/>
+							{i18n.t('pages.settings.hintNotesNoPasswordTail')}
 						{/if}
 					</small>
 				</span>
 			</label>
 			<fieldset class="field tick-config">
 				<legend class="field-title">
-					<span>Counted tick types</span>
+					<span>{i18n.t('pages.settings.titleCountedTickTypes')}</span>
 					<small class="hint">
-						Configure which tick types count in dashboard and page totals, projects, and goals. The
-						logbook always lists every logged ascent.
+						{i18n.t('pages.settings.hintCountedTickTypes')}
 					</small>
 				</legend>
-				<div class="preset-bar" role="group" aria-label="Tick configuration presets">
-					<span class="preset-label">Presets:</span>
+				<div
+					class="preset-bar"
+					role="group"
+					aria-label={i18n.t('pages.settings.ariaTickConfigurationPresets')}
+				>
+					<span class="preset-label">{i18n.t('pages.settings.labelPresets')}</span>
 					<button
 						type="button"
 						class="btn secondary sm"
 						class:active={currentPreset === 'all'}
 						aria-pressed={currentPreset === 'all'}
 						onclick={() => applyPreset('all')}
+						>{i18n.t('pages.settings.buttonAllLoggedTicks')}</button
 					>
-						All logged ticks
-					</button>
 					<button
 						type="button"
 						class="btn secondary sm"
 						class:active={currentPreset === 'sends_only'}
 						aria-pressed={currentPreset === 'sends_only'}
 						onclick={() => applyPreset('sends_only')}
+						>{i18n.t('pages.settings.buttonSendsOnly')}</button
 					>
-						Sends only
-					</button>
 					<button
 						type="button"
 						class="btn secondary sm"
 						class:active={currentPreset === 'exclude_working'}
 						aria-pressed={currentPreset === 'exclude_working'}
 						onclick={() => applyPreset('exclude_working')}
+						>{i18n.t('pages.settings.buttonExcludeWorking')}</button
 					>
-						Exclude Working
-					</button>
 				</div>
 				<div class="table-wrap">
 					<table class="tick-matrix">
 						<thead>
 							<tr>
-								<th scope="col">Tick type</th>
+								<th scope="col">{i18n.t('pages.settings.columnTickType')}</th>
 								<th scope="col" class="center">
 									<div class="col-head">
-										<span>Enable</span>
-										<small class="col-desc">Count everywhere</small>
+										<span>{i18n.t('pages.settings.thEnable')}</span>
+										<small class="col-desc">{i18n.t('pages.settings.hintColumnEnable')}</small>
 									</div>
 								</th>
 								<th scope="col" class="center">
 									<div class="col-head">
-										<span>Projects &amp; goals only</span>
-										<small class="col-desc">Out of totals</small>
+										<span>{i18n.t('pages.settings.thProjectsGoals')}</span>
+										<small class="col-desc"
+											>{i18n.t('pages.settings.hintColumnProjectsGoals')}</small
+										>
 									</div>
 								</th>
 								<th scope="col" class="center">
 									<div class="col-head">
-										<span>Hide</span>
-										<small class="col-desc">Exclude completely</small>
+										<span>{i18n.t('pages.settings.thHide')}</span>
+										<small class="col-desc">{i18n.t('pages.settings.hintColumnHide')}</small>
 									</div>
 								</th>
 							</tr>
@@ -462,7 +503,9 @@
 													value="enable"
 													checked={(tickState[tick.key] ?? 'enable') === 'enable'}
 													onchange={() => setTick(tick.key, 'enable')}
-													aria-label={`${tick.name}: Enable (count everywhere)`}
+													aria-label={i18n.t('pages.settings.ariaTickEnable', {
+														name: tick.name
+													})}
 												/>
 											</label>
 										</td>
@@ -474,7 +517,9 @@
 													value="projects_goals"
 													checked={tickState[tick.key] === 'projects_goals'}
 													onchange={() => setTick(tick.key, 'projects_goals')}
-													aria-label={`${tick.name}: Projects and goals only (out of totals)`}
+													aria-label={i18n.t('pages.settings.ariaTickProjectsGoals', {
+														name: tick.name
+													})}
 												/>
 											</label>
 										</td>
@@ -486,7 +531,9 @@
 													value="hide"
 													checked={tickState[tick.key] === 'hide'}
 													onchange={() => setTick(tick.key, 'hide')}
-													aria-label={`${tick.name}: Hide completely`}
+													aria-label={i18n.t('pages.settings.ariaTickHide', {
+														name: tick.name
+													})}
 												/>
 											</label>
 										</td>
@@ -498,65 +545,89 @@
 				</div>
 				{#if leftoverChoices.length > 0}
 					<p class="hint tick-leftovers">
-						Saved for tick types with no logged ascents — these stay live for future climbs but are
-						not listed above: <strong>{leftoverLabel}</strong>. Choose
-						<strong>All logged ticks</strong> and save to clear them.
+						<RichText
+							message={i18n.t('pages.settings.hintTickLeftovers')}
+							tokens={{
+								leftover: { kind: 'strong', text: leftoverLabel },
+								allTicks: {
+									kind: 'strong',
+									text: i18n.t('pages.settings.buttonAllLoggedTicks')
+								}
+							}}
+						/>
 					</p>
 				{/if}
 			</fieldset>
 			{#each storedWithoutRadio as [key, behavior] (key)}
 				<input type="hidden" name={`tick_${key}`} value={behavior} />
 			{/each}
-			<button type="submit">Save preferences</button>
+			<button type="submit">{i18n.t('pages.settings.buttonSavePreferences')}</button>
 		</form>
 	</article>
 
 	<article class="panel" id="dashboard">
-		<h2>Dashboard layout</h2>
+		<h2>{i18n.t('pages.settings.titleDashboardLayout')}</h2>
 		<DashboardLayoutEditor layout={data.dashLayout} />
 	</article>
 
 	<article class="panel">
-		<h2>CSV import</h2>
+		<h2>{i18n.t('pages.settings.titleCSVImport')}</h2>
 		<p class="hint">
-			For everyone without supporter API access. Export from theCrag:
-			<em>Action → Export logbook as CSV</em>, then upload the file here whenever you want to
-			refresh. CSV import upserts rows but does <strong>not</strong> remove missing entries. API
-			sync reconciles deletions. <a href="/docs/logbook-sync">Logbook sync options</a>
+			<RichText
+				message={i18n.t('pages.settings.hintCsvImport')}
+				tokens={{
+					action: { kind: 'em', text: i18n.t('pages.settings.csvExportAction') },
+					syncOptions: {
+						kind: 'link',
+						text: i18n.t('pages.settings.linkLogbookSyncOptions'),
+						href: '/docs/logbook-sync'
+					}
+				}}
+			/>
 		</p>
 		<form method="POST" action="?/importCsv" enctype="multipart/form-data" class="csv-import">
 			<input
 				type="file"
 				name="file"
 				accept=".csv,text/csv"
-				aria-label="theCrag logbook CSV export"
+				aria-label={i18n.t('pages.settings.ariaTheCragLogbookCsvExport')}
 				required
 			/>
-			<button type="submit">Import CSV</button>
+			<button type="submit">{i18n.t('pages.settings.buttonImportCsv')}</button>
 		</form>
 	</article>
 
 	<article class="panel">
-		<h2>theCrag logbook sync</h2>
+		<h2>{i18n.t('pages.settings.titleTheCragLogbookSync')}</h2>
 		<p class="hint">
-			Uses <code>THECRAG_API_KEY</code> from your environment. Keys grant read access to private
-			notes — treat them like passwords.
-			<a href="https://www.thecrag.com/en/article/logbookreadapi" target="_blank" rel="noreferrer"
-				>API docs</a
-			>
+			<RichText
+				message={i18n.t('pages.settings.hintApiKeyIntro')}
+				tokens={{
+					key: { kind: 'code', text: 'THECRAG_API_KEY' },
+					docs: {
+						kind: 'link',
+						text: i18n.t('pages.settings.linkApiDocs'),
+						href: 'https://www.thecrag.com/en/article/logbookreadapi',
+						external: true
+					}
+				}}
+			/>
 		</p>
 		<p class="hint">
-			<strong>Upstream is source of truth.</strong> Each sync pulls the full logbook, updates changed
-			ascents (comments, grades, ticks), and deletes local rows that were removed on theCrag.
+			<RichText message={i18n.t('pages.settings.hintUpstreamSourceOfTruth')} />
 		</p>
 		<p class="status">
 			<span class={['pill', { ok: data.sync.status === 'idle', err: data.sync.status === 'error' }]}
 				>{data.sync.status}</span
 			>
 			{#if data.sync.lastSuccessAt}
-				<span>Last sync {formatDateTime(data.sync.lastSuccessAt, data.dateDisplay)}</span>
+				<span
+					>{i18n.t('pages.settings.statusLastSync', {
+						when: formatDateTime(data.sync.lastSuccessAt, data.dateDisplay)
+					})}</span
+				>
 			{:else}
-				<span>No logbook sync yet</span>
+				<span>{i18n.t('pages.settings.statusNoSyncYet')}</span>
 			{/if}
 		</p>
 		{#if data.sync.lastError}
@@ -565,46 +636,95 @@
 		{#if data.syncConfiguration.configured}
 			<div class="actions">
 				<form method="POST" action="?/sync">
-					<button type="submit">Sync now</button>
+					<button type="submit">{i18n.t('pages.settings.buttonSyncNow')}</button>
 				</form>
 				<form method="POST" action="?/fullSync">
-					<button type="submit" class="secondary">Sync again</button>
+					<button type="submit" class="secondary">{i18n.t('pages.settings.buttonSyncAgain')}</button
+					>
 				</form>
 			</div>
+		{:else if data.syncConfiguration.mode === 'csv'}
+			<p class="hint">
+				<RichText
+					message={i18n.t('pages.settings.hintCsvLogbook')}
+					tokens={{ token: { kind: 'code', text: 'CSV_INGEST_TOKEN' } }}
+				/>
+			</p>
+			{#if data.routeDataConfiguration.hasApiKey}
+				<p class="hint">
+					<RichText
+						message={i18n.t('pages.settings.hintCsvOnlyRouteData')}
+						tokens={{ key: { kind: 'code', text: 'THECRAG_API_KEY' } }}
+					/>
+				</p>
+			{/if}
 		{:else}
 			<p class="hint">
-				No API key configured. Set <code>THECRAG_API_KEY</code> in <code>.env</code>, or use
-				<strong>CSV import</strong> above to upload your logbook export by hand.
+				<RichText
+					message={i18n.t('pages.settings.hintNoApiKey')}
+					tokens={{
+						key: { kind: 'code', text: 'THECRAG_API_KEY' },
+						env: { kind: 'code', text: '.env' }
+					}}
+				/>
 			</p>
 		{/if}
 	</article>
 
 	<article class="panel">
-		<h2>Import route data</h2>
+		<h2>{i18n.t('pages.settings.titleImportRouteData')}</h2>
 		<p class="hint">
-			Caches route details for routes in your logbook from theCrag (popularity, ascent counts,
-			quality, seasonality, beta, location, pitches and flags) along with their public history. FA /
-			FFA entries that name your <code>@login</code> are marked as yours.
+			<RichText
+				message={i18n.t('pages.settings.hintRouteDataIntro')}
+				tokens={{ login: { kind: 'code', text: '@login' } }}
+			/>
 			{#if rh.refreshDays}
-				Route data is queued for refresh after {rh.refreshDays} days.
+				{i18n.t('pages.settings.hintRouteDataRefreshCycle', { days: rh.refreshDays })}
 			{:else}
-				Each route is checked once unless you request a refresh.
+				{i18n.t('pages.settings.hintRouteDataFetchOnce')}
 			{/if}
-			Up to {rh.perRun} routes per run, at most one request a second, after each logbook sync. When weather
-			import is on, remaining requests also check crag/sector locations, including for CSV imports.
-			<a href="/docs/first-ascents">How first ascents work</a>
+			<RichText
+				message={i18n.t('pages.settings.hintRouteDataTail', { count: rh.perRun })}
+				tokens={{
+					docs: {
+						kind: 'link',
+						text: i18n.t('pages.settings.linkHowFirstAscentsWork'),
+						href: '/docs/first-ascents'
+					}
+				}}
+			/>
 		</p>
 		{#if !rh.enabled}
 			<p class="hint">
-				Off. To turn it on, set <code>ROUTE_DATA_IMPORT=true</code> in <code>.env</code> and
-				restart. theCrag blocks plain server requests to its route API, so this uses browser
-				impersonation (<code>impers</code>). It's at your own risk under theCrag's terms; manual FA
-				marks always work. Renamed from <code>ROUTE_HISTORY_IMPORT</code>, which no longer has any
-				effect.
+				<RichText
+					message={i18n.t('pages.settings.hintRouteDataDisabled')}
+					tokens={{
+						import: { kind: 'code', text: 'ROUTE_DATA_IMPORT=true' },
+						env: { kind: 'code', text: '.env' },
+						impers: { kind: 'code', text: 'impers' },
+						oldImport: { kind: 'code', text: 'ROUTE_HISTORY_IMPORT' }
+					}}
+				/>
 			</p>
 		{:else if !rh.hasApiKey}
-			<p class="hint">Needs <code>THECRAG_API_KEY</code> (the same key as API sync).</p>
+			<p class="hint">
+				<RichText
+					message={i18n.t('pages.settings.hintRouteDataNeedsKey')}
+					tokens={{ key: { kind: 'code', text: 'THECRAG_API_KEY' } }}
+				/>
+			</p>
 		{:else}
+			{#if data.syncConfiguration.mode === 'csv' && !data.routeDataConfiguration.hasUsername}
+				<p class="hint">
+					<RichText
+						message={i18n.t('pages.settings.hintRouteDataNeedsOwnerLogin')}
+						tokens={{
+							login: { kind: 'code', text: '@login' },
+							ownerLogin: { kind: 'code', text: 'THECRAG_USERNAME' }
+						}}
+					/>
+				</p>
+			{/if}
 			<p class="status">
 				<span
 					class={[
@@ -617,17 +737,26 @@
 					aria-live="polite">{rh.status}</span
 				>
 				<span>
-					{rh.fetchedRoutes} of {rh.totalRoutes} routes checked · {rh.importedMarks} FA/FFA imported
+					{i18n.t('pages.settings.statusRoutesChecked', {
+						checked: rh.fetchedRoutes,
+						total: rh.totalRoutes
+					})} · {i18n.t('pages.settings.statusFasImported', { count: rh.importedMarks })}
 					{#if rh.pendingAreas > 0}
-						· {rh.pendingAreas} weather areas pending{/if}
+						· {i18n.t('pages.settings.statusAreasPending', { count: rh.pendingAreas })}{/if}
 					{#if rh.lastRunAt}
-						· last run {formatDateTime(rh.lastRunAt, data.dateDisplay)} ({rh.lastFetched} checked)
+						· {i18n.t('pages.settings.statusLastRunRoutes', {
+							when: formatDateTime(rh.lastRunAt, data.dateDisplay),
+							count: rh.lastFetched
+						})}
 					{/if}
 				</span>
 			</p>
 			{#if rh.nextAllowedAt && (rh.status === 'blocked' || rh.status === 'error')}
 				<p class="err">
-					{rh.lastError} Paused until {formatDateTime(rh.nextAllowedAt, data.dateDisplay)}.
+					{i18n.t('pages.settings.statusPausedUntil', {
+						message: rh.lastError ?? '',
+						when: formatDateTime(rh.nextAllowedAt, data.dateDisplay)
+					})}
 				</p>
 			{/if}
 			<div class="actions">
@@ -639,77 +768,100 @@
 							retrySeconds > 0}
 					>
 						{rh.pendingRoutes === 0 && rh.pendingAreas === 0
-							? 'All routes checked'
+							? i18n.t('pages.settings.buttonAllRoutesChecked')
 							: rh.running
-								? 'Checking routes…'
+								? i18n.t('pages.settings.buttonCheckingRoutes')
 								: retrySeconds > 0
-									? `Check again in ${retryLabel}`
+									? i18n.t('pages.settings.buttonCheckAgainIn', { when: retryLabel })
 									: rh.pendingRoutes === 0
-										? 'Check weather locations now'
-										: `Check next ${rh.perRun} routes now`}
+										? i18n.t('pages.settings.buttonCheckWeatherLocationsNow')
+										: i18n.t('pages.settings.buttonCheckNextRoutes', { count: rh.perRun })}
 					</button>
 				</form>
 			</div>
 			<noscript>
-				<p class="hint">Reload this page to update route data availability.</p>
+				<p class="hint">{i18n.t('pages.settings.hintRouteDataRefresh')}</p>
 			</noscript>
 			<details>
-				<summary>Re-apply or refresh</summary>
+				<summary>{i18n.t('pages.settings.summary')}</summary>
 				<form method="POST" action="?/reapplyRouteHistory" class="stack">
-					<p class="hint">
-						Re-applies marks from history already saved here. No requests to theCrag.
-					</p>
+					<p class="hint">{i18n.t('pages.settings.hintReAppliesMarksFromHistory')}</p>
 					<label class="check">
 						<input type="checkbox" name="replaceExisting" />
 						<span>
-							<strong>Replace existing FA / FFA marks</strong>
-							<small class="hint">Off by default: marks you set stay as they are.</small>
+							<strong>{i18n.t('pages.settings.titleReplaceExistingMarks')}</strong>
+							<small class="hint">{i18n.t('pages.settings.hintReplaceExistingMarks')}</small>
 						</span>
 					</label>
 					<label class="check">
 						<input type="checkbox" name="reapplyUnmarked" />
 						<span>
-							<strong>Re-apply routes I unmarked</strong>
-							<small class="hint">Off by default: routes you unmarked stay unmarked.</small>
+							<strong>{i18n.t('pages.settings.titleReapplyUnmarked')}</strong>
+							<small class="hint">{i18n.t('pages.settings.hintReapplyUnmarked')}</small>
 						</span>
 					</label>
-					<button type="submit" class="secondary">Re-apply from saved history</button>
+					<button type="submit" class="secondary"
+						>{i18n.t('pages.settings.buttonReApplyFromSavedHistory')}</button
+					>
 				</form>
 				<form method="POST" action="?/refreshRouteHistory" class="stack">
 					<p class="hint">
-						Check every route again, still {data.routeHistory.perRun} per run. Only useful if theCrag's
-						history was corrected. After re-fetching, use
-						<strong>Re-apply from saved history</strong>
-						(tick
-						<strong>Replace existing</strong> if you want corrected history to overwrite current marks).
+						<RichText
+							message={i18n.t('pages.settings.hintRefreshAllRoutes', {
+								count: data.routeHistory.perRun
+							})}
+							tokens={{
+								reapply: {
+									kind: 'strong',
+									text: i18n.t('pages.settings.buttonReApplyFromSavedHistory')
+								}
+							}}
+						/>
 					</p>
 					<label class="field">
-						<span>Type <code>REFRESH</code> to confirm</span>
+						<span>
+							<RichText
+								message={i18n.t('pages.settings.labelTypeRefreshToConfirm')}
+								tokens={{ refresh: { kind: 'code', text: 'REFRESH' } }}
+							/>
+						</span>
 						<input name="confirm" autocomplete="off" />
 					</label>
-					<button type="submit" class="secondary">Refresh all routes</button>
+					<button type="submit" class="secondary"
+						>{i18n.t('pages.settings.buttonRefreshAllRoutes')}</button
+					>
 				</form>
 			</details>
 		{/if}
 	</article>
 
 	<article class="panel">
-		<h2>Import weather</h2>
+		<h2>{i18n.t('pages.settings.titleImportWeather')}</h2>
 		<p>
-			<a href="/settings/weather-locations"
-				>Review weather locations and choose a nearby place for missing locations</a
+			<a href="/settings/weather-locations">{i18n.t('pages.settings.linkReviewWeatherLocations')}</a
 			>
 		</p>
 		<p class="hint">
-			Caches daily outdoor weather (Open-Meteo) for logbook days that have a usable route/crag
-			weather location. Powers heat, freeze, rain, snow and wind badges. Up to {wx.perRun} days per run,
-			at most one request a second, after each logbook sync.
-			<a href="/docs/weather">How weather works</a>
+			<RichText
+				message={i18n.t('pages.settings.hintWeatherIntro', { count: wx.perRun })}
+				tokens={{
+					docs: {
+						kind: 'link',
+						text: i18n.t('pages.settings.linkHowWeatherWorks'),
+						href: '/docs/weather'
+					}
+				}}
+			/>
 		</p>
 		{#if !wx.enabled}
 			<p class="hint">
-				Off. To turn it on, set <code>WEATHER_IMPORT=true</code> in <code>.env</code> and restart. Uses
-				Open-Meteo's free non-commercial archive API — fine for personal self-hosted installs.
+				<RichText
+					message={i18n.t('pages.settings.hintWeatherDisabled')}
+					tokens={{
+						import: { kind: 'code', text: 'WEATHER_IMPORT=true' },
+						env: { kind: 'code', text: '.env' }
+					}}
+				/>
 			</p>
 		{:else}
 			<p class="status">
@@ -724,28 +876,42 @@
 					aria-live="polite">{wx.status}</span
 				>
 				<span>
-					{wx.cachedOk} days cached · {wx.totalPending} pending
+					{i18n.t('pages.settings.statusDaysCached', { count: wx.cachedOk })} ·
+					{i18n.t('pages.settings.statusPending', { count: wx.totalPending })}
 					{#if wx.unresolvedRoutes > 0}
-						· {wx.unresolvedRoutes} outdoor routes without locations{/if}
+						· {i18n.t('pages.settings.statusRoutesWithoutLocations', {
+							count: wx.unresolvedRoutes
+						})}{/if}
 					{#if wx.lastRunAt}
-						· last run {formatDateTime(wx.lastRunAt, data.dateDisplay)} ({wx.lastFetched} fetched)
+						· {i18n.t('pages.settings.statusLastRunWeather', {
+							when: formatDateTime(wx.lastRunAt, data.dateDisplay),
+							count: wx.lastFetched
+						})}
 					{/if}
 				</span>
 			</p>
 			{#if wx.nextAllowedAt && (wx.status === 'blocked' || wx.status === 'error')}
 				<p class="err">
-					{wx.lastError} Paused until {formatDateTime(wx.nextAllowedAt, data.dateDisplay)}.
+					{i18n.t('pages.settings.statusPausedUntil', {
+						message: wx.lastError ?? '',
+						when: formatDateTime(wx.nextAllowedAt, data.dateDisplay)
+					})}
 				</p>
 			{/if}
 			{#if wx.totalPending === 0 && wx.cachedOk === 0}
 				<p class="hint">
-					No weather days ready to fetch. Weather needs a usable route/crag location and a valid
-					past climbing date.
+					{i18n.t('pages.settings.hintWeatherNoDays')}
 					{#if wx.unresolvedRoutes > 0}
-						Check pending route data and weather locations above, then <a
-							href="/settings/weather-locations">review missing locations</a
-						>. CSV imports can use the configured supporter key for crag/sector lookups when route
-						data import is enabled.
+						<RichText
+							message={i18n.t('pages.settings.hintWeatherUnresolved')}
+							tokens={{
+								review: {
+									kind: 'link',
+									text: i18n.t('pages.settings.linkReviewMissingLocations'),
+									href: '/settings/weather-locations'
+								}
+							}}
+						/>
 					{/if}
 				</p>
 			{/if}
@@ -757,13 +923,13 @@
 					>
 						{wx.totalPending === 0
 							? wx.cachedOk === 0
-								? 'No eligible days pending'
-								: 'All outdoor days cached'
+								? i18n.t('pages.settings.buttonNoEligibleDays')
+								: i18n.t('pages.settings.buttonAllDaysCached')
 							: wx.running
-								? 'Fetching weather…'
+								? i18n.t('pages.settings.buttonFetchingWeather')
 								: weatherRetrySeconds > 0
-									? `Fetch again in ${weatherRetryLabel}`
-									: `Fetch next ${wx.perRun} days now`}
+									? i18n.t('pages.settings.buttonFetchAgainIn', { when: weatherRetryLabel })
+									: i18n.t('pages.settings.buttonFetchNextDays', { count: wx.perRun })}
 					</button>
 				</form>
 			</div>
@@ -771,11 +937,18 @@
 	</article>
 
 	<article class="panel">
-		<h2>Privacy & data control</h2>
+		<h2>{i18n.t('pages.settings.titlePrivacyDataControl')}</h2>
 		<p class="hint">
-			Revoking a theCrag key does not delete data already synced here. Wipe only removes the
-			<strong>local</strong> SQLite copy on this machine — it never deletes your theCrag logbook.
-			See <a href="https://github.com/Luen/crag-stats/blob/main/docs/PRIVACY.md">PRIVACY.md</a>.
+			<RichText
+				message={i18n.t('pages.settings.hintPrivacy')}
+				tokens={{
+					privacy: {
+						kind: 'link',
+						text: i18n.t('pages.settings.linkPrivacyMd'),
+						href: 'https://github.com/Luen/crag-stats/blob/main/docs/PRIVACY.md'
+					}
+				}}
+			/>
 		</p>
 		<div class="backup">
 			<a class="btn secondary" href="/settings/export" download>
@@ -793,24 +966,27 @@
 						d="M12 3v12m0 0-4.5-4.5M12 15l4.5-4.5M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"
 					/></svg
 				>
-				Download logbook CSV
+				{i18n.t('pages.settings.buttonDownloadLogbookCsv')}
 			</a>
-			<small class="hint">Backup / re-import</small>
+			<small class="hint">{i18n.t('pages.settings.labelBackupReImport')}</small>
 		</div>
 		<form method="POST" action="?/wipe" class="stack">
-			<input name="confirm" placeholder="Type DELETE to confirm" required />
-			<button type="submit" class="danger">Wipe all local data</button>
+			<input
+				name="confirm"
+				placeholder={i18n.t('pages.settings.placeholderTypeDeleteToConfirm')}
+				required
+			/>
+			<button type="submit" class="danger">{i18n.t('pages.settings.buttonWipeAllLocalData')}</button
+			>
 		</form>
 	</article>
 
 	{#if data.authEnabled && data.authed}
 		<article class="panel">
-			<h2>Admin session</h2>
-			<p class="hint">
-				End your signed-in session on this device. You will need the app password to return.
-			</p>
+			<h2>{i18n.t('pages.settings.titleAdminSession')}</h2>
+			<p class="hint">{i18n.t('pages.settings.hintEndYourSignedInSession')}</p>
 			<form method="POST" action="/logout">
-				<button type="submit" class="secondary">Log out</button>
+				<button type="submit" class="secondary">{i18n.t('pages.settings.buttonLogOut')}</button>
 			</form>
 		</article>
 	{/if}

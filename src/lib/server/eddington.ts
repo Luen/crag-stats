@@ -7,6 +7,7 @@
  * - routeGrade / boulderGrade: grade h-index, E distinct routes sent at ≥ grade E
  *   (Ewbank for routes, V-scale for boulders)
  */
+import { DEFAULT_LOCALE, formatMessage, type SupportedLocale } from '#lib/i18n';
 import type {
 	EddingtonMetric,
 	EddingtonMilestoneRow,
@@ -149,37 +150,38 @@ export function buildEddingtonMilestones(
 
 export function buildEddingtonMilestoneTables(
 	rows: readonly EddingtonRow[],
-	count = 5
+	count = 5,
+	locale: SupportedLocale = DEFAULT_LOCALE
 ): EddingtonMilestoneTable[] {
 	const v = collectEddingtonValues(rows);
 	const stats = buildEddington(rows);
 	return [
 		{
 			key: 'sends',
-			label: 'Send days',
+			label: formatMessage(locale, 'cards.eddington.labelSendDays'),
 			unit: 1,
-			qualifierLabel: 'days with sends',
+			qualifierLabel: formatMessage(locale, 'cards.eddington.qualifierSends'),
 			rows: buildEddingtonMilestones(v.daySends, 1, stats.sends.value, count)
 		},
 		{
 			key: 'vertical',
-			label: 'Vertical days',
+			label: formatMessage(locale, 'cards.eddington.labelVerticalDays'),
 			unit: VERTICAL_UNIT_M,
-			qualifierLabel: 'days with vertical',
+			qualifierLabel: formatMessage(locale, 'cards.eddington.qualifierVertical'),
 			rows: buildEddingtonMilestones(v.dayMetres, VERTICAL_UNIT_M, stats.vertical.value, count)
 		},
 		{
 			key: 'routeGrade',
-			label: 'Route grade index',
+			label: formatMessage(locale, 'cards.eddington.labelRouteGrade'),
 			unit: 1,
-			qualifierLabel: 'routes sent',
+			qualifierLabel: formatMessage(locale, 'cards.eddington.qualifierRoutes'),
 			rows: buildEddingtonMilestones(v.routeScores, 1, stats.routeGrade.value, count)
 		},
 		{
 			key: 'boulderGrade',
-			label: 'Boulder grade index',
+			label: formatMessage(locale, 'cards.eddington.labelBoulderGrade'),
 			unit: 1,
-			qualifierLabel: 'problems sent',
+			qualifierLabel: formatMessage(locale, 'cards.eddington.qualifierBoulders'),
 			rows: buildEddingtonMilestones(v.boulderScores, 1, stats.boulderGrade.value, count)
 		}
 	];

@@ -16,6 +16,7 @@ import {
 	usesVScale,
 	type DisplayGradeSystems
 } from '#lib/grades';
+import { DEFAULT_LOCALE, formatMessage, type SupportedLocale } from '#lib/i18n';
 import { tickKind } from '#lib/ticks';
 import {
 	DEFAULT_DATE_DISPLAY,
@@ -78,7 +79,7 @@ export type BadgeDef = {
 	title: string;
 	hint: string;
 	/** Hint wording for the owner's unit settings; thresholds stay metric (#484). */
-	hintForUnits?: (units: DisplayUnits) => string;
+	hintForUnits?: (units: DisplayUnits, locale?: SupportedLocale) => string;
 	icon: BadgeIcon;
 	tone: BadgeTone;
 };
@@ -178,676 +179,589 @@ export function isGreenpoint(row: DashboardExtraRow): boolean {
 
 /** Cumulative height thresholds in metres (#484): one catalogue, metric thresholds. */
 const HEIGHT_BADGES = [
-	{ id: 'height_1km', m: 1000, title: 'Kilometre Climber', tone: 'warm' as const },
-	{ id: 'height_5km', m: 5000, title: 'Five K Vertical', tone: 'green' as const },
-	{ id: 'height_10km', m: 10000, title: 'Ten K Vertical', tone: 'blue' as const },
-	{ id: 'height_20km', m: 20000, title: 'Twenty K Vertical', tone: 'purple' as const },
-	{ id: 'height_50km', m: 50000, title: 'Fifty K Vertical', tone: 'warm' as const },
-	{ id: 'height_100km', m: 100000, title: 'Hundred K Vertical', tone: 'green' as const },
-	{ id: 'height_150km', m: 150000, title: 'One-Fifty K Vertical', tone: 'blue' as const }
+	{ id: 'height_1km', m: 1000, tone: 'warm' as const },
+	{ id: 'height_5km', m: 5000, tone: 'green' as const },
+	{ id: 'height_10km', m: 10000, tone: 'blue' as const },
+	{ id: 'height_20km', m: 20000, tone: 'purple' as const },
+	{ id: 'height_50km', m: 50000, tone: 'warm' as const },
+	{ id: 'height_100km', m: 100000, tone: 'green' as const },
+	{ id: 'height_150km', m: 150000, tone: 'blue' as const }
 ];
 
-/** Static catalog — order is display order for locked badges. */
-export const BADGE_CATALOG: readonly BadgeDef[] = [
-	{
-		id: 'first_moves',
-		title: 'First Moves',
-		hint: 'Import your logbook into Crag Stats',
-		icon: 'carabiner',
-		tone: 'warm'
+const BADGE_CATALOG_KEYS: Record<string, { titleKey: string; hintKey?: string }> = {
+	first_moves: {
+		titleKey: 'cards.badges.catalog.first_moves_title',
+		hintKey: 'cards.badges.catalog.first_moves_hint'
 	},
-	{
-		id: 'first_session',
-		title: 'First Session',
-		hint: 'Complete your first day out',
-		icon: 'knot',
-		tone: 'warm'
+	first_session: {
+		titleKey: 'cards.badges.catalog.first_session_title',
+		hintKey: 'cards.badges.catalog.first_session_hint'
 	},
-	{
-		id: 'first_send',
-		title: 'First Send',
-		hint: 'Send any route or boulder',
-		icon: 'send',
-		tone: 'green'
+	first_send: {
+		titleKey: 'cards.badges.catalog.first_send_title',
+		hintKey: 'cards.badges.catalog.first_send_hint'
 	},
-	{
-		id: 'first_onsight',
-		title: 'First Onsight',
-		hint: 'Onsight a route',
-		icon: 'eye',
-		tone: 'blue'
+	first_onsight: {
+		titleKey: 'cards.badges.catalog.first_onsight_title',
+		hintKey: 'cards.badges.catalog.first_onsight_hint'
 	},
-	{
-		id: 'first_flash',
-		title: 'First Flash',
-		hint: 'Flash a route or boulder',
-		icon: 'bolt',
-		tone: 'green'
+	first_flash: {
+		titleKey: 'cards.badges.catalog.first_flash_title',
+		hintKey: 'cards.badges.catalog.first_flash_hint'
 	},
-	{
-		id: 'ascents_10',
-		title: 'Getting Started',
-		hint: 'Log 10 ascents',
-		icon: 'route',
-		tone: 'warm'
+	ascents_10: {
+		titleKey: 'cards.badges.catalog.ascents_10_title',
+		hintKey: 'cards.badges.catalog.ascents_10_hint'
 	},
-	{
-		id: 'ascents_25',
-		title: 'Quarter Century',
-		hint: 'Log 25 ascents',
-		icon: 'route',
-		tone: 'warm'
+	ascents_25: {
+		titleKey: 'cards.badges.catalog.ascents_25_title',
+		hintKey: 'cards.badges.catalog.ascents_25_hint'
 	},
-	{ id: 'ascents_50', title: 'Fifty Climbs', hint: 'Log 50 ascents', icon: 'route', tone: 'warm' },
-	{ id: 'ascents_100', title: 'Century', hint: 'Log 100 ascents', icon: 'star', tone: 'green' },
-	{ id: 'ascents_250', title: 'Two-Fifty', hint: 'Log 250 ascents', icon: 'star', tone: 'green' },
-	{
-		id: 'ascents_500',
-		title: 'Half Thousand',
-		hint: 'Log 500 ascents',
-		icon: 'star',
-		tone: 'blue'
+	ascents_50: {
+		titleKey: 'cards.badges.catalog.ascents_50_title',
+		hintKey: 'cards.badges.catalog.ascents_50_hint'
 	},
-	{
-		id: 'ascents_1000',
-		title: 'Thousand Climbs',
-		hint: 'Log 1,000 ascents',
-		icon: 'mountain',
-		tone: 'purple'
+	ascents_100: {
+		titleKey: 'cards.badges.catalog.ascents_100_title',
+		hintKey: 'cards.badges.catalog.ascents_100_hint'
 	},
-	{ id: 'sends_10', title: 'Ten Sends', hint: 'Send 10 climbs', icon: 'send', tone: 'green' },
-	{ id: 'sends_25', title: 'Send Machine', hint: 'Send 25 climbs', icon: 'send', tone: 'green' },
-	{ id: 'sends_50', title: 'Fifty Sends', hint: 'Send 50 climbs', icon: 'send', tone: 'blue' },
-	{
-		id: 'sends_100',
-		title: 'Hundred Sends',
-		hint: 'Send 100 climbs',
-		icon: 'send',
-		tone: 'purple'
+	ascents_250: {
+		titleKey: 'cards.badges.catalog.ascents_250_title',
+		hintKey: 'cards.badges.catalog.ascents_250_hint'
 	},
-	{
-		id: 'onsight_10',
-		title: 'Onsight Specialist',
-		hint: 'Onsight 10 routes',
-		icon: 'eye',
-		tone: 'blue'
+	ascents_500: {
+		titleKey: 'cards.badges.catalog.ascents_500_title',
+		hintKey: 'cards.badges.catalog.ascents_500_hint'
 	},
-	{
-		id: 'onsight_25',
-		title: 'Onsight Ace',
-		hint: 'Onsight 25 routes',
-		icon: 'eye',
-		tone: 'purple'
+	ascents_1000: {
+		titleKey: 'cards.badges.catalog.ascents_1000_title',
+		hintKey: 'cards.badges.catalog.ascents_1000_hint'
 	},
-	{ id: 'flash_10', title: 'Quick Study', hint: 'Flash 10 climbs', icon: 'bolt', tone: 'green' },
-	{ id: 'flash_25', title: 'Flasher', hint: 'Flash 25 climbs', icon: 'bolt', tone: 'green' },
-	{
-		id: 'weekend_5',
-		title: 'Weekend Warrior',
-		hint: 'Send on 5 weekend days',
-		icon: 'sun',
-		tone: 'warm'
+	sends_10: {
+		titleKey: 'cards.badges.catalog.sends_10_title',
+		hintKey: 'cards.badges.catalog.sends_10_hint'
 	},
-	{
-		id: 'weekend_15',
-		title: 'Weekend Climber',
-		hint: 'Send on 15 weekend days',
-		icon: 'sun',
-		tone: 'green'
+	sends_25: {
+		titleKey: 'cards.badges.catalog.sends_25_title',
+		hintKey: 'cards.badges.catalog.sends_25_hint'
 	},
-	...STREAK_DAY_THRESHOLDS.map((n): BadgeDef => ({
+	sends_50: {
+		titleKey: 'cards.badges.catalog.sends_50_title',
+		hintKey: 'cards.badges.catalog.sends_50_hint'
+	},
+	sends_100: {
+		titleKey: 'cards.badges.catalog.sends_100_title',
+		hintKey: 'cards.badges.catalog.sends_100_hint'
+	},
+	onsight_10: {
+		titleKey: 'cards.badges.catalog.onsight_10_title',
+		hintKey: 'cards.badges.catalog.onsight_10_hint'
+	},
+	onsight_25: {
+		titleKey: 'cards.badges.catalog.onsight_25_title',
+		hintKey: 'cards.badges.catalog.onsight_25_hint'
+	},
+	flash_10: {
+		titleKey: 'cards.badges.catalog.flash_10_title',
+		hintKey: 'cards.badges.catalog.flash_10_hint'
+	},
+	flash_25: {
+		titleKey: 'cards.badges.catalog.flash_25_title',
+		hintKey: 'cards.badges.catalog.flash_25_hint'
+	},
+	weekend_5: {
+		titleKey: 'cards.badges.catalog.weekend_5_title',
+		hintKey: 'cards.badges.catalog.weekend_5_hint'
+	},
+	weekend_15: {
+		titleKey: 'cards.badges.catalog.weekend_15_title',
+		hintKey: 'cards.badges.catalog.weekend_15_hint'
+	},
+	holiday_christmas: {
+		titleKey: 'cards.badges.catalog.holiday_christmas_title',
+		hintKey: 'cards.badges.catalog.holiday_christmas_hint'
+	},
+	holiday_new_year: {
+		titleKey: 'cards.badges.catalog.holiday_new_year_title',
+		hintKey: 'cards.badges.catalog.holiday_new_year_hint'
+	},
+	sun_facing_summer: {
+		titleKey: 'cards.badges.catalog.sun_facing_summer_title',
+		hintKey: 'cards.badges.catalog.sun_facing_summer_hint'
+	},
+	weather_heat: { titleKey: 'cards.badges.catalog.weather_heat_title' },
+	weather_freeze: { titleKey: 'cards.badges.catalog.weather_freeze_title' },
+	weather_rain: { titleKey: 'cards.badges.catalog.weather_rain_title' },
+	weather_snow: {
+		titleKey: 'cards.badges.catalog.weather_snow_title',
+		hintKey: 'cards.badges.catalog.weather_snow_hint'
+	},
+	weather_wind: { titleKey: 'cards.badges.catalog.weather_wind_title' },
+	weather_bluebird: { titleKey: 'cards.badges.catalog.weather_bluebird_title' },
+	weather_sticky: {
+		titleKey: 'cards.badges.catalog.weather_sticky_title',
+		hintKey: 'cards.badges.catalog.weather_sticky_hint'
+	},
+	weather_storm_send: { titleKey: 'cards.badges.catalog.weather_storm_send_title' },
+	weather_four_seasons: {
+		titleKey: 'cards.badges.catalog.weather_four_seasons_title',
+		hintKey: 'cards.badges.catalog.weather_four_seasons_hint'
+	},
+	partners_crowded_belay: {
+		titleKey: 'cards.badges.catalog.partners_crowded_belay_title',
+		hintKey: 'cards.badges.catalog.partners_crowded_belay_hint'
+	},
+	multipitch_day: {
+		titleKey: 'cards.badges.catalog.multipitch_day_title',
+		hintKey: 'cards.badges.catalog.multipitch_day_hint'
+	},
+	travel_week: {
+		titleKey: 'cards.badges.catalog.travel_week_title',
+		hintKey: 'cards.badges.catalog.travel_week_hint'
+	},
+	route_persistence: {
+		titleKey: 'cards.badges.catalog.route_persistence_title',
+		hintKey: 'cards.badges.catalog.route_persistence_hint'
+	},
+	greenpoint: {
+		titleKey: 'cards.badges.catalog.greenpoint_title',
+		hintKey: 'cards.badges.catalog.greenpoint_hint'
+	},
+	first_lead_rope_solo: {
+		titleKey: 'cards.badges.catalog.first_lead_rope_solo_title',
+		hintKey: 'cards.badges.catalog.first_lead_rope_solo_hint'
+	},
+	first_top_rope_solo: {
+		titleKey: 'cards.badges.catalog.first_top_rope_solo_title',
+		hintKey: 'cards.badges.catalog.first_top_rope_solo_hint'
+	},
+	sessions_10: {
+		titleKey: 'cards.badges.catalog.sessions_10_title',
+		hintKey: 'cards.badges.catalog.sessions_10_hint'
+	},
+	sessions_50: {
+		titleKey: 'cards.badges.catalog.sessions_50_title',
+		hintKey: 'cards.badges.catalog.sessions_50_hint'
+	},
+	sessions_100: {
+		titleKey: 'cards.badges.catalog.sessions_100_title',
+		hintKey: 'cards.badges.catalog.sessions_100_hint'
+	},
+	height_1km: { titleKey: 'cards.badges.catalog.height_1km_title' },
+	height_5km: { titleKey: 'cards.badges.catalog.height_5km_title' },
+	height_10km: { titleKey: 'cards.badges.catalog.height_10km_title' },
+	height_20km: { titleKey: 'cards.badges.catalog.height_20km_title' },
+	height_50km: { titleKey: 'cards.badges.catalog.height_50km_title' },
+	height_100km: { titleKey: 'cards.badges.catalog.height_100km_title' },
+	height_150km: { titleKey: 'cards.badges.catalog.height_150km_title' },
+	day_height_250: { titleKey: 'cards.badges.catalog.day_height_250_title' },
+	country_1: {
+		titleKey: 'cards.badges.catalog.country_1_title',
+		hintKey: 'cards.badges.catalog.country_1_hint'
+	},
+	country_2: {
+		titleKey: 'cards.badges.catalog.country_2_title',
+		hintKey: 'cards.badges.catalog.country_2_hint'
+	},
+	country_5: {
+		titleKey: 'cards.badges.catalog.country_5_title',
+		hintKey: 'cards.badges.catalog.country_5_hint'
+	},
+	country_10: {
+		titleKey: 'cards.badges.catalog.country_10_title',
+		hintKey: 'cards.badges.catalog.country_10_hint'
+	},
+	distinct_routes_50: {
+		titleKey: 'cards.badges.catalog.distinct_routes_50_title',
+		hintKey: 'cards.badges.catalog.distinct_routes_50_hint'
+	},
+	distinct_routes_100: {
+		titleKey: 'cards.badges.catalog.distinct_routes_100_title',
+		hintKey: 'cards.badges.catalog.distinct_routes_100_hint'
+	},
+	distinct_routes_250: {
+		titleKey: 'cards.badges.catalog.distinct_routes_250_title',
+		hintKey: 'cards.badges.catalog.distinct_routes_250_hint'
+	},
+	distinct_routes_500: {
+		titleKey: 'cards.badges.catalog.distinct_routes_500_title',
+		hintKey: 'cards.badges.catalog.distinct_routes_500_hint'
+	},
+	route_days_10: {
+		titleKey: 'cards.badges.catalog.route_days_10_title',
+		hintKey: 'cards.badges.catalog.route_days_10_hint'
+	},
+	home_turf_25: {
+		titleKey: 'cards.badges.catalog.home_turf_25_title',
+		hintKey: 'cards.badges.catalog.home_turf_25_hint'
+	},
+	style_sport: {
+		titleKey: 'cards.badges.catalog.style_sport_title',
+		hintKey: 'cards.badges.catalog.style_sport_hint'
+	},
+	style_trad: {
+		titleKey: 'cards.badges.catalog.style_trad_title',
+		hintKey: 'cards.badges.catalog.style_trad_hint'
+	},
+	style_boulder: {
+		titleKey: 'cards.badges.catalog.style_boulder_title',
+		hintKey: 'cards.badges.catalog.style_boulder_hint'
+	},
+	band_intermediate: {
+		titleKey: 'grades.bands.intermediate',
+		hintKey: 'cards.badges.catalog.band_intermediate_hint'
+	},
+	band_experienced: {
+		titleKey: 'grades.bands.experienced',
+		hintKey: 'cards.badges.catalog.band_experienced_hint'
+	},
+	band_expert: {
+		titleKey: 'grades.bands.expert',
+		hintKey: 'cards.badges.catalog.band_expert_hint'
+	},
+	band_elite: {
+		titleKey: 'grades.bands.elite',
+		hintKey: 'cards.badges.catalog.band_elite_hint'
+	},
+	new_high: {
+		titleKey: 'cards.badges.catalog.new_high_title',
+		hintKey: 'cards.badges.catalog.new_high_hint'
+	},
+	first_fa: {
+		titleKey: 'cards.badges.catalog.first_fa_title',
+		hintKey: 'cards.badges.catalog.first_fa_hint'
+	},
+	first_ffa: {
+		titleKey: 'cards.badges.catalog.first_ffa_title',
+		hintKey: 'cards.badges.catalog.first_ffa_hint'
+	},
+	fa_5: {
+		titleKey: 'cards.badges.catalog.fa_5_title',
+		hintKey: 'cards.badges.catalog.fa_5_hint'
+	},
+	fa_10: {
+		titleKey: 'cards.badges.catalog.fa_10_title',
+		hintKey: 'cards.badges.catalog.fa_10_hint'
+	},
+	fa_20: {
+		titleKey: 'cards.badges.catalog.fa_20_title',
+		hintKey: 'cards.badges.catalog.fa_20_hint'
+	},
+	fa_50: {
+		titleKey: 'cards.badges.catalog.fa_50_title',
+		hintKey: 'cards.badges.catalog.fa_50_hint'
+	},
+	fa_100: {
+		titleKey: 'cards.badges.catalog.fa_100_title',
+		hintKey: 'cards.badges.catalog.fa_100_hint'
+	},
+	ffa_5: {
+		titleKey: 'cards.badges.catalog.ffa_5_title',
+		hintKey: 'cards.badges.catalog.ffa_5_hint'
+	},
+	ffa_10: {
+		titleKey: 'cards.badges.catalog.ffa_10_title',
+		hintKey: 'cards.badges.catalog.ffa_10_hint'
+	},
+	ffa_20: {
+		titleKey: 'cards.badges.catalog.ffa_20_title',
+		hintKey: 'cards.badges.catalog.ffa_20_hint'
+	},
+	ffa_50: {
+		titleKey: 'cards.badges.catalog.ffa_50_title',
+		hintKey: 'cards.badges.catalog.ffa_50_hint'
+	},
+	ffa_100: {
+		titleKey: 'cards.badges.catalog.ffa_100_title',
+		hintKey: 'cards.badges.catalog.ffa_100_hint'
+	},
+	fa_sport_10: {
+		titleKey: 'cards.badges.catalog.fa_sport_10_title',
+		hintKey: 'cards.badges.catalog.fa_sport_10_hint'
+	},
+	fa_sport_20: {
+		titleKey: 'cards.badges.catalog.fa_sport_20_title',
+		hintKey: 'cards.badges.catalog.fa_sport_20_hint'
+	},
+	fa_sport_50: {
+		titleKey: 'cards.badges.catalog.fa_sport_50_title',
+		hintKey: 'cards.badges.catalog.fa_sport_50_hint'
+	},
+	fa_trad_10: {
+		titleKey: 'cards.badges.catalog.fa_trad_10_title',
+		hintKey: 'cards.badges.catalog.fa_trad_10_hint'
+	},
+	fa_trad_20: {
+		titleKey: 'cards.badges.catalog.fa_trad_20_title',
+		hintKey: 'cards.badges.catalog.fa_trad_20_hint'
+	},
+	fa_trad_50: {
+		titleKey: 'cards.badges.catalog.fa_trad_50_title',
+		hintKey: 'cards.badges.catalog.fa_trad_50_hint'
+	},
+	fa_boulder_10: {
+		titleKey: 'cards.badges.catalog.fa_boulder_10_title',
+		hintKey: 'cards.badges.catalog.fa_boulder_10_hint'
+	},
+	fa_boulder_20: {
+		titleKey: 'cards.badges.catalog.fa_boulder_20_title',
+		hintKey: 'cards.badges.catalog.fa_boulder_20_hint'
+	},
+	fa_boulder_50: {
+		titleKey: 'cards.badges.catalog.fa_boulder_50_title',
+		hintKey: 'cards.badges.catalog.fa_boulder_50_hint'
+	},
+	first_setter: {
+		titleKey: 'cards.badges.catalog.first_setter_title',
+		hintKey: 'cards.badges.catalog.first_setter_hint'
+	},
+	setter_5: {
+		titleKey: 'cards.badges.catalog.setter_5_title',
+		hintKey: 'cards.badges.catalog.setter_5_hint'
+	},
+	setter_10: {
+		titleKey: 'cards.badges.catalog.setter_10_title',
+		hintKey: 'cards.badges.catalog.setter_10_hint'
+	},
+	setter_25: {
+		titleKey: 'cards.badges.catalog.setter_25_title',
+		hintKey: 'cards.badges.catalog.setter_25_hint'
+	},
+	community_10: {
+		titleKey: 'cards.badges.catalog.community_10_title',
+		hintKey: 'cards.badges.catalog.community_10_hint'
+	},
+	community_50: {
+		titleKey: 'cards.badges.catalog.community_50_title',
+		hintKey: 'cards.badges.catalog.community_50_hint'
+	},
+	community_100: {
+		titleKey: 'cards.badges.catalog.community_100_title',
+		hintKey: 'cards.badges.catalog.community_100_hint'
+	},
+	community_500: {
+		titleKey: 'cards.badges.catalog.community_500_title',
+		hintKey: 'cards.badges.catalog.community_500_hint'
+	},
+	community_sport_10: {
+		titleKey: 'cards.badges.catalog.community_sport_10_title',
+		hintKey: 'cards.badges.catalog.community_sport_10_hint'
+	},
+	community_sport_50: {
+		titleKey: 'cards.badges.catalog.community_sport_50_title',
+		hintKey: 'cards.badges.catalog.community_sport_50_hint'
+	},
+	community_sport_100: {
+		titleKey: 'cards.badges.catalog.community_sport_100_title',
+		hintKey: 'cards.badges.catalog.community_sport_100_hint'
+	}
+};
+
+type BadgeSpec = Omit<BadgeDef, 'title' | 'hint'>;
+
+function badgeTitle(def: BadgeSpec, locale: SupportedLocale): string {
+	if (def.id.startsWith('streak_days_')) {
+		const count = Number(def.id.slice('streak_days_'.length));
+		return formatMessage(locale, 'cards.badges.catalog.streak_days_title', { count });
+	}
+	const keys = BADGE_CATALOG_KEYS[def.id];
+	return keys ? formatMessage(locale, keys.titleKey) : def.id;
+}
+
+function badgeHint(def: BadgeSpec, units: DisplayUnits, locale: SupportedLocale): string {
+	if (def.hintForUnits) return def.hintForUnits(units, locale);
+	if (def.id.startsWith('streak_days_')) {
+		const count = Number(def.id.slice('streak_days_'.length));
+		return formatMessage(locale, 'cards.badges.catalog.streak_days_hint', { count });
+	}
+	const keys = BADGE_CATALOG_KEYS[def.id];
+	return keys?.hintKey ? formatMessage(locale, keys.hintKey) : '';
+}
+
+const BADGE_SPECS: readonly BadgeSpec[] = [
+	{ id: 'first_moves', icon: 'carabiner', tone: 'warm' },
+	{ id: 'first_session', icon: 'knot', tone: 'warm' },
+	{ id: 'first_send', icon: 'send', tone: 'green' },
+	{ id: 'first_onsight', icon: 'eye', tone: 'blue' },
+	{ id: 'first_flash', icon: 'bolt', tone: 'green' },
+	{ id: 'ascents_10', icon: 'route', tone: 'warm' },
+	{ id: 'ascents_25', icon: 'route', tone: 'warm' },
+	{ id: 'ascents_50', icon: 'route', tone: 'warm' },
+	{ id: 'ascents_100', icon: 'star', tone: 'green' },
+	{ id: 'ascents_250', icon: 'star', tone: 'green' },
+	{ id: 'ascents_500', icon: 'star', tone: 'blue' },
+	{ id: 'ascents_1000', icon: 'mountain', tone: 'purple' },
+	{ id: 'sends_10', icon: 'send', tone: 'green' },
+	{ id: 'sends_25', icon: 'send', tone: 'green' },
+	{ id: 'sends_50', icon: 'send', tone: 'blue' },
+	{ id: 'sends_100', icon: 'send', tone: 'purple' },
+	{ id: 'onsight_10', icon: 'eye', tone: 'blue' },
+	{ id: 'onsight_25', icon: 'eye', tone: 'purple' },
+	{ id: 'flash_10', icon: 'bolt', tone: 'green' },
+	{ id: 'flash_25', icon: 'bolt', tone: 'green' },
+	{ id: 'weekend_5', icon: 'sun', tone: 'warm' },
+	{ id: 'weekend_15', icon: 'sun', tone: 'green' },
+	...STREAK_DAY_THRESHOLDS.map((n): BadgeSpec => ({
 		id: `streak_days_${n}`,
-		title: `${n}-Day Streak`,
-		hint: `Log a climb on ${n} consecutive days (attempts count)`,
 		icon: 'calendar',
 		tone: n === 30 ? 'purple' : n === 10 ? 'blue' : 'green'
 	})),
-	{
-		id: 'holiday_christmas',
-		title: 'Christmas Day',
-		hint: 'Climb on Christmas Day',
-		icon: 'calendar',
-		tone: 'warm'
-	},
-	{
-		id: 'holiday_new_year',
-		title: 'New Year',
-		hint: 'Climb on New Year’s Eve or Day',
-		icon: 'calendar',
-		tone: 'warm'
-	},
-	{
-		id: 'sun_facing_summer',
-		title: 'Summer Sun Face',
-		hint: 'Log a route in local summer with equator-facing aspect or All day sun on it or its immediate parent.',
-		icon: 'sun',
-		tone: 'warm'
-	},
+	{ id: 'holiday_christmas', icon: 'calendar', tone: 'warm' },
+	{ id: 'holiday_new_year', icon: 'calendar', tone: 'warm' },
+	{ id: 'sun_facing_summer', icon: 'sun', tone: 'warm' },
 	{
 		id: 'weather_heat',
-		title: 'Heat Wave',
-		hint: 'Climb outdoors when the day’s high is 35°C or hotter',
-		hintForUnits: (units) =>
-			`Climb outdoors when the day’s high is ${formatTemperature(35, units.temperature)} or hotter`,
+		hintForUnits: (units, locale = DEFAULT_LOCALE) =>
+			formatMessage(locale, 'cards.badges.catalog.weather_heat_hint', {
+				temp: formatTemperature(35, units.temperature)
+			}),
 		icon: 'thermometer',
 		tone: 'warm'
 	},
 	{
 		id: 'weather_freeze',
-		title: 'Freeze Frame',
-		hint: 'Climb outdoors when the day’s low is 0°C or colder',
-		hintForUnits: (units) =>
-			`Climb outdoors when the day’s low is ${formatTemperature(0, units.temperature)} or colder`,
+		hintForUnits: (units, locale = DEFAULT_LOCALE) =>
+			formatMessage(locale, 'cards.badges.catalog.weather_freeze_hint', {
+				temp: formatTemperature(0, units.temperature)
+			}),
 		icon: 'snowflake',
 		tone: 'blue'
 	},
 	{
 		id: 'weather_rain',
-		title: 'Rain Check',
-		hint: 'Climb outdoors on a day with at least 1 mm of rain',
-		hintForUnits: (units) =>
-			`Climb outdoors on a day with at least ${formatPrecipitation(1, units.precipitation)} of rain`,
+		hintForUnits: (units, locale = DEFAULT_LOCALE) =>
+			formatMessage(locale, 'cards.badges.catalog.weather_rain_hint', {
+				precip: formatPrecipitation(1, units.precipitation)
+			}),
 		icon: 'droplet',
 		tone: 'blue'
 	},
-	{
-		id: 'weather_snow',
-		title: 'Climbing in the Snow',
-		hint: 'Climb outdoors on a snowy day',
-		icon: 'snowflake',
-		tone: 'purple'
-	},
+	{ id: 'weather_snow', icon: 'snowflake', tone: 'purple' },
 	{
 		id: 'weather_wind',
-		title: 'Blown Away',
-		hint: 'Climb outdoors when the day’s max wind is 50 km/h or stronger',
-		hintForUnits: (units) =>
-			`Climb outdoors when the day’s max wind is ${formatWind(50, units.wind)} or stronger`,
+		hintForUnits: (units, locale = DEFAULT_LOCALE) =>
+			formatMessage(locale, 'cards.badges.catalog.weather_wind_hint', {
+				wind: formatWind(50, units.wind)
+			}),
 		icon: 'wind',
 		tone: 'slate'
 	},
 	{
 		id: 'weather_bluebird',
-		title: 'Bluebird',
-		hint: 'Climb outdoors on a pleasant dry day (high 15–25°C, little precip)',
-		hintForUnits: (units) =>
-			`Climb outdoors on a pleasant dry day (high ${formatTemperature(15, units.temperature)} to ${formatTemperature(25, units.temperature)}, little precip)`,
+		hintForUnits: (units, locale = DEFAULT_LOCALE) =>
+			formatMessage(locale, 'cards.badges.catalog.weather_bluebird_hint', {
+				low: formatTemperature(15, units.temperature),
+				high: formatTemperature(25, units.temperature)
+			}),
 		icon: 'sun',
 		tone: 'blue'
 	},
-	{
-		id: 'weather_sticky',
-		title: 'Sticky',
-		hint: 'Climb outdoors when mean humidity is 85% or higher',
-		icon: 'droplet',
-		tone: 'green'
-	},
+	{ id: 'weather_sticky', icon: 'droplet', tone: 'green' },
 	{
 		id: 'weather_storm_send',
-		title: 'Storm Send',
-		hint: 'Send outdoors on a day with at least 10 mm of non-snow rain',
-		hintForUnits: (units) =>
-			`Send outdoors on a day with at least ${formatPrecipitation(10, units.precipitation)} of non-snow rain`,
+		hintForUnits: (units, locale = DEFAULT_LOCALE) =>
+			formatMessage(locale, 'cards.badges.catalog.weather_storm_send_hint', {
+				precip: formatPrecipitation(10, units.precipitation)
+			}),
 		icon: 'bolt',
 		tone: 'purple'
 	},
-	{
-		id: 'weather_four_seasons',
-		title: 'Four Seasons',
-		hint: 'Earn Heat Wave, Freeze Frame, Rain Check, and Climbing in the Snow',
-		icon: 'globe',
-		tone: 'warm'
-	},
-	{
-		id: 'partners_crowded_belay',
-		title: 'Crowded Belay',
-		hint: 'Log an ascent with 3 or more partners',
-		icon: 'carabiner',
-		tone: 'green'
-	},
-	{
-		id: 'multipitch_day',
-		title: 'Multipitch Day',
-		hint: 'Send 3 or more pitches in one day',
-		icon: 'route',
-		tone: 'blue'
-	},
-	{
-		id: 'travel_week',
-		title: 'Travel Week',
-		hint: 'Climb at 4 different crags within 7 days',
-		icon: 'globe',
-		tone: 'warm'
-	},
-	{
-		id: 'route_persistence',
-		title: 'Persistence Pays',
-		hint: 'Send a route after working it over 4 or more different days',
-		icon: 'knot',
-		tone: 'purple'
-	},
-	{
-		id: 'greenpoint',
-		title: 'Greenpoint',
-		hint: 'Greenpoint a sport route, or send one with a clean lead recorded as Trad.',
-		icon: 'knot',
-		tone: 'green'
-	},
-	{
-		id: 'first_lead_rope_solo',
-		title: 'First Lead Rope Solo',
-		hint: 'Complete your first explicitly logged lead rope-solo ascent.',
-		icon: 'carabiner',
-		tone: 'blue'
-	},
-	{
-		id: 'first_top_rope_solo',
-		title: 'First Top-Rope Solo',
-		hint: 'Complete your first explicitly logged top-rope solo ascent.',
-		icon: 'knot',
-		tone: 'purple'
-	},
-	{
-		id: 'sessions_10',
-		title: 'Regular',
-		hint: 'Climb on 10 different days',
-		icon: 'calendar',
-		tone: 'warm'
-	},
-	{
-		id: 'sessions_50',
-		title: 'Dedicated',
-		hint: 'Climb on 50 different days',
-		icon: 'calendar',
-		tone: 'green'
-	},
-	{
-		id: 'sessions_100',
-		title: 'Hundred Days',
-		hint: 'Climb on 100 different days',
-		icon: 'calendar',
-		tone: 'blue'
-	},
-	...HEIGHT_BADGES.map((b): BadgeDef => ({
+	{ id: 'weather_four_seasons', icon: 'globe', tone: 'warm' },
+	{ id: 'partners_crowded_belay', icon: 'carabiner', tone: 'green' },
+	{ id: 'multipitch_day', icon: 'route', tone: 'blue' },
+	{ id: 'travel_week', icon: 'globe', tone: 'warm' },
+	{ id: 'route_persistence', icon: 'knot', tone: 'purple' },
+	{ id: 'greenpoint', icon: 'knot', tone: 'green' },
+	{ id: 'first_lead_rope_solo', icon: 'carabiner', tone: 'blue' },
+	{ id: 'first_top_rope_solo', icon: 'knot', tone: 'purple' },
+	{ id: 'sessions_10', icon: 'calendar', tone: 'warm' },
+	{ id: 'sessions_50', icon: 'calendar', tone: 'green' },
+	{ id: 'sessions_100', icon: 'calendar', tone: 'blue' },
+	...HEIGHT_BADGES.map((b): BadgeSpec => ({
 		id: b.id,
-		title: b.title,
-		hint: `Climb a cumulative ${formatDistance(b.m / 1000, 'km')}`,
-		hintForUnits: (units) => `Climb a cumulative ${formatDistance(b.m / 1000, units.distance)}`,
+		hintForUnits: (units, locale = DEFAULT_LOCALE) =>
+			formatMessage(locale, 'cards.badges.catalog.height_climb_hint', {
+				distance: formatDistance(b.m / 1000, units.distance)
+			}),
 		icon: 'mountain',
 		tone: b.tone
 	})),
 	{
 		id: 'day_height_250',
-		title: '250m Day',
-		hint: 'Climb 250 m in a single day',
-		hintForUnits: (units) => `Climb ${formatHeight(250, units.height)} in a single day`,
+		hintForUnits: (units, locale = DEFAULT_LOCALE) =>
+			formatMessage(locale, 'cards.badges.catalog.day_height_250_hint', {
+				height: formatHeight(250, units.height)
+			}),
 		icon: 'mountain',
 		tone: 'green'
 	},
-	{
-		id: 'country_1',
-		title: 'Home Crag Country',
-		hint: 'Climb in a logged country',
-		icon: 'flag',
-		tone: 'warm'
-	},
-	{
-		id: 'country_2',
-		title: 'Two Countries',
-		hint: 'Climb in 2 countries',
-		icon: 'globe',
-		tone: 'green'
-	},
-	{
-		id: 'country_5',
-		title: 'Globe Trotter',
-		hint: 'Climb in 5 countries',
-		icon: 'globe',
-		tone: 'blue'
-	},
-	{
-		id: 'country_10',
-		title: 'World Traveller',
-		hint: 'Climb in 10 countries',
-		icon: 'globe',
-		tone: 'purple'
-	},
-	// Repeats vs new routes: distinct routes, one route on many days, repeats at one crag.
-	{
-		id: 'distinct_routes_50',
-		title: 'Explorer',
-		hint: 'Log ascents on 50 different routes (attempts count)',
-		icon: 'route',
-		tone: 'warm'
-	},
-	{
-		id: 'distinct_routes_100',
-		title: 'Wanderer',
-		hint: 'Log ascents on 100 different routes (attempts count)',
-		icon: 'route',
-		tone: 'green'
-	},
-	{
-		id: 'distinct_routes_250',
-		title: 'Route Collector',
-		hint: 'Log ascents on 250 different routes (attempts count)',
-		icon: 'route',
-		tone: 'blue'
-	},
-	{
-		id: 'distinct_routes_500',
-		title: 'Guidebook Explorer',
-		hint: 'Log ascents on 500 different routes (attempts count)',
-		icon: 'route',
-		tone: 'purple'
-	},
-	{
-		id: 'route_days_10',
-		title: 'Old Faithful',
-		hint: 'Climb the same route on 10 different days',
-		icon: 'knot',
-		tone: 'green'
-	},
-	{
-		id: 'home_turf_25',
-		title: 'Home Turf',
-		hint: 'Log 25 repeat ascents on routes at one crag',
-		icon: 'flag',
-		tone: 'blue'
-	},
-	{
-		id: 'style_sport',
-		title: 'Sport Starter',
-		hint: 'Send a sport route',
-		icon: 'carabiner',
-		tone: 'blue'
-	},
-	{
-		id: 'style_trad',
-		title: 'Trad Curious',
-		hint: 'Send a trad route',
-		icon: 'knot',
-		tone: 'warm'
-	},
-	{
-		id: 'style_boulder',
-		title: 'Boulder Start',
-		hint: 'Send a boulder problem',
-		icon: 'route',
-		tone: 'green'
-	},
-	{
-		id: 'band_intermediate',
-		title: 'Intermediate',
-		hint: 'Send an Intermediate-band climb',
-		icon: 'star',
-		tone: 'warm'
-	},
-	{
-		id: 'band_experienced',
-		title: 'Experienced',
-		hint: 'Send an Experienced-band climb',
-		icon: 'star',
-		tone: 'green'
-	},
-	{
-		id: 'band_expert',
-		title: 'Expert',
-		hint: 'Send an Expert-band climb',
-		icon: 'star',
-		tone: 'blue'
-	},
-	{
-		id: 'band_elite',
-		title: 'Elite',
-		hint: 'Send an Elite-band climb',
-		icon: 'star',
-		tone: 'purple'
-	},
-	{
-		id: 'new_high',
-		title: 'New High',
-		hint: 'Set a personal grade high',
-		icon: 'flag',
-		tone: 'green'
-	},
-	// First ascents rely on the owner marking FA/FFA in the logbook (theCrag's API has no
-	// route history); each is dated by the first send of the marked route (#194 thresholds).
-	{
-		id: 'first_fa',
-		title: 'First Ascent',
-		hint: 'Send a route and mark it as your FA in the logbook',
-		icon: 'hanger',
-		tone: 'purple'
-	},
-	{
-		id: 'first_ffa',
-		title: 'First Free Ascent',
-		hint: 'Send a route and mark it as your FFA in the logbook',
-		icon: 'hanger',
-		tone: 'blue'
-	},
-	{
-		id: 'fa_5',
-		title: '5 First Ascents',
-		hint: 'Log 5 first ascents (FA or FFA)',
-		icon: 'hanger',
-		tone: 'warm'
-	},
-	{
-		id: 'fa_10',
-		title: 'Pioneer',
-		hint: 'Log 10 first ascents (FA or FFA)',
-		icon: 'hanger',
-		tone: 'purple'
-	},
-	{
-		id: 'fa_20',
-		title: '20 First Ascents',
-		hint: 'Log 20 first ascents (FA or FFA)',
-		icon: 'hanger',
-		tone: 'green'
-	},
-	{
-		id: 'fa_50',
-		title: '50 First Ascents',
-		hint: 'Log 50 first ascents (FA or FFA)',
-		icon: 'hanger',
-		tone: 'blue'
-	},
-	{
-		id: 'fa_100',
-		title: '100 First Ascents',
-		hint: 'Log 100 first ascents (FA or FFA)',
-		icon: 'hanger',
-		tone: 'purple'
-	},
-	{
-		id: 'ffa_5',
-		title: '5 First Free Ascents',
-		hint: 'Log 5 first free ascents',
-		icon: 'hanger',
-		tone: 'warm'
-	},
-	{
-		id: 'ffa_10',
-		title: '10 First Free Ascents',
-		hint: 'Log 10 first free ascents',
-		icon: 'hanger',
-		tone: 'blue'
-	},
-	{
-		id: 'ffa_20',
-		title: '20 First Free Ascents',
-		hint: 'Log 20 first free ascents',
-		icon: 'hanger',
-		tone: 'green'
-	},
-	{
-		id: 'ffa_50',
-		title: '50 First Free Ascents',
-		hint: 'Log 50 first free ascents',
-		icon: 'hanger',
-		tone: 'purple'
-	},
-	{
-		id: 'ffa_100',
-		title: '100 First Free Ascents',
-		hint: 'Log 100 first free ascents',
-		icon: 'hanger',
-		tone: 'purple'
-	},
-	{
-		id: 'fa_sport_10',
-		title: '10 Sport First Ascents',
-		hint: 'Log 10 sport first ascents (FA or FFA)',
-		icon: 'hanger',
-		tone: 'blue'
-	},
-	{
-		id: 'fa_sport_20',
-		title: '20 Sport First Ascents',
-		hint: 'Log 20 sport first ascents (FA or FFA)',
-		icon: 'hanger',
-		tone: 'blue'
-	},
-	{
-		id: 'fa_sport_50',
-		title: '50 Sport First Ascents',
-		hint: 'Log 50 sport first ascents (FA or FFA)',
-		icon: 'hanger',
-		tone: 'blue'
-	},
-	{
-		id: 'fa_trad_10',
-		title: '10 Trad First Ascents',
-		hint: 'Log 10 trad first ascents (FA or FFA)',
-		icon: 'hanger',
-		tone: 'warm'
-	},
-	{
-		id: 'fa_trad_20',
-		title: '20 Trad First Ascents',
-		hint: 'Log 20 trad first ascents (FA or FFA)',
-		icon: 'hanger',
-		tone: 'warm'
-	},
-	{
-		id: 'fa_trad_50',
-		title: '50 Trad First Ascents',
-		hint: 'Log 50 trad first ascents (FA or FFA)',
-		icon: 'hanger',
-		tone: 'warm'
-	},
-	{
-		id: 'fa_boulder_10',
-		title: '10 Boulder First Ascents',
-		hint: 'Log 10 boulder first ascents (FA or FFA)',
-		icon: 'hanger',
-		tone: 'purple'
-	},
-	{
-		id: 'fa_boulder_20',
-		title: '20 Boulder First Ascents',
-		hint: 'Log 20 boulder first ascents (FA or FFA)',
-		icon: 'hanger',
-		tone: 'purple'
-	},
-	{
-		id: 'fa_boulder_50',
-		title: '50 Boulder First Ascents',
-		hint: 'Log 50 boulder first ascents (FA or FFA)',
-		icon: 'hanger',
-		tone: 'purple'
-	},
-	{
-		id: 'first_setter',
-		title: 'Route Setter',
-		hint: 'Credited as route setter on a route you bolted or set',
-		icon: 'bolt',
-		tone: 'warm'
-	},
-	{
-		id: 'setter_5',
-		title: 'Route Developer',
-		hint: 'Credited as route setter on 5 different routes',
-		icon: 'bolt',
-		tone: 'green'
-	},
-	{
-		id: 'setter_10',
-		title: 'Wall Builder',
-		hint: 'Credited as route setter on 10 different routes',
-		icon: 'bolt',
-		tone: 'blue'
-	},
-	{
-		id: 'setter_25',
-		title: 'Crag Architect',
-		hint: 'Credited as route setter on 25 different routes',
-		icon: 'bolt',
-		tone: 'purple'
-	},
-	// Community ticks on routes you put up — cached paired estimates (#146); no earned date.
-	{
-		id: 'community_10',
-		title: 'Shared Crag',
-		hint: '~10 community ascents on routes you put up (estimate)',
-		icon: 'globe',
-		tone: 'warm'
-	},
-	{
-		id: 'community_50',
-		title: 'Crowd Pleaser',
-		hint: '~50 community ascents on routes you put up (estimate)',
-		icon: 'globe',
-		tone: 'green'
-	},
-	{
-		id: 'community_100',
-		title: 'Hundred Hands',
-		hint: '~100 community ascents on routes you put up (estimate)',
-		icon: 'globe',
-		tone: 'blue'
-	},
-	{
-		id: 'community_500',
-		title: 'Local Classic',
-		hint: '~500 community ascents on routes you put up (estimate)',
-		icon: 'globe',
-		tone: 'purple'
-	},
-	{
-		id: 'community_sport_10',
-		title: 'Bolted Buzz',
-		hint: '~10 community ascents on your sport/bolted routes (estimate)',
-		icon: 'carabiner',
-		tone: 'warm'
-	},
-	{
-		id: 'community_sport_50',
-		title: 'Sport Magnet',
-		hint: '~50 community ascents on your sport/bolted routes (estimate)',
-		icon: 'carabiner',
-		tone: 'green'
-	},
-	{
-		id: 'community_sport_100',
-		title: 'Clip Classic',
-		hint: '~100 community ascents on your sport/bolted routes (estimate)',
-		icon: 'carabiner',
-		tone: 'blue'
-	}
-] as const;
+	{ id: 'country_1', icon: 'flag', tone: 'warm' },
+	{ id: 'country_2', icon: 'globe', tone: 'green' },
+	{ id: 'country_5', icon: 'globe', tone: 'blue' },
+	{ id: 'country_10', icon: 'globe', tone: 'purple' },
+	{ id: 'distinct_routes_50', icon: 'route', tone: 'warm' },
+	{ id: 'distinct_routes_100', icon: 'route', tone: 'green' },
+	{ id: 'distinct_routes_250', icon: 'route', tone: 'blue' },
+	{ id: 'distinct_routes_500', icon: 'route', tone: 'purple' },
+	{ id: 'route_days_10', icon: 'knot', tone: 'green' },
+	{ id: 'home_turf_25', icon: 'flag', tone: 'blue' },
+	{ id: 'style_sport', icon: 'carabiner', tone: 'blue' },
+	{ id: 'style_trad', icon: 'knot', tone: 'warm' },
+	{ id: 'style_boulder', icon: 'route', tone: 'green' },
+	{ id: 'band_intermediate', icon: 'star', tone: 'warm' },
+	{ id: 'band_experienced', icon: 'star', tone: 'green' },
+	{ id: 'band_expert', icon: 'star', tone: 'blue' },
+	{ id: 'band_elite', icon: 'star', tone: 'purple' },
+	{ id: 'new_high', icon: 'flag', tone: 'green' },
+	{ id: 'first_fa', icon: 'hanger', tone: 'purple' },
+	{ id: 'first_ffa', icon: 'hanger', tone: 'blue' },
+	{ id: 'fa_5', icon: 'hanger', tone: 'warm' },
+	{ id: 'fa_10', icon: 'hanger', tone: 'purple' },
+	{ id: 'fa_20', icon: 'hanger', tone: 'green' },
+	{ id: 'fa_50', icon: 'hanger', tone: 'blue' },
+	{ id: 'fa_100', icon: 'hanger', tone: 'purple' },
+	{ id: 'ffa_5', icon: 'hanger', tone: 'warm' },
+	{ id: 'ffa_10', icon: 'hanger', tone: 'blue' },
+	{ id: 'ffa_20', icon: 'hanger', tone: 'green' },
+	{ id: 'ffa_50', icon: 'hanger', tone: 'purple' },
+	{ id: 'ffa_100', icon: 'hanger', tone: 'purple' },
+	{ id: 'fa_sport_10', icon: 'hanger', tone: 'blue' },
+	{ id: 'fa_sport_20', icon: 'hanger', tone: 'blue' },
+	{ id: 'fa_sport_50', icon: 'hanger', tone: 'blue' },
+	{ id: 'fa_trad_10', icon: 'hanger', tone: 'warm' },
+	{ id: 'fa_trad_20', icon: 'hanger', tone: 'warm' },
+	{ id: 'fa_trad_50', icon: 'hanger', tone: 'warm' },
+	{ id: 'fa_boulder_10', icon: 'hanger', tone: 'purple' },
+	{ id: 'fa_boulder_20', icon: 'hanger', tone: 'purple' },
+	{ id: 'fa_boulder_50', icon: 'hanger', tone: 'purple' },
+	{ id: 'first_setter', icon: 'bolt', tone: 'warm' },
+	{ id: 'setter_5', icon: 'bolt', tone: 'green' },
+	{ id: 'setter_10', icon: 'bolt', tone: 'blue' },
+	{ id: 'setter_25', icon: 'bolt', tone: 'purple' },
+	{ id: 'community_10', icon: 'globe', tone: 'warm' },
+	{ id: 'community_50', icon: 'globe', tone: 'green' },
+	{ id: 'community_100', icon: 'globe', tone: 'blue' },
+	{ id: 'community_500', icon: 'globe', tone: 'purple' },
+	{ id: 'community_sport_10', icon: 'carabiner', tone: 'warm' },
+	{ id: 'community_sport_50', icon: 'carabiner', tone: 'green' },
+	{ id: 'community_sport_100', icon: 'carabiner', tone: 'blue' }
+];
 
-const COUNT_BADGES: { id: string; n: number; label: (n: number) => string }[] = [
-	{ id: 'ascents_10', n: 10, label: (n) => `Logged climb #${n}` },
-	{ id: 'ascents_25', n: 25, label: (n) => `Logged climb #${n}` },
-	{ id: 'ascents_50', n: 50, label: (n) => `Logged climb #${n}` },
-	{ id: 'ascents_100', n: 100, label: (n) => `Logged climb #${n}` },
-	{ id: 'ascents_250', n: 250, label: (n) => `Logged climb #${n}` },
-	{ id: 'ascents_500', n: 500, label: (n) => `Logged climb #${n}` },
-	{ id: 'ascents_1000', n: 1000, label: (n) => `Logged climb #${n}` }
+/** Static catalog — order is display order for locked badges. */
+export const BADGE_CATALOG: readonly BadgeDef[] = BADGE_SPECS.map((spec) => ({
+	...spec,
+	title: badgeTitle(spec, DEFAULT_LOCALE),
+	hint: badgeHint(spec, DEFAULT_DISPLAY_UNITS, DEFAULT_LOCALE)
+}));
+
+const COUNT_BADGES: { id: string; n: number }[] = [
+	{ id: 'ascents_10', n: 10 },
+	{ id: 'ascents_25', n: 25 },
+	{ id: 'ascents_50', n: 50 },
+	{ id: 'ascents_100', n: 100 },
+	{ id: 'ascents_250', n: 250 },
+	{ id: 'ascents_500', n: 500 },
+	{ id: 'ascents_1000', n: 1000 }
 ];
 
 const SEND_BADGES = [
@@ -980,7 +894,12 @@ function pitchCredit(row: DashboardExtraRow): PitchCredit | null {
 		: null;
 }
 
-function makeHit(row: DashboardExtraRow, prefix: string, display: DateDisplay): Hit {
+function makeHit(
+	row: DashboardExtraRow,
+	prefix: string,
+	display: DateDisplay,
+	locale: SupportedLocale = DEFAULT_LOCALE
+): Hit {
 	const date = dayKey(row.ascentDate)!;
 	const routeName = (row.routeName || '').trim() || null;
 	const href = row.ascentUrl || row.url || null;
@@ -991,7 +910,7 @@ function makeHit(row: DashboardExtraRow, prefix: string, display: DateDisplay): 
 		href,
 		detail: [
 			tail ? `${prefix} · ${tail}` : `${prefix} · ${formatBadgeDate(date, display)}`,
-			ascentPartners(row.partners)
+			ascentPartners(row.partners, locale)
 		]
 			.filter(Boolean)
 			.join(' · ')
@@ -1019,11 +938,13 @@ export function buildBadges(
 		displayUnits?: DisplayUnits;
 		/** Cached Open-Meteo days keyed by lat|lon|day (#268). */
 		weatherByKey?: ReadonlyMap<string, WeatherSnapshot>;
+		locale?: SupportedLocale;
 	} = {}
 ): BadgesResult {
 	const dateDisplay = context.dateDisplay ?? DEFAULT_DATE_DISPLAY;
 	const units = context.displayUnits ?? DEFAULT_DISPLAY_UNITS;
-	const hit = (row: DashboardExtraRow, prefix: string) => makeHit(row, prefix, dateDisplay);
+	const locale = context.locale ?? DEFAULT_LOCALE;
+	const hit = (row: DashboardExtraRow, prefix: string) => makeHit(row, prefix, dateDisplay, locale);
 
 	// Chronological by day, then stable ascent id — never alphabetise route names
 	// (that made “Nacho Libre” beat earlier same-day climbs like “Torched”).
@@ -1053,7 +974,10 @@ export function buildBadges(
 			.toISOString()
 			.slice(0, 10);
 		const runHit = dated.find((r) => r.day === day)!;
-		mark(`streak_days_${threshold}`, hit(runHit.row, `Climbed on ${threshold} consecutive days`));
+		mark(
+			`streak_days_${threshold}`,
+			hit(runHit.row, formatMessage(locale, 'cards.badges.detailStreakDays', { count: threshold }))
+		);
 	}
 
 	let ascentCount = 0;
@@ -1116,12 +1040,19 @@ export function buildBadges(
 				ascentGearStyle: row.ascentGearStyle ?? null
 			});
 			if (solo === 'lead' && soloStyle !== 'Top rope')
-				mark('first_lead_rope_solo', hit(row, 'First completed lead rope solo'));
+				mark(
+					'first_lead_rope_solo',
+					hit(row, formatMessage(locale, 'cards.badges.detailFirstLeadRopeSolo'))
+				);
 			if (solo === 'toprope')
-				mark('first_top_rope_solo', hit(row, 'First completed top-rope solo'));
+				mark(
+					'first_top_rope_solo',
+					hit(row, formatMessage(locale, 'cards.badges.detailFirstTopRopeSolo'))
+				);
 		}
 
-		if (isGreenpoint(row)) mark('greenpoint', hit(row, 'Sport route led on trad protection'));
+		if (isGreenpoint(row))
+			mark('greenpoint', hit(row, formatMessage(locale, 'cards.badges.detailGreenpoint')));
 		const outdoor =
 			row.outdoor !== false &&
 			!isLikelyIndoorRoute({
@@ -1131,21 +1062,29 @@ export function buildBadges(
 				tagsJson: row.tagsJson
 			});
 		if (outdoor && isSunFacingSummer(row))
-			mark('sun_facing_summer', hit(row, 'Sunny exposure in local summer · tag/aspect heuristic'));
+			mark(
+				'sun_facing_summer',
+				hit(row, formatMessage(locale, 'cards.badges.detailSunFacingSummer'))
+			);
 		const monthDay = day.slice(5); // MM-DD from calendar dayKey — no local TZ
 
 		if (sessions.size === 1 && !earned.has('first_session')) {
-			mark('first_session', hit(row, 'First session done'));
+			mark('first_session', hit(row, formatMessage(locale, 'cards.badges.detailFirstSession')));
 		}
 
 		// Holiday badges: any logged ascent that calendar day (attempts count).
 		if (monthDay === '12-25') {
-			mark('holiday_christmas', hit(row, 'Climbed on Christmas Day'));
+			mark('holiday_christmas', hit(row, formatMessage(locale, 'cards.badges.detailChristmasDay')));
 		}
 		if (monthDay === '12-31' || monthDay === '01-01') {
 			mark(
 				'holiday_new_year',
-				hit(row, monthDay === '12-31' ? 'Climbed on New Year’s Eve' : 'Climbed on New Year’s Day')
+				hit(
+					row,
+					monthDay === '12-31'
+						? formatMessage(locale, 'cards.badges.detailNewYearsEve')
+						: formatMessage(locale, 'cards.badges.detailNewYearsDay')
+				)
 			);
 		}
 
@@ -1158,45 +1097,80 @@ export function buildBadges(
 			if (isHeatWeather(weather)) {
 				mark(
 					'weather_heat',
-					hit(row, `Hot day · ${formatTemperature(weather.tempMaxC, units.temperature)} high`)
+					hit(
+						row,
+						formatMessage(locale, 'cards.badges.detailHotDay', {
+							temp: formatTemperature(weather.tempMaxC, units.temperature)
+						})
+					)
 				);
 			}
 			if (isFreezeWeather(weather)) {
 				mark(
 					'weather_freeze',
-					hit(row, `Cold day · ${formatTemperature(weather.tempMinC, units.temperature)} low`)
+					hit(
+						row,
+						formatMessage(locale, 'cards.badges.detailColdDay', {
+							temp: formatTemperature(weather.tempMinC, units.temperature)
+						})
+					)
 				);
 			}
 			if (isSnowWeather(weather)) {
-				mark('weather_snow', hit(row, 'Climbed in the snow'));
+				mark('weather_snow', hit(row, formatMessage(locale, 'cards.badges.detailClimbedInSnow')));
 			} else if (isRainWeather(weather)) {
 				mark(
 					'weather_rain',
-					hit(row, `Rainy day · ${formatPrecipitation(weather.precipMm, units.precipitation)}`)
+					hit(
+						row,
+						formatMessage(locale, 'cards.badges.detailRainyDay', {
+							precip: formatPrecipitation(weather.precipMm, units.precipitation)
+						})
+					)
 				);
 			}
 			if (isWindyWeather(weather)) {
 				mark(
 					'weather_wind',
-					hit(row, `Windy day · ${formatWind(weather.windMaxKmh, units.wind)} max`)
+					hit(
+						row,
+						formatMessage(locale, 'cards.badges.detailWindyDay', {
+							wind: formatWind(weather.windMaxKmh, units.wind)
+						})
+					)
 				);
 			}
 			if (isFairWeather(weather)) {
 				mark(
 					'weather_bluebird',
-					hit(row, `Bluebird day · ${formatTemperature(weather.tempMaxC, units.temperature)} high`)
+					hit(
+						row,
+						formatMessage(locale, 'cards.badges.detailBluebirdDay', {
+							temp: formatTemperature(weather.tempMaxC, units.temperature)
+						})
+					)
 				);
 			}
 			if (isStickyHumidity(weather)) {
 				mark(
 					'weather_sticky',
-					hit(row, `Sticky day · ${Math.round(weather.humidityMean!)}% humidity`)
+					hit(
+						row,
+						formatMessage(locale, 'cards.badges.detailStickyDay', {
+							percent: Math.round(weather.humidityMean!)
+						})
+					)
 				);
 			}
 			if (send && isStormPrecip(weather)) {
 				mark(
 					'weather_storm_send',
-					hit(row, `Storm send · ${formatPrecipitation(weather.precipMm, units.precipitation)}`)
+					hit(
+						row,
+						formatMessage(locale, 'cards.badges.detailStormSend', {
+							precip: formatPrecipitation(weather.precipMm, units.precipitation)
+						})
+					)
 				);
 			}
 			if (
@@ -1206,14 +1180,25 @@ export function buildBadges(
 				earned.has('weather_snow') &&
 				!earned.has('weather_four_seasons')
 			) {
-				mark('weather_four_seasons', hit(row, 'Heat, freeze, rain, and snow'));
+				mark(
+					'weather_four_seasons',
+					hit(row, formatMessage(locale, 'cards.badges.detailFourSeasons'))
+				);
 			}
 		}
 
 		// Partner / multipitch / travel / persistence badges (#279), from existing row fields.
 		const partnerNames = new Set(splitPartners(row.partners).map((n) => n.toLowerCase()));
 		if (partnerNames.size >= 3) {
-			mark('partners_crowded_belay', hit(row, `Crowded belay · ${partnerNames.size} partners`));
+			mark(
+				'partners_crowded_belay',
+				hit(
+					row,
+					formatMessage(locale, 'cards.badges.detailCrowdedBelay', {
+						count: partnerNames.size
+					})
+				)
+			);
 		}
 
 		if (send || row.sentPitchNumbers != null) {
@@ -1230,7 +1215,11 @@ export function buildBadges(
 					(n, p) => n + Math.max(p.whole, p.labels.size),
 					0
 				);
-				if (total >= 3) mark('multipitch_day', hit(row, `Multipitch day · ${total} pitches`));
+				if (total >= 3)
+					mark(
+						'multipitch_day',
+						hit(row, formatMessage(locale, 'cards.badges.detailMultipitchDay', { count: total }))
+					);
 			}
 		}
 
@@ -1242,7 +1231,13 @@ export function buildBadges(
 				while (cragEvents.length && cragEvents[0]!.t < t - 6) cragEvents.shift();
 				const distinct = new Set(cragEvents.map((e) => e.crag));
 				if (distinct.size >= 4) {
-					mark('travel_week', hit(row, `Travel week · ${distinct.size} crags in 7 days`));
+					mark(
+						'travel_week',
+						hit(
+							row,
+							formatMessage(locale, 'cards.badges.detailTravelWeek', { count: distinct.size })
+						)
+					);
 				}
 			}
 		}
@@ -1255,7 +1250,10 @@ export function buildBadges(
 			if (send && !routeSent.has(row.routeId)) {
 				routeSent.add(row.routeId);
 				if (days.size >= 4) {
-					mark('route_persistence', hit(row, `Sent after ${days.size} days on it`));
+					mark(
+						'route_persistence',
+						hit(row, formatMessage(locale, 'cards.badges.detailPersistence', { count: days.size }))
+					);
 				}
 			}
 		}
@@ -1265,7 +1263,14 @@ export function buildBadges(
 			if (!firstDay) {
 				routeFirstDay.set(row.routeKey, day);
 				for (const b of DISTINCT_ROUTE_BADGES) {
-					if (routeFirstDay.size === b.n) mark(b.id, hit(row, `Different route #${b.n}`));
+					if (routeFirstDay.size === b.n)
+						mark(
+							b.id,
+							hit(
+								row,
+								formatMessage(locale, 'cards.badges.detailDifferentRouteNumber', { count: b.n })
+							)
+						);
 				}
 			}
 			const days = keyedRouteDays.get(row.routeKey) ?? new Set<string>();
@@ -1273,7 +1278,15 @@ export function buildBadges(
 			keyedRouteDays.set(row.routeKey, days);
 			maxRouteDays = Math.max(maxRouteDays, days.size);
 			if (days.size === ROUTE_DAYS_TARGET) {
-				mark('route_days_10', hit(row, `Day ${ROUTE_DAYS_TARGET} on the same route`));
+				mark(
+					'route_days_10',
+					hit(
+						row,
+						formatMessage(locale, 'cards.badges.detailDayOnSameRoute', {
+							count: ROUTE_DAYS_TARGET
+						})
+					)
+				);
 			}
 			// A repeat is any ascent on a later day than the route's first logged day.
 			if (firstDay && day > firstDay && crag && crag !== 'unknown') {
@@ -1283,29 +1296,70 @@ export function buildBadges(
 				if (n === HOME_TURF_TARGET) {
 					mark(
 						'home_turf_25',
-						hit(row, `${HOME_TURF_TARGET} repeat ascents at ${row.cragName!.trim()}`)
+						hit(
+							row,
+							formatMessage(locale, 'cards.badges.detailHomeTurf', {
+								count: HOME_TURF_TARGET,
+								crag: row.cragName!.trim()
+							})
+						)
 					);
 				}
 			}
 		}
 
 		for (const b of COUNT_BADGES) {
-			if (ascentCount === b.n) mark(b.id, hit(row, b.label(b.n)));
+			if (ascentCount === b.n)
+				mark(
+					b.id,
+					hit(row, formatMessage(locale, 'cards.badges.detailLoggedClimbNumber', { count: b.n }))
+				);
 		}
 		for (const b of SESSION_BADGES) {
-			if (sessions.size === b.n) mark(b.id, hit(row, `Day out #${b.n}`));
+			if (sessions.size === b.n)
+				mark(
+					b.id,
+					hit(row, formatMessage(locale, 'cards.badges.detailDayOutNumber', { count: b.n }))
+				);
 		}
 		for (const b of HEIGHT_BADGES) {
 			if (cumHeight >= b.m && !earned.has(b.id)) {
-				mark(b.id, hit(row, `${formatDistance(b.m / 1000, units.distance)} climbed`));
+				mark(
+					b.id,
+					hit(
+						row,
+						formatMessage(locale, 'cards.badges.detailDistanceClimbed', {
+							distance: formatDistance(b.m / 1000, units.distance)
+						})
+					)
+				);
 			}
 		}
 		if (dayHeight >= 250 && !earned.has('day_height_250')) {
-			mark('day_height_250', hit(row, `${formatHeight(250, units.height)} in one day`));
+			mark(
+				'day_height_250',
+				hit(
+					row,
+					formatMessage(locale, 'cards.badges.detailHeightInOneDay', {
+						height: formatHeight(250, units.height)
+					})
+				)
+			);
 		}
 		for (const b of COUNTRY_BADGES) {
 			if (countries.size === b.n && country) {
-				mark(b.id, hit(row, b.n === 1 ? `Climbed in ${country}` : `${b.n} countries · ${country}`));
+				mark(
+					b.id,
+					hit(
+						row,
+						b.n === 1
+							? formatMessage(locale, 'cards.badges.detailClimbedInCountry', { country })
+							: formatMessage(locale, 'cards.badges.detailCountriesCount', {
+									count: b.n,
+									country
+								})
+					)
+				);
 			}
 		}
 
@@ -1316,61 +1370,98 @@ export function buildBadges(
 			const how =
 				kind === 'onsight' || kind === 'flash' || kind === 'redpoint' || kind === 'pinkpoint'
 					? kind === 'onsight'
-						? 'Onsight'
+						? formatMessage(locale, 'ticks.onsight')
 						: kind === 'flash'
-							? 'Flash'
+							? formatMessage(locale, 'ticks.flash')
 							: kind === 'redpoint'
-								? 'Red point'
-								: 'Pink point'
+								? formatMessage(locale, 'ticks.redpoint')
+								: formatMessage(locale, 'ticks.pinkpoint')
 					: null;
-			mark('first_send', hit(row, how ? `First send (${how})` : 'First send'));
+			mark(
+				'first_send',
+				hit(
+					row,
+					how
+						? formatMessage(locale, 'cards.badges.detailFirstSendHow', { how })
+						: formatMessage(locale, 'cards.badges.detailFirstSend')
+				)
+			);
 		}
 		for (const b of SEND_BADGES) {
-			if (sendCount === b.n) mark(b.id, hit(row, `Send #${b.n}`));
+			if (sendCount === b.n)
+				mark(
+					b.id,
+					hit(row, formatMessage(locale, 'cards.badges.detailSendNumber', { count: b.n }))
+				);
 		}
 
 		if (kind === 'onsight') {
 			onsightCount += 1;
-			if (onsightCount === 1) mark('first_onsight', hit(row, 'First onsight'));
+			if (onsightCount === 1)
+				mark('first_onsight', hit(row, formatMessage(locale, 'cards.badges.detailFirstOnsight')));
 			for (const b of ONSIGHT_BADGES) {
-				if (onsightCount === b.n) mark(b.id, hit(row, `Onsighted your ${b.n}th route`));
+				if (onsightCount === b.n)
+					mark(
+						b.id,
+						hit(row, formatMessage(locale, 'cards.badges.detailOnsightedNth', { count: b.n }))
+					);
 			}
 		}
 		if (kind === 'flash') {
 			flashCount += 1;
-			if (flashCount === 1) mark('first_flash', hit(row, 'First flash'));
+			if (flashCount === 1)
+				mark('first_flash', hit(row, formatMessage(locale, 'cards.badges.detailFirstFlash')));
 			for (const b of FLASH_BADGES) {
-				if (flashCount === b.n) mark(b.id, hit(row, `Flashed your ${b.n}th route`));
+				if (flashCount === b.n)
+					mark(
+						b.id,
+						hit(row, formatMessage(locale, 'cards.badges.detailFlashedNth', { count: b.n }))
+					);
 			}
 		}
 
 		if (isWeekend(day)) {
 			weekendSendCount += 1;
-			if (weekendSendCount === 5) mark('weekend_5', hit(row, 'Your 5th weekend send'));
-			if (weekendSendCount === 15) mark('weekend_15', hit(row, 'Your 15th weekend send'));
+			if (weekendSendCount === 5)
+				mark('weekend_5', hit(row, formatMessage(locale, 'cards.badges.detailWeekend5')));
+			if (weekendSendCount === 15)
+				mark('weekend_15', hit(row, formatMessage(locale, 'cards.badges.detailWeekend15')));
 		}
 
 		const style = (row.gearStyle || '').toLowerCase();
 		if (style.includes('sport') && !earned.has('style_sport')) {
-			mark('style_sport', hit(row, 'First sport send'));
+			mark('style_sport', hit(row, formatMessage(locale, 'cards.badges.detailFirstSportSend')));
 		}
 		if (style.includes('trad') && !earned.has('style_trad')) {
-			mark('style_trad', hit(row, 'First trad send'));
+			mark('style_trad', hit(row, formatMessage(locale, 'cards.badges.detailFirstTradSend')));
 		}
 		if (style.includes('boulder') && !earned.has('style_boulder')) {
-			mark('style_boulder', hit(row, 'First boulder send'));
+			mark('style_boulder', hit(row, formatMessage(locale, 'cards.badges.detailFirstBoulderSend')));
 		}
 
 		const band = row.gradeBand;
-		if (band === 2) mark('band_intermediate', hit(row, 'First Intermediate-band send'));
-		if (band === 3) mark('band_experienced', hit(row, 'First Experienced-band send'));
-		if (band === 4) mark('band_expert', hit(row, 'First Expert-band send'));
-		if (band === 5) mark('band_elite', hit(row, 'First Elite-band send'));
+		if (band === 2)
+			mark(
+				'band_intermediate',
+				hit(row, formatMessage(locale, 'cards.badges.detailFirstBandIntermediate'))
+			);
+		if (band === 3)
+			mark(
+				'band_experienced',
+				hit(row, formatMessage(locale, 'cards.badges.detailFirstBandExperienced'))
+			);
+		if (band === 4)
+			mark('band_expert', hit(row, formatMessage(locale, 'cards.badges.detailFirstBandExpert')));
+		if (band === 5)
+			mark('band_elite', hit(row, formatMessage(locale, 'cards.badges.detailFirstBandElite')));
 
 		// First send of a route the owner marked FA/FFA dates that first ascent (#194).
 		if (row.firstAscent && row.routeId != null && !faRoutes.has(row.routeId)) {
 			faRoutes.add(row.routeId);
-			const what = row.firstAscent === 'FFA' ? 'First free ascent' : 'First ascent';
+			const what =
+				row.firstAscent === 'FFA'
+					? formatMessage(locale, 'cards.badges.detailFirstFreeAscent')
+					: formatMessage(locale, 'cards.badges.detailFirstAscent');
 			mark(row.firstAscent === 'FFA' ? 'first_ffa' : 'first_fa', hit(row, what));
 			for (const b of FA_COUNT_BADGES) {
 				if (faRoutes.size === b.n) mark(b.id, hit(row, `${what} #${b.n}`));
@@ -1378,16 +1469,26 @@ export function buildBadges(
 			if (row.firstAscent === 'FFA') {
 				ffaCount += 1;
 				for (const b of FFA_COUNT_BADGES) {
-					if (ffaCount === b.n) mark(b.id, hit(row, `First free ascent #${b.n}`));
+					if (ffaCount === b.n)
+						mark(
+							b.id,
+							hit(row, `${formatMessage(locale, 'cards.badges.detailFirstFreeAscent')} #${b.n}`)
+						);
 				}
 			}
 			const faStyle = displayStyle(row.gearStyle);
 			if (faStyle === 'Sport' || faStyle === 'Trad' || faStyle === 'Boulder') {
 				styleFaCounts[faStyle] += 1;
 				const n = styleFaCounts[faStyle];
+				const styleFaKey =
+					faStyle === 'Sport'
+						? 'cards.milestones.faSportCount'
+						: faStyle === 'Trad'
+							? 'cards.milestones.faTradCount'
+							: 'cards.milestones.faBoulderCount';
 				for (const b of STYLE_FA_BADGES) {
 					if (b.style === faStyle && n === b.n) {
-						mark(b.id, hit(row, `${b.n} ${faStyle.toLowerCase()} first ascents · ${what}`));
+						mark(b.id, hit(row, `${formatMessage(locale, styleFaKey, { count: b.n })} · ${what}`));
 					}
 				}
 			}
@@ -1405,7 +1506,10 @@ export function buildBadges(
 						true,
 						context.gradeSystems ?? DEFAULT_DISPLAY_SYSTEMS
 					);
-					mark('new_high', hit(row, `New boulder high · ${label}`));
+					mark(
+						'new_high',
+						hit(row, formatMessage(locale, 'cards.badges.detailNewBoulderHigh', { grade: label }))
+					);
 					// Allow new_high to update to latest? Catalog is single badge — keep first high only via mark()
 				}
 			} else if (n > maxRoute) {
@@ -1415,7 +1519,13 @@ export function buildBadges(
 						'new_high',
 						hit(
 							row,
-							`New route high · ${formatGradeLabel(score, false, context.gradeSystems ?? DEFAULT_DISPLAY_SYSTEMS)}`
+							formatMessage(locale, 'cards.badges.detailNewRouteHigh', {
+								grade: formatGradeLabel(
+									score,
+									false,
+									context.gradeSystems ?? DEFAULT_DISPLAY_SYSTEMS
+								)
+							})
 						)
 					);
 				}
@@ -1463,17 +1573,21 @@ export function buildBadges(
 			date: at,
 			routeName: null,
 			href: null,
-			detail: `Imported ${formatNumber(first.count, display)} climbs · ${when}`
+			detail: formatMessage(locale, 'cards.badges.detailFirstMoves', {
+				count: formatNumber(first.count, display),
+				when
+			})
 		});
 	}
 
 	const cards: BadgeCard[] = BADGE_CATALOG.map((def) => {
 		const earnedHit = earned.get(def.id);
-		const hint = def.hintForUnits?.(units) ?? def.hint;
+		const title = badgeTitle(def, locale);
+		const hint = badgeHint(def, units, locale);
 		if (!earnedHit) {
 			return {
 				id: def.id,
-				title: def.title,
+				title,
 				hint,
 				icon: def.icon,
 				tone: def.tone,
@@ -1486,7 +1600,7 @@ export function buildBadges(
 		}
 		return {
 			id: def.id,
-			title: def.title,
+			title,
 			hint,
 			icon: def.icon,
 			tone: def.tone,
@@ -1500,7 +1614,10 @@ export function buildBadges(
 
 	const earnedCards = cards.filter((c) => c.earned);
 	const lockedCards = cards.filter((c) => !c.earned);
-	const titleOf = (id: string) => BADGE_CATALOG.find((d) => d.id === id)?.title ?? id;
+	const titleOf = (id: string) => {
+		const def = BADGE_CATALOG.find((d) => d.id === id);
+		return def ? badgeTitle(def, locale) : id;
+	};
 
 	const maxDayHeight = Math.max(0, ...dayHeights.values());
 	const almostCandidates: { id: string; title: string; current: number; target: number }[] = [];

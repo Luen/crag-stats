@@ -1,6 +1,7 @@
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { timingSafeEqualString, verifySharedSecret } from './cryptoCompare';
 import { safeRedirectPath } from './safeRedirect';
+import { canTriggerSync } from './auth';
 import {
 	_resetLoginRateLimitForTests,
 	checkLoginAllowed,
@@ -51,6 +52,42 @@ describe('verifySharedSecret', () => {
 		expect(verifySharedSecret('abc', 'xyz')).toBe(false);
 		expect(verifySharedSecret(null, 'abc')).toBe(false);
 		expect(verifySharedSecret('abc', '')).toBe(false);
+	});
+});
+
+describe('canTriggerSync', () => {
+	const original = { secret: process.env.SESSION_SECRET, password: process.env.APP_PASSWORD };
+
+	beforeEach(() => {
+		process.env.SESSION_SECRET = 'worker-secret-for-tests';
+		delete process.env.APP_PASSWORD;
+	});
+
+	afterEach(() => {
+		process.env.SESSION_SECRET = original.secret ?? '';
+		process.env.APP_PASSWORD = original.password ?? '';
+	});
+
+	it('accepts the worker secret', () => {
+		expect(canTriggerSync('worker-secret-for-tests', false)).toBe(true);
+	});
+
+	it('rejects anonymous callers on an install with no password', () => {
+		// With APP_PASSWORD unset every visitor is `authed`, which must not start a sync (#505).
+		expect(canTriggerSync(null, true)).toBe(false);
+		expect(canTriggerSync('wrong-secret', true)).toBe(false);
+	});
+
+	it('accepts an owner session only when a password is configured', () => {
+		process.env.APP_PASSWORD = 'owner-password';
+		expect(canTriggerSync(null, true)).toBe(true);
+		expect(canTriggerSync(null, false)).toBe(false);
+		expect(canTriggerSync('wrong-secret', false)).toBe(false);
+	});
+
+	it('fails closed when no secret is configured', () => {
+		process.env.SESSION_SECRET = '';
+		expect(canTriggerSync('anything', false)).toBe(false);
 	});
 });
 

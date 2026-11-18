@@ -1,8 +1,11 @@
 <script lang="ts">
-	import { MONTH_LABELS } from '#lib/bestMonths';
+	import { monthLabels, useI18n } from '#lib/i18n';
 	import type { BestMonthsView } from '#lib/types/dashboard';
 
 	let { data }: { data: BestMonthsView } = $props();
+	const i18n = useI18n();
+	const t = i18n.t;
+	const MONTHS = $derived(monthLabels(t));
 
 	function maxOf(values: number[]): number {
 		return Math.max(1, ...values);
@@ -11,13 +14,11 @@
 
 <article class="panel">
 	<header>
-		<h2>Best months</h2>
-		<a class="how" href="/seasonality">Search seasonality</a>
-		<a class="how" href="/docs/best-months">How it works</a>
+		<h2>{i18n.t('cards.bestMonths.titleBestMonths')}</h2>
+		<a class="how" href="/seasonality">{t('cards.bestMonths.linkSearchSeasonality')}</a>
+		<a class="how" href="/docs/best-months">{i18n.t('common.howItWorks')}</a>
 	</header>
-	<p class="lead">
-		theCrag seasonality for your favourite crags (orange) vs when you climb there (grey).
-	</p>
+	<p class="lead">{i18n.t('cards.bestMonths.lead')}</p>
 
 	<ul class="crags">
 		{#each data.crags as c (c.crag)}
@@ -30,13 +31,22 @@
 					{:else}
 						<span class="name">{c.crag}</span>
 					{/if}
-					<span class="meta">{c.ascentCount} ascents · peak {MONTH_LABELS[c.peakMonth]}</span>
+					<span class="meta"
+						>{t('cards.bestMonths.cragMeta', {
+							count: c.ascentCount,
+							month: MONTHS[c.peakMonth] ?? ''
+						})}</span
+					>
 				</div>
 				<div class="strip" aria-hidden="true">
-					{#each MONTH_LABELS as label, i (label)}
+					{#each MONTHS as label, i (label)}
 						<div
 							class="col"
-							title="{label}: season {c.seasonality[i].toFixed(1)}, you {c.yourMonths[i]}"
+							title={t('cards.bestMonths.monthTitle', {
+								month: label,
+								season: c.seasonality[i].toFixed(1),
+								yours: c.yourMonths[i]
+							})}
 						>
 							<div class="bars">
 								<span class="bar season" style:height="{(c.seasonality[i] / maxSeason) * 100}%"
@@ -48,16 +58,18 @@
 					{/each}
 				</div>
 				<details class="values">
-					<summary>View monthly values for {c.crag}</summary>
+					<summary>{t('cards.bestMonths.summaryViewMonthlyValues', { crag: c.crag })}</summary>
 					<table>
-						<caption>{c.crag}: seasonality and your ascents</caption><thead
+						<caption
+							>{t('cards.bestMonths.captionSeasonalityAndYourAscents', { crag: c.crag })}</caption
+						><thead
 							><tr
-								><th scope="col">Month</th><th scope="col">Seasonality</th><th scope="col"
-									>Your ascents</th
-								></tr
+								><th scope="col">{t('cards.bestMonths.thMonth')}</th><th scope="col"
+									>{t('cards.bestMonths.thSeasonality')}</th
+								><th scope="col">{t('cards.bestMonths.thYourAscents')}</th></tr
 							></thead
 						><tbody>
-							{#each MONTH_LABELS as label, i (label)}<tr
+							{#each MONTHS as label, i (label)}<tr
 									><th scope="row">{label}</th><td>{c.seasonality[i].toFixed(1)}</td><td
 										>{c.yourMonths[i]}</td
 									></tr
@@ -70,8 +82,8 @@
 	</ul>
 
 	<div class="legend">
-		<span><i class="sw season"></i> theCrag seasonality</span>
-		<span><i class="sw yours"></i> Your ascents</span>
+		<span><i class="sw season"></i> {t('cards.bestMonths.legendTheCragSeasonality')}</span>
+		<span><i class="sw yours"></i> {t('cards.bestMonths.legendYourAscents')}</span>
 	</div>
 </article>
 

@@ -1,36 +1,35 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
 	import WeatherConditions from '#lib/components/WeatherConditions.svelte';
 	import WeatherPerformance from '#lib/components/WeatherPerformance.svelte';
+	import RichText from '#lib/components/RichText.svelte';
 	import { formatNumber } from '#lib/dates';
 	import type { PageProps } from './$types';
 	let { data }: PageProps = $props();
+	const i18n = useI18n();
 	const fmt = (n: number) => formatNumber(n, data.dateDisplay);
 </script>
 
 <svelte:head>
-	<title>Weather · Crag Stats</title>
-	<meta
-		name="description"
-		content="Historical weather on your outdoor climbing days and patterns in your logged sends and attempts."
-	/>
+	<title>{i18n.t('pages.weather.pageTitle')}</title>
+	<meta name="description" content={i18n.t('pages.weather.pageDescription')} />
 </svelte:head>
 
 <section class="panel head">
-	<h1>Weather</h1>
+	<h1>{i18n.t('pages.weather.titleWeather')}</h1>
 	<p>
-		Historical weather on the days you climbed outdoors. These are modelled daily conditions at
-		cached locations, not measurements at the wall or a forecast.
-		<a class="how" href="/docs/weather">How it works</a>
+		{i18n.t('pages.weather.lead')}
+		<a class="how" href="/docs/weather">{i18n.t('common.howItWorks')}</a>
 	</p>
-	<nav aria-label="Weather sections">
-		<a href="#conditions">Conditions</a><a href="#performance">Performance</a><a href="#coverage"
-			>Coverage &amp; location quality</a
-		>
+	<nav aria-label={i18n.t('pages.weather.ariaWeatherSections')}>
+		<a href="#conditions">{i18n.t('pages.weather.linkConditions')}</a><a href="#performance"
+			>{i18n.t('pages.weather.linkPerformance')}</a
+		><a href="#coverage">{i18n.t('pages.weather.titleCoverageAmpLocationQuality')}</a>
 	</nav>
 </section>
 
 {#if data.conditions}
-	<section id="conditions" aria-label="Weather conditions">
+	<section id="conditions" aria-label={i18n.t('pages.weather.ariaWeatherConditions')}>
 		<WeatherConditions
 			data={data.conditions}
 			dateDisplay={data.dateDisplay}
@@ -40,69 +39,70 @@
 	</section>
 {:else}
 	<section id="conditions" class="panel empty">
-		<h2>No weather cached for outdoor climbs yet</h2>
+		<h2>{i18n.t('pages.weather.titleNoWeatherCachedForOutdoor')}</h2>
 		<p>
-			Weather appears after the owner enables weather import and eligible outdoor location-days have
-			been fetched. Indoor climbs are excluded. <a href="/docs/weather">Read about weather import</a
-			>.
+			<RichText
+				message={i18n.t('pages.weather.leadNoWeatherCached')}
+				tokens={{
+					weatherImport: {
+						kind: 'link',
+						text: i18n.t('pages.weather.linkReadAboutWeatherImport'),
+						href: '/docs/weather'
+					}
+				}}
+			/>
 		</p>
 	</section>
 {/if}
 
-<section id="performance" aria-label="Weather and performance">
+<section id="performance" aria-label={i18n.t('pages.weather.ariaWeatherAndPerformance')}>
 	{#if data.performance}
 		<WeatherPerformance data={data.performance} dateDisplay={data.dateDisplay} compact={false} />
 	{:else}
 		<div class="panel empty">
-			<h2>Weather &amp; performance</h2>
-			<p>There are no outdoor sends or attempts with cached weather to compare yet.</p>
+			<h2>{i18n.t('pages.weather.titleWeatherAmpPerformance')}</h2>
+			<p>{i18n.t('pages.weather.leadNoPerformanceData')}</p>
 		</div>
 	{/if}
 </section>
 
 <section id="coverage" class="panel coverage">
-	<h2>Coverage &amp; location quality</h2>
+	<h2>{i18n.t('pages.weather.titleCoverageAmpLocationQuality')}</h2>
 	<p>
-		A location-day is one calendar day at one weather location, rounded to 0.1°. Visiting two
-		locations in a day can count twice. Conditions include all outdoor ticks; performance includes
-		only sends and attempts, so their totals can differ. Logbook links list ascents rather than
-		location-days.
+		{i18n.t('pages.weather.leadCoverage')}
 	</p>
 	<dl>
 		<div>
-			<dt>Outdoor location-days with a resolved location</dt>
+			<dt>{i18n.t('pages.weather.labelResolvedLocationDays')}</dt>
 			<dd>{fmt(data.coverage.resolvedDays)}</dd>
 		</div>
 		<div>
-			<dt>With usable cached weather</dt>
+			<dt>{i18n.t('pages.weather.labelUsableCachedWeather')}</dt>
 			<dd>{fmt(data.coverage.cachedDays)}</dd>
 		</div>
 		<div>
-			<dt>Checked, weather unavailable</dt>
+			<dt>{i18n.t('pages.weather.labelCheckedWeatherUnavailable')}</dt>
 			<dd>{fmt(data.coverage.unavailableDays)}</dd>
 		</div>
 		<div>
-			<dt>Not checked yet (including today or future dates)</dt>
+			<dt>{i18n.t('pages.weather.labelNotCheckedYet')}</dt>
 			<dd>{fmt(data.coverage.uncheckedDays)}</dd>
 		</div>
 		<div>
-			<dt>Outdoor ascents with a valid day but no resolved location</dt>
+			<dt>{i18n.t('pages.weather.labelOutdoorAscentsWithoutLocation')}</dt>
 			<dd>{fmt(data.coverage.unresolvedAscents)}</dd>
 		</div>
 	</dl>
 	<p>
-		Unresolved ascents are excluded from the location-day totals. Unavailable days have already been
-		checked and are not automatically queued again. Viewing this page never starts an import.
+		{i18n.t('pages.weather.hintCoverageTotals')}
 	</p>
 	<p>
-		Weather may use route, crag or sector points, an approximate area polygon, or an owner-selected
-		nearby place. Terrain, elevation and distance can change conditions at the cliff. Nearby-place
-		and polygon weather is included in these views but does not unlock weather badges. The logbook
-		shows each ascent's location source.
+		{i18n.t('pages.weather.hintLocationQuality')}
 	</p>
 	{#if data.authed}<p>
-			<a href="/settings/weather-locations">Review weather locations</a> ·
-			<a href="/settings">Manage weather imports</a>
+			<a href="/settings/weather-locations">{i18n.t('pages.weather.linkReviewWeatherLocations')}</a>
+			·
+			<a href="/settings">{i18n.t('pages.weather.linkManageWeatherImports')}</a>
 		</p>{/if}
 </section>
 
@@ -129,7 +129,8 @@
 		color: var(--ink-muted);
 		max-width: 65rem;
 	}
-	a {
+	a,
+	.empty p :global(a) {
 		color: var(--accent);
 		text-decoration: underline;
 		text-underline-offset: 0.15em;

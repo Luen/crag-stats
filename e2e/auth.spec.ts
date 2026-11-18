@@ -1,8 +1,31 @@
 import { expect, test } from '@playwright/test';
-import { PORTS, TEST_PASSWORD } from '../playwright.config';
+import { PORTS, TEST_PASSWORD, TEST_SESSION_SECRET } from '../playwright.config';
 
 const settingsOrigin = `http://localhost:${PORTS.settings}`;
 const allOrigin = `http://localhost:${PORTS.all}`;
+const openOrigin = `http://localhost:${PORTS.open}`;
+
+test.describe('sync endpoint', () => {
+	test('anonymous callers cannot start a sync, even with no password (#505)', async ({
+		request
+	}) => {
+		// JSON like the Docker worker: a form-shaped, Origin-less POST is already rejected
+		// by SvelteKit's CSRF guard, which would hide whether the handler itself refuses.
+		const json = { headers: { 'content-type': 'application/json' }, data: '{}' };
+		expect((await request.post(`${openOrigin}/api/sync`, json)).status()).toBe(401);
+		expect((await request.post(`${openOrigin}/api/sync?full=1`, json)).status()).toBe(401);
+	});
+
+	test('the worker secret still reaches the sync', async ({ request }) => {
+		// No API key is configured, so authorising is all this can prove; it fails before any request.
+		const res = await request.post(`${openOrigin}/api/sync`, {
+			headers: { 'x-worker-secret': TEST_SESSION_SECRET, 'content-type': 'application/json' },
+			data: '{}'
+		});
+		expect(res.status()).toBe(400);
+		expect((await res.json()).error).toMatch(/THECRAG_API_KEY/);
+	});
+});
 
 test.describe('AUTH_SCOPE=settings', () => {
 	test('settings redirects to login; dashboard is public but not customisable', async ({

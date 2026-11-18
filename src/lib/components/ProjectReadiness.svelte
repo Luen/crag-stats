@@ -1,16 +1,39 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
+
 	let { pct, horizon }: { pct: number | null; horizon: string } = $props();
+	const i18n = useI18n();
+
+	const HORIZON_KEYS: Record<string, string> = {
+		Sent: 'cards.projectReadiness.horizonSent',
+		'Unknown grade': 'cards.projectReadiness.horizonUnknownGrade',
+		'Short-term': 'cards.projectReadiness.horizonShortTerm',
+		Medium: 'cards.projectReadiness.horizonMedium',
+		'Long-haul': 'cards.projectReadiness.horizonLongHaul'
+	};
+
+	const horizonLabel = $derived(HORIZON_KEYS[horizon] ? i18n.t(HORIZON_KEYS[horizon]) : horizon);
 </script>
 
 <div class="readiness">
 	<div class="label">
-		<span>{pct === 100 ? 'Sent' : 'Approximate readiness'}</span>
-		<strong>{pct == null ? 'Not enough grade data' : `${pct}%`}</strong>
+		<span
+			>{pct === 100
+				? i18n.t('cards.projectReadiness.sent')
+				: i18n.t('cards.projectReadiness.approximate')}</span
+		>
+		<strong>{pct == null ? i18n.t('cards.projectReadiness.noGradeData') : `${pct}%`}</strong>
 	</div>
 	{#if pct != null}
-		<progress max="100" value={pct} aria-label="Approximate project readiness">{pct}%</progress>
+		<progress
+			max="100"
+			value={pct}
+			aria-label={i18n.t('cards.projectReadiness.ariaApproximateProjectReadiness')}>{pct}%</progress
+		>
 	{/if}
-	{#if pct !== 100}<span class="horizon">{horizon} · an estimate, not a send probability</span>{/if}
+	{#if pct !== 100}<span class="horizon"
+			>{horizonLabel} · {i18n.t('cards.projectReadiness.estimateNote')}</span
+		>{/if}
 </div>
 
 <style>

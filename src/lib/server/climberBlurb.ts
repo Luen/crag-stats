@@ -2,8 +2,8 @@
  * Climbing story copy (#186). Core tenure/volume/identity paragraphs, then up to a few
  * optional personality lines when the signal is strong — never a second dashboard dump.
  */
-import { MONTH_LABELS } from '#lib/bestMonths';
 import { DEFAULT_DATE_DISPLAY, formatNumber, type DateDisplay } from '#lib/dates';
+import { DEFAULT_LOCALE, formatMessage, monthLabels, type SupportedLocale } from '#lib/i18n';
 import { formatDistance, formatTemperature, type DisplayUnits } from '#lib/units';
 import type { WeatherConditionsView } from '#lib/weatherStats';
 import type { StoryRouteLink } from '#lib/types/climbingStory';
@@ -28,7 +28,6 @@ const PUT_UP_CLASSIC_MIN_OTHERS = 50;
 /** Flourish on the single most-climbed put-up (aligned with community_100). */
 const PUT_UP_MEGA_ROUTE_OTHERS = 100;
 const PUT_UP_CHARACTER_MIN_WITH_DATA = 2;
-const POPULAR_PUT_UP_PREFIX = "The most popular route I've put up is ";
 const MAX_OPTIONAL = 3;
 /** Weather lines need enough cached outdoor days, and most of them covered (#275). */
 export const WEATHER_STORY_MIN_DAYS = 20;
@@ -76,6 +75,7 @@ export type ClimberBlurbInput = {
 	/** Outdoor weather summary (#272); null/absent until the weather cache has enough days. */
 	weather?: WeatherConditionsView | null;
 	dateDisplay?: DateDisplay;
+	locale?: SupportedLocale;
 };
 
 export type ClimberBlurb = {
@@ -86,28 +86,51 @@ export type ClimberBlurb = {
 };
 
 /** First-go vs worked-route preference from tick mix. */
-export function describeSendPreference(input: {
-	onsightCount: number;
-	flashCount: number;
-	redpointCount: number;
-	pinkpointCount: number;
-	totalSends: number;
-}): string {
+export function describeSendPreference(
+	input: {
+		onsightCount: number;
+		flashCount: number;
+		redpointCount: number;
+		pinkpointCount: number;
+		totalSends: number;
+	},
+	locale: SupportedLocale = DEFAULT_LOCALE
+): string {
 	const firstGo = input.onsightCount + input.flashCount;
 	const worked = input.redpointCount + input.pinkpointCount;
 	const classified = firstGo + worked;
-	if (classified === 0) return 'I mix onsighting with redpointing and working routes';
+	if (classified === 0) return formatMessage(locale, 'cards.climberBlurb.prefMixed');
 	const firstGoShare = firstGo / classified;
 	const workedShare = worked / classified;
-	if (firstGoShare >= MAJORITY) return 'I like to onsight (and flash) when I can';
-	if (workedShare >= MAJORITY) return 'I tend to work routes and redpoint them';
-	return 'I mix onsighting with redpointing and working routes';
+	if (firstGoShare >= MAJORITY) return formatMessage(locale, 'cards.climberBlurb.prefOnsight');
+	if (workedShare >= MAJORITY) return formatMessage(locale, 'cards.climberBlurb.prefRedpoint');
+	return formatMessage(locale, 'cards.climberBlurb.prefMixed');
 }
 
-export function climberTypeSentence(climberType: string, preference: string): string {
-	const type = (climberType || 'Rock climber').trim() || 'Rock climber';
-	const labeled = /climber$/i.test(type) ? type : `${type} climber`;
-	return `I'm a ${labeled} — ${preference}.`;
+const CLIMBER_TYPE_KEYS: Record<string, string> = {
+	'sport climber': 'cards.climberTypeBar.typeSport',
+	'trad climber': 'cards.climberTypeBar.typeTrad',
+	'boulder climber': 'cards.climberBlurb.typeBoulderClimber',
+	'rock climber': 'cards.climberTypeBar.typeRock'
+};
+
+export function climberTypeSentence(
+	climberType: string,
+	preference: string,
+	locale: SupportedLocale = DEFAULT_LOCALE
+): string {
+	const fallbackRock = formatMessage(locale, 'cards.climberTypeBar.typeRock');
+	const type = (climberType || fallbackRock).trim() || fallbackRock;
+	const typeKey = CLIMBER_TYPE_KEYS[type.toLowerCase()];
+	const labeled = typeKey
+		? formatMessage(locale, typeKey)
+		: /climber$/i.test(type)
+			? type
+			: formatMessage(locale, 'cards.climberBlurb.typeFallback', { type });
+	return formatMessage(locale, 'cards.climberBlurb.identitySentence', {
+		type: labeled,
+		preference
+	});
 }
 
 export function classifyPutUpStyle(
@@ -170,27 +193,41 @@ function mostPopularPutUp(routes: readonly DeveloperImpactRoute[]): DeveloperImp
 
 export function describeMostPopularPutUp(
 	routes: readonly DeveloperImpactRoute[],
-	format: (n: number) => string = String
+	format: (n: number) => string = String,
+	locale: SupportedLocale = DEFAULT_LOCALE
 ): string | null {
 	const best = mostPopularPutUp(routes);
 	if (!best) return null;
-	const lead = `${POPULAR_PUT_UP_PREFIX}${best.routeName!.trim()}`;
+	const name = best.routeName!.trim();
 	const others = Math.max(0, Math.floor(best.othersAscents!));
 	if (others >= PUT_UP_MEGA_ROUTE_OTHERS) {
-		return `${lead}, and it's a mega classic with over ${format(others)} ascents!`;
+		return formatMessage(locale, 'cards.climberBlurb.popularPutUpMega', {
+			name,
+			count: format(others)
+		});
 	}
-	return `${lead}.`;
+	return formatMessage(locale, 'cards.climberBlurb.popularPutUp', { name });
 }
 
 function popularRouteLink(
 	paragraphs: readonly string[],
-	routes: readonly DeveloperImpactRoute[]
+	routes: readonly DeveloperImpactRoute[],
+	format: (n: number) => string = String,
+	locale: SupportedLocale = DEFAULT_LOCALE
 ): StoryRouteLink | null {
 	const best = mostPopularPutUp(routes);
 	if (!best) return null;
 	const name = best.routeName!.trim();
-	const phrase = `${POPULAR_PUT_UP_PREFIX}${name}`;
-	const paragraph = paragraphs.findIndex((text) => text.includes(phrase));
+	const others = Math.max(0, Math.floor(best.othersAscents!));
+	const key =
+		others >= PUT_UP_MEGA_ROUTE_OTHERS
+			? 'cards.climberBlurb.popularPutUpMega'
+			: 'cards.climberBlurb.popularPutUp';
+	const partial = formatMessage(locale, key, { count: format(others) });
+	const nameOffset = partial.indexOf('{name}');
+	if (nameOffset < 0) return null;
+	const sentence = partial.replace('{name}', name);
+	const paragraph = paragraphs.findIndex((text) => text.includes(sentence));
 	if (paragraph < 0) return null;
 	let href: string | null = null;
 	try {
@@ -207,7 +244,7 @@ function popularRouteLink(
 	}
 	if (!href && /^\d+$/.test(best.routeExternalId)) href = theCragRouteUrl(best.routeExternalId);
 	if (!href) return null;
-	const start = paragraphs[paragraph].indexOf(phrase) + POPULAR_PUT_UP_PREFIX.length;
+	const start = paragraphs[paragraph].indexOf(sentence) + nameOffset;
 	return { paragraph, start, end: start + name.length, href };
 }
 
@@ -215,8 +252,10 @@ export function describeDeveloperPreference(input: {
 	routes: readonly DeveloperImpactRoute[];
 	firstAscentCount?: number;
 	format?: (n: number) => string;
+	locale?: SupportedLocale;
 }): string | null {
 	const fmt = input.format ?? ((n: number) => String(n));
+	const locale = input.locale ?? DEFAULT_LOCALE;
 	const byStyle = new Map<PutUpStyle, { routes: number; others: number }>();
 	for (const style of PUT_UP_STYLE_PRIORITY) byStyle.set(style, { routes: 0, others: 0 });
 
@@ -243,62 +282,80 @@ export function describeDeveloperPreference(input: {
 	}
 
 	const fa = input.firstAscentCount ?? 0;
-	const faSentence = fa >= 1 ? `I've put up ${fmt(fa)} first ascent${fa === 1 ? '' : 's'}.` : null;
+	const faSentence =
+		fa >= 1
+			? formatMessage(locale, 'cards.climberBlurb.devFirstAscents', {
+					count: fa,
+					formatted: fmt(fa)
+				})
+			: null;
 
 	if (!chosen) return faSentence;
 
 	const others = byStyle.get(chosen)!.others;
 	const lead =
 		chosen === 'Sport'
-			? 'I like to bolt sport routes'
+			? formatMessage(locale, 'cards.climberBlurb.devLeadSport')
 			: chosen === 'Trad'
-				? 'I like to put up trad routes'
-				: 'I like to put up boulders';
+				? formatMessage(locale, 'cards.climberBlurb.devLeadTrad')
+				: formatMessage(locale, 'cards.climberBlurb.devLeadBoulder');
 
 	const character = putUpCharacter(input.routes);
 	let styleSentence: string;
 	if (character === 'obscure') {
-		styleSentence = `${lead} — mostly obscure and adventure lines few others have logged.`;
+		styleSentence = formatMessage(locale, 'cards.climberBlurb.devStyleObscure', { lead });
 	} else if (character === 'classic') {
-		styleSentence = `${lead} — mega classics other people keep climbing.`;
-	} else {
+		styleSentence = formatMessage(locale, 'cards.climberBlurb.devStyleClassic', { lead });
+	} else if (others >= DEVELOPER_IMPACT_MIN) {
 		// Counts are cached route ascents (estimates), not distinct people.
-		let impact = '';
-		if (others >= DEVELOPER_IMPACT_MIN) {
-			impact = ` that other people have climbed over ${fmt(others)} times`;
-		}
-		styleSentence = `${lead}${impact}.`;
+		styleSentence = formatMessage(locale, 'cards.climberBlurb.devStyleImpact', {
+			lead,
+			count: fmt(others)
+		});
+	} else {
+		styleSentence = formatMessage(locale, 'cards.climberBlurb.devStylePlain', { lead });
 	}
 
 	const parts = [styleSentence];
 	if (faSentence) parts.push(faSentence);
-	const popular = describeMostPopularPutUp(input.routes, fmt);
+	const popular = describeMostPopularPutUp(input.routes, fmt, locale);
 	if (popular) parts.push(popular);
 	return parts.join(' ');
 }
 
-export function describeHomeCrag(input: {
-	topCrags: { crag: string; count: number }[];
-	totalAscents: number;
-}): string | null {
+export function describeHomeCrag(
+	input: {
+		topCrags: { crag: string; count: number }[];
+		totalAscents: number;
+	},
+	locale: SupportedLocale = DEFAULT_LOCALE
+): string | null {
 	if (input.totalAscents < 10 || !input.topCrags.length) return null;
 	const top = input.topCrags[0];
 	if (!top?.crag) return null;
 	const share = top.count / input.totalAscents;
-	if (share >= HOME_CRAG_SHARE) return `I often climb at ${top.crag}.`;
+	if (share >= HOME_CRAG_SHARE)
+		return formatMessage(locale, 'cards.climberBlurb.homeCrag', { crag: top.crag });
 	return null;
 }
 
-export function describeWanderer(distinctCrags: number, topShare: number | null): string | null {
+export function describeWanderer(
+	distinctCrags: number,
+	topShare: number | null,
+	locale: SupportedLocale = DEFAULT_LOCALE
+): string | null {
 	if (distinctCrags < 5) return null;
 	if (topShare != null && topShare >= WANDER_MAX_SHARE) return null;
-	return `I hop around — ${distinctCrags} areas and no single home crag.`;
+	return formatMessage(locale, 'cards.climberBlurb.wanderer', { count: distinctCrags });
 }
 
-export function describePartners(partners: { name: string; count: number }[]): string | null {
+export function describePartners(
+	partners: { name: string; count: number }[],
+	locale: SupportedLocale = DEFAULT_LOCALE
+): string | null {
 	const top = partners[0];
 	if (!top?.name || top.count < PARTNER_MIN) return null;
-	return `I climb a lot with ${top.name}.`;
+	return formatMessage(locale, 'cards.climberBlurb.partner', { name: top.name });
 }
 
 function southernHemisphere(locale: string | undefined): boolean {
@@ -325,7 +382,18 @@ export function seasonNameForMonth(monthIndex: number, locale?: string): string 
 	return 'winter';
 }
 
-export function describeSeason(activeDayDates: string[], locale?: string): string | null {
+const SEASON_KEYS: Record<string, string> = {
+	spring: 'cards.climberBlurb.seasonSpring',
+	summer: 'cards.climberBlurb.seasonSummer',
+	autumn: 'cards.climberBlurb.seasonAutumn',
+	winter: 'cards.climberBlurb.seasonWinter'
+};
+
+export function describeSeason(
+	activeDayDates: string[],
+	locale?: string,
+	uiLocale: SupportedLocale = DEFAULT_LOCALE
+): string | null {
 	if (activeDayDates.length < 20) return null;
 	const seasonDays = new Map<string, number>();
 	const monthDays = new Array(12).fill(0);
@@ -343,23 +411,33 @@ export function describeSeason(activeDayDates: string[], locale?: string): strin
 	const ranked = [...seasonDays.entries()].sort((a, b) => b[1] - a[1]);
 	const [season, count] = ranked[0] ?? [];
 	if (!season || count / total < SEASON_SHARE) return null;
+	const months = monthLabels((key) => formatMessage(uiLocale, key));
 	const topMonths = monthDays
 		.map((n, i) => ({ n, i }))
 		.sort((a, b) => b.n - a.n)
 		.slice(0, 2)
 		.filter((m) => m.n > 0)
-		.map((m) => MONTH_LABELS[m.i]);
-	const monthsBit =
-		topMonths.length >= 2 ? ` — ${topMonths[0]} and ${topMonths[1]} are my busy months` : '';
-	return `I'm a ${season} climber${monthsBit}.`;
+		.map((m) => months[m.i]);
+	const seasonLabel = SEASON_KEYS[season] ? formatMessage(uiLocale, SEASON_KEYS[season]) : season;
+	if (topMonths.length >= 2) {
+		return formatMessage(uiLocale, 'cards.climberBlurb.seasonWithMonths', {
+			season: seasonLabel,
+			month1: topMonths[0]!,
+			month2: topMonths[1]!
+		});
+	}
+	return formatMessage(uiLocale, 'cards.climberBlurb.seasonPlain', { season: seasonLabel });
 }
 
-export function describeSolo(soloByKind: { kind: string; count: number }[]): string | null {
+export function describeSolo(
+	soloByKind: { kind: string; count: number }[],
+	locale: SupportedLocale = DEFAULT_LOCALE
+): string | null {
 	const prefer = ['free', 'lead', 'dws'] as const;
-	const labels: Record<(typeof prefer)[number], string> = {
-		free: 'free solos',
-		lead: 'lead solos',
-		dws: 'deep water solos'
+	const keys: Record<(typeof prefer)[number], string> = {
+		free: 'cards.climberBlurb.soloFree',
+		lead: 'cards.climberBlurb.soloLead',
+		dws: 'cards.climberBlurb.soloDws'
 	};
 	let best: { kind: (typeof prefer)[number]; count: number } | null = null;
 	for (const kind of prefer) {
@@ -368,40 +446,46 @@ export function describeSolo(soloByKind: { kind: string; count: number }[]): str
 		if (!best || row.count > best.count) best = { kind, count: row.count };
 	}
 	if (!best) return null;
-	return `I've logged ${best.count} ${labels[best.kind]}.`;
+	return formatMessage(locale, keys[best.kind], { count: best.count });
 }
 
 export function describeProjects(
 	openProjects: number,
-	format?: (n: number) => string
+	format?: (n: number) => string,
+	locale: SupportedLocale = DEFAULT_LOCALE
 ): string | null {
 	if (openProjects < PROJECTS_MIN) return null;
 	const fmt = format ?? String;
-	return `I'm sitting on ${fmt(openProjects)} open projects.`;
+	return formatMessage(locale, 'cards.climberBlurb.openProjects', { count: fmt(openProjects) });
 }
 
 export function describeHardest(
 	routeLabel: string | null | undefined,
-	boulderLabel: string | null | undefined
+	boulderLabel: string | null | undefined,
+	locale: SupportedLocale = DEFAULT_LOCALE
 ): string | null {
 	const route = (routeLabel || '').trim();
 	const boulder = (boulderLabel || '').trim();
-	if (route && boulder) return `Hardest sends sit around ${route} / ${boulder}.`;
-	if (route) return `Hardest sends sit around ${route}.`;
-	if (boulder) return `Hardest boulder sends sit around ${boulder}.`;
+	if (route && boulder)
+		return formatMessage(locale, 'cards.climberBlurb.hardestBoth', { route, boulder });
+	if (route) return formatMessage(locale, 'cards.climberBlurb.hardestRoute', { route });
+	if (boulder) return formatMessage(locale, 'cards.climberBlurb.hardestBoulder', { boulder });
 	return null;
 }
 
-export function describePopularity(pop: {
-	busyPct: number;
-	quietPct: number;
-	withData: number;
-}): string | null {
+export function describePopularity(
+	pop: {
+		busyPct: number;
+		quietPct: number;
+		withData: number;
+	},
+	locale: SupportedLocale = DEFAULT_LOCALE
+): string | null {
 	if (pop.withData < POP_MIN_WITH_DATA) return null;
 	const quietShare = pop.quietPct / 100;
 	const busyShare = pop.busyPct / 100;
-	if (quietShare >= POP_SHARE) return 'I like quiet gems as much as the classics.';
-	if (busyShare >= POP_SHARE) return 'I climb a lot of the busy classics.';
+	if (quietShare >= POP_SHARE) return formatMessage(locale, 'cards.climberBlurb.popularityQuiet');
+	if (busyShare >= POP_SHARE) return formatMessage(locale, 'cards.climberBlurb.popularityBusy');
 	return null;
 }
 
@@ -414,7 +498,8 @@ export function describePopularity(pop: {
 export function describeWeatherPersonality(
 	weather: WeatherConditionsView | null | undefined,
 	format?: (n: number) => string,
-	displayUnits?: DisplayUnits
+	displayUnits?: DisplayUnits,
+	locale: SupportedLocale = DEFAULT_LOCALE
 ): string | null {
 	if (!weather) return null;
 	const { withWeather, outdoorDays } = weather;
@@ -426,50 +511,70 @@ export function describeWeatherPersonality(
 
 	const snow = share('snow');
 	if (snow && snow.days >= WEATHER_SNOW_MIN_DAYS) {
-		return `I've climbed in the snow on ${fmt(snow.days)} days.`;
+		return formatMessage(locale, 'cards.climberBlurb.weatherSnow', { days: fmt(snow.days) });
 	}
 	const freeze = share('freeze');
 	if (freeze && freeze.pct >= WEATHER_COLD_SHARE) {
-		return `I'm happy climbing in the cold: ${pct(freeze.pct)}% of my outdoor days with weather dipped to freezing or below.`;
+		return formatMessage(locale, 'cards.climberBlurb.weatherCold', { percent: pct(freeze.pct) });
 	}
 	const heat = share('heat');
 	if (heat && heat.pct >= WEATHER_HEAT_SHARE) {
 		const label = displayUnits?.temperature === 'fahrenheit' ? '95°F' : '35°C';
-		return `I climb in the heat too: ${pct(heat.pct)}% of my outdoor days with weather reached ${label} or more.`;
+		return formatMessage(locale, 'cards.climberBlurb.weatherHeat', {
+			percent: pct(heat.pct),
+			temp: label
+		});
 	}
 	const rain = share('rain');
 	if (rain && rain.pct >= WEATHER_RAIN_SHARE) {
-		return `A bit of rain doesn't stop me: ${pct(rain.pct)}% of my outdoor days with weather saw rain.`;
+		return formatMessage(locale, 'cards.climberBlurb.weatherRain', { percent: pct(rain.pct) });
 	}
 	const hot = weather.hottest?.tempC;
 	const cold = weather.coldest?.tempC;
 	if (hot != null && cold != null && hot - cold >= WEATHER_RANGE_MIN_C) {
 		const coldLabel = formatTemperature(cold, displayUnits?.temperature ?? 'celsius');
 		const hotLabel = formatTemperature(hot, displayUnits?.temperature ?? 'celsius');
-		return `I've climbed in everything from ${coldLabel} to ${hotLabel}.`;
+		return formatMessage(locale, 'cards.climberBlurb.weatherRange', {
+			cold: coldLabel,
+			hot: hotLabel
+		});
 	}
 	return null;
 }
 
-export function describeTravel(countries: number, format?: (n: number) => string): string | null {
+export function describeTravel(
+	countries: number,
+	format?: (n: number) => string,
+	locale: SupportedLocale = DEFAULT_LOCALE
+): string | null {
 	if (countries < 2) return null;
 	const fmt = format ?? String;
-	return `Climbed in ${fmt(countries)} countries.`;
+	return formatMessage(locale, 'cards.climberBlurb.travelCountries', { count: fmt(countries) });
 }
 
-function formatDurationHuman(isoDate: string, now = new Date()): string {
+function formatDurationHuman(
+	isoDate: string,
+	now = new Date(),
+	locale: SupportedLocale = DEFAULT_LOCALE
+): string {
 	const start = new Date(isoDate.length === 10 ? `${isoDate}T12:00:00` : isoDate);
-	if (Number.isNaN(start.getTime())) return 'some time';
+	if (Number.isNaN(start.getTime()))
+		return formatMessage(locale, 'cards.climberBlurb.durationSomeTime');
 	const months =
 		(now.getFullYear() - start.getFullYear()) * 12 + (now.getMonth() - start.getMonth());
 	const years = Math.floor(Math.max(0, months) / 12);
 	const rem = Math.max(0, months) % 12;
-	if (years <= 0) return rem <= 1 ? `${Math.max(1, rem)} month` : `${rem} months`;
-	if (rem === 0) return years === 1 ? '1 year' : `${years} years`;
-	return `${years} year${years === 1 ? '' : 's'} and ${rem} month${rem === 1 ? '' : 's'}`;
+	if (years <= 0)
+		return formatMessage(locale, 'cards.climberBlurb.durationMonths', { count: Math.max(1, rem) });
+	if (rem === 0) return formatMessage(locale, 'cards.climberBlurb.durationYears', { count: years });
+	return formatMessage(locale, 'cards.climberBlurb.durationYearsAndMonths', {
+		years: formatMessage(locale, 'cards.climberBlurb.durationYears', { count: years }),
+		months: formatMessage(locale, 'cards.climberBlurb.durationMonths', { count: rem })
+	});
 }
 
 export function buildClimberBlurb(input: ClimberBlurbInput): ClimberBlurb {
+	const locale = input.locale ?? DEFAULT_LOCALE;
 	const fmt = (n: number) => (input.dateDisplay ? formatNumber(n, input.dateDisplay) : String(n));
 	const heightM = Math.round(input.heightM);
 	const heightKm = Math.round((heightM / 1000) * 10) / 10;
@@ -480,13 +585,17 @@ export function buildClimberBlurb(input: ClimberBlurbInput): ClimberBlurb {
 		input.activeDays > 0 ? Math.round((input.totalAscents / input.activeDays) * 10) / 10 : 0;
 	const identity = climberTypeSentence(
 		input.climberType,
-		describeSendPreference({
-			onsightCount: input.onsightCount,
-			flashCount: input.flashCount,
-			redpointCount: input.redpointCount,
-			pinkpointCount: input.pinkpointCount,
-			totalSends: input.totalSends
-		})
+		describeSendPreference(
+			{
+				onsightCount: input.onsightCount,
+				flashCount: input.flashCount,
+				redpointCount: input.redpointCount,
+				pinkpointCount: input.pinkpointCount,
+				totalSends: input.totalSends
+			},
+			locale
+		),
+		locale
 	);
 
 	const optional: string[] = [];
@@ -498,34 +607,45 @@ export function buildClimberBlurb(input: ClimberBlurbInput): ClimberBlurb {
 		describeDeveloperPreference({
 			routes: input.putUpRoutes ?? [],
 			firstAscentCount: input.firstAscentCount ?? 0,
-			format: fmt
+			format: fmt,
+			locale
 		})
 	);
 
 	const top = input.topCrags?.[0];
 	const topShare = top && input.totalAscents > 0 ? top.count / input.totalAscents : null;
-	const home = describeHomeCrag({
-		topCrags: input.topCrags ?? [],
-		totalAscents: input.totalAscents
-	});
-	push(home);
-	if (!home) push(describeWanderer(input.distinctCrags, topShare));
-
-	push(describePartners(input.partners ?? []));
-	push(
-		describeSeason(input.activeDayDates ?? [], (input.dateDisplay ?? DEFAULT_DATE_DISPLAY).locale)
+	const home = describeHomeCrag(
+		{
+			topCrags: input.topCrags ?? [],
+			totalAscents: input.totalAscents
+		},
+		locale
 	);
-	push(describeWeatherPersonality(input.weather, fmt, input.displayUnits));
-	push(describeSolo(input.soloByKind ?? []));
-	push(describeProjects(input.openProjects ?? 0, fmt));
-	push(describeHardest(input.hardestRouteLabel, input.hardestBoulderLabel));
-	if (input.popularity) push(describePopularity(input.popularity));
-	push(describeTravel(input.countries ?? 0, fmt));
+	push(home);
+	if (!home) push(describeWanderer(input.distinctCrags, topShare, locale));
+
+	push(describePartners(input.partners ?? [], locale));
+	push(
+		describeSeason(
+			input.activeDayDates ?? [],
+			(input.dateDisplay ?? DEFAULT_DATE_DISPLAY).locale,
+			locale
+		)
+	);
+	push(describeWeatherPersonality(input.weather, fmt, input.displayUnits, locale));
+	push(describeSolo(input.soloByKind ?? [], locale));
+	push(describeProjects(input.openProjects ?? 0, fmt, locale));
+	push(describeHardest(input.hardestRouteLabel, input.hardestBoulderLabel, locale));
+	if (input.popularity) push(describePopularity(input.popularity, locale));
+	push(describeTravel(input.countries ?? 0, fmt, locale));
 	if (input.rockBlurb) push(input.rockBlurb);
 
 	if (!input.firstDate) {
 		const paragraphs = [
-			`You've logged ${fmt(input.totalAscents)} ascents across ${fmt(input.distinctCrags)} crags so far.`,
+			formatMessage(locale, 'cards.climberBlurb.leadNoFirstDate', {
+				ascents: fmt(input.totalAscents),
+				crags: fmt(input.distinctCrags)
+			}),
 			identity,
 			...optional
 		];
@@ -533,24 +653,53 @@ export function buildClimberBlurb(input: ClimberBlurbInput): ClimberBlurb {
 			startedOn: null,
 			durationLabel: null,
 			paragraphs,
-			routeLink: popularRouteLink(paragraphs, input.putUpRoutes ?? [])
+			routeLink: popularRouteLink(paragraphs, input.putUpRoutes ?? [], fmt, locale)
 		};
 	}
 
-	const duration = formatDurationHuman(input.firstDate);
+	const duration = formatDurationHuman(input.firstDate, new Date(), locale);
 	const outdoorBit =
 		input.outdoorAscents != null
-			? ` ${fmt(input.outdoorAscents)} outdoor` +
-				(input.indoorAscents != null ? ` / ${fmt(input.indoorAscents)} indoor` : '')
+			? input.indoorAscents != null
+				? ` ${formatMessage(locale, 'cards.climberBlurb.outdoorIndoorSplit', {
+						outdoor: fmt(input.outdoorAscents),
+						indoor: fmt(input.indoorAscents)
+					})}`
+				: ` ${formatMessage(locale, 'cards.climberBlurb.outdoorOnlySplit', {
+						outdoor: fmt(input.outdoorAscents)
+					})}`
 			: '';
 
+	const distanceLabel = formatDistance(heightKm, input.displayUnits?.distance ?? 'km');
 	const paragraphs = [
-		`Since I began climbing ${duration} ago on ${input.firstDate}, I've logged ${fmt(input.activeDays)} active days at the crag.`,
-		`In that time I've racked up ${fmt(input.totalAscents)} logged ascents (${fmt(input.totalSends)} sends, ${fmt(input.onsightCount)} onsights)${outdoorBit}, on ${fmt(input.distinctRoutes)} routes across ${fmt(input.distinctCrags)} areas.`,
+		formatMessage(locale, 'cards.climberBlurb.coreSinceBegan', {
+			duration,
+			date: input.firstDate,
+			days: fmt(input.activeDays)
+		}),
+		formatMessage(locale, 'cards.climberBlurb.coreRackedUp', {
+			ascents: fmt(input.totalAscents),
+			sends: fmt(input.totalSends),
+			onsights: fmt(input.onsightCount),
+			outdoor: outdoorBit,
+			routes: fmt(input.distinctRoutes),
+			crags: fmt(input.distinctCrags)
+		}),
 		heightM > 0
-			? `That's about ${formatDistance(heightKm, input.displayUnits?.distance ?? 'km')} of rock — roughly ${everest}× Everest or ${elCap}× El Capitan${worldLaps > 0 ? `, and ${worldLaps} trips around the world if you laid the rope end-to-end` : ''}.`
+			? worldLaps > 0
+				? formatMessage(locale, 'cards.climberBlurb.coreHeightWithWorldLaps', {
+						distance: distanceLabel,
+						everest,
+						elCap,
+						worldLaps
+					})
+				: formatMessage(locale, 'cards.climberBlurb.coreHeight', {
+						distance: distanceLabel,
+						everest,
+						elCap
+					})
 			: null,
-		`On average that's ${perDay} ascents per active day.`,
+		formatMessage(locale, 'cards.climberBlurb.corePerDay', { perDay }),
 		identity,
 		...optional
 	].filter((p): p is string => Boolean(p));
@@ -559,6 +708,6 @@ export function buildClimberBlurb(input: ClimberBlurbInput): ClimberBlurb {
 		startedOn: input.firstDate,
 		durationLabel: duration,
 		paragraphs,
-		routeLink: popularRouteLink(paragraphs, input.putUpRoutes ?? [])
+		routeLink: popularRouteLink(paragraphs, input.putUpRoutes ?? [], fmt, locale)
 	};
 }

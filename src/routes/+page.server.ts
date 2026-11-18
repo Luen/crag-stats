@@ -10,7 +10,7 @@ import { projectProgress } from '#lib/server/projectProgress';
 import { getSyncStatus } from '#lib/server/sync';
 import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ cookies, url, parent }) => {
+export const load: PageServerLoad = async ({ cookies, url, parent, locals }) => {
 	// Site default from Settings; `?system=` (route or boulder system) and `?boulderSystem=`
 	// are one-off overrides for shared links.
 	const gradeSystems = applyDisplaySystemOverrides(getDisplayGradeSystems(), url.searchParams);
@@ -18,12 +18,17 @@ export const load: PageServerLoad = async ({ cookies, url, parent }) => {
 
 	const { dateDisplay, displayUnits } = await parent();
 	const units = applyDisplayUnitOverrides(displayUnits, url.searchParams);
-	const stats = getDashboardStats(gradeSystems, { pyramidMode, dateDisplay, displayUnits: units });
+	const stats = getDashboardStats(gradeSystems, {
+		pyramidMode,
+		dateDisplay,
+		displayUnits: units,
+		locale: locals.locale
+	});
 	const projects = listDashboardProjects(3);
 	const progressRows = projects.length ? loadProjectProgressRows() : [];
 	const today = new Date().toISOString().slice(0, 10);
 	const dashboardProjects = projects.map((project) => {
-		const { pct, horizon } = projectProgress(project, progressRows, today);
+		const { pct, horizon } = projectProgress(project, progressRows, today, locals.locale);
 		return {
 			...project,
 			gradeLabel: formatClimbGrade(project, gradeSystems),
@@ -43,7 +48,7 @@ export const load: PageServerLoad = async ({ cookies, url, parent }) => {
 		gradeSystems,
 		displayUnits: units,
 		pyramidMode,
-		activeGoals: listActiveGoals(3),
+		activeGoals: listActiveGoals(3, locals.locale),
 		dashboardProjects,
 		// Site-wide so visitors see the owner's layout (#37); cookie is a legacy fallback.
 		dashLayout: resolveDashLayout(

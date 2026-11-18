@@ -17,7 +17,7 @@ export const load: PageServerLoad = ({ locals }) => {
 	const enrich = (project: (typeof workingOn)[number]) => ({
 		...project,
 		gradeLabel: formatClimbGrade(project, gradeSystems),
-		progress: projectProgress(project, rows, today)
+		progress: projectProgress(project, rows, today, locals.locale)
 	});
 	return {
 		workingOn: workingOn.map(enrich),

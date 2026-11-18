@@ -6,6 +6,7 @@
 import { calendarDay as validDay } from '#lib/calendarDay';
 import { formatGradeLabel, usesVScale, type DisplayGradeSystems } from '#lib/grades';
 import { parseGoalGradeScale } from '#lib/goalGrades';
+import { DEFAULT_LOCALE, formatMessage, type SupportedLocale } from '#lib/i18n';
 
 /** Same indoor heuristics as `#lib/server/venue` (kept local so this module stays non-server). */
 function isOutdoorRow(row: {
@@ -93,9 +94,11 @@ export function buildSuggestedOutdoorGradeGoals(
 		now?: Date;
 		gradeSystems: DisplayGradeSystems;
 		activeGoals?: SuggestedGoalActive[];
+		locale?: SupportedLocale;
 	}
 ): SuggestedGradeGoal[] {
 	const now = opts.now ?? new Date();
+	const locale = opts.locale ?? DEFAULT_LOCALE;
 	const year = now.getFullYear();
 	const from = windowStartIso(now);
 	const active = (opts.activeGoals ?? []).filter((g) => !g.completed);
@@ -133,8 +136,15 @@ export function buildSuggestedOutdoorGradeGoals(
 			targetLabel,
 			year,
 			venueScope: 'outdoor',
-			title: `Send outdoor ${targetLabel} in ${year}`,
-			blurb: `Based on your hardest outdoor ${boulder ? 'boulder' : 'route'} send in the last two years (${maxLabel}) — aim for ${targetLabel} this year.`,
+			title: formatMessage(locale, 'pages.goals.titleSendOutdoorYear', {
+				grade: targetLabel,
+				year
+			}),
+			blurb: formatMessage(
+				locale,
+				boulder ? 'pages.goals.suggestionBlurbBoulder' : 'pages.goals.suggestionBlurbRoute',
+				{ max: maxLabel, target: targetLabel }
+			),
 			alreadyTracking
 		});
 	};

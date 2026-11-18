@@ -7,9 +7,10 @@ import {
 	verifySessionToken,
 	verifySharedSecret
 } from '#lib/server/auth';
-import { getSearchIndexing } from '#lib/server/appSettings';
+import { getAppSetting, getSearchIndexing } from '#lib/server/appSettings';
 import { ensureSchema } from '#lib/server/db';
 import { runDataMigrations } from '#lib/server/db/dataMigrations';
+import { DEFAULT_LOCALE, resolveLocale } from '#lib/i18n';
 import { env } from '#lib/server/env';
 import { startScheduler } from '#lib/server/scheduler';
 import { isNoindexPath } from '#lib/server/seo';
@@ -53,19 +54,43 @@ function finish(res: Response, path: string): Response {
 
 export const handle: Handle = async ({ event, resolve }) => {
 	const path = event.url.pathname;
+
+	// Resolve the interface language once per request so the shell (`%lang%`), the root layout
+	// and every server-rendered string agree. Settings, not the URL, own the site default.
+	event.locals.locale =
+		path === '/offline'
+			? DEFAULT_LOCALE
+			: resolveLocale({
+					query: event.url.searchParams.get('locale'),
+					cookie: event.cookies.get('cs_locale'),
+					stored: getAppSetting('locale'),
+					displayLocale: env('DISPLAY_LOCALE'),
+					acceptLanguage: event.request.headers.get('accept-language')
+				});
+
+	const resolveWithLang = () =>
+		resolve(event, {
+			transformPageChunk: ({ html }) => html.replace('%lang%', event.locals.locale)
+		});
+
 	// Public, data-free offline shell; no logbook or authenticated layout data is embedded.
-	if (path === '/offline') return finish(await resolve(event), path);
+	if (path === '/offline') return finish(await resolveWithLang(), path);
 
 	if (path === '/health' || path.startsWith('/health/')) {
 		return finish(await resolve(event), path);
 	}
+
+	// `POST /api/logbook/csv` authenticates itself with CSV_INGEST_TOKEN, so it answers its own
+	// 401/503. The browser gate below would report 401 for a missing token, hiding the 503 that
+	// tells an operator to set one.
+	if (path === '/api/logbook/csv') return finish(await resolveWithLang(), path);
 
 	// Worker can trigger sync with shared secret even when password gate is on
 	if (path === '/api/sync') {
 		const secret = env('SESSION_SECRET');
 		const header = event.request.headers.get('x-worker-secret');
 		if (verifySharedSecret(header, secret)) {
-			return finish(await resolve(event), path);
+			return finish(await resolveWithLang(), path);
 		}
 	}
 
@@ -89,5 +114,5 @@ export const handle: Handle = async ({ event, resolve }) => {
 		);
 	}
 
-	return finish(await resolve(event), path);
+	return finish(await resolveWithLang(), path);
 };

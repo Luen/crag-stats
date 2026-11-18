@@ -1,4 +1,5 @@
 import { eq } from 'drizzle-orm';
+import { DEFAULT_LOCALE, type SupportedLocale } from '#lib/i18n';
 import { buildWeatherConditionsView } from '#lib/weatherStats';
 import { buildWeatherPerformanceView } from '#lib/weatherPerformance';
 import { ascentWeatherKey } from '#lib/weatherKeys';
@@ -13,7 +14,10 @@ import { attachWeatherLocation, loadWeatherLocations } from './weatherLocations'
 import { isOutdoorLogbookRow } from './logbookWeather';
 
 /** Local cache only: no notes, provider payloads or import actions reach the page. */
-export function getWeatherPageData(tickSettings?: TickTypeSettings) {
+export function getWeatherPageData(
+	tickSettings?: TickTypeSettings,
+	locale: SupportedLocale = DEFAULT_LOCALE
+) {
 	ensureSchema();
 	const locations = loadWeatherLocations();
 	const settings = tickSettings ?? getTickTypeSettings();
@@ -69,8 +73,8 @@ export function getWeatherPageData(tickSettings?: TickTypeSettings) {
 		else unresolvedAscents++;
 	}
 	return {
-		conditions: buildWeatherConditionsView(rows, weather),
-		performance: buildWeatherPerformanceView(rows, weather, getDisplayUnits().temperature),
+		conditions: buildWeatherConditionsView(rows, weather, locale),
+		performance: buildWeatherPerformanceView(rows, weather, getDisplayUnits().temperature, locale),
 		coverage: {
 			resolvedDays: keys.size,
 			cachedDays: [...keys].filter((key) => weather.has(key)).length,

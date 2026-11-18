@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
 	import { onMount } from 'svelte';
 	import {
 		formatCalendarDate,
@@ -12,9 +13,12 @@
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
+	const i18n = useI18n();
 
 	let snapshot = $state<OfflineSnapshot | null>(null);
-	let message = $state('Preparing offline storage…');
+	let statusKey = $state<string | null>('pages.offline.statusPreparing');
+	let rawError = $state('');
+	const message = $derived(statusKey ? i18n.t(statusKey) : rawError);
 	let busy = $state(true);
 	let ready = $state(false);
 	let online = $state(true);
@@ -38,14 +42,19 @@
 				throw new Error(result.error);
 			}
 			snapshot = result.snapshot ?? null;
-			message =
+			statusKey =
 				type === 'CLEAR'
-					? 'Offline copy cleared. Automatic downloads paused until you download again.'
+					? 'pages.offline.statusClearedPaused'
 					: snapshot
-						? 'Saved copy ready. Sync and editing require a connection.'
-						: 'No offline copy. Download while connected; expired copies are removed after seven days.';
+						? 'pages.offline.statusSavedCopyReady'
+						: 'pages.offline.statusNoOfflineCopy';
 		} catch (error) {
-			message = error instanceof Error ? error.message : 'Offline storage is unavailable.';
+			if (error instanceof Error) {
+				statusKey = null;
+				rawError = error.message;
+			} else {
+				statusKey = 'pages.offline.statusStorageUnavailable';
+			}
 		} finally {
 			busy = false;
 		}
@@ -69,7 +78,7 @@
 		const cleared = (event: MessageEvent) => {
 			if (event.data?.type === 'OFFLINE_CLEARED') {
 				snapshot = null;
-				message = 'Offline copy cleared. Download again while connected.';
+				statusKey = 'pages.offline.statusClearedDownloadAgain';
 			}
 			if (event.data?.type === 'OFFLINE_SAVED' && ready) void command('READ');
 		};
@@ -79,8 +88,7 @@
 		navigator.serviceWorker?.addEventListener('message', cleared);
 		void (async () => {
 			if (!('serviceWorker' in navigator) || !window.isSecureContext) {
-				message =
-					'Offline mode needs HTTPS (or localhost) and a browser with service worker support.';
+				statusKey = 'pages.offline.statusNeedsHttps';
 				busy = false;
 				return;
 			}
@@ -94,7 +102,7 @@
 						};
 						const timeout = setTimeout(() => {
 							navigator.serviceWorker.removeEventListener('controllerchange', controlled);
-							reject(new Error('Offline preparation timed out.'));
+							reject(new Error(i18n.t('pages.offline.errorPreparationTimedOut')));
 						}, 20000);
 						navigator.serviceWorker.addEventListener('controllerchange', controlled, {
 							once: true
@@ -105,8 +113,7 @@
 				await command('READ');
 				if (online && snapshot) await command('SAVE');
 			} catch {
-				message =
-					'Could not prepare offline mode. Check your connection and browser storage permissions.';
+				statusKey = 'pages.offline.statusCouldNotPrepare';
 				busy = false;
 			}
 		})();
@@ -120,65 +127,67 @@
 	});
 </script>
 
-<svelte:head><title>Offline copy · Crag Stats</title></svelte:head>
-<h1>Offline copy</h1>
+<svelte:head><title>{i18n.t('pages.offline.pageTitle')}</title></svelte:head>
+<h1>{i18n.t('pages.offline.titleOfflineCopy')}</h1>
 <p>
-	Download public climbing stats and your latest logbook rows for this browser. Private notes are
-	excluded. Sites protected by a whole-app password stay online-only.
+	{i18n.t('pages.offline.leadDownloadCopy')}
 </p>
 <p>
-	Installing or opening the installed app downloads a copy automatically. While connected, the app
-	checks for updates hourly while open and requests daily background updates where supported.
-	Clearing the copy pauses automatic downloads until you download again.
+	{i18n.t('pages.offline.leadAutomaticDownloads')}
 </p>
 <p>
-	<a href="/" data-sveltekit-reload>Return to live dashboard</a> ·
-	<a href="/docs/offline" data-sveltekit-reload>How offline mode works</a>
+	<a href="/" data-sveltekit-reload>{i18n.t('pages.offline.linkReturnToLiveDashboard')}</a> ·
+	<a href="/docs/offline" data-sveltekit-reload>{i18n.t('pages.offline.linkHowOfflineModeWorks')}</a
+	>
 </p>
 <div class="controls">
 	<button type="button" disabled={!ready || busy || !online} onclick={() => command('SAVE')}
-		>Download or refresh copy</button
+		>{i18n.t('pages.offline.buttonDownloadOrRefreshCopy')}</button
 	>
 	<button type="button" disabled={!ready || busy} onclick={() => command('CLEAR')}
-		>Clear offline copy</button
+		>{i18n.t('pages.offline.buttonClearOfflineCopy')}</button
 	>
 </div>
 <p role="status">
 	{online
-		? 'Connection available; the server may still be unreachable.'
-		: 'Offline — showing downloaded data only.'}
+		? i18n.t('pages.offline.statusConnectionAvailable')
+		: i18n.t('pages.offline.statusOfflineShowingDownloadedData')}
 	{message}
 </p>
 {#if snapshot}
 	<p class="saved">
-		Saved {formatDateTime(snapshot.savedAt, DEFAULT_DATE_DISPLAY)} (UTC). Expires after seven days. This
-		is a snapshot, not live data.
+		{i18n.t('pages.offline.statusSavedSnapshot', {
+			when: formatDateTime(snapshot.savedAt, DEFAULT_DATE_DISPLAY)
+		})}
 	</p>
-	<section class="panel" aria-label="Downloaded dashboard stats">
-		<h2>Dashboard summary</h2>
+	<section class="panel" aria-label={i18n.t('pages.offline.ariaDownloadedDashboardStats')}>
+		<h2>{i18n.t('pages.offline.titleDashboardSummary')}</h2>
 		<dl>
 			<div>
-				<dt>Ascents</dt>
+				<dt>{i18n.t('pages.offline.labelAscents')}</dt>
 				<dd>{fmt(snapshot.summary.ascents)}</dd>
 			</div>
 			<div>
-				<dt>Successful ascents</dt>
+				<dt>{i18n.t('pages.offline.labelSuccessfulAscents')}</dt>
 				<dd>{fmt(snapshot.summary.sends)}</dd>
 			</div>
 			<div>
-				<dt>Height climbed</dt>
+				<dt>{i18n.t('pages.offline.labelHeightClimbed')}</dt>
 				<dd>{formatHeight(snapshot.summary.heightM, data.displayUnits.height)}</dd>
 			</div>
 		</dl>
 	</section>
-	<section class="panel" aria-label="Downloaded logbook">
-		<h2>Logbook</h2>
+	<section class="panel" aria-label={i18n.t('pages.offline.ariaDownloadedLogbook')}>
+		<h2>{i18n.t('pages.offline.titleLogbook')}</h2>
 		<p>
-			Downloaded {fmt(snapshot.rows.length)} of {fmt(snapshot.total)} ascents, newest first. Up to 5,000
-			rows / 10 MB; other pages and charts need a connection.
+			{i18n.t('pages.offline.leadDownloadedRows', {
+				shown: fmt(snapshot.rows.length),
+				total: fmt(snapshot.total)
+			})}
 		</p>
 		<label
-			>Search downloaded climbs <input
+			>{i18n.t('pages.offline.labelSearchDownloadedClimbs')}
+			<input
 				type="search"
 				bind:value={query}
 				oninput={() => {
@@ -186,21 +195,25 @@
 				}}
 			/></label
 		>
-		<p>{fmt(matching.length)} matching ascents</p>
+		<p>{i18n.t('pages.offline.matchingAscents', { count: fmt(matching.length) })}</p>
 		<div class="table-wrap">
 			<table>
-				<caption class="sr-only">Downloaded ascents</caption><thead
+				<caption class="sr-only">{i18n.t('pages.offline.captionDownloadedAscents')}</caption><thead
 					><tr
-						><th scope="col">Date</th><th scope="col">Climb</th><th scope="col">Grade</th><th
-							scope="col">Tick</th
-						><th scope="col">Partners</th></tr
+						><th scope="col">{i18n.t('pages.offline.columnDate')}</th><th scope="col"
+							>{i18n.t('pages.offline.columnClimb')}</th
+						><th scope="col">{i18n.t('pages.offline.columnGrade')}</th><th scope="col"
+							>{i18n.t('pages.offline.columnTick')}</th
+						><th scope="col">{i18n.t('pages.offline.columnPartners')}</th></tr
 					></thead
 				><tbody>
 					{#each matching.slice(0, limit) as row (row.id)}<tr
-							><td>{formatCalendarDate(row.date, data.dateDisplay) || 'Unknown'}</td><td
-								>{row.name}<br />{row.crag}</td
-							><td>{row.grade ?? '—'}</td><td>{row.tick ?? '—'}</td><td>{row.partners ?? '—'}</td
-							></tr
+							><td
+								>{formatCalendarDate(row.date, data.dateDisplay) ||
+									i18n.t('pages.offline.unknown')}</td
+							><td>{row.name}<br />{row.crag}</td><td>{row.grade ?? '—'}</td><td
+								>{row.tick ?? '—'}</td
+							><td>{row.partners ?? '—'}</td></tr
 						>{/each}
 				</tbody>
 			</table>
@@ -209,7 +222,7 @@
 				type="button"
 				onclick={() => {
 					limit += 100;
-				}}>Show 100 more</button
+				}}>{i18n.t('pages.offline.buttonShow100More')}</button
 			>{/if}
 	</section>
 {/if}

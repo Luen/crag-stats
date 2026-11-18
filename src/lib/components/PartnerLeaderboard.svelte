@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
 	import { onMount } from 'svelte';
 	import {
 		EMPTY_CARD_PREFERENCES,
@@ -33,6 +34,7 @@
 		limit,
 		compact = false
 	}: Props = $props();
+	const i18n = useI18n();
 
 	const METRIC_KEY = 'cs_partners_metric';
 
@@ -56,17 +58,17 @@
 	const max = $derived(Math.max(1, ...ranked.map((p) => partnerMetricValue(p, metric))));
 
 	const metricButtonLabel = (m: PartnerMetric): string => {
-		if (m === 'sessions') return 'Sessions';
-		if (m === 'areas') return 'Areas';
-		return 'Ascents';
+		if (m === 'sessions') return i18n.t('cards.partnerLeaderboard.metricSessions');
+		if (m === 'areas') return i18n.t('cards.partnerLeaderboard.metricAreas');
+		return i18n.t('cards.partnerLeaderboard.metricAscents');
 	};
 
 	const hint = $derived(
 		metric === 'sessions'
-			? 'A session is a calendar day with at least one shared ascent.'
+			? i18n.t('cards.partnerLeaderboard.hintSessions')
 			: metric === 'areas'
-				? 'Areas are distinct crags (blank or Unknown venues are skipped).'
-				: 'Counts every logged ascent that names that partner.'
+				? i18n.t('cards.partnerLeaderboard.hintAreas')
+				: i18n.t('cards.partnerLeaderboard.hintAscents')
 	);
 </script>
 
@@ -84,17 +86,23 @@
 		<div class="titles">
 			<h2>
 				{#if titleHref}
-					<a class="title-link" href={titleHref}>Partners</a>
+					<a class="title-link" href={titleHref}
+						>{i18n.t('cards.partnerLeaderboard.titlePartners')}</a
+					>
 				{:else}
-					Partners
+					{i18n.t('cards.partnerLeaderboard.titlePartners')}
 				{/if}
 			</h2>
 			{#if metricToggle}
-				<a class="how" href="/docs/partners">How it works</a>
+				<a class="how" href="/docs/partners">{i18n.t('common.howItWorks')}</a>
 			{/if}
 		</div>
 		{#if metricToggle}
-			<div class="toggles" role="group" aria-label="Partner count metric">
+			<div
+				class="toggles"
+				role="group"
+				aria-label={i18n.t('cards.partnerLeaderboard.ariaPartnerCountMetric')}
+			>
 				{#each PARTNER_METRICS as m (m)}
 					<button
 						type="button"
@@ -108,7 +116,7 @@
 	</header>
 
 	{#if ranked.length === 0}
-		<p class="empty">No partners recorded yet.</p>
+		<p class="empty">{i18n.t('cards.partnerLeaderboard.empty')}</p>
 	{:else}
 		<ul class="bars">
 			{#each ranked as p (p.name)}
@@ -120,7 +128,9 @@
 						>
 						<span class="value"
 							>{value}
-							{#if metricToggle}<span class="unit">{partnerMetricLabel(metric, value)}</span>{/if}
+							{#if metricToggle}<span class="unit"
+									>{partnerMetricLabel(metric, value, i18n.locale)}</span
+								>{/if}
 						</span>
 					</div>
 					<div class="track">
