@@ -15,6 +15,7 @@ import { env } from '#lib/server/env';
 import { startScheduler } from '#lib/server/scheduler';
 import { isNoindexPath } from '#lib/server/seo';
 import { offlineAllowed } from '#lib/server/offline';
+import { csvUploadToken } from '#lib/server/csvIngest';
 
 ensureSchema();
 
@@ -80,11 +81,15 @@ export const handle: Handle = async ({ event, resolve }) => {
 		return finish(await resolve(event), path);
 	}
 
-	// Worker can trigger sync with shared secret even when password gate is on
-	if (path === '/api/sync') {
-		const secret = env('SESSION_SECRET');
-		const header = event.request.headers.get('x-worker-secret');
-		if (verifySharedSecret(header, secret)) {
+	// Machine endpoints authenticate with a shared secret, not the browser session,
+	// even when the password gate covers the whole UI.
+	if (path === '/api/sync' || path === '/api/logbook/csv') {
+		const provided =
+			path === '/api/sync'
+				? event.request.headers.get('x-worker-secret')
+				: csvUploadToken(event.request.headers);
+		const expected = path === '/api/sync' ? env('SESSION_SECRET') : env('CSV_INGEST_TOKEN');
+		if (verifySharedSecret(provided, expected)) {
 			return finish(await resolveWithLang(), path);
 		}
 	}

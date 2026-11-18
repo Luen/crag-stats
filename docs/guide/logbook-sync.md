@@ -49,6 +49,25 @@ Manual uploads add and update ascents but never remove ascents that are missing 
 
 Route data import needs a saved profile login to match FA/FFA credits, which comes from API sync. Manual CSV uploads do not set it, so mark first ascents by hand in the logbook.
 
+## Uploading a CSV from another container
+
+Uploading by hand is fine for occasional refreshes. If you keep your export somewhere your network can read — a shared folder, a Nextcloud or Dropbox share, or a small companion container that watches for a new file — Crag Stats can accept it over HTTP instead. Set `CSV_INGEST_TOKEN` to a long random value, restart, and then `POST` the file:
+
+```bash
+curl -X POST https://cragstats.example.com/api/logbook/csv \
+  -H "Authorization: Bearer $CSV_INGEST_TOKEN" \
+  -H "Content-Type: text/csv" \
+  --data-binary @thecrag-logbook.csv
+```
+
+A multipart upload with the file in a `file` field works too. Requests without the token are rejected, and a successful response reports how many ascents were processed and how many were new:
+
+```json
+{ "ok": true, "imported": 412, "created": { "routes": 318, "ascents": 412 } }
+```
+
+An empty file, a login page saved by mistake, or anything over 25 MB is rejected rather than imported. This endpoint does the same upsert-only import as the Settings form, so it never removes ascents that are missing from the file. It makes no request to theCrag: the export still has to come from your own browser or another tool you control.
+
 ## Why there are no automatic CSV downloads
 
 Crag Stats never signs in to the theCrag website or downloads exports for you. theCrag's [terms](https://www.thecrag.com/terms#ownership-and-licenses) require all programmatic access to go through the API, and every export is a full logbook dump that is costly for their servers. Exporting and uploading the CSV yourself is fine.

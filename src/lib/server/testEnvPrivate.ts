@@ -12,6 +12,7 @@ export const SYNC_CRON = process.env.SYNC_CRON ?? '';
 export const ROUTE_DATA_IMPORT = process.env.ROUTE_DATA_IMPORT ?? '';
 export const ROUTE_DATA_REFRESH_DAYS = process.env.ROUTE_DATA_REFRESH_DAYS ?? '';
 export const WEATHER_IMPORT = process.env.WEATHER_IMPORT ?? '';
+export const CSV_INGEST_TOKEN = process.env.CSV_INGEST_TOKEN ?? '';
 export const DISPLAY_LOCALE = process.env.DISPLAY_LOCALE ?? '';
 export const TZ = process.env.TZ ?? '';
 export const HOST = process.env.HOST ?? '';

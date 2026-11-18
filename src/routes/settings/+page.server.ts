@@ -32,10 +32,7 @@ import {
 	setTickTypeSettings
 } from '#lib/server/appSettings';
 import { env, hasTheCragApiKey, getTheCragSyncConfiguration } from '#lib/server/env';
-import { beginFirstImport, completeFirstImport } from '#lib/server/firstImport';
-import { db } from '#lib/server/db';
-import { upsertAscents } from '#lib/server/ingest';
-import { parseTheCragCsv } from '#lib/server/providers/thecrag';
+import { ingestLogbookCsv } from '#lib/server/csvIngest';
 import { refreshProjects } from '#lib/server/projects';
 import {
 	getRouteHistoryStatus,
@@ -221,15 +218,8 @@ export const actions: Actions = {
 		}
 		const buf = Buffer.from(await file.arrayBuffer());
 		try {
-			const ascents = parseTheCragCsv(buf);
-			const result = db.transaction(() => {
-				const token = beginFirstImport();
-				const created = upsertAscents(ascents);
-				refreshProjects();
-				completeFirstImport(ascents.length, token);
-				return created;
-			});
-			return { ok: true, imported: ascents.length, created: result };
+			const { imported, created } = ingestLogbookCsv(buf);
+			return { ok: true, imported, created };
 		} catch (err) {
 			return fail(400, {
 				ok: false,

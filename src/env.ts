@@ -43,6 +43,11 @@ export const variables = defineEnvVars({
 			'Opt-in: fetch daily outdoor weather from Open-Meteo for badge enrichment (default false; non-commercial self-host OK)',
 		schema: optionalString
 	},
+	CSV_INGEST_TOKEN: {
+		description:
+			'Opt-in: bearer token for POST /api/logbook/csv, so a companion uploader can submit a CSV export (unset disables the endpoint)',
+		schema: optionalString
+	},
 	DISPLAY_LOCALE: {
 		description: 'Locale for dates/numbers (BCP 47, default en-AU)',
 		schema: optionalString
