@@ -72,7 +72,7 @@ describe('CSV logbook mode (#504)', () => {
 	it('ignores THECRAG_USERNAME when choosing the logbook source', () => {
 		// The name predates this feature (it was the removed website-login sync), so it
 		// must never switch the logbook away from the API on its own.
-		vars.THECRAG_USERNAME = 'jodie';
+		vars.THECRAG_USERNAME = 'sample-climber';
 		vars.THECRAG_API_KEY = 'shared-key';
 		expect(getTheCragSyncConfiguration()).toEqual({ configured: true, mode: 'api' });
 	});
@@ -90,8 +90,8 @@ describe('CSV logbook mode (#504)', () => {
 
 	it('passes THECRAG_USERNAME as the FA/FFA identity for CSV logbooks', () => {
 		vars.CSV_INGEST_TOKEN = 'upload-token';
-		vars.THECRAG_USERNAME = ' jodie ';
-		expect(routeHistoryConfig().ownerLogin).toBe('jodie');
+		vars.THECRAG_USERNAME = ' sample-climber ';
+		expect(routeHistoryConfig().ownerLogin).toBe('sample-climber');
 		expect(routeHistoryConfig().apiKey).toBe('');
 	});
 

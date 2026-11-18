@@ -35,7 +35,7 @@ describe('logbook source (#504)', () => {
 	});
 
 	it('keeps the API logbook when only a username is set', async () => {
-		const env = await loadEnv({ THECRAG_API_KEY: 'key', THECRAG_USERNAME: 'jodie' });
+		const env = await loadEnv({ THECRAG_API_KEY: 'key', THECRAG_USERNAME: 'sample-climber' });
 		expect(env.logbookMode()).toBe('api');
 		expect(env.getTheCragSyncConfiguration()).toEqual({ configured: true, mode: 'api' });
 	});
@@ -46,8 +46,8 @@ describe('logbook source (#504)', () => {
 	});
 
 	it('reports a trimmed username for FA/FFA matching', async () => {
-		const env = await loadEnv({ THECRAG_USERNAME: ' jodie ' });
-		expect(env.theCragUsername()).toBe('jodie');
+		const env = await loadEnv({ THECRAG_USERNAME: ' sample-climber ' });
+		expect(env.theCragUsername()).toBe('sample-climber');
 		expect(env.getRouteDataConfiguration()).toEqual({
 			mode: 'api',
 			hasApiKey: false,
