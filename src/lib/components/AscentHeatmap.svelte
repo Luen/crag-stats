@@ -238,22 +238,26 @@
 						class={{ active: activeMode === 'intensity' }}
 						aria-pressed={activeMode === 'intensity'}
 						onclick={() => setMode('intensity')}
-						>{i18n.t('cards.ascentHeatmap.buttonIntensity')}</button
 					>
+						{i18n.t('cards.ascentHeatmap.buttonIntensity')}
+					</button>
 					<button
 						type="button"
 						class={{ active: activeMode === 'grade' }}
 						aria-pressed={activeMode === 'grade'}
-						onclick={() => setMode('grade')}>{i18n.t('cards.ascentHeatmap.buttonGrade')}</button
+						onclick={() => setMode('grade')}
 					>
+						{i18n.t('cards.ascentHeatmap.buttonGrade')}
+					</button>
 					{#if hasWeather}
 						<button
 							type="button"
 							class={{ active: activeMode === 'weather' }}
 							aria-pressed={activeMode === 'weather'}
 							onclick={() => setMode('weather')}
-							>{i18n.t('cards.ascentHeatmap.buttonWeather')}</button
 						>
+							{i18n.t('cards.ascentHeatmap.buttonWeather')}
+						</button>
 					{/if}
 				</div>
 			{/if}
@@ -280,9 +284,9 @@
 		<div class="scroll">
 			<div class="months" style:--cols={weeks.length} aria-hidden="true">
 				{#each monthNums as monthNum, i (i)}
-					<span class={['month', { sparse: monthNum != null && monthNum % 2 === 0 }]}
-						>{monthNum ? (MONTH_ABBR[monthNum - 1] ?? '') : ''}</span
-					>
+					<span class={['month', { sparse: monthNum != null && monthNum % 2 === 0 }]}>
+						{monthNum ? (MONTH_ABBR[monthNum - 1] ?? '') : ''}
+					</span>
 				{/each}
 			</div>
 			<div class="grid" style:--cols={weeks.length}>
@@ -348,11 +352,11 @@
 						<tbody>
 							{#each weatherDays as day (day.date)}
 								<tr>
-									<th scope="row"
-										><a href="/logbook?day={encodeURIComponent(day.date)}"
-											>{formatCalendarDate(day.date, dateDisplay)}</a
-										></th
-									>
+									<th scope="row">
+										<a href="/logbook?day={encodeURIComponent(day.date)}">
+											{formatCalendarDate(day.date, dateDisplay)}
+										</a>
+									</th>
 									<td>{kindLabel(day.weather!.kind)}</td>
 									<td>{tempText(day.weather!.tempMaxC)}</td>
 									<td>{tempText(day.weather!.tempMinC)}</td>

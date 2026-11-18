@@ -85,9 +85,9 @@
 			<strong>{formatTemperature(e.tempC, displayUnits.temperature)}</strong>
 			<span class="meta">
 				{#if e.href}
-					<a href={e.href} target="_blank" rel="noreferrer"
-						>{e.routeName ?? i18n.t('cards.weatherConditions.labelAscent')}</a
-					>
+					<a href={e.href} target="_blank" rel="noreferrer">
+						{e.routeName ?? i18n.t('cards.weatherConditions.labelAscent')}
+					</a>
 				{:else}
 					{e.routeName ?? i18n.t('cards.weatherConditions.labelAscent')}
 				{/if}
@@ -103,9 +103,9 @@
 <article class="panel">
 	<header>
 		<h2>
-			{#if compact}<a href="/weather#conditions"
-					>{i18n.t('cards.weatherConditions.titleWeatherConditions')}</a
-				>{:else}{i18n.t('cards.weatherConditions.titleWeatherConditions')}{/if}
+			{#if compact}<a href="/weather#conditions">
+					{i18n.t('cards.weatherConditions.titleWeatherConditions')}
+				</a>{:else}{i18n.t('cards.weatherConditions.titleWeatherConditions')}{/if}
 		</h2>
 		<a class="how" href="/docs/weather">{i18n.t('common.howItWorks')}</a>
 	</header>
@@ -158,11 +158,9 @@
 			{#each data.shares as share (share.key)}
 				<li>
 					<a href={`/logbook?weather=${share.key}`}>
-						<span class="label"
-							>{SHARE_LABEL_KEYS[share.key]
-								? i18n.t(SHARE_LABEL_KEYS[share.key])
-								: share.label}</span
-						>
+						<span class="label">
+							{SHARE_LABEL_KEYS[share.key] ? i18n.t(SHARE_LABEL_KEYS[share.key]) : share.label}
+						</span>
 						<span class="value">
 							{formatNumber(share.pct, dateDisplay)}% · {formatNumber(share.days, dateDisplay)}
 							{i18n.t('cards.weatherConditions.unitDays', { count: share.days })}
@@ -189,9 +187,9 @@
 			{i18n.t('cards.weatherConditions.hintDaysPerBin')}
 		</p>
 	{:else}
-		<a href="/weather#conditions"
-			>{i18n.t('cards.weatherConditions.linkExploreWeatherConditions')}</a
-		>
+		<a href="/weather#conditions">
+			{i18n.t('cards.weatherConditions.linkExploreWeatherConditions')}
+		</a>
 	{/if}
 </article>
 

@@ -80,8 +80,10 @@
 					type="button"
 					class={{ active: active === s.key }}
 					aria-pressed={active === s.key}
-					onclick={() => (active = s.key)}>{i18n.t(s.labelKey)}</button
+					onclick={() => (active = s.key)}
 				>
+					{i18n.t(s.labelKey)}
+				</button>
 			{/each}
 		</div>
 	</div>
@@ -101,11 +103,11 @@
 	{:else}
 		<div class="chart-wrap">
 			<svg viewBox="0 0 100 100" preserveAspectRatio="none" role="img">
-				<title
-					>{i18n.t('cards.eddingtonTimelineChart.captionEddingtonByYear', {
+				<title>
+					{i18n.t('cards.eddingtonTimelineChart.captionEddingtonByYear', {
 						metric: seriesLabel
-					})}</title
-				>
+					})}
+				</title>
 				{#if areaPath}
 					<path class="area" d={areaPath} style:fill={series.color} />
 				{/if}
@@ -118,9 +120,9 @@
 					/>
 				{/if}
 				{#each points as p (p.period)}
-					<circle class="dot" cx={xPct(p.i)} cy={yPct(p.value)} r="1.2" style:fill={series.color}
-						><title>{p.period}: {p.value}</title></circle
-					>
+					<circle class="dot" cx={xPct(p.i)} cy={yPct(p.value)} r="1.2" style:fill={series.color}>
+						<title>{p.period}: {p.value}</title>
+					</circle>
 				{/each}
 			</svg>
 			<div class="axis">
@@ -136,19 +138,20 @@
 		<details class="values">
 			<summary>{i18n.t('cards.eddingtonTimelineChart.summaryViewYearlyValues')}</summary>
 			<table>
-				<caption
-					>{i18n.t('cards.eddingtonTimelineChart.captionEddingtonByYear', {
+				<caption>
+					{i18n.t('cards.eddingtonTimelineChart.captionEddingtonByYear', {
 						metric: seriesLabel
-					})}</caption
-				><thead
-					><tr
-						><th scope="col">{i18n.t('cards.eddingtonTimelineChart.thYear')}</th><th scope="col"
-							>{i18n.t('cards.eddingtonTimelineChart.thEddingtonNumber')}</th
-						></tr
-					></thead
-				><tbody>
-					{#each points as p (p.period)}<tr><th scope="row">{p.period}</th><td>{p.value}</td></tr
-						>{/each}
+					})}
+				</caption><thead>
+					<tr>
+						<th scope="col">{i18n.t('cards.eddingtonTimelineChart.thYear')}</th><th scope="col">
+							{i18n.t('cards.eddingtonTimelineChart.thEddingtonNumber')}
+						</th>
+					</tr>
+				</thead><tbody>
+					{#each points as p (p.period)}<tr>
+							<th scope="row">{p.period}</th><td>{p.value}</td>
+						</tr>{/each}
 				</tbody>
 			</table>
 		</details>

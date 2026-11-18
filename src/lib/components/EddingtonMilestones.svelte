@@ -61,12 +61,12 @@
 									<div class="bar" role="presentation">
 										<div class="fill" style:width="{row.progress * 100}%"></div>
 									</div>
-									<span class="sr"
-										>{i18n.t('cards.eddingtonMilestones.srProgress', {
+									<span class="sr">
+										{i18n.t('cards.eddingtonMilestones.srProgress', {
 											percent: Math.round(row.progress * 100),
 											target: row.target
-										})}</span
-									>
+										})}
+									</span>
 								</td>
 							</tr>
 						{/each}

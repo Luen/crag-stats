@@ -109,8 +109,10 @@
 				font-size="8.5"
 				font-family="system-ui,Segoe UI,sans-serif"
 				font-weight="700"
-				style="fill: var(--ink)">Top</text
+				style="fill: var(--ink)"
 			>
+				Top
+			</text>
 			<path
 				d="M8.05 2.1 9.35 3.35 11.5 1.1"
 				fill="none"

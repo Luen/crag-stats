@@ -213,11 +213,11 @@
 	<p class="banner hint" role="status">{form.result.reason}</p>
 {:else if importResult}
 	<div class="banner ok" role="status" aria-label={i18n.t('pages.settings.ariaImportSummary')}>
-		<strong
-			>{importResult.pruned
+		<strong>
+			{importResult.pruned
 				? i18n.t('pages.settings.bannerSyncComplete')
-				: i18n.t('pages.settings.bannerCsvComplete')}</strong
-		>
+				: i18n.t('pages.settings.bannerCsvComplete')}
+		</strong>
 		<p>{i18n.t('pages.settings.summaryProcessed', { count: importResult.count })}</p>
 		<ul>
 			<li>{i18n.t('pages.settings.summaryNewRoutes', { count: importResult.created.routes })}</li>
@@ -261,9 +261,9 @@
 			<label class="field">
 				<span>{i18n.t('pages.settings.labelLanguage')}</span>
 				<select name="locale">
-					<option value="" selected={!data.siteLocale}
-						>{i18n.t('pages.settings.optionAutoBrowserLanguage')}</option
-					>
+					<option value="" selected={!data.siteLocale}>
+						{i18n.t('pages.settings.optionAutoBrowserLanguage')}
+					</option>
 					{#each data.supportedLocales as loc (loc)}
 						<option value={loc} selected={data.siteLocale === loc}>
 							{data.localeMetadata[loc].nativeName} ({data.localeMetadata[loc].name})
@@ -278,9 +278,9 @@
 				<span>{i18n.t('pages.settings.labelRouteGrades')}</span>
 				<select name="routeSystem">
 					{#each ROUTE_GRADE_SYSTEMS as opt (opt.id)}
-						<option value={opt.id} selected={data.gradeSystems.route === opt.id}
-							>{i18n.t(opt.labelKey)}</option
-						>
+						<option value={opt.id} selected={data.gradeSystems.route === opt.id}>
+							{i18n.t(opt.labelKey)}
+						</option>
 					{/each}
 				</select>
 				<small class="hint">{i18n.t('pages.settings.hintRouteGrades')}</small>
@@ -289,9 +289,9 @@
 				<span>{i18n.t('pages.settings.labelBoulderGrades')}</span>
 				<select name="boulderSystem">
 					{#each BOULDER_GRADE_SYSTEMS as opt (opt.id)}
-						<option value={opt.id} selected={data.gradeSystems.boulder === opt.id}
-							>{i18n.t(opt.labelKey)}</option
-						>
+						<option value={opt.id} selected={data.gradeSystems.boulder === opt.id}>
+							{i18n.t(opt.labelKey)}
+						</option>
 					{/each}
 				</select>
 				<small class="hint">{i18n.t('pages.settings.hintBoulderGrades')}</small>
@@ -300,9 +300,9 @@
 				<span>{i18n.t('pages.settings.labelDateFormat')}</span>
 				<select name="dateFormat">
 					{#each DATE_FORMAT_OPTIONS as opt (opt.id)}
-						<option value={opt.id} selected={data.dateFormat === opt.id}
-							>{i18n.t(opt.labelKey)}</option
-						>
+						<option value={opt.id} selected={data.dateFormat === opt.id}>
+							{i18n.t(opt.labelKey)}
+						</option>
 					{/each}
 				</select>
 				<small class="hint">{i18n.t('pages.settings.hintDateFormat')}</small>
@@ -431,24 +431,27 @@
 						class:active={currentPreset === 'all'}
 						aria-pressed={currentPreset === 'all'}
 						onclick={() => applyPreset('all')}
-						>{i18n.t('pages.settings.buttonAllLoggedTicks')}</button
 					>
+						{i18n.t('pages.settings.buttonAllLoggedTicks')}
+					</button>
 					<button
 						type="button"
 						class="btn secondary sm"
 						class:active={currentPreset === 'sends_only'}
 						aria-pressed={currentPreset === 'sends_only'}
 						onclick={() => applyPreset('sends_only')}
-						>{i18n.t('pages.settings.buttonSendsOnly')}</button
 					>
+						{i18n.t('pages.settings.buttonSendsOnly')}
+					</button>
 					<button
 						type="button"
 						class="btn secondary sm"
 						class:active={currentPreset === 'exclude_working'}
 						aria-pressed={currentPreset === 'exclude_working'}
 						onclick={() => applyPreset('exclude_working')}
-						>{i18n.t('pages.settings.buttonExcludeWorking')}</button
 					>
+						{i18n.t('pages.settings.buttonExcludeWorking')}
+					</button>
 				</div>
 				<div class="table-wrap">
 					<table class="tick-matrix">
@@ -464,9 +467,9 @@
 								<th scope="col" class="center">
 									<div class="col-head">
 										<span>{i18n.t('pages.settings.thProjectsGoals')}</span>
-										<small class="col-desc"
-											>{i18n.t('pages.settings.hintColumnProjectsGoals')}</small
-										>
+										<small class="col-desc">
+											{i18n.t('pages.settings.hintColumnProjectsGoals')}
+										</small>
 									</div>
 								</th>
 								<th scope="col" class="center">
@@ -617,15 +620,17 @@
 			<RichText message={i18n.t('pages.settings.hintUpstreamSourceOfTruth')} />
 		</p>
 		<p class="status">
-			<span class={['pill', { ok: data.sync.status === 'idle', err: data.sync.status === 'error' }]}
-				>{data.sync.status}</span
+			<span
+				class={['pill', { ok: data.sync.status === 'idle', err: data.sync.status === 'error' }]}
 			>
+				{data.sync.status}
+			</span>
 			{#if data.sync.lastSuccessAt}
-				<span
-					>{i18n.t('pages.settings.statusLastSync', {
+				<span>
+					{i18n.t('pages.settings.statusLastSync', {
 						when: formatDateTime(data.sync.lastSuccessAt, data.dateDisplay)
-					})}</span
-				>
+					})}
+				</span>
 			{:else}
 				<span>{i18n.t('pages.settings.statusNoSyncYet')}</span>
 			{/if}
@@ -639,8 +644,9 @@
 					<button type="submit">{i18n.t('pages.settings.buttonSyncNow')}</button>
 				</form>
 				<form method="POST" action="?/fullSync">
-					<button type="submit" class="secondary">{i18n.t('pages.settings.buttonSyncAgain')}</button
-					>
+					<button type="submit" class="secondary">
+						{i18n.t('pages.settings.buttonSyncAgain')}
+					</button>
 				</form>
 			</div>
 		{:else if data.syncConfiguration.mode === 'csv'}
@@ -734,8 +740,10 @@
 							err: rh.status === 'error' || rh.status === 'blocked'
 						}
 					]}
-					aria-live="polite">{rh.status}</span
+					aria-live="polite"
 				>
+					{rh.status}
+				</span>
 				<span>
 					{i18n.t('pages.settings.statusRoutesChecked', {
 						checked: rh.fetchedRoutes,
@@ -800,9 +808,9 @@
 							<small class="hint">{i18n.t('pages.settings.hintReapplyUnmarked')}</small>
 						</span>
 					</label>
-					<button type="submit" class="secondary"
-						>{i18n.t('pages.settings.buttonReApplyFromSavedHistory')}</button
-					>
+					<button type="submit" class="secondary">
+						{i18n.t('pages.settings.buttonReApplyFromSavedHistory')}
+					</button>
 				</form>
 				<form method="POST" action="?/refreshRouteHistory" class="stack">
 					<p class="hint">
@@ -827,9 +835,9 @@
 						</span>
 						<input name="confirm" autocomplete="off" />
 					</label>
-					<button type="submit" class="secondary"
-						>{i18n.t('pages.settings.buttonRefreshAllRoutes')}</button
-					>
+					<button type="submit" class="secondary">
+						{i18n.t('pages.settings.buttonRefreshAllRoutes')}
+					</button>
 				</form>
 			</details>
 		{/if}
@@ -838,8 +846,9 @@
 	<article class="panel">
 		<h2>{i18n.t('pages.settings.titleImportWeather')}</h2>
 		<p>
-			<a href="/settings/weather-locations">{i18n.t('pages.settings.linkReviewWeatherLocations')}</a
-			>
+			<a href="/settings/weather-locations">
+				{i18n.t('pages.settings.linkReviewWeatherLocations')}
+			</a>
 		</p>
 		<p class="hint">
 			<RichText
@@ -873,8 +882,10 @@
 							err: wx.status === 'error' || wx.status === 'blocked'
 						}
 					]}
-					aria-live="polite">{wx.status}</span
+					aria-live="polite"
 				>
+					{wx.status}
+				</span>
 				<span>
 					{i18n.t('pages.settings.statusDaysCached', { count: wx.cachedOk })} ·
 					{i18n.t('pages.settings.statusPending', { count: wx.totalPending })}
@@ -962,10 +973,9 @@
 					stroke-linecap="round"
 					stroke-linejoin="round"
 					aria-hidden="true"
-					><path
-						d="M12 3v12m0 0-4.5-4.5M12 15l4.5-4.5M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"
-					/></svg
 				>
+					<path d="M12 3v12m0 0-4.5-4.5M12 15l4.5-4.5M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" />
+				</svg>
 				{i18n.t('pages.settings.buttonDownloadLogbookCsv')}
 			</a>
 			<small class="hint">{i18n.t('pages.settings.labelBackupReImport')}</small>
@@ -976,8 +986,9 @@
 				placeholder={i18n.t('pages.settings.placeholderTypeDeleteToConfirm')}
 				required
 			/>
-			<button type="submit" class="danger">{i18n.t('pages.settings.buttonWipeAllLocalData')}</button
-			>
+			<button type="submit" class="danger">
+				{i18n.t('pages.settings.buttonWipeAllLocalData')}
+			</button>
 		</form>
 	</article>
 

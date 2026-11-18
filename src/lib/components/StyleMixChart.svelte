@@ -62,11 +62,12 @@
 					type="button"
 					class={{ active: range === 'recent' }}
 					onclick={() => (range = 'recent')}
-					>{i18n.t('cards.styleMixChart.buttonLastThreeYears')}</button
 				>
-				<button type="button" class={{ active: range === 'all' }} onclick={() => (range = 'all')}
-					>{i18n.t('cards.styleMixChart.buttonAll')}</button
-				>
+					{i18n.t('cards.styleMixChart.buttonLastThreeYears')}
+				</button>
+				<button type="button" class={{ active: range === 'all' }} onclick={() => (range = 'all')}>
+					{i18n.t('cards.styleMixChart.buttonAll')}
+				</button>
 			</div>
 		{/if}
 	</div>

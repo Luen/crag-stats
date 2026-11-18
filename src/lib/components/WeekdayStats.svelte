@@ -214,14 +214,18 @@
 					type="button"
 					class={{ active: range === 'all' }}
 					aria-pressed={range === 'all'}
-					onclick={() => setRange('all')}>{i18n.t('cards.weekdayStats.rangeAllTime')}</button
+					onclick={() => setRange('all')}
 				>
+					{i18n.t('cards.weekdayStats.rangeAllTime')}
+				</button>
 				<button
 					type="button"
 					class={{ active: range === 'last12' }}
 					aria-pressed={range === 'last12'}
-					onclick={() => setRange('last12')}>{i18n.t('cards.weekdayStats.rangeLast12Weeks')}</button
+					onclick={() => setRange('last12')}
 				>
+					{i18n.t('cards.weekdayStats.rangeLast12Weeks')}
+				</button>
 			</div>
 			<div class="toggles" role="group" aria-label={i18n.t('cards.weekdayStats.ariaWeekdayMetric')}>
 				<button
@@ -229,14 +233,17 @@
 					class={{ active: metric === 'sessions' }}
 					aria-pressed={metric === 'sessions'}
 					onclick={() => setMetric('sessions')}
-					>{i18n.t('cards.weekdayStats.metricSessions')}</button
 				>
+					{i18n.t('cards.weekdayStats.metricSessions')}
+				</button>
 				<button
 					type="button"
 					class={{ active: metric === 'ascents' }}
 					aria-pressed={metric === 'ascents'}
-					onclick={() => setMetric('ascents')}>{i18n.t('cards.weekdayStats.metricAscents')}</button
+					onclick={() => setMetric('ascents')}
 				>
+					{i18n.t('cards.weekdayStats.metricAscents')}
+				</button>
 			</div>
 			<div class="toggles" role="group" aria-label={i18n.t('cards.weekdayStats.ariaClimbingStyle')}>
 				{#each WEEKDAY_STYLE_KEYS as key (key)}
@@ -246,8 +253,10 @@
 						class={{ active: style === key }}
 						aria-pressed={style === key}
 						style:--chip={chip ?? 'var(--accent)'}
-						onclick={() => setStyle(key)}>{i18n.t(STYLE_LABEL_KEYS[key])}</button
+						onclick={() => setStyle(key)}
 					>
+						{i18n.t(STYLE_LABEL_KEYS[key])}
+					</button>
 				{/each}
 			</div>
 		</div>
@@ -305,13 +314,13 @@
 				{/each}
 				<circle class="hole" {cx} {cy} r={innerR - 1} />
 				{#if most}
-					<text class="center-day" x={cx} y={cy - 6} style="fill: var(--ink)"
-						>{fullDay(most.weekday)}</text
-					>
-					<text class="center-meta" x={cx} y={cy + 14} style="fill: var(--ink-muted)"
-						>{formatNumber(most.value, dateDisplay)}
-						{unitFor(most.value)}</text
-					>
+					<text class="center-day" x={cx} y={cy - 6} style="fill: var(--ink)">
+						{fullDay(most.weekday)}
+					</text>
+					<text class="center-meta" x={cx} y={cy + 14} style="fill: var(--ink-muted)">
+						{formatNumber(most.value, dateDisplay)}
+						{unitFor(most.value)}
+					</text>
 				{/if}
 			</svg>
 
@@ -348,10 +357,10 @@
 						>
 							<i style:background={DAY_COLORS[row.weekday]}></i>
 							<span class="lab">{dayLabel}</span>
-							<span class="val"
-								>{formatNumber(value, dateDisplay)}{#if value > 0}
-									<span class="pct"> · {pct}%</span>{/if}</span
-							>
+							<span class="val">
+								{formatNumber(value, dateDisplay)}{#if value > 0}
+									<span class="pct"> · {pct}%</span>{/if}
+							</span>
 						</button>
 					</li>
 				{/each}
@@ -361,8 +370,8 @@
 		<details class="values">
 			<summary>{i18n.t('cards.weekdayStats.summaryViewWeekdayValues')}</summary>
 			<table>
-				<caption
-					>{i18n.t(
+				<caption>
+					{i18n.t(
 						style === 'all'
 							? range === 'last12'
 								? 'cards.weekdayStats.captionLast12Weeks'
@@ -371,8 +380,8 @@
 								? 'cards.weekdayStats.captionStyleLast12Weeks'
 								: 'cards.weekdayStats.captionStyleAllTime',
 						{ unit: unitFor(2), style: styleLabel }
-					)}</caption
-				>
+					)}
+				</caption>
 				<thead>
 					<tr>
 						<th scope="col">{i18n.t('cards.weekdayStats.thDay')}</th>

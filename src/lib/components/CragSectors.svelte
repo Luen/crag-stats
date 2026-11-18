@@ -41,28 +41,28 @@
 					>
 						<span class="chev" aria-hidden="true">{open[crag.cragName] ? '▾' : '▸'}</span>
 						<strong>{crag.cragName}</strong>
-						<span class="meta"
-							>{i18n.t('cards.cragSectors.meta', {
+						<span class="meta">
+							{i18n.t('cards.cragSectors.meta', {
 								routes: crag.routeCount,
 								ascents: crag.ascentCount,
 								sectors: crag.sectors.length
-							})}</span
-						>
+							})}
+						</span>
 					</button>
-					<a class="log" href="/logbook?crag={encodeURIComponent(crag.cragName)}"
-						>{i18n.t('cards.cragSectors.logbook')}</a
-					>
+					<a class="log" href="/logbook?crag={encodeURIComponent(crag.cragName)}">
+						{i18n.t('cards.cragSectors.logbook')}
+					</a>
 					{#if crag.areaBreadcrumb}
 						<p class="breadcrumb">{crag.areaBreadcrumb}</p>
 					{/if}
 					{#if crag.visitClimate}
 						{@const c = crag.visitClimate}
 						<p class="climate">
-							<strong
-								>{i18n.t('cards.cragSectors.climateDays', {
+							<strong>
+								{i18n.t('cards.cragSectors.climateDays', {
 									days: formatNumber(c.days, dateDisplay)
-								})}</strong
-							>
+								})}
+							</strong>
 							{#if c.avgHighC != null}
 								{i18n.t('cards.cragSectors.averageHigh')}
 								{formatTemperature(c.avgHighC, displayUnits.temperature)}

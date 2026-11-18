@@ -36,9 +36,9 @@
 								type="hidden"
 								name="queryKey"
 								value={form.queryKey}
-							/><input type="hidden" name="id" value={p.id} /><button type="submit"
-								>{i18n.t('pages.weatherLocations.buttonUsePlace', { name: p.name })}</button
-							>
+							/><input type="hidden" name="id" value={p.id} /><button type="submit">
+								{i18n.t('pages.weatherLocations.buttonUsePlace', { name: p.name })}
+							</button>
 						</form>
 					</li>{/each}
 			</ul>
@@ -50,44 +50,44 @@
 		})}
 	</p>
 	{#each data.groups as g (g.key)}<details>
-			<summary
-				>{i18n.t('pages.weatherLocations.summaryArea', {
+			<summary>
+				{i18n.t('pages.weatherLocations.summaryArea', {
 					name: g.name,
 					country: g.country ?? i18n.t('pages.weatherLocations.labelCountryUnknown'),
 					unresolved: g.unresolved,
 					routes: g.routes,
 					source: g.source
-				})}</summary
-			>{#if g.override}<p>
+				})}
+			</summary>{#if g.override}<p>
 					{i18n.t('pages.weatherLocations.labelChosenFallback', { name: g.override.name })}
 				</p>
 				<form method="POST" action="?/clear">
-					<input type="hidden" name="areaKey" value={g.key} /><button type="submit"
-						>{i18n.t('pages.weatherLocations.buttonRemoveNearbyPlaceFallback')}</button
-					>
+					<input type="hidden" name="areaKey" value={g.key} /><button type="submit">
+						{i18n.t('pages.weatherLocations.buttonRemoveNearbyPlaceFallback')}
+					</button>
 				</form>{/if}
 			<form method="POST" action="?/search" class="search">
-				<input type="hidden" name="areaKey" value={g.key} /><label
-					>{i18n.t('pages.weatherLocations.labelNearbyPlaceOrTown')}
+				<input type="hidden" name="areaKey" value={g.key} /><label>
+					{i18n.t('pages.weatherLocations.labelNearbyPlaceOrTown')}
 					<input
 						name="query"
 						required
 						minlength="3"
 						maxlength="100"
 						placeholder={i18n.t('pages.weatherLocations.placeholderTownRegion')}
-					/></label
-				><label
-					>{i18n.t('pages.weatherLocations.labelCountryCode')}
+					/>
+				</label><label>
+					{i18n.t('pages.weatherLocations.labelCountryCode')}
 					<input
 						name="countryCode"
 						required
 						pattern={'[A-Za-z]{2}'}
 						maxlength="2"
 						placeholder={i18n.t('pages.weatherLocations.placeholderAU')}
-					/></label
-				><button type="submit"
-					>{i18n.t('pages.weatherLocations.buttonSearchPlacesForArea', { name: g.name })}</button
-				>
+					/>
+				</label><button type="submit">
+					{i18n.t('pages.weatherLocations.buttonSearchPlacesForArea', { name: g.name })}
+				</button>
 			</form>
 		</details>{/each}
 </section>

@@ -21,13 +21,13 @@
 
 <div class="docs">
 	<nav class="toc panel" aria-label={i18n.t('pages.docsLayout.ariaDocs')} {@attach scrollActiveTab}>
-		<a href="/docs" class={{ active: page.url.pathname === '/docs' }}
-			>{i18n.t('pages.docsLayout.linkOverview')}</a
-		>
+		<a href="/docs" class={{ active: page.url.pathname === '/docs' }}>
+			{i18n.t('pages.docsLayout.linkOverview')}
+		</a>
 		{#each DOC_PAGES as d (d.slug)}
-			<a href="/docs/{d.slug}" class={{ active: page.url.pathname === `/docs/${d.slug}` }}
-				>{d.title}</a
-			>
+			<a href="/docs/{d.slug}" class={{ active: page.url.pathname === `/docs/${d.slug}` }}>
+				{d.title}
+			</a>
 		{/each}
 	</nav>
 	<div class="body">

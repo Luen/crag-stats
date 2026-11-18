@@ -259,10 +259,11 @@
 				title={data.source === 'api'
 					? i18n.t('cards.cprTimeline.titleSourceApi')
 					: i18n.t('cards.cprTimeline.titleSourceApprox')}
-				>{data.source === 'api'
-					? i18n.t('cards.cprTimeline.labelSourceApi')
-					: i18n.t('cards.cprTimeline.labelSourceApprox')}</span
 			>
+				{data.source === 'api'
+					? i18n.t('cards.cprTimeline.labelSourceApi')
+					: i18n.t('cards.cprTimeline.labelSourceApprox')}
+			</span>
 			{#if showGapsToggle}
 				<label class="gaps">
 					<input

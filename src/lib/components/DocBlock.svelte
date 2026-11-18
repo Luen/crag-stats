@@ -51,9 +51,9 @@
 			<tbody>
 				{#each GRADE_BANDS as band (band.id)}
 					<tr>
-						<td
-							><span class="band" style:--c={band.color}>{getBandName(band, i18n.locale)}</span></td
-						>
+						<td>
+							<span class="band" style:--c={band.color}>{getBandName(band, i18n.locale)}</span>
+						</td>
 						<td class="num">{BAND_DOCS[band.id].routes}</td>
 						<td class="num">{BAND_DOCS[band.id].boulders}</td>
 						<td>{BAND_DOCS[band.id].text}</td>
@@ -130,11 +130,11 @@
 						<tr>
 							<td class="strong nowrap">{t.name}</td>
 							<td>{t.meaning}</td>
-							<td class="nowrap"
-								><span class="kind" class:send={t.send}
-									>{t.send ? i18n.t('ticks.send') : i18n.t('ticks.attempt')}</span
-								></td
-							>
+							<td class="nowrap">
+								<span class="kind" class:send={t.send}>
+									{t.send ? i18n.t('ticks.send') : i18n.t('ticks.attempt')}
+								</span>
+							</td>
 						</tr>
 					{/each}
 				</tbody>

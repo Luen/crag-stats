@@ -18,22 +18,22 @@
 	<summary>{i18n.t('cards.seasonalityStrip.summary', { name })}</summary>
 	<table>
 		<caption>{i18n.t('cards.seasonalityStrip.caption', { name })}</caption>
-		<thead
-			><tr
-				><th scope="col">{i18n.t('cards.seasonalityStrip.month')}</th><th scope="col"
-					>{i18n.t('cards.seasonalityStrip.value')}</th
-				></tr
-			></thead
-		>
-		<tbody
-			>{#each MONTHS as label, i (label)}
-				<tr
-					><th scope="row"
-						>{label}{i === month - 1 ? ` ${i18n.t('cards.seasonalityStrip.selected')}` : ''}</th
-					><td>{values[i].toFixed(1)}</td></tr
-				>
-			{/each}</tbody
-		>
+		<thead>
+			<tr>
+				<th scope="col">{i18n.t('cards.seasonalityStrip.month')}</th><th scope="col">
+					{i18n.t('cards.seasonalityStrip.value')}
+				</th>
+			</tr>
+		</thead>
+		<tbody>
+			{#each MONTHS as label, i (label)}
+				<tr>
+					<th scope="row">
+						{label}{i === month - 1 ? ` ${i18n.t('cards.seasonalityStrip.selected')}` : ''}
+					</th><td>{values[i].toFixed(1)}</td>
+				</tr>
+			{/each}
+		</tbody>
 	</table>
 </details>
 

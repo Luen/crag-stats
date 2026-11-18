@@ -54,12 +54,12 @@
 			{#each shares as s (s.style)}
 				{@const label = displayStyle(s.style)}
 				{#if s.pct >= 2}
-					<span class="seg" style:flex={s.pct} style:background={s.color} title="{label}: {s.pct}%"
-						>{#if s.pct >= 8}<span class="seg-label"
-								><span class="seg-name">{label.toUpperCase()}</span>
-								<span class="seg-pct">{Math.round(s.pct)}%</span></span
-							>{/if}</span
-					>
+					<span class="seg" style:flex={s.pct} style:background={s.color} title="{label}: {s.pct}%">
+						{#if s.pct >= 8}<span class="seg-label">
+								<span class="seg-name">{label.toUpperCase()}</span>
+								<span class="seg-pct">{Math.round(s.pct)}%</span>
+							</span>{/if}
+					</span>
 				{/if}
 			{/each}
 		</div>

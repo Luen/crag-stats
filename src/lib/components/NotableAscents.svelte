@@ -56,9 +56,9 @@
 			{row.hardestRoute}
 		{/if}
 		{#if row.hardestDate}
-			<time class="ago" datetime={row.hardestDate}
-				>{formatCalendarDate(row.hardestDate, dateDisplay)}</time
-			>
+			<time class="ago" datetime={row.hardestDate}>
+				{formatCalendarDate(row.hardestDate, dateDisplay)}
+			</time>
 		{/if}
 		{#if ascentPartners(row.hardestPartners, i18n.locale)}
 			<span class="companions">{ascentPartners(row.hardestPartners, i18n.locale)}</span>

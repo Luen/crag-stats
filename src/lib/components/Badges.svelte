@@ -116,9 +116,9 @@
 			{/if}
 		</p>
 		{#if b.earned && b.href}
-			<a class="link" href={b.href} target="_blank" rel="noreferrer"
-				>{i18n.t('cards.badges.linkViewClimb')}</a
-			>
+			<a class="link" href={b.href} target="_blank" rel="noreferrer">
+				{i18n.t('cards.badges.linkViewClimb')}
+			</a>
 		{:else if b.earned}
 			<span class="link muted">{i18n.t('cards.badges.labelEarned')}</span>
 		{:else}
@@ -144,12 +144,12 @@
 			{/if}
 		</div>
 		<div class="meta">
-			<span class="progress"
-				>{i18n.t('cards.badges.progressEarned', {
+			<span class="progress">
+				{i18n.t('cards.badges.progressEarned', {
 					earned: earnedCount,
 					total: totalCount
-				})}</span
-			>
+				})}
+			</span>
 			<a class="how" href="/docs/badges">{i18n.t('common.howItWorks')}</a>
 		</div>
 	</header>
@@ -183,8 +183,10 @@
 				type="button"
 				class="nav prev"
 				onclick={() => scrollBy(-1)}
-				aria-label={i18n.t('cards.badges.ariaScrollBadgesLeft')}>‹</button
+				aria-label={i18n.t('cards.badges.ariaScrollBadgesLeft')}
 			>
+				‹
+			</button>
 			<div
 				class="scroller"
 				{@attach (node) => {
@@ -202,8 +204,10 @@
 				type="button"
 				class="nav next"
 				onclick={() => scrollBy(1)}
-				aria-label={i18n.t('cards.badges.ariaScrollBadgesRight')}>›</button
+				aria-label={i18n.t('cards.badges.ariaScrollBadgesRight')}
 			>
+				›
+			</button>
 		</div>
 	{/if}
 

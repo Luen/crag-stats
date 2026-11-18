@@ -297,36 +297,44 @@
 						type="button"
 						class={{ active: chartMode === 'year' }}
 						aria-pressed={chartMode === 'year'}
-						onclick={() => setChartMode('year')}>{t('cards.yearlyStats.modeYear')}</button
+						onclick={() => setChartMode('year')}
 					>
+						{t('cards.yearlyStats.modeYear')}
+					</button>
 					<button
 						type="button"
 						class={{ active: chartMode === 'cumulative' }}
 						aria-pressed={chartMode === 'cumulative'}
 						onclick={() => setChartMode('cumulative')}
-						>{t('cards.yearlyStats.modeCumulative')}</button
 					>
+						{t('cards.yearlyStats.modeCumulative')}
+					</button>
 				</div>
 				<div class="toggles" role="group" aria-label={i18n.t('cards.yearlyStats.ariaMetric')}>
 					<button
 						type="button"
 						class={{ active: metric === 'ascents' }}
 						aria-pressed={metric === 'ascents'}
-						onclick={() => (metric = 'ascents')}>{t('cards.yearlyStats.metricAscents')}</button
+						onclick={() => (metric = 'ascents')}
 					>
+						{t('cards.yearlyStats.metricAscents')}
+					</button>
 					<button
 						type="button"
 						class={{ active: metric === 'sends' }}
 						aria-pressed={metric === 'sends'}
-						onclick={() => (metric = 'sends')}>{t('cards.yearlyStats.metricSends')}</button
+						onclick={() => (metric = 'sends')}
 					>
+						{t('cards.yearlyStats.metricSends')}
+					</button>
 					<button
 						type="button"
 						class={{ active: metric === 'heightM' }}
 						aria-pressed={metric === 'heightM'}
 						onclick={() => (metric = 'heightM')}
-						>{t('cards.yearlyStats.metricHeight', { unit: heightUnit })}</button
 					>
+						{t('cards.yearlyStats.metricHeight', { unit: heightUnit })}
+					</button>
 				</div>
 			</div>
 		{/if}
@@ -351,9 +359,9 @@
 						y2={plot.h - plot.padBot}
 						style="stroke: color-mix(in srgb, var(--ink) 12%, transparent)"
 					/>
-					<text class="month-tick" x={tick.x} y={plot.h - 8} style="fill: var(--ink-muted)"
-						>{tick.label}</text
-					>
+					<text class="month-tick" x={tick.x} y={plot.h - 8} style="fill: var(--ink-muted)">
+						{tick.label}
+					</text>
 				{/each}
 				{#each yearLines as yl (yl.year)}
 					<polyline
@@ -403,13 +411,13 @@
 							chart: chartLabel
 						})}
 					>
-						<title
-							>{p.year}: {formatValue(p.value)}
+						<title>
+							{p.year}: {formatValue(p.value)}
 							{t('cards.yearlyStats.yearPointTitle', {
 								chart: chartLabel,
 								delta: fmtDelta(series[i]?.delta ?? null, deltaSuffix)
-							})}</title
-						>
+							})}
+						</title>
 						<circle
 							class="dot"
 							cx={p.x}
@@ -497,9 +505,9 @@
 							<div class="bar" style:height="{(point.value / max) * 100}%"></div>
 						</div>
 						<span class="year-label">{point.year}</span>
-						<span class={['delta', deltaClass(point.delta)]}
-							>{fmtDelta(point.delta, deltaSuffix)}</span
-						>
+						<span class={['delta', deltaClass(point.delta)]}>
+							{fmtDelta(point.delta, deltaSuffix)}
+						</span>
 					</a>
 				{/each}
 			</div>
@@ -535,9 +543,9 @@
 								<td>{row.onsights}</td>
 								<td class={deltaClass(row.deltaOnsights)}>{fmtDelta(row.deltaOnsights)}</td>
 								<td>{formatHeight(row.heightM, heightUnit)}</td>
-								<td class={deltaClass(row.deltaHeightM)}
-									>{fmtDelta(row.deltaHeightM, ` ${heightUnit}`)}</td
-								>
+								<td class={deltaClass(row.deltaHeightM)}>
+									{fmtDelta(row.deltaHeightM, ` ${heightUnit}`)}
+								</td>
 							</tr>
 						{/each}
 					</tbody>

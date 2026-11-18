@@ -24,11 +24,11 @@
 		<div class="bucket busy">
 			<span class="k">{i18n.t('cards.routePopularity.labelBeatenTrack')}</span>
 			<strong>{data.busy.pct}%</strong>
-			<span class="n"
-				>{i18n.t('cards.routePopularity.labelTicks', {
+			<span class="n">
+				{i18n.t('cards.routePopularity.labelTicks', {
 					count: formatNumber(data.busy.count, dateDisplay)
-				})}</span
-			>
+				})}
+			</span>
 			<div class="track" aria-hidden="true">
 				<div class="fill" style:width="{data.busy.pct}%"></div>
 			</div>
@@ -37,11 +37,11 @@
 		<div class="bucket quiet">
 			<span class="k">{i18n.t('cards.routePopularity.labelOffTheBeatenTrack')}</span>
 			<strong>{data.quiet.pct}%</strong>
-			<span class="n"
-				>{i18n.t('cards.routePopularity.labelTicks', {
+			<span class="n">
+				{i18n.t('cards.routePopularity.labelTicks', {
 					count: formatNumber(data.quiet.count, dateDisplay)
-				})}</span
-			>
+				})}
+			</span>
 			<div class="track" aria-hidden="true">
 				<div class="fill" style:width="{data.quiet.pct}%"></div>
 			</div>
