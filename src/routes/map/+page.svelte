@@ -24,12 +24,12 @@
 	const styleLabel = (style: string) => (STYLE_KEYS[style] ? i18n.t(STYLE_KEYS[style]) : style);
 </script>
 
-<svelte:head
-	><title>{i18n.t('pages.map.pageTitle')}</title><meta
+<svelte:head>
+	<title>{i18n.t('pages.map.pageTitle')}</title><meta
 		name="description"
 		content={i18n.t('pages.map.pageDescription')}
-	/></svelte:head
->
+	/>
+</svelte:head>
 <section class="panel">
 	<h1>{i18n.t('pages.map.titleClimbingAroundTheWorld')}</h1>
 	<p>
@@ -42,31 +42,34 @@
 		<a class="how" href="/docs/climbing-map">{i18n.t('common.howItWorks')}</a>
 	</p>
 	<form method="GET" class="filters">
-		<label
-			>{i18n.t('common.from')} <input type="date" name="from" value={data.filters.from} /></label
-		><label
-			>{i18n.t('pages.map.labelTo')} <input type="date" name="to" value={data.filters.to} /></label
-		>
-		<label
-			>{i18n.t('pages.map.labelStyle')}
-			<select name="style" value={data.filters.style}
-				><option value="">{i18n.t('pages.map.optionAllStyles')}</option
-				>{#each includeSelectedOptions( LOGBOOK_STYLES, [data.filters.style] ) as style (style)}<option
-						value={style}>{styleLabel(style)}</option
-					>{/each}</select
-			></label
-		>
-		<label
-			>{i18n.t('pages.map.labelVenues')}
-			<select name="venue" value={data.filters.venue}
-				><option value="all">{i18n.t('pages.map.optionAllVenues')}</option><option value="outdoor"
-					>{i18n.t('pages.map.optionOutdoor')}</option
-				><option value="indoor">{i18n.t('pages.map.optionIndoor')}</option></select
-			></label
-		>
-		<button type="submit">{i18n.t('pages.map.buttonApplyFilters')}</button><a href="/map"
-			>{i18n.t('pages.map.linkReset')}</a
-		>
+		<label>
+			{i18n.t('common.from')} <input type="date" name="from" value={data.filters.from} />
+		</label><label>
+			{i18n.t('pages.map.labelTo')} <input type="date" name="to" value={data.filters.to} />
+		</label>
+		<label>
+			{i18n.t('pages.map.labelStyle')}
+			<select name="style" value={data.filters.style}>
+				<option value="">
+					{i18n.t('pages.map.optionAllStyles')}
+				</option>{#each includeSelectedOptions( LOGBOOK_STYLES, [data.filters.style] ) as style (style)}<option
+						value={style}
+					>
+						{styleLabel(style)}
+					</option>{/each}
+			</select>
+		</label>
+		<label>
+			{i18n.t('pages.map.labelVenues')}
+			<select name="venue" value={data.filters.venue}>
+				<option value="all">{i18n.t('pages.map.optionAllVenues')}</option><option value="outdoor">
+					{i18n.t('pages.map.optionOutdoor')}
+				</option><option value="indoor">{i18n.t('pages.map.optionIndoor')}</option>
+			</select>
+		</label>
+		<button type="submit">{i18n.t('pages.map.buttonApplyFilters')}</button><a href="/map">
+			{i18n.t('pages.map.linkReset')}
+		</a>
 	</form>
 	{#if data.places.length}<WorldClimbingMap
 			places={data.places}
@@ -83,21 +86,21 @@
 	<p>{i18n.t('pages.map.leadValues')}</p>
 	<div class="table-wrap">
 		<table>
-			<thead
-				><tr
-					><th>{i18n.t('pages.map.thPlace')}</th><th>{i18n.t('pages.map.thAscents')}</th><th
-						>{i18n.t('pages.map.thRoutes')}</th
-					><th>{i18n.t('pages.map.thFirstDay')}</th><th>{i18n.t('pages.map.thLastDay')}</th></tr
-				></thead
-			><tbody
-				>{#each data.places as p (p.key)}<tr
-						><td><a href={p.href}>{p.name}{p.country ? ` · ${p.country}` : ''}</a></td><td
-							>{formatNumber(p.count, data.dateDisplay)}</td
-						><td>{formatNumber(p.routes, data.dateDisplay)}</td><td
-							>{p.firstDay ? formatCalendarDate(p.firstDay, data.dateDisplay) : '—'}</td
-						><td>{p.lastDay ? formatCalendarDate(p.lastDay, data.dateDisplay) : '—'}</td></tr
-					>{/each}</tbody
-			>
+			<thead>
+				<tr>
+					<th>{i18n.t('pages.map.thPlace')}</th><th>{i18n.t('pages.map.thAscents')}</th><th>
+						{i18n.t('pages.map.thRoutes')}
+					</th><th>{i18n.t('pages.map.thFirstDay')}</th><th>{i18n.t('pages.map.thLastDay')}</th>
+				</tr>
+			</thead><tbody>
+				{#each data.places as p (p.key)}<tr>
+						<td><a href={p.href}>{p.name}{p.country ? ` · ${p.country}` : ''}</a></td><td>
+							{formatNumber(p.count, data.dateDisplay)}
+						</td><td>{formatNumber(p.routes, data.dateDisplay)}</td><td>
+							{p.firstDay ? formatCalendarDate(p.firstDay, data.dateDisplay) : '—'}
+						</td><td>{p.lastDay ? formatCalendarDate(p.lastDay, data.dateDisplay) : '—'}</td>
+					</tr>{/each}
+			</tbody>
 		</table>
 	</div>
 </section>

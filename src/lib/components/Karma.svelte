@@ -41,9 +41,9 @@
 			{i18n.t('cards.karma.sourceLocal')}
 		{/if}
 		{i18n.t('cards.karma.queueNote')}
-		<a href="https://www.thecrag.com/article/cragkarma" target="_blank" rel="noreferrer"
-			>{i18n.t('cards.karma.articleLink')}</a
-		>.
+		<a href="https://www.thecrag.com/article/cragkarma" target="_blank" rel="noreferrer">
+			{i18n.t('cards.karma.articleLink')}
+		</a>.
 	</p>
 </article>
 

@@ -137,16 +137,17 @@
 </p>
 <p>
 	<a href="/" data-sveltekit-reload>{i18n.t('pages.offline.linkReturnToLiveDashboard')}</a> ·
-	<a href="/docs/offline" data-sveltekit-reload>{i18n.t('pages.offline.linkHowOfflineModeWorks')}</a
-	>
+	<a href="/docs/offline" data-sveltekit-reload>
+		{i18n.t('pages.offline.linkHowOfflineModeWorks')}
+	</a>
 </p>
 <div class="controls">
-	<button type="button" disabled={!ready || busy || !online} onclick={() => command('SAVE')}
-		>{i18n.t('pages.offline.buttonDownloadOrRefreshCopy')}</button
-	>
-	<button type="button" disabled={!ready || busy} onclick={() => command('CLEAR')}
-		>{i18n.t('pages.offline.buttonClearOfflineCopy')}</button
-	>
+	<button type="button" disabled={!ready || busy || !online} onclick={() => command('SAVE')}>
+		{i18n.t('pages.offline.buttonDownloadOrRefreshCopy')}
+	</button>
+	<button type="button" disabled={!ready || busy} onclick={() => command('CLEAR')}>
+		{i18n.t('pages.offline.buttonClearOfflineCopy')}
+	</button>
 </div>
 <p role="status">
 	{online
@@ -185,36 +186,35 @@
 				total: fmt(snapshot.total)
 			})}
 		</p>
-		<label
-			>{i18n.t('pages.offline.labelSearchDownloadedClimbs')}
+		<label>
+			{i18n.t('pages.offline.labelSearchDownloadedClimbs')}
 			<input
 				type="search"
 				bind:value={query}
 				oninput={() => {
 					limit = 100;
 				}}
-			/></label
-		>
+			/>
+		</label>
 		<p>{i18n.t('pages.offline.matchingAscents', { count: fmt(matching.length) })}</p>
 		<div class="table-wrap">
 			<table>
-				<caption class="sr-only">{i18n.t('pages.offline.captionDownloadedAscents')}</caption><thead
-					><tr
-						><th scope="col">{i18n.t('pages.offline.columnDate')}</th><th scope="col"
-							>{i18n.t('pages.offline.columnClimb')}</th
-						><th scope="col">{i18n.t('pages.offline.columnGrade')}</th><th scope="col"
-							>{i18n.t('pages.offline.columnTick')}</th
-						><th scope="col">{i18n.t('pages.offline.columnPartners')}</th></tr
-					></thead
-				><tbody>
-					{#each matching.slice(0, limit) as row (row.id)}<tr
-							><td
-								>{formatCalendarDate(row.date, data.dateDisplay) ||
-									i18n.t('pages.offline.unknown')}</td
-							><td>{row.name}<br />{row.crag}</td><td>{row.grade ?? '—'}</td><td
-								>{row.tick ?? '—'}</td
-							><td>{row.partners ?? '—'}</td></tr
-						>{/each}
+				<caption class="sr-only">{i18n.t('pages.offline.captionDownloadedAscents')}</caption><thead>
+					<tr>
+						<th scope="col">{i18n.t('pages.offline.columnDate')}</th><th scope="col">
+							{i18n.t('pages.offline.columnClimb')}
+						</th><th scope="col">{i18n.t('pages.offline.columnGrade')}</th><th scope="col">
+							{i18n.t('pages.offline.columnTick')}
+						</th><th scope="col">{i18n.t('pages.offline.columnPartners')}</th>
+					</tr>
+				</thead><tbody>
+					{#each matching.slice(0, limit) as row (row.id)}<tr>
+							<td>
+								{formatCalendarDate(row.date, data.dateDisplay) || i18n.t('pages.offline.unknown')}
+							</td><td>{row.name}<br />{row.crag}</td><td>{row.grade ?? '—'}</td><td>
+								{row.tick ?? '—'}
+							</td><td>{row.partners ?? '—'}</td>
+						</tr>{/each}
 				</tbody>
 			</table>
 		</div>
@@ -222,8 +222,10 @@
 				type="button"
 				onclick={() => {
 					limit += 100;
-				}}>{i18n.t('pages.offline.buttonShow100More')}</button
-			>{/if}
+				}}
+			>
+				{i18n.t('pages.offline.buttonShow100More')}
+			</button>{/if}
 	</section>
 {/if}
 

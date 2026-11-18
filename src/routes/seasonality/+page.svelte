@@ -30,33 +30,37 @@
 </section>
 
 <form class="panel filters" method="GET" action="/seasonality">
-	<label
-		>{t('pages.seasonality.labelMonth')}<select name="month" value={data.filters.month}>
+	<label>
+		{t('pages.seasonality.labelMonth')}<select name="month" value={data.filters.month}>
 			{#each MONTHS as label, i (label)}<option value={i + 1}>{label}</option>{/each}
-		</select></label
-	>
-	<label class="search"
-		>{t('pages.seasonality.labelSearch')}<input
+		</select>
+	</label>
+	<label class="search">
+		{t('pages.seasonality.labelSearch')}<input
 			name="q"
 			type="search"
 			value={data.filters.q}
 			placeholder={i18n.t('pages.seasonality.placeholderSearchYourCachedClimbs')}
-		/></label
-	>
-	<label
-		>{t('pages.seasonality.labelShow')}<select name="view" value={data.filters.view}
-			><option value="crags">{i18n.t('pages.seasonality.optionCrags')}</option><option
-				value="routes">{i18n.t('pages.seasonality.optionClimbs')}</option
-			></select
-		></label
-	>
-	<label
-		>{t('pages.seasonality.labelSortBy')}<select name="sort" value={data.filters.sort}
-			><option value="season">{i18n.t('pages.seasonality.optionSelectedMonth')}</option><option
-				value="name">{i18n.t('pages.seasonality.optionName')}</option
-			></select
-		></label
-	>
+		/>
+	</label>
+	<label>
+		{t('pages.seasonality.labelShow')}<select name="view" value={data.filters.view}>
+			<option value="crags">{i18n.t('pages.seasonality.optionCrags')}</option><option
+				value="routes"
+			>
+				{i18n.t('pages.seasonality.optionClimbs')}
+			</option>
+		</select>
+	</label>
+	<label>
+		{t('pages.seasonality.labelSortBy')}<select name="sort" value={data.filters.sort}>
+			<option value="season">{i18n.t('pages.seasonality.optionSelectedMonth')}</option><option
+				value="name"
+			>
+				{i18n.t('pages.seasonality.optionName')}
+			</option>
+		</select>
+	</label>
 	{#if data.filters.crag}<input type="hidden" name="crag" value={data.filters.crag} />{/if}
 	<button type="submit">{i18n.t('pages.seasonality.buttonSearch')}</button>
 </form>
@@ -64,9 +68,9 @@
 {#if data.filters.crag}
 	<p class="scope">
 		{t('pages.seasonality.scopeAt', { crag: data.cragName })}
-		<a href={seasonalityHref(data.filters, { crag: '', page: 1 })}
-			>{t('pages.seasonality.searchAllCrags')}</a
-		>
+		<a href={seasonalityHref(data.filters, { crag: '', page: 1 })}>
+			{t('pages.seasonality.searchAllCrags')}
+		</a>
 	</p>
 {/if}
 <p class="explanation">
@@ -101,13 +105,13 @@
 				<h2>{result.name}</h2>
 				{#if result.context}<p class="context">{result.context}</p>{/if}
 				<p class="score">
-					<strong
-						>{result.relative == null
+					<strong>
+						{result.relative == null
 							? t('pages.seasonality.noSeasonalSignal')
 							: t('pages.seasonality.percentOfAnnualPeak', {
 									percent: Math.round(result.relative * 100)
-								})}</strong
-					><br />{t('pages.seasonality.monthValue', {
+								})}
+					</strong><br />{t('pages.seasonality.monthValue', {
 						month: MONTHS[data.filters.month - 1] ?? '',
 						value: result.value.toFixed(1)
 					})}
@@ -121,17 +125,17 @@
 				<SeasonalityStrip values={result.curve} month={data.filters.month} name={result.name} />
 				<div class="links">
 					{#if data.filters.view === 'crags'}
-						<a href={seasonalityHref(data.filters, { view: 'routes', crag: result.crag, page: 1 })}
-							>{t('pages.seasonality.viewClimbsAt', { name: result.name })}</a
-						>
+						<a href={seasonalityHref(data.filters, { view: 'routes', crag: result.crag, page: 1 })}>
+							{t('pages.seasonality.viewClimbsAt', { name: result.name })}
+						</a>
 					{:else if result.logbookHref}
-						<a href={result.logbookHref}
-							>{t('pages.seasonality.viewInLogbook', { name: result.name })}</a
-						>
+						<a href={result.logbookHref}>
+							{t('pages.seasonality.viewInLogbook', { name: result.name })}
+						</a>
 					{/if}
-					{#if result.guidebookHref}<a href={result.guidebookHref} target="_blank" rel="noreferrer"
-							>{t('pages.seasonality.onTheCrag', { name: result.name })}</a
-						>{/if}
+					{#if result.guidebookHref}<a href={result.guidebookHref} target="_blank" rel="noreferrer">
+							{t('pages.seasonality.onTheCrag', { name: result.name })}
+						</a>{/if}
 				</div>
 			</li>
 		{/each}
@@ -140,13 +144,13 @@
 
 {#if data.pages > 1}
 	<nav class="pagination" aria-label={i18n.t('pages.seasonality.ariaSeasonalityResultsPages')}>
-		{#if data.page > 1}<a href={seasonalityHref(data.filters, { page: data.page - 1 })}
-				>{t('pages.seasonality.buttonPrevious')}</a
-			>{/if}
+		{#if data.page > 1}<a href={seasonalityHref(data.filters, { page: data.page - 1 })}>
+				{t('pages.seasonality.buttonPrevious')}
+			</a>{/if}
 		<span>{t('pages.seasonality.pageOf', { page: data.page, pages: data.pages })}</span>
-		{#if data.page < data.pages}<a href={seasonalityHref(data.filters, { page: data.page + 1 })}
-				>{t('pages.seasonality.buttonNext')}</a
-			>{/if}
+		{#if data.page < data.pages}<a href={seasonalityHref(data.filters, { page: data.page + 1 })}>
+				{t('pages.seasonality.buttonNext')}
+			</a>{/if}
 	</nav>
 {/if}
 

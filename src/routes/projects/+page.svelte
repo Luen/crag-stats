@@ -77,9 +77,9 @@
 
 		<p class="footer">{sessionsLabel(p.sessionCount)} · {triesLabel(p.tryCount)}</p>
 		<ProjectReadiness pct={p.progress.pct} horizon={p.progress.horizon} />
-		<a class="doc-link" href={`/logbook?route=${p.routeId}`}
-			>{i18n.t('pages.projects.linkAllLoggedClimbs')}</a
-		>
+		<a class="doc-link" href={`/logbook?route=${p.routeId}`}>
+			{i18n.t('pages.projects.linkAllLoggedClimbs')}
+		</a>
 		{#if p.selection === 'include'}<p class="selection-label">
 				{i18n.t('pages.projects.labelSelectedByYou')}
 			</p>{/if}
@@ -99,8 +99,9 @@
 	<h1>{i18n.t('pages.projects.titleProjects')}</h1>
 	<p class="blurb">
 		{i18n.t('pages.projects.lead')}
-		<a class="doc-link" href="/docs/projects">{i18n.t('pages.projects.linkGuidebookTextPrivacy')}</a
-		>
+		<a class="doc-link" href="/docs/projects">
+			{i18n.t('pages.projects.linkGuidebookTextPrivacy')}
+		</a>
 		{#if data.canManageProjects}
 			<RichText
 				message={i18n.t('pages.projects.leadIncludeDismiss')}
@@ -120,9 +121,9 @@
 <section class="block">
 	<div class="section-head">
 		<h2>{i18n.t('pages.projects.titleWorkingOn')}</h2>
-		<span class="count"
-			>{i18n.t('pages.projects.countRoutes', { count: data.workingOn.length })}</span
-		>
+		<span class="count">
+			{i18n.t('pages.projects.countRoutes', { count: data.workingOn.length })}
+		</span>
 	</div>
 	{#if data.workingOn.length === 0}
 		<p class="empty">{i18n.t('pages.projects.emptyNoOpenProjects')}</p>
@@ -148,9 +149,9 @@
 <section class="block">
 	<div class="section-head">
 		<h2>{i18n.t('pages.projects.titleRecentlySent')}</h2>
-		<span class="count muted"
-			>{i18n.t('pages.projects.countRoutes', { count: data.recentlySent.length })}</span
-		>
+		<span class="count muted">
+			{i18n.t('pages.projects.countRoutes', { count: data.recentlySent.length })}
+		</span>
 	</div>
 	{#if data.recentlySent.length === 0}
 		<p class="empty">{i18n.t('pages.projects.emptyNoFoughtThenSentProjects')}</p>

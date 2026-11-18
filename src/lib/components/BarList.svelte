@@ -33,15 +33,17 @@
 							<a
 								href={item.href}
 								target={external ? '_blank' : undefined}
-								rel={external ? 'noreferrer' : undefined}>{item.label}</a
+								rel={external ? 'noreferrer' : undefined}
 							>
+								{item.label}
+							</a>
 						{:else}
 							{item.label}
 						{/if}
 					</span>
-					<span class="value"
-						>{item.value}{#if item.meta}<span class="meta"> · {item.meta}</span>{/if}</span
-					>
+					<span class="value">
+						{item.value}{#if item.meta}<span class="meta"> · {item.meta}</span>{/if}
+					</span>
 				</div>
 				<div class="track">
 					<div
@@ -56,8 +58,10 @@
 					class="whole-row"
 					href={item.href}
 					target={/^https?:\/\//i.test(item.href) ? '_blank' : undefined}
-					rel={/^https?:\/\//i.test(item.href) ? 'noreferrer' : undefined}>{@render contents()}</a
+					rel={/^https?:\/\//i.test(item.href) ? 'noreferrer' : undefined}
 				>
+					{@render contents()}
+				</a>
 			{:else}{@render contents()}{/if}
 		</li>
 	{/each}

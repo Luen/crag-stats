@@ -61,8 +61,10 @@
 							onclick={() => move(item.id, -1)}
 							aria-label={i18n.t('cards.dashboardLayoutEditor.ariaMoveUp', {
 								name: cardLabel(item.id)
-							})}>↑</button
+							})}
 						>
+							↑
+						</button>
 						<button
 							type="button"
 							class="icon"
@@ -70,23 +72,25 @@
 							onclick={() => move(item.id, 1)}
 							aria-label={i18n.t('cards.dashboardLayoutEditor.ariaMoveDown', {
 								name: cardLabel(item.id)
-							})}>↓</button
+							})}
 						>
+							↓
+						</button>
 					</div>
 				</li>
 			{/each}
 		</ul>
 		<div class="actions">
 			<button type="submit">{i18n.t('cards.dashboardLayoutEditor.buttonSaveLayout')}</button>
-			<button type="button" class="secondary" onclick={resetDraft}
-				>{i18n.t('cards.dashboardLayoutEditor.buttonResetDraft')}</button
-			>
+			<button type="button" class="secondary" onclick={resetDraft}>
+				{i18n.t('cards.dashboardLayoutEditor.buttonResetDraft')}
+			</button>
 		</div>
 	</form>
 	<form method="POST" action="?/resetDashboardLayout" class="reset-form">
-		<button type="submit" class="secondary"
-			>{i18n.t('cards.dashboardLayoutEditor.buttonClearSavedLayout')}</button
-		>
+		<button type="submit" class="secondary">
+			{i18n.t('cards.dashboardLayoutEditor.buttonClearSavedLayout')}
+		</button>
 	</form>
 	<p class="meta">
 		{i18n.t('cards.dashboardLayoutEditor.metaCardsVisible', {

@@ -5,25 +5,30 @@ import { describe, expect, it } from 'vitest';
 const require = createRequire(import.meta.url);
 
 describe('installed dependency security patches', () => {
-	it('minimatch bounds globstar-parent amplification and retains tooling matches', () => {
-		const toolingRequire = createRequire(require.resolve('eslint'));
-		const entry = toolingRequire.resolve('minimatch');
-		const { minimatch, Minimatch } = toolingRequire('minimatch');
-		expect(minimatch('src/lib/file.ts', 'src/**/*.ts', { dot: true })).toBe(true);
-		expect(new Minimatch('src/**/*.ts', { dot: true }).match('src/lib', true)).toBe(true);
-		expect(new Minimatch('**/*.svelte', { dot: true }).match('src/routes/+page.svelte')).toBe(true);
-		const result = spawnSync(
-			process.execPath,
-			[
-				'-e',
-				`const { Minimatch } = require(process.argv[1]); const m = new Minimatch(Array(30).fill('**/../a/b').join('/'), { optimizationLevel: 2, braceExpandMax: 64 }); if (m.set.length > 64) process.exit(1);`,
-				entry
-			],
-			{ encoding: 'utf8', timeout: 2000 }
-		);
-		expect(result.error, result.stderr).toBeUndefined();
-		expect(result.status, result.stderr).toBe(0);
-	});
+	it.each(['eslint', '@typescript-eslint/typescript-estree'])(
+		'%s minimatch bounds globstar-parent amplification and retains tooling matches',
+		(tooling) => {
+			const toolingRequire = createRequire(require.resolve(tooling));
+			const entry = toolingRequire.resolve('minimatch');
+			const { minimatch, Minimatch } = toolingRequire('minimatch');
+			expect(minimatch('src/lib/file.ts', 'src/**/*.ts', { dot: true })).toBe(true);
+			expect(new Minimatch('src/**/*.ts', { dot: true }).match('src/lib', true)).toBe(true);
+			expect(new Minimatch('**/*.svelte', { dot: true }).match('src/routes/+page.svelte')).toBe(
+				true
+			);
+			const result = spawnSync(
+				process.execPath,
+				[
+					'-e',
+					`const { Minimatch } = require(process.argv[1]); try { const m = new Minimatch(Array(30).fill('**/../a/b').join('/'), { optimizationLevel: 2, braceExpandMax: 64 }); if (m.set.length > 64) process.exit(1); } catch (error) { if (!(error instanceof RangeError) || error.message !== "optimizationLevel 2: too many patterns from '**/..'") throw error; }`,
+					entry
+				],
+				{ encoding: 'utf8', timeout: 2000 }
+			);
+			expect(result.error, result.stderr).toBeUndefined();
+			expect(result.status, result.stderr).toBe(0);
+		}
+	);
 
 	it.each(['uri-js', 'uri-js/dist/es5/uri.all.min.js'])(
 		'%s rejects invalid UTF-8 and handles malformed mailto',

@@ -13,12 +13,12 @@
 <article class="panel">
 	<header>
 		<h3>{pyramid.style}</h3>
-		<span class="meta"
-			>{i18n.t('cards.stylePyramid.meta', {
+		<span class="meta">
+			{i18n.t('cards.stylePyramid.meta', {
 				ascents: pyramid.total,
 				system: pyramid.system
-			})}</span
-		>
+			})}
+		</span>
 	</header>
 	{#if pyramid.rows.length === 0}
 		<p class="empty">{i18n.t('cards.stylePyramid.empty')}</p>

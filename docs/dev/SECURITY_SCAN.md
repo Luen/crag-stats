@@ -57,7 +57,7 @@ The dependency scan also reported that the organisation had reached its monthly 
 
 ## Dependabot recheck — 5 November 2026
 
-Alert #11 (GHSA-g3hv-75wg-m249): minimatch 10.2.6 is replaced by 11.0.4 through a range-scoped pnpm override for the current ESLint/config-array/typescript-estree callers. Upstream v11 removes makeRe, AST and RegExp-based set entries; these callers use the retained minimatch function and Minimatch.match API. The installed-package regression exercises those APIs and bounds the advisory's globstar-parent preprocessing reproducer in a subprocess. Remove the override when the owning tools adopt a fixed release. Full lint/type/unit/build/browser checks validate this override; this is not a blanket override of older majors.
+Alert #11 (GHSA-g3hv-75wg-m249): minimatch 10.2.6 is replaced by 11.0.9 through a range-scoped pnpm override for the current ESLint/config-array/typescript-estree callers. Upstream v11 removes makeRe, AST and RegExp-based set entries; these callers use the retained minimatch function and Minimatch.match API. The installed-package regression exercises those APIs and bounds the advisory's globstar-parent preprocessing reproducer in a subprocess. Remove the override when the owning tools adopt a fixed release. Full lint/type/unit/build/browser checks validate this override; this is not a blanket override of older majors.
 
 Alert #10 (GHSA-gcqx-w48m-w2h4 / CVE-2026-93753) names the same deepmerge flaw already addressed by the version-pinned patch in #227. npm still has no upstream fixed release. Installed CJS/UMD exploit tests cover null-prototype targets, malicious source and target inputs, nested merges and arrays. Keep #174 and the version-level alert open; no advisory dismissal or scanner ignore is added. The affected package remains build-only and excluded by the container smoke test. (Superseded: Snyk revoked this advisory on 17 November 2026, so the patch was retired — see below.)
 
@@ -92,7 +92,7 @@ Two advisories from the 28 October table are gone because Snyk revoked them, not
 - deepmerge `SNYK-JS-DEEPMERGE-19964053`: "The advisory has been revoked - it doesn't affect any version of package deepmerge". CVE-2026-93753 was rejected by the CVE List.
 - picomatch `SNYK-JS-PICOMATCH-21248802`: "The advisory has been revoked - it doesn't affect any version of package picomatch". CVE-2026-112366 was disputed by the maintainer.
 
-`snyk test deepmerge@4.3.1` and `snyk test picomatch@4.0.7` both return no findings for the published packages, so this is the advisory database rather than the projected lockfile hiding the patched keys. Keep #174 and #175 open; deleting their pnpm patches is a separate change with its own installed-package regressions, and nothing here added an ignore or dismissed a finding.
+`snyk test deepmerge@4.3.1` and `snyk test picomatch@4.0.7` both return no findings for the published packages, so this is the advisory database rather than the projected lockfile hiding the patched keys. The patches were subsequently retired in #499 after full local validation. No ignore or advisory dismissal was added.
 
 ### Source scan
 

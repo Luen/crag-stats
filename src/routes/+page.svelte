@@ -314,8 +314,10 @@
 						type="button"
 						class={{ active: pyramidMode === mode.id }}
 						aria-pressed={pyramidMode === mode.id}
-						onclick={() => (pyramidOverride = mode.id)}>{i18n.t(mode.key)}</button
+						onclick={() => (pyramidOverride = mode.id)}
 					>
+						{i18n.t(mode.key)}
+					</button>
 				{/each}
 			</nav>
 		</header>
@@ -519,15 +521,17 @@
 							{#if record.href}
 								<a
 									href={record.href}
-									aria-label="{record.grade} · {record.tick} · {record.routeName}">{record.grade}</a
+									aria-label="{record.grade} · {record.tick} · {record.routeName}"
 								>
+									{record.grade}
+								</a>
 							{:else}{record.grade}{/if}
 						</strong>
-						<span
-							>{record.discipline === 'route'
+						<span>
+							{record.discipline === 'route'
 								? i18n.t('pages.dashboard.labelRoutes')
-								: i18n.t('pages.dashboard.labelBoulders')} · {record.tick}</span
-						>
+								: i18n.t('pages.dashboard.labelBoulders')} · {record.tick}
+						</span>
 					</div>
 				{:else}
 					<strong>—</strong><span>{summary.empty}</span>
@@ -548,15 +552,15 @@
 		</div>
 		<div class="metric panel">
 			<strong>{s.totalAscents}</strong>
-			<span
-				>{s.isFiltered
+			<span>
+				{s.isFiltered
 					? i18n.t('pages.dashboard.labelCountedAscents')
-					: i18n.t('pages.dashboard.labelTotalLogged')}</span
-			>
+					: i18n.t('pages.dashboard.labelTotalLogged')}
+			</span>
 			{#if s.isFiltered}
-				<span class="sub"
-					>{i18n.t('pages.dashboard.labelTotalLoggedCount', { count: s.totalLogged })}</span
-				>
+				<span class="sub">
+					{i18n.t('pages.dashboard.labelTotalLoggedCount', { count: s.totalLogged })}
+				</span>
 			{/if}
 		</div>
 		{#if s.outdoorAscents != null || s.indoorAscents != null}

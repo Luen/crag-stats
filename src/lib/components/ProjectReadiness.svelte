@@ -17,23 +17,25 @@
 
 <div class="readiness">
 	<div class="label">
-		<span
-			>{pct === 100
+		<span>
+			{pct === 100
 				? i18n.t('cards.projectReadiness.sent')
-				: i18n.t('cards.projectReadiness.approximate')}</span
-		>
+				: i18n.t('cards.projectReadiness.approximate')}
+		</span>
 		<strong>{pct == null ? i18n.t('cards.projectReadiness.noGradeData') : `${pct}%`}</strong>
 	</div>
 	{#if pct != null}
 		<progress
 			max="100"
 			value={pct}
-			aria-label={i18n.t('cards.projectReadiness.ariaApproximateProjectReadiness')}>{pct}%</progress
+			aria-label={i18n.t('cards.projectReadiness.ariaApproximateProjectReadiness')}
 		>
+			{pct}%
+		</progress>
 	{/if}
-	{#if pct !== 100}<span class="horizon"
-			>{horizonLabel} · {i18n.t('cards.projectReadiness.estimateNote')}</span
-		>{/if}
+	{#if pct !== 100}<span class="horizon">
+			{horizonLabel} · {i18n.t('cards.projectReadiness.estimateNote')}
+		</span>{/if}
 </div>
 
 <style>

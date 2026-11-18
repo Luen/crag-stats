@@ -90,8 +90,9 @@
 					y={lp.y}
 					dy={lp.y < cy - 2 ? '-0.2em' : lp.y > cy + 2 ? '0.75em' : '0.35em'}
 					text-anchor={lp.x < cx - 6 ? 'end' : lp.x > cx + 6 ? 'start' : 'middle'}
-					>{axisLabel(axis)}</text
 				>
+					{axisLabel(axis)}
+				</text>
 			{/each}
 			<polygon class="fill90" points={poly(last90)} />
 			<polygon class="fill30" points={poly(last30)} />

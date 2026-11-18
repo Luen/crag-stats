@@ -153,9 +153,9 @@
 <article class="panel weather-performance">
 	<header>
 		<h2>
-			{#if compact}<a href="/weather#performance"
-					>{i18n.t('cards.weatherPerformance.titleWeatherAndPerformance')}</a
-				>{:else}{i18n.t('cards.weatherPerformance.titleWeatherAndPerformance')}{/if}
+			{#if compact}<a href="/weather#performance">
+					{i18n.t('cards.weatherPerformance.titleWeatherAndPerformance')}
+				</a>{:else}{i18n.t('cards.weatherPerformance.titleWeatherAndPerformance')}{/if}
 		</h2>
 		<a class="how" href="/docs/weather">{i18n.t('common.howItWorks')}</a>
 	</header>
@@ -190,8 +190,10 @@
 							type="button"
 							class={{ active: dimension === g.key }}
 							aria-pressed={dimension === g.key}
-							onclick={() => select('group', g.key)}>{groupLabel(g.key, g.label)}</button
+							onclick={() => select('group', g.key)}
 						>
+							{groupLabel(g.key, g.label)}
+						</button>
 					{/each}
 				</div>
 				<div
@@ -204,8 +206,10 @@
 							type="button"
 							class={{ active: metric === m.key }}
 							aria-pressed={metric === m.key}
-							onclick={() => select('measure', m.key)}>{i18n.t(m.labelKey)}</button
+							onclick={() => select('measure', m.key)}
 						>
+							{i18n.t(m.labelKey)}
+						</button>
 					{/each}
 				</div>
 			</div>
@@ -254,11 +258,11 @@
 						{fmt(r.pct)}% · {sampleText(r)}
 					{/if}
 					{#if r.signal}
-						<span class="signal {r.signal}"
-							>{r.signal === 'higher'
+						<span class="signal {r.signal}">
+							{r.signal === 'higher'
 								? i18n.t('cards.weatherPerformance.labelHigher')
-								: i18n.t('cards.weatherPerformance.labelLower')}</span
-						>
+								: i18n.t('cards.weatherPerformance.labelLower')}
+						</span>
 					{/if}
 				</span>
 				<div class="track" aria-hidden="true">
@@ -335,11 +339,11 @@
 										<td>
 											{rateText(r)}
 											<span class="n">({sampleText(r)})</span>
-											{#if r.signal}<span class="visually-hidden"
-													>{r.signal === 'higher'
+											{#if r.signal}<span class="visually-hidden">
+													{r.signal === 'higher'
 														? i18n.t('cards.weatherPerformance.visuallyHiddenHigher')
-														: i18n.t('cards.weatherPerformance.visuallyHiddenLower')}</span
-												>{/if}
+														: i18n.t('cards.weatherPerformance.visuallyHiddenLower')}
+												</span>{/if}
 										</td>
 									{/each}
 								</tr>
@@ -356,9 +360,9 @@
 		{/if}
 	{/if}
 	{#if compact}<p>
-			<a href="/weather#performance"
-				>{i18n.t('cards.weatherPerformance.linkExploreWeatherPerformance')}</a
-			>
+			<a href="/weather#performance">
+				{i18n.t('cards.weatherPerformance.linkExploreWeatherPerformance')}
+			</a>
 		</p>{/if}
 </article>
 

@@ -121,19 +121,24 @@
 				<button
 					type="button"
 					class={{ active: metric === 'ascents' }}
-					onclick={() => (metric = 'ascents')}>{i18n.t('cards.monthlyStats.metricAscents')}</button
+					onclick={() => (metric = 'ascents')}
 				>
+					{i18n.t('cards.monthlyStats.metricAscents')}
+				</button>
 				<button
 					type="button"
 					class={{ active: metric === 'sends' }}
-					onclick={() => (metric = 'sends')}>{i18n.t('cards.monthlyStats.metricSends')}</button
+					onclick={() => (metric = 'sends')}
 				>
+					{i18n.t('cards.monthlyStats.metricSends')}
+				</button>
 				<button
 					type="button"
 					class={{ active: metric === 'heightM' }}
 					onclick={() => (metric = 'heightM')}
-					>{i18n.t('cards.monthlyStats.metricHeight', { unit: heightUnit })}</button
 				>
+					{i18n.t('cards.monthlyStats.metricHeight', { unit: heightUnit })}
+				</button>
 			</div>
 		</div>
 
@@ -151,9 +156,9 @@
 							<div class="stack">
 								<div class="bar" style:height="{(point.value / max) * 100}%"></div>
 							</div>
-							<span class={['m', { year: sparseLabels }]} aria-hidden="true"
-								>{axisLabel(point.month, i) ?? ''}</span
-							>
+							<span class={['m', { year: sparseLabels }]} aria-hidden="true">
+								{axisLabel(point.month, i) ?? ''}
+							</span>
 						</a>
 					{/each}
 				</div>

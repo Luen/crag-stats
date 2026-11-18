@@ -76,9 +76,9 @@
 		{:else}
 			<p class="hard">
 				{#if s.hardestSend.href}
-					<a href={s.hardestSend.href} target="_blank" rel="noreferrer"
-						><strong>{s.hardestSend.name}</strong></a
-					>
+					<a href={s.hardestSend.href} target="_blank" rel="noreferrer">
+						<strong>{s.hardestSend.name}</strong>
+					</a>
 				{:else}
 					<strong>{s.hardestSend.name}</strong>
 				{/if}
@@ -88,9 +88,9 @@
 			</p>
 			<p class="sub">
 				{#if s.hardestSend.cragName}
-					<a href="/logbook?crag={encodeURIComponent(s.hardestSend.cragName)}&year={s.year}"
-						>{s.hardestSend.cragName}</a
-					>
+					<a href="/logbook?crag={encodeURIComponent(s.hardestSend.cragName)}&year={s.year}">
+						{s.hardestSend.cragName}
+					</a>
 					·
 				{/if}
 				{formatCalendarDate(s.hardestSend.ascentDate, data.dateDisplay)}
