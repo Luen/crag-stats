@@ -7,6 +7,7 @@ vi.mock('./env', () => ({
 	env: (name: string, fallback = '') => vars[name] ?? fallback,
 	envFlag: (name: string) => ['1', 'true', 'yes', 'on'].includes((vars[name] ?? '').toLowerCase()),
 	csvUploadConfigured: () => Boolean((vars.CSV_INGEST_TOKEN ?? '').trim()),
+	logbookMode: () => ((vars.CSV_INGEST_TOKEN ?? '').trim() ? 'csv' : 'api'),
 	theCragUsername: () => (vars.THECRAG_USERNAME ?? '').trim() || null,
 	getTheCragSyncConfiguration: () => {
 		const mode = (vars.CSV_INGEST_TOKEN ?? '').trim() ? 'csv' : 'api';
@@ -88,8 +89,17 @@ describe('CSV logbook mode (#504)', () => {
 	});
 
 	it('passes THECRAG_USERNAME as the FA/FFA identity for CSV logbooks', () => {
+		vars.CSV_INGEST_TOKEN = 'upload-token';
 		vars.THECRAG_USERNAME = ' jodie ';
 		expect(routeHistoryConfig().ownerLogin).toBe('jodie');
 		expect(routeHistoryConfig().apiKey).toBe('');
+	});
+
+	it('ignores THECRAG_USERNAME when the logbook comes from the API', () => {
+		// The name predates this feature, so a leftover value on an API install must not
+		// become an identity that has to match the synced profile (or stop FA matching).
+		vars.THECRAG_API_KEY = 'shared-key';
+		vars.THECRAG_USERNAME = 'someone-else';
+		expect(routeHistoryConfig().ownerLogin).toBeNull();
 	});
 });

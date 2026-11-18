@@ -3,7 +3,7 @@
  * starts runs in the background (after each logbook sync, on a schedule, or from Settings). Off
  * unless ROUTE_DATA_IMPORT=true. All pacing and caching rules live in `routeHistoryEngine.ts`.
  */
-import { env, envFlag, theCragUsername } from './env';
+import { env, envFlag, logbookMode, theCragUsername } from './env';
 import { openRouteHistoryClient } from './providers/thecrag/routeHistoryApi';
 import { triggerWeatherImport } from './weatherImport';
 import {
@@ -19,11 +19,20 @@ import {
 	type RouteHistoryStatus
 } from './routeHistoryEngine';
 
+/**
+ * FA/FFA identity, from `.env` only when the logbook arrives by CSV: an API sync saves
+ * `profiles.login`, which is the account this install actually holds. Reading the variable
+ * in API mode would let a leftover value (it predates this feature) stop matching.
+ */
+function configuredOwnerLogin(): string | null {
+	return logbookMode() === 'csv' ? theCragUsername() : null;
+}
+
 export function routeHistoryConfig(): RouteHistoryConfig {
 	return {
 		enabled: envFlag('ROUTE_DATA_IMPORT'),
 		apiKey: env('THECRAG_API_KEY').trim(),
-		ownerLogin: theCragUsername(),
+		ownerLogin: configuredOwnerLogin(),
 		refreshDays: parseRouteDataRefreshDays(env('ROUTE_DATA_REFRESH_DAYS')),
 		weatherEnabled: envFlag('WEATHER_IMPORT')
 	};
@@ -74,7 +83,7 @@ export function triggerRouteHistoryImport(reason: string): boolean {
 }
 
 export function reapplyRouteHistoryMarks(rules: MarkRules) {
-	return applyCachedHistoryMarks(rules, theCragUsername());
+	return applyCachedHistoryMarks(rules, configuredOwnerLogin());
 }
 
 export function refreshAllRouteHistory(): number {

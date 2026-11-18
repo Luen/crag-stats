@@ -47,7 +47,7 @@ No supporter key? On theCrag, open your logbook and choose **Action → Export l
 
 Manual uploads add and update ascents but never remove ascents that are missing from the file. To drop deleted ticks, **Wipe all local data** and upload a fresh export. The CSV has fewer fields than the API, including less profile, route metadata, and multipitch information, and it does not include theCrag's private ascent notes (`privateMarkdown`); only the public Comment column is imported. Australian bare boulder digits use Country / path as an AU hint so they do not become fake V-grades.
 
-Route data import matches FA/FFA credits against your theCrag username. API sync saves it from your profile; a CSV-only install sets it with `THECRAG_USERNAME`. Without it the import stops before fetching anything, so set it (or mark first ascents by hand in the logbook).
+Route data import matches FA/FFA credits against your theCrag username. API sync saves it from your profile, and `THECRAG_USERNAME` is ignored in that mode; a CSV-only install sets it instead. Without a login the import stops before fetching anything, so set it (or mark first ascents by hand in the logbook).
 
 ## CSV logbook with route data
 

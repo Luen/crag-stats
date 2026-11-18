@@ -61,9 +61,9 @@ export type RouteHistoryConfig = {
 	/** Fetch missing crag/sector geometry only when weather import is opted in too. */
 	weatherEnabled?: boolean;
 	/**
-	 * Optional login override. When a logbook sync has saved a login it must match, or the
-	 * run is blocked (account-switch guard). When nothing is saved — a CSV-only logbook —
-	 * the override supplies the identity to match FA/FFA credits against.
+	 * FA/FFA identity from `.env`, used only when the logbook arrives by CSV (it carries no
+	 * `@login`). When a sync has saved a profile login it must match, so the value can never
+	 * retarget an existing logbook. API installs leave this null and use the saved login.
 	 */
 	ownerLogin?: string | null;
 };
