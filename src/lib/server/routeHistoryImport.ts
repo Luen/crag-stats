@@ -1,9 +1,9 @@
 /**
  * Route-history import wiring (#68): reads `.env`, plugs the impers client into the engine, and
- * starts runs in the background (after each logbook sync, or from Settings). Off unless
- * ROUTE_DATA_IMPORT=true. All pacing and caching rules live in `routeHistoryEngine.ts`.
+ * starts runs in the background (after each logbook sync, on a schedule, or from Settings). Off
+ * unless ROUTE_DATA_IMPORT=true. All pacing and caching rules live in `routeHistoryEngine.ts`.
  */
-import { env, envFlag } from './env';
+import { env, envFlag, logbookMode, theCragUsername } from './env';
 import { openRouteHistoryClient } from './providers/thecrag/routeHistoryApi';
 import { triggerWeatherImport } from './weatherImport';
 import {
@@ -19,10 +19,20 @@ import {
 	type RouteHistoryStatus
 } from './routeHistoryEngine';
 
-function config(): RouteHistoryConfig {
+/**
+ * FA/FFA identity, from `.env` only when the logbook arrives by CSV: an API sync saves
+ * `profiles.login`, which is the account this install actually holds. Reading the variable
+ * in API mode would let a leftover value (it predates this feature) stop matching.
+ */
+function configuredOwnerLogin(): string | null {
+	return logbookMode() === 'csv' ? theCragUsername() : null;
+}
+
+export function routeHistoryConfig(): RouteHistoryConfig {
 	return {
 		enabled: envFlag('ROUTE_DATA_IMPORT'),
 		apiKey: env('THECRAG_API_KEY').trim(),
+		ownerLogin: configuredOwnerLogin(),
 		refreshDays: parseRouteDataRefreshDays(env('ROUTE_DATA_REFRESH_DAYS')),
 		weatherEnabled: envFlag('WEATHER_IMPORT')
 	};
@@ -35,16 +45,16 @@ const deps: RouteHistoryDeps = {
 };
 
 export function isRouteHistoryImportEnabled(): boolean {
-	return config().enabled;
+	return routeHistoryConfig().enabled;
 }
 
 export function getRouteHistoryStatus(): RouteHistoryStatus {
-	return routeHistoryStatus(config());
+	return routeHistoryStatus(routeHistoryConfig());
 }
 
 /** Run one batch of up to 100 routes now and wait for it (tests / scripts). */
 export async function runRouteHistoryImport(): Promise<RouteHistoryRunResult> {
-	const result = await runRouteHistoryImportOnce(config(), deps);
+	const result = await runRouteHistoryImportOnce(routeHistoryConfig(), deps);
 	if (result.outcome === 'ran') triggerWeatherImport('route locations');
 	return result;
 }
@@ -54,7 +64,7 @@ export async function runRouteHistoryImport(): Promise<RouteHistoryRunResult> {
  * refuses while a run is active, inside the 1-minute run gap, or during a back-off.
  */
 export function triggerRouteHistoryImport(reason: string): boolean {
-	const c = config();
+	const c = routeHistoryConfig();
 	if (!c.enabled || !c.apiKey) return false;
 	void runRouteHistoryImportOnce(c, deps)
 		.then((r) => {
@@ -73,7 +83,7 @@ export function triggerRouteHistoryImport(reason: string): boolean {
 }
 
 export function reapplyRouteHistoryMarks(rules: MarkRules) {
-	return applyCachedHistoryMarks(rules);
+	return applyCachedHistoryMarks(rules, configuredOwnerLogin());
 }
 
 export function refreshAllRouteHistory(): number {

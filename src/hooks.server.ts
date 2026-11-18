@@ -80,6 +80,11 @@ export const handle: Handle = async ({ event, resolve }) => {
 		return finish(await resolve(event), path);
 	}
 
+	// `POST /api/logbook/csv` authenticates itself with CSV_INGEST_TOKEN, so it answers its own
+	// 401/503. The browser gate below would report 401 for a missing token, hiding the 503 that
+	// tells an operator to set one.
+	if (path === '/api/logbook/csv') return finish(await resolveWithLang(), path);
+
 	// Worker can trigger sync with shared secret even when password gate is on
 	if (path === '/api/sync') {
 		const secret = env('SESSION_SECRET');

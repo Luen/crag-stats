@@ -4,14 +4,14 @@ Crag Stats can cache **daily outdoor weather** for climbs that have route coordi
 
 ## Opt-in
 
-Off by default. The server owner sets `WEATHER_IMPORT=true` in `.env` and restarts. After each successful logbook sync (and from **Settings → Import weather**), Crag Stats fetches up to **50** missing outdoor days per run from [Open-Meteo](https://open-meteo.com/)'s historical weather API, oldest climb days first, with at least **1.1 seconds** between requests. The Settings action starts that run in the background so the page does not wait on the full batch. Wipe clears the cache.
+Off by default. The server owner sets `WEATHER_IMPORT=true` in `.env` and restarts. After each successful logbook sync, on the background import schedule (`IMPORT_CRON`, daily by default, which also covers logbooks that arrive by CSV), and from **Settings → Import weather**, Crag Stats fetches up to **50** missing outdoor days per run from [Open-Meteo](https://open-meteo.com/)'s historical weather API, oldest climb days first, with at least **1.1 seconds** between requests. The Settings action starts that run in the background so the page does not wait on the full batch. Wipe clears the cache.
 
 Open-Meteo's free non-commercial tier is intended for personal self-hosted installs. Do not enable this for a commercial multi-tenant service without reviewing their terms and paid options.
 
 ## What gets fetched
 
 - **Outdoor only** — likely indoor / gym routes are skipped (same heuristics as goals).
-- **Coordinates required** — the route must have latitude and longitude (from theCrag sync).
+- **Coordinates required** — the route must have latitude and longitude (from theCrag sync, or from route data import for CSV logbooks).
 - **Past days** — today's UTC date is skipped; the archive is often incomplete for the current day.
 - **Shared cache key** — lat/lon are rounded to **one decimal place**, so nearby routes at one crag share a day row.
 
@@ -140,7 +140,7 @@ The card counts outdoor _days_ at each location, while the logbook lists every m
 
 CSV exports do not include coordinates. With both weather import and route-data import enabled (`WEATHER_IMPORT=true` and `ROUTE_DATA_IMPORT=true`), the configured supporter API key can also look up locations for the crag/sector IDs found in cached route data. This does not import that key owner's logbook or profile. Both keyed logbook ancestors and route API ancestor arrays are supported.
 
-Area lookups share the route import's ten-request budget and one-second pacing. Route checks use the budget first; remaining requests check up to ten areas each. Settings shows **weather areas pending** and offers **Check weather locations now** when all routes are checked. Existing CSV installations can fill missing area locations without **Refresh all routes**. The next successful logbook sync also checks the backlog. Once location checks finish, a background weather batch starts when eligible days exist.
+Area lookups share the route import's ten-request budget and one-second pacing. Route checks use the budget first; remaining requests check up to ten areas each. Settings shows **weather areas pending** and offers **Check weather locations now** when all routes are checked. Existing CSV installations can fill missing area locations without **Refresh all routes**. The next import run also checks the backlog. Once location checks finish, a background weather batch starts when eligible days exist.
 
 Area responses (including missing locations) are cached once by provider area ID. `ROUTE_DATA_REFRESH_DAYS` also controls their optional refresh age, and **Refresh all routes** makes area lookups eligible again. Access failures stop the import and use its existing backoff; a key that can read route history is not guaranteed access to area locations. If the API supplies no supported location, use the explicit nearby-place fallback below. No API calls run while viewing weather pages.
 

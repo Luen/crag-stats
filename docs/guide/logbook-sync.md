@@ -47,7 +47,46 @@ No supporter key? On theCrag, open your logbook and choose **Action → Export l
 
 Manual uploads add and update ascents but never remove ascents that are missing from the file. To drop deleted ticks, **Wipe all local data** and upload a fresh export. The CSV has fewer fields than the API, including less profile, route metadata, and multipitch information, and it does not include theCrag's private ascent notes (`privateMarkdown`); only the public Comment column is imported. Australian bare boulder digits use Country / path as an AU hint so they do not become fake V-grades.
 
-Route data import needs a saved profile login to match FA/FFA credits, which comes from API sync. Manual CSV uploads do not set it, so mark first ascents by hand in the logbook.
+Route data import matches FA/FFA credits against your theCrag username. API sync saves it from your profile, and `THECRAG_USERNAME` is ignored in that mode; a CSV-only install sets it instead. Without a login the import stops before fetching anything, so set it (or mark first ascents by hand in the logbook).
+
+## CSV logbook with route data
+
+You can keep the logbook in CSV and still have route data (popularity, ascent counts, quality, seasonality, pitches) and automatic FA/FFA marks. Set:
+
+- `CSV_INGEST_TOKEN`: a long random value. It is what lets a container or script send you a CSV export, so it also tells Crag Stats that uploads are the logbook source: no API sync runs, so uploaded ascents are never removed, and the sync never writes the key holder's climber profile.
+- `THECRAG_API_KEY`: your supporter logbook read key, now used only for route data and crag/sector location lookups.
+- `THECRAG_USERNAME`: your theCrag username, so FA/FFA history matches you (CSV exports don't include it).
+
+That is the whole configuration: three values, no mode switch. Without `CSV_INGEST_TOKEN`, `THECRAG_API_KEY` syncs the logbook and route data shares the same key. Background route and weather imports follow `IMPORT_CRON` (daily by default) rather than the logbook schedule, so a weekly or monthly `SYNC_CRON` still gets route data daily. Settings → **Import route data** shows progress and starts a run by hand.
+
+## Uploading a CSV from another container
+
+Uploading by hand is fine for occasional refreshes. If you keep your export somewhere your network can read — a shared folder, a Nextcloud or Dropbox share, or a small companion container that uploads each new export — Crag Stats can accept it over HTTP instead. Set `CSV_INGEST_TOKEN` to a long random value, restart, and then `POST` the file:
+
+```bash
+curl -X POST https://cragstats.example.com/api/logbook/csv \
+  -H "Authorization: Bearer $CSV_INGEST_TOKEN" \
+  -H "Content-Type: text/csv" \
+  --data-binary @thecrag-logbook.csv
+```
+
+A multipart upload with the file in a `file` field works too. Requests without the token are rejected, and a successful response reports how many ascents were processed and how many were new:
+
+```json
+{ "ok": true, "imported": 412, "created": { "routes": 318, "ascents": 412 } }
+```
+
+To check an install without importing anything, send a body that is not an export:
+
+```bash
+curl -s -o /dev/null -w '%{http_code}\n' -X POST https://cragstats.example.com/api/logbook/csv \
+  -H "Authorization: Bearer $CSV_INGEST_TOKEN" \
+  -H "Content-Type: text/csv" --data-binary 'x'
+```
+
+`400` means the endpoint is reachable and the token was accepted: it rejected the body, so nothing was written. `401` means the token did not match, while `404` means that image predates this endpoint. On a whole-UI-gated install (`AUTH_SCOPE=all`), an older image answers `401` for any unknown `/api/` path, so read `401` as "token or image".
+
+An empty file, a login page saved by mistake, or anything over 25 MB is rejected rather than imported. This endpoint does the same upsert-only import as the Settings form, so it never removes ascents that are missing from the file. It makes no request to theCrag: the export still has to come from your own browser or another tool you control.
 
 ## Why there are no automatic CSV downloads
 

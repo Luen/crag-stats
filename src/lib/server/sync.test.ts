@@ -9,7 +9,7 @@ import { invalidateLogbookSync } from './syncGeneration';
 
 vi.mock('./env', () => ({
 	env: () => 'synthetic-key',
-	getTheCragSyncConfiguration: vi.fn(() => ({ configured: true }))
+	getTheCragSyncConfiguration: vi.fn(() => ({ configured: true, mode: 'api' as const }))
 }));
 vi.mock('./providers/thecrag', () => ({ syncTheCragAll: vi.fn() }));
 vi.mock('./ingest', () => ({
@@ -30,7 +30,7 @@ vi.mock('./weatherImport', () => ({ triggerWeatherImport: vi.fn() }));
 
 beforeEach(() => {
 	vi.clearAllMocks();
-	vi.mocked(getTheCragSyncConfiguration).mockReturnValue({ configured: true });
+	vi.mocked(getTheCragSyncConfiguration).mockReturnValue({ configured: true, mode: 'api' });
 	vi.mocked(syncTheCragAll).mockResolvedValue({ count: 0, maxEpoch: null, profile: null });
 });
 

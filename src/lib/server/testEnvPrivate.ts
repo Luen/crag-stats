@@ -4,14 +4,17 @@
  * into the cache of `src/lib/server/env.ts`.
  */
 export const THECRAG_API_KEY = process.env.THECRAG_API_KEY ?? '';
+export const THECRAG_USERNAME = process.env.THECRAG_USERNAME ?? '';
 export const APP_PASSWORD = process.env.APP_PASSWORD ?? '';
 export const AUTH_SCOPE = process.env.AUTH_SCOPE ?? 'settings';
 export const SESSION_SECRET = process.env.SESSION_SECRET ?? '';
 export const DATABASE_PATH = process.env.DATABASE_PATH ?? ':memory:';
 export const SYNC_CRON = process.env.SYNC_CRON ?? '';
+export const IMPORT_CRON = process.env.IMPORT_CRON ?? '';
 export const ROUTE_DATA_IMPORT = process.env.ROUTE_DATA_IMPORT ?? '';
 export const ROUTE_DATA_REFRESH_DAYS = process.env.ROUTE_DATA_REFRESH_DAYS ?? '';
 export const WEATHER_IMPORT = process.env.WEATHER_IMPORT ?? '';
+export const CSV_INGEST_TOKEN = process.env.CSV_INGEST_TOKEN ?? '';
 export const DISPLAY_LOCALE = process.env.DISPLAY_LOCALE ?? '';
 export const TZ = process.env.TZ ?? '';
 export const HOST = process.env.HOST ?? '';

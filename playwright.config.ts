@@ -12,6 +12,11 @@ export const TEST_PASSWORD = (process.env.CRAG_STATS_E2E_PASSWORD ||=
 	randomBytes(24).toString('hex'));
 const sessionSecret = (process.env.CRAG_STATS_E2E_SESSION_SECRET ||=
 	randomBytes(32).toString('hex'));
+// Shared with workers so the sync endpoint's worker-secret path can be exercised.
+export const TEST_SESSION_SECRET = sessionSecret;
+// Bearer token for POST /api/logbook/csv, generated so no credential-shaped literal is committed.
+export const TEST_CSV_TOKEN = (process.env.CRAG_STATS_E2E_CSV_TOKEN ||=
+	randomBytes(24).toString('hex'));
 
 const server = (name: keyof typeof PORTS, env: Record<string, string>) => ({
 	// Reset this named throwaway DB before importing the same server entry as Docker (#350).
@@ -60,7 +65,9 @@ export default defineConfig({
 		server('all', {
 			APP_PASSWORD: TEST_PASSWORD,
 			AUTH_SCOPE: 'all',
-			ORIGIN: `http://localhost:${PORTS.all}`
+			ORIGIN: `http://localhost:${PORTS.all}`,
+			// Proves the CSV endpoint keeps its own token auth when the whole UI is gated.
+			CSV_INGEST_TOKEN: TEST_CSV_TOKEN
 		})
 	],
 	projects: [

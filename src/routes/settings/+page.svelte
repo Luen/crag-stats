@@ -643,6 +643,21 @@
 					>
 				</form>
 			</div>
+		{:else if data.syncConfiguration.mode === 'csv'}
+			<p class="hint">
+				<RichText
+					message={i18n.t('pages.settings.hintCsvLogbook')}
+					tokens={{ token: { kind: 'code', text: 'CSV_INGEST_TOKEN' } }}
+				/>
+			</p>
+			{#if data.routeDataConfiguration.hasApiKey}
+				<p class="hint">
+					<RichText
+						message={i18n.t('pages.settings.hintCsvOnlyRouteData')}
+						tokens={{ key: { kind: 'code', text: 'THECRAG_API_KEY' } }}
+					/>
+				</p>
+			{/if}
 		{:else}
 			<p class="hint">
 				<RichText
@@ -699,6 +714,17 @@
 				/>
 			</p>
 		{:else}
+			{#if data.syncConfiguration.mode === 'csv' && !data.routeDataConfiguration.hasUsername}
+				<p class="hint">
+					<RichText
+						message={i18n.t('pages.settings.hintRouteDataNeedsOwnerLogin')}
+						tokens={{
+							login: { kind: 'code', text: '@login' },
+							ownerLogin: { kind: 'code', text: 'THECRAG_USERNAME' }
+						}}
+					/>
+				</p>
+			{/if}
 			<p class="status">
 				<span
 					class={[
