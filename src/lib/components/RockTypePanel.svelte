@@ -30,8 +30,10 @@
 					<div class="row">
 						<a
 							class={['label', 'link', { dom: dominant === t.name }]}
-							href={`/logbook?rock=${encodeURIComponent(t.name)}`}>{t.name}</a
+							href={`/logbook?rock=${encodeURIComponent(t.name)}`}
 						>
+							{t.name}
+						</a>
 						<span class="value">{t.count} · {Math.round(t.pct)}%</span>
 					</div>
 					<div class="track">

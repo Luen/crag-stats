@@ -86,9 +86,9 @@
 		<div class="titles">
 			<h2>
 				{#if titleHref}
-					<a class="title-link" href={titleHref}
-						>{i18n.t('cards.partnerLeaderboard.titlePartners')}</a
-					>
+					<a class="title-link" href={titleHref}>
+						{i18n.t('cards.partnerLeaderboard.titlePartners')}
+					</a>
 				{:else}
 					{i18n.t('cards.partnerLeaderboard.titlePartners')}
 				{/if}
@@ -108,8 +108,10 @@
 						type="button"
 						class={{ active: metric === m }}
 						aria-pressed={metric === m}
-						onclick={() => setMetric(m)}>{metricButtonLabel(m)}</button
+						onclick={() => setMetric(m)}
 					>
+						{metricButtonLabel(m)}
+					</button>
 				{/each}
 			</div>
 		{/if}
@@ -123,14 +125,17 @@
 				{@const value = partnerMetricValue(p, metric)}
 				<li>
 					<div class="row">
-						<a class="label" href={`/logbook?partnerMatch=exact&with=${encodeURIComponent(p.name)}`}
-							>{p.name}</a
+						<a
+							class="label"
+							href={`/logbook?partnerMatch=exact&with=${encodeURIComponent(p.name)}`}
 						>
-						<span class="value"
-							>{value}
-							{#if metricToggle}<span class="unit"
-									>{partnerMetricLabel(metric, value, i18n.locale)}</span
-								>{/if}
+							{p.name}
+						</a>
+						<span class="value">
+							{value}
+							{#if metricToggle}<span class="unit">
+									{partnerMetricLabel(metric, value, i18n.locale)}
+								</span>{/if}
 						</span>
 					</div>
 					<div class="track">

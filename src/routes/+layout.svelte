@@ -521,8 +521,10 @@
 				href="{data.githubUrl}/releases"
 				target="_blank"
 				rel="noreferrer"
-				title={t('nav.installedVersion')}>{data.appVersion}</a
+				title={t('nav.installedVersion')}
 			>
+				{data.appVersion}
+			</a>
 		</div>
 	</aside>
 	<button
@@ -546,8 +548,9 @@
 		<footer>
 			<p>
 				{t('footer.selfHosted')} · AGPL-3.0 · {t('footer.dataFrom')}
-				<a href="https://www.thecrag.com/" target="_blank" rel="noreferrer">{t('footer.theCrag')}</a
-				>
+				<a href="https://www.thecrag.com/" target="_blank" rel="noreferrer">
+					{t('footer.theCrag')}
+				</a>
 				·
 				<a href={data.githubUrl} target="_blank" rel="noreferrer">{data.appVersion}</a>
 				· <a href="/offline" data-sveltekit-reload>{t('footer.offlineCopy')}</a>

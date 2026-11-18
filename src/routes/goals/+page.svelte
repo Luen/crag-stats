@@ -37,11 +37,11 @@
 			</p>
 			{#if data.canEdit && g.kind === 'grade'}
 				<details>
-					<summary
-						>{g.gradeScale
+					<summary>
+						{g.gradeScale
 							? i18n.t('pages.goals.summaryGradePreferences')
-							: i18n.t('pages.goals.summaryChooseGradeScale')}</summary
-					>
+							: i18n.t('pages.goals.summaryChooseGradeScale')}
+					</summary>
 					<form method="POST" action="?/scale" class="scale-form">
 						<input type="hidden" name="id" value={g.id} />
 						<label>
@@ -78,9 +78,9 @@
 				{:else}
 					<form method="POST" action="?/complete">
 						<input type="hidden" name="id" value={g.id} />
-						<button type="submit" class="secondary"
-							>{i18n.t('pages.goals.buttonMarkComplete')}</button
-						>
+						<button type="submit" class="secondary">
+							{i18n.t('pages.goals.buttonMarkComplete')}
+						</button>
 					</form>
 				{/if}
 				<form method="POST" action="?/delete">
@@ -146,9 +146,9 @@
 				{i18n.t('pages.goals.labelKind')}
 				<select name="kind" bind:value={kind}>
 					<option value="grade">{i18n.t('pages.goals.optionGradeThisYearSendX')}</option>
-					<option value="height_year"
-						>{i18n.t('pages.goals.optionHeightThisYear', { unit: heightUnit })}</option
-					>
+					<option value="height_year">
+						{i18n.t('pages.goals.optionHeightThisYear', { unit: heightUnit })}
+					</option>
 					<option value="days_month">{i18n.t('pages.goals.optionClimbingDaysThisMonth')}</option>
 					<option value="custom">{i18n.t('pages.goals.optionCustomManual')}</option>
 				</select>

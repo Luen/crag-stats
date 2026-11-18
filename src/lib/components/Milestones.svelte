@@ -64,9 +64,9 @@
 			{/each}
 		</ul>
 		{#if remaining > 0}
-			<a class="more" href={titleHref || '/milestones'}
-				>{i18n.t('cards.milestones.more', { count: remaining })}</a
-			>
+			<a class="more" href={titleHref || '/milestones'}>
+				{i18n.t('cards.milestones.more', { count: remaining })}
+			</a>
 		{/if}
 	{/if}
 </article>

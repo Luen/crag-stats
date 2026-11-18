@@ -14,8 +14,10 @@
 			{#if routeLink && routeLink.paragraph === i}{p.slice(0, routeLink.start)}<a
 					href={routeLink.href}
 					target="_blank"
-					rel="noreferrer">{p.slice(routeLink.start, routeLink.end)}</a
-				>{p.slice(routeLink.end)}{:else}{p}{/if}
+					rel="noreferrer"
+				>
+					{p.slice(routeLink.start, routeLink.end)}
+				</a>{p.slice(routeLink.end)}{:else}{p}{/if}
 		</p>
 	{/each}
 	<p class="foot"><a class="how" href="/docs/climbing-story">{i18n.t('common.howItWorks')}</a></p>

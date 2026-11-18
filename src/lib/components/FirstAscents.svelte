@@ -76,11 +76,11 @@
 			{#if years}
 				<div class="tile">
 					<strong>{years}</strong>
-					<span
-						>{i18n.t('cards.firstAscents.tileYears', {
+					<span>
+						{i18n.t('cards.firstAscents.tileYears', {
 							count: data.firstYear === data.latestYear ? 1 : 2
-						})}</span
-					>
+						})}
+					</span>
 				</div>
 			{/if}
 		</div>
@@ -151,11 +151,11 @@
 			</ul>
 			{#if latestMore > 0}
 				<p class="more">
-					<a href="/logbook?fa=any"
-						>{i18n.t('cards.firstAscents.moreInLogbook', {
+					<a href="/logbook?fa=any">
+						{i18n.t('cards.firstAscents.moreInLogbook', {
 							count: formatNumber(latestMore, dateDisplay)
-						})}</a
-					>
+						})}
+					</a>
 				</p>
 			{/if}
 		{/if}
@@ -168,18 +168,18 @@
 						<div>
 							<strong>
 								{#if r.url}
-									<a href={r.url} target="_blank" rel="noreferrer"
-										>{r.routeName ?? r.routeExternalId}</a
-									>
+									<a href={r.url} target="_blank" rel="noreferrer">
+										{r.routeName ?? r.routeExternalId}
+									</a>
 								{:else}
 									{r.routeName ?? r.routeExternalId}
 								{/if}
 							</strong>
 							<span class="credits">
 								{#if r.faKind}<span class="kind">{r.faKind}</span>{/if}
-								{#if r.fromSetter}<span class="kind setter"
-										>{i18n.t('cards.firstAscents.labelSet')}</span
-									>{/if}
+								{#if r.fromSetter}<span class="kind setter">
+										{i18n.t('cards.firstAscents.labelSet')}
+									</span>{/if}
 								{#if r.styleLabel}<StyleBadge style={r.styleLabel} />{/if}
 							</span>
 							<div class="sub">
@@ -229,8 +229,9 @@
 			{i18n.t('cards.firstAscents.footCommunityUnavailable', {
 				count: formatNumber(data.routesPutUp, dateDisplay)
 			})}
-			{#if canEdit}<a href="/settings">{i18n.t('cards.firstAscents.linkImportRouteHistory')}</a
-				>.{/if}
+			{#if canEdit}<a href="/settings">
+					{i18n.t('cards.firstAscents.linkImportRouteHistory')}
+				</a>.{/if}
 		{/if}
 		<a class="how" href="/docs/first-ascents">{i18n.t('common.howItWorks')}</a>
 	</p>

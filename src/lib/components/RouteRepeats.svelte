@@ -109,15 +109,18 @@
 					type="button"
 					class={{ active: range === 'all' }}
 					aria-pressed={range === 'all'}
-					onclick={() => setRange('all')}>{i18n.t('cards.routeRepeats.buttonAllTime')}</button
+					onclick={() => setRange('all')}
 				>
+					{i18n.t('cards.routeRepeats.buttonAllTime')}
+				</button>
 				<button
 					type="button"
 					class={{ active: range === 'last12' }}
 					aria-pressed={range === 'last12'}
 					onclick={() => setRange('last12')}
-					>{i18n.t('cards.routeRepeats.buttonLast12Months')}</button
 				>
+					{i18n.t('cards.routeRepeats.buttonLast12Months')}
+				</button>
 			</div>
 			<div
 				class="toggles"
@@ -130,8 +133,10 @@
 						class={{ active: style === key }}
 						aria-pressed={style === key}
 						style:--chip={STYLE_CHIPS[key]}
-						onclick={() => setStyle(key)}>{i18n.t(STYLE_LABEL_KEYS[key])}</button
+						onclick={() => setStyle(key)}
 					>
+						{i18n.t(STYLE_LABEL_KEYS[key])}
+					</button>
 				{/each}
 			</div>
 		</div>

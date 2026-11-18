@@ -31,12 +31,12 @@
 					{:else}
 						<span class="name">{c.crag}</span>
 					{/if}
-					<span class="meta"
-						>{t('cards.bestMonths.cragMeta', {
+					<span class="meta">
+						{t('cards.bestMonths.cragMeta', {
 							count: c.ascentCount,
 							month: MONTHS[c.peakMonth] ?? ''
-						})}</span
-					>
+						})}
+					</span>
 				</div>
 				<div class="strip" aria-hidden="true">
 					{#each MONTHS as label, i (label)}
@@ -60,20 +60,20 @@
 				<details class="values">
 					<summary>{t('cards.bestMonths.summaryViewMonthlyValues', { crag: c.crag })}</summary>
 					<table>
-						<caption
-							>{t('cards.bestMonths.captionSeasonalityAndYourAscents', { crag: c.crag })}</caption
-						><thead
-							><tr
-								><th scope="col">{t('cards.bestMonths.thMonth')}</th><th scope="col"
-									>{t('cards.bestMonths.thSeasonality')}</th
-								><th scope="col">{t('cards.bestMonths.thYourAscents')}</th></tr
-							></thead
-						><tbody>
-							{#each MONTHS as label, i (label)}<tr
-									><th scope="row">{label}</th><td>{c.seasonality[i].toFixed(1)}</td><td
-										>{c.yourMonths[i]}</td
-									></tr
-								>{/each}
+						<caption>
+							{t('cards.bestMonths.captionSeasonalityAndYourAscents', { crag: c.crag })}
+						</caption><thead>
+							<tr>
+								<th scope="col">{t('cards.bestMonths.thMonth')}</th><th scope="col">
+									{t('cards.bestMonths.thSeasonality')}
+								</th><th scope="col">{t('cards.bestMonths.thYourAscents')}</th>
+							</tr>
+						</thead><tbody>
+							{#each MONTHS as label, i (label)}<tr>
+									<th scope="row">{label}</th><td>{c.seasonality[i].toFixed(1)}</td><td>
+										{c.yourMonths[i]}
+									</td>
+								</tr>{/each}
 						</tbody>
 					</table>
 				</details>

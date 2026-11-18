@@ -33,34 +33,38 @@
 			name="decision"
 			value="exclude"
 			aria-label={i18n.t('cards.projectSelection.ariaUnmarkProject', { name })}
-			>{i18n.t('cards.projectSelection.buttonUnmarkProject')}</button
 		>
+			{i18n.t('cards.projectSelection.buttonUnmarkProject')}
+		</button>
 	{:else}
-		{#if decision === 'exclude'}<span class="dismissed"
-				>{i18n.t('cards.projectSelection.labelNotAProject')}</span
-			>{/if}
+		{#if decision === 'exclude'}<span class="dismissed">
+				{i18n.t('cards.projectSelection.labelNotAProject')}
+			</span>{/if}
 		<button
 			type="submit"
 			name="decision"
 			value="include"
 			aria-label={i18n.t('cards.projectSelection.ariaMarkProject', { name })}
-			>{i18n.t('cards.projectSelection.buttonMarkProject')}</button
 		>
+			{i18n.t('cards.projectSelection.buttonMarkProject')}
+		</button>
 		{#if decision === 'auto'}<button
 				type="submit"
 				name="decision"
 				value="exclude"
 				aria-label={i18n.t('cards.projectSelection.ariaNotAProject', { name })}
-				>{i18n.t('cards.projectSelection.labelNotAProject')}</button
-			>{/if}
+			>
+				{i18n.t('cards.projectSelection.labelNotAProject')}
+			</button>{/if}
 	{/if}
 	{#if decision !== 'auto'}<button
 			type="submit"
 			name="decision"
 			value="auto"
 			aria-label={i18n.t('cards.projectSelection.ariaUseAutomatic', { name })}
-			>{i18n.t('cards.projectSelection.buttonUseAutomatic')}</button
-		>{/if}
+		>
+			{i18n.t('cards.projectSelection.buttonUseAutomatic')}
+		</button>{/if}
 </form>
 
 <style>

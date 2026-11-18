@@ -94,8 +94,10 @@
 					type="button"
 					class={{ active: metric === m.key }}
 					aria-pressed={metric === m.key}
-					onclick={() => (metric = m.key)}>{i18n.t(m.labelKey)}</button
+					onclick={() => (metric = m.key)}
 				>
+					{i18n.t(m.labelKey)}
+				</button>
 			{/each}
 		</div>
 		<p class="hint">{i18n.t(metricDef.helpKey)}</p>
@@ -131,11 +133,11 @@
 					{fmt(r.pct)}% · {sampleText(r)}
 				{/if}
 				{#if r.signal}
-					<span class="signal {r.signal}"
-						>{r.signal === 'higher'
+					<span class="signal {r.signal}">
+						{r.signal === 'higher'
 							? i18n.t('cards.rockPerformance.labelHigher')
-							: i18n.t('cards.rockPerformance.labelLower')}</span
-					>
+							: i18n.t('cards.rockPerformance.labelLower')}
+					</span>
 				{/if}
 			</span>
 			<div class="track" aria-hidden="true">
@@ -203,11 +205,11 @@
 									<td>
 										{rateText(r)}
 										<span class="n">({sampleText(r)})</span>
-										{#if r.signal}<span class="visually-hidden"
-												>{r.signal === 'higher'
+										{#if r.signal}<span class="visually-hidden">
+												{r.signal === 'higher'
 													? i18n.t('cards.rockPerformance.visuallyHiddenHigher')
-													: i18n.t('cards.rockPerformance.visuallyHiddenLower')}</span
-											>{/if}
+													: i18n.t('cards.rockPerformance.visuallyHiddenLower')}
+											</span>{/if}
 									</td>
 								{/each}
 							</tr>

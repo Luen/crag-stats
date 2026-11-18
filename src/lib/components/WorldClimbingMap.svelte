@@ -77,42 +77,58 @@
 		<button
 			type="button"
 			onclick={() => zoom(0.6)}
-			aria-label={i18n.t('cards.worldClimbingMap.ariaZoomIn')}>+</button
-		><button
+			aria-label={i18n.t('cards.worldClimbingMap.ariaZoomIn')}
+		>
+			+
+		</button><button
 			type="button"
 			onclick={() => zoom(1 / 0.6)}
-			aria-label={i18n.t('cards.worldClimbingMap.ariaZoomOut')}>−</button
+			aria-label={i18n.t('cards.worldClimbingMap.ariaZoomOut')}
 		>
+			−
+		</button>
 		<button
 			type="button"
 			onclick={() => pan(-1, 0)}
-			aria-label={i18n.t('cards.worldClimbingMap.ariaPanWest')}>←</button
-		><button
+			aria-label={i18n.t('cards.worldClimbingMap.ariaPanWest')}
+		>
+			←
+		</button><button
 			type="button"
 			onclick={() => pan(1, 0)}
-			aria-label={i18n.t('cards.worldClimbingMap.ariaPanEast')}>→</button
-		><button
+			aria-label={i18n.t('cards.worldClimbingMap.ariaPanEast')}
+		>
+			→
+		</button><button
 			type="button"
 			onclick={() => pan(0, -1)}
-			aria-label={i18n.t('cards.worldClimbingMap.ariaPanNorth')}>↑</button
-		><button
+			aria-label={i18n.t('cards.worldClimbingMap.ariaPanNorth')}
+		>
+			↑
+		</button><button
 			type="button"
 			onclick={() => pan(0, 1)}
-			aria-label={i18n.t('cards.worldClimbingMap.ariaPanSouth')}>↓</button
+			aria-label={i18n.t('cards.worldClimbingMap.ariaPanSouth')}
 		>
+			↓
+		</button>
 		<button
 			type="button"
 			onclick={() => {
 				customView = null;
 				selectedKey = null;
-			}}>{i18n.t('cards.worldClimbingMap.buttonFitPlaces')}</button
-		><button
+			}}
+		>
+			{i18n.t('cards.worldClimbingMap.buttonFitPlaces')}
+		</button><button
 			type="button"
 			onclick={() => {
 				customView = { x: 0, y: 0, width: 1000, height: 500 };
 				selectedKey = null;
-			}}>{i18n.t('cards.worldClimbingMap.buttonWorld')}</button
+			}}
 		>
+			{i18n.t('cards.worldClimbingMap.buttonWorld')}
+		</button>
 	</div>
 </div>
 <div
@@ -123,8 +139,10 @@
 	<svg
 		viewBox={`${view.x} ${view.y} ${view.width} ${view.height}`}
 		preserveAspectRatio="none"
-		aria-hidden="true"><path class="land" d={outline} /></svg
+		aria-hidden="true"
 	>
+		<path class="land" d={outline} />
+	</svg>
 	{#each clusters as c (c.key)}
 		{@const size = 28 + 24 * Math.sqrt(c.count / max)}
 		<button
@@ -138,8 +156,10 @@
 			aria-label={label(c)}
 			aria-pressed={selectedKey === c.key}
 			onclick={() => (selectedKey = selectedKey === c.key ? null : c.key)}
-			title={label(c)}>{formatNumber(c.count, dateDisplay)}</button
+			title={label(c)}
 		>
+			{formatNumber(c.count, dateDisplay)}
+		</button>
 	{/each}
 </div>
 <p class="legend">
@@ -158,17 +178,19 @@
 					// Small floor so close places separate; the spread padding keeps all of them in view.
 					customView = fitMapPlaces(selected.places, centre, 8);
 					selectedKey = null;
-				}}>{i18n.t('cards.worldClimbingMap.buttonZoomToThesePlaces')}</button
-			>{/if}
+				}}
+			>
+				{i18n.t('cards.worldClimbingMap.buttonZoomToThesePlaces')}
+			</button>{/if}
 		<ul>
 			{#each selected.places as p (p.key)}<li>
-					<a href={p.href}
-						>{i18n.t('cards.worldClimbingMap.linkPlaceAscents', {
+					<a href={p.href}>
+						{i18n.t('cards.worldClimbingMap.linkPlaceAscents', {
 							name: p.name,
 							country: p.country ? ` · ${p.country}` : '',
 							ascents: formatNumber(p.count, dateDisplay)
-						})}</a
-					>
+						})}
+					</a>
 					· {i18n.t('cards.worldClimbingMap.metaRoutesAndDates', {
 						routes: p.routes,
 						first: p.firstDay

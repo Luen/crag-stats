@@ -23,26 +23,28 @@
 					class="name"
 					href="/logbook?crag={encodeURIComponent(cragName)}&sectorPath={encodeURIComponent(
 						JSON.stringify([...parentPath, sector.name])
-					)}">{sector.name}</a
+					)}"
 				>
+					{sector.name}
+				</a>
 				<span class="meta">
 					{i18n.t('cards.sectorTreeList.meta', {
 						routes: sector.routeCount,
 						ascents: sector.ascentCount
 					})}
 					{#if sector.multipitchRouteCount}
-						<span class="tag" title={i18n.t('cards.sectorTreeList.titlePitchesHint')}
-							>· {i18n.t('cards.sectorTreeList.metaMultipitch', {
+						<span class="tag" title={i18n.t('cards.sectorTreeList.titlePitchesHint')}>
+							· {i18n.t('cards.sectorTreeList.metaMultipitch', {
 								count: sector.multipitchRouteCount
-							})}</span
-						>
+							})}
+						</span>
 					{/if}
 					{#if sector.styleMismatchRouteCount}
-						<span class="tag warn" title={i18n.t('cards.sectorTreeList.titleStyleFlagsHint')}
-							>· {i18n.t('cards.sectorTreeList.metaStyleFlags', {
+						<span class="tag warn" title={i18n.t('cards.sectorTreeList.titleStyleFlagsHint')}>
+							· {i18n.t('cards.sectorTreeList.metaStyleFlags', {
 								count: sector.styleMismatchRouteCount
-							})}</span
-						>
+							})}
+						</span>
 					{/if}
 				</span>
 			</div>

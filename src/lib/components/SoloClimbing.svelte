@@ -40,8 +40,10 @@
 							href={`/logbook?solo=${k.kind}`}
 							aria-label={i18n.t('cards.soloClimbing.ariaViewClimbsInLogbook', {
 								kind: label
-							})}><strong>{label}</strong></a
+							})}
 						>
+							<strong>{label}</strong>
+						</a>
 						<span class="count">{k.count}</span>
 					</div>
 					<p class="meta">

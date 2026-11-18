@@ -19,9 +19,9 @@
 	}
 </script>
 
-<svelte:head
-	><title>{i18n.t('pages.projectDetail.pageTitle', { name: p.routeName })}</title></svelte:head
->
+<svelte:head>
+	<title>{i18n.t('pages.projectDetail.pageTitle', { name: p.routeName })}</title>
+</svelte:head>
 
 <a class="back" href="/projects">{i18n.t('pages.projectDetail.linkAllProjects')}</a>
 <header class="head">
@@ -36,9 +36,9 @@
 	</h1>
 	<p class="muted">{p.areaLabel}</p>
 	{#if p.gearStyle}<StyleBadge style={p.gearStyle} />{/if}
-	{#if p.href}<a href={p.href} target="_blank" rel="noreferrer"
-			>{i18n.t('pages.projectDetail.linkViewOnTheCrag')}</a
-		>{/if}
+	{#if p.href}<a href={p.href} target="_blank" rel="noreferrer">
+			{i18n.t('pages.projectDetail.linkViewOnTheCrag')}
+		</a>{/if}
 </header>
 
 {#if data.canManageProjects}
@@ -120,23 +120,23 @@
 			tabindex="0"
 		>
 			<table>
-				<thead
-					><tr
-						><th>{i18n.t('pages.projectDetail.thClimbingDay')}</th><th
-							>{i18n.t('pages.projectDetail.thFailedTries')}</th
-						><th>{i18n.t('pages.projectDetail.thCumulativeFailedTries')}</th><th
-							>{i18n.t('pages.projectDetail.thSends')}</th
-						><th>{i18n.t('cards.projectReadiness.approximate')}</th></tr
-					></thead
-				><tbody>
+				<thead>
+					<tr>
+						<th>{i18n.t('pages.projectDetail.thClimbingDay')}</th><th>
+							{i18n.t('pages.projectDetail.thFailedTries')}
+						</th><th>{i18n.t('pages.projectDetail.thCumulativeFailedTries')}</th><th>
+							{i18n.t('pages.projectDetail.thSends')}
+						</th><th>{i18n.t('cards.projectReadiness.approximate')}</th>
+					</tr>
+				</thead><tbody>
 					{#each progress.sessions as session (session.day)}<tr>
-							<td>{formatCalendarDate(session.day, data.dateDisplay)}</td><td
-								>{count(session.failedTries)}</td
-							><td>{count(session.cumulativeTries)}</td><td>{count(session.sends)}</td><td
-								>{session.readiness == null
+							<td>{formatCalendarDate(session.day, data.dateDisplay)}</td><td>
+								{count(session.failedTries)}
+							</td><td>{count(session.cumulativeTries)}</td><td>{count(session.sends)}</td><td>
+								{session.readiness == null
 									? i18n.t('pages.projectDetail.labelUnknownGrade')
-									: `${count(session.readiness)}%`}</td
-							>
+									: `${count(session.readiness)}%`}
+							</td>
 						</tr>{/each}
 				</tbody>
 			</table>
@@ -152,18 +152,18 @@
 	<ul class="tries">
 		{#each data.attempts as attempt (attempt.id)}
 			<li>
-				<span
-					>{attempt.day
+				<span>
+					{attempt.day
 						? formatCalendarDate(attempt.day, data.dateDisplay)
-						: i18n.t('pages.projectDetail.labelUnknownClimbingDay')}</span
-				>
+						: i18n.t('pages.projectDetail.labelUnknownClimbingDay')}
+				</span>
 				<TickTypeIcon tick={attempt.tickLabel || attempt.tickType} />
-				{#if attempt.numberAttempts != null && attempt.numberAttempts > 0}<span
-						>{count(attempt.numberAttempts)}
+				{#if attempt.numberAttempts != null && attempt.numberAttempts > 0}<span>
+						{count(attempt.numberAttempts)}
 						{attempt.isSend
 							? i18n.t('pages.projectDetail.triesIncludingSend')
-							: i18n.t('pages.projectDetail.triesLogged')}</span
-					>{/if}
+							: i18n.t('pages.projectDetail.triesLogged')}
+					</span>{/if}
 				{#if attempt.grade}<span>{attempt.grade}</span>{/if}
 				{#if attempt.pitchLabel}<span>{attempt.pitchLabel}</span>{/if}
 			</li>
@@ -189,9 +189,9 @@
 </details>
 
 <footer class="logbook-link">
-	<a href={`/logbook?route=${p.routeId}`}
-		>{i18n.t('pages.projectDetail.linkViewAllLoggedClimbs', { name: p.routeName })}</a
-	>
+	<a href={`/logbook?route=${p.routeId}`}>
+		{i18n.t('pages.projectDetail.linkViewAllLoggedClimbs', { name: p.routeName })}
+	</a>
 </footer>
 
 <style>

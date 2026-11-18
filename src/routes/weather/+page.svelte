@@ -22,9 +22,9 @@
 		<a class="how" href="/docs/weather">{i18n.t('common.howItWorks')}</a>
 	</p>
 	<nav aria-label={i18n.t('pages.weather.ariaWeatherSections')}>
-		<a href="#conditions">{i18n.t('pages.weather.linkConditions')}</a><a href="#performance"
-			>{i18n.t('pages.weather.linkPerformance')}</a
-		><a href="#coverage">{i18n.t('pages.weather.titleCoverageAmpLocationQuality')}</a>
+		<a href="#conditions">{i18n.t('pages.weather.linkConditions')}</a><a href="#performance">
+			{i18n.t('pages.weather.linkPerformance')}
+		</a><a href="#coverage">{i18n.t('pages.weather.titleCoverageAmpLocationQuality')}</a>
 	</nav>
 </section>
 

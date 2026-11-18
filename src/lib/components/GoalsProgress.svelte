@@ -28,9 +28,9 @@
 	{#if goals.length === 0}
 		<p class="empty">
 			{#if canEdit}
-				{i18n.t('cards.goalsProgress.emptyBeforeLink')}<a href="/goals"
-					>{i18n.t('cards.goalsProgress.emptyLink')}</a
-				>{i18n.t('cards.goalsProgress.emptyAfterLink')}
+				{i18n.t('cards.goalsProgress.emptyBeforeLink')}<a href="/goals">
+					{i18n.t('cards.goalsProgress.emptyLink')}
+				</a>{i18n.t('cards.goalsProgress.emptyAfterLink')}
 			{:else}
 				{i18n.t('cards.goalsProgress.emptyReadOnly')}
 			{/if}

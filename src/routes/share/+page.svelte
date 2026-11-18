@@ -70,9 +70,9 @@
 				: i18n.t('pages.share.buttonCopyDashboardLink')}
 		</button>
 		{#if canShare}
-			<button type="button" class="secondary" onclick={shareDashboard}
-				>{i18n.t('pages.share.buttonShare')}</button
-			>
+			<button type="button" class="secondary" onclick={shareDashboard}>
+				{i18n.t('pages.share.buttonShare')}
+			</button>
 		{/if}
 	</div>
 </section>
@@ -85,19 +85,19 @@
 	</fieldset>
 	<fieldset>
 		<legend>{i18n.t('pages.share.legendCode')}</legend>
-		<label
-			><input type="radio" bind:group={format} value="html" />
-			{i18n.t('pages.share.optionHtml')}</label
-		>
-		<label
-			><input type="radio" bind:group={format} value="markdown" />
-			{i18n.t('pages.share.optionMarkdown')}</label
-		>
+		<label>
+			<input type="radio" bind:group={format} value="html" />
+			{i18n.t('pages.share.optionHtml')}
+		</label>
+		<label>
+			<input type="radio" bind:group={format} value="markdown" />
+			{i18n.t('pages.share.optionMarkdown')}
+		</label>
 	</fieldset>
-	<label class="check"
-		><input type="checkbox" bind:checked={linkBack} />
-		{i18n.t('pages.share.labelLinkToMyDashboard')}</label
-	>
+	<label class="check">
+		<input type="checkbox" bind:checked={linkBack} />
+		{i18n.t('pages.share.labelLinkToMyDashboard')}
+	</label>
 </section>
 
 <div class="cards">
@@ -116,9 +116,9 @@
 						? i18n.t('pages.share.buttonCopied')
 						: i18n.t('pages.share.buttonCopyCode')}
 				</button>
-				<a class="secondary" href={imageUrl(card.id)} target="_blank" rel="noreferrer"
-					>{i18n.t('pages.share.linkOpenImage')}</a
-				>
+				<a class="secondary" href={imageUrl(card.id)} target="_blank" rel="noreferrer">
+					{i18n.t('pages.share.linkOpenImage')}
+				</a>
 			</div>
 		</section>
 	{/each}

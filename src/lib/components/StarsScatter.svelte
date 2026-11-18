@@ -176,15 +176,17 @@
 					class={{ active: kind === 'route' }}
 					aria-pressed={kind === 'route'}
 					onclick={() => (kindOverride = 'route')}
-					>{i18n.t('cards.starsScatter.buttonRoutes')}</button
 				>
+					{i18n.t('cards.starsScatter.buttonRoutes')}
+				</button>
 				<button
 					type="button"
 					class={{ active: kind === 'boulder' }}
 					aria-pressed={kind === 'boulder'}
 					onclick={() => (kindOverride = 'boulder')}
-					>{i18n.t('cards.starsScatter.buttonBoulders')}</button
 				>
+					{i18n.t('cards.starsScatter.buttonBoulders')}
+				</button>
 			</div>
 		{/if}
 	</header>
@@ -197,11 +199,11 @@
 			{#if useQualityAxis}
 				{i18n.t('cards.starsScatter.summaryAverageQuality', { score: Math.round(meanQuality) })}
 				{#if meanStars > 0}
-					<span class="muted"
-						>{i18n.t('cards.starsScatter.summaryStarsWhereNoScore', {
+					<span class="muted">
+						{i18n.t('cards.starsScatter.summaryStarsWhereNoScore', {
 							stars: meanStars.toFixed(1)
-						})}</span
-					>
+						})}
+					</span>
 				{/if}
 			{:else}
 				{i18n.t('cards.starsScatter.summaryAverageStars', { stars: meanStars.toFixed(1) })}
@@ -222,9 +224,9 @@
 					y2={yOf(tick)}
 					class={tick === 0 ? 'axis-line' : 'grid'}
 				/>
-				<text x={pad.l - 8} y={yOf(tick) + 4} text-anchor="end" class="axis"
-					>{yTickLabel(tick)}</text
-				>
+				<text x={pad.l - 8} y={yOf(tick) + 4} text-anchor="end" class="axis">
+					{yTickLabel(tick)}
+				</text>
 			{/each}
 			{#each xTicks as t (t)}
 				<text x={xOf(t)} y={h - pad.b + 16} text-anchor="middle" class="axis">{gradeLabel(t)}</text>
