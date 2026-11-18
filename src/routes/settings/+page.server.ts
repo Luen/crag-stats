@@ -31,7 +31,12 @@ import {
 	setAppSetting,
 	setTickTypeSettings
 } from '#lib/server/appSettings';
-import { env, hasTheCragApiKey, getTheCragSyncConfiguration } from '#lib/server/env';
+import {
+	env,
+	hasTheCragApiKey,
+	getTheCragSyncConfiguration,
+	getRouteDataConfiguration
+} from '#lib/server/env';
 import { ingestLogbookCsv } from '#lib/server/csvIngest';
 import { refreshProjects } from '#lib/server/projects';
 import {
@@ -57,6 +62,7 @@ export const load: PageServerLoad = async ({ cookies }) => {
 		sync: getSyncStatus(),
 		hasApiKey: hasTheCragApiKey(),
 		syncConfiguration: getTheCragSyncConfiguration(),
+		routeDataConfiguration: getRouteDataConfiguration(),
 		// Only an enabled language is a real default; anything else (Auto, a disabled or stale
 		// tag) falls back to Auto.
 		siteLocale: isEnabledLocale(storedLocale) ? storedLocale : '',

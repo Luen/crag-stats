@@ -47,7 +47,17 @@ No supporter key? On theCrag, open your logbook and choose **Action → Export l
 
 Manual uploads add and update ascents but never remove ascents that are missing from the file. To drop deleted ticks, **Wipe all local data** and upload a fresh export. The CSV has fewer fields than the API, including less profile, route metadata, and multipitch information, and it does not include theCrag's private ascent notes (`privateMarkdown`); only the public Comment column is imported. Australian bare boulder digits use Country / path as an AU hint so they do not become fake V-grades.
 
-Route data import needs a saved profile login to match FA/FFA credits, which comes from API sync. Manual CSV uploads do not set it, so mark first ascents by hand in the logbook.
+Route data import matches FA/FFA credits against your theCrag `@login`. API sync saves it from your profile; a CSV-only install sets it with `THECRAG_OWNER_LOGIN`. Without it the import stops before fetching anything, so set it (or mark first ascents by hand in the logbook).
+
+## CSV logbook with route data
+
+You can keep the logbook in CSV and still have route data (popularity, ascent counts, quality, seasonality, pitches) and automatic FA/FFA marks. Set:
+
+- `THECRAG_LOGBOOK_MODE=csv`: the logbook stays CSV-only. No API sync runs, so uploaded ascents are never removed, and the sync never writes the key holder's climber profile.
+- `THECRAG_API_KEY`: the same supporter logbook read key, now used only for route data and crag/sector location lookups.
+- `THECRAG_OWNER_LOGIN`: your theCrag `@login`, so FA/FFA history matches you (CSV exports don't include it).
+
+With `THECRAG_LOGBOOK_MODE` unset, or set to `api`, `THECRAG_API_KEY` syncs the logbook and route data shares the same key. Background route and weather imports follow `IMPORT_CRON` (daily by default) rather than the logbook schedule, so a weekly or monthly `SYNC_CRON` still gets route data daily. Settings → **Import route data** shows progress and starts a run by hand.
 
 ## Uploading a CSV from another container
 

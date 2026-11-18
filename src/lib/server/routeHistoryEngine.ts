@@ -61,9 +61,9 @@ export type RouteHistoryConfig = {
 	/** Fetch missing crag/sector geometry only when weather import is opted in too. */
 	weatherEnabled?: boolean;
 	/**
-	 * Optional login override. It must match the saved logbook login; an empty or
-	 * mismatched value blocks import until the owner syncs or wipes. Unset uses the
-	 * saved profile login.
+	 * Optional login override. When a logbook sync has saved a login it must match, or the
+	 * run is blocked (account-switch guard). When nothing is saved — a CSV-only logbook —
+	 * the override supplies the identity to match FA/FFA credits against.
 	 */
 	ownerLogin?: string | null;
 };
@@ -189,9 +189,10 @@ function ownerLogin(config?: Pick<RouteHistoryConfig, 'ownerLogin'>): string | n
 			?.login ?? null;
 	if (config?.ownerLogin == null) return saved;
 	const override = config.ownerLogin.trim();
-	// Keep the CSV sync account-switch guard effective for manual imports and
-	// cached reapplication too. Environment changes cannot retarget a logbook.
-	if (!override || !saved || override.toLowerCase() !== saved.trim().toLowerCase()) return null;
+	if (!override) return null;
+	// Keep the account-switch guard: a saved logbook login must match.
+	if (saved && override.toLowerCase() !== saved.trim().toLowerCase()) return null;
+	// A CSV logbook has no synced profile, so the configured login is the only identity.
 	return override;
 }
 
@@ -403,7 +404,12 @@ export async function runRouteHistoryImportOnce(
 	if (!config.enabled) {
 		return result(false, 'disabled', 'Route data import is off (set ROUTE_DATA_IMPORT=true).');
 	}
-	if (!config.apiKey) return result(false, 'no-key', 'THECRAG_API_KEY is not set.');
+	if (!config.apiKey)
+		return result(
+			false,
+			'no-key',
+			'Set ROUTE_DATA_API_KEY (or THECRAG_API_KEY) to import route data.'
+		);
 	if (running) return result(false, 'busy', 'A route data import run is already in progress.');
 
 	const now = deps.now();
@@ -422,7 +428,7 @@ export async function runRouteHistoryImportOnce(
 		return result(
 			false,
 			'no-login',
-			'Sync the logbook first with the configured @login. Wipe local data before switching accounts.'
+			'No theCrag login to match FA/FFA credits. Sync the logbook with an API key, or set THECRAG_OWNER_LOGIN when the logbook arrives by CSV.'
 		);
 	}
 	const pending = pendingRouteIds(ROUTES_PER_RUN, config.refreshDays, now);

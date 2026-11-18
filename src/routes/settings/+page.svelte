@@ -653,6 +653,14 @@
 					}}
 				/>
 			</p>
+			{#if data.routeDataConfiguration.mode === 'csv' && data.routeDataConfiguration.hasApiKey}
+				<p class="hint">
+					<RichText
+						message={i18n.t('pages.settings.hintCsvOnlyRouteData')}
+						tokens={{ key: { kind: 'code', text: 'THECRAG_API_KEY' } }}
+					/>
+				</p>
+			{/if}
 		{/if}
 	</article>
 
@@ -699,6 +707,17 @@
 				/>
 			</p>
 		{:else}
+			{#if data.syncConfiguration.mode === 'csv' && !data.routeDataConfiguration.hasOwnerLogin}
+				<p class="hint">
+					<RichText
+						message={i18n.t('pages.settings.hintRouteDataNeedsOwnerLogin')}
+						tokens={{
+							login: { kind: 'code', text: '@login' },
+							ownerLogin: { kind: 'code', text: 'THECRAG_OWNER_LOGIN' }
+						}}
+					/>
+				</p>
+			{/if}
 			<p class="status">
 				<span
 					class={[

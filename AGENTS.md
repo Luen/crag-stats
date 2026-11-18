@@ -102,6 +102,12 @@ User docs: `docs/guide/logbook-sync.md` (also `/docs/logbook-sync` in the app; k
 
 Height quirk: theCrag may return height as `[value, unit]` arrays — parse in the API mapper (`parseHeightMeters` / array handler).
 
+### CSV logbook mode (`THECRAG_LOGBOOK_MODE=csv`)
+
+A CSV-only instance may still use a shared supporter key for route data. In `csv` mode `getTheCragSyncConfiguration().configured` is **false even when `THECRAG_API_KEY` is set**, so no scheduled, boot, worker, or `/api/sync` pull runs, `reconcileProviderAscents` never prunes the CSV rows, and `upsertProfile` never replaces the climber with the key holder. `runTheCragSync` throws a fixed message. The key remains available to `routeHistoryApi` and `/api/area` lookups.
+
+CSV exports carry no `@login`, so `THECRAG_OWNER_LOGIN` supplies the identity for FA/FFA matching (`ownerLogin()` in `routeHistoryEngine.ts`). It may establish a login only when no profile is saved; a saved login must still match, or the run reports `no-login`. `applyCachedHistoryMarks` shares that rule. `IMPORT_CRON` (default `0 6 * * *`, `off` supported) schedules background route/weather imports independently of `SYNC_CRON`, and `startScheduler` starts when either the logbook or the imports are configured — otherwise a CSV install would never drain its route queue.
+
 ---
 
 ## Grades & colours
@@ -619,3 +625,5 @@ World map (#313): `/map` uses bundled public-domain Natural Earth outlines, serv
 - The #468 catalogue sync contains all 1,848 source keys in de/fr/es/it; the UI rollout remains en/de. Unit-only plural labels (for example partner/session units) must not introduce `#` when the English source omits it: their numeric value is rendered separately. Correct target text in Crowdin, then download it; placeholder checks distinguish plural branch text from interpolation variables.
 
 - CSV ingest endpoint: `POST /api/logbook/csv` shares `ingestLogbookCsv()` (`src/lib/server/csvIngest.ts`) with the Settings form, so both paths upsert identically and neither prunes. Auth is `CSV_INGEST_TOKEN` (`x-csv-token` or `Authorization: Bearer`, timing-safe compare); `hooks.server.ts` exempts the path from the browser-session gate like `/api/sync`. Unset token = 503, wrong token = 401, over 25 MB = 413, empty/HTML body = 400 with a fixed message and no upstream detail. It never contacts theCrag, so it does not reintroduce automated logins or export downloads. User guide: `/docs/logbook-sync`.
+
+- #504: `THECRAG_LOGBOOK_MODE=csv` pairs CSV logbook uploads with a shared `THECRAG_API_KEY` for route data only; `THECRAG_OWNER_LOGIN` supplies the `@login` CSV exports lack; `IMPORT_CRON` schedules background route/weather imports independently of `SYNC_CRON`. In csv mode `getTheCragSyncConfiguration().configured` is false, so no sync, prune, or profile overwrite runs.

@@ -29,7 +29,11 @@ export async function runTheCragSync(opts?: { full?: boolean }) {
 	const configuration = getTheCragSyncConfiguration();
 	const apiKey = env('THECRAG_API_KEY').trim();
 	if (!configuration.configured) {
-		throw new Error('THECRAG_API_KEY is not set');
+		throw new Error(
+			configuration.mode === 'csv'
+				? 'Logbook sync is off (THECRAG_LOGBOOK_MODE=csv). Upload a CSV export instead.'
+				: 'THECRAG_API_KEY is not set'
+		);
 	}
 	if (syncing) {
 		return { skipped: true as const, reason: 'Sync already in progress' };

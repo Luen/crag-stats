@@ -8,6 +8,16 @@ export const variables = defineEnvVars({
 		description: 'Personal theCrag Logbook Read API key (Supporters)',
 		schema: optionalString
 	},
+	THECRAG_LOGBOOK_MODE: {
+		description:
+			'Logbook source: api (default, uses THECRAG_API_KEY) or csv (upload/ingest only; THECRAG_API_KEY is then used for route data and area lookups only)',
+		schema: optionalString
+	},
+	THECRAG_OWNER_LOGIN: {
+		description:
+			'Opt-in: theCrag @login used for FA/FFA matching when the logbook arrives by CSV instead of API sync',
+		schema: optionalString
+	},
 	APP_PASSWORD: {
 		description: 'Optional password gate for the UI',
 		schema: optionalString
@@ -26,6 +36,11 @@ export const variables = defineEnvVars({
 	},
 	SYNC_CRON: {
 		description: 'node-cron expression for daily sync',
+		schema: optionalString
+	},
+	IMPORT_CRON: {
+		description:
+			'node-cron expression for background route data and weather imports (default daily; off disables)',
 		schema: optionalString
 	},
 	ROUTE_DATA_IMPORT: {

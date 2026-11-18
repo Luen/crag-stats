@@ -30,9 +30,9 @@ On **Logbook**, use the **First ascent mark** control to show only your FAs, FFA
 
 If your server owner turns it on (`ROUTE_DATA_IMPORT=true`; older versions called this `ROUTE_HISTORY_IMPORT`, which is no longer read, so rename it and restart), Crag Stats reads each logbook route's public history from theCrag in the background and marks the FAs and FFAs that name you.
 
-- **Only entries naming your theCrag username** (`@yourlogin`) count. Plain-text names are ignored because they're too easy to mix up.
+- **Only entries naming your theCrag username** (`@yourlogin`) count. Plain-text names are ignored because they're too easy to mix up. API sync saves that login; if your logbook comes from CSV uploads, set `THECRAG_OWNER_LOGIN` so the import knows which entries are yours.
 - **Your choices win.** Marks you set stay as they are, and routes you unmarked stay unmarked. **Settings → Import route data → Re-apply** can override either, using history already saved, without asking theCrag again.
-- **Gentle on theCrag.** Each route is checked **once** by default (optional periodic data refreshes are described below), at most **100 routes per run** and one request a second. A run happens after each logbook sync, when the app restarts with routes still waiting (for example after an upgrade), or when you press **Check next 100 routes now**. If theCrag pushes back, the import pauses for at least a day.
+- **Gentle on theCrag.** Each route is checked **once** by default (optional periodic data refreshes are described below), at most **100 routes per run** and one request a second. A run happens after each logbook sync, on the background import schedule (`IMPORT_CRON`, daily by default), when the app restarts with routes still waiting (for example after an upgrade), or when you press **Check next 100 routes now**. If theCrag pushes back, the import pauses for at least a day.
 - Settings shows how many of your routes have been checked so far. With the daily sync, a few hundred routes take a few weeks; pressing the button speeds that up.
 
 Only public route history is saved, never your private ascent notes. **Settings → Wipe** removes it along with your marks.

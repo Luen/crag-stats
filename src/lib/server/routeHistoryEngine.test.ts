@@ -184,6 +184,24 @@ describe('route history import', () => {
 		expect(applyCachedHistoryMarks({}, '').routes).toBe(0);
 	});
 
+	it('accepts a configured login when a CSV-only logbook has no saved profile', async () => {
+		// CSV ingest never writes a provider profile, so THECRAG_OWNER_LOGIN is the only
+		// identity available for FA/FFA matching.
+		db.delete(profiles).run();
+		const h = harness({ [routeId(0)]: fa(routeId(0), '@csv-owner') });
+		const result = await runRouteHistoryImportOnce({ ...config, ownerLogin: 'csv-owner' }, h.deps);
+		expect(result.outcome).toBe('ran');
+		expect(result.marked).toBe(1);
+		expect(getFirstAscentMarks().size).toBe(1);
+	});
+
+	it('still blocks with no saved profile and no configured login', async () => {
+		db.delete(profiles).run();
+		const h = harness();
+		expect((await runRouteHistoryImportOnce(config, h.deps)).outcome).toBe('no-login');
+		expect(h.sessions().opened).toBe(0);
+	});
+
 	it.each([
 		['', 0],
 		['0', 0],

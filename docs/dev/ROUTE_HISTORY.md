@@ -6,13 +6,17 @@ User-facing explanations: [`docs/guide/first-ascents.md`](../guide/first-ascents
 
 `ROUTE_DATA_IMPORT=true` in `.env` (default **off**). This was `ROUTE_HISTORY_IMPORT` before #353; the old name is no longer read, so existing deployments must rename it and restart. When it's off, nothing below runs, `impers` is never imported, and its native library is never downloaded.
 
+Runs are triggered after each successful logbook sync, from Settings, and on `IMPORT_CRON` (node-cron, default `0 6 * * *`; `off` disables). The schedule is independent of `SYNC_CRON`, so a weekly or monthly logbook pull still drains the route queue daily; the engine's own run gap and back-off make a tick with nothing pending request-free.
+
 Set `ROUTE_DATA_REFRESH_DAYS` to a whole number of days from 30 through 3650 (~10 years) for rolling refreshes (fixed days, not calendar months) — e.g. `90` (recommended), `30`, or `180` (~half a year). Unset, `0`, under 30, over 3650, or non-digit values keep the default fetch-once behavior. This still requires `ROUTE_DATA_IMPORT=true` and an API key. No separate timer runs: successful logbook syncs and manual runs process eligible routes within the same 100-route budget, so a large backlog may take several syncs to refresh.
 
 ## Household / shared supporter key
 
 Route history uses `THECRAG_API_KEY` against `/api/route/ids`. That key is a **supporter** credential. Free accounts do not get a personal logbook/route API key in the browser: a HAR of a logged-in free climber browsing route pages shows no `key=` / supporter API token on `/api/route/ids` (only unrelated map-tile `apiServer.key` scaffolding and cookie-auth HTML/API lookups). So an unpaid partner cannot “use their own route key” for this import.
 
-The automatic CSV download mode that used to pair a free account's logbook with a household supporter's key was removed at theCrag's request (programmatic access must use the API). A free-account instance now gets its logbook from manual CSV uploads only. Those uploads do not set `profiles.login`, so `runRouteHistoryImportOnce` reports `no-login` and does not import or auto-mark FAs; owners mark first ascents by hand. Installs that were CSV-synced before the removal keep their saved login until they wipe. Never use a shared key to sync another person's logbook, and remember that a key can read its owner's private notes.
+Set `THECRAG_LOGBOOK_MODE=csv` to keep the logbook in CSV uploads while a shared supporter key still authorises route data. In that mode `getTheCragSyncConfiguration().configured` is false, so no scheduled, boot-time, worker, or `/api/sync` pull runs — the CSV rows are never pruned — and `upsertProfile` never replaces the climber with the key holder. `THECRAG_API_KEY` is then used only by `routeHistoryApi` / area lookups.
+
+CSV exports carry no `@login`, so a CSV-only logbook has no `profiles.login`. `runRouteHistoryImportOnce` reports `no-login` and imports nothing until `THECRAG_OWNER_LOGIN` supplies the identity (or the logbook is API-synced). When a saved profile login exists it must still match, so an env change cannot retarget an existing logbook; `applyCachedHistoryMarks` reuses the same rule. Never use a shared key to sync another person's logbook, and remember that a key can read its owner's private notes.
 
 ## Why it needs `impers`
 
