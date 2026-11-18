@@ -76,6 +76,16 @@ A multipart upload with the file in a `file` field works too. Requests without t
 { "ok": true, "imported": 412, "created": { "routes": 318, "ascents": 412 } }
 ```
 
+To check an install without importing anything, send a body that is not an export:
+
+```bash
+curl -s -o /dev/null -w '%{http_code}\n' -X POST https://cragstats.example.com/api/logbook/csv \
+  -H "Authorization: Bearer $CSV_INGEST_TOKEN" \
+  -H "Content-Type: text/csv" --data-binary 'x'
+```
+
+`400` means the endpoint is reachable and the token was accepted: it rejected the body, so nothing was written. `401` means the token did not match, while `404` means that image predates this endpoint. On a whole-UI-gated install (`AUTH_SCOPE=all`), an older image answers `401` for any unknown `/api/` path, so read `401` as "token or image".
+
 An empty file, a login page saved by mistake, or anything over 25 MB is rejected rather than imported. This endpoint does the same upsert-only import as the Settings form, so it never removes ascents that are missing from the file. It makes no request to theCrag: the export still has to come from your own browser or another tool you control.
 
 ## Why there are no automatic CSV downloads

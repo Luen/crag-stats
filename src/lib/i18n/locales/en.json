@@ -1785,7 +1785,7 @@
 			"hintNoApiKey": "No API key configured. Set {key} in {env}, or use **CSV import** above to upload your logbook export by hand.",
 			"hintCsvLogbook": "CSV uploads are your logbook source because {token} is set, so no API sync runs and uploaded ascents are never pruned. Use **CSV import** above whenever you want to refresh.",
 			"hintCsvOnlyRouteData": "{key} is still used for route data and area lookups. The key holder's logbook is never synced over your uploads.",
-			"hintRouteDataNeedsOwnerLogin": "CSV imports don't carry your {login}, so set {ownerLogin} to your theCrag username and match your FA / FFA credits.",
+			"hintRouteDataNeedsOwnerLogin": "CSV imports don't carry your {login}, so set {ownerLogin} to your theCrag username. Without it, FA / FFA credits are never matched.",
 			"hintNotes": "Shows the notes from your theCrag ticks in the logbook, and lets logbook search match them.",
 			"hintNotesNoPassword": "**No {appPassword} is set, so anyone who can open this site will see them.**",
 			"hintNotesNoPasswordTail": "Best for offline or home-network installs.",
