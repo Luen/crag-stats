@@ -8,6 +8,8 @@ This document details the architecture, API quirks, quota rotation strategies, a
 
 ## 1. High-Level Architecture
 
+Use GitHub Actions as the only translation PR producer. The separate Crowdin GitHub integration was removed after it created a duplicate `main` source branch and PR. The retained duplicate catalogue has context and QA corrections, but is not an additional sync source. `export_languages` in `crowdin.yml` limits downloads to the registered German, French, Spanish, and Italian catalogues; future languages remain available in Crowdin until the application registers them.
+
 ```
 GitHub Repository (main)
   │
@@ -91,7 +93,7 @@ Set on `src/lib/i18n/locales/en.json` (File ID `10`) via `PATCH /projects/946179
 
 - Repository copy: [`docs/dev/i18n-glossary.csv`](i18n-glossary.csv).
 - Crowdin Glossary: **Crag Stats's Glossary** (`id: 745241`).
-- Contains 54+ core concepts mapped across English, German, French, Spanish, and Italian.
+- Contains 104 concepts mapped across Australian English, German, French, Spanish, and Italian, including climbing styles, geology, weather, training, and analytics vocabulary.
 - When new features introduce specialized terminology, add entries in both git and Crowdin (`POST /glossaries/{glossaryId}/terms`).
 
 ### 3. Style Guide
@@ -109,7 +111,7 @@ Crowdin flags projects where fewer than 20% of short strings have character limi
   $$\text{limit} = \max(\text{len} + 10,\, 2 \times \text{len})$$
 - Generous limits prevent compact mobile layouts from overflowing while ensuring translators are never blocked by an overly tight limit.
 - **API updates:** `maxLength` lives on the Crowdin string asset, not in `en.json`. Set over the API: `PATCH /projects/946179/strings/{stringId}` with `[{"op": "replace", "path": "/maxLength", "value": n}]`.
-- Recorded coverage: 69 strings (about 43% of the current 159-string catalogue), with 0 size violations. Re-check after catalogue changes, because new keys start without a limit.
+- Re-check coverage after catalogue changes, because new keys start without a limit. The 18 November 2026 maintenance pass copied existing limits to the duplicate catalogue and added limits to short control labels, headings, and badge titles while leaving explanatory prose unlimited.
 
 ---
 
@@ -149,6 +151,14 @@ The following structural and syntax safety checks **must always remain active** 
 - `unifiedPlaceholders` (placeholder consistency)
 
 With this configuration, the project maintains a clean **0-issue QA baseline**.
+
+### Context and QA maintenance — 18 November 2026
+
+- Replaced key-path-only context on all 3,699 strings across the two source files with screen, control-purpose, source-reference, and placeholder guidance. Added usable file-level context to both files.
+- Corrected the 24 QA warnings across German, French, and Spanish, including their duplicate-file copies. Wording preserves numerical meanings and placeholders: spelled-out achievement thresholds, German Christmas Day labels, Eddington wording without added parentheses, and the French `theCrag : CPR` label. No QA category was disabled.
+- Expanded the glossary from 56 to 104 concepts, with equivalents in all four target languages. The CSV in this repository mirrors those additions.
+- Uploaded 15 screenshots of the real application seeded only from `samples/thecrag-logbook-sample.csv`, with external imports disabled. Positioned tags link 1,288 source strings to matching visible text. This is partial coverage: variable-dependent messages, hidden controls, error states, and screens requiring more specialised fixtures still need additional captures. Never tag a string to an unrelated screen just to improve the percentage.
+- This is AI-assisted terminology and context review, not native-speaker sign-off. Context Advisor is advisory and may take time to recompute; verify its percentages separately from the QA API result.
 
 ---
 
