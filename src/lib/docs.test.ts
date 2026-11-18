@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { DOC_PAGES, TICK_DOCS } from './docs';
+import { docPage, docPages, DOC_PAGES, getBandDocText, getTickDocs, TICK_DOCS } from './docs';
 import { classifyTick } from './server/providers/types';
 
 describe('docs', () => {
@@ -23,5 +23,34 @@ describe('docs', () => {
 				`# ${page.title === 'CPR' ? 'CPR (Climber Performance Rating)' : page.title}`
 			);
 		}
+	});
+
+	it('returns localized doc pages for German', () => {
+		const pages = docPages('de');
+		expect(pages.length).toBe(DOC_PAGES.length);
+		const climberType = pages.find((p) => p.slug === 'climber-type');
+		expect(climberType?.title).toBe('Klettertyp');
+		expect(climberType?.summary).toContain('Übersicht');
+
+		const cpr = docPage('cpr', 'de');
+		expect(cpr?.title).toBe('CPR');
+		expect(cpr?.summary).toContain('theCrags');
+	});
+
+	it('returns localized band descriptions for German', () => {
+		expect(getBandDocText(1, 'de')).toContain('Klettertage');
+		expect(getBandDocText(1, 'en')).toContain('first days of climbing');
+	});
+
+	it('returns localized tick documentation for German', () => {
+		const groups = getTickDocs('de');
+		expect(groups.length).toBe(TICK_DOCS.length);
+		const lead = groups.find((g) => g.group === 'Vorstieg');
+		expect(lead).toBeDefined();
+		expect(lead?.styles).toContain('Sportklettern');
+		const redpoint = lead?.ticks.find((t) => t.name === 'Rotpunkt');
+		expect(redpoint).toBeDefined();
+		expect(redpoint?.send).toBe(true);
+		expect(redpoint?.meaning).toContain('Vorstieg');
 	});
 });

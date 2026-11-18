@@ -28,3 +28,5 @@ files:
     # rename the committed catalogues at the same time as the first variant is
     # added; see the "Adding a locale" section in docs/dev/TRANSLATIONS.md.
     translation: /src/lib/i18n/locales/%two_letters_code%.json
+  - source: /docs/guide/*.md
+    translation: /docs/guide/%two_letters_code%/%original_file_name%

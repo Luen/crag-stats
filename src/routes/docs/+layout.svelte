@@ -1,11 +1,12 @@
 <script lang="ts">
 	import { useI18n } from '#lib/i18n';
 	import { page } from '$app/state';
-	import { DOC_PAGES } from '#lib/docs';
+	import { docPages } from '#lib/docs';
 	import type { LayoutProps } from './$types';
 
 	let { children }: LayoutProps = $props();
 	const i18n = useI18n();
+	const pages = $derived(docPages(i18n.locale));
 
 	/**
 	 * On phones the tab strip scrolls sideways; bring the current page's tab into view
@@ -24,7 +25,7 @@
 		<a href="/docs" class={{ active: page.url.pathname === '/docs' }}
 			>{i18n.t('pages.docsLayout.linkOverview')}</a
 		>
-		{#each DOC_PAGES as d (d.slug)}
+		{#each pages as d (d.slug)}
 			<a href="/docs/{d.slug}" class={{ active: page.url.pathname === `/docs/${d.slug}` }}
 				>{d.title}</a
 			>

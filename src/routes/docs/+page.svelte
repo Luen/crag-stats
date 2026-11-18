@@ -1,14 +1,18 @@
 <script lang="ts">
+	import { useI18n } from '#lib/i18n';
+	import { docPages } from '#lib/docs';
 	import DocContent from './DocContent.svelte';
 	import type { PageProps } from './$types';
 
 	let { data }: PageProps = $props();
+	const i18n = useI18n();
+	const pages = $derived(docPages(i18n.locale));
 </script>
 
 <article class="panel">
 	<DocContent doc={data.intro} />
 	<ul class="cards">
-		{#each data.pages as p (p.slug)}
+		{#each pages as p (p.slug)}
 			<li>
 				<a href="/docs/{p.slug}">
 					<strong>{p.title}</strong>

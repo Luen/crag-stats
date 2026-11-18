@@ -12,6 +12,7 @@ on:
     # merging a translation PR cannot re-trigger this workflow. Do not remove it.
     paths:
       - 'src/lib/i18n/locales/en.json'
+      - 'docs/guide/*.md'
       - 'crowdin.yml'
       - '.github/workflows/crowdin-sync.yml'
   workflow_dispatch:

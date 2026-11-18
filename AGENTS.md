@@ -184,7 +184,7 @@ Components: `TickTypeIcon.svelte`, `StyleBadge.svelte`. Keep icons SVG-inline so
 
 ## In-app docs (/docs)
 
-- User-facing explanations live in **`docs/guide/<slug>.md`** and are rendered at `/docs/<slug>` (bundled at build time via `import.meta.glob`, rendered with `marked`). Order/titles come from `DOC_PAGES` in `src/lib/docs.ts`; add new pages there.
+- User-facing explanations live in **`docs/guide/<slug>.md`** (with localized versions in `docs/guide/<locale>/<slug>.md`) and are rendered at `/docs/<slug>` (bundled at build time via `import.meta.glob`, rendered with `marked`). Order/titles come from `DOC_PAGES` in `src/lib/docs.ts`, localized via `docPages(locale)` with keys in `pages.docsPages.*`. Unlocalized guides fall back gracefully to the English source.
 - `<!-- component:name -->` markers embed generated tables from `DocBlock.svelte` (grade bands, conversions, tick types) so docs never drift from code. `docs.test.ts` checks tick-type send/attempt labels against `classifyTick()`.
 - **When you change an analytic (climber type, CPR, training load, grades), update its doc page in the same PR.** Dashboard cards link to their page ("How it works").
 - Paraphrase theCrag articles and link the source; don't paste their text.

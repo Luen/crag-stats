@@ -2,7 +2,7 @@ import { Marked } from 'marked';
 import { docPage, type DocSegment, type RenderedDoc } from '#lib/docs';
 
 /** Markdown sources are bundled at build time, so the Docker image needs no docs/ folder. */
-const SOURCES = import.meta.glob('/docs/guide/*.md', {
+const SOURCES = import.meta.glob('/docs/guide/**/*.md', {
 	query: '?raw',
 	import: 'default',
 	eager: true
@@ -48,9 +48,10 @@ export function renderMarkdown(md: string): { title: string; segments: DocSegmen
 	return { title, segments };
 }
 
-export function loadDoc(slug: string): RenderedDoc | null {
+export function loadDoc(slug: string, locale?: string | null): RenderedDoc | null {
 	if (slug !== 'index' && !docPage(slug)) return null;
-	const md = SOURCES[`/docs/guide/${slug}.md`];
+	const localized = locale && locale !== 'en' ? SOURCES[`/docs/guide/${locale}/${slug}.md`] : null;
+	const md = localized ?? SOURCES[`/docs/guide/${slug}.md`];
 	if (md == null) return null;
 	return { slug, ...renderMarkdown(md) };
 }

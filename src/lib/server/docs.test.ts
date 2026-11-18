@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { renderMarkdown, wrapTables } from './docs';
+import { loadDoc, renderMarkdown, wrapTables } from './docs';
 
 describe('docs Markdown rendering', () => {
 	it('wraps Markdown tables in a focusable scroll region', () => {
@@ -12,5 +12,30 @@ describe('docs Markdown rendering', () => {
 
 	it('leaves table-free HTML untouched', () => {
 		expect(wrapTables('<p>No tables here.</p>')).toBe('<p>No tables here.</p>');
+	});
+
+	it('loads English documentation by default', () => {
+		const doc = loadDoc('climber-type');
+		expect(doc).not.toBeNull();
+		expect(doc?.title).toBe('Climber type');
+		expect(doc?.slug).toBe('climber-type');
+	});
+
+	it('loads localized documentation when available', () => {
+		const doc = loadDoc('climber-type', 'de');
+		expect(doc).not.toBeNull();
+		expect(doc?.title).toBe('Klettertyp');
+		expect(doc?.slug).toBe('climber-type');
+	});
+
+	it('falls back to English when a localized guide is not yet translated', () => {
+		const doc = loadDoc('training-load', 'de');
+		expect(doc).not.toBeNull();
+		expect(doc?.title).toBe('Training load');
+	});
+
+	it('returns null for unknown slugs', () => {
+		expect(loadDoc('non-existent-slug')).toBeNull();
+		expect(loadDoc('non-existent-slug', 'de')).toBeNull();
 	});
 });
