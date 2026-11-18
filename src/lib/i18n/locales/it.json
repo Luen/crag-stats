@@ -492,6 +492,11 @@
 		"docBlock": {
 			"ariaBoulderGradeConversions": "Conversioni gradi boulder",
 			"ariaRouteGradeConversions": "Conversioni gradi vie",
+			"bandText1": "",
+			"bandText2": "",
+			"bandText3": "",
+			"bandText4": "",
+			"bandText5": "",
 			"thBand": "Fascia",
 			"thBoulders": "Boulder",
 			"thEwbank": "Ewbank",
@@ -500,7 +505,48 @@
 			"thRoutesEwbank": "Vie (Ewbank)",
 			"thVScale": "Scala V",
 			"thWhatItMeans": "Significato",
-			"thYds": "YDS"
+			"thYds": "YDS",
+			"tickGroupAid": "",
+			"tickGroupAidStyles": "",
+			"tickGroupAttempts": "",
+			"tickGroupAttemptsStyles": "",
+			"tickGroupBouldering": "",
+			"tickGroupBoulderingStyles": "",
+			"tickGroupGeneral": "",
+			"tickGroupGeneralStyles": "",
+			"tickGroupLead": "",
+			"tickGroupLeadStyles": "",
+			"tickGroupTopRope": "",
+			"tickGroupTopRopeStyles": "",
+			"tickMeaningAidSolo": "",
+			"tickMeaningAidTick": "",
+			"tickMeaningAttempt": "",
+			"tickMeaningBoulderDab": "",
+			"tickMeaningBoulderFlash": "",
+			"tickMeaningBoulderOnsight": "",
+			"tickMeaningBoulderRepeat": "",
+			"tickMeaningBoulderSend": "",
+			"tickMeaningFreeSolo": "",
+			"tickMeaningGeneralTick": "",
+			"tickMeaningLeadAllFreeWithRest": "",
+			"tickMeaningLeadFlash": "",
+			"tickMeaningLeadGreenPoint": "",
+			"tickMeaningLeadGroundUpRedPoint": "",
+			"tickMeaningLeadHangDog": "",
+			"tickMeaningLeadOnsight": "",
+			"tickMeaningLeadPinkPoint": "",
+			"tickMeaningLeadRedPoint": "",
+			"tickMeaningLeadSolo": "",
+			"tickMeaningRetreat": "",
+			"tickMeaningTopRopeClean": "",
+			"tickMeaningTopRopeFlash": "",
+			"tickMeaningTopRopeHangDog": "",
+			"tickMeaningTopRopeOnsight": "",
+			"tickMeaningTopRopeRopedSolo": "",
+			"tickMeaningWorking": "",
+			"ariaTable": "",
+			"tickNameGreenPoint": "",
+			"tickNameGroundUpRedPoint": ""
 		},
 		"eddington": {
 			"foot": "Come il numero di Eddington del ciclismo: il valore E più grande raggiunto E volte.",
@@ -1273,9 +1319,131 @@
 			"titleTrad": "Trad",
 			"titleVolume": "Volume"
 		},
+		"docs": {
+			"pageDescription": "",
+			"pageTitle": ""
+		},
 		"docsLayout": {
 			"ariaDocs": "Documentazione",
 			"linkOverview": "Panoramica"
+		},
+		"docsPages": {
+			"activity": {
+				"summary": "",
+				"title": ""
+			},
+			"ascentCalendar": {
+				"summary": "",
+				"title": ""
+			},
+			"badges": {
+				"summary": "",
+				"title": ""
+			},
+			"bestMonths": {
+				"summary": "",
+				"title": ""
+			},
+			"climberProfile": {
+				"summary": "",
+				"title": ""
+			},
+			"climberType": {
+				"summary": "",
+				"title": ""
+			},
+			"climbingMap": {
+				"summary": "",
+				"title": ""
+			},
+			"climbingStory": {
+				"summary": "",
+				"title": ""
+			},
+			"cpr": {
+				"summary": "",
+				"title": ""
+			},
+			"displaySettings": {
+				"summary": "",
+				"title": ""
+			},
+			"eddington": {
+				"summary": "",
+				"title": ""
+			},
+			"firstAscents": {
+				"summary": "",
+				"title": ""
+			},
+			"goals": {
+				"summary": "",
+				"title": ""
+			},
+			"grades": {
+				"summary": "",
+				"title": ""
+			},
+			"karma": {
+				"summary": "",
+				"title": ""
+			},
+			"logbookSync": {
+				"summary": "",
+				"title": ""
+			},
+			"offline": {
+				"summary": "",
+				"title": ""
+			},
+			"partners": {
+				"summary": "",
+				"title": ""
+			},
+			"projects": {
+				"summary": "",
+				"title": ""
+			},
+			"repeats": {
+				"summary": "",
+				"title": ""
+			},
+			"rockTypes": {
+				"summary": "",
+				"title": ""
+			},
+			"routePopularity": {
+				"summary": "",
+				"title": ""
+			},
+			"sessionsPerWeek": {
+				"summary": "",
+				"title": ""
+			},
+			"solo": {
+				"summary": "",
+				"title": ""
+			},
+			"tickTypes": {
+				"summary": "",
+				"title": ""
+			},
+			"trainingLoad": {
+				"summary": "",
+				"title": ""
+			},
+			"weather": {
+				"summary": "",
+				"title": ""
+			},
+			"weekday": {
+				"summary": "",
+				"title": ""
+			},
+			"yearlyStats": {
+				"summary": "",
+				"title": ""
+			}
 		},
 		"eddington": {
 			"lead": "Metriche di costanza ispirate al numero di Eddington del ciclismo — come sono cresciuti nel tempo i tuoi giorni di chiusura, il dislivello e gli indici di grado.",
@@ -1778,6 +1946,8 @@
 			"hintColumnProjectsGoals": "Escludi dai totali",
 			"hintCountedTickTypes": "Configura quali tipi di salita contano nei totali del dashboard, nelle pagine, nei progetti e negli obiettivi. Il registro elenca sempre tutte le salite registrate.",
 			"hintCsvImport": "Per chi non ha l'accesso API supporter. Esporta da theCrag: {action}, poi carica il file qui ogni volta che desideri aggiornare. L'importazione CSV aggiorna e inserisce le righe ma **non** rimuove le voci mancanti. La sincronizzazione API riconcilia le eliminazioni. {syncOptions}",
+			"hintCsvLogbook": "",
+			"hintCsvOnlyRouteData": "",
 			"hintDateFormat": "Controlla il formato delle date nel registro delle salite, nelle mappe di calore e nei grafici.",
 			"hintDatesAreDisplayOnly": "Le date e le misurazioni servono solo per la visualizzazione: i dati memorizzati, le soglie dei badge e i filtri rimangono nel sistema metrico.",
 			"hintDistance": "Distanza verticale cumulativa scalata.",
@@ -1786,9 +1956,6 @@
 			"hintIntro": "Sincronizzazione, preferenze di visualizzazione, visibilità nella ricerca, importazioni e gestione dei dati locali.",
 			"hintLanguage": "Lingua predefinita dell'interfaccia. Imposta su Auto per corrispondere alla lingua del browser di ciascun visitatore. I visitatori possono anche modificare la lingua preferita dall'intestazione.",
 			"hintNoApiKey": "Nessuna chiave API configurata. Imposta {key} in {env}, oppure usa **Importazione CSV** qui sopra per caricare manualmente l'esportazione del tuo registro.",
-			"hintCsvLogbook": "",
-			"hintCsvOnlyRouteData": "",
-			"hintRouteDataNeedsOwnerLogin": "",
 			"hintNotes": "Mostra le note delle tue salite su theCrag nel registro e consente alla ricerca del registro di trovarle.",
 			"hintNotesNoPassword": "**Nessuna {appPassword} impostata, quindi chiunque possa aprire questo sito le vedrà.**",
 			"hintNotesNoPasswordTail": "Ideale per installazioni offline o su rete domestica.",
@@ -1803,6 +1970,7 @@
 			"hintRouteDataFetchOnce": "Ogni via viene controllata una volta sola, a meno che tu non richieda un aggiornamento.",
 			"hintRouteDataIntro": "Salva in cache i dettagli delle vie del tuo registro da theCrag (popolarità, numero di salite, qualità, stagionalità, info, posizione, tiri e contrassegni) insieme alla loro cronologia pubblica. Le voci FA / FFA che citano il tuo {login} vengono contrassegnate come tue.",
 			"hintRouteDataNeedsKey": "",
+			"hintRouteDataNeedsOwnerLogin": "",
 			"hintRouteDataRefresh": "Ricarica questa pagina per aggiornare la disponibilità dei dati delle vie.",
 			"hintRouteDataRefreshCycle": "I dati delle vie vengono messi in coda per l'aggiornamento dopo {days} giorni.",
 			"hintRouteDataTail": "",

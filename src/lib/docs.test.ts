@@ -1,10 +1,27 @@
-import { readFileSync } from 'node:fs';
+import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { docPage, docPages, DOC_PAGES, getBandDocText, getTickDocs, TICK_DOCS } from './docs';
 import { classifyTick } from './server/providers/types';
 
 describe('docs', () => {
+	it('translated guides preserve embedded generated-table markers', () => {
+		const root = join(__dirname, '..', '..', 'docs', 'guide');
+		for (const locale of readdirSync(root, { withFileTypes: true }).filter((entry) =>
+			entry.isDirectory()
+		)) {
+			for (const name of readdirSync(join(root, locale.name)).filter((name) =>
+				name.endsWith('.md')
+			)) {
+				const markers = (text: string) =>
+					[...text.matchAll(/<!--\s*component:([a-z-]+)\s*-->/g)].map((match) => match[1]);
+				expect(
+					markers(readFileSync(join(root, locale.name, name), 'utf8')),
+					`${locale.name}/${name}`
+				).toEqual(markers(readFileSync(join(root, name), 'utf8')));
+			}
+		}
+	});
 	it('tick-type docs agree with how ticks are classified', () => {
 		for (const group of TICK_DOCS) {
 			for (const t of group.ticks) {

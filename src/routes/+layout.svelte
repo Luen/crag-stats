@@ -134,7 +134,7 @@
 		url.searchParams.delete('locale');
 		try {
 			if (url.href === page.url.href) await invalidateAll();
-			else await goto(url, { replaceState: true });
+			else await goto(url, { replaceState: true, invalidateAll: true });
 		} catch {
 			// Offline: client-rendered copy already switched; the rest catches up on reconnect.
 		}

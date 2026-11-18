@@ -4,6 +4,8 @@ Crag Stats supports multiple languages so climbers worldwide can analyse their c
 
 For detailed API automation, Gemini AI configuration, quota rotation, and QA check baselines, see [`CROWDIN_SETUP_AND_QA.md`](CROWDIN_SETUP_AND_QA.md).
 
+Documentation sources under `docs/guide/*.md` are also uploaded to Crowdin. Localised guides are exported under `docs/guide/<locale>/`; missing files fall back to the English guide, and Crowdin retains English for untranslated Markdown passages. The `skip_untranslated_strings` option only affects supported catalogue formats, not Markdown. Preserve links, code examples, environment variable names, and `<!-- component:name -->` markers. Import seed translations before downloading, then inspect the round trip: Markdown import matching can leave individual headings or sentences untranslated even when the input guide was fully translated. The initial German review is AI-assisted.
+
 ---
 
 ## Initial Priority Languages

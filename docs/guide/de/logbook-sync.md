@@ -41,21 +41,21 @@ Kein Unterstützer-Schlüssel? Öffne auf theCrag dein Tourenbuch, wähle **Akti
 
 Manuelle Uploads fügen Begehungen hinzu und aktualisieren sie, entfernen jedoch niemals Einträge, die in der Datei fehlen. Um gelöschte Ticks zu entfernen, führe **Alle lokalen Daten löschen** aus und lade einen frischen Export hoch. Das CSV enthält weniger Felder als die API, darunter weniger Profil-, Routen-Metadaten- und Mehrseillängen-Informationen, und beinhaltet nicht theCrags private Begehungsnotizen (`privateMarkdown`); lediglich die öffentliche Kommentar-Spalte wird importiert. Australische reine Ziffern bei Bouldern nutzen Land / Pfad als AU-Hinweis, damit daraus keine fehlerhaften V-Grade entstehen.
 
-Route data import matches FA/FFA credits against your theCrag username. Die API-Synchronisierung übernimmt ihn aus deinem Profil, und `THECRAG_USERNAME` wird in diesem Modus ignoriert; eine reine CSV-Installation setzt ihn stattdessen. Ohne Login stoppt der Import vor dem Abruf von Daten.
+Der Routendaten-Import gleicht FA/FFA-Einträge mit deinem theCrag-Benutzernamen ab. Die API-Synchronisierung übernimmt ihn aus deinem Profil, und `THECRAG_USERNAME` wird in diesem Modus ignoriert; eine reine CSV-Installation setzt ihn stattdessen. Ohne Login stoppt der Import vor dem Abruf von Daten. Setze ihn daher (oder trage Erstbegehungen manuell im Tourenbuch ein).
 
 ## CSV-Tourenbuch mit Routendaten
 
-Du kannst dein Tourenbuch per CSV pflegen und trotzdem Routendaten und automatische FA/FFA-Markierungen erhalten. Set:
+Du kannst dein Tourenbuch per CSV pflegen und trotzdem Routendaten (Beliebtheit, Begehungszahlen, Qualität, Saisonalität, Seillängen) und automatische FA/FFA-Markierungen erhalten. Setze:
 
-- `CSV_INGEST_TOKEN`: ein langer Zufallswert für CSV-Uploads. It is what lets a container or script send you a CSV export, so it also tells Crag Stats that uploads are the logbook source: no API sync runs, so uploaded ascents are never removed, and the sync never writes the key holder's climber profile.
+- `CSV_INGEST_TOKEN`: ein langer Zufallswert für CSV-Uploads. Damit kann ein Container oder Skript dir einen CSV-Export senden. Zugleich legt der Wert Uploads als Tourenbuchquelle fest: Die API-Synchronisierung läuft nicht, löscht keine hochgeladenen Begehungen und überschreibt das Kletterprofil nicht mit dem Profil des Schlüsselinhabers.
 - `THECRAG_API_KEY`: dein Unterstützer-Schlüssel, der in diesem Modus nur für Routendaten und Standortabfragen verwendet wird.
-- `THECRAG_USERNAME`: dein theCrag-Benutzername für den Abgleich von FA/FFA-Einträgen.
+- `THECRAG_USERNAME`: dein theCrag-Benutzername für den Abgleich von FA/FFA-Einträgen (CSV-Exporte enthalten ihn nicht).
 
-That is the whole configuration: three values, no mode switch. Ohne `CSV_INGEST_TOKEN` synchronisiert der API-Schlüssel weiterhin das Tourenbuch. Routendaten- und Wetterimporte folgen unabhängig davon `IMPORT_CRON` (standardmäßig täglich). Unter **Einstellungen → Routendaten importieren** kannst du einen Lauf starten und den Fortschritt sehen.
+Das ist die gesamte Konfiguration: drei Werte, kein zusätzlicher Modusschalter. Ohne `CSV_INGEST_TOKEN` synchronisiert der API-Schlüssel weiterhin das Tourenbuch. Routendaten- und Wetterimporte folgen unabhängig davon `IMPORT_CRON` (standardmäßig täglich). Unter **Einstellungen → Routendaten importieren** kannst du einen Lauf starten und den Fortschritt sehen.
 
 ## CSV aus einem anderen Container hochladen
 
-Uploading by hand is fine for occasional refreshes. If you keep your export somewhere your network can read — a shared folder, a Nextcloud or Dropbox share, or a small companion container that uploads each new export — Crag Stats can accept it over HTTP instead. Set `CSV_INGEST_TOKEN` to a long random value, restart, and then `POST` the file:
+Für gelegentliche Aktualisierungen genügt ein manueller Upload. Liegt dein Export im Netzwerk bereit — in einem gemeinsamen Ordner, einer Nextcloud- oder Dropbox-Freigabe oder einem kleinen Container, der jeden neuen Export hochlädt — kann Crag Stats ihn stattdessen über HTTP empfangen. Setze `CSV_INGEST_TOKEN` auf einen langen Zufallswert, starte neu und sende die Datei mit `POST`:
 
 ```bash
 curl -X POST https://cragstats.example.com/api/logbook/csv \
@@ -64,13 +64,13 @@ curl -X POST https://cragstats.example.com/api/logbook/csv \
   --data-binary @thecrag-logbook.csv
 ```
 
-Ein Multipart-Upload mit dem Feld `file` funktioniert ebenfalls. Requests without the token are rejected, and a successful response reports how many ascents were processed and how many were new:
+Ein Multipart-Upload mit dem Feld `file` funktioniert ebenfalls. Anfragen ohne Token werden abgewiesen. Eine erfolgreiche Antwort nennt die verarbeiteten und neu hinzugefügten Begehungen:
 
 ```json
 { "ok": true, "imported": 412, "created": { "routes": 318, "ascents": 412 } }
 ```
 
-To check an install without importing anything, send a body that is not an export:
+Um eine Installation ohne Import zu prüfen, sende einen Inhalt, der kein Export ist:
 
 ```bash
 curl -s -o /dev/null -w '%{http_code}\n' -X POST https://cragstats.example.com/api/logbook/csv \
@@ -78,10 +78,10 @@ curl -s -o /dev/null -w '%{http_code}\n' -X POST https://cragstats.example.com/a
   -H "Content-Type: text/csv" --data-binary 'x'
 ```
 
-`400` means the endpoint is reachable and the token was accepted: it rejected the body, so nothing was written. `401` means the token did not match, while `404` means that image predates this endpoint. On a whole-UI-gated install (`AUTH_SCOPE=all`), an older image answers `401` for any unknown `/api/` path, so read `401` as "token or image".
+`400` bedeutet, dass der Endpunkt erreichbar ist und der Token akzeptiert wurde: Der Inhalt wurde abgewiesen, und es wurde nichts geschrieben. `401` bedeutet, dass der Token nicht stimmt; `404` bedeutet, dass das Image diesen Endpunkt noch nicht enthält. Bei einer vollständig geschützten Installation (`AUTH_SCOPE=all`) antwortet ein älteres Image für jeden unbekannten `/api/`-Pfad mit `401`. Lies `401` daher als "Token oder Image".
 
-Leere Dateien, HTML-Anmeldeseiten und Dateien über 25 MB werden nicht importiert. This endpoint does the same upsert-only import as the Settings form, so it never removes ascents that are missing from the file. It makes no request to theCrag: the export still has to come from your own browser or another tool you control.
+Leere Dateien, HTML-Anmeldeseiten und Dateien über 25 MB werden nicht importiert. Dieser Endpunkt importiert wie das Formular in den Einstellungen nur neue und aktualisierte Einträge. Er löscht niemals Begehungen, die in der Datei fehlen. Er stellt keine Anfrage an theCrag: Der Export muss weiterhin aus deinem Browser oder einem anderen von dir kontrollierten Werkzeug stammen.
 
-## Why there are no automatic CSV downloads
+## Warum es keine automatischen CSV-Downloads gibt
 
-Crag Stats lädt keine CSV-Exporte von theCrag herunter und meldet sich nicht auf dessen Website an. theCrag's [terms](https://www.thecrag.com/terms#ownership-and-licenses) require all programmatic access to go through the API, and every export is a full logbook dump that is costly for their servers. Exporting and uploading the CSV yourself is fine.
+Crag Stats meldet sich niemals auf der theCrag-Website an und lädt keine Exporte für dich herunter. theCrags [Nutzungsbedingungen](https://www.thecrag.com/terms#ownership-and-licenses) verlangen, dass automatisierte Zugriffe über die API erfolgen. Jeder Export enthält das vollständige Tourenbuch und belastet die Server. Du kannst die CSV-Datei selbst exportieren und hochladen.

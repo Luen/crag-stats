@@ -35,11 +35,17 @@ describe('docs Markdown rendering', () => {
 		expect(doc?.slug).toBe('climber-type');
 	});
 
-	it('falls back to English when a localized guide is not yet translated', () => {
-		const doc = loadDoc('training-load', 'de');
-		expect(doc).not.toBeNull();
-		expect(doc?.title).toBe('Training load');
-	});
+	it.each([undefined, '', ' \n\t '])(
+		'falls back to English for a missing or empty guide (%j)',
+		(target) => {
+			const sources = { '/docs/guide/training-load.md': '# Training load\n\nEnglish fallback.' };
+			if (target !== undefined)
+				Object.assign(sources, { '/docs/guide/de/training-load.md': target });
+			const doc = loadDoc('training-load', 'de', sources);
+			expect(doc).not.toBeNull();
+			expect(doc?.title).toBe('Training load');
+		}
+	);
 
 	it('returns null for unknown slugs', () => {
 		expect(loadDoc('non-existent-slug')).toBeNull();

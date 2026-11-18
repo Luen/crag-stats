@@ -507,11 +507,11 @@
 			"thWhatItMeans": "Bedeutung",
 			"thYds": "YDS",
 			"tickGroupAid": "Technisch & Free Solo",
-			"tickGroupAidStyles": "Technisch (Aid), Free Solo",
+			"tickGroupAidStyles": "Technisches Klettern, Free Solo",
 			"tickGroupAttempts": "Versuche",
 			"tickGroupAttemptsStyles": "Alle Stile",
 			"tickGroupBouldering": "Bouldern",
-			"tickGroupBoulderingStyles": "",
+			"tickGroupBoulderingStyles": "Boulder",
 			"tickGroupGeneral": "Allgemein",
 			"tickGroupGeneralStyles": "Die meisten Stile",
 			"tickGroupLead": "Vorstieg",
@@ -1362,7 +1362,7 @@
 			},
 			"cpr": {
 				"summary": "theCrags Climber Performance Rating, wie es berechnet wird und wie man die Zeitleiste liest.",
-				"title": ""
+				"title": "CPR"
 			},
 			"displaySettings": {
 				"summary": "Datumsformate, granulare Einheiten und metrische Schwellenwerte, die fest bleiben.",
@@ -1386,11 +1386,11 @@
 			},
 			"karma": {
 				"summary": "Ungefähres Begehungs-Karma aus geloggten Routen; Kletterführer-Bearbeitungspunkte warten auf eine theCrag-API.",
-				"title": ""
+				"title": "Karma"
 			},
 			"logbookSync": {
 				"summary": "Für den Server-Betreiber: geplante API-Synchronisierung mit Unterstützer-Schlüssel oder manuelle CSV-Uploads.",
-				"title": "Tourenbuch-Synchronisierung"
+				"title": "Tourenbuch-Sync"
 			},
 			"offline": {
 				"summary": "Lade einen schreibgeschützten Snapshot deiner öffentlichen Statistiken und deines Tourenbuchs für diesen Browser herunter.",

@@ -58,10 +58,14 @@ export function renderMarkdown(
 	return { title, segments };
 }
 
-export function loadDoc(slug: string, locale?: SupportedLocale | null): RenderedDoc | null {
+export function loadDoc(
+	slug: string,
+	locale?: SupportedLocale | null,
+	sources: Record<string, string> = SOURCES
+): RenderedDoc | null {
 	if (slug !== 'index' && !docPage(slug)) return null;
-	const localized = locale && locale !== 'en' ? SOURCES[`/docs/guide/${locale}/${slug}.md`] : null;
-	const md = localized ?? SOURCES[`/docs/guide/${slug}.md`];
+	const localized = locale && locale !== 'en' ? sources[`/docs/guide/${locale}/${slug}.md`] : null;
+	const md = localized?.trim() ? localized : sources[`/docs/guide/${slug}.md`];
 	if (md == null) return null;
 	return { slug, ...renderMarkdown(md, locale ?? 'en') };
 }

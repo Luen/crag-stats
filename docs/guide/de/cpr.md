@@ -6,13 +6,13 @@
 
 theCrag hat CPR aus einer statistischen Analyse von rund einer Million Ticks entwickelt. Die Grundideen:
 
-- **Jeder Grad ist etwa fünfmal schwerer als der darunterliegende** (Potenzfaktor _P_ = 5 auf der Ewbank-Skala). Jede einmalige Route, die du geklettert bist, fügt einer Gesamtsumme etwa _P_ hoch den Grad hinzu. Die Summe wird über einen Logarithmus zur Basis 5 wieder in einen Grad umgerechnet. Fünf Begehungen eines Grades sind also ungefähr so viel wert wie eine Begehung des nächsthöheren Grades.
+- **Jeder Grad ist etwa 5× schwerer als der darunterliegende** (Potenzfaktor _P_ = 5 auf der Ewbank-Skala). Jede einmalige Route, die du geklettert bist, fügt einer Gesamtsumme etwa _P_ hoch den Grad hinzu. Die Summe wird über einen Logarithmus zur Basis 5 wieder in einen Grad umgerechnet. Fünf Begehungen eines Grades sind also ungefähr so viel wert wie eine Begehung des nächsthöheren Grades.
 - **Begehungs-Verschiebungen.** Wie du geklettert bist, zählt. Ticks werden vor der Bewertung um einen Grad-Offset verschoben. Sportkletterer klettern im Rotpunkt beispielsweise etwa **2,1 Grade** schwerer als im Onsight, und beim Trad-Klettern ist ein Pinkpoint etwa **0,8 Grade** leichter als ein Rotpunkt. Die Offsets werden für Sport, Trad und Bouldern getrennt ermittelt.
 - **Grad festigen.** Ein einzelner Tick in einem neuen Grad könnte eine weich bewertete Route oder ein Zufall sein. Dein _Grad_ steigt erst nach etwa **drei** Ticks auf diesem Niveau, aber jede Begehung trägt weiterhin zur Bewertung bei.
-- **Leistungsabfall (Decay).** Wenn du mit dem Klettern pausierst, sinkt das CPR um etwa **0,7 Ewbank-Grade pro Jahr** (ungefähr ein Dreiviertel-Grad).
+- **Leistungsabfall.** Wenn du mit dem Klettern pausierst, sinkt das CPR um etwa **0,7 Ewbank-Grade pro Jahr** (ungefähr ein Dreiviertel-Grad).
 - **Wiederholungen** einer Route zählen nur einmal (der beste Tick), und es wird der offizielle Konsensgrad der Route verwendet statt deiner persönlichen Meinung.
 
-theCrag führt für Sport, Trad und Bouldern jeweils einen abgewerteten (decayed) und einen nicht-abgewerteten Wert.
+theCrag führt für Sport, Trad und Bouldern jeweils einen abgewerteten und einen nicht abgewerteten Wert.
 
 ## Woher Crag Stats die Werte bezieht
 
