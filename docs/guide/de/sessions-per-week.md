@@ -1,15 +1,15 @@
-# Sessions per week
+# Sessions pro Woche
 
-The **Sessions per week** card counts how many climbing **sessions** you logged each week in a chosen year.
+Die Karte **Sessions pro Woche** zählt, wie viele Kletter-**Sessions** du in einem ausgewählten Jahr pro Woche in deinem Tourenbuch erfasst hast.
 
-## What is a session?
+## Was ist eine Session?
 
-A session is a **calendar day** with at least one ascent in your logbook — the same idea as “sessions” on project cards. Two ticks on the same day still count as one session. Days with no logs are empty bars.
+Eine Session ist ein **Kalendertag** mit mindestens einer Begehung in deinem Tourenbuch – dasselbe Konzept wie „Sessions“ auf Projekt-Karten. Zwei Begehungen am selben Tag zählen trotzdem als eine Session. Tage ohne Einträge sind leere Balken.
 
-## Average
+## Durchschnitt
 
-**Average sessions / week** is the year’s total sessions divided by the number of weeks shown for that year (about 52–53 ISO weeks that overlap the calendar year). Quiet winters pull the average down; a dense trip block pulls it up.
+**Durchschnittliche Sessions / Woche** sind die Gesamtsessions des Jahres geteilt durch die Anzahl der für dieses Jahr angezeigten Wochen (ca. 52–53 ISO-Wochen, die sich mit dem Kalenderjahr überschneiden). Ruhige Winter ziehen den Durchschnitt nach unten; ein intensiver Klettertrip zieht ihn nach oben.
 
-Weeks use a Monday start (UTC date of the ascent). Tap a bar to open the logbook for that week.
+Wochen beginnen am Montag (UTC-Datum der Begehung). Tippe auf einen Balken, um das Tourenbuch für diese Woche zu öffnen.
 
-Session analytics share strict UTC calendar-day validation: placeholders (`2018-00-00`), impossible dates (`2024-02-31`), and missing dates do not count as sessions. Leap days are accepted only in leap years. Repeated ticks or timestamps on the same written date still count once, regardless of browser or server time zone. This policy is shared with Partners, Weekday, dashboard active days and weather.
+Session-Analysen nutzen dieselbe strikte UTC-Kalendertag-Validierung: Platzhalter (`2018-00-00`), ungültige Datumsangaben (`2024-02-31`) und fehlende Daten zählen nicht als Sessions. Schalttage werden nur in Schaltjahren akzeptiert. Mehrfache Begehungen oder Zeitstempel am selben eingetragenen Datum zählen trotzdem nur einmal, unabhängig von der Zeitzone des Browsers oder Servers. Diese Regelung gilt auch für Kletterpartner, Wochentag, aktive Tage im Dashboard und Wetter.

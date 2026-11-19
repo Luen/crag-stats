@@ -5,8 +5,10 @@
  *
  * Fonts: an SVG in `<img>` can't load web fonts, so this uses a system stack.
  */
+import { DEFAULT_LOCALE, formatMessage, intlLocale, type SupportedLocale } from '#lib/i18n';
+import { eddingtonTiles } from '#lib/eddingtonDisplay';
 import { bandById, DEFAULT_DISPLAY_SYSTEMS, formatGradeLabel } from '#lib/grades';
-import { DEFAULT_DISPLAY_UNITS, formatDistance, type DisplayUnits } from '#lib/units';
+import { DEFAULT_DISPLAY_UNITS, convertDistance, type DisplayUnits } from '#lib/units';
 import { STYLE_COLORS } from '#lib/ticks';
 import type { DashboardStats } from '#lib/types/dashboard';
 
@@ -60,8 +62,8 @@ function clip(s: string, max: number): string {
 	return s.length > max ? `${s.slice(0, max - 1)}…` : s;
 }
 
-function fmt(n: number): string {
-	return Math.round(n).toLocaleString('en-US');
+function fmt(n: number, locale: SupportedLocale): string {
+	return Math.round(n).toLocaleString(intlLocale(locale));
 }
 
 function logo(x: number, y: number, size: number, color: string): string {
@@ -101,7 +103,7 @@ function tiles(
 			return `<rect x="${x}" y="${y}" width="${w}" height="62" rx="9" fill="${t.tile}" stroke="${t.line}"/>
 <rect x="${x}" y="${y}" width="${w}" height="3" rx="1.5" fill="${t.accent}"/>
 <text x="${x + w / 2}" y="${y + 33}" font-size="21" font-weight="800" text-anchor="middle" fill="${t.ink}">${escapeXml(it.value)}</text>
-<text x="${x + w / 2}" y="${y + 51}" font-size="11" text-anchor="middle" fill="${t.muted}">${escapeXml(it.label)}</text>`;
+<text x="${x + w / 2}" y="${y + 51}" font-size="11" text-anchor="middle" fill="${t.muted}"${it.label.length * 6 > w - 10 ? ` textLength="${w - 10}" lengthAdjust="spacingAndGlyphs"` : ''}>${escapeXml(it.label)}</text>`;
 		})
 		.join('\n');
 }
@@ -114,26 +116,37 @@ function chip(x: number, y: number, label: string, color: string, band: number |
 <text x="${x + w / 2}" y="${y + 14}" font-size="11.5" font-weight="700" text-anchor="middle" fill="${fg}">${escapeXml(label)}</text>`;
 }
 
-function displayName(s: DashboardStats): string {
-	return s.profileName ? `${s.profileName}` : 'My climbing';
+function displayName(s: DashboardStats, locale: SupportedLocale): string {
+	return s.profileName ? `${s.profileName}` : formatMessage(locale, 'embed.myClimbing');
 }
 
-/** Accessible title: "Alex's climbing stats", or "Climbing stats" without a profile. */
-function cardTitle(s: DashboardStats, what: string): string {
-	return s.profileName ? `${s.profileName}'s ${what}` : what[0].toUpperCase() + what.slice(1);
+/** Accessible title combines the profile name and translated card title. */
+function cardTitle(s: DashboardStats, what: string, locale: SupportedLocale): string {
+	return s.profileName
+		? formatMessage(locale, 'embed.title', { name: s.profileName, card: what })
+		: what;
 }
 
 function summaryCard(
 	s: DashboardStats,
 	t: Record<string, string>,
-	units: DisplayUnits = DEFAULT_DISPLAY_UNITS
+	units: DisplayUnits = DEFAULT_DISPLAY_UNITS,
+	locale: SupportedLocale = DEFAULT_LOCALE
 ): string {
-	const sub = `${s.climberType}${s.blurb.durationLabel ? ` · climbing ${s.blurb.durationLabel}` : ''}`;
+	const sub = s.blurb.durationLabel
+		? formatMessage(locale, 'embed.duration', {
+				type: s.climberType,
+				duration: s.blurb.durationLabel
+			})
+		: s.climberType;
 	const metrics = tiles(t, 68, [
-		{ value: fmt(s.totalAscents), label: 'ascents' },
-		{ value: fmt(s.totalSends), label: 'sends' },
-		{ value: fmt(s.onsightCount), label: 'onsights' },
-		{ value: formatDistance(s.heightKm, units.distance), label: 'climbed' }
+		{ value: fmt(s.totalAscents, locale), label: formatMessage(locale, 'embed.ascents') },
+		{ value: fmt(s.totalSends, locale), label: formatMessage(locale, 'embed.sends') },
+		{ value: fmt(s.onsightCount, locale), label: formatMessage(locale, 'embed.onsights') },
+		{
+			value: `${convertDistance(s.heightKm, units.distance).toLocaleString(intlLocale(locale), { maximumFractionDigits: 1 })} ${units.distance}`,
+			label: formatMessage(locale, 'embed.climbed')
+		}
 	]);
 
 	// Hardest send per discipline, from the sends pyramid (rows ascend by score).
@@ -149,9 +162,9 @@ function summaryCard(
 		const color = STYLE_COLORS[h.style] ?? STYLE_COLORS.Unknown;
 		parts.push(
 			`<circle cx="${x + 5}" cy="${157}" r="5" fill="${color}"/>`,
-			`<text x="${x + 15}" y="${161}" font-size="12" fill="${t.ink}">${escapeXml(h.style)}</text>`
+			`<text x="${x + 15}" y="${161}" font-size="12" fill="${t.ink}">${escapeXml(styleLabel(h.style, locale))}</text>`
 		);
-		const textW = h.style.length * 7 + 22;
+		const textW = styleLabel(h.style, locale).length * 7 + 22;
 		parts.push(chip(x + textW, 147, h.row.grade, h.row.color, h.row.band));
 		x += textW + Math.max(34, h.row.grade.length * 7.4 + 14) + 18;
 	}
@@ -169,9 +182,9 @@ function summaryCard(
 		})
 		.join('');
 
-	const body = `${header(t, displayName(s), sub)}
+	const body = `${header(t, displayName(s, locale), sub)}
 ${metrics}
-<text x="20" y="${140}" font-size="11" font-weight="700" fill="${t.muted}" letter-spacing="0.5">HARDEST SENDS</text>
+<text x="20" y="${140}" font-size="11" font-weight="700" fill="${t.muted}" letter-spacing="0.5">${escapeXml(formatMessage(locale, 'embed.hardestTitle'))}</text>
 ${parts.join('\n')}
 <clipPath id="bar"><rect x="20" y="186" width="${barW}" height="8" rx="4"/></clipPath>
 <rect x="20" y="186" width="${barW}" height="8" rx="4" fill="${t.line}"/>
@@ -179,35 +192,52 @@ ${parts.join('\n')}
 <text x="20" y="214" font-size="11" fill="${t.muted}">${escapeXml(
 		s.styleShare
 			.slice(0, 4)
-			.map((p) => `${p.style} ${Math.round(p.pct)}%`)
+			.map((p) => `${styleLabel(p.style, locale)} ${fmt(p.pct, locale)}%`)
 			.join(' · ')
 	)}</text>`;
-	return frame(t, 228, cardTitle(s, 'climbing stats'), body);
+	return frame(t, 228, cardTitle(s, formatMessage(locale, 'embed.summaryTitle'), locale), body);
 }
 
-function eddingtonCard(s: DashboardStats, t: Record<string, string>): string {
+function eddingtonCard(
+	s: DashboardStats,
+	t: Record<string, string>,
+	locale: SupportedLocale
+): string {
 	const e = s.eddington;
 	const systems = s.gradeSystems ?? DEFAULT_DISPLAY_SYSTEMS;
-	const routeName = { ewbank: 'Ewbank', french: 'French', yds: 'YDS' }[systems.route];
+	const routeName = {
+		ewbank: 'Ewbank',
+		french: formatMessage(locale, 'grades.systems.french'),
+		yds: 'YDS'
+	}[systems.route];
 	const routeGrade = (score: number) => `${routeName} ${formatGradeLabel(score, false, systems)}`;
 	const boulderGrade = (score: number) =>
 		`${systems.boulder === 'font' ? 'Font ' : ''}${formatGradeLabel(score, true, systems)}`;
+	const shared = eddingtonTiles(e, locale);
 	const details = [
+		[shared[0].means, shared[0].next],
+		[shared[1].means, shared[1].next],
 		[
-			`${e.sends.value} days with ${e.sends.value}+ sends`,
-			`${e.sends.needed} more days with ${e.sends.next}+ sends for ${e.sends.next}`
+			formatMessage(locale, 'embed.routeCurrent', {
+				count: e.routeGrade.value,
+				grade: routeGrade(e.routeGrade.value)
+			}),
+			formatMessage(locale, 'embed.routeNext', {
+				needed: e.routeGrade.needed,
+				grade: routeGrade(e.routeGrade.next),
+				next: e.routeGrade.next
+			})
 		],
 		[
-			`${e.vertical.value} days with ${e.vertical.value * e.verticalUnitM}+ m climbed`,
-			`${e.vertical.needed} more days with ${e.vertical.next * e.verticalUnitM}+ m for ${e.vertical.next}`
-		],
-		[
-			`${e.routeGrade.value} routes sent at ${routeGrade(e.routeGrade.value)} or harder`,
-			`${e.routeGrade.needed} more routes at ≥ ${routeGrade(e.routeGrade.next)} for index ${e.routeGrade.next}`
-		],
-		[
-			`${e.boulderGrade.value} problems sent at ${boulderGrade(e.boulderGrade.value)} or harder`,
-			`${e.boulderGrade.needed} more problems at ≥ ${boulderGrade(e.boulderGrade.next)} for index ${e.boulderGrade.next}`
+			formatMessage(locale, 'embed.boulderCurrent', {
+				count: e.boulderGrade.value,
+				grade: boulderGrade(e.boulderGrade.value)
+			}),
+			formatMessage(locale, 'embed.boulderNext', {
+				needed: e.boulderGrade.needed,
+				grade: boulderGrade(e.boulderGrade.next),
+				next: e.boulderGrade.next
+			})
 		]
 	]
 		.map(([current, next], i) => {
@@ -216,18 +246,30 @@ function eddingtonCard(s: DashboardStats, t: Record<string, string>): string {
 <text x="20" y="${y + 16}" font-size="10.5" fill="${t.muted}">${escapeXml(next)}</text>`;
 		})
 		.join('\n');
-	const body = `${header(t, displayName(s), 'Eddington numbers · consistency across days and grades')}
+	const body = `${header(t, displayName(s, locale), formatMessage(locale, 'embed.eddingtonSubtitle'))}
 ${tiles(t, 68, [
-	{ value: String(e.sends.value), label: 'send days' },
-	{ value: String(e.vertical.value), label: `vertical (${e.verticalUnitM} m)` },
-	{ value: String(e.routeGrade.value), label: 'route grade index' },
-	{ value: String(e.boulderGrade.value), label: 'boulder grade index' }
+	{ value: String(e.sends.value), label: formatMessage(locale, 'embed.sendDays') },
+	{
+		value: String(e.vertical.value),
+		label: formatMessage(locale, 'embed.vertical', { metres: e.verticalUnitM })
+	},
+	{ value: String(e.routeGrade.value), label: formatMessage(locale, 'embed.routeIndex') },
+	{ value: String(e.boulderGrade.value), label: formatMessage(locale, 'embed.boulderIndex') }
 ])}
 ${details}`;
-	return frame(t, 320, cardTitle(s, 'Eddington numbers'), body);
+	return frame(
+		t,
+		320,
+		cardTitle(s, formatMessage(locale, 'cards.eddington.titleEddingtonNumbers'), locale),
+		body
+	);
 }
 
-function hardestCard(s: DashboardStats, t: Record<string, string>): string {
+function hardestCard(
+	s: DashboardStats,
+	t: Record<string, string>,
+	locale: SupportedLocale
+): string {
 	const rows = s.hardestSends.slice(0, 5);
 	const list = rows.length
 		? rows
@@ -240,13 +282,13 @@ function hardestCard(s: DashboardStats, t: Record<string, string>): string {
 <text x="${W - 20}" y="${y}" font-size="11" text-anchor="end" fill="${t.muted}">${escapeXml(clip(meta, 26))}</text>`;
 				})
 				.join('\n')
-		: `<text x="20" y="90" font-size="13" fill="${t.muted}">No graded sends yet.</text>`;
+		: `<text x="20" y="90" font-size="13" fill="${t.muted}">${escapeXml(formatMessage(locale, 'embed.empty'))}</text>`;
 	const height = 82 + Math.max(rows.length, 1) * 28;
 	return frame(
 		t,
 		height,
-		cardTitle(s, 'hardest sends'),
-		`${header(t, displayName(s), 'Hardest sends')}\n${list}`
+		cardTitle(s, formatMessage(locale, 'embed.hardestTitle'), locale),
+		`${header(t, displayName(s, locale), formatMessage(locale, 'embed.hardestTitle'))}\n${list}`
 	);
 }
 
@@ -258,10 +300,30 @@ export function renderEmbedCard(
 	card: EmbedCard,
 	stats: DashboardStats,
 	theme: EmbedTheme,
-	units: DisplayUnits = DEFAULT_DISPLAY_UNITS
+	units: DisplayUnits = DEFAULT_DISPLAY_UNITS,
+	locale: SupportedLocale = DEFAULT_LOCALE
 ): string {
 	const t = THEMES[theme];
-	if (card === 'eddington') return eddingtonCard(stats, t);
-	if (card === 'hardest') return hardestCard(stats, t);
-	return summaryCard(stats, t, units);
+	if (card === 'eddington') return eddingtonCard(stats, t, locale);
+	if (card === 'hardest') return hardestCard(stats, t, locale);
+	return summaryCard(stats, t, units, locale);
+}
+
+function styleLabel(style: string, locale: SupportedLocale): string {
+	const keys: Record<string, string> = {
+		Sport: 'styles.sport',
+		Trad: 'styles.trad',
+		Boulder: 'styles.boulder',
+		'Top rope': 'styles.toprope',
+		'Deep water solo': 'styles.deepWaterSolo',
+		Alpine: 'styles.alpine',
+		Aid: 'styles.aid',
+		Solo: 'styles.solo',
+		Other: 'styles.other',
+		Unknown: 'styles.unknown'
+	};
+	const base = style.replace(/ · V$/, '');
+	return (
+		(keys[base] ? formatMessage(locale, keys[base]) : base) + (style.endsWith(' · V') ? ' · V' : '')
+	);
 }

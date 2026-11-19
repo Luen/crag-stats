@@ -1,53 +1,42 @@
-# Activity
+# Aktivität
 
-The dashboard **Monthly stats** and **Yearly stats** cards summarise volume at a glance. **Activity** (`/activity`) is the detail page when you want more than the charts: a full per-month table (ascents, sends, height, style mix) and the yearly year-over-year breakdown.
+Die Dashboard-Karten **Monatsstatistik** und **Jahresstatistik** fassen das Volumen auf einen Blick zusammen. **Aktivität** (`/activity`) ist die Detailseite, wenn du mehr als nur die Diagramme möchtest: eine vollständige Tabelle pro Monat (Begehungen, Durchstiege, Höhenmeter, Stilmix) sowie die jährliche Aufschlüsselung im Jahresvergleich.
 
-## What counts
+## Was zählt
 
-- **Ascents** — every logged tick that day/month/year (attempts included).
-- **Sends** — ticks classified as sends (see [Tick types](/docs/tick-types)).
-- **Height** — metres from ascent or route height when present.
-- **Styles** — Sport / Trad / Boulder from gear style; everything else rolls into **Other** on the table.
+- **Begehungen** — jeder eingetragene Tick an diesem Tag, in diesem Monat oder in diesem Jahr (einschließlich Versuchen).
+- **Durchstiege** — als erfolgreich eingestufte Ticks (siehe [Begehungsarten](/docs/tick-types)).
+- **Höhe** — Meter aus der Begehungs- oder Routenhöhe, sofern vorhanden.
+- **Stile** — Sport / Trad / Boulder entsprechend dem Absicherungsstil; alles andere wird in der Tabelle unter **Sonstige** zusammengefasst.
 
-Month links open the logbook for that calendar month. Year links (on the yearly card/table) open `/logbook?year=`.
+Monatslinks öffnen das Tourenbuch für den jeweiligen Kalendermonat. Jahreslinks (auf der Jahreskarte oder in der Jahrestabelle) öffnen `/logbook?year=`.
 
-## Why a separate page
+## Warum eine eigene Seite
 
-Repeating the same two charts alone would be sidebar bloat. Activity earns its route by carrying the **monthly breakdown table** and keeping YoY deltas easy to scan — the same bar the issue set for shipping past thin cards.
+Nur dieselben beiden Diagramme zu wiederholen, würde die Seitenleiste unnötig aufblähen. Die Aktivitätsseite bietet mit der **monatlichen Detailtabelle** und übersichtlichen Vorjahresvergleichen einen echten Mehrwert — statt lediglich einfache Karten zu wiederholen.
 
-## Streaks
+## Serien
 
-The Streaks card shows current day, week and month streaks beside your all-time
-**longest** day streak (four metric tiles). The longest run’s start and end dates
-sit under the tiles. When equally long records exist, the earliest range is shown.
-A single climbing day shows one date; an empty history has no record dates.
+Die Serienkarte zeigt deine aktuellen Tages-, Wochen- und Monatsserien neben deiner bisher **längsten** Tagesserie (vier Kennzahlenfelder). Anfangs- und Enddatum der längsten Serie stehen unter den Feldern. Bei gleich langen Rekorden wird der früheste Zeitraum angezeigt.
+Ein einzelner Klettertag zeigt ein Datum; ohne Einträge gibt es keine Rekorddaten.
 
-The footer also shows your last climbing day, how many whole days have passed
-since then when the current day streak is broken, and lifetime **active days**
-(distinct climbing days). Days come from valid written ascent dates; attempts and
-sends, indoors and outdoors, count equally, and several climbs on one day count
-once. See [Badges](/docs/badges) for the 7-, 10- and 30-day milestones.
+Die Fußzeile zeigt außerdem deinen letzten Klettertag, wie viele ganze Tage
+seitdem vergangen sind, wenn die aktuelle Tagesserie unterbrochen ist, sowie die **aktiven Tage** insgesamt
+(unterschiedliche Klettertage). Die Tage stammen aus gültigen eingetragenen Begehungsdaten; Versuche und
+Durchstiege, in der Halle und draußen, zählen gleichermaßen, und mehrere Begehungen an einem Tag zählen
+einmal. Die Meilensteine für 7, 10 und 30 Tage findest du unter [Abzeichen](/docs/badges).
 
-The current day streak ends today, or yesterday while you have not climbed today.
-Calendar-day comparisons use UTC, so the server time zone and daylight-saving
-changes cannot shift a logged day. Future-dated entries do not extend the current streak.
+Die aktuelle Tagesserie endet heute oder gestern, solange du heute noch nicht geklettert bist.
+Kalendertage werden in UTC verglichen, damit die Server-Zeitzone und Zeitumstellungen keinen eingetragenen Tag verschieben. Einträge mit einem Datum in der Zukunft verlängern die aktuelle Serie nicht.
 
-Current week and month streaks follow the same grace rule: count consecutive
-periods ending in the current period, or the immediately preceding one if there
-has been no climb this period yet. After a whole empty week or month, that counter
-is zero. Weeks start on Monday and calendar boundaries use UTC, including across
-ISO week 53 and the new year. Future-dated entries do not count toward these counters.
+Für aktuelle Wochen- und Monatsserien gilt dieselbe Übergangsregel: Gezählt werden aufeinanderfolgende Zeiträume bis zum aktuellen Zeitraum oder bis zum unmittelbar vorherigen, wenn du im aktuellen noch nicht geklettert bist. Nach einer vollständig leeren Woche oder einem vollständig leeren Monat steht der jeweilige Zähler auf null. Wochen beginnen am Montag. Kalendergrenzen werden in UTC bestimmt, auch über die ISO-Kalenderwoche 53 und den Jahreswechsel hinweg. Einträge mit einem Datum in der Zukunft zählen für diese Zähler nicht.
 
-## Recent activities
+## Letzte Aktivitäten
 
-The dashboard lists the newest **climbing day** first. Within each day, the most
-recently **logged** ascent comes first, using the provider’s log creation timestamp.
-The displayed date remains the climbing date: logging an older climb today does
-not move it above climbs from a later climbing day. Logging order is a proxy for
-climbing order when you enter climbs in sequence, not a recorded ascent time.
+Das Dashboard zeigt den neuesten **Klettertag** zuerst. Innerhalb eines Tages steht die zuletzt **eingetragene** Begehung zuerst. Maßgeblich ist der Erstellungszeitpunkt des Eintrags beim Anbieter.
+Das angezeigte Datum bleibt der Klettertag: Wenn du heute eine ältere Begehung einträgst, rückt sie nicht vor Begehungen von späteren Klettertagen. Wenn du Begehungen in ihrer Reihenfolge einträgst, dient die Eintragsreihenfolge als Näherung für die Kletterreihenfolge — sie ist keine aufgezeichnete Begehungszeit.
 
-Entries with missing or invalid log times follow timed entries on the same day.
-Equal or unavailable log times use the stored ascent ID, newest first, to keep the
-order stable. Edit/sync timestamps are not used as log creation times.
+Einträge mit fehlenden oder ungültigen Eintragszeiten stehen hinter zeitlich zugeordneten Einträgen desselben Tages.
+Bei gleichen oder fehlenden Eintragszeiten sorgt die gespeicherte Begehungs-ID für eine stabile Reihenfolge, mit der neuesten zuerst. Bearbeitungs-/Synchronisierungszeitstempel werden nicht als Erstellungszeitpunkte von Einträgen verwendet.
 
-Recent activities also show the same climb-style badges as the logbook: route discipline, a different recorded ascent protection style when applicable, and explicit solo variants such as Lead solo or Top-rope solo. Missing partners never imply a solo.
+Letzte Aktivitäten zeigen außerdem dieselben Kletterstil-Abzeichen wie das Tourenbuch: die Routendisziplin, gegebenenfalls einen abweichenden erfassten Sicherungsstil der Begehung sowie explizite Solo-Varianten wie Vorstieg-Solo oder Toprope-Solo. Fehlende Partner bedeuten niemals ein Solo.

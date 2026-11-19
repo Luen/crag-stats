@@ -20,6 +20,7 @@ const LABEL_KEYS: Record<(typeof EMBED_CARDS)[number], { titleKey: string; altKe
 
 export const load: PageServerLoad = ({ url, locals }) => ({
 	origin: url.origin,
+	locale: locals.locale,
 	// Links and embeds built from this origin won't load for anyone outside this network.
 	privateHost: isPrivateHost(url.hostname),
 	cards: EMBED_CARDS.map((id) => ({

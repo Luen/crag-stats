@@ -1,4 +1,4 @@
-# CPR (Climber Performance Rating)
+# CPR (Leistungsbewertung für Kletterer)
 
 **CPR** ist theCrags Einstufung deines Kletterkönnens. Crag Stats zeigt eine CPR-Zeitleiste getrennt nach **Sportklettern**, **Trad** und **Bouldern**, genau wie theCrag, da die drei Disziplinen sehr unterschiedlich bewertet werden.
 
@@ -33,5 +33,5 @@ theCrag weist darauf hin, dass eine **graue Spitze** über der Linie (Fehlversuc
 
 ## Quellen
 
-- theCrag: [Climber Performance Rating (CPR)](https://www.thecrag.com/en/article/cpr)
-- theCrag: [CPR timeline explained](https://www.thecrag.com/en/article/cprtimeline)
+- theCrag: [Leistungsbewertung für Kletterer (CPR)](https://www.thecrag.com/en/article/cpr)
+- theCrag: [CPR-Zeitverlauf erklärt](https://www.thecrag.com/en/article/cprtimeline)

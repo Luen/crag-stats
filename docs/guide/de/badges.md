@@ -1,110 +1,103 @@
-# Badges
+# Abzeichen
 
-Most badges celebrate climbing milestones: your first session or send, ascent totals, grades and more. These use the dates of the relevant climbs in your logbook. Importing an older climb can therefore move a climbing milestone earlier.
+Die meisten Abzeichen würdigen Klettermeilensteine: deine erste Einheit oder deinen ersten Durchstieg, Begehungszahlen, Schwierigkeitsgrade und mehr. Sie verwenden das Datum der jeweiligen Begehung in deinem Tourenbuch. Der Import einer älteren Begehung kann einen Klettermeilenstein daher auf ein früheres Datum verschieben.
 
-**First Moves** celebrates bringing your logbook into Crag Stats. Its date is the first successful import or sync containing at least one ascent, and its count is saved with that import. Later syncs and imported older climbs do not move it. It has no link to an individual climb. Import timestamps use the site's display time zone.
+**Erste Züge** würdigt, dass du dein Tourenbuch in Crag Stats eingebracht hast. Das Datum entspricht dem ersten erfolgreichen Import oder der ersten erfolgreichen Synchronisierung mit mindestens einer Begehung; die Anzahl wird bei diesem Import gespeichert. Spätere Synchronisierungen und importierte ältere Begehungen ändern dieses Datum nicht. Es gibt keinen Link zu einer einzelnen Begehung. Importzeitpunkte verwenden die Anzeige-Zeitzone der Website.
 
-If an older database has no saved import date, the next successful non-empty import supplies it. Existing saved dates are preserved.
+Wenn in einer älteren Datenbank kein Importdatum gespeichert ist, liefert es der nächste erfolgreiche Import mit mindestens einer Begehung. Bereits gespeicherte Daten bleiben erhalten.
 
-Wiping local data resets this milestone along with the logbook; the next successful non-empty import starts a new one.
+Das Löschen der lokalen Daten setzt diesen Meilenstein zusammen mit dem Tourenbuch zurück; der nächste erfolgreiche Import mit Begehungen beginnt einen neuen.
 
-## Order
+## Reihenfolge
 
-Earned badges are listed by the climb that earned them, most recent first. The dashboard card shows the latest eight. Badges earned on the same day keep their gallery order. First Moves and the community-ascent estimates are not tied to a climb, so they come after every climb-dated badge.
+Verdiente Abzeichen werden nach der auslösenden Begehung sortiert, mit der neuesten zuerst. Die Dashboard-Karte zeigt die neuesten acht. Am selben Tag verdiente Abzeichen behalten ihre Reihenfolge aus der Galerie. Erste Züge und die Schätzungen zu Community-Begehungen sind keiner Begehung zugeordnet und stehen deshalb hinter allen Abzeichen mit Begehungsdatum.
 
-## Counted tick types
+## Gezählte Begehungsarten
 
-The **Counted tick types** setting in Settings → Display & visibility decides which of your logged ascents each badge follows. See [Tick types](/docs/tick-types) for the setting itself.
+Die Einstellung **Gezählte Begehungsarten** unter Einstellungen → Anzeige und Sichtbarkeit bestimmt, welche deiner eingetragenen Begehungen für die jeweiligen Abzeichen zählen. Die Einstellung selbst wird unter [Begehungsarten](/docs/tick-types) erklärt.
 
-- Tick types set to **Projects & goals only** are out of headline ascents and dashboard totals, but they still earn badges: **Persistence Pays**, the consecutive-day streaks, **Multipitch Day**, **Travel Week**, the height milestones, and other activity badges all keep counting them. Height milestones therefore keep growing from working burns even though your ascent totals stay lean.
-- Tick types set to **Hide** earn nothing: those ascents are excluded from badges as well as every other analytic.
+- Begehungsarten mit **Nur Projekte und Ziele** fehlen in den hervorgehobenen Begehungszahlen und Dashboard-Summen, zählen aber weiterhin für Abzeichen: **Beharrlichkeit zahlt sich aus**, Tagesserien, **Mehrseillängentag**, **Reisewoche**, Höhenmeilensteine und andere Aktivitätsabzeichen berücksichtigen sie weiterhin. Höhenmeilensteine wachsen daher auch durch Projektversuche, obwohl deine Begehungssummen diese nicht mitzählen.
+- Begehungsarten mit **Ausblenden** bringen keine Abzeichen: Diese Begehungen sind von Abzeichen und allen anderen Auswertungen ausgeschlossen.
 
-The distinction is deliberate. Headline totals filter what you send, while badges describe what you did — a working burn is still a day on the rock, and it still counts towards the badges that celebrate that. If a badge you expect has not appeared, check whether its tick type is hidden rather than merely out of the totals.
+Diese Unterscheidung ist beabsichtigt. Die hervorgehobenen Summen filtern deine Durchstiege, während Abzeichen deine Aktivitäten beschreiben — ein Projektversuch bleibt ein Tag am Fels und zählt für die entsprechenden Aktivitätsabzeichen. Wenn ein erwartetes Abzeichen fehlt, prüfe, ob die Begehungsart ausgeblendet und nicht nur von den Summen ausgeschlossen ist.
 
-## Distance climbed
+## Gekletterte Strecke
 
-Height badges count the total height of your logged climbs: 1, 5, 10, 20, 50, 100, and 150 km. Each one is dated by the climb that takes your running total past the mark. **250m Day** instead sums the height climbed on a single calendar day.
+Höhenabzeichen zählen die Gesamthöhe deiner eingetragenen Begehungen: 1, 5, 10, 20, 50, 100 und 150 km. Jedes erhält das Datum der Begehung, mit der deine laufende Summe die Marke überschreitet. **250-m-Tag** summiert dagegen die an einem einzelnen Kalendertag gekletterte Höhe.
 
-Badge thresholds are defined in metric and never change with the display-unit setting. Only the wording converts: with imperial units selected, **1 km climbed** reads in miles and **250m Day** reads in feet. The same climbs earn exactly the same badges in either unit system. See [Display settings](/docs/display-settings).
+Abzeichenschwellen sind metrisch definiert und ändern sich nie mit der eingestellten Anzeigeeinheit. Nur die Beschriftung wird umgerechnet: Bei imperialen Einheiten wird **1 km geklettert** in Meilen und **250-m-Tag** in Fuß angezeigt. Dieselben Begehungen bringen in beiden Einheitensystemen genau dieselben Abzeichen. Siehe [Anzeigeeinstellungen](/docs/display-settings).
 
-## Weather
+## Wetter
 
-**Heat Wave**, **Freeze Frame**, **Rain Check**, **Climbing in the Snow**, **Blown Away**, **Bluebird**, **Sticky**, **Storm Send**, and **Four Seasons** need the optional outdoor weather cache (`WEATHER_IMPORT`). See [Weather](/docs/weather). Until those days are fetched, the badges stay locked. **Storm Send** requires a successful send on a heavy-rain day; attempts alone do not count.
+**Hitzewelle**, **Frostbeule**, **Regen-Test**, **Klettern im Schnee**, **Vom Winde verweht**, **Kaiserwetter**, **Grip**, **Sturm-Durchstieg** und **Vier Jahreszeiten** benötigen den optionalen Outdoor-Wetter-Cache (`WEATHER_IMPORT`). Siehe [Wetter](/docs/weather). Solange diese Tage nicht abgerufen wurden, bleiben die Abzeichen gesperrt. **Sturm-Durchstieg** erfordert einen erfolgreichen Durchstieg an einem Tag mit Starkregen; Versuche allein zählen nicht.
 
-## Almost there
+## Fast geschafft
 
-On the full **[Badges](/badges)** page, **Almost there** lists up to three locked badges that are closest to completion. Only **countable** thresholds qualify (ascent totals, height, grade-band sends, FA/FFA counts, routes set, and similar). One-shot badges such as holiday days, weather days or First Moves are excluded. Progress is ranked by percent of the target (capped below 100% until earned), then by smaller targets when percentages tie. The dashboard badges card still shows recent earned badges only.
+Auf der vollständigen Seite **[Abzeichen](/badges)** zeigt **Fast geschafft** bis zu drei gesperrte Abzeichen, deren Abschluss am nächsten liegt. Berücksichtigt werden nur **zählbare** Schwellenwerte (Begehungssummen, Höhe, Durchstiege in Schwierigkeitsbändern, EB-/EFB-Zahlen, eingerichtete Routen und Ähnliches). Einmalige Ereignisabzeichen wie Feiertage, Wettertage oder Erste Züge sind ausgeschlossen. Der Fortschritt wird nach dem erreichten Zielanteil sortiert (bis zum Erwerb auf unter 100% begrenzt); bei gleichem Anteil stehen kleinere Ziele zuerst. Die Abzeichenkarte im Dashboard zeigt weiterhin nur kürzlich verdiente Abzeichen.
 
-## Partners, multipitch and travel
+## Partner, Mehrseillängen und Reisen
 
-These four badges use fields already in your logbook and are dated by the climb that completes them:
+Diese vier Abzeichen verwenden bereits vorhandene Tourenbuchfelder und erhalten das Datum der Begehung, die sie vervollständigt:
 
-| Badge                | Rule                                                                                                                                                                                                                                       |
-| -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Crowded Belay**    | One ascent lists 3 or more different partners (names are matched ignoring case).                                                                                                                                                           |
-| **Multipitch Day**   | You send 3 or more pitches in one calendar day: pitch ranges and lists are expanded and deduplicated per route/day. Whole-route and individual-pitch logs do not double-count. When cached API pitch ticks exist, only sent pitches count. |
-| **Travel Week**      | You log climbs at 4 different outdoor crags within any 7 consecutive days. Gyms and unknown crags do not count.                                                                                                                            |
-| **Persistence Pays** | You send a route for the first time after logging it on 4 or more different days (attempts included). Repeating a route you already sent does not count.                                                                                   |
+| Abzeichen                         | Regel                                                                                                                                                                                                                                                                                                                                                       |
+| --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Voller Standplatz**             | Eine Begehung nennt mindestens 3 verschiedene Partner (Namen werden ohne Berücksichtigung der Groß-/Kleinschreibung abgeglichen).                                                                                                                                                                                                                           |
+| **Mehrseillängentag**             | Du steigst an einem Kalendertag mindestens 3 Seillängen durch: Bereiche und Listen von Seillängen werden aufgelöst und je Route und Tag ohne Duplikate gezählt. Einträge für die gesamte Route und einzelne Seillängen werden nicht doppelt gezählt. Wenn gespeicherte API-Ticks für Seillängen vorliegen, zählen nur erfolgreich durchstiegene Seillängen. |
+| **Reisewoche**                    | Du trägst innerhalb von 7 aufeinanderfolgenden Tagen Begehungen in 4 verschiedenen Outdoor-Gebieten ein. Kletterhallen und unbekannte Gebiete zählen nicht.                                                                                                                                                                                                 |
+| **Beharrlichkeit zahlt sich aus** | Du steigst eine Route erstmals durch, nachdem du sie an mindestens 4 verschiedenen Tagen eingetragen hast (einschließlich Versuchen). Wiederholungen bereits durchstiegener Routen zählen nicht.                                                                                                                                                            |
 
-They are one-shot badges, so they do not appear in **Almost there**.
+Es handelt sich um einmalige Ereignisabzeichen; deshalb erscheinen sie nicht unter **Fast geschafft**.
 
-## Repeats and new routes
+## Wiederholungen und neue Routen
 
-These badges share the rules of the [Repeats vs new routes](/docs/repeats) card. Routes are matched by their theCrag route ID, attempts count, and each badge is dated by the climb that completes it.
+Diese Abzeichen verwenden die Regeln der Karte [Wiederholungen und neue Routen](/docs/repeats). Routen werden anhand ihrer theCrag-Routen-ID zugeordnet, Versuche zählen mit, und jedes Abzeichen erhält das Datum der Begehung, die es vervollständigt.
 
-| Badge                  | Rule                                                                                                          |
-| ---------------------- | ------------------------------------------------------------------------------------------------------------- |
-| **Explorer**           | Ascents logged on 50 different routes.                                                                        |
-| **Wanderer**           | Ascents logged on 100 different routes.                                                                       |
-| **Route Collector**    | Ascents logged on 250 different routes.                                                                       |
-| **Guidebook Explorer** | Ascents logged on 500 different routes.                                                                       |
-| **Old Faithful**       | One route climbed on 10 different days. Several ascents on one day count once.                                |
-| **Home Turf**          | 25 repeat ascents (any day after a route's first logged day) on routes at one crag. First visits don't count. |
+| Abzeichen                   | Regel                                                                                                                                              |
+| --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Entdecker**               | Eingetragene Begehungen auf 50 verschiedenen Routen.                                                                                               |
+| **Routensammler**           | Eingetragene Begehungen auf 100 verschiedenen Routen.                                                                                              |
+| **Routensammler**           | Eingetragene Begehungen auf 250 verschiedenen Routen.                                                                                              |
+| **Kletterführer-Entdecker** | Eingetragene Begehungen auf 500 verschiedenen Routen.                                                                                              |
+| **Dauerbrenner**            | Eine Route an 10 verschiedenen Tagen geklettert. Mehrere Begehungen an einem Tag zählen einmal.                                                    |
+| **Heimgebiet**              | 25 Wiederholungsbegehungen auf Routen in einem Gebiet (an Tagen nach dem ersten eingetragenen Tag der jeweiligen Route). Erstbesuche zählen nicht. |
 
-All six are countable, so they can appear in **Almost there**.
+Alle sechs sind zählbar und können daher unter **Fast geschafft** erscheinen.
 
-## Summer Sun Face
+## Sommersonnenwand
 
-Log an outdoor climb on an equator-facing route in local meteorological summer: N/NE/NW during December–February in the southern hemisphere, or S/SE/SW during June–August in the northern hemisphere. This conservative version covers absolute latitudes from 25° up to (but not including) 60°. Attempts count as logged climbs, as with weather-day badges. The badge unlocks once on the earliest qualifying day and has no Almost there counter.
+Trage im örtlichen meteorologischen Sommer eine Outdoor-Begehung an einer zum Äquator ausgerichteten Route ein: N/NE/NW im Dezember–Februar auf der Südhalbkugel oder S/SE/SW im Juni–August auf der Nordhalbkugel. Diese konservative Variante gilt für absolute Breitengrade von 25° bis 60° (ausschließlich). Versuche zählen als eingetragene Begehungen, wie bei den Wettertagsabzeichen. Das Abzeichen wird einmalig am frühesten passenden Tag freigeschaltet und hat keinen Zähler unter Fast geschafft.
 
-Use the route's own sun/aspect tags first. When it has no exposure tags of its own, tags inherited from its **immediate parent** (for example its sector, cliff or boulder) can fill in. The cached tag's source ID must match that exact parent. Tags from higher ancestors, unknown sources and broad geographic areas never fill in. A route's own exposure tags take priority even when the parent says something different; unknown or conflicting route directions do not trigger a parent fallback.
+Zuerst werden die eigenen Sonnen- und Ausrichtungs-Tags der Route verwendet. Hat sie keine eigenen Expositions-Tags, können geerbte Tags des **unmittelbar übergeordneten Objekts** einspringen (zum Beispiel Sektor, Felswand oder Boulder). Die Quell-ID des gespeicherten Tags muss genau diesem übergeordneten Objekt entsprechen. Tags höherer Vorfahren, unbekannter Quellen und großer geografischer Gebiete werden niemals als Ersatz verwendet. Eigene Expositions-Tags der Route haben Vorrang, auch wenn das übergeordnete Objekt etwas anderes angibt; unbekannte oder widersprüchliche Routenausrichtungen lösen keinen Rückgriff auf dessen Tags aus.
 
-At the chosen level, **All day sun** can qualify without a facing direction. **Always shady** prevents the award. Otherwise, the aspect must face the equator as described above; morning/noon/afternoon-only sun tags do not qualify on their own. Both sun and aspect tags are not required together.
+Auf der gewählten Ebene kann **Ganztägig Sonne** auch ohne Himmelsrichtung genügen. **Immer schattig** verhindert die Vergabe. Andernfalls muss die Ausrichtung wie oben beschrieben zum Äquator zeigen; Tags für Sonne nur am Morgen, Mittag oder Nachmittag reichen allein nicht aus. Sonnen- und Ausrichtungs-Tags müssen nicht gemeinsam vorhanden sein.
 
-Indoor climbs, invalid dates, tropical/high-latitude locations, legacy points of unknown precision and nearby-town approximations do not qualify. Cached-data upgrades recover route/parent/higher-ancestor provenance without another sync or external request.
+Indoor-Begehungen, ungültige Daten, tropische oder hoch gelegene Breitengrade, ältere Standortangaben unbekannter Genauigkeit und Näherungen über benachbarte Orte erfüllen die Voraussetzungen nicht. Aktualisierungen der gespeicherten Daten stellen die Herkunft von Route, direktem Elternobjekt und höheren Vorfahren ohne erneute Synchronisierung oder externe Anfrage wieder her.
 
-This records provider-described exposure plus a seasonal heuristic. It does not establish the time you climbed, actual sunshine, shade from overhangs or rock temperature, and requires no Open-Meteo cache. The separate heat badge describes cached high air temperature. Minimized real API tag fixtures and their provenance are documented in the repository.
+Erfasst wird die vom Anbieter beschriebene Exposition zusammen mit einer saisonalen Näherungsregel. Daraus lassen sich weder deine Kletterzeit noch tatsächlicher Sonnenschein, Schatten durch Überhänge oder die Felstemperatur ableiten; ein Open-Meteo-Cache ist nicht erforderlich. Das separate Hitzeabzeichen beschreibt eine gespeicherte hohe Lufttemperatur. Reduzierte echte API-Tag-Testdaten und ihre Herkunft sind im Repository dokumentiert.
 
 ## Greenpoint
 
-**Greenpoint** is a one-shot badge for leading a bolted sport route on your own trad gear. It unlocks the first time you either:
+**Greenpoint** ist ein einmaliges Abzeichen für den Vorstieg einer mit Bohrhaken gesicherten Sportroute mit eigener mobiler Sicherung. Es wird freigeschaltet, sobald du erstmals entweder:
 
-- log a theCrag **Green point**, **Green point onsight** or **Green point flash** tick that counts as a send, or
-- send a route listed as **Sport** with your ascent recorded as **Trad**, using a clean lead tick (onsight, flash, red point, pink point, ground-up red point or Lead).
+- bei theCrag einen als Durchstieg zählenden Tick **Green point**, **Green point onsight** oder **Green point flash** einträgst oder
+- eine als **Sport** eingestufte Route mit dem Begehungsstil **Trad** durchsteigst und dabei einen sauberen Vorstiegs-Tick verwendest (Onsight, Flash, Rotpunkt, Pinkpoint, Ground-up-Rotpunkt oder Lead).
 
-Generic Tick/Send/Clean entries, attempts, top-rope and seconding don't count for the second path, because they don't show that you led on gear. Like the badges above, it does not appear in **Almost there**. See theCrag's [tick types](https://www.thecrag.com/en/article/ticktypes) for how Green point ticks are defined.
+Allgemeine Tick-/Send-/Clean-Einträge, Versuche, Toprope und Nachstieg zählen für den zweiten Weg nicht, weil sie keinen Vorstieg mit mobiler Sicherung belegen. Wie die Abzeichen oben erscheint es nicht unter **Fast geschafft**. Die Definition der Green-point-Ticks findest du bei den [Begehungsarten von theCrag](https://www.thecrag.com/en/article/ticktypes).
 
-## First rope-solo ascents
+## Erste Seilsolo-Begehungen
 
-**First Lead Rope Solo** unlocks on your first successful ascent explicitly logged as Lead solo. **First Top-Rope Solo** unlocks separately on your first successful Roped Solo / Top rope solo ascent. Each links to the earliest qualifying climb, using ascent ID to break same-day ties, and neither appears in Almost there.
+**Erstes Rope-Solo im Vorstieg** wird mit deiner ersten erfolgreichen, ausdrücklich als Lead solo eingetragenen Begehung freigeschaltet. **Erstes Toprope-Solo** wird separat mit deiner ersten erfolgreichen Begehung als Roped Solo / Top rope solo freigeschaltet. Beide verlinken auf die früheste passende Begehung; bei gleichem Tag entscheidet die Begehungs-ID. Keines erscheint unter Fast geschafft.
 
-Classification matches the Solo climbing card. The [provider API](https://www.thecrag.com/en/article/api) documents `leadsolo` and `ropedsolo`; display labels and their case/spacing/separator variants are recognized without changing the original tick text. A cached-data upgrade repairs old completion flags only when the stored provider payload confirms the same explicit solo method. Route discipline and ascent style remain separate.
+Die Einstufung entspricht der Karte Solo-Klettern. Die [Anbieter-API](https://www.thecrag.com/en/article/api) dokumentiert `leadsolo` und `ropedsolo`; Anzeigebezeichnungen und Varianten bei Groß-/Kleinschreibung, Leerzeichen und Trennzeichen werden erkannt, ohne den ursprünglichen Tick-Text zu ändern. Eine Aktualisierung gespeicherter Daten korrigiert ältere Erfolgsmarkierungen nur, wenn die gespeicherte Anbieterantwort dieselbe ausdrückliche Solo-Methode bestätigt. Routendisziplin und Begehungsstil bleiben getrennt.
 
-Attempts, hangdogs, retreats, free solos, deep-water solos, aid solos, ordinary top-rope ascents and entries with unknown completion do not qualify. An ascent explicitly recorded as Boulder or Second also contradicts either rope-solo method and cannot unlock these badges. Missing partners alone do not establish solo climbing. These milestones apply to indoor and outdoor climbs and need neither coordinates nor weather imports.
+Versuche, Hangdogs, Rückzüge, Free Solos, Deep-Water-Solos, technische Solos, gewöhnliche Toprope-Begehungen und Einträge mit unbekanntem Erfolg erfüllen die Voraussetzungen nicht. Eine ausdrücklich als Boulder oder Nachstieg erfasste Begehung widerspricht ebenfalls beiden Seilsolo-Methoden und kann diese Abzeichen nicht freischalten. Fehlende Partner allein belegen kein Solo-Klettern. Diese Meilensteine gelten für Indoor- und Outdoor-Begehungen und benötigen weder Koordinaten noch Wetterimporte.
 
-## Consecutive-day streaks
+## Serien aufeinanderfolgender Tage
 
-**7-Day Streak**, **10-Day Streak** and **30-Day Streak** celebrate logging at
-least one climb on every consecutive calendar day. Attempts count, and indoor
-and outdoor climbs both count, matching the Streaks card. Multiple ascents on one
-day count once; missing or invalid dates do not establish a day. Climbing dates,
-not logging times, determine the streak without shifting their written dates
-between time zones.
+**7-Tage-Serie**, **10-Tage-Serie** und **30-Tage-Serie** würdigen mindestens eine eingetragene Begehung an jedem aufeinanderfolgenden Kalendertag. Versuche sowie Indoor- und Outdoor-Begehungen zählen, entsprechend der Serienkarte. Mehrere Begehungen an einem Tag zählen einmal; fehlende oder ungültige Daten begründen keinen Klettertag. Maßgeblich sind die Kletterdaten, nicht die Eintragszeiten. Die eingetragenen Daten werden nicht zwischen Zeitzonen verschoben.
 
-Each badge is dated to the earliest day its threshold was reached. Taking a break
-does not erase a milestone in your recorded history. These are one-shot awards
-and do not appear in Almost there.
+Jedes Abzeichen erhält das Datum des frühesten Tages, an dem seine Schwelle erreicht wurde. Eine Pause löscht keinen Meilenstein aus deiner gespeicherten Historie. Dies sind einmalige Auszeichnungen; sie erscheinen nicht unter Fast geschafft.
 
-## Who you climbed with
+## Mit wem du geklettert bist
 
-Earned badges with a qualifying climb show its recorded companions. “Partners on this ascent” refers only to the linked climb, including badges earned across several pitches, days or routes. It is not a list of everyone who contributed to the whole achievement. Missing names do not imply a solo ascent.
+Verdiente Abzeichen mit einer auslösenden Begehung zeigen deren eingetragene Begleiter. „Partner bei dieser Begehung“ bezieht sich nur auf die verlinkte Begehung, auch bei Abzeichen, die über mehrere Seillängen, Tage oder Routen verdient wurden. Die Angabe ist keine Liste aller Personen, die zur gesamten Leistung beigetragen haben. Fehlende Namen bedeuten keine Solo-Begehung.

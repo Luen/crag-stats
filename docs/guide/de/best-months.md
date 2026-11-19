@@ -1,41 +1,41 @@
-# Best months
+# Beste Monate
 
-The **Best months** card compares [theCrag seasonality](https://www.thecrag.com/article/Seasonality) for the crags you climb most with **when you actually climb there**.
+Die Karte **Beste Monate** vergleicht die [Saisonalität von theCrag](https://www.thecrag.com/article/Seasonality) für deine meistbesuchten Klettergebiete damit, **wann du dort tatsächlich kletterst**.
 
-## Where the data comes from
+## Woher die Daten stammen
 
-theCrag stores a **12-value seasonality curve** per route (one value per calendar month). Crag Stats caches it on each route during the optional route data import (`ROUTE_DATA_IMPORT`, off by default). Until a route has been fetched at least once, there is no seasonality to show.
+theCrag speichert pro Route eine **12-Werte-Saisonalitätskurve** (einen Wert pro Kalendermonat). Crag Stats speichert sie beim optionalen Routendaten-Import (`ROUTE_DATA_IMPORT`, standardmäßig deaktiviert) für jede Route im Cache. Solange eine Route noch nicht mindestens einmal abgerufen wurde, kann keine Saisonalität angezeigt werden.
 
-## How we aggregate it
+## Wie wir die Daten zusammenfassen
 
-For each crag in your logbook:
+Für jedes Klettergebiet in deinem Tourenbuch:
 
-1. **Your volume** — count your ascents by calendar month (all years combined).
-2. **theCrag seasonality** — for each route you have ticked at that crag, take the cached 12-month curve and weight it by **how many times you climbed that route**. Routes with more of your ticks influence the crag average more.
+1. **Dein Umfang** — deine Begehungen werden nach Kalendermonat gezählt (alle Jahre zusammen).
+2. **Saisonalität von theCrag** — für jede von dir begangene Route in diesem Gebiet wird die gespeicherte 12-Monats-Kurve mit der **Anzahl deiner Begehungen dieser Route** gewichtet. Routen mit mehr deiner Ticks beeinflussen den Gebietsdurchschnitt stärker.
 
-We show up to **six** crags ranked by your total ascents there, but only crags where at least one climbed route has seasonality cached.
+Angezeigt werden bis zu **sechs** Gebiete, sortiert nach der Gesamtzahl deiner dortigen Begehungen. Berücksichtigt werden nur Gebiete mit gespeicherter Saisonalität für mindestens eine begangene Route.
 
-## Reading the chart
+## Das Diagramm lesen
 
-- **Orange bars** — weighted mean seasonality (higher = more popular on theCrag that month).
-- **Grey bars** — your ascents that month at that crag.
+- **Orange Balken** — gewichtete mittlere Saisonalität (höher = in diesem Monat auf theCrag beliebter).
+- **Graue Balken** — deine Begehungen in diesem Monat in diesem Gebiet.
 
-When the grey bars peak in different months than the orange strip, you may be climbing off-peak — or your sample is small.
+Wenn die grauen Balken in anderen Monaten ihren Höhepunkt erreichen als die orange Darstellung, kletterst du möglicherweise außerhalb der Hauptsaison — oder deine Stichprobe ist klein.
 
-## Refreshing seasonality
+## Saisonalität aktualisieren
 
-Run **Sync** from Settings. With route data import enabled, seasonality backfills in the background (rate-limited, up to 100 routes per run).
+Starte **Synchronisieren** in den Einstellungen. Bei aktiviertem Routendatenimport wird die Saisonalität im Hintergrund ergänzt (mit begrenzter Anfragerate, bis zu 100 Routen pro Durchlauf).
 
-The Sectors page can also show [weather on your cached visit days](/docs/weather). This describes conditions on your logged days, separately from the route seasonality used here.
+Die Sektorenseite kann auch das [Wetter an deinen gespeicherten Besuchstagen](/docs/weather) anzeigen. Das beschreibt die Bedingungen an deinen eingetragenen Tagen, unabhängig von der hier verwendeten Routensaisonalität.
 
-## Search by month
+## Nach Monat suchen
 
-Open [Seasonality search](/seasonality) from the Best months card to browse all crags and climbs in your synced logbook with cached monthly data. Choose a month (the current month in your display time zone by default), search a crag, area or climb name, and switch between **Crags** and **Climbs**. Searches, month selection, sorting and pages are stored in the URL so you can bookmark or share them. Choose **View climbs** to narrow to one crag, or **Search all crags** to leave that scope.
+Öffne die [Saisonalitätssuche](/seasonality) über die Karte Beste Monate, um alle Gebiete und Routen deines synchronisierten Tourenbuchs mit gespeicherten Monatsdaten zu durchsuchen. Wähle einen Monat (standardmäßig der aktuelle Monat in deiner angezeigten Zeitzone), suche nach dem Namen eines Felsens, Gebiets oder einer Route und wechsle zwischen **Felsen** und **Routen**. Suchanfragen, Monatsauswahl, Sortierung und Seiten werden in der URL gespeichert, sodass du sie als Lesezeichen speichern oder teilen kannst. Wähle **Routen anzeigen**, um auf ein Gebiet einzugrenzen, oder **Alle Gebiete durchsuchen**, um diese Eingrenzung aufzuheben.
 
-Results are ranked by the selected month’s value divided by the highest value in that result’s annual curve. For example, a value of 5 with an annual peak of 10 shows **50% of annual peak**. Names break ties; you can also sort by name. There is no “in season” cutoff. A zero-only curve has **No seasonal signal** and sorts after curves with a positive peak. The month strip and expandable values table show all twelve months.
+Die Ergebnisse werden nach dem Wert des gewählten Monats geteilt durch den höchsten Wert der jeweiligen Jahreskurve sortiert. Ein Wert von 5 bei einem Jahreshöchstwert von 10 ergibt beispielsweise **50% des Jahreshöchstwerts**. Bei Gleichstand entscheidet der Name; du kannst auch direkt nach Namen sortieren. Es gibt keinen festen Grenzwert für „in der Saison“. Eine Kurve mit ausschließlich Nullwerten hat **Kein saisonales Signal** und wird hinter Kurven mit positivem Höchstwert eingeordnet. Die Monatsleiste und die aufklappbare Wertetabelle zeigen alle zwölf Monate.
 
-Crag curves use the same ascent-weighted mean as the dashboard: routes with more of your logged ascents have more influence; missing route curves do not enter the mean. Searching a climb name can find its crag, but does not change that crag’s full curve. Crags are kept separate by provider area identity where available. Each crag shows how many of its logged climbs have data; the page also reports coverage among matching climbs. Missing or malformed curves stay unknown and are omitted from ranked results.
+Gebietskurven verwenden denselben nach Begehungen gewichteten Mittelwert wie das Dashboard: Routen mit mehr deiner eingetragenen Begehungen haben mehr Einfluss; fehlende Routenkurven gehen nicht in den Mittelwert ein. Die Suche nach dem Namen einer Route kann das zugehörige Klettergebiet finden, ändert jedoch nicht die vollständige Kurve dieses Klettergebiets. Klettergebiete werden, sofern verfügbar, anhand der Gebietskennung des Anbieters getrennt geführt. Jedes Klettergebiet zeigt an, wie viele seiner geloggten Routen über Daten verfügen; die Seite gibt außerdem die Abdeckung unter den passenden Routen an. Fehlende oder fehlerhafte Kurven bleiben unbekannt und werden aus der Rangliste ausgelassen.
 
-Climb results link to all your logbook entries for that exact climb and to its guidebook page on theCrag. Your browser’s Back button returns to the search. Searching reads the local cache only and does not trigger a provider fetch or search the whole theCrag catalogue. Enable the optional route data import and sync to build coverage.
+Routenergebnisse verlinken auf alle deine Tourenbucheinträge für genau diese Route und auf ihre Führerseite bei theCrag. Mit der Zurück-Schaltfläche deines Browsers gelangst du wieder zur Suche. Die Suche liest nur den lokalen Cache. Sie löst weder eine Abfrage beim Anbieter aus noch durchsucht sie den gesamten theCrag-Katalog. Aktiviere den optionalen Routendatenimport und synchronisiere, um die Datenabdeckung aufzubauen.
 
-Seasonality describes **community climbing patterns**, not forecast weather or measured conditions on your logged visits. See [Weather](/docs/weather) for those visit-day observations.
+Saisonalität beschreibt **Klettergewohnheiten der Community**, keine Wettervorhersagen oder gemessenen Bedingungen bei deinen eingetragenen Besuchen. Diese Beobachtungen zu Besuchstagen findest du unter [Wetter](/docs/weather).

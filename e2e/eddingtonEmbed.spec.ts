@@ -29,14 +29,14 @@ test('Eddington embed keeps numeric indexes and converts only explanatory grades
 		await page.goto('/embed/eddington.svg');
 		const original = await indexes();
 		expect(original.every((value) => /^\d+$/.test(value))).toBe(true);
-		await expect(page.locator('svg')).toContainText(/problems sent at V\d+ or harder/);
+		await expect(page.locator('svg')).toContainText(/problems? sent at V\d+ or harder/);
 		preferences('french', 'font');
 		for (const theme of ['light', 'dark']) {
 			await page.goto(`/embed/eddington.svg?theme=${theme}`);
 			expect(await indexes()).toEqual(original);
 			await expect(page.locator('svg')).toContainText('routes sent at French');
-			await expect(page.locator('svg')).toContainText('problems sent at Font');
-			await expect(page.locator('svg')).toContainText('more problems at ≥ Font');
+			await expect(page.locator('svg')).toContainText(/problems? sent at Font/);
+			await expect(page.locator('svg')).toContainText(/more problems? at ≥ Font/);
 			const clipped = await page.locator('svg text').evaluateAll((nodes) =>
 				nodes
 					.filter((node) => {
@@ -51,7 +51,7 @@ test('Eddington embed keeps numeric indexes and converts only explanatory grades
 		await page.goto('/embed/eddington.svg?system=yds&boulderSystem=v_scale');
 		expect(await indexes()).toEqual(original);
 		await expect(page.locator('svg')).toContainText('routes sent at YDS');
-		await expect(page.locator('svg')).toContainText(/problems sent at V\d+ or harder/);
+		await expect(page.locator('svg')).toContainText(/problems? sent at V\d+ or harder/);
 	} finally {
 		db.prepare('DELETE FROM app_settings WHERE key IN (?,?)').run(...keys);
 		for (const row of saved)
