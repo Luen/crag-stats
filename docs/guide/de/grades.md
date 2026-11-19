@@ -36,8 +36,8 @@ Umrechnungen zwischen Systemen sind Näherungswerte: Grade sind kulturell gewach
 
 ## Quellen
 
-- theCrag: [Grades and grade conversions](https://www.thecrag.com/en/article/grades)
-- theCrag: [Grades on theCrag](https://www.thecrag.com/en/article/gradesonthecrag)
+- theCrag: [Schwierigkeitsgrade und Gradumrechnungen](https://www.thecrag.com/en/article/grades)
+- theCrag: [Schwierigkeitsgrade auf theCrag](https://www.thecrag.com/en/article/gradesonthecrag)
 
 ## Rekorde in der Übersicht
 

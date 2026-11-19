@@ -1,5 +1,7 @@
 # AGENTS.md — Crag Stats
 
+- Share images resolve the same locale as the UI, and `/share` pins that locale in every copied SVG URL. Embed responses vary on `Accept-Language` and `Cookie`; pass the locale to both analytics and SVG rendering. Keep translated copy XML-escaped, retain provider route names and grade notation, and check German SVG text bounds in both themes (`e2e/share.spec.ts`).
+
 - AI top-up progress must use `/files/{fileId}/languages/progress`, matching the `fileIds` submitted for pre-translation. Project-wide totals include guides and retained duplicate branches; using them makes a completed UI catalogue retry unrelated work and rotate through unused models.
 
 - Crowdin AI top-up requires **Translation status → Project progress → Read only** (`project.status.progress:read`) on `CROWDIN_PERSONAL_TOKEN`, in addition to catalogue and AI scopes. A 403 naming that scope is a credential configuration failure, not exhausted model quota; correct the token permissions and rerun. Ordinary Crowdin Sync does not exercise this permission.

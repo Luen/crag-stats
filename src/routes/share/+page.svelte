@@ -14,7 +14,7 @@
 	const dashboardUrl = $derived(`${data.origin}/`);
 
 	function imageUrl(id: string) {
-		return `${data.origin}/embed/${id}.svg${theme === 'dark' ? '?theme=dark' : ''}`;
+		return `${data.origin}/embed/${id}.svg?locale=${data.locale}${theme === 'dark' ? '&theme=dark' : ''}`;
 	}
 
 	function snippet(card: (typeof data.cards)[number]) {
@@ -106,7 +106,7 @@
 		<section class="panel card">
 			<h2>{card.title}</h2>
 			<div class="preview" class:dark={theme === 'dark'}>
-				<img src="/embed/{card.id}.svg{theme === 'dark' ? '?theme=dark' : ''}" alt={card.alt} />
+				<img src={imageUrl(card.id)} alt={card.alt} />
 			</div>
 			<label class="code-label" for="code-{card.id}">{i18n.t('pages.share.labelEmbedCode')}</label>
 			<textarea id="code-{card.id}" readonly rows="3" value={code}></textarea>

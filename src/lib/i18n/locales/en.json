@@ -2196,5 +2196,26 @@
 		"tick": "Tick",
 		"toprope": "Top rope",
 		"working": "Working"
+	},
+	"embed": {
+		"myClimbing": "My climbing",
+		"title": "{name} · {card}",
+		"summaryTitle": "Climbing stats",
+		"hardestTitle": "Hardest sends",
+		"duration": "{type} · climbing {duration}",
+		"ascents": "ascents",
+		"sends": "sends",
+		"onsights": "onsights",
+		"climbed": "climbed",
+		"eddingtonSubtitle": "Eddington numbers · consistency across days and grades",
+		"vertical": "vertical ({metres} m)",
+		"routeIndex": "route grade index",
+		"boulderIndex": "boulder grade index",
+		"sendDays": "send days",
+		"routeCurrent": "{count, plural, one {# route} other {# routes}} sent at {grade} or harder",
+		"routeNext": "{needed, plural, one {# more route} other {# more routes}} at ≥ {grade} for index {next}",
+		"boulderCurrent": "{count, plural, one {# problem} other {# problems}} sent at {grade} or harder",
+		"boulderNext": "{needed, plural, one {# more problem} other {# more problems}} at ≥ {grade} for index {next}",
+		"empty": "No graded sends yet."
 	}
 }

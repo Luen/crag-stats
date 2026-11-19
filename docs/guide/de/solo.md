@@ -1,27 +1,27 @@
-# Solo climbing
+# Soloklettern
 
-The **Solo climbing** card counts your solo ascents by type, plus every ascent you logged without a partner.
+Die Karte **Soloklettern** zählt deine Solo-Begehungen nach Typ sowie jede Begehung, die du ohne Partner geloggt hast.
 
-## What counts as which kind of solo
+## Was als welche Art von Solo zählt
 
-It follows how theCrag records your tick ([theCrag tick types](https://www.thecrag.com/en/article/ticktypes)):
+Es richtet sich danach, wie theCrag deinen Tick erfasst ([theCrag Tick-Arten](https://www.thecrag.com/en/article/ticktypes)):
 
-| On the card     | What you logged on theCrag                                                                               |
-| --------------- | -------------------------------------------------------------------------------------------------------- |
-| Top-rope solo   | The **Roped Solo** tick: you top-roped the route by yourself, self-belaying on a rope set up from above. |
-| Lead solo       | The **Lead solo** tick: you led the route with a lead-solo device, the rope anchored at the bottom.      |
-| Free solo       | The **Free solo** climbing style, with any tick (onsight, flash, red point…): no rope at all.            |
-| Deep water solo | The **Deep water solo** climbing style.                                                                  |
-| Aid solo        | The **Aid solo** tick.                                                                                   |
+| Auf der Karte    | Was du auf theCrag geloggt hast                                                                                                          |
+| ---------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
+| Toprope-Solo     | Der Tick **Roped Solo**: Du hast die Route alleine im Toprope geklettert und dich an einem von oben installierten Seil selbst gesichert. |
+| Vorstieg-Solo    | Der Tick **Lead solo**: Du bist die Route im Vorstieg mit einem Solosicherungsgerät geklettert, wobei das Seil unten verankert war.      |
+| Free Solo        | Der Kletterstil **Free Solo**, mit jedem beliebigen Tick (Onsight, Flash, Rotpunkt…): komplett ohne Seil.                                |
+| Deep Water Solo  | Der Kletterstil **Deep Water Solo**.                                                                                                     |
+| Technisches Solo | Der Tick **Aid solo**.                                                                                                                   |
 
-For each kind you see how many ascents and sends, the years they span, and your **hardest send**. That uses the grade you climbed, so a partial multipitch counts at the hardest pitch. Routes use Ewbank and boulders use V-grades, and they're never compared with each other. When a kind has both, the hardest route is shown.
+Für jede Art siehst du, wie viele Begehungen und Durchstiege du hast, über welche Jahre sie sich erstrecken und deinen **schwersten Durchstieg**. Dabei wird der von dir gekletterte Grad verwendet, sodass eine teilweise gekletterte Mehrseillängenroute mit der schwersten Seillänge zählt. Routen verwenden Ewbank und Bouldern nutzt V-Grade, und sie werden nie miteinander verglichen. Wenn eine Art beides enthält, wird die schwerste Route angezeigt.
 
-## No partner tagged
+## Kein Partner markiert
 
-The last line counts ascents with nobody in theCrag's **With** field, and how many were sends. That's not the same as soloing. It also includes days you climbed with someone but didn't tag them, and indoor sessions. It's a rough measure of how often you climb without logging a partner, and it includes your roped and free solos.
+Die letzte Zeile zählt Begehungen, bei denen im Feld **With** auf theCrag niemand eingetragen ist, und wie viele davon Durchstiege waren. Das ist nicht dasselbe wie Soloklettern. Es umfasst auch Tage, an denen du mit jemandem geklettert bist, ihn aber nicht markiert hast, sowie Indoor-Sessions. Es ist ein ungefähres Maß dafür, wie oft du kletterst, ohne einen Partner zu loggen, und enthält deine seilgesicherten sowie Free-Solos.
 
-## First rope-solo badges
+## Erste Seil-Solo-Abzeichen
 
-Successful **Lead solo** and **Roped Solo / Top rope solo** ascents unlock separate first-event badges. The card and badges share normalization of explicit solo ticks, including the documented `leadsolo` and `ropedsolo` identifiers and ordinary case/spacing/separator variants. Original provider tick text is retained. The card can count an explicitly classified ascent without a send, but the badges require successful completion and a valid calendar date. See [Badges](/docs/badges).
+Erfolgreiche Begehungen im **Lead solo** und **Roped Solo / Top rope solo** schalten separate Abzeichen für das erste Ereignis frei. Die Karte und die Abzeichen teilen sich die Normalisierung expliziter Solo-Ticks, einschließlich der dokumentierten Bezeichner `leadsolo` und `ropedsolo` sowie üblicher Groß-/Kleinschreibungs-, Leerzeichen- und Trennzeichen-Varianten. Der ursprüngliche Tick-Text des Anbieters bleibt erhalten. Die Karte kann eine explizit klassifizierte Begehung ohne Durchstieg zählen, aber die Abzeichen erfordern einen erfolgreichen Durchstieg und ein gültiges Kalenderdatum. Siehe [Abzeichen](/docs/badges).
 
-Click a solo-type card to open all matching ascents in the logbook, including attempts. The Solo type filter stays selected when you sort, paginate, or change other filters. The hardest-send link still opens that individual climb on theCrag.
+Klicke auf eine Karte eines Solo-Typs, um alle passenden Begehungen im Tourenbuch zu öffnen, einschließlich Versuchen. Der Filter für den Solo-Typ bleibt ausgewählt, wenn du sortierst, Seiten wechselst oder andere Filter änderst. Der Link zum schwersten Durchstieg öffnet weiterhin diese einzelne Kletterei auf theCrag.

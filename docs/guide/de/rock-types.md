@@ -1,36 +1,36 @@
-# Rock types
+# Gesteinsarten
 
-theCrag stores geology on many routes as a structured **Rock type** tag (for example Granite or Sandstone). Crag Stats reads that tag from the synced logbook / route cache — it never scrapes pages or guesses rock from the crag name.
+theCrag speichert die Geologie bei vielen Routen als strukturierten Tag **Gesteinsart** (zum Beispiel Granit oder Sandstein). Crag Stats liest diesen Tag aus dem synchronisierten Tourenbuch / Routen-Cache – es scraped weder Seiten noch errät es das Gestein aus dem Namen des Klettergebiets.
 
-## Rock types card
+## Karte „Gesteinsarten“
 
-The dashboard **Rock types** card counts ascents whose route has a Rock type tag and shows each name’s share. The dominant type can show a short geology blurb. Each name links to the logbook filtered with `?rock=`.
+Die Dashboard-Karte **Gesteinsarten** zählt Begehungen, deren Route einen Tag für die Gesteinsart hat, und zeigt den Anteil jedes Namens. Die vorherrschende Gesteinsart kann einen kurzen Info-Text zur Geologie anzeigen. Jeder Name verlinkt auf das Tourenbuch, gefiltert mit `?rock=`.
 
-Routes without a Rock type tag are left out of the chart, so the percentages describe tagged climbs only.
+Routen ohne Tag für die Gesteinsart werden im Diagramm nicht berücksichtigt, sodass sich die Prozentwerte nur auf getaggte Begehungen beziehen.
 
-## Rock & performance card
+## Karte „Gestein & Leistung“
 
-Once **20 or more** climbing days include at least one send or attempt on a Rock-type-tagged route, the **Rock & performance** card compares how those climbs went by rock. Before that it shows how many tagged days you have so far. The card stays hidden while no tagged send or attempt exists, and can be moved or hidden from Settings → Dashboard.
+Sobald **20 oder mehr** Klettertage mindestens einen Durchstieg oder Versuch an einer Route mit Gesteinsart-Tag enthalten, vergleicht die Karte **Gestein & Leistung**, wie diese Klettereien je nach Gestein verlaufen sind. Davor zeigt sie an, wie viele getaggte Tage du bisher hast. Die Karte bleibt ausgeblendet, solange kein getaggter Durchstieg oder Versuch existiert, und kann unter Einstellungen → Dashboard verschoben oder ausgeblendet werden.
 
-**What is counted.** Sends and attempts (the same tick classification as everywhere else) on routes with a Rock type tag. Untagged climbs are reported only as coverage (“N more … have no rock type tag”).
+**Was gezählt wird.** Durchstiege und Versuche (dieselbe Tick-Klassifizierung wie überall sonst) an Routen mit einem Tag für die Gesteinsart. Nicht getaggte Klettereien werden nur als Abdeckung gemeldet („N weitere … haben keinen Tag für die Gesteinsart“).
 
-**Measures** (same ideas as [Weather & performance](/docs/weather)):
+**Messwerte** (gleiche Konzepte wie unter [Wetter & Leistung](/docs/weather)):
 
-- **Send rate:** sends as a share of sends and attempts on that rock.
-- **Near-limit:** the share of graded sends within 2 grades (1 V-grade on the V-scale) of your hardest send of the **same style and grade scale** in the 365 days before that day. V-scale and route grades are never mixed.
-- **Onsight/flash:** onsights and flashes as a share of sends on that rock.
+- **Durchstiegsquote:** Durchstiege als Anteil an Durchstiegen und Versuchen auf diesem Gestein.
+- **Limitnah:** der Anteil der bewerteten Durchstiege innerhalb von 2 Grad (1 V-Grad auf der V-Skala) deines schwersten Durchstiegs des **gleichen Stils und der gleichen Bewertungsskala** in den 365 Tagen vor diesem Tag. V-Skala und Routengrade werden niemals gemischt.
+- **Onsight/Flash:** Onsights und Flashes als Anteil an den Durchstiegen auf diesem Gestein.
 
-**Reading it honestly.**
+**Ehrliche Interpretation.**
 
-- A rock needs at least **10** ascents (for that measure’s denominator) over at least **3** days before it shows a rate.
-- **Higher** / **Lower** uses the same cluster-robust test as weather performance: each rock-and-day group is one unit, so one big session cannot invent a pattern alone.
-- Crag choice, travel and projects confound rock type. Treat differences as correlation, not cause.
-- When you have many distinct rock names, the least frequent fold into **Other** (no logbook link). Named bands link to `/logbook?rock=…` with the same case-insensitive match as the Rock types card.
+- Ein Gestein benötigt mindestens **10** Begehungen (für den Nenner dieses Messwerts) an mindestens **3** Tagen, bevor eine Quote angezeigt wird.
+- **Höher** / **Niedriger** verwendet denselben cluster-robusten Test wie die Wetter-Leistung: Jede Gestein-und-Tag-Gruppe ist eine Einheit, sodass eine einzelne große Session nicht alleine ein Muster erzeugen kann.
+- Gebietsauswahl, Reisen und Projekte beeinflussen die Ergebnisse bei den Gesteinsarten. Betrachte Unterschiede als Korrelation, nicht als Ursache.
+- Wenn du viele verschiedene Gesteinsnamen hast, werden die am seltensten vorkommenden unter **Sonstige** zusammengefasst (kein Tourenbuch-Link). Benannte Abschnitte verlinken auf `/logbook?rock=…` mit demselben Abgleich unabhängig von Groß-/Kleinschreibung wie die Karte „Gesteinsarten“.
 
-Viewing the card never triggers a provider request, and private notes are never used.
+Das Betrachten der Karte löst niemals eine Anforderung an den Anbieter aus, und private Notizen werden niemals verwendet.
 
-The near-limit reference includes your same-style, same-scale sends even when
-those reference routes have no rock tag. It uses the hardest climbed-pitch grade
-when available, includes the 365th prior day, and excludes all sends on the day
-being compared. Rock and weather performance share this reference calculation;
-weather additionally restricts its reference sends to outdoor climbs.
+Die Referenz für „limitnah“ schließt deine Durchstiege desselben Stils und derselben Skala ein, selbst wenn
+diese Referenzrouten keinen Gesteins-Tag haben. Sie verwendet den schwersten gekletterten Seillängengrad,
+falls verfügbar, schließt den 365. vorherigen Tag ein und schließt alle Durchstiege am verglichenen Tag
+aus. Gesteins- und Wetter-Leistung teilen sich diese Referenzberechnung;
+beim Wetter werden die Referenzdurchstiege zusätzlich auf Klettereien im Freien beschränkt.

@@ -2196,5 +2196,26 @@
 		"tick": "Tick",
 		"toprope": "Moulinette",
 		"working": "In lavorazione"
+	},
+	"embed": {
+		"myClimbing": "",
+		"title": "",
+		"summaryTitle": "",
+		"hardestTitle": "",
+		"duration": "",
+		"ascents": "",
+		"sends": "",
+		"onsights": "",
+		"climbed": "",
+		"eddingtonSubtitle": "",
+		"vertical": "",
+		"routeIndex": "",
+		"boulderIndex": "",
+		"sendDays": "",
+		"routeCurrent": "",
+		"routeNext": "",
+		"boulderCurrent": "",
+		"boulderNext": "",
+		"empty": ""
 	}
 }

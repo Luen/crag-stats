@@ -258,3 +258,7 @@ with Solo type and Grade band grouped beside the other select filters.
 On screens up to 860px wide (#478), the Logbook replaces horizontal table scrolling with stacked, responsive cards matching the visual hierarchy of the Recent activities card. Each card features the route name and grade chip in the header, a subline with date, tick icon, and crag (filter plus external link) and sector links, followed by style badges, partner credits, tags, weather chips, expandable comments, and owner management actions. The table header transforms into a compact row of interactive sort pills.
 
 Wider viewports keep the full 11-column table, still inside a horizontally scrollable `.table-wrap`. The expanded sidebar leaves roughly 600–1000px for it on common laptop screens, so removing that overflow fallback clips the trailing columns instead of making them reachable.
+
+### Share cards
+
+SVG embeds retain their 480 px canvas and light/dark token colours. Labels and numbers follow the resolved interface language; copied URLs pin that language. Long metric labels fit within their tiles using SVG text-length adjustment. German Eddington cards are checked for text overflow in both themes.

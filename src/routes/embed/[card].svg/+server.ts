@@ -7,22 +7,25 @@ import { isEmbedCard, parseEmbedTheme, renderEmbedCard } from '#lib/server/embed
 import type { RequestHandler } from './$types';
 
 /** Dynamic SVG stat card for `<img>` embeds (see /share). */
-export const GET: RequestHandler = ({ params, url }) => {
+export const GET: RequestHandler = ({ params, url, locals }) => {
 	if (!isEmbedCard(params.card)) error(404, 'Unknown card');
 	const gradeSystems = applyDisplaySystemOverrides(getDisplayGradeSystems(), url.searchParams);
 	const units = applyDisplayUnitOverrides(getDisplayUnits(), url.searchParams);
-	const stats = getDashboardStats(gradeSystems, { displayUnits: units });
+	const stats = getDashboardStats(gradeSystems, { displayUnits: units, locale: locals.locale });
 	const svg = renderEmbedCard(
 		params.card,
 		stats,
 		parseEmbedTheme(url.searchParams.get('theme')),
-		units
+		units,
+		locals.locale
 	);
 	return new Response(svg, {
 		headers: {
 			'content-type': 'image/svg+xml; charset=utf-8',
 			// Blogs hot-link these; an hour keeps them fresh after the daily sync.
 			'cache-control': 'public, max-age=3600',
+			vary: 'Accept-Language, Cookie',
+			'content-language': locals.locale,
 			'content-security-policy': "default-src 'none'; style-src 'unsafe-inline'",
 			'cross-origin-resource-policy': 'cross-origin'
 		}

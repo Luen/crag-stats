@@ -59,6 +59,27 @@ const stats = {
 } as unknown as DashboardStats;
 
 describe('embed cards', () => {
+	it('localises SVG labels and numbers without changing route names or grade notation', () => {
+		const summary = renderEmbedCard(
+			'summary',
+			{ ...stats, totalAscents: 1234 },
+			'light',
+			undefined,
+			'de'
+		);
+		expect(summary).toContain('1.234');
+		expect(summary).toContain('2,4 km');
+		expect(summary).toContain('Begehungen');
+		expect(summary).toContain('Schwerste Durchstiege');
+		const hardest = renderEmbedCard('hardest', stats, 'dark', undefined, 'de');
+		expect(hardest).toContain('Rock &amp; Roll');
+		expect(hardest).toContain('Schwerste Durchstiege');
+		expect(hardest).not.toContain('Hardest sends');
+		const eddington = renderEmbedCard('eddington', stats, 'light', undefined, 'de');
+		expect(eddington).toContain('Routengrad-Index');
+		expect(eddington).toContain('Noch 2 Routen');
+		expect(eddington).not.toContain('more routes');
+	});
 	it('formats Eddington grade thresholds in the selected systems while retaining counts', () => {
 		const selected = {
 			...stats,

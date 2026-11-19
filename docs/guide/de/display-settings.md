@@ -1,53 +1,53 @@
-# Display settings
+# Anzeigeeinstellungen
 
-**Settings → Display & visibility** sets how dates and measurements appear across the whole site. The choices apply to every visitor, not just the owner's browser, and they take effect on the next page load.
+**Einstellungen → Anzeige & Sichtbarkeit** legt fest, wie Datum und Maßeinheiten auf der gesamten Website dargestellt werden. Die Einstellungen gelten für alle Besucher – nicht nur im Browser des Besitzers – und werden beim nächsten Laden der Seite wirksam.
 
-## Date format
+## Datumsformat
 
-| Option         | Example     |
-| -------------- | ----------- |
-| **Auto**       | 27 Oct 2026 |
-| **DD/MM/YYYY** | 27/10/2026  |
-| **MM/DD/YYYY** | 10/27/2026  |
-| **YYYY-MM-DD** | 2026-10-27  |
+| Option          | Beispiel      |
+| --------------- | ------------- |
+| **Automatisch** | 27. Okt. 2026 |
+| **TT/MM/JJJJ**  | 27/10/2026    |
+| **MM/TT/JJJJ**  | 10/27/2026    |
+| **JJJJ-MM-TT**  | 2026-10-27    |
 
-**Auto** follows the site's display locale (`DISPLAY_LOCALE`), so it reads naturally for most visitors without extra configuration.
+**Auto** richtet sich nach dem Anzeige-Gebietsschema der Website (`DISPLAY_LOCALE`), sodass es für die meisten Besucher ohne zusätzliche Konfiguration natürlich lesbar ist.
 
-The format changes visible calendar days on the dashboard, logbook, weather pages, badges, goals, milestones, and charts. Filter links, `datetime` attributes, chart data, and URL parameters keep their ISO `YYYY-MM-DD` values, so a shared link always points at the same day.
+Das Format ändert die sichtbaren Kalendertage auf dem Dashboard, im Tourenbuch, auf den Wetterseiten, bei Abzeichen, Zielen, Meilensteinen und Diagrammen. Filter-Links, `datetime`-Attribute, Diagrammdaten und URL-Parameter behalten ihre ISO-Werte im Format `YYYY-MM-DD`, sodass ein geteilter Link immer auf denselben Tag verweist.
 
-## Units of measurement
+## Maßeinheiten
 
-Each measurement has its own setting, so you can mix and match:
+Jede Maßeinheit hat ihre eigene Einstellung, sodass du sie beliebig kombinieren kannst:
 
-| Measurement       | Options                       |
-| ----------------- | ----------------------------- |
-| **Height**        | Metres (m), feet (ft)         |
-| **Distance**      | Kilometres (km), miles (mi)   |
-| **Temperature**   | Celsius (°C), Fahrenheit (°F) |
-| **Wind**          | km/h, mph                     |
-| **Precipitation** | Millimetres (mm), inches (in) |
+| Messgröße        | Optionen                      |
+| ---------------- | ----------------------------- |
+| **Höhe**         | Meter (m), Fuß (ft)           |
+| **Distanz**      | Kilometer (km), Meilen (mi)   |
+| **Temperatur**   | Celsius (°C), Fahrenheit (°F) |
+| **Wind**         | km/h, mph                     |
+| **Niederschlag** | Millimeter (mm), Zoll (in)    |
 
-The presets fill all five at once:
+Die Voreinstellungen füllen alle fünf auf einmal aus:
 
-- **Metric**: metres, kilometres, Celsius, km/h, and millimetres.
-- **Imperial (US)**: feet, miles, Fahrenheit, mph, and inches.
-- **UK (Mixed)**: metres, miles, Celsius, mph, and millimetres.
+- **Metrisch**: Meter, Kilometer, Celsius, km/h und Millimeter.
+- **Imperial (US)**: Fuß, Meilen, Fahrenheit, mph und Zoll.
+- **UK (Gemischt)**: Meter, Meilen, Celsius, mph und Millimeter.
 
-Presets are only a shortcut: changing an individual unit afterwards gives a custom mix, and the Settings form shows which values are stored.
+Voreinstellungen sind nur eine Abkürzung: Wenn du danach eine einzelne Einheit änderst, erhältst du eine benutzerdefinierte Mischung, und das Formular „Einstellungen“ zeigt an, welche Werte gespeichert sind.
 
-## What stays metric
+## Was metrisch bleibt
 
-The database always stores heights in metres, distances in kilometres, temperatures in °C, wind in km/h, and precipitation in millimetres. Conversion happens only when a page is rendered, so switching units never rewrites your logbook, goals or imports.
+Die Datenbank speichert Höhen immer in Metern, Entfernungen in Kilometern, Temperaturen in °C, Wind in km/h und Niederschlag in Millimetern. Die Umrechnung erfolgt erst beim Rendern einer Seite. Das Wechseln von Einheiten überschreibt daher niemals dein Tourenbuch, deine Ziele oder deine Importe.
 
-- **CSV export** keeps its canonical metric columns.
-- **Badge thresholds** (height marks, heat, frost, rain, wind, and so on) are defined in metric. Only the wording converts, for example **Heat Wave** reads "35°C or hotter" in metric and "95°F or hotter" in Fahrenheit. The same climbs earn the same badges either way.
-- **Weather filters** such as the logbook's heat, frost, rain, snow, and wind filters keep their metric thresholds.
-- **Conversions are rounded** for display, so a value shown in feet, miles or inches is approximate rather than a second stored reading.
+- Der **CSV-Export** behält seine kanonischen metrischen Spalten bei.
+- **Abzeichen-Schwellenwerte** (Höhenmarken, Hitze, Frost, Regen, Wind usw.) sind metrisch definiert. Nur der Wortlaut wird umgerechnet. Zum Beispiel heißt es bei **Hitzewelle** metrisch „35 °C oder heißer“ und in Fahrenheit „95 °F oder heißer“. Dieselben Begehungen bringen in beiden Fällen dieselben Abzeichen ein.
+- **Wetterfilter** wie die Filter für Hitze, Frost, Regen, Schnee und Wind im Tourenbuch behalten ihre metrischen Schwellenwerte bei.
+- **Umrechnungen werden für die Anzeige gerundet**, sodass ein in Fuß, Meilen oder Zoll angezeigter Wert eine Annäherung ist und kein zweiter gespeicherter Messwert.
 
-## One-off overrides
+## Einmalige Überschreibungen
 
-The dashboard accepts `?units=metric`, `?units=imperial`, or `?units=uk` to preview a preset without saving it. Individual parameters override one measurement at a time: `unitHeight`, `unitDistance`, `unitTemp`, `unitWind`, and `unitPrecip` (for example `?unitTemp=fahrenheit&unitWind=mph`). These apply only to that page load and do not change Settings.
+Das Dashboard akzeptiert `?units=metric`, `?units=imperial` oder `?units=uk`, um eine Vorschau einer Voreinstellung anzuzeigen, ohne sie zu speichern. Einzelne Parameter überschreiben jeweils eine Messgröße: `unitHeight`, `unitDistance`, `unitTemp`, `unitWind` und `unitPrecip` (zum Beispiel `?unitTemp=fahrenheit&unitWind=mph`). Diese gelten nur für diesen Seitenaufruf und ändern die Einstellungen nicht.
 
-## Where the settings appear
+## Wo die Einstellungen erscheinen
 
-Date and unit choices reach the dashboard, logbook, activity calendar, training load, weather pages, sectors, the climbing map, goals, badges, milestones, embed cards, and the offline snapshot. Grade systems are separate: see [Grades](/docs/grades).
+Datums- und Einheiteneinstellungen wirken sich auf das Dashboard, das Tourenbuch, den Aktivitätskalender, die Trainingsbelastung, die Wetterseiten, Sektoren, die Kletterkarte, Ziele, Abzeichen, Meilensteine, Einbettungs-Karten und den Offline-Snapshot aus. Gradsysteme sind separat: Siehe [Schwierigkeitsgrade](/docs/grades).

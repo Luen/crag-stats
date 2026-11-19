@@ -163,6 +163,13 @@ With this configuration, the project maintains a clean **0-issue QA baseline**.
 
 ---
 
+### German completion and embeds — 19 November 2026
+
+- German now covers all 5,345 source strings and 38,911 source words in Crowdin, including the user guides and retained integration catalogue. Exported German guides preserve component markers, links, grade notation, and executable examples.
+- Corrected the 12 guide QA findings in Crowdin, including unnecessary parenthetical expansions and inconsistent badge terminology. The QA API returned zero findings; no checks were disabled.
+- The share cards use the resolved interface language, and copied URLs pin it explicitly. New SVG labels have German translations, translator context, and character limits where appropriate.
+- Completion and review are AI-assisted, not native-speaker approval. The Crowdin approval percentage remains separate from translation coverage.
+
 ## 5. Typographic & String Conventions
 
 - **Ellipses:** Always use the single-character ellipsis glyph **`…`** (`U+2026`), never three full stops `...`. All catalogs maintain 100% adherence.

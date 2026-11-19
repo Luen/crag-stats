@@ -1,23 +1,23 @@
-# Climber profile
+# Kletterprofil
 
-The **Climber profile** radar compares how you have been climbing over the **last 30 days** (inner series) with the **last 90 days** (outer series). Each axis is scored 0–100 from your local logbook — not a theCrag leaderboard score.
+Das Netzdiagramm **Kletterprofil** vergleicht dein Klettern in den **letzten 30 Tagen** (innere Datenreihe) mit den **letzten 90 Tagen** (äußere Datenreihe). Jede Achse erhält anhand deines lokalen Tourenbuchs einen Wert von 0–100 — keinen Ranglistenwert von theCrag.
 
-## Axes
+## Achsen
 
-| Axis              | What it rewards                                                                 |
-| ----------------- | ------------------------------------------------------------------------------- |
-| **Volume**        | How many ascents you logged relative to the window length.                      |
-| **Style variety** | How many distinct climb styles appear (sport, trad, boulder, …).                |
-| **Density**       | How many distinct active days you climbed, relative to the window.              |
-| **Height**        | Metres climbed (ascent or route height) relative to the window.                 |
-| **Intensity**     | Average and peak effective grades in the window (harder ticks push this up).    |
-| **Consistency**   | Mix of send rate and onsight/flash share — finishing climbs and first-go ticks. |
+| Achse            | Was belohnt wird                                                                                                         |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| **Umfang**       | Wie viele Begehungen du im Verhältnis zur Länge des Zeitraums eingetragen hast.                                          |
+| **Stilvielfalt** | Wie viele verschiedene Kletterstile vorkommen (Sport, Trad, Boulder, …).                                                 |
+| **Dichte**       | An wie vielen verschiedenen Tagen du im Verhältnis zum Zeitraum geklettert bist.                                         |
+| **Höhe**         | Gekletterte Meter (aus Begehungs- oder Routenhöhe) im Verhältnis zum Zeitraum.                                           |
+| **Intensität**   | Durchschnittliche und höchste effektive Schwierigkeitsgrade im Zeitraum (schwerere Ticks erhöhen den Wert).              |
+| **Konstanz**     | Kombination aus Durchstiegsquote und Onsight-/Flash-Anteil — also abgeschlossenen Routen und Erfolgen im ersten Versuch. |
 
-Scores are capped at 100. Quiet periods pull axes in; a busy trip or projecting block pushes them out. Treat the shape as a nudge, not a diagnosis.
+Die Werte sind auf 100 begrenzt. Ruhige Phasen ziehen die Achsen nach innen; ein intensiver Kletterurlaub oder eine Projektphase verschiebt sie nach außen. Verstehe die Form als Anregung, nicht als Diagnose.
 
-## Reading 30 vs 90
+## 30 gegenüber 90 Tagen lesen
 
-- **Last 90 days** (teal fill) is your recent baseline.
-- **Last 30 days** (blue outline) shows whether the latest month is above or below that baseline on each axis.
+- **Letzte 90 Tage** (türkise Füllung) bilden deine aktuelle Vergleichsbasis.
+- **Letzte 30 Tage** (blaue Umrandung) zeigen für jede Achse, ob der letzte Monat über oder unter dieser Vergleichsbasis liegt.
 
-If either polygon is empty, you do not have enough dated ascents in that window yet.
+Wenn eines der Polygone leer ist, gibt es im entsprechenden Zeitraum noch nicht genügend Begehungen mit Datum.

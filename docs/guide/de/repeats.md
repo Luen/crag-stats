@@ -1,43 +1,43 @@
-# Repeats vs new routes
+# Wiederholungen vs. neue Routen
 
-The **Repeats vs new routes** card shows how much of your climbing goes to routes you've logged before, compared with routes that are new to you. It sits after **Route popularity** by default (half width), and Customize dashboard can move it.
+Die Karte **Wiederholungen vs. neue Routen** zeigt, wie viel deiner Kletterei auf Routen entfällt, die du zuvor schon geloggt hast, verglichen mit Routen, die neu für dich sind. Standardmäßig befindet sie sich nach **Routen-Beliebtheit** (halbe Breite) und kann über „Dashboard anpassen“ verschoben werden.
 
-## What counts
+## Was zählt
 
-Every logged ascent counts, sends and attempts alike, as long as it has a valid calendar date and a provider route ID.
+Jede geloggte Begehung zählt – Durchstiege ebenso wie Versuche –, solange sie ein gültiges Kalenderdatum und eine Routen-ID des Anbieters hat.
 
-- A **first visit** is any ascent on the first day you logged that route. An attempt and a send on that same first day are both first visits.
-- A **repeat** is any ascent on a later day on the same route.
+- Ein **Erstbesuch** ist jede Begehung am ersten Tag, an dem du diese Route geloggt hast. Ein Versuch und ein Durchstieg am selben ersten Tag zählen beide als Erstbesuch.
+- Eine **Wiederholung** ist jede Begehung derselben Route an einem späteren Tag.
 
-Routes are matched by their theCrag route ID, never by name, so two different routes called "Arete" stay separate. Days are the written climbing dates in your logbook, without any time-zone shift.
+Routen werden über ihre theCrag-Routen-ID zugeordnet, niemals anhand des Namens – zwei verschiedene Routen namens „Arete“ bleiben also getrennt. Tage entsprechen den eingetragenen Kletterdaten in deinem Tourenbuch, ohne Zeitzonenverschiebung.
 
-## Filters
+## Filter
 
-- **All time** or **Last 12 months**. The short range is the 365 days ending today. Whether an ascent is a repeat always depends on your whole history, so a route you first climbed three years ago counts as a repeat this year.
-- **All**, **Sport**, **Trad**, or **Boulder**. These match the logbook style filters (climbed style **or** route style). Top-rope and other styles appear only under **All**.
+- **Gesamter Zeitraum** oder **Letzte 12 Monate**. Der kurze Zeitraum umfasst die 365 Tage bis einschließlich heute. Ob eine Begehung eine Wiederholung ist, hängt immer von deiner gesamten Historie ab – eine Route, die du vor drei Jahren zum ersten Mal geklettert bist, zählt dieses Jahr also als Wiederholung.
+- **Alle**, **Sport**, **Trad** oder **Boulder**. Diese entsprechen den Stilfiltern des Tourenbuchs (Kletterstil **oder** Routenstil). Toprope und andere Stile erscheinen nur unter **Alle**.
 
-Your choices are saved in this browser (`cs_repeats_range`, `cs_repeats_style`).
+Deine Auswahl wird in diesem Browser gespeichert (`cs_repeats_range`, `cs_repeats_style`).
 
-## Labels
+## Bezeichnungen
 
-Once the current view has at least 20 ascents, the card adds a short, descriptive label:
+Sobald die aktuelle Ansicht mindestens 20 Begehungen umfasst, ergänzt die Karte ein kurzes, beschreibendes Label:
 
-| Label              | Rule                                     |
-| ------------------ | ---------------------------------------- |
-| **Explorer**       | At least 75% of ascents are first visits |
-| **Repeat climber** | At least 50% of ascents are repeats      |
-| **A bit of both**  | Anything in between                      |
+| Bezeichnung          | Regel                                              |
+| -------------------- | -------------------------------------------------- |
+| **Entdecker**        | Mindestens 75 % der Begehungen sind Erstbesuche    |
+| **Wiederholer**      | Mindestens 50 % der Begehungen sind Wiederholungen |
+| **Von beidem etwas** | Alles dazwischen                                   |
 
-The thresholds use exact shares; the percentages on the card are rounded. Neither style is better than the other: projecting, training laps, and favourite circuits all show up as repeats.
+Die Schwellenwerte basieren auf den exakten Anteilen; die Prozentangaben auf der Karte sind gerundet. Kein Stil ist besser als der andere: Projektieren, Trainingsrunden und Lieblings-Circuits zählen alle als Wiederholungen.
 
-## Most repeated
+## Am häufigsten wiederholt
 
-Up to five routes you came back to most in the current view, ranked by the number of different days you climbed them, then by ascents, then by the most recent day. Each one links to its logbook entries.
+Bis zu fünf Routen, zu denen du in der aktuellen Ansicht am häufigsten zurückgekehrt bist, sortiert nach der Anzahl verschiedener Klettertage, dann nach Begehungen und zuletzt nach dem jüngsten Tag. Jede davon verlinkt auf ihre Tourenbucheinträge.
 
-## When it shows
+## Wann sie angezeigt wird
 
-The card stays hidden until you have at least 20 dated ascents with a route ID.
+Die Karte bleibt ausgeblendet, bis du mindestens 20 datierte Begehungen mit einer Routen-ID hast.
 
-## Related badges
+## Zugehörige Abzeichen
 
-**Explorer**, **Wanderer**, **Route Collector**, **Guidebook Explorer**, **Old Faithful**, and **Home Turf** use the same first-visit and repeat rules. See [Badges](/docs/badges).
+**Entdecker**, **Routensammler**, **Routensammler**, **Kletterführer-Entdecker**, **Dauerbrenner** und **Heimgebiet** verwenden dieselben Regeln für Erstbesuche und Wiederholungen. Siehe [Abzeichen](/docs/badges).
