@@ -1,63 +1,63 @@
-# Training load
+# Carga de entrenamiento
 
-The **Training load** card (and the dedicated [`/training-load`](/training-load) page) estimates how hard you've been climbing recently compared with what your body is used to. A quick increase is when finger and shoulder injuries most often happen. The dashboard card summarises the newest 12 weeks; the page shows 26 weeks plus a 28-day daily load strip.
+La tarjeta **Carga de entrenamiento** (y la página dedicada [`/training-load`](/training-load)) calcula cuánto has estado escalando recientemente en comparación con lo que tu cuerpo está acostumbrado. Un aumento rápido es cuando suelen ocurrir la mayoría de las lesiones de dedos y hombros. La tarjeta del panel resume las 12 semanas más recientes; la página muestra 26 semanas más una tira de carga diaria de 28 días.
 
-## 1. Load per ascent
+## 1. Carga por ascensión
 
-Each ascent gets a load score:
+Cada ascensión recibe una puntuación de carga:
 
-> **load = 10 × intensity × style factor**
+> **carga = 10 × intensidad × factor de estilo**
 
-**Intensity** compares the ascent's grade with your **hardest send of the last 12 months** in the same discipline. Routes are compared on Ewbank and boulders on the V-scale.
+La **intensidad** compara el grado de la ascensión con tu **encadene más difícil de los últimos 12 meses** en la misma disciplina. Las vías se comparan en la escala Ewbank y los bloques en la escala V.
 
-| Grade compared with your 12-month max                      | Intensity |
-| ---------------------------------------------------------- | --------- |
-| At your max                                                | 1.0       |
-| 2 Ewbank grades (1 V-grade) below                          | 0.5       |
-| 4 Ewbank grades (2 V-grades) below                         | 0.25      |
-| Above your max (a new high)                                | up to 1.5 |
-| Working an ungraded route or a theCrag Project (see below) | 1.0       |
-| Ungraded send, or no sends in 12 months                    | 0.3       |
+| Grado comparado con tu máximo de 12 meses                      | Intensidad |
+| -------------------------------------------------------------- | ---------- |
+| En tu máximo                                                   | 1.0        |
+| 2 grados Ewbank (1 grado V) por debajo                         | 0.5        |
+| 4 grados Ewbank (2 grados V) por debajo                        | 0.25       |
+| Por encima de tu máximo (un nuevo récord)                      | hasta 1.5  |
+| Ensayar una vía sin grado o un proyecto de theCrag (ver abajo) | 1.0        |
+| Encadene sin grado, o sin encadenes en 12 meses                | 0.3        |
 
-Climbing near your limit counts much more than mileage well below it. A day of ten easy routes and a day spent on one project can come out similar.
+Escalar cerca de tu límite cuenta mucho más que hacer volumen muy por debajo de él. Un día de diez vías fáciles y un día dedicado a un solo proyecto pueden resultar similares.
 
-**Ungraded and flagged projects:** an attempt, hang-dog or other unsent tick on a route with **no grade**, or on a route theCrag marks with the **Project** flag (from the optional route-info import), is treated as climbing **at your max**. Ungraded routes you keep working are usually new lines near your limit; the flag is the definite case when we have it. The same attempts also count towards the near-limit share. If you gave the tick a grade yourself on theCrag, that grade is used instead. An ungraded _send_ still counts as light (0.3), since an unnamed easy route shouldn't look like a limit day.
+**Proyectos sin grado y marcados:** un intento, acero/hang-dog u otro registro sin encadenar en una vía **sin grado**, o en una vía que theCrag marca con la etiqueta **Proyecto** (de la importación opcional de información de vías), se trata como escalar **en tu máximo**. Las vías sin grado que sigues ensayando suelen ser líneas nuevas cerca de tu límite; la etiqueta es el caso definitivo cuando la tenemos. Esos mismos intentos también cuentan para la proporción cerca del límite. Si tú mismo le diste un grado al registro en theCrag, se utilizará ese grado en su lugar. Un _encadene_ sin grado sigue contando como ligero (0.3), ya que una vía fácil sin nombre no debería parecer un día límite.
 
-**Style factor:** a lead send is 1.0. Attempts and hang-dogs are 0.8, because working a route is still real effort. Top-roping or seconding is 0.8× on top of that.
+**Factor de estilo:** un encadene de primero es 1.0. Los intentos y hang-dogs son 0.8, porque ensayar una vía sigue siendo un esfuerzo real. Escalar en top-rope o de segundo es 0.8× adicional sobre eso.
 
-## 2. Fatigue and fitness
+## 2. Fatiga y forma física
 
-Daily loads are averaged two ways, both weighted towards recent days:
+Las cargas diarias se promedian de dos formas, ambas ponderadas hacia los días más recientes:
 
-- **Fatigue (acute):** a 7-day exponentially weighted average.
-- **Fitness (chronic):** a 28-day exponentially weighted average.
+- **Fatiga (aguda):** un promedio ponderado exponencialmente de 7 días.
+- **Forma física (crónica):** un promedio ponderado exponencialmente de 28 días.
 
-## 3. Acute : chronic ratio
+## 3. Ratio agudo : crónico
 
-**ratio = fatigue ÷ fitness**
+**ratio = fatiga ÷ forma física**
 
-| Ratio     | Status      | Meaning                                                    |
-| --------- | ----------- | ---------------------------------------------------------- |
-| —         | Resting     | Nothing logged recently                                    |
-| < 0.8     | Below usual | Lighter than normal: fresh, tapering, or losing fitness    |
-| 0.8 – 1.3 | Sweet spot  | In line with what you're used to                           |
-| 1.3 – 1.5 | Ramping up  | Climbing more than usual; keep an eye on recovery          |
-| > 1.5     | Spike       | A big jump; the zone most associated with overuse injuries |
+| Ratio     | Estado                    | Significado                                                              |
+| --------- | ------------------------- | ------------------------------------------------------------------------ |
+| —         | En descanso               | Nada registrado recientemente                                            |
+| < 0.8     | Por debajo de lo habitual | Más ligero de lo normal: fresco, en afinamiento o perdiendo forma física |
+| 0.8 – 1.3 | Punto óptimo              | En línea con a lo que estás acostumbrado                                 |
+| 1.3 – 1.5 | En aumento                | Escalando más de lo habitual; vigila la recuperación                     |
+| > 1.5     | Pico                      | Un gran salto; la zona más asociada a lesiones por sobreuso              |
 
-These bands come from the acute:chronic workload ratio used in sports science and climbing coaching. Treat them as a nudge, not a diagnosis.
+Esas franjas provienen del ratio de carga de trabajo agudo:crónico utilizado en las ciencias del deporte y el entrenamiento de escalada. Tómalas como una orientación, no como un diagnóstico.
 
-## Also on the card / page
+## También en la tarjeta / página
 
-- **Weekly load:** the total load for each week (12 on the card, 26 on the page). The current week is the highlighted bar.
-- **Daily load (page):** the last 28 days of intensity-weighted load, including rest days.
-- **Near-limit sends · 28d:** sends in the last 28 days within 2 Ewbank grades (1 V-grade) of your 12-month max.
-- **Near-limit share:** the percentage of the last 28 days' graded ascents that were near your limit. A high share over several weeks means a lot of limit climbing; consider deload weeks.
-- **Last 7 / 28 days:** ascents, sends, active and rest days, height climbed and send rate.
+- **Carga semanal:** la carga total de cada semana (12 en la tarjeta, 26 en la página). La semana actual es la barra destacada.
+- **Carga diaria (página):** los últimos 28 días de carga ponderada por intensidad, incluidos los días de descanso.
+- **Encadenes cerca del límite · 28d:** encadenes en los últimos 28 días dentro de 2 grados Ewbank (1 grado V) de tu máximo de 12 meses.
+- **Proporción cerca del límite:** el porcentaje de ascensiones con grado de los últimos 28 días que estuvieron cerca de tu límite. Una proporción alta durante varias semanas significa mucha escalada al límite; considera semanas de descarga.
+- **Últimos 7 / 28 días:** ascensiones, encadenes, días activos y de descanso, altura escalada y porcentaje de encadenes.
 
-## Caveats
+## Consideraciones
 
-- **Only what you log counts.** Gym sessions, hangboarding and other training you don't log are invisible.
-- **Grades are noisy**, and a soft or sandbagged route skews intensity.
-- **The ratio needs history.** With fewer than a few weeks of logs, "fitness" is low and the ratio jumps around.
+- **Solo cuenta lo que registras.** Las sesiones de rocódromo, multipresa y otros entrenamientos que no registras son invisibles.
+- **Los grados son imprecisos**, y una vía blanda o dura para el grado desvirtúa la intensidad.
+- **El ratio necesita historial.** Con menos de unas pocas semanas de registros, la "forma física" es baja y el ratio fluctúa.
 
-For Project routes, a personal grade must come from the ascent or a climbed pitch (or the CSV Ascent Grade field). An effective grade copied from the route is only a fallback, so it does not disable the at-max Project assumption.
+Para las vías marcadas como Proyecto, el grado personal debe proceder de la ascensión o de un largo escalado (o del campo CSV Ascent Grade). Un grado efectivo copiado de la vía es solo una alternativa por defecto, por lo que no desactiva la suposición de Proyecto en el máximo.

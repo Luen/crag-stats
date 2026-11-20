@@ -1,5 +1,5 @@
-# Docs
+# Documentación
 
-How Crag Stats works out the numbers on your dashboard. Crag Stats reads your [theCrag](https://www.thecrag.com/) logbook; theCrag stays the source of truth, and everything here is computed from what you've logged.
+Cómo calcula Crag Stats los números de tu panel. Crag Stats lee tu libro de vías de [theCrag](https://www.thecrag.com/); theCrag sigue siendo la fuente de verdad y todo lo que ves aquí se calcula a partir de lo que has registrado.
 
-Pick a topic below. Every dashboard card that uses one of these ideas links back here.
+Elige un tema a continuación. Cada tarjeta del panel que usa una de estas ideas enlaza aquí.

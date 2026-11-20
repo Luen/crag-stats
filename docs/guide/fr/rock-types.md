@@ -1,36 +1,36 @@
-# Rock types
+# Types de roche
 
-theCrag stores geology on many routes as a structured **Rock type** tag (for example Granite or Sandstone). Crag Stats reads that tag from the synced logbook / route cache — it never scrapes pages or guesses rock from the crag name.
+theCrag enregistre la géologie de nombreuses voies sous la forme d'une étiquette structurée **Type de roche** (par exemple Granite ou Grès). Crag Stats lit cette étiquette à partir du carnet de croix / cache des voies synchronisé — il ne scrappe jamais les pages et ne déduit jamais la roche d'après le nom de la falaise.
 
-## Rock types card
+## Carte Types de roche
 
-The dashboard **Rock types** card counts ascents whose route has a Rock type tag and shows each name’s share. The dominant type can show a short geology blurb. Each name links to the logbook filtered with `?rock=`.
+La carte **Types de roche** du tableau de bord comptabilise les ascensions dont la voie comporte une étiquette Type de roche et affiche la part de chacune. Le type dominant peut afficher un court descriptif géologique. Chaque nom renvoie vers le carnet de croix filtré avec `?rock=`.
 
-Routes without a Rock type tag are left out of the chart, so the percentages describe tagged climbs only.
+Les voies sans étiquette Type de roche sont exclues du graphique, de sorte que les pourcentages ne décrivent que les ascensions étiquetées.
 
-## Rock & performance card
+## Carte Roche & performance
 
-Once **20 or more** climbing days include at least one send or attempt on a Rock-type-tagged route, the **Rock & performance** card compares how those climbs went by rock. Before that it shows how many tagged days you have so far. The card stays hidden while no tagged send or attempt exists, and can be moved or hidden from Settings → Dashboard.
+Dès lors que **20 journées d'escalade ou plus** comportent au moins un enchaînement ou un essai sur une voie dotée d'une étiquette Type de roche, la carte **Roche & performance** compare vos résultats selon le type de roche. Avant cela, elle indique le nombre de journées étiquetées enregistrées jusqu'à présent. La carte reste masquée tant qu'aucun enchaînement ni essai étiqueté n'existe, et peut être déplacée ou masquée depuis Paramètres → Tableau de bord.
 
-**What is counted.** Sends and attempts (the same tick classification as everywhere else) on routes with a Rock type tag. Untagged climbs are reported only as coverage (“N more … have no rock type tag”).
+**Ce qui est comptabilisé.** Les enchaînements et les essais (la même classification de croix que partout ailleurs) sur les voies comportant une étiquette Type de roche. Les ascensions non étiquetées ne sont mentionnées qu'au titre de la couverture (« N de plus … n'ont pas d'étiquette de type de roche »).
 
-**Measures** (same ideas as [Weather & performance](/docs/weather)):
+**Indicateurs** (même principe que [Météo & performance](/docs/weather)) :
 
-- **Send rate:** sends as a share of sends and attempts on that rock.
-- **Near-limit:** the share of graded sends within 2 grades (1 V-grade on the V-scale) of your hardest send of the **same style and grade scale** in the 365 days before that day. V-scale and route grades are never mixed.
-- **Onsight/flash:** onsights and flashes as a share of sends on that rock.
+- **Taux d'enchaînement :** proportion d'enchaînements par rapport à l'ensemble des enchaînements et essais sur cette roche.
+- **Proche de la limite :** la part d'enchaînements cotés situés à 2 cotations près (1 degré sur l'échelle V) de votre enchaînement le plus difficile du **même style et de la même échelle de cotation** dans les 365 jours précédant cette date. L'échelle V et les cotations de voies ne sont jamais mélangées.
+- **À vue/flash :** part des ascensions à vue et flash par rapport à l'ensemble des enchaînements sur cette roche.
 
-**Reading it honestly.**
+**Interpréter ces données avec lucidité.**
 
-- A rock needs at least **10** ascents (for that measure’s denominator) over at least **3** days before it shows a rate.
-- **Higher** / **Lower** uses the same cluster-robust test as weather performance: each rock-and-day group is one unit, so one big session cannot invent a pattern alone.
-- Crag choice, travel and projects confound rock type. Treat differences as correlation, not cause.
-- When you have many distinct rock names, the least frequent fold into **Other** (no logbook link). Named bands link to `/logbook?rock=…` with the same case-insensitive match as the Rock types card.
+- Un type de roche doit totaliser au moins **10** ascensions (pour le dénominateur de cet indicateur) réparties sur au moins **3** jours avant d'afficher un taux.
+- **Supérieur** / **Inférieur** utilise le même test robuste aux grappes que la performance météo : chaque groupe roche-jour constitue une unité, de sorte qu'une seule grosse séance ne peut pas créer de tendance à elle seule.
+- Le choix de la falaise, les voyages et les projets constituent des facteurs de confusion par rapport au type de roche. Considérez ces différences comme une corrélation, pas comme une causalité.
+- Lorsque vous avez de nombreux noms de roche distincts, les moins fréquents sont regroupés sous **Autre** (aucun lien vers le carnet de croix). Les barres nommées renvoient vers `/logbook?rock=…` avec la même correspondance insensible à la casse que la carte Types de roche.
 
-Viewing the card never triggers a provider request, and private notes are never used.
+La consultation de la carte ne déclenche jamais de requête vers le fournisseur, et les notes privées ne sont jamais utilisées.
 
-The near-limit reference includes your same-style, same-scale sends even when
-those reference routes have no rock tag. It uses the hardest climbed-pitch grade
-when available, includes the 365th prior day, and excludes all sends on the day
-being compared. Rock and weather performance share this reference calculation;
-weather additionally restricts its reference sends to outdoor climbs.
+La référence proche de la limite inclut vos enchaînements du même style et de la même échelle, même lorsque
+ces voies de référence n'ont pas d'étiquette de roche. Elle utilise la cotation de longueur grimpée la plus difficile
+lorsqu'elle est disponible, inclut le 365e jour précédent et exclut tous les enchaînements du jour
+comparé. Les performances par roche et par météo partagent ce calcul de référence ;
+la météo restreint en outre ses enchaînements de référence aux ascensions en extérieur.

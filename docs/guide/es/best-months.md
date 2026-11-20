@@ -1,41 +1,41 @@
-# Best months
+# Mejores meses
 
-The **Best months** card compares [theCrag seasonality](https://www.thecrag.com/article/Seasonality) for the crags you climb most with **when you actually climb there**.
+La tarjeta **Mejores meses** compara la [estacionalidad de theCrag](https://www.thecrag.com/article/Seasonality) para las escuelas en las que más escalas con **cuándo escalas allí realmente**.
 
-## Where the data comes from
+## De dónde proceden los datos
 
-theCrag stores a **12-value seasonality curve** per route (one value per calendar month). Crag Stats caches it on each route during the optional route data import (`ROUTE_DATA_IMPORT`, off by default). Until a route has been fetched at least once, there is no seasonality to show.
+theCrag guarda una **curva de estacionalidad de 12 valores** por vía (un valor por cada mes del año). Crag Stats la guarda en caché en cada vía durante la importación opcional de datos de vías (`ROUTE_DATA_IMPORT`, desactivada por defecto). Hasta que se haya obtenido una vía al menos una vez, no hay estacionalidad que mostrar.
 
-## How we aggregate it
+## Cómo agrupamos los datos
 
-For each crag in your logbook:
+Para cada escuela en tu libro de vías:
 
-1. **Your volume** — count your ascents by calendar month (all years combined).
-2. **theCrag seasonality** — for each route you have ticked at that crag, take the cached 12-month curve and weight it by **how many times you climbed that route**. Routes with more of your ticks influence the crag average more.
+1. **Tu volumen**: cuenta tus ascensiones por mes del año (todos los años combinados).
+2. **Estacionalidad de theCrag**: para cada vía que hayas apuntado en esa escuela, toma la curva de 12 meses guardada en caché y pondérala según **cuántas veces has escalado esa vía**. Las vías con más encadenes o registros tuyos influyen más en la media de la escuela.
 
-We show up to **six** crags ranked by your total ascents there, but only crags where at least one climbed route has seasonality cached.
+Mostramos hasta **seis** escuelas clasificadas por tu total de ascensiones en ellas, pero solo escuelas donde al menos una vía escalada tenga la estacionalidad guardada en caché.
 
-## Reading the chart
+## Lectura del gráfico
 
-- **Orange bars** — weighted mean seasonality (higher = more popular on theCrag that month).
-- **Grey bars** — your ascents that month at that crag.
+- **Barras naranjas**: estacionalidad media ponderada (más alta = más popular en theCrag ese mes).
+- **Barras grises**: tus ascensiones ese mes en esa escuela.
 
-When the grey bars peak in different months than the orange strip, you may be climbing off-peak — or your sample is small.
+Cuando las barras grises alcancen su punto máximo en meses distintos a la franja naranja, puede que estés escalando fuera de temporada o que tu muestra de datos sea pequeña.
 
-## Refreshing seasonality
+## Actualizar la estacionalidad
 
-Run **Sync** from Settings. With route data import enabled, seasonality backfills in the background (rate-limited, up to 100 routes per run).
+Ejecuta **Sincronizar** desde Ajustes. Con la importación de datos de vías activada, la estacionalidad se completa en segundo plano (con límite de frecuencia, hasta 100 vías por ejecución).
 
-The Sectors page can also show [weather on your cached visit days](/docs/weather). This describes conditions on your logged days, separately from the route seasonality used here.
+La página de Sectores también puede mostrar el [tiempo en los días de visita guardados en caché](/docs/weather). Esto describe las condiciones en los días que registraste, independientemente de la estacionalidad de las vías que se usa aquí.
 
-## Search by month
+## Buscar por mes
 
-Open [Seasonality search](/seasonality) from the Best months card to browse all crags and climbs in your synced logbook with cached monthly data. Choose a month (the current month in your display time zone by default), search a crag, area or climb name, and switch between **Crags** and **Climbs**. Searches, month selection, sorting and pages are stored in the URL so you can bookmark or share them. Choose **View climbs** to narrow to one crag, or **Search all crags** to leave that scope.
+Abre la [Búsqueda por estacionalidad](/seasonality) desde la tarjeta Mejores meses para explorar todas las escuelas y vías de tu libro de vías sincronizado que tengan datos mensuales en caché. Elige un mes (por defecto, el mes actual en tu zona horaria), busca el nombre de una escuela, zona o vía, y cambia entre **Escuelas** y **Vías**. Las búsquedas, la selección de mes, la ordenación y las páginas se guardan en la URL para que puedas añadirlas a marcadores o compartirlas. Elige **Ver vías** para limitarte a una escuela, o **Buscar en todas las escuelas** para salir de ese ámbito.
 
-Results are ranked by the selected month’s value divided by the highest value in that result’s annual curve. For example, a value of 5 with an annual peak of 10 shows **50% of annual peak**. Names break ties; you can also sort by name. There is no “in season” cutoff. A zero-only curve has **No seasonal signal** and sorts after curves with a positive peak. The month strip and expandable values table show all twelve months.
+Los resultados se clasifican dividiendo el valor del mes seleccionado entre el valor más alto de la curva anual de ese resultado. Por ejemplo, un valor de 5 con un pico anual de 10 muestra **50 % del pico anual**. Los nombres desempatan; también puedes ordenar por nombre. No hay un límite estricto para estar «en temporada». Una curva con solo ceros indica **Sin señal estacional** y se ordena después de las curvas con un pico positivo. La franja de meses y la tabla desplegable de valores muestran los doce meses.
 
-Crag curves use the same ascent-weighted mean as the dashboard: routes with more of your logged ascents have more influence; missing route curves do not enter the mean. Searching a climb name can find its crag, but does not change that crag’s full curve. Crags are kept separate by provider area identity where available. Each crag shows how many of its logged climbs have data; the page also reports coverage among matching climbs. Missing or malformed curves stay unknown and are omitted from ranked results.
+Las curvas de las escuelas usan la misma media ponderada por ascensiones que el panel principal: las vías con más ascensiones registradas influyen más; las curvas de vías que faltan no entran en la media. Buscar el nombre de una vía puede localizar su escuela, pero no cambia la curva completa de esa escuela. Las escuelas se mantienen separadas por la identidad de zona del proveedor cuando está disponible. Cada escuela muestra cuántas de sus vías registradas tienen datos; la página también informa sobre la cobertura entre las vías coincidentes. Las curvas no disponibles o con formato incorrecto permanecen como desconocidas y se omiten de los resultados clasificados.
 
-Climb results link to all your logbook entries for that exact climb and to its guidebook page on theCrag. Your browser’s Back button returns to the search. Searching reads the local cache only and does not trigger a provider fetch or search the whole theCrag catalogue. Enable the optional route data import and sync to build coverage.
+Los resultados de vías enlazan a todas las entradas de tu libro de vías para esa vía exacta y a su página de reseña en theCrag. El botón Atrás de tu navegador vuelve a la búsqueda. Al buscar, solo se lee la caché local y no se activa una consulta al proveedor ni se busca en todo el catálogo de theCrag. Activa la importación opcional de datos de vías y sincroniza para ampliar la cobertura.
 
-Seasonality describes **community climbing patterns**, not forecast weather or measured conditions on your logged visits. See [Weather](/docs/weather) for those visit-day observations.
+La estacionalidad describe **patrones de escalada de la comunidad**, no la predicción meteorológica ni las condiciones medidas en tus visitas registradas. Consulta [Tiempo](/docs/weather) para ver esas observaciones en los días de visita.

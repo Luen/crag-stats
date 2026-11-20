@@ -1,35 +1,35 @@
-# Eddington numbers
+# Números de Eddington
 
-Cyclists use the **Eddington number** _E_: the largest number where you have ridden at least _E_ miles on at least _E_ different days. It grows slowly and is hard to game. Going from 70 to 71 needs 71 rides of 71+ miles, so it rewards consistency more than any one big day.
+Los ciclistas usan el **número de Eddington** _E_: el número más alto en el que has recorrido al menos _E_ millas en al menos _E_ días diferentes. Crece despacio y es difícil de manipular. Pasar de 70 a 71 requiere 71 salidas de 71 o más millas, por lo que premia la constancia más que un solo día grande.
 
-The **Eddington numbers** card uses the same idea four ways for a climbing logbook. Open **[Eddington](/eddington)** from the dashboard card title or sidebar for year-by-year growth and upcoming milestone tables.
+La tarjeta de **números de Eddington** usa la misma idea de cuatro formas distintas para un libro de vías de escalada. Abre **[Eddington](/eddington)** desde el título de la tarjeta del panel o la barra lateral para ver el crecimiento año a año y las tablas de los próximos hitos.
 
-## Send days
+## Días de encadenes
 
-> **E days with at least E sends**
+> **E días con al menos E encadenes**
 
-Every day in your logbook counts, indoor and outdoor. Only sends count (onsight, flash, red point, pink point, clean, tick and so on); attempts and hang-dogs don't. If your E is 8, you've had 8 days with 8 or more sends.
+Cada día en tu libro de vías cuenta, tanto en rocódromo como en roca. Solo cuentan los encadenes (a vista, flash, punto rojo, punto rosa, limpio, tick, etc.); los intentos y reposos en cuerda no cuentan. Si tu E es 8, has tenido 8 días con 8 o más encadenes.
 
-## Vertical days
+## Días verticales
 
-> **E days with at least 10 × E metres climbed**
+> **E días con al menos 10 × E metros escalados**
 
-This one is closest to cycling's distance, measured in **10 m units** because a single day rarely reaches hundreds of metres. E = 12 means 12 days of 120 m or more. It uses each ascent's height, falling back to the route height, and counts attempts too, since you still climbed the metres. Ascents with no height recorded add nothing, so the number is low if theCrag has no route heights for your area.
+Este es el más cercano a la distancia del ciclismo, medido en **unidades de 10 m** porque un solo día rara vez alcanza cientos de metros. E = 12 significa 12 días de 120 m o más. Usa la altura de cada ascensión, recurriendo a la altura de la vía si no está disponible, y también cuenta los intentos, ya que aun así escalaste los metros. Las ascensiones sin altura registrada no suman nada, por lo que el número será bajo si theCrag no tiene alturas de vías para tu zona.
 
-## Route grade index
+## Índice de grado de vías
 
-> **E different routes sent at Ewbank grade E or harder**
+> **E vías diferentes encadenadas en grado Ewbank E o más difícil**
 
-This is closer to an academic **h-index** than to Eddington: E sends at grade E or above. It uses your **best send of each route**, so repeating a favourite doesn't move it, and multipitch routes count at the hardest pitch you climbed. All grades are compared on Ewbank (see [Grades](/docs/grades)), whatever display system you use. E = 20 means 20 different routes sent at 20 / 6b+ / 5.10c or harder.
+Esto está más cerca de un **índice h** académico que de Eddington: E encadenes en grado E o superior. Usa tu **mejor encadene de cada vía**, por lo que repetir una favorita no lo cambia, y las vías de varios largos cuentan según el largo más difícil que hayas escalado. Todos los grados se comparan en la escala Ewbank (consulta [Grades](/docs/grades)), sea cual sea el sistema de visualización que utilices. E = 20 significa 20 vías diferentes encadenadas en 20 / 6b+ / 5.10c o más difícil.
 
-## Boulder grade index
+## Índice de grado de bloque
 
-> **E different problems sent at V-grade E or harder**
+> **E problemas diferentes encadenados en grado V E o más difícil**
 
-Same as the route index, on the V-scale. Split grades like V5/6 count as the lower grade. Because V-grades are coarse, this number is small. A boulder index of 4 (four problems at V4+) is already solid.
+Igual que el índice de vías, en la escala V. Los grados intermedios como V5/6 cuentan como el grado más bajo. Dado que los grados V son más amplios, este número es pequeño. Un índice de bloque de 4 (cuatro problemas en V4+) ya es sólido.
 
-The **Share & embed** card keeps these index values numeric. Its explanations show each current threshold and the next milestone, with route and boulder grade labels following Settings. A boulder index of **4** still means four problems at **V4 or harder**, even when the threshold is displayed in Font; changing display systems does not change any index or count.
+La tarjeta **Compartir e insertar** mantiene estos valores de índice como números. Sus explicaciones muestran cada umbral actual y el siguiente hito, con las etiquetas de grado de vía y bloque según la Configuración. Un índice de bloque de **4** sigue significando cuatro problemas en **V4 o más difícil**, incluso cuando el umbral se muestre en Font; cambiar los sistemas de visualización no cambia ningún índice ni recuento.
 
-## The "more for E+1" line
+## La línea "más para E+1"
 
-Under each number the card shows how many more qualifying days or routes you need for the next one. With a send-days E of 8 and four days of 9+ sends already, you need **5 more** 9-send days to reach 9.
+Debajo de cada número, la tarjeta muestra cuántos días o vías válidos más necesitas para el siguiente. Con un E de días de encadenes de 8 y cuatro días de 9+ encadenes ya acumulados, necesitas **5 días más** de 9 encadenes para llegar a 9.

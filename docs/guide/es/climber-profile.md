@@ -1,23 +1,23 @@
-# Climber profile
+# Perfil de escalador
 
-The **Climber profile** radar compares how you have been climbing over the **last 30 days** (inner series) with the **last 90 days** (outer series). Each axis is scored 0–100 from your local logbook — not a theCrag leaderboard score.
+El radar del **Perfil de escalador** compara cómo has estado escalando durante los **últimos 30 días** (serie interior) con los **últimos 90 días** (serie exterior). Cada eje se puntúa de 0 a 100 según tu libro de vías local, no con la puntuación de la clasificación de theCrag.
 
-## Axes
+## Ejes
 
-| Axis              | What it rewards                                                                 |
-| ----------------- | ------------------------------------------------------------------------------- |
-| **Volume**        | How many ascents you logged relative to the window length.                      |
-| **Style variety** | How many distinct climb styles appear (sport, trad, boulder, …).                |
-| **Density**       | How many distinct active days you climbed, relative to the window.              |
-| **Height**        | Metres climbed (ascent or route height) relative to the window.                 |
-| **Intensity**     | Average and peak effective grades in the window (harder ticks push this up).    |
-| **Consistency**   | Mix of send rate and onsight/flash share — finishing climbs and first-go ticks. |
+| Eje                     | Lo que recompensa                                                                                           |
+| ----------------------- | ----------------------------------------------------------------------------------------------------------- |
+| **Volumen**             | Cuántas ascensiones has registrado en relación con la duración del periodo.                                 |
+| **Variedad de estilos** | Cuántos estilos de escalada distintos aparecen (deportiva, clásica, bloque, …).                             |
+| **Densidad**            | Cuántos días activos distintos has escalado, en relación con el periodo.                                    |
+| **Altura**              | Metros escalados (altura de ascensión o de vía) en relación con el periodo.                                 |
+| **Intensidad**          | Grados efectivos promedio y máximos en el periodo (los encadenes más duros aumentan este valor).            |
+| **Constancia**          | Combinación de tasa de encadenes y proporción de a vista/flash: encadenar vías y encadenar al primer pegue. |
 
-Scores are capped at 100. Quiet periods pull axes in; a busy trip or projecting block pushes them out. Treat the shape as a nudge, not a diagnosis.
+Las puntuaciones están limitadas a 100. Los periodos tranquilos reducen los ejes; un viaje intenso o un bloque de proyectos los amplía. Toma la forma como una orientación, no como un diagnóstico.
 
-## Reading 30 vs 90
+## Cómo interpretar 30 vs. 90
 
-- **Last 90 days** (teal fill) is your recent baseline.
-- **Last 30 days** (blue outline) shows whether the latest month is above or below that baseline on each axis.
+- Los **últimos 90 días** (relleno verde azulado) son tu referencia reciente.
+- Los **últimos 30 días** (contorno azul) muestran si el último mes está por encima o por debajo de esa referencia en cada eje.
 
-If either polygon is empty, you do not have enough dated ascents in that window yet.
+Si algún polígono está vacío, es porque aún no tienes suficientes ascensiones fechadas en ese periodo.

@@ -1,67 +1,67 @@
-# Logbook sync
+# Synchronisation du carnet de croix
 
-Crag Stats gets your logbook in one of two ways:
+Crag Stats récupère votre carnet de croix de deux manières différentes :
 
-- **API sync** with a theCrag supporter API key. It runs on the existing schedule (`SYNC_CRON`, daily by default), from **Settings → Sync now** (open **`/settings`**, or **`/login`** first when `APP_PASSWORD` is set), and from the Docker worker. A new installation syncs on startup when a key is configured.
-- **Manual CSV upload**. Export your logbook on theCrag and upload the file in **Settings → CSV import** whenever you want to refresh.
+- **Synchronisation par API** avec une clé d'API supporter theCrag. Elle s'exécute selon la planification définie (`SYNC_CRON`, quotidienne par défaut), depuis **Paramètres → Synchroniser maintenant** (ouvrez **`/settings`**, ou d'abord **`/login`** si `APP_PASSWORD` est configuré), ainsi que depuis le worker Docker. Une nouvelle installation se synchronise au démarrage lorsqu'une clé est configurée.
+- **Import manuel de fichier CSV**. Exportez votre carnet de croix sur theCrag et importez le fichier dans **Paramètres → Import CSV** chaque fois que vous souhaitez l'actualiser.
 
-## Backup: keep a local copy
+## Sauvegarde : conserver une copie locale
 
-Your theCrag account remains the source of truth for the live logbook. Crag Stats stores synced ascents, settings, goals, route-history cache, weather days and related state in **SQLite** (`DATABASE_PATH`, typically `./data/crag-stats.sqlite` or `/data/crag-stats.sqlite` in Docker). Back up the Docker **data volume** (or the host directory you mount at `/data`) with the rest of your homelab backups. For a consistent file backup, stop every app and worker using that database, copy the volume including any `-wal` / `-shm` sidecars, then restart them. Copying these files one at a time while writers are running can produce an inconsistent backup; use a SQLite-aware online backup tool if you need to keep the app running. Compose already persists the volume across image upgrades.
+Votre compte theCrag reste la source de référence pour votre carnet de croix en ligne. Crag Stats stocke les croix synchronisées, les paramètres, les objectifs, le cache de l'historique des voies, l'historique météo et les états associés dans **SQLite** (`DATABASE_PATH`, généralement `./data/crag-stats.sqlite` ou `/data/crag-stats.sqlite` sous Docker). Sauvegardez le **volume de données** Docker (ou le répertoire hôte que vous montez sur `/data`) avec le reste de vos sauvegardes homelab. Pour une sauvegarde de fichiers cohérente, arrêtez chaque application et worker utilisant cette base de données, copiez le volume en incluant les fichiers auxiliaires `-wal` / `-shm`, puis redémarrez-les. Copier ces fichiers un par un pendant que des écritures sont en cours peut produire une sauvegarde incohérente ; utilisez un outil de sauvegarde à chaud adapté à SQLite si vous devez laisser l'application tourner. Compose conserve déjà le volume lors des mises à jour d'image.
 
-For a portable spreadsheet-style copy, open **Settings → Privacy & data control** and use **Download logbook CSV** (same action as `/settings/export`). The file is a theCrag-like CSV of the local logbook: routes, ticks, partners, quality, dates and comments/notes. Notes are always included in this download because it is your backup; treat the file like personal data. You can re-import it later with **Settings → CSV import** (upsert only — it does not remove ascents that are missing from the file). Download a CSV before **Wipe all local data** if you want a fallback while rebuilding from theCrag — a volume backup is still the complete restore path.
+Pour obtenir une copie portable au format tableur, ouvrez **Paramètres → Confidentialité et contrôle des données** et utilisez **Télécharger le CSV du carnet** (même action que `/settings/export`). Le fichier est un CSV similaire à celui de theCrag pour le carnet de croix local : voies, croix, partenaires, note/qualité, dates et commentaires/notes. Les notes sont toujours incluses dans ce téléchargement puisqu'il s'agit de votre sauvegarde ; traitez ce fichier comme des données personnelles. Vous pouvez le réimporter plus tard avec **Paramètres → Import CSV** (mise à jour/insertion uniquement — les croix absentes du fichier ne sont pas supprimées). Téléchargez un CSV avant d'effectuer un **Effacement de toutes les données locales** si vous souhaitez disposer d'une solution de secours pendant la reconstruction depuis theCrag — la sauvegarde de volume reste la méthode de restauration complète.
 
-The Settings CSV is from Crag Stats, not a live pull from theCrag. For an upstream backup of the logbook itself, use theCrag’s own **Action → Export logbook as CSV** in your online logbook as well.
+Le CSV des paramètres provient de Crag Stats, il ne s'agit pas d'une extraction en direct depuis theCrag. Pour une sauvegarde directe du carnet de croix lui-même à la source, utilisez également l'option de theCrag **Action → Exporter le carnet de croix au format CSV** dans votre carnet en ligne.
 
-## What a manual sync imported
+## Ce qu'une synchronisation manuelle a importé
 
-After **Sync now** or **Full re-sync** succeeds, Settings shows processed ascents,
-new ascents, existing ascents refreshed, new routes, and removed ascents/routes.
-A route shared by several ascents counts as one new route. “Refreshed” means an
-existing ascent was processed again; it does not mean its contents changed.
-An unchanged logbook therefore shows zero additions/removals and existing ascents
-refreshed. Skipped runs and errors show their own messages, not a success summary.
+Une fois que **Synchroniser maintenant** ou **Resynchronisation complète** a réussi, les Paramètres affichent les croix traitées,
+les nouvelles croix, les croix existantes actualisées, les nouvelles voies et les croix/voies supprimées.
+Une voie partagée par plusieurs croix compte comme une seule nouvelle voie. « Actualisée » signifie qu'une
+croix existante a été traitée à nouveau ; cela ne signifie pas que son contenu a changé.
+Un carnet de croix inchangé affiche donc zéro ajout/suppression et des croix
+existantes actualisées. Les exécutions ignorées et les erreurs affichent leurs propres messages, et non un récapitulatif de succès.
 
-Manual CSV uploads show processed/new/refreshed counts too, but never remove
-missing entries. Route-history and weather enrichment are separate background
-imports and are not included in these logbook counts. The summary describes the
-completed button action; it is not a persistent sync history.
+Les imports manuels de CSV affichent aussi le nombre d'entrées traitées/nouvelles/actualisées, mais ne suppriment jamais
+les entrées manquantes. L'historique des voies et l'enrichissement météo sont des imports en arrière-plan
+distincts et ne sont pas inclus dans ces décomptes du carnet de croix. Le récapitulatif décrit l'action
+du bouton qui vient de se terminer ; il ne s'agit pas d'un historique de synchronisation persistant.
 
-## API sync
+## Synchronisation par API
 
-Set `THECRAG_API_KEY` to your supporter logbook read key. Each sync reads the full logbook and reconciles local ascents, including deletions. This mode provides richer route, profile, and multipitch data, and it is the only way Crag Stats contacts theCrag for your logbook automatically.
+Définissez `THECRAG_API_KEY` avec votre clé de lecture de carnet supporter. Chaque synchronisation lit l'intégralité du carnet de croix et réconcilie les croix locales, y compris les suppressions. Ce mode fournit des données plus riches sur les voies, les profils et les grandes voies, et constitue le seul moyen pour Crag Stats de contacter automatiquement theCrag pour votre carnet de croix.
 
-### If API sync fails
+### En cas d'échec de la synchronisation par API
 
-Settings shows the failure and retains the time of the last successful sync. The message names the cause when theCrag reports one, followed by theCrag's short error code (for example `invalid-api-key`):
+Les Paramètres indiquent l'échec et conservent l'heure de la dernière synchronisation réussie. Le message indique la cause lorsque theCrag en signale une, suivie du code d'erreur court de theCrag (par exemple `invalid-api-key`) :
 
-- **Invalid key:** theCrag rejected `THECRAG_API_KEY`. Check it for typos, or replace it if it expired or was revoked, then restart the server.
-- **Access denied:** the key lacks logbook read access. Check your supporter key, or upload your CSV export by hand instead (below).
-- **Usage limit:** the key has hit theCrag's request limit. Wait for it to reset, then sync again.
+- **Clé non valide :** theCrag a rejeté `THECRAG_API_KEY`. Vérifiez qu'elle ne contient pas de fautes de frappe, ou remplacez-la si elle a expiré ou a été révoquée, puis redémarrez le serveur.
+- **Accès refusé :** la clé n'a pas les droits de lecture sur le carnet de croix. Vérifiez votre clé supporter, ou importez manuellement votre export CSV à la place (ci-dessous).
+- **Limite d'utilisation atteinte :** la clé a atteint la limite de requêtes de theCrag. Attendez qu'elle soit réinitialisée, puis synchronisez à nouveau.
 
-If a later page fails, updates from earlier pages remain cached, but no missing ascents are deleted and the run is not marked successful. The next scheduled run (daily by default) or **Sync now** retries the full logbook from page 1. API failures do not pause the schedule.
+Si une page ultérieure échoue, les mises à jour des pages précédentes restent en cache, mais aucune croix manquante n'est supprimée et l'exécution n'est pas marquée comme réussie. La prochaine exécution planifiée (quotidienne par défaut) ou **Synchroniser maintenant** réessaiera l'ensemble du carnet depuis la page 1. Les échecs d'API ne mettent pas la planification en pause.
 
-## Manual CSV upload
+## Import manuel de CSV
 
-No supporter key? On theCrag, open your logbook and choose **Action → Export logbook as CSV**, then upload the file in **Settings → CSV import**. Repeat whenever you want to bring in new ticks.
+Pas de clé supporter ? Sur theCrag, ouvrez votre carnet de croix et choisissez **Action → Exporter le carnet de croix au format CSV**, puis importez le fichier dans **Paramètres → Import CSV**. Répétez l'opération chaque fois que vous souhaitez intégrer de nouvelles croix.
 
-Manual uploads add and update ascents but never remove ascents that are missing from the file. To drop deleted ticks, **Wipe all local data** and upload a fresh export. The CSV has fewer fields than the API, including less profile, route metadata, and multipitch information, and it does not include theCrag's private ascent notes (`privateMarkdown`); only the public Comment column is imported. Australian bare boulder digits use Country / path as an AU hint so they do not become fake V-grades.
+Les imports manuels ajoutent et mettent à jour les croix, mais ne suppriment jamais les croix absentes du fichier. Pour supprimer les croix effacées, effectuez un **Effacement de toutes les données locales** et importez un nouvel export. Le CSV comporte moins de champs que l'API, notamment moins de détails sur le profil, les métadonnées de voies et les grandes voies, et il n'inclut pas les notes privées d'ascension de theCrag (`privateMarkdown`) ; seule la colonne publique Commentaire est importée. Les chiffres de bloc australiens sans préfixe utilisent le pays / chemin comme indication AU afin de ne pas être convertis à tort en cotations V.
 
-Route data import matches FA/FFA credits against your theCrag username. API sync saves it from your profile, and `THECRAG_USERNAME` is ignored in that mode; a CSV-only install sets it instead. Without a login the import stops before fetching anything, so set it (or mark first ascents by hand in the logbook).
+L’import des données de voies rapproche les crédits FA/FFA de votre nom d’utilisateur theCrag. La synchronisation par API l'enregistre à partir de votre profil, et `THECRAG_USERNAME` est ignoré dans ce mode ; une installation basée uniquement sur CSV le configure à la place. Sans identifiant, l'import s'arrête avant de récupérer quoi que ce soit, veillez donc à le définir (ou marquez manuellement les premières ascensions dans le carnet de croix).
 
-## CSV logbook with route data
+## Carnet CSV avec données de voies
 
-You can keep the logbook in CSV and still have route data (popularity, ascent counts, quality, seasonality, pitches) and automatic FA/FFA marks. Set:
+Vous pouvez conserver le carnet de croix en CSV tout en bénéficiant des données de voies (popularité, nombre de répétitions, note, saisonnalité, longueurs) et des mentions automatiques de FA/FFA. Configurez :
 
-- `CSV_INGEST_TOKEN`: a long random value. It is what lets a container or script send you a CSV export, so it also tells Crag Stats that uploads are the logbook source: no API sync runs, so uploaded ascents are never removed, and the sync never writes the key holder's climber profile.
-- `THECRAG_API_KEY`: your supporter logbook read key, now used only for route data and crag/sector location lookups.
-- `THECRAG_USERNAME`: your theCrag username, so FA/FFA history matches you (CSV exports don't include it).
+- `CSV_INGEST_TOKEN` : une valeur aléatoire longue. C'est ce qui permet à un conteneur ou à un script de vous envoyer un export CSV, et cela indique également à Crag Stats que les imports sont la source du carnet de croix : aucune synchronisation API n'est lancée, les croix importées ne sont donc jamais supprimées, et la synchronisation n'écrit jamais le profil de grimpeur du titulaire de la clé.
+- `THECRAG_API_KEY` : votre clé de lecture de carnet supporter, désormais utilisée uniquement pour les données de voies et la recherche de localisation des falaises/secteurs.
+- `THECRAG_USERNAME` : votre nom d'utilisateur theCrag, pour que l'historique FA/FFA vous soit attribué (les exports CSV ne l'incluent pas).
 
-That is the whole configuration: three values, no mode switch. Without `CSV_INGEST_TOKEN`, `THECRAG_API_KEY` syncs the logbook and route data shares the same key. Background route and weather imports follow `IMPORT_CRON` (daily by default) rather than the logbook schedule, so a weekly or monthly `SYNC_CRON` still gets route data daily. Settings → **Import route data** shows progress and starts a run by hand.
+C'est l'ensemble de la configuration : trois valeurs, aucun changement de mode. Sans `CSV_INGEST_TOKEN`, `THECRAG_API_KEY` synchronise le carnet de croix et les données de voies partagent la même clé. Les imports en arrière-plan des voies et de la météo suivent `IMPORT_CRON` (quotidien par défaut) plutôt que la planification du carnet de croix, de sorte qu'un `SYNC_CRON` hebdomadaire ou mensuel récupère tout de même les données de voies quotidiennement. Paramètres → **Importer les données de voies** affiche la progression et lance une exécution manuellement.
 
-## Uploading a CSV from another container
+## Importer un CSV depuis un autre conteneur
 
-Uploading by hand is fine for occasional refreshes. If you keep your export somewhere your network can read — a shared folder, a Nextcloud or Dropbox share, or a small companion container that uploads each new export — Crag Stats can accept it over HTTP instead. Set `CSV_INGEST_TOKEN` to a long random value, restart, and then `POST` the file:
+L'import manuel convient très bien pour des actualisations occasionnelles. Si vous conservez votre export à un endroit accessible sur votre réseau — un dossier partagé, un partage Nextcloud ou Dropbox, ou un petit conteneur compagnon qui envoie chaque nouvel export —, Crag Stats peut le recevoir via HTTP à la place. Définissez `CSV_INGEST_TOKEN` avec une valeur aléatoire longue, redémarrez, puis envoyez le fichier avec un `POST` :
 
 ```bash
 curl -X POST https://cragstats.example.com/api/logbook/csv \
@@ -70,13 +70,13 @@ curl -X POST https://cragstats.example.com/api/logbook/csv \
   --data-binary @thecrag-logbook.csv
 ```
 
-A multipart upload with the file in a `file` field works too. Requests without the token are rejected, and a successful response reports how many ascents were processed and how many were new:
+Un import multipart avec le fichier dans un champ `file` fonctionne également. Les requêtes sans le jeton sont rejetées, et une réponse réussie indique combien de croix ont été traitées et combien étaient nouvelles :
 
 ```json
 { "ok": true, "imported": 412, "created": { "routes": 318, "ascents": 412 } }
 ```
 
-To check an install without importing anything, send a body that is not an export:
+Pour tester une installation sans rien importer, envoyez un corps de requête qui n'est pas un export :
 
 ```bash
 curl -s -o /dev/null -w '%{http_code}\n' -X POST https://cragstats.example.com/api/logbook/csv \
@@ -84,10 +84,10 @@ curl -s -o /dev/null -w '%{http_code}\n' -X POST https://cragstats.example.com/a
   -H "Content-Type: text/csv" --data-binary 'x'
 ```
 
-`400` means the endpoint is reachable and the token was accepted: it rejected the body, so nothing was written. `401` means the token did not match, while `404` means that image predates this endpoint. On a whole-UI-gated install (`AUTH_SCOPE=all`), an older image answers `401` for any unknown `/api/` path, so read `401` as "token or image".
+`400` signifie que le point de terminaison est accessible et que le jeton a été accepté : le corps a été rejeté, donc rien n'a été écrit. `401` signifie que le jeton ne correspond pas, tandis que `404` indique que cette image est antérieure à ce point de terminaison. Sur une installation protégeant toute l'interface (`AUTH_SCOPE=all`), une image plus ancienne renvoie `401` pour tout chemin `/api/` inconnu ; interprétez donc `401` comme « jeton ou image ».
 
-An empty file, a login page saved by mistake, or anything over 25 MB is rejected rather than imported. This endpoint does the same upsert-only import as the Settings form, so it never removes ascents that are missing from the file. It makes no request to theCrag: the export still has to come from your own browser or another tool you control.
+Un fichier vide, une page de connexion enregistrée par erreur ou tout élément supérieur à 25 Mo est rejeté au lieu d'être importé. Ce point de terminaison effectue le même import avec mise à jour/insertion que le formulaire des Paramètres, il ne supprime donc jamais les croix absentes du fichier. Il n'effectue aucune requête auprès de theCrag : l'export doit toujours provenir de votre propre navigateur ou d'un autre outil que vous contrôlez.
 
-## Why there are no automatic CSV downloads
+## Pourquoi il n'y a pas de téléchargements automatiques de CSV
 
-Crag Stats never signs in to the theCrag website or downloads exports for you. theCrag's [terms](https://www.thecrag.com/terms#ownership-and-licenses) require all programmatic access to go through the API, and every export is a full logbook dump that is costly for their servers. Exporting and uploading the CSV yourself is fine.
+Crag Stats ne se connecte jamais au site web theCrag et ne télécharge aucun export à votre place. theCrag : ses [conditions d’utilisation](https://www.thecrag.com/terms#ownership-and-licenses) exigent que tout accès programmatique passe par l’API, et chaque export est une extraction complète du carnet de croix coûteuse pour ses serveurs. Exporter et importer le CSV vous-même ne pose aucun problème.

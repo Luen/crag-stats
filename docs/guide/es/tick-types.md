@@ -1,32 +1,32 @@
-# Tick types
+# Tipos de ascensión
 
-A **tick type** records _how_ you climbed something, not just whether you reached the top. An onsight is worth more than a red point of the same route. That's why theCrag (and Crag Stats) keep them apart.
+Un **tipo de ascensión** registra _cómo_ escalaste algo, no solo si llegaste a la cima. Un a vista vale más que un punto rojo en la misma vía. Por eso theCrag (y Crag Stats) los mantienen por separado.
 
-In the tables below, **Send** means Crag Stats counts the tick as a successful (clean) ascent, for example in "successful ascents", send rates and pyramids. **Attempt** means it's logged as an attempt: it shows as grey in charts, still counts as climbing volume, and can mark a route as a project.
+En las tablas a continuación, **Encadene** significa que Crag Stats cuenta la ascensión como exitosa (limpia), por ejemplo en "ascensiones exitosas", tasas de encadene y pirámides. **Intento** significa que se registra como un intento: se muestra en gris en los gráficos, sigue contando como volumen de escalada y puede marcar una vía como proyecto.
 
 <!-- component:tick-types -->
 
-## How ticks are used here
+## Cómo se usan las ascensiones aquí
 
-- **Pyramids and charts** colour each tick type consistently: onsight green, flash yellow, red point red, pink point pink, send/clean blue, attempts grey.
-- **CPR** shifts each tick by a grade offset (an onsight counts as harder than a red point); see [CPR](/docs/cpr).
-- **Projects** are routes with attempts but no send yet. A route you sent first go (onsight or flash) is never a project.
-- **Training load** counts attempts at 0.8× a send, since working a route is still hard work; see [Training load](/docs/training-load).
+- **Las pirámides y los gráficos** colorean cada tipo de ascensión de forma consistente: a vista en verde, flash en amarillo, punto rojo en rojo, pink point en rosa, encadene/limpio en azul y los intentos en gris.
+- **El CPR** desplaza cada ascensión por un ajuste de grado (un a vista cuenta como más difícil que un punto rojo); consulta [CPR](/docs/cpr).
+- **Los proyectos** son vías con intentos pero sin ningún encadene todavía. Una vía que encadenaste a la primera (a vista o flash) nunca es un proyecto.
+- **La carga de entrenamiento** cuenta los intentos como 0,8× un encadene, ya que ensayar una vía sigue siendo un gran esfuerzo; consulta [Carga de entrenamiento](/docs/training-load).
 
-## Counted tick types in analytics
+## Tipos de ascensión contabilizados en analíticas
 
-On theCrag, non-send attempts (such as `Working`, `Attempt`, `Hang dog`, or `Retreat`) are logged as ascents. If you log numerous working burns while projecting, counting every attempt in dashboard totals can skew your headline ascent count, style share, and climber type.
+En theCrag, los intentos sin encadene (como `Working`, `Attempt`, `Hang dog` o `Retreat`) se registran como ascensiones. Si registras numerosos pegues de ensayo mientras trabajas un proyecto, contar cada intento en los totales del panel de control puede distorsionar tu recuento principal de ascensiones, la proporción de estilos y tu tipo de escalador.
 
-In **Settings → Display & visibility → Counted tick types**, you can configure how each tick type is treated across Crag Stats:
+En **Ajustes → Visualización y visibilidad → Tipos de ascensión contabilizados**, puedes configurar cómo se trata cada tipo de ascensión en Crag Stats:
 
-- **Enable (Count everywhere):** Included in headline ascents, discipline breakdown, crags and sectors, pyramids, map totals, Eddington numbers, route repeats, the climber profile axes, activity heatmaps, training load, badges, projects, and goals.
-- **Projects & goals only (Out of totals):** Excluded from headline ascents, discipline share, crags, sectors, pyramids, map totals, Eddington numbers, route repeats, and the climber profile axes, but still counted towards project detection, session activity (heatmap, streaks, sessions per week, and weekday charts), training load fatigue, badges, and grade goals.
-- **Hide (Exclude completely):** Excluded across all analytics, projects, goals, and badges.
+- **Activar (Contar en todas partes):** Se incluye en las ascensiones principales, el desglose por disciplinas, escuelas y sectores, pirámides, totales del mapa, números de Eddington, repeticiones de vías, los ejes del perfil de escalador, mapas de calor de actividad, carga de entrenamiento, insignias, proyectos y objetivos.
+- **Solo proyectos y objetivos (Fuera de los totales):** Se excluye de las ascensiones principales, la proporción por disciplinas, escuelas, sectores, pirámides, totales del mapa, números de Eddington, repeticiones de vías y los ejes del perfil de escalador, pero sigue contando para la detección de proyectos, la actividad de sesión (mapa de calor, rachas, sesiones por semana y gráficos por días de la semana), la fatiga de la carga de entrenamiento, las insignias y los objetivos de grado.
+- **Ocultar (Excluir por completo):** Se excluye en todas las analíticas, proyectos, objetivos e insignias.
 
-The logbook always preserves and displays all your logged ascents with full filtering regardless of this setting. For which badges follow each choice, see [Badges](/docs/badges).
+El libro de vías siempre conserva y muestra todas tus ascensiones registradas con filtrado completo, independientemente de este ajuste. Para ver qué insignias siguen cada opción, consulta [Insignias](/docs/badges).
 
-When a configured tick type excludes some of your logged ascents, the dashboard also recalculates the profile figures that normally come from theCrag (outdoor and indoor ascents, routes ticked, total height, and climber type) from your counted ascents, so every total on the page describes the same set of ticks. Clear the configuration with the **All logged ticks** preset to go back to theCrag's own totals.
+Cuando un tipo de ascensión configurado excluye algunas de tus ascensiones registradas, el panel de control también recalcula las cifras del perfil que normalmente provienen de theCrag (ascensiones en exterior y en rocódromo, vías encadenadas, altura total y tipo de escalador) a partir de tus ascensiones contabilizadas, de modo que cada total de la página describe el mismo conjunto de ascensiones. Borra la configuración con el ajuste predeterminado **Todas las ascensiones registradas** para volver a los totales propios de theCrag.
 
-## Source
+## Fuente
 
-Definitions are paraphrased from theCrag's [Tick types](https://www.thecrag.com/en/article/ticktypes) article. Not every tick type applies to every gear style.
+Las definiciones son una paráfrasis del artículo [Tipos de ascensión](https://www.thecrag.com/en/article/ticktypes) de theCrag. No todos los tipos de ascensión se aplican a todos los estilos de equipamiento.

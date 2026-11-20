@@ -30,7 +30,7 @@ Climbing is a global sport, but initial localisation focuses on communities with
 
 ### Adding a locale
 
-A locale is _supported_ once its catalogue exists, and _enabled_ once it is translated well enough to ship. Only `en` and `de` are enabled today; `fr`, `es`, and `it` keep their catalogues, stay validated by `i18n.test.ts`, and stay out of the header menu, the Settings picker, and locale resolution until they are switched on.
+A locale is _supported_ once its catalogue exists, and _enabled_ once it is translated well enough to ship. English, German, French, and Spanish are enabled. The owner approved French at approximately 94% completion: missing or empty UI messages fall back to English, and untranslated guide passages retain English. Italian keeps its catalogue and validation but stays out of the header menu, the Settings picker, and locale resolution. Translation review is AI-assisted, not native-speaker sign-off.
 
 1. Finish the target in Crowdin first — `crowdin-pretranslate.yml` translates one language per scheduled run, so add the next id to its `CROWDIN_LANGUAGES` line and let the daily top-up work through the catalogue. Seeded but unshipped: `ko`, `pl`, `zh-CN`, `pt-PT` (already translated), and `ja` (already translated).
 2. Add the language id to `ENABLED_LOCALES` in `src/lib/i18n/types.ts`. If the catalogue is new, add it to `SUPPORTED_LOCALES`, `LOCALE_METADATA`, and the `LOCALES` map in `format.ts` too.

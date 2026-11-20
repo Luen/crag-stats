@@ -1,29 +1,29 @@
 # Karma
 
-theCrag awards **Karma** for contributions to the climbing index — logging ascents and editing guidebook data. See [Karma on theCrag](https://www.thecrag.com/article/cragkarma).
+theCrag attribue du **Karma** pour les contributions à l'index d'escalade — l'enregistrement d'ascensions et la modification des données de topo. Consultez [Karma sur theCrag](https://www.thecrag.com/article/cragkarma).
 
-## What Crag Stats can show
+## Ce que Crag Stats peut afficher
 
-The supporter **logbook** API account object does **not** include your personal karma total or an ascents/edits split. Area `/karma` endpoints are contributor leaderboards for a crag, not a substitute for your account score.
+L'objet compte de l'API **carnet de croix** supporter n'inclut **pas** votre total de karma personnel ni la répartition entre ascensions et modifications. Les points de terminaison `/karma` d'une zone sont des classements de contributeurs pour une falaise, et non un substitut à votre score de compte.
 
-Until theCrag exposes personal karma (or negotiated access), the dashboard card is an **approximation of the ascent portion only**:
+Tant que theCrag n'expose pas le karma personnel (ou un accès négocié), la carte du tableau de bord constitue une **approximation de la part liée aux ascensions uniquement** :
 
-| Source                                        | Points                                                                          |
-| --------------------------------------------- | ------------------------------------------------------------------------------- |
-| Log Ascent                                    | **1** once per route (node), matching theCrag’s once-per-contribution-type rule |
-| Guide edits (descriptions, topos, history, …) | **Unavailable** — not reconstructible from the logbook cache                    |
+| Source                                                      | Points                                                                                                              |
+| ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| Enregistrer une ascension                                   | **1** une seule fois par voie (nœud), conformément à la règle d'une attribution par type de contribution de theCrag |
+| Modifications de topo (descriptions, tracés, historique, …) | **Indisponible** — impossible à reconstituer depuis le cache du carnet de croix                                     |
 
-When your synced account includes `routesTicked` and that figure is at least as large as the local route cache, the card uses it for the ascent total (it matches “routes you’ve logged” on theCrag). Otherwise it counts distinct routes in your local SQLite cache.
+Lorsque votre compte synchronisé inclut `routesTicked` et que ce chiffre est au moins aussi grand que le cache local des voies, la carte l'utilise pour le total des ascensions (il correspond aux « voies que vous avez enregistrées » sur theCrag). Sinon, elle compte les voies distinctes dans votre cache SQLite local.
 
-The **local routes logged** tile always shows the number of distinct routes linked to your cached ascents, even when the ascent estimate uses the larger account counter. Repeat ticks count once; route metadata without an ascent does not count.
+La tuile **voies locales enregistrées** affiche toujours le nombre de voies distinctes liées à vos ascensions en cache, même lorsque l'estimation des ascensions utilise le compteur de compte, plus élevé. Les répétitions ne comptent qu'une fois ; les métadonnées d'une voie sans ascension ne comptent pas.
 
-## What it is not
+## Ce que ce n'est pas
 
-- Not a byte-for-byte clone of the score on your theCrag profile.
-- Real karma sits in a **review queue** for about a week before it lands on your account.
-- Deleting or editing ascents, private accounts, and historical imports can leave local counts and theCrag out of sync.
-- We do **not** invent edit points from FA marks or route-setter credits — those activities may earn karma on theCrag, but the scoring rules are one-per-node per contribution type and we do not have your edit history.
+- Ce n'est pas une copie exacte au bit près du score affiché sur votre profil theCrag.
+- Le vrai karma passe par une **file de modération** pendant environ une semaine avant d'apparaître sur votre compte.
+- La suppression ou la modification d'ascensions, les comptes privés et les imports historiques peuvent désynchroniser les totaux locaux et theCrag.
+- Nous n’inventons **pas** de points de modification à partir des mentions FA ou des crédits d’ouvreur — ces activités peuvent rapporter du karma sur theCrag, mais les règles de calcul prévoient un point par nœud et par type de contribution, et nous ne disposons pas de votre historique de modifications.
 
-## When this can improve
+## Comment cela pourra s'améliorer
 
-If theCrag adds karma (or ascent/edit totals) to the logbook account payload or a documented climber endpoint we can sync safely, Crag Stats can replace the estimate with the real numbers and fill in the edits tile.
+Si theCrag ajoute le karma (ou les totaux d'ascensions et de modifications) aux données de compte du carnet de croix ou à un point de terminaison documenté pour grimpeurs que nous pouvons synchroniser en toute sécurité, Crag Stats pourra remplacer l'estimation par les vrais chiffres et remplir la tuile des modifications.

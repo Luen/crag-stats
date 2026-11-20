@@ -1,36 +1,34 @@
-# Rock types
+# Tipos de roca
 
-theCrag stores geology on many routes as a structured **Rock type** tag (for example Granite or Sandstone). Crag Stats reads that tag from the synced logbook / route cache — it never scrapes pages or guesses rock from the crag name.
+theCrag almacena la geología de muchas vías como una etiqueta estructurada de **Tipo de roca** (por ejemplo, granito o arenisca). Crag Stats lee esa etiqueta del libro de vías / caché de vías sincronizado; nunca extrae información de páginas web ni adivina el tipo de roca a partir del nombre de la escuela.
 
-## Rock types card
+## Tarjeta de tipos de roca
 
-The dashboard **Rock types** card counts ascents whose route has a Rock type tag and shows each name’s share. The dominant type can show a short geology blurb. Each name links to the logbook filtered with `?rock=`.
+La tarjeta **Tipos de roca** del panel cuenta las ascensiones cuya vía tiene una etiqueta de Tipo de roca y muestra la proporción de cada nombre. El tipo dominante puede mostrar una breve descripción geológica. Cada nombre enlaza al libro de vías filtrado con `?rock=`.
 
-Routes without a Rock type tag are left out of the chart, so the percentages describe tagged climbs only.
+Las vías sin etiqueta de Tipo de roca se excluyen del gráfico, por lo que los porcentajes describen únicamente las escaladas etiquetadas.
 
-## Rock & performance card
+## Tarjeta de roca y rendimiento
 
-Once **20 or more** climbing days include at least one send or attempt on a Rock-type-tagged route, the **Rock & performance** card compares how those climbs went by rock. Before that it shows how many tagged days you have so far. The card stays hidden while no tagged send or attempt exists, and can be moved or hidden from Settings → Dashboard.
+Una vez que **20 o más** días de escalada incluyan al menos un encadenamiento o intento en una vía etiquetada con Tipo de roca, la tarjeta **Roca y rendimiento** compara cómo fueron esas escaladas según la roca. Antes de alcanzarlos, muestra cuántos días etiquetados llevas hasta el momento. La tarjeta permanece oculta mientras no exista ningún encadenamiento o intento etiquetado, y se puede mover u ocultar desde Ajustes → Panel.
 
-**What is counted.** Sends and attempts (the same tick classification as everywhere else) on routes with a Rock type tag. Untagged climbs are reported only as coverage (“N more … have no rock type tag”).
+**Qué se cuenta.** Encadenamientos e intentos (la misma clasificación de registros que en cualquier otro lugar) en vías con etiqueta de Tipo de roca. Las escaladas sin etiquetar solo se notifican como cobertura (“N más … no tienen etiqueta de tipo de roca”).
 
-**Measures** (same ideas as [Weather & performance](/docs/weather)):
+**Métricas** (mismas ideas que en [Tiempo y rendimiento](/docs/weather)):
 
-- **Send rate:** sends as a share of sends and attempts on that rock.
-- **Near-limit:** the share of graded sends within 2 grades (1 V-grade on the V-scale) of your hardest send of the **same style and grade scale** in the 365 days before that day. V-scale and route grades are never mixed.
-- **Onsight/flash:** onsights and flashes as a share of sends on that rock.
+- **Tasa de encadenamiento:** encadenamientos como porcentaje del total de encadenamientos e intentos en esa roca.
+- **Cerca del límite:** el porcentaje de encadenamientos con grado situados a no más de 2 grados (1 grado V en la escala V) de tu encadenamiento más difícil del **mismo estilo y escala de grado** en los 365 días anteriores a ese día. La escala V y los grados de vía nunca se mezclan.
+- **A vista/flash:** ascensiones a vista y flashes como porcentaje de los encadenamientos en esa roca.
 
-**Reading it honestly.**
+**Interpretación honesta.**
 
-- A rock needs at least **10** ascents (for that measure’s denominator) over at least **3** days before it shows a rate.
-- **Higher** / **Lower** uses the same cluster-robust test as weather performance: each rock-and-day group is one unit, so one big session cannot invent a pattern alone.
-- Crag choice, travel and projects confound rock type. Treat differences as correlation, not cause.
-- When you have many distinct rock names, the least frequent fold into **Other** (no logbook link). Named bands link to `/logbook?rock=…` with the same case-insensitive match as the Rock types card.
+- Un tipo de roca necesita al menos **10** ascensiones (para el denominador de esa métrica) a lo largo de al menos **3** días antes de mostrar una tasa.
+- **Superior** / **Inferior** utiliza la misma prueba robusta por conglomerados que el rendimiento según el tiempo: cada grupo de roca y día es una unidad, por lo que una sola sesión grande no puede inventar un patrón por sí sola.
+- La elección de escuela, los viajes y los proyectos interfieren con el tipo de roca. Trata las diferencias como correlación, no como causa.
+- Cuando tienes muchos nombres de roca distintos, los menos frecuentes se agrupan en **Otros** (sin enlace al libro de vías). Las franjas con nombre enlazan a `/logbook?rock=…` con la misma coincidencia insensible a mayúsculas y minúsculas que la tarjeta Tipos de roca.
 
-Viewing the card never triggers a provider request, and private notes are never used.
+Ver la tarjeta nunca activa una solicitud al proveedor y las notas privadas nunca se utilizan.
 
-The near-limit reference includes your same-style, same-scale sends even when
-those reference routes have no rock tag. It uses the hardest climbed-pitch grade
-when available, includes the 365th prior day, and excludes all sends on the day
-being compared. Rock and weather performance share this reference calculation;
-weather additionally restricts its reference sends to outdoor climbs.
+La referencia cerca del límite incluye tus encadenamientos del mismo estilo y misma escala, incluso cuando
+esas vías de referencia no tienen etiqueta de roca. Utiliza el grado del largo escalado más difícil cuando está disponible, incluye el día número 365 anterior y excluye todos los encadenes del día que se está comparando. El rendimiento por roca y el rendimiento por tiempo comparten este cálculo de referencia;
+el tiempo restringe además sus encadenamientos de referencia a escaladas en exterior.

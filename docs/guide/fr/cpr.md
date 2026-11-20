@@ -1,37 +1,37 @@
 # CPR (Climber Performance Rating)
 
-**CPR** is theCrag's rating of your climbing ability. Crag Stats shows a CPR timeline for **sport**, **trad** and **boulder** separately, as theCrag does, because the three disciplines rate very differently.
+Le **CPR** est l'indice attribué par theCrag pour évaluer votre niveau en escalade. Crag Stats affiche une chronologie du CPR distincte pour l'**escalade sportive**, le **trad** et le **bloc**, tout comme theCrag, car ces trois disciplines s'évaluent très différemment.
 
-## How theCrag calculates CPR
+## Comment theCrag calcule le CPR
 
-theCrag built CPR from a statistical analysis of around a million ticks. The main ideas:
+theCrag a conçu le CPR à partir d'une analyse statistique d'environ un million de croix. Les principes clés :
 
-- **Each grade is about 5× harder than the one below** (power factor _P_ = 5 on the Ewbank scale). Every unique route you've done adds roughly _P_ to the power of its grade to a total. The total is turned back into a grade with a base-5 logarithm. So five ascents of a grade are worth about the same as one ascent of the next grade up.
-- **Tick shifts.** How you climbed matters. Ticks are shifted by a grade offset before scoring. For example, sport climbers red point about **2.1 grades** harder than they onsight, and on trad a pink point is about **0.8 grades** easier than a red point. Offsets are worked out separately for sport, trad and boulder.
-- **Solidifying a grade.** One tick at a new grade could be a soft route or a fluke. Your _grade_ rises only after about **three** ticks at it, but every ascent still adds to the rating.
-- **Decay.** If you stop climbing, CPR drops by about **0.7 Ewbank grades per year** (roughly three quarters of a grade).
-- **Repeats** of a route only count once (the best tick), and the route's assigned grade is used rather than your personal opinion.
+- **Chaque cotation est environ 5× plus difficile que la précédente** (facteur de puissance _P_ = 5 sur l'échelle Ewbank). Chaque voie distincte que vous avez réussie ajoute environ _P_ à la puissance de sa cotation à un total. Ce total est reconverti en cotation à l'aide d'un logarithme en base 5. Ainsi, cinq ascensions d'une cotation donnée équivalent à peu près à une ascension de la cotation supérieure.
+- **Décalages de croix.** La manière dont vous avez grimpé compte. Les croix subissent un décalage de cotation avant le calcul du score. Par exemple, en escalade sportive, on grimpe après travail environ **2,1 cotations** plus dur qu’à vue, et en trad, un pink point est environ **0,8 cotation** plus facile qu’un enchaînement après travail. Les décalages sont calculés séparément pour l'escalade sportive, le trad et le bloc.
+- **Consolider une cotation.** Une seule croix dans une nouvelle cotation peut venir d'une voie généreuse ou d'un coup de chance. Votre _cotation_ n'augmente qu'après environ **trois** croix à ce niveau, mais chaque ascension contribue tout de même à l'indice.
+- **Décroissance.** Si vous arrêtez de grimper, le CPR baisse d'environ **0,7 cotation Ewbank par an** (environ trois quarts de cotation).
+- Les **répétitions** d'une voie ne comptent qu'une seule fois (la meilleure croix), et c'est la cotation attribuée à la voie qui est utilisée plutôt que votre avis personnel.
 
-theCrag keeps a decayed and an undecayed rating for each of sport, trad and boulder.
+theCrag conserve un indice avec décroissance et un indice sans décroissance pour chacune des disciplines : escalade sportive, trad et bloc.
 
-## Where Crag Stats gets it
+## Comment Crag Stats l'obtient
 
-- **From theCrag's API (preferred).** When you sync with a supporter API key, each ascent can carry theCrag's own CPR values. If enough of your ascents in a discipline have them (at least 3, and at least 20% of that discipline's ascents), the timeline uses **theCrag's decayed CPR**, labelled _theCrag CPR_.
-- **Approximate model (fallback).** Otherwise Crag Stats calculates its own CPR, labelled _Approx._ It uses the same ideas: _P_ = 5, the best tick per route, tick shifts and 0.7 grades/year decay. The tick shifts are estimates, for example sport onsight +2.1, flash +1.4, red point 0, pink point −0.5, attempts −3. **It is not a copy of theCrag's proprietary implementation**, so expect small differences.
+- **Depuis l'API de theCrag (recommandé).** Lorsque vous synchronisez avec une clé API supporter, chaque ascension peut inclure les valeurs de CPR propres à theCrag. Si suffisamment de vos ascensions dans une discipline en disposent (au moins 3, et au moins 20 % des ascensions de cette discipline), la chronologie utilise **le CPR avec décroissance de theCrag**, libellé _theCrag CPR_.
+- **Modèle approximatif (de secours).** Sinon, Crag Stats calcule son propre CPR, libellé _Approx._ Il reprend les mêmes principes : _P_ = 5, la meilleure croix par voie, les décalages de croix et une décroissance de 0,7 cotation/an. Les décalages de croix sont des estimations : par exemple en escalade sportive, à vue +2,1, flash +1,4, après travail 0, pink point −0,5, essais −3. **Il ne s'agit pas d'une copie de l'implémentation propriétaire de theCrag**, attendez-vous donc à de légères différences.
 
-## Reading the timeline
+## Lire la chronologie
 
-- Each **column** is one quarter of a year.
-- **Candles** show the range of grades you climbed with each tick type in that quarter. As on theCrag, the purest tick sits on top: onsight green, flash yellow, red point red, pink point pink, send/clean blue, attempts grey.
-- The **black line** is your CPR over time. A ring marks your **peak**, and a hollow dot your **current** rating.
-- The **coloured background** shows the grade bands (Beginner → Elite) at their real grade boundaries.
-- **Bars** underneath show how many ascents you logged that quarter. Click one to open those ascents in the logbook.
-- A **dashed divider** with **⋯** on the time axis marks a gap of more than one quarter.
-- **Show empty quarters** gives every quarter its own column between your first and last logged quarter. Quarters with no ascents stay empty and **break the black line**, so a long layoff no longer reads as steady progress. The chart scrolls sideways when the extra columns need more room. Leave it unticked to keep the compact view, where only quarters with ascents get a column.
+- Chaque **colonne** représente un trimestre.
+- Les **bougies** indiquent la plage de cotations grimpées pour chaque type de croix au cours de ce trimestre. Comme sur theCrag, la croix la plus pure se place au sommet : à vue en vert, flash en jaune, après travail en rouge, pink point en rose, enchaînement/sans chute en bleu, essais en gris.
+- La **ligne noire** représente l'évolution de votre CPR au fil du temps. Un anneau marque votre **pic**, et un point creux votre indice **actuel**.
+- L'**arrière-plan coloré** indique les tranches de niveau (Débutant → Élite) selon leurs véritables seuils de cotation.
+- Les **barres** en dessous indiquent le nombre d'ascensions enregistrées au cours de ce trimestre. Cliquez sur l'une d'elles pour ouvrir ces ascensions dans le carnet de croix.
+- Un **séparateur en pointillés** avec **⋯** sur l'axe temporel signale un intervalle de plus d'un trimestre.
+- L'option **Afficher les trimestres vides** attribue sa propre colonne à chaque trimestre entre votre premier et votre dernier trimestre enregistré. Les trimestres sans ascension restent vides et **interrompent la ligne noire**, de sorte qu'une longue pause n'apparaît plus comme une progression régulière. Le graphique défile horizontalement lorsque les colonnes supplémentaires nécessitent plus d'espace. Laissez cette case décochée pour conserver la vue compacte, où seuls les trimestres contenant des ascensions ont une colonne.
 
-theCrag notes that a **grey top** above the line (failed attempts at a higher grade) often comes just before a jump up a grade.
+theCrag souligne qu'un **sommet gris** au-dessus de la ligne (des tentatives échouées dans une cotation supérieure) précède souvent un passage à la cotation suivante.
 
 ## Sources
 
-- theCrag: [Climber Performance Rating (CPR)](https://www.thecrag.com/en/article/cpr)
-- theCrag: [CPR timeline explained](https://www.thecrag.com/en/article/cprtimeline)
+- theCrag : [Climber Performance Rating (CPR)](https://www.thecrag.com/en/article/cpr)
+- theCrag : [Explication de la chronologie du CPR](https://www.thecrag.com/en/article/cprtimeline)

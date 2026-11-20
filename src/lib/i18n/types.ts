@@ -7,13 +7,17 @@ export type SupportedLocale = (typeof SUPPORTED_LOCALES)[number];
  * A locale is *supported* once its catalogue exists and is validated by `i18n.test.ts`; it is
  * *enabled* once that catalogue is translated well enough to ship. Catalogues for the rest stay
  * compiled (and stay validated against English for orphan keys), and Crowdin keeps translating
- * them, so enabling one later is this list plus the Settings picker — not an extraction pass.
+ * them, so enabling one later only requires updating this list.
  *
- * Right now only German is enabled: the AI pre-translate allowance is spent on one language at a
- * time so each gets the strongest model, and a language is switched on once it is translated (see
- * "Adding a locale" in docs/dev/TRANSLATIONS.md).
+ * English, German, French, and Spanish are enabled. Missing translations fall back to English
+ * while Crowdin completes the remaining French copy (see docs/dev/TRANSLATIONS.md).
  */
-export const ENABLED_LOCALES = ['en', 'de'] as const satisfies readonly SupportedLocale[];
+export const ENABLED_LOCALES = [
+	'en',
+	'de',
+	'fr',
+	'es'
+] as const satisfies readonly SupportedLocale[];
 export type EnabledLocale = (typeof ENABLED_LOCALES)[number];
 
 export const DEFAULT_LOCALE: SupportedLocale = 'en';
@@ -128,8 +132,8 @@ export type ResolveLocaleInput = {
  * 5. DISPLAY_LOCALE environment variable (fallback if browser language is unsupported)
  * 6. DEFAULT_LOCALE ('en')
  *
- * Only `ENABLED_LOCALES` are ever returned: a stale `cs_locale=fr` cookie, an old
- * `app_settings.locale` row, or a French browser header all fall through to the next source rather
+ * Only `ENABLED_LOCALES` are ever returned: a stale `cs_locale=it` cookie, an old
+ * `app_settings.locale` row, or an Italian browser header all fall through to the next source rather
  * than serving a catalogue that is still being translated.
  */
 export function resolveLocale(input: ResolveLocaleInput): SupportedLocale {
