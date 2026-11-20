@@ -1,25 +1,25 @@
-# Partners
+# Partenaires
 
-The **Partners** page (and the dashboard card) ranks people tagged in your logbook’s `with` / partners field. Click a name to open the logbook with an exact partner match.
+La page **Partenaires** (ainsi que la carte du tableau de bord) classe les personnes identifiées dans le champ `with` / partenaires de votre carnet de croix. Cliquez sur un nom pour ouvrir le carnet de croix filtré exactement sur ce partenaire.
 
-## Metrics (`/partners`)
+## Indicateurs (`/partners`)
 
-Use the top-right toggle:
+Utilisez le sélecteur en haut à droite :
 
-- **Ascents** (default) — every logged ascent that names that partner
-- **Sessions** — unique calendar days with at least one shared ascent (same “session = day” idea as [Sessions per week](/docs/sessions-per-week); invalid placeholders like `2018-00-00` are skipped, as on Weekday)
-- **Areas** — distinct crags climbed with that partner, using cached provider area IDs when available. Renames keep one identity and equally named crags with different IDs stay separate. Without an ID, names are matched case-insensitively; blank and “Unknown” names are skipped. A name-only row joins a known ID only when that name maps to exactly one ID
+- **Ascensions** (par défaut) — chaque ascension enregistrée mentionnant ce partenaire
+- **Séances** — jours calendaires distincts avec au moins une ascension partagée (même principe de « séance = jour » que dans [Séances par semaine](/docs/sessions-per-week) ; les valeurs génériques non valides comme `2018-00-00` sont ignorées, comme pour Jour de la semaine)
+- **Falaises** — différentes falaises grimpées avec ce partenaire, en utilisant les identifiants de falaise mis en cache par le fournisseur lorsqu'ils sont disponibles. Les renommages conservent une identité unique et les falaises portant le même nom mais ayant des identifiants différents restent distinctes. Sans identifiant, la correspondance des noms ne tient pas compte de la casse ; les noms vides et « Inconnu » sont ignorés. Une ligne comportant uniquement un nom n’est associée à un identifiant connu que si ce nom correspond exactement à un seul identifiant
 
-Your choice is stored in the browser (`cs_partners_metric`).
+Votre choix est enregistré dans le navigateur (`cs_partners_metric`).
 
-## Notes
+## Remarques
 
-- Handles are normalised (leading `@` stripped); the same person under different casing shares one bar.
-- Multi-pitch days with many ticks inflate **Ascents** more than **Sessions**.
-- Someone you only climb with at one crag ranks lower under **Areas** than a travelling partner with fewer ticks.
+- Les pseudonymes sont normalisés (le `@` initial est retiré) ; la même personne écrite avec une casse différente partage la même barre.
+- Les journées en grande voie avec de nombreuses croix gonflent davantage le nombre d'**Ascensions** que celui des **Séances**.
+- Une personne avec qui vous ne grimpez que sur une seule falaise sera moins bien classée sous **Falaises** qu'un partenaire de voyage ayant moins de croix.
 
-The dashboard preview and full page use the same logged ascents, including legacy ascents whose route record is unavailable. Missing route details do not erase partner ascents or valid session days; they contribute no area without a known venue. Other route-based dashboard analytics still require a route record.
+L'aperçu du tableau de bord et la page complète utilisent les mêmes ascensions enregistrées, y compris les anciennes ascensions dont la fiche de voie n'est plus disponible. L'absence de détails sur la voie ne supprime pas les ascensions avec un partenaire ni les jours de séance valides ; elles ne contribuent simplement à aucune falaise sans site connu. Les autres analyses du tableau de bord basées sur les voies nécessitent toujours une fiche de voie.
 
-The dashboard card shares your selected metric with this page and shows the top seven partners for that metric. Click its Partners title to see the full list.
+La carte du tableau de bord partage l'indicateur sélectionné avec cette page et affiche les sept principaux partenaires pour cet indicateur. Cliquez sur le titre Partenaires pour afficher la liste complète.
 
-Badges, hardest sends, notable ascents, recent activities and climb-specific grade/FA milestones also show recorded companions. Attribution follows the selected ascent, not every repeat of the route. Route-level development/community cards and aggregate milestones do not infer companions. Names are deduplicated ignoring case; missing names are omitted, never treated as proof of solo climbing.
+Les badges, les croix les plus dures, les ascensions marquantes, les activités récentes ainsi que les étapes de cotation/première ascension spécifiques à une voie affichent également les compagnons enregistrés. L'attribution est liée à l'ascension sélectionnée, et non à chaque répétition de la voie. Les cartes communautaires/d'équipement au niveau de la voie et les jalons cumulés ne déduisent pas automatiquement les compagnons de cordée. Les doublons de noms sont fusionnés sans tenir compte de la casse ; les noms manquants sont ignorés et ne sont jamais considérés comme une preuve d'escalade en solo.

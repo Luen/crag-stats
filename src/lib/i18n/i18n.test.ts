@@ -111,32 +111,41 @@ describe('i18n locales and types', () => {
 	});
 
 	it('enables a subset of the supported locales while the rest are still translating', () => {
-		// A catalogue can exist and be validated without being offered: Half-translated copy reads
-		// worse than English, so languages ship one at a time (docs/dev/TRANSLATIONS.md).
-		expect(ENABLED_LOCALES).toEqual(['en', 'de']);
+		// Italian remains compiled and validated without being offered yet.
+		expect(ENABLED_LOCALES).toEqual(['en', 'de', 'fr', 'es']);
 		for (const locale of ENABLED_LOCALES) {
 			expect(SUPPORTED_LOCALES).toContain(locale);
 			expect(isEnabledLocale(locale)).toBe(true);
 			expect(isSupportedLocale(locale)).toBe(true);
 		}
-		expect(isEnabledLocale('fr')).toBe(false);
-		expect(isSupportedLocale('fr')).toBe(true);
+		expect(isEnabledLocale('it')).toBe(false);
+		expect(isSupportedLocale('it')).toBe(true);
 		expect(isEnabledLocale(null)).toBe(false);
 	});
 
 	it('never resolves to a locale that is not enabled', () => {
-		// A stale cs_locale=fr cookie, an old app_settings row, or a French browser header all
+		// A stale cs_locale=it cookie, an old app_settings row, or an Italian browser header all
 		// fall through to the next source instead of serving a half-translated catalogue.
-		expect(resolveLocale({ query: 'fr' })).toBe('en');
-		expect(resolveLocale({ cookie: 'es' })).toBe('en');
+		expect(resolveLocale({ query: 'it' })).toBe('en');
+		expect(resolveLocale({ cookie: 'it' })).toBe('en');
 		expect(resolveLocale({ stored: 'it' })).toBe('en');
-		expect(resolveLocale({ acceptLanguage: 'fr-FR,fr;q=0.9' })).toBe('en');
-		expect(resolveLocale({ displayLocale: 'es-AR' })).toBe('en');
+		expect(resolveLocale({ acceptLanguage: 'it-IT,it;q=0.9' })).toBe('en');
+		expect(resolveLocale({ displayLocale: 'it-IT' })).toBe('en');
 		// An enabled locale still wins, and a disabled query does not shadow a lower-priority one.
 		expect(resolveLocale({ query: 'de' })).toBe('de');
-		expect(resolveLocale({ query: 'fr', stored: 'de' })).toBe('de');
-		expect(resolveLocale({ acceptLanguage: 'fr;q=0.9, de;q=0.8' })).toBe('de');
+		expect(resolveLocale({ query: 'it', stored: 'de' })).toBe('de');
+		expect(resolveLocale({ acceptLanguage: 'it;q=0.9, de;q=0.8' })).toBe('de');
 	});
+
+	it.each(['fr', 'es'] as const)(
+		'resolves %s through every language preference source',
+		(locale) => {
+			for (const source of ['query', 'cookie', 'stored', 'acceptLanguage', 'displayLocale']) {
+				expect(resolveLocale({ [source]: locale })).toBe(locale);
+			}
+			expect(resolveLocale({ acceptLanguage: `${locale}-CA,en;q=0.8` })).toBe(locale);
+		}
+	);
 
 	it('validates supported locales with isSupportedLocale', () => {
 		expect(isSupportedLocale('en')).toBe(true);

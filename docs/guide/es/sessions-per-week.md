@@ -1,15 +1,15 @@
-# Sessions per week
+# Sesiones por semana
 
-The **Sessions per week** card counts how many climbing **sessions** you logged each week in a chosen year.
+La tarjeta **Sesiones por semana** cuenta cuántas **sesiones** de escalada registraste cada semana en un año seleccionado.
 
-## What is a session?
+## ¿Qué es una sesión?
 
-A session is a **calendar day** with at least one ascent in your logbook — the same idea as “sessions” on project cards. Two ticks on the same day still count as one session. Days with no logs are empty bars.
+Una sesión es un **día de calendario** con al menos una ascensión en tu libro de vías; la misma idea que las «sesiones» en las tarjetas de proyectos. Dos encadenes el mismo día siguen contando como una sola sesión. Los días sin registros se muestran como barras vacías.
 
-## Average
+## Promedio
 
-**Average sessions / week** is the year’s total sessions divided by the number of weeks shown for that year (about 52–53 ISO weeks that overlap the calendar year). Quiet winters pull the average down; a dense trip block pulls it up.
+**Promedio de sesiones / semana** es el total de sesiones del año dividido entre el número de semanas mostradas para ese año (aproximadamente 52-53 semanas ISO que se solapan con el año natural). Los inviernos tranquilos bajan el promedio; un bloque concentrado de viajes lo sube.
 
-Weeks use a Monday start (UTC date of the ascent). Tap a bar to open the logbook for that week.
+Las semanas comienzan el lunes (fecha UTC de la ascensión). Toca una barra para abrir el libro de vías de esa semana.
 
-Session analytics share strict UTC calendar-day validation: placeholders (`2018-00-00`), impossible dates (`2024-02-31`), and missing dates do not count as sessions. Leap days are accepted only in leap years. Repeated ticks or timestamps on the same written date still count once, regardless of browser or server time zone. This policy is shared with Partners, Weekday, dashboard active days and weather.
+Las analíticas de sesión comparten una validación estricta de día de calendario UTC: los marcadores de posición (`2018-00-00`), las fechas imposibles (`2024-02-31`) y las fechas que faltan no cuentan como sesiones. Los días bisiestos solo se aceptan en años bisiestos. Los encadenes repetidos o las marcas de tiempo en la misma fecha escrita siguen contando una sola vez, independientemente de la zona horaria del navegador o del servidor. Esta política se comparte con Compañeros, Día de la semana, días activos del panel y tiempo.

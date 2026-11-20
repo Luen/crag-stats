@@ -1,23 +1,23 @@
-# Climber profile
+# Profil du grimpeur
 
-The **Climber profile** radar compares how you have been climbing over the **last 30 days** (inner series) with the **last 90 days** (outer series). Each axis is scored 0–100 from your local logbook — not a theCrag leaderboard score.
+Le radar **Profil du grimpeur** compare votre activité d'escalade sur les **30 derniers jours** (série intérieure) avec celle des **90 derniers jours** (série extérieure). Chaque axe est noté de 0 à 100 à partir de votre carnet de croix local — il ne s'agit pas d'un score de classement theCrag.
 
 ## Axes
 
-| Axis              | What it rewards                                                                 |
-| ----------------- | ------------------------------------------------------------------------------- |
-| **Volume**        | How many ascents you logged relative to the window length.                      |
-| **Style variety** | How many distinct climb styles appear (sport, trad, boulder, …).                |
-| **Density**       | How many distinct active days you climbed, relative to the window.              |
-| **Height**        | Metres climbed (ascent or route height) relative to the window.                 |
-| **Intensity**     | Average and peak effective grades in the window (harder ticks push this up).    |
-| **Consistency**   | Mix of send rate and onsight/flash share — finishing climbs and first-go ticks. |
+| Axe                    | Ce qu'il valorise                                                                                                   |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| **Volume**             | Le nombre d'ascensions enregistrées par rapport à la durée de la période.                                           |
+| **Variété des styles** | Le nombre de styles d'escalade distincts qui apparaissent (sportive, trad, bloc, …).                                |
+| **Densité**            | Le nombre de jours distincts où vous avez grimpé, par rapport à la période.                                         |
+| **Hauteur**            | Les mètres grimpés (hauteur de l'ascension ou de la voie) par rapport à la période.                                 |
+| **Intensité**          | Les cotations effectives moyenne et maximale sur la période (les croix plus dures font monter ce score).            |
+| **Régularité**         | Combinaison du taux de réussite et de la part d'à vue/flash — enchaîner les ascensions et réussir au premier essai. |
 
-Scores are capped at 100. Quiet periods pull axes in; a busy trip or projecting block pushes them out. Treat the shape as a nudge, not a diagnosis.
+Les scores sont plafonnés à 100. Les périodes calmes ramènent les axes vers le centre ; un trip chargé ou une phase de travail de projets les pousse vers l'extérieur. Voyez la forme du graphique comme une indication, pas comme un diagnostic.
 
-## Reading 30 vs 90
+## Lire 30 vs 90
 
-- **Last 90 days** (teal fill) is your recent baseline.
-- **Last 30 days** (blue outline) shows whether the latest month is above or below that baseline on each axis.
+- **90 derniers jours** (remplissage bleu-vert) correspond à votre référence récente.
+- **30 derniers jours** (contour bleu) indique si le dernier mois se situe au-dessus ou en dessous de cette référence sur chaque axe.
 
-If either polygon is empty, you do not have enough dated ascents in that window yet.
+Si l'un des polygones est vide, c'est que vous n'avez pas encore assez d'ascensions datées sur cette période.

@@ -1,43 +1,43 @@
-# Repeats vs new routes
+# Répétitions vs nouvelles voies
 
-The **Repeats vs new routes** card shows how much of your climbing goes to routes you've logged before, compared with routes that are new to you. It sits after **Route popularity** by default (half width), and Customize dashboard can move it.
+La carte **Répétitions vs nouvelles voies** indique la part de votre pratique consacrée aux voies déjà enregistrées dans votre carnet de croix, par rapport aux voies nouvelles pour vous. Elle se place par défaut après **Popularité des voies** (demi-largeur), et vous pouvez la déplacer via Personnaliser le tableau de bord.
 
-## What counts
+## Ce qui est comptabilisé
 
-Every logged ascent counts, sends and attempts alike, as long as it has a valid calendar date and a provider route ID.
+Chaque ascension enregistrée compte, enchaînement comme tentative, dès lors qu'elle dispose d'une date calendaire valide et d'un identifiant de voie du fournisseur.
 
-- A **first visit** is any ascent on the first day you logged that route. An attempt and a send on that same first day are both first visits.
-- A **repeat** is any ascent on a later day on the same route.
+- Une **première visite** correspond à toute ascension effectuée le premier jour où vous avez enregistré cette voie. Une tentative et un enchaînement réalisés ce même premier jour comptent tous deux comme des premières visites.
+- Une **répétition** correspond à toute ascension réalisée un jour ultérieur sur la même voie.
 
-Routes are matched by their theCrag route ID, never by name, so two different routes called "Arete" stay separate. Days are the written climbing dates in your logbook, without any time-zone shift.
+Les voies sont associées via leur identifiant theCrag, jamais par leur nom ; ainsi, deux voies différentes appelées « Arete » restent distinctes. Les jours correspondent aux dates d'escalade saisies dans votre carnet de croix, sans décalage de fuseau horaire.
 
-## Filters
+## Filtres
 
-- **All time** or **Last 12 months**. The short range is the 365 days ending today. Whether an ascent is a repeat always depends on your whole history, so a route you first climbed three years ago counts as a repeat this year.
-- **All**, **Sport**, **Trad**, or **Boulder**. These match the logbook style filters (climbed style **or** route style). Top-rope and other styles appear only under **All**.
+- **Depuis toujours** ou **12 derniers mois**. La période courte correspond aux 365 jours se terminant aujourd'hui. Le caractère répétitif d'une ascension dépend toujours de l'ensemble de votre historique : une voie gravie pour la première fois il y a trois ans compte donc comme une répétition cette année.
+- **Tout**, **Sport**, **Trad** ou **Bloc**. Ils correspondent aux filtres de style du carnet de croix (style grimpé **ou** style de la voie). La moulinette et les autres styles n'apparaissent que sous **Tout**.
 
-Your choices are saved in this browser (`cs_repeats_range`, `cs_repeats_style`).
+Vos choix sont enregistrés dans ce navigateur (`cs_repeats_range`, `cs_repeats_style`).
 
-## Labels
+## Étiquettes
 
-Once the current view has at least 20 ascents, the card adds a short, descriptive label:
+Dès que la vue actuelle comporte au moins 20 ascensions, la carte affiche une courte étiquette descriptive :
 
-| Label              | Rule                                     |
-| ------------------ | ---------------------------------------- |
-| **Explorer**       | At least 75% of ascents are first visits |
-| **Repeat climber** | At least 50% of ascents are repeats      |
-| **A bit of both**  | Anything in between                      |
+| Étiquette                  | Règle                                                   |
+| -------------------------- | ------------------------------------------------------- |
+| **Explorateur**            | Au moins 75 % des ascensions sont des premières visites |
+| **Adepte des répétitions** | Au moins 50 % des ascensions sont des répétitions       |
+| **Un peu des deux**        | Tout ce qui se situe entre les deux                     |
 
-The thresholds use exact shares; the percentages on the card are rounded. Neither style is better than the other: projecting, training laps, and favourite circuits all show up as repeats.
+Les seuils utilisent les proportions exactes ; les pourcentages affichés sur la carte sont arrondis. Aucun profil n'est meilleur qu'un autre : le travail d'un projet, les longueurs d'entraînement et les circuits favoris apparaissent tous comme des répétitions.
 
-## Most repeated
+## Les plus répétées
 
-Up to five routes you came back to most in the current view, ranked by the number of different days you climbed them, then by ascents, then by the most recent day. Each one links to its logbook entries.
+Jusqu'à cinq voies sur lesquelles vous êtes le plus revenu dans la vue actuelle, classées par nombre de jours différents où vous les avez grimpées, puis par nombre d'ascensions, puis par date la plus récente. Chacune renvoie vers ses entrées dans le carnet de croix.
 
-## When it shows
+## Quand la carte s'affiche
 
-The card stays hidden until you have at least 20 dated ascents with a route ID.
+La carte reste masquée tant que vous n'avez pas au moins 20 ascensions datées associées à un identifiant de voie.
 
-## Related badges
+## Badges associés
 
-**Explorer**, **Wanderer**, **Route Collector**, **Guidebook Explorer**, **Old Faithful**, and **Home Turf** use the same first-visit and repeat rules. See [Badges](/docs/badges).
+**Explorateur**, **Baroudeur**, **Collectionneur de voies**, **Explorateur de topos**, **Fidèle habitude** et **Terrain connu** utilisent les mêmes règles de première visite et de répétition. Voir [Badges](/docs/badges).

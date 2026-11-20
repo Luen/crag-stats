@@ -1,64 +1,64 @@
-# Projects
+# Proyectos
 
-Crag Stats lists outdoor routes as **open projects** after unsent attempts on **at least two separate climbing days** in the logbook. Multiple tries on one day alone do not create an open project. Open projects disappear after a year without activity.
+Crag Stats muestra las vías en exterior como **proyectos abiertos** tras registrar intentos sin encadenar en **al menos dos días de escalada distintos** en el libro de vías. Varios intentos en un solo día no crean un proyecto abierto. Los proyectos abiertos desaparecen tras un año sin actividad.
 
-A **completed project** is a route sent after work across at least two days, or after **at least two unsuccessful tries on the send day** (three or more tries including the send). Attempts can be separate log entries or recorded in the send’s attempt count. Separate entries and the send count are not added together, to avoid counting the same tries twice. First-go sends and one failed try followed by a same-day send are not projects. Only work up to the first send counts; later repeats do not turn an earlier send into a project. Missing or invalid dates do not establish sessions. Completed projects appear on the **Recently sent** shelf for the past six calendar months.
+Un **proyecto completado** es una vía encadenada tras trabajarla en al menos dos días, o después de **al menos dos intentos fallidos en el día del encadene** (tres o más intentos contando el encadene). Los intentos pueden ser entradas independientes en el registro o figurar en el recuento de intentos del encadene. Las entradas independientes y el recuento del encadene no se suman entre sí, para evitar contar dos veces los mismos intentos. Los encadenes al primer intento y un intento fallido seguido de un encadene en el mismo día no se consideran proyectos. Solo cuenta el trabajo previo al primer encadene; las repeticiones posteriores no convierten un encadene anterior en un proyecto. Las fechas ausentes o no válidas no cuentan como sesiones. Los proyectos completados aparecen en la sección **Encadenes recientes** durante los últimos seis meses naturales.
 
-When both an attempt and the first send include timestamps, attempts after that send are excluded from the classification. Date-only entries on the send day are treated as work leading to it because their within-day order is unknown. Multiple sends tied on a date without usable times use their stored ascent order, so a later repeat does not replace the first recorded send. Session totals on cards and the dashboard use the same valid calendar days as the classifier.
+Cuando tanto un intento como el primer encadene incluyen marca de tiempo, los intentos posteriores a ese encadene se excluyen de la clasificación. Las entradas que solo tienen fecha en el día del encadene se tratan como trabajo previo a este, ya que se desconoce su orden dentro del mismo día. Cuando hay varios encadenes en la misma fecha sin horas utilizables, se usa el orden de ascensión guardado, de modo que una repetición posterior no sustituye al primer encadene registrado. Los totales de sesiones en las tarjetas y en el panel principal utilizan los mismos días naturales válidos que el clasificador.
 
-**Recently sent** covers the past six calendar months in UTC, including the boundary day for date-only sends. At month ends the boundary clamps to the last valid day (31 October looks back to 30 April). Future dates are excluded. Timestamp sends preserve the reference clock at the boundary. The dashboard uses the same window when filling spare project slots with recent sends.
+**Encadenes recientes** abarca los últimos seis meses naturales en UTC, incluido el día límite para los encadenes que solo tienen fecha. A fin de mes, el límite se ajusta al último día válido (el 31 de octubre retrocede hasta el 30 de abril). Se excluyen las fechas futuras. Los encadenes con marca de tiempo conservan el reloj de referencia en el límite. El panel principal usa la misma ventana temporal al rellenar los huecos libres de proyectos con encadenes recientes.
 
-## Choosing your own projects
+## Elegir tus propios proyectos
 
-The owner sees compact project pills beside the FA/FFA controls in the logbook and on project cards/details:
+El propietario ve selectores compactos de proyecto junto a los controles de FA/FFA en el libro de vías y en las tarjetas o detalles del proyecto:
 
-- **Mark project** selects a logged outdoor route even after just one session or a year without activity.
-- **Not a project** / **Unmark project** dismisses it from Projects, the dashboard and the active-project count until the owner marks it again or restores detection.
-- **Use automatic** removes the manual choice and restores the rules above.
+- **Marcar como proyecto** selecciona una vía en exterior registrada incluso tras una sola sesión o un año sin actividad.
+- **No es un proyecto** / **Desmarcar proyecto** la descarta de Proyectos, del panel principal y del recuento de proyectos activos hasta que el propietario la vuelva a marcar o restaure la detección automática.
+- **Usar automático** elimina la elección manual y restablece las reglas anteriores.
 
-Each pill saves directly. Logbook pills keep you on the same filtered page; project-card/detail pills return to the project list. The Project / Not a project tag shows a manual choice without relying on colour.
+Cada selector se guarda directamente. Los selectores del libro de vías te mantienen en la misma página filtrada; los de las tarjetas o detalles del proyecto vuelven a la lista de proyectos. La etiqueta Proyecto / No es un proyecto muestra una elección manual sin depender del color.
 
-Selections are local metadata and survive syncs, cache rebuilds and even a route being removed upstream and later returning. They do not change theCrag's logbook or its public Project flag. Only a real logged send makes a selected project sent. Selected sends outside the six-month window appear under **Earlier selected sends** instead of Recently sent. Settings → Wipe clears selections. Visitors can read the resulting projects but cannot change the choices. Indoor and unlogged routes cannot be manually included.
+Las selecciones son metadatos locales y se conservan tras sincronizaciones, reconstrucciones de caché e incluso si una vía se elimina en origen y vuelve a aparecer más adelante. No modifican el libro de vías de theCrag ni su indicador público de Proyecto. Solo un encadene real registrado marca como encadenado un proyecto seleccionado. Los encadenes seleccionados fuera de la ventana de seis meses aparecen en **Encadenes seleccionados anteriores** en lugar de Encadenes recientes. Ajustes → Borrar datos elimina las selecciones. Los visitantes pueden ver los proyectos resultantes, pero no pueden cambiar las elecciones. Las vías de interior y las vías sin registrar no se pueden incluir manualmente.
 
-## Project details, progression and estimates
+## Detalles del proyecto, progresión y estimaciones
 
-Click a project name on the Projects page or dashboard to open its detail page. It shows the route, public guidebook excerpts when cached, dated session progression, and previous tries/sends (including climbed pitch labels). The bottom link opens every logbook entry for that exact route, including older repeats. Private ascent notes stay in the logbook under the existing owner-only visibility setting.
+Haz clic en el nombre de un proyecto en la página Proyectos o en el panel principal para abrir su página de detalle. Muestra la vía, extractos públicos de la guía cuando están en caché, la progresión de sesiones por fecha e intentos/encadenes anteriores (incluidas las etiquetas de los largos escalados). El enlace inferior abre todas las entradas del libro de vías para esa vía exacta, incluidas las repeticiones anteriores. Las notas privadas de ascensión permanecen en el libro de vías bajo el ajuste de visibilidad exclusivo para el propietario.
 
-The **approximate readiness** bar follows the goals readiness approach: it measures supporting evidence, not a percentage of a grade or the probability of sending. Only a logged send on this route completes the bar. Another route at the same grade cannot do that. Earlier sessions use only evidence available by that climbing day, so a later send does not rewrite their readiness.
+La barra de **preparación aproximada** sigue el enfoque de preparación de objetivos: mide la evidencia de respaldo, no el porcentaje de un grado ni la probabilidad de encadenar. Solo un encadene registrado en esta vía completa la barra. Otra vía del mismo grado no puede hacerlo. Las sesiones anteriores utilizan únicamente la evidencia disponible hasta ese día de escalada, por lo que un encadene posterior no reescribe su nivel de preparación.
 
-For each reference day, the model uses the preceding 365 days (including that day) of outdoor sends in the same discipline and grade scale, using effective climbed grades. Supporting pyramid counts use distinct routes; repeats do not fill the pyramid again. The target route is excluded from supporting evidence.
+Para cada día de referencia, el modelo usa los 365 días anteriores (incluido ese día) de encadenes en exterior en la misma disciplina y escala de grados, utilizando los grados efectivos escalados. Los recuentos de la pirámide de respaldo utilizan vías distintas; las repeticiones no vuelven a llenar la pirámide. La vía objetivo se excluye de la evidencia de respaldo.
 
-- Best recent send at/above target: 60 points; one step below: 35; two steps below: 10; otherwise zero.
-- Two distinct routes one step below add up to 20 points, and four two steps below add up to 25 points.
-- Unsuccessful tries on the target add up to 15 points, against a soft target of 15, 35 or 75 tries. The horizon is **Short-term** when the gap to your recent best is at most one step, **Medium** for two, otherwise **Long-haul** (also when no recent send is known).
-- The base model caps at 94%, then gains one point per additional valid climbing day on this route (the first day establishes the baseline), up to 99% until this project has a logged send. Unknown grades have no estimate. V-scale zero/negative grades are supported and never mixed with route grades.
+- Mejor encadene reciente igual o superior al objetivo: 60 puntos; un nivel por debajo: 35; dos niveles por debajo: 10; en caso contrario, cero.
+- Dos vías distintas un nivel por debajo suman hasta 20 puntos, y cuatro dos niveles por debajo suman hasta 25 puntos.
+- Los intentos fallidos en el objetivo suman hasta 15 puntos, frente a una referencia orientativa de 15, 35 o 75 intentos. El horizonte es **A corto plazo** cuando la diferencia respecto a tu mejor marca reciente es de como máximo un nivel, **Medio** para dos y, en caso contrario, **A largo plazo** (también cuando no se conoce ningún encadene reciente).
+- El modelo base tiene un límite del 94 %, y luego suma un punto por cada día de escalada válido adicional en esta vía (el primer día establece la base), hasta el 99 % mientras este proyecto no tenga un encadene registrado. Los grados desconocidos no tienen estimación. Se admiten grados cero y negativos de la escala V y nunca se mezclan con grados de vías.
 
-Practice can raise this bar without proving that a particular move is solved. Grades and logged effort cannot reveal beta, conditions, injuries or confidence, so this is an explainable heuristic, not a scientifically validated model.
+La práctica puede hacer subir esta barra sin demostrar que un paso concreto esté resuelto. Los grados y el esfuerzo registrado no pueden revelar la beta, las condiciones, las lesiones ni la confianza, por lo que se trata de una heurística explicable, no de un modelo validado científicamente.
 
-**Estimated work remaining** compares your history of completed outdoor projects in the same discipline and scale, within one numeric grade step. First-go sends do not enter this cohort; partial-pitch sends below the route grade do not stand in for whole-route sends. For each metric separately, at least three completed projects must have taken more sessions/tries than you have logged so far. The displayed range is the middle half (25th–75th percentile, using enclosing observed ranks) of those totals minus your logged work; remaining tries include the eventual send. When you exceed that history or there are too few comparisons, the estimate is withheld rather than inventing a deadline. Cohorts include all recorded years, while readiness uses recent sends.
+**Trabajo restante estimado** compara tu historial de proyectos en exterior completados en la misma disciplina y escala, dentro de un margen de un paso numérico de grado. Los encadenes al primer intento no entran en esta cohorte; los encadenes de largos parciales por debajo del grado de la vía no sustituyen a los encadenes de la vía completa. Para cada métrica por separado, al menos tres proyectos completados deben haber requerido más sesiones o intentos de los que has registrado hasta ahora. El rango mostrado corresponde a la mitad central (percentil 25–75, utilizando los rangos observados que la enmarcan) de esos totales menos el trabajo que ya has registrado; los intentos restantes incluyen el encadene final. Cuando superas ese historial o hay muy pocas comparaciones, la estimación se omite en lugar de inventar un plazo. Las cohortes incluyen todos los años registrados, mientras que la preparación utiliza los encadenes recientes.
 
-These estimates describe completed projects only: unsent projects and unlogged attempts are absent, and ability changes over time. They are rough personal comparisons, not guaranteed remaining effort. Session totals count valid written calendar days. Missing, invalid and future dates are listed in history but excluded from progression/estimates. Send-entry attempt counts include the successful try and may overlap separate failure entries; summaries use the larger failure total instead of adding both. A later repeat remains visible without changing which send first completed the project.
+Estas estimaciones describen únicamente proyectos completados: faltan los proyectos sin encadenar y los intentos no registrados, y la capacidad cambia con el tiempo. Son comparaciones personales aproximadas, no un esfuerzo restante garantizado. Los totales de sesiones cuentan los días naturales válidos anotados. Las fechas ausentes, no válidas y futuras aparecen en el historial, pero se excluyen de la progresión y las estimaciones. El recuento de intentos en la entrada del encadene incluye el intento exitoso y puede solaparse con entradas de intentos fallidos independientes; los resúmenes utilizan el total mayor de fallos en lugar de sumar ambos. Una repetición posterior sigue siendo visible sin cambiar qué encadene completó primero el proyecto.
 
-## New route?
+## ¿Vía nueva?
 
-When a project has **no grade** on theCrag (or is literally graded “Project” / “Proj”), cards show a **New route?** badge — usually a new line you are bolting or still working. The same badge also appears for **wide provisional spans** such as `21-23` or `V1-3`, which often mean the grade is still being dialled in. Adjacent half-grades like `V1/2` stay ordinary published grades and do not get the badge. The grade chip still shows the parsed midpoint when one exists; only the badge changes. A definite theCrag **Project** flag (from route-info import) shows the separate Project badge instead.
+Cuando un proyecto **no tiene grado** en theCrag (o tiene literalmente el grado «Project» / «Proj»), las tarjetas muestran la insignia **¿Vía nueva?** — normalmente una línea nueva que estás equipando o todavía trabajando. La misma insignia también aparece para **horquillas provisionales amplias** como `21-23` o `V1-3`, que suelen indicar que el grado aún se está afinando. Los grados intermedios adyacentes como `V1/2` siguen siendo grados publicados normales y no reciben la insignia. La etiqueta del grado sigue mostrando el punto medio interpretado cuando existe; solo cambia la insignia. Un indicador definitivo de **Proyecto** en theCrag (procedente de la importación de información de vías) muestra en su lugar la insignia independiente de Proyecto.
 
-## Guidebook text on project cards
+## Texto de la guía en las tarjetas de proyecto
 
-When **route data import** has cached public guidebook data for a route, project cards can show:
+Cuando la **importación de datos de vías** ha guardado en caché datos públicos de la guía para una vía, las tarjetas de proyecto pueden mostrar:
 
-- A short **description** excerpt
-- An **access** warning when the guidebook lists access issues (for example closed or tolerated crags)
+- Un breve extracto de la **descripción**
+- Un aviso de **acceso** cuando la guía indica problemas de acceso (por ejemplo, sectores cerrados o tolerados)
 
-That text comes from theCrag’s public route pages (`beta` fields such as Description and Access issues). It is **not** your private logbook notes.
+Ese texto procede de las páginas públicas de vías de theCrag (campos `beta` como Descripción y Problemas de acceso). **No** son tus notas privadas del libro de vías.
 
-### Privacy
+### Privacidad
 
-- **Private ascent notes** (`ascents.comment`) stay separate. They only appear in the logbook when you opt in under Settings, and never on project cards or dashboard stats.
-- **Guidebook beta** is public community content. Crag Stats stores short excerpts in `routes.beta_json` during the same opt-in route import as FA history — never mixed with notes.
+- Las **notas privadas de ascensión** (`ascents.comment`) se mantienen separadas. Solo aparecen en el libro de vías si lo activas en Ajustes, y nunca en las tarjetas de proyecto ni en las estadísticas del panel principal.
+- La **beta de la guía** es contenido público de la comunidad. Crag Stats guarda extractos breves en `routes.beta_json` durante la misma importación opcional de vías que el historial de FA — nunca mezclados con tus notas.
 
-### Licensing & attribution
+### Licencia y atribución
 
-theCrag guidebook content may be licensed under terms such as [Creative Commons BY-SA](https://creativecommons.org/licenses/by-sa/4.0/). Route pages often credit contributors (for example local clubs). Crag Stats shows **short excerpts** only, links back to the **route page on theCrag**, and labels the source (CC BY-SA). For the full description, ethics, approach and current access status, use the link on the card.
+theCrag cuenta con contenido de guías que puede estar licenciado bajo términos como [Creative Commons BY-SA](https://creativecommons.org/licenses/by-sa/4.0/). Las páginas de vías suelen acreditar a los colaboradores (por ejemplo, clubes locales). Crag Stats muestra únicamente **extractos breves**, enlaza de vuelta a la **página de la vía en theCrag** e indica la fuente (CC BY-SA). Para ver la descripción completa, la ética, la aproximación y el estado actual del acceso, utiliza el enlace de la tarjeta.
 
-Route import is **off by default** (`ROUTE_DATA_IMPORT`). Set `ROUTE_DATA_IMPORT=true` on the server and restart if you want guidebook excerpts and automatic FA hints; see [First ascents](/docs/first-ascents) for the privacy and pacing limits.
+La importación de vías está **desactivada por defecto** (`ROUTE_DATA_IMPORT`). Configura `ROUTE_DATA_IMPORT=true` en el servidor y reinicia si quieres obtener extractos de la guía y sugerencias automáticas de FA; consulta [Primeras ascensiones](/docs/first-ascents) para conocer los límites de privacidad y frecuencia.

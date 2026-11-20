@@ -1,19 +1,19 @@
-# Ascent calendar
+# Calendario de ascensiones
 
-The **Ascent calendar** is a year-long heatmap of days you logged climbs. Cells link to `/logbook?day=` for that date.
+El **Calendario de ascensiones** es un mapa de calor anual de los días en los que registraste escaladas. Las celdas enlazan a `/logbook?day=` para esa fecha.
 
-## Intensity
+## Intensidad
 
-Colours scale with how many ascents you logged that day (empty → few → many), using the same green heat ramp. Attempts count toward intensity; the tooltip still separates send count.
+Los colores varían según cuántas ascensiones registraste ese día (vacío → pocas → muchas), utilizando la misma escala de calor verde. Los intentos cuentan para la intensidad; la descripción emergente sigue separando el recuento de encadenes.
 
-## Grade
+## Grado
 
-Each day is coloured by the **hardest successful send** that day, using the same Beginner → Elite band palette as grade chips elsewhere. Days with only attempts (no send) use a muted “attempt” fill. When one day mixes boulder and route grades, the calendar picks the higher band id — bands are not perfectly comparable across systems.
+Cada día se colorea según el **encadene exitoso más duro** de ese día, utilizando la misma paleta de rangos de Principiante → Élite que las etiquetas de grado en otras partes. Los días en los que solo hay intentos (sin encadene) utilizan un relleno atenuado de «intento». Cuando en un mismo día se mezclan grados de bloque y de vía, el calendario elige el id de rango más alto; los rangos no son perfectamente comparables entre distintos sistemas.
 
-Your Intensity / Grade preference is stored in the browser (`cs_heatmap_mode`).
+Tu preferencia de Intensidad / Grado se guarda en el navegador (`cs_heatmap_mode`).
 
-## Weather
+## Tiempo
 
-When the opt-in [weather cache](/docs/weather) has any of your climbing days, a third **Weather** mode appears. Each climbed day is coloured by the conditions at its first outdoor ascent with cached weather: snow, rain, hot (35°C+), freezing, fair (15–25°C and dry) or mild, using the same rules as the badges. Days with no cached weather (gym, no coordinates, not fetched yet) stay a muted grey. Tooltips list the high, low and rain, and a **View weather values** table under the calendar gives the same numbers as text for the selected year.
+Cuando la [caché meteorológica](/docs/weather) opcional contiene alguno de tus días de escalada, aparece un tercer modo: **Tiempo**. Cada día escalado se colorea según las condiciones de su primera ascensión en exterior con datos meteorológicos en caché: nieve, lluvia, calor (35 °C+), helada, buen tiempo (15–25 °C y seco) o templado, siguiendo las mismas reglas que las insignias. Los días sin datos meteorológicos en caché (rocódromo, sin coordenadas, aún no obtenidos) permanecen en un gris atenuado. Las descripciones emergentes muestran la máxima, la mínima y la lluvia, y una tabla de **Ver valores meteorológicos** debajo del calendario ofrece los mismos números en formato de texto para el año seleccionado.
 
-Calendar cells keep the logged calendar date in every browser time zone, including across daylight-saving changes. They do not convert climb days into local timestamps.
+Las celdas del calendario conservan la fecha registrada en el calendario en cualquier zona horaria del navegador, incluso a través de los cambios de horario de verano. No convierten los días de escalada en marcas de tiempo locales.

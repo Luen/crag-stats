@@ -72,12 +72,12 @@ test.describe('app shell', () => {
 		await trigger.click();
 		const menu = page.getByRole('menu');
 		await expect(menu).toBeVisible();
-		// Every enabled locale is one interaction away (#494). Only German ships while the other
-		// catalogues are still being translated, so a catalogue that exists but is not enabled
-		// must not appear here.
-		await expect(menu.getByRole('menuitemradio')).toHaveCount(2);
+		// Every enabled locale is one interaction away (#494); Italian remains disabled.
+		await expect(menu.getByRole('menuitemradio')).toHaveCount(4);
 		await expect(menu.getByRole('menuitemradio', { name: 'Deutsch', exact: true })).toBeVisible();
-		await expect(menu.getByRole('menuitemradio', { name: 'Français', exact: true })).toHaveCount(0);
+		await expect(menu.getByRole('menuitemradio', { name: 'Français', exact: true })).toBeVisible();
+		await expect(menu.getByRole('menuitemradio', { name: 'Español', exact: true })).toBeVisible();
+		await expect(menu.getByRole('menuitemradio', { name: 'Italiano', exact: true })).toHaveCount(0);
 		await expect(menu.getByRole('menuitemradio', { name: 'English', exact: true })).toHaveAttribute(
 			'aria-checked',
 			'true'
@@ -107,11 +107,20 @@ test.describe('app shell', () => {
 		await expect(page.locator('html')).toHaveAttribute('lang', 'de');
 		await expect(page.locator('#side-nav').getByRole('link', { name: 'Übersicht' })).toBeVisible();
 
-		// Reset to English via ?locale=en, then confirm a disabled catalogue is not reachable by
-		// link: ?locale=fr keeps English rather than serving a half-translated catalogue.
+		for (const locale of ['fr', 'es']) {
+			await page.goto(`/?locale=${locale}`);
+			await expect(page.locator('html')).toHaveAttribute('lang', locale);
+			await page.reload();
+			await expect(page.locator('html')).toHaveAttribute('lang', locale);
+			await page.goto('/settings');
+			await expect(page.locator('select[name="locale"] option[value="fr"]')).toHaveCount(1);
+			await expect(page.locator('select[name="locale"] option[value="es"]')).toHaveCount(1);
+		}
+
+		// Reset to English, then confirm Italian remains unavailable.
 		await page.goto('/?locale=en');
 		await expect(page.locator('html')).toHaveAttribute('lang', 'en');
-		await page.goto('/?locale=fr');
+		await page.goto('/?locale=it');
 		await expect(page.locator('html')).toHaveAttribute('lang', 'en');
 		await expect(page.locator('#side-nav').getByRole('link', { name: 'Dashboard' })).toBeVisible();
 

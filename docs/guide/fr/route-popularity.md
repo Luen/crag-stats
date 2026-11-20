@@ -1,29 +1,29 @@
-# Route popularity
+# Popularité des voies
 
-The **Route popularity** card uses community stats theCrag caches on each route: **ascent count**, **popularity**, and **relative popularity** (0–100). Crag Stats stores these when route data import runs (`ROUTE_DATA_IMPORT=true` on the server, then restart and sync).
+La carte **Popularité des voies** utilise les statistiques communautaires mises en cache par theCrag pour chaque voie : **nombre d'ascensions**, **popularité** et **popularité relative** (0–100). Crag Stats les enregistre lorsque l'importation des données de voies s'exécute (`ROUTE_DATA_IMPORT=true` sur le serveur, puis redémarrez et synchronisez).
 
-## Beaten track vs off the beaten track
+## Sentiers battus vs hors des sentiers battus
 
-For each ascent where popularity data exists, we compare **relative popularity** when present, otherwise **global popularity**:
+Pour chaque ascension disposant de données de popularité, nous comparons la **popularité relative** lorsqu'elle est présente, sinon la **popularité globale** :
 
-| Bucket                   | Rule          |
-| ------------------------ | ------------- |
-| **Beaten track**         | Score ≥ 50    |
-| **Off the beaten track** | Score &lt; 50 |
+| Catégorie                    | Règle         |
+| ---------------------------- | ------------- |
+| **Sentiers battus**          | Score ≥ 50    |
+| **Hors des sentiers battus** | Score &lt; 50 |
 
-The card shows what **share of those ticks** fall in each bucket. Ascents on routes without cached stats are excluded from the percentages.
+La carte indique la **part de ces croix** qui correspond à chaque catégorie. Les ascensions sur des voies sans statistiques en cache sont exclues des pourcentages.
 
-## Hidden gems
+## Pépites cachées
 
-**Hidden gems** are **sends** on routes that are both well regarded (`qualityScore` ≥ 70, or at least ★★★, or a strong quality label on your tick) and quiet (community **ascent count** ≤ 100 and popularity score &lt; 50). Up to three distinct routes are listed, ranked by quality.
+Les **pépites cachées** sont des **enchaînements** sur des voies à la fois très appréciées (`qualityScore` ≥ 70, au moins ★★★ ou une mention de grande qualité sur votre croix) et peu fréquentées (**nombre d'ascensions** communautaire ≤ 100 et score de popularité &lt; 50). Jusqu'à trois voies distinctes sont affichées, classées par qualité.
 
-## Logbook
+## Carnet de croix
 
-Sort by **Pop.** to order ticks by route popularity (highest first by default). Rows without cached stats sort to the bottom.
+Triez par **Pop.** pour ordonner vos croix selon la popularité des voies (la plus élevée d'abord par défaut). Les lignes sans statistiques en cache sont reléguées en bas de liste.
 
 ## Source
 
-Numbers come from theCrag’s route API (`show=info`). They reflect the whole community, not just your logbook.
+Les chiffres proviennent de l'API des voies de theCrag (`show=info`). They reflect the whole community, not just your logbook.
 
 Popularity uses relative popularity when available, then global popularity. Community ascent counts are shown separately and never compared numerically with popularity scores.
 

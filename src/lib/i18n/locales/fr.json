@@ -403,8 +403,8 @@
 			"empty": "Pas encore assez de données pour une chronologie du CPR.",
 			"footnoteApi": "Courbe issue de l'API theCrag (CPR régressif) ; les chandeliers montrent vos ascensions.",
 			"footnoteApprox": "CPR approximatif : facteur de puissance 5, décalages d'ascension, baisse de ~0,7 cotation/an.",
-			"footnoteGaps": "",
-			"gapsToggle": "",
+			"footnoteGaps": "Les trimestres vides sans ascension interrompent la courbe.",
+			"gapsToggle": "Afficher les trimestres vides",
 			"howCprWorks": "Comment fonctionne le CPR",
 			"labelCurrent": "Actuel",
 			"labelPeak": "Sommet",
@@ -417,7 +417,7 @@
 			"titleCandle": "{family} {min}–{max} ({count})",
 			"titleCprGrade": "CPR ≈ {grade}",
 			"titleGapInTime": "Écart temporel",
-			"titleNoAscents": "",
+			"titleNoAscents": "{label} : aucune ascension enregistrée",
 			"titleSourceApi": "Courbe CPR issue de l'API theCrag",
 			"titleSourceApprox": "Modèle CPR approximatif (voir la doc)",
 			"titleVolumeLink": "{label} : {count, plural, one {# ascension} other {# ascensions}} — ouvrir le carnet de croix"
@@ -492,11 +492,11 @@
 		"docBlock": {
 			"ariaBoulderGradeConversions": "Conversions de cotations de bloc",
 			"ariaRouteGradeConversions": "Conversions de cotations de voie",
-			"bandText1": "",
-			"bandText2": "",
-			"bandText3": "",
-			"bandText4": "",
-			"bandText5": "",
+			"bandText1": "Vos premiers jours d'escalade, souvent en second ou en moulinette. Beaucoup y arrivent dès le premier jour, même si certaines voies à ce niveau restent sérieuses.",
+			"bandText2": "Typique des grimpeurs dans leur première année. La plupart de l'escalade en extérieur se situe dans cette tranche, et beaucoup de grimpeurs expérimentés y reviennent pour le plaisir.",
+			"bandText3": "Accessible après deux ans de pratique régulière ; les grimpeurs occasionnels deviennent rares à ce niveau.",
+			"bandText4": "Exige un entraînement ciblé et structuré ; relativement peu de grimpeurs atteignent ce niveau.",
+			"bandText5": "Niveau professionnel : les meilleurs grimpeurs au monde.",
 			"thBand": "Tranche",
 			"thBoulders": "Blocs",
 			"thEwbank": "Ewbank",
@@ -506,47 +506,47 @@
 			"thVScale": "Échelle V",
 			"thWhatItMeans": "Signification",
 			"thYds": "YDS",
-			"tickGroupAid": "",
-			"tickGroupAidStyles": "",
-			"tickGroupAttempts": "",
-			"tickGroupAttemptsStyles": "",
-			"tickGroupBouldering": "",
-			"tickGroupBoulderingStyles": "",
-			"tickGroupGeneral": "",
-			"tickGroupGeneralStyles": "",
-			"tickGroupLead": "",
-			"tickGroupLeadStyles": "",
-			"tickGroupTopRope": "",
-			"tickGroupTopRopeStyles": "",
-			"tickMeaningAidSolo": "",
-			"tickMeaningAidTick": "",
-			"tickMeaningAttempt": "",
-			"tickMeaningBoulderDab": "",
-			"tickMeaningBoulderFlash": "",
-			"tickMeaningBoulderOnsight": "",
-			"tickMeaningBoulderRepeat": "",
-			"tickMeaningBoulderSend": "",
-			"tickMeaningFreeSolo": "",
-			"tickMeaningGeneralTick": "",
-			"tickMeaningLeadAllFreeWithRest": "",
-			"tickMeaningLeadFlash": "",
-			"tickMeaningLeadGreenPoint": "",
-			"tickMeaningLeadGroundUpRedPoint": "",
-			"tickMeaningLeadHangDog": "",
-			"tickMeaningLeadOnsight": "",
-			"tickMeaningLeadPinkPoint": "",
-			"tickMeaningLeadRedPoint": "",
-			"tickMeaningLeadSolo": "",
-			"tickMeaningRetreat": "",
-			"tickMeaningTopRopeClean": "",
-			"tickMeaningTopRopeFlash": "",
-			"tickMeaningTopRopeHangDog": "",
-			"tickMeaningTopRopeOnsight": "",
-			"tickMeaningTopRopeRopedSolo": "",
-			"tickMeaningWorking": "",
-			"ariaTable": "",
-			"tickNameGreenPoint": "",
-			"tickNameGroundUpRedPoint": ""
+			"tickGroupAid": "Artif et solo intégral",
+			"tickGroupAidStyles": "Artif, solo intégral",
+			"tickGroupAttempts": "Essais",
+			"tickGroupAttemptsStyles": "Tous les styles",
+			"tickGroupBouldering": "Bloc",
+			"tickGroupBoulderingStyles": "Bloc",
+			"tickGroupGeneral": "Général",
+			"tickGroupGeneralStyles": "La plupart des styles",
+			"tickGroupLead": "En tête",
+			"tickGroupLeadStyles": "Sportive, trad, psicobloc et glace",
+			"tickGroupTopRope": "Moulinette et en second",
+			"tickGroupTopRopeStyles": "Moulinette, en second",
+			"tickMeaningAidSolo": "Voie gravie en artif en solitaire.",
+			"tickMeaningAidTick": "Voie gravie en artif avec des points fixes ou posés.",
+			"tickMeaningAttempt": "Essayée mais non réussie.",
+			"tickMeaningBoulderDab": "Sortie au sommet, mais en touchant le sol ou un pareur en chemin.",
+			"tickMeaningBoulderFlash": "Réussi au premier essai, avec méthode.",
+			"tickMeaningBoulderOnsight": "Réussi au premier essai sans méthode (rare en bloc).",
+			"tickMeaningBoulderRepeat": "Répétition d'un bloc déjà réussi.",
+			"tickMeaningBoulderSend": "Réussi proprement après des essais précédents.",
+			"tickMeaningFreeSolo": "Grimpé sans corde (à vue, flash ou après travail).",
+			"tickMeaningGeneralTick": "Gravi ; utilisé en alpinisme, via ferrata ou quand vous ne savez plus comment.",
+			"tickMeaningLeadAllFreeWithRest": "Gravi en libre mais avec repos ou chute ; accepté uniquement dans certaines régions (ex. Saxe).",
+			"tickMeaningLeadFlash": "Enchaîné en tête au premier essai, mais avec méthode ou repérage.",
+			"tickMeaningLeadGreenPoint": "Voie équipée gravie en tête uniquement sur coinceurs ; compte comme trad.",
+			"tickMeaningLeadGroundUpRedPoint": "Après travail où chaque essai raté a été redescendu avec ravalement de corde, sans travail de pas.",
+			"tickMeaningLeadHangDog": "Arrivé au relais en tête après chute ou repos sur les points.",
+			"tickMeaningLeadOnsight": "Enchaîné en tête au premier essai sans méthode ni repérage préalable.",
+			"tickMeaningLeadPinkPoint": "Après travail avec les coinceurs ou dégaines déjà en place.",
+			"tickMeaningLeadRedPoint": "Enchaîné en tête après des essais précédents (inclut les répétitions).",
+			"tickMeaningLeadSolo": "En tête en solitaire avec un système d'auto-assurage.",
+			"tickMeaningRetreat": "But (trop dur, météo, matériel, blessure…).",
+			"tickMeaningTopRopeClean": "Proprement après des essais précédents (inclut les répétitions).",
+			"tickMeaningTopRopeFlash": "Proprement au premier essai, avec méthode.",
+			"tickMeaningTopRopeHangDog": "Arrivé au relais après chute ou repos sur la corde.",
+			"tickMeaningTopRopeOnsight": "Proprement au premier essai, sans méthode.",
+			"tickMeaningTopRopeRopedSolo": "En moulinette en solitaire sur une corde fixe avec auto-assurage.",
+			"tickMeaningWorking": "Travail de la voie ou du bloc.",
+			"ariaTable": "Tableau",
+			"tickNameGreenPoint": "Point vert",
+			"tickNameGroundUpRedPoint": "Après travail du bas"
 		},
 		"eddington": {
 			"foot": "À l'image du nombre d'Eddington en cyclisme : la plus grande valeur E atteinte E fois.",
@@ -1320,8 +1320,8 @@
 			"titleVolume": "Volume"
 		},
 		"docs": {
-			"pageDescription": "",
-			"pageTitle": ""
+			"pageDescription": "Comment Crag Stats calcule vos statistiques d'escalade.",
+			"pageTitle": "Documentation"
 		},
 		"docsLayout": {
 			"ariaDocs": "Docs",
@@ -1329,120 +1329,120 @@
 		},
 		"docsPages": {
 			"activity": {
-				"summary": "",
-				"title": ""
+				"summary": "Volume mensuel et annuel au-delà des cartes du tableau de bord — tableaux mensuels complets et écarts d'une année sur l'autre.",
+				"title": "Activité"
 			},
 			"ascentCalendar": {
-				"summary": "",
-				"title": ""
+				"summary": "Carte thermique annuelle des jours enregistrés ; Intensité selon le volume, Cotation selon la tranche la plus dure enchaînée ce jour-là.",
+				"title": "Calendrier d'ascensions"
 			},
 			"badges": {
-				"summary": "",
-				"title": ""
+				"summary": "Jalons du carnet de croix et date d'import automatique de vos premiers pas.",
+				"title": "Insignes"
 			},
 			"bestMonths": {
-				"summary": "",
-				"title": ""
+				"summary": "theCrag : la saisonnalité de vos principales falaises, pondérée par vos croix, comparée aux périodes où vous y grimpez.",
+				"title": "Meilleurs mois"
 			},
 			"climberProfile": {
-				"summary": "",
-				"title": ""
+				"summary": "Axes radar pour le volume, la variété, la densité, la hauteur, l'intensité et la régularité sur 30 vs 90 jours.",
+				"title": "Profil du grimpeur"
 			},
 			"climberType": {
-				"summary": "",
-				"title": ""
+				"summary": "Comment le tableau de bord détermine si vous êtes grimpeur de voie sportive, trad, bloc ou falaisiste.",
+				"title": "Type de grimpeur"
 			},
 			"climbingMap": {
-				"summary": "",
-				"title": ""
+				"summary": "Lieux dans le monde, marqueurs lumineux de densité d'ascensions, filtres et couverture géographique.",
+				"title": "Carte d'escalade"
 			},
 			"climbingStory": {
-				"summary": "",
-				"title": ""
+				"summary": "Récit à la première personne tiré de votre carnet de croix : ancienneté, voies ouvertes, falaise locale, partenaires et autres repères marquants.",
+				"title": "Histoire d'escalade"
 			},
 			"cpr": {
-				"summary": "",
-				"title": ""
+				"summary": "theCrag : son indice de performance en escalade, son calcul et la lecture de sa chronologie.",
+				"title": "Indice CPR"
 			},
 			"displaySettings": {
-				"summary": "",
-				"title": ""
+				"summary": "Formats de date, unités fines et seuils métriques qui restent fixes.",
+				"title": "Paramètres d'affichage"
 			},
 			"eddington": {
-				"summary": "",
-				"title": ""
+				"summary": "Le nombre d'Eddington du cyclisme adapté à l'escalade : jours de croix, jours de dénivelé et indices de cotation.",
+				"title": "Nombres d'Eddington"
 			},
 			"firstAscents": {
-				"summary": "",
-				"title": ""
+				"summary": "Suivi de vos FA et FFA, des voies ouvertes et des croix de la communauté sur vos lignes.",
+				"title": "Premières ascensions"
 			},
 			"goals": {
-				"summary": "",
-				"title": ""
+				"summary": "Objectifs annuels de cotation, de hauteur et de jours ; les barres de cotation utilisent la préparation pyramidale plutôt que meilleur÷objectif.",
+				"title": "Objectifs"
 			},
 			"grades": {
-				"summary": "",
-				"title": ""
+				"summary": "Tranches Débutant → Élite, comparaison des systèmes de cotation et tableaux de correspondance.",
+				"title": "Cotations et tranches"
 			},
 			"karma": {
-				"summary": "",
-				"title": ""
+				"summary": "Karma approximatif issu des voies enregistrées ; les points d'édition de topo attendent une API theCrag.",
+				"title": "Points Karma"
 			},
 			"logbookSync": {
-				"summary": "",
-				"title": ""
+				"summary": "Pour le propriétaire du serveur : synchronisation API planifiée avec une clé supporter, ou imports CSV manuels.",
+				"title": "Synchro carnet de croix"
 			},
 			"offline": {
-				"summary": "",
-				"title": ""
+				"summary": "Téléchargez un instantané public en lecture seule des statistiques et du carnet de croix pour ce navigateur.",
+				"title": "Mode hors ligne"
 			},
 			"partners": {
-				"summary": "",
-				"title": ""
+				"summary": "Avec qui vous grimpez — classement par ascensions partagées, séances (jours) ou falaises distinctes.",
+				"title": "Partenaires"
 			},
 			"projects": {
-				"summary": "",
-				"title": ""
+				"summary": "Projets détectés automatiquement, extraits publics de topo sur les cartes et différence avec les notes privées.",
+				"title": "Projets"
 			},
 			"repeats": {
-				"summary": "",
-				"title": ""
+				"summary": "Premières visites contre jours de retour sur la même voie, avec les mentions Explorateur et Répétiteur.",
+				"title": "Répétitions vs nouvelles voies"
 			},
 			"rockTypes": {
-				"summary": "",
-				"title": ""
+				"summary": "Types de roche issus de theCrag, carte de volume, taux d'enchaînement et efforts près de la limite par roche.",
+				"title": "Types de roche"
 			},
 			"routePopularity": {
-				"summary": "",
-				"title": ""
+				"summary": "Croix fréquentées ou calmes selon la popularité theCrag, plus les pépites cachées (haute qualité, faible affluence).",
+				"title": "Popularité des voies"
 			},
 			"sessionsPerWeek": {
-				"summary": "",
-				"title": ""
+				"summary": "Jours d'escalade par semaine ISO et moyenne annuelle de séances.",
+				"title": "Séances par semaine"
 			},
 			"solo": {
-				"summary": "",
-				"title": ""
+				"summary": "Moulinette, en tête, solo intégral et psicobloc en solo, ainsi que les ascensions sans partenaire identifié.",
+				"title": "Escalade en solo"
 			},
 			"tickTypes": {
-				"summary": "",
-				"title": ""
+				"summary": "À vue, flash, après travail, essais et les autres types de croix, et lesquels comptent comme enchaînements.",
+				"title": "Types de croix"
 			},
 			"trainingLoad": {
-				"summary": "",
-				"title": ""
+				"summary": "Le modèle de charge aiguë:chronique pondérée par l'intensité derrière la carte Charge d'entraînement.",
+				"title": "Charge d'entraînement"
 			},
 			"weather": {
-				"summary": "",
-				"title": ""
+				"summary": "Cache optionnel Open-Meteo des jours en extérieur et badges chaleur / gel / pluie / neige / vent (opt-in WEATHER_IMPORT).",
+				"title": "Météo"
 			},
 			"weekday": {
-				"summary": "",
-				"title": ""
+				"summary": "Vos jours d'escalade de la semaine — séances et ascensions lun.–dim., depuis toujours ou sur 12 semaines.",
+				"title": "Jour de semaine"
 			},
 			"yearlyStats": {
-				"summary": "",
-				"title": ""
+				"summary": "Barres annuelles ou totaux cumulés en carrière pour les ascensions, enchaînements et hauteur, avec courbes intra-annuelles en option.",
+				"title": "Stats annuelles"
 			}
 		},
 		"eddington": {
@@ -1946,8 +1946,8 @@
 			"hintColumnProjectsGoals": "Exclure des totaux",
 			"hintCountedTickTypes": "Configurez les types de croix pris en compte dans les totaux du tableau de bord, des pages, des projets et des objectifs. Le carnet de croix liste toujours chaque ascension enregistrée.",
 			"hintCsvImport": "Pour toute personne sans accès à l'API supporter. Exportez depuis theCrag : {action}, puis téléversez le fichier ici dès que vous souhaitez actualiser. L'import CSV met à jour/insère les lignes mais ne supprime **pas** les entrées manquantes. La synchronisation API gère les suppressions. {syncOptions}",
-			"hintCsvLogbook": "",
-			"hintCsvOnlyRouteData": "",
+			"hintCsvLogbook": "Les imports CSV sont la source de votre carnet de croix car {token} est défini ; aucune synchronisation API n'est exécutée et les ascensions importées ne sont jamais supprimées. Utilisez **Import CSV** ci-dessus dès que vous souhaitez actualiser.",
+			"hintCsvOnlyRouteData": "{key} reste utilisé pour les données de voies et la recherche de secteurs. Le carnet de croix du titulaire de la clé n'est jamais synchronisé par-dessus vos imports.",
 			"hintDateFormat": "Contrôle le format des dates dans le carnet de croix, les cartes thermiques et les graphiques.",
 			"hintDatesAreDisplayOnly": "Les dates et les mesures sont uniquement destinées à l'affichage : les données stockées, les seuils de badges et les filtres restent en système métrique.",
 			"hintDistance": "Distance verticale cumulée grimpée.",
@@ -1969,11 +1969,11 @@
 			"hintRouteDataDisabled": "Désactivé. Pour l'activer, définissez {import} dans {env} et redémarrez. theCrag bloque les requêtes serveur simples vers son API de voies, donc cela utilise l'usurpation de navigateur ({impers}). C'est à vos risques et périls selon les conditions de theCrag ; les marquages FA manuels fonctionnent toujours. Renommé depuis {oldImport}, qui n'a plus aucun effet.",
 			"hintRouteDataFetchOnce": "Chaque voie est vérifiée une fois, sauf si vous demandez un rafraîchissement.",
 			"hintRouteDataIntro": "Met en cache les détails des voies de votre carnet de croix depuis theCrag (popularité, nombre d'ascensions, qualité, saisonnalité, méthode, localisation, longueurs et fanions) ainsi que leur historique public. Les entrées FA / FFA mentionnant votre {login} sont marquées comme vôtres.",
-			"hintRouteDataNeedsKey": "",
-			"hintRouteDataNeedsOwnerLogin": "",
+			"hintRouteDataNeedsKey": "Nécessite {key}.",
+			"hintRouteDataNeedsOwnerLogin": "Les imports CSV ne contiennent pas votre {login}, définissez donc {ownerLogin} avec votre nom d'utilisateur theCrag. Sans cela, les crédits de FA / FFA ne sont jamais associés.",
 			"hintRouteDataRefresh": "Rechargez cette page pour mettre à jour la disponibilité des données de voies.",
 			"hintRouteDataRefreshCycle": "Les données de voies sont mises en file d'attente pour actualisation après {days} jours.",
-			"hintRouteDataTail": "",
+			"hintRouteDataTail": "Jusqu'à {count} voies par exécution, au maximum une requête par seconde, après chaque synchronisation du carnet de croix et selon le calendrier d'import en arrière-plan. Lorsque l'import météo est activé, les requêtes restantes vérifient aussi la localisation des falaises/secteurs, y compris pour les imports CSV. {docs}",
 			"hintRouteGrades": "Escalade sportive, trad, moulinette et autres escalades en cordée.",
 			"hintSearchIndexing": "Décochez pour demander à Google et autres de ne pas indexer ce site (balise meta {robots}, {noindex} et en-tête {xRobotsTag}). Les paramètres et la connexion ne sont jamais indexés.",
 			"hintSearchIndexingForcedOff": "Désactivé — l'ensemble du site est protégé par mot de passe ({authScope}).",
@@ -2178,7 +2178,7 @@
 		"dab": "Dab",
 		"flash": "Flash",
 		"freesolo": "Solo intégral",
-		"hangdog": "Après travail",
+		"hangdog": "Avec repos",
 		"hit": "Essai",
 		"lead": "En tête",
 		"leadsolo": "Solo en tête",
@@ -2193,29 +2193,29 @@
 		"send": "Enchaînement",
 		"solo": "Solo",
 		"target": "Objectif",
-		"tick": "Coché",
+		"tick": "Croix",
 		"toprope": "Moulinette",
 		"working": "Travail"
 	},
 	"embed": {
-		"myClimbing": "",
-		"title": "",
-		"summaryTitle": "",
-		"hardestTitle": "",
-		"duration": "",
-		"ascents": "",
-		"sends": "",
-		"onsights": "",
-		"climbed": "",
-		"eddingtonSubtitle": "",
-		"vertical": "",
-		"routeIndex": "",
-		"boulderIndex": "",
-		"sendDays": "",
-		"routeCurrent": "",
-		"routeNext": "",
-		"boulderCurrent": "",
-		"boulderNext": "",
-		"empty": ""
+		"myClimbing": "Mon escalade",
+		"title": "{name} · {card}",
+		"summaryTitle": "Stats d'escalade",
+		"hardestTitle": "Enchaînements les plus durs",
+		"duration": "{type} · grimpe depuis {duration}",
+		"ascents": "ascensions",
+		"sends": "enchaînements",
+		"onsights": "à vue",
+		"climbed": "grimpés",
+		"eddingtonSubtitle": "Nombres d'Eddington · régularité sur les jours et cotations",
+		"vertical": "dénivelé ({metres} m)",
+		"routeIndex": "indice cotation voie",
+		"boulderIndex": "indice cotation bloc",
+		"sendDays": "jours de croix",
+		"routeCurrent": "{count, plural, one {# voie enchaînée} other {# voies enchaînées}} à {grade} ou plus",
+		"routeNext": "{needed, plural, one {# voie de plus} other {# voies de plus}} à ≥ {grade} pour l'indice {next}",
+		"boulderCurrent": "{count, plural, one {# bloc enchaîné} other {# blocs enchaînés}} à {grade} ou plus",
+		"boulderNext": "{needed, plural, one {# bloc de plus} other {# blocs de plus}} à ≥ {grade} pour l'indice {next}",
+		"empty": "Aucun enchaînement coté pour l'instant."
 	}
 }

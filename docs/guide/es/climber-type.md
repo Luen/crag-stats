@@ -1,22 +1,22 @@
-# Climber type
+# Tipo de escalador
 
-The dashboard labels you with a **climber type**, such as _Sport climber_ or _Rock climber_. It sits at the top of the dashboard and in the "Climber type" card.
+El panel te etiqueta con un **tipo de escalador**, como _Escalador deportivo_ o _Escalador en roca_. Se encuentra en la parte superior del panel y en la tarjeta «Tipo de escalador».
 
-## How it's decided
+## Cómo se determina
 
-1. **theCrag first, while every tick type is counted.** If your theCrag account has a climber type set (synced through the API), Crag Stats uses it as-is. Once you set any tick type to _Projects & goals only_ or _Hide_ in Settings, the label is recalculated from your counted ascents instead, so projecting burns can't keep you in the wrong discipline.
-2. **Otherwise, from your logbook.** Every counted ascent counts towards its discipline (gear style): Sport, Trad, Boulder, Top rope, Alpine, Aid, Deep-water solo, and so on. By default, attempts count too, but you can configure [counted tick types](/docs/tick-types) in Settings to keep projecting burns (like working boulder problems) from distorting your climber type.
-3. **The 40% rule.** If a single discipline makes up **at least 40%** of all your counted ascents, _and_ that discipline is **Sport, Trad, or Boulder**, you're a "Sport climber", "Trad climber", or "Boulder climber".
-4. **Everything else** is a **Rock climber**. That covers no discipline reaching 40%, or the biggest share being something like Top rope.
+1. **Primero theCrag, mientras se cuenten todos los tipos de pegue.** Si tu cuenta de theCrag tiene un tipo de escalador configurado (sincronizado a través de la API), Crag Stats lo utiliza tal cual. Una vez que configuras cualquier tipo de pegue en _Solo proyectos y objetivos_ u _Ocultar_ en Ajustes, la etiqueta se recalcula a partir de tus ascensiones contadas, para que los pegues a proyectos no te mantengan en la disciplina equivocada.
+2. **De lo contrario, desde tu libro de vías.** Cada ascensión contada suma para su disciplina (estilo de equipamiento): Deportiva, Clásica, Bloque, Top rope, Alpina, Artificial, Psicobloc, etc. Por defecto, los intentos también cuentan, pero puedes configurar los [tipos de pegue contados](/docs/tick-types) en Ajustes para evitar que los pegues a proyectos (como trabajar problemas de bloque) distorsionen tu tipo de escalador.
+3. **La regla del 40 %.** Si una sola disciplina representa **al menos el 40 %** de todas tus ascensiones contadas, _y_ esa disciplina es **Deportiva, Clásica o Bloque**, eres un «Escalador deportivo», «Escalador clásico» o «Escalador de bloque».
+4. **Cualquier otro caso** es un **Escalador en roca**. Esto cubre los casos en los que ninguna disciplina alcanza el 40 % o cuando la mayor proporción es algo como Top rope.
 
-The coloured bar in the card shows each discipline's share, using the same colours as everywhere else: Sport blue, Trad orange, and Boulder red.
+La barra de colores de la tarjeta muestra la proporción de cada disciplina, utilizando los mismos colores que en el resto de la aplicación: azul para Deportiva, naranja para Clásica y rojo para Bloque.
 
-## Why 40%?
+## ¿Por qué el 40 %?
 
-Most climbers mix disciplines. A threshold well below 50% still captures a clear preference (for example 47% sport, 24% boulder, and 24% trad) without forcing an all-rounder into a single box. Climbers whose time is spread fairly evenly stay "Rock climber".
+La mayoría de los escaladores combinan distintas disciplinas. Un umbral bastante por debajo del 50 % sigue capturando una preferencia clara (por ejemplo, 47 % deportiva, 24 % bloque y 24 % clásica) sin encasillar a un escalador polivalente en una sola categoría. Los escaladores cuyo tiempo se reparte de forma bastante equilibrada se mantienen como «Escalador en roca».
 
-## Changing it
+## Cómo cambiarlo
 
-- Set a climber type on your theCrag profile and sync,
-- adjust your counted tick types in Settings if projecting attempts are skewing your discipline share, or
-- log more of the style you identify with. The label updates on the next page load.
+- Define un tipo de escalador en tu perfil de theCrag y sincroniza,
+- ajusta tus tipos de pegue contados en Ajustes si los intentos a proyectos están sesgando la proporción de tus disciplinas, o
+- registra más encadenes del estilo con el que te identificas. La etiqueta se actualizará la próxima vez que cargues la página.

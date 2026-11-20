@@ -1,30 +1,30 @@
-# Route popularity
+# Popularidad de las vías
 
-The **Route popularity** card uses community stats theCrag caches on each route: **ascent count**, **popularity**, and **relative popularity** (0–100). Crag Stats stores these when route data import runs (`ROUTE_DATA_IMPORT=true` on the server, then restart and sync).
+La tarjeta de **Popularidad de las vías** utiliza estadísticas de la comunidad que theCrag guarda en caché para cada vía: **número de ascensiones**, **popularidad** y **popularidad relativa** (0–100). Crag Stats los almacena cuando se ejecuta la importación de datos de vías (`ROUTE_DATA_IMPORT=true` en el servidor, después reinicia y sincroniza).
 
-## Beaten track vs off the beaten track
+## Vías muy transitadas vs. poco transitadas
 
-For each ascent where popularity data exists, we compare **relative popularity** when present, otherwise **global popularity**:
+Para cada ascensión en la que existan datos de popularidad, comparamos la **popularidad relativa** cuando esté presente; de lo contrario, la **popularidad global**:
 
-| Bucket                   | Rule          |
-| ------------------------ | ------------- |
-| **Beaten track**         | Score ≥ 50    |
-| **Off the beaten track** | Score &lt; 50 |
+| Categoría            | Regla              |
+| -------------------- | ------------------ |
+| **Muy transitadas**  | Puntuación ≥ 50    |
+| **Poco transitadas** | Puntuación &lt; 50 |
 
-The card shows what **share of those ticks** fall in each bucket. Ascents on routes without cached stats are excluded from the percentages.
+La tarjeta muestra qué **proporción de esos encadenes** cae en cada categoría. Las ascensiones en vías sin estadísticas en caché quedan excluidas de los porcentajes.
 
-## Hidden gems
+## Joyas ocultas
 
-**Hidden gems** are **sends** on routes that are both well regarded (`qualityScore` ≥ 70, or at least ★★★, or a strong quality label on your tick) and quiet (community **ascent count** ≤ 100 and popularity score &lt; 50). Up to three distinct routes are listed, ranked by quality.
+Las **joyas ocultas** son **encadenes** en vías que están bien valoradas (`qualityScore` ≥ 70, o al menos ★★★, o una etiqueta de buena calidad en tu encadene) y son tranquilas (**número de ascensiones** de la comunidad ≤ 100 y puntuación de popularidad &lt; 50). Se enumeran hasta tres vías distintas, ordenadas por calidad.
 
-## Logbook
+## Libro de vías
 
-Sort by **Pop.** to order ticks by route popularity (highest first by default). Rows without cached stats sort to the bottom.
+Ordena por **Pop.** para clasificar los encadenes según la popularidad de la vía (las más altas primero por defecto). Las filas sin estadísticas en caché se ordenan al final.
 
-## Source
+## Fuente
 
-Numbers come from theCrag’s route API (`show=info`). They reflect the whole community, not just your logbook.
+Los números proceden de la API de vías de theCrag (`show=info`). Reflejan a toda la comunidad, no solo a tu libro de vías.
 
-Popularity uses relative popularity when available, then global popularity. Community ascent counts are shown separately and never compared numerically with popularity scores.
+La popularidad utiliza la popularidad relativa cuando está disponible y, en su defecto, la popularidad global. El número de ascensiones de la comunidad se muestra por separado y nunca se compara numéricamente con las puntuaciones de popularidad.
 
-To keep community ascent totals, popularity and ratings fresh, the server owner can set `ROUTE_DATA_REFRESH_DAYS` to a whole number of days from 30 through 3650 (e.g. `90` recommended, or `180` for about half a year), with `ROUTE_DATA_IMPORT=true`. These are rolling day intervals. After successful logbook syncs, new routes take priority, then the oldest stale fetches refresh within the same 100-route limit and pacing. A backlog can take several syncs. Unset, `0`, under 30, or over 3650 keeps the default fetch-once cache; **Refresh all** remains available in Settings.
+Para mantener actualizados los totales de ascensiones de la comunidad, la popularidad y las valoraciones, el propietario del servidor puede establecer `ROUTE_DATA_REFRESH_DAYS` en un número entero de días entre 30 y 3650 (p. ej. se recomienda `90`, o `180` para unos seis meses), con `ROUTE_DATA_IMPORT=true`. Estos son intervalos de días móviles. Tras sincronizar con éxito el libro de vías, las vías nuevas tienen prioridad, y después se actualizan las consultas almacenadas más antiguas dentro del mismo límite de 100 vías y ritmo de actualización. Resolver una acumulación de datos pendientes puede requerir varias sincronizaciones. Si no se define, es `0`, es menor de 30 o mayor de 3650, se mantiene la caché por defecto de consulta única; la opción **Actualizar todo** sigue disponible en Ajustes.
