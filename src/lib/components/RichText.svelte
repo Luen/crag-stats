@@ -15,7 +15,8 @@
 
 {#snippet render(
 	list: RichNode[]
-)}{#each list as node (node.key)}{#if node.kind === 'text'}{node.text}{:else if node.kind === 'strong'}<strong>
+)}{#each list as node (node.key)}{#if node.kind === 'text'}{node.text}{:else if node.kind === 'strong'}<strong
+			>
 				{@render render(node.children)}
 			</strong>{:else if node.kind === 'em'}<em>
 				{@render render(node.children)}
