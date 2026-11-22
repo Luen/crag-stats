@@ -10,6 +10,8 @@ import { beginFirstImport, completeFirstImport } from './firstImport';
 import { upsertAscents } from './ingest';
 import { refreshProjects } from './projects';
 import { parseTheCragCsv } from './providers/thecrag';
+import { triggerRouteHistoryImport } from './routeHistoryImport';
+import { triggerWeatherImport } from './weatherImport';
 
 /** A theCrag logbook export is a few MB; anything far larger is not one. */
 export const MAX_CSV_BYTES = 25 * 1024 * 1024;
@@ -94,5 +96,12 @@ export function ingestLogbookCsv(file: Buffer): CsvIngestSummary {
 		completeFirstImport(ascents.length, token);
 		return counts;
 	});
+
+	// Like an API sync: start the opt-in route data (ROUTE_DATA_IMPORT) and weather
+	// (WEATHER_IMPORT) imports in the background, so new climbs are enriched without
+	// waiting for IMPORT_CRON. Both keep their own pacing, run gap, and back-off.
+	triggerRouteHistoryImport('after CSV import');
+	triggerWeatherImport('after CSV import');
+
 	return { imported: ascents.length, created };
 }

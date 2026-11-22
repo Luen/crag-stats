@@ -1,14 +1,23 @@
 import { readFileSync } from 'node:fs';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { getFirstImport } from './firstImport';
 import { CsvIngestError, csvUploadToken, ingestLogbookCsv, readCappedBody } from './csvIngest';
 import { parseTheCragCsv } from './providers/thecrag/csv';
+import { triggerRouteHistoryImport } from './routeHistoryImport';
+import { triggerWeatherImport } from './weatherImport';
 import { wipeAllData } from './wipe';
+
+vi.mock('./routeHistoryImport', () => ({ triggerRouteHistoryImport: vi.fn() }));
+vi.mock('./weatherImport', () => ({ triggerWeatherImport: vi.fn() }));
 
 const sampleFile = readFileSync('samples/thecrag-logbook-sample.csv');
 const sample = parseTheCragCsv(sampleFile);
 
-beforeEach(() => wipeAllData());
+beforeEach(() => {
+	wipeAllData();
+	vi.mocked(triggerRouteHistoryImport).mockClear();
+	vi.mocked(triggerWeatherImport).mockClear();
+});
 
 describe('ingestLogbookCsv', () => {
 	it('upserts the export and reports processed and new ascents', () => {
@@ -31,6 +40,18 @@ describe('ingestLogbookCsv', () => {
 
 		ingestLogbookCsv(sampleFile);
 		expect(getFirstImport()?.at).toBe(first?.at);
+	});
+
+	it('starts the background route data and weather imports after a successful upload', () => {
+		ingestLogbookCsv(sampleFile);
+		expect(triggerRouteHistoryImport).toHaveBeenCalledTimes(1);
+		expect(triggerWeatherImport).toHaveBeenCalledTimes(1);
+	});
+
+	it('does not start the imports when the upload is rejected', () => {
+		expect(() => ingestLogbookCsv(Buffer.from('Ascent ID,Route ID\n'))).toThrow();
+		expect(triggerRouteHistoryImport).not.toHaveBeenCalled();
+		expect(triggerWeatherImport).not.toHaveBeenCalled();
 	});
 
 	it('rejects a file with no ascents instead of reporting a successful no-op', () => {

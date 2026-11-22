@@ -108,6 +108,45 @@ Inspired by [Dreeve](https://dreeve.app/) (Stats for Strava) and [RoxClimbs](htt
 
 Contributor / agent notes: see [AGENTS.md](./AGENTS.md) (living document).
 
+## Agent install prompt
+
+Prefer to let an AI coding agent (Claude Code, Codex, Cursor, or similar) do the
+setup? Copy this prompt into your agent. It follows the same Docker steps as the
+manual guide below and leaves your secrets for you to type yourself.
+
+```text
+Install Crag Stats (https://github.com/Luen/crag-stats) on this computer using its
+prebuilt Docker image. Follow the README section "Run Crag Stats on your own computer
+(Docker)" at https://github.com/Luen/crag-stats#run-crag-stats-on-your-own-computer-docker.
+
+1. Check that Docker (Desktop or Engine) with Compose is installed and its engine is
+   running (`docker info`, `docker compose version`). If it is missing, tell me how to
+   install it for my operating system and wait; do not install it without asking.
+2. Create a `crag-stats` folder in my home folder. If it already contains a `.env`,
+   stop and ask before changing anything, because it holds my saved settings.
+3. Download `docker-compose.ghcr.yml` and `.env.example` (saved as `.env`) from
+   https://raw.githubusercontent.com/Luen/crag-stats/main/ into that folder.
+4. In `.env`, generate a random SESSION_SECRET of at least 32 letters and digits
+   locally, set AUTH_SCOPE=all, and set TZ to my system's IANA time zone. Do not
+   print the secret.
+5. Ask me whether I have a theCrag supporter Logbook Read API key, and whether I want
+   the optional route data and weather imports (ROUTE_DATA_IMPORT, WEATHER_IMPORT);
+   link me to docs/dev/ROUTE_HISTORY.md before I opt in to route data. Then open
+   `.env` in an editor for me to paste THECRAG_API_KEY and choose APP_PASSWORD
+   myself. Never ask me to paste the key or password into this chat, and never echo
+   them back. Without a key, leave THECRAG_API_KEY empty.
+6. Run `docker compose -f docker-compose.ghcr.yml pull` and then
+   `docker compose -f docker-compose.ghcr.yml up -d`, and check both containers are
+   up with `docker compose -f docker-compose.ghcr.yml ps`. If startup fails, read
+   `docker compose -f docker-compose.ghcr.yml logs --tail=100` and fix the cause.
+7. Tell me to open http://localhost:8097 and sign in with my APP_PASSWORD. If I have
+   no API key, explain how to export my logbook CSV from theCrag and upload it in
+   Settings → CSV import.
+
+Keep `.env` private, do not commit or upload it anywhere, and do not change the
+Compose file's HOST, PORT, or DATABASE_PATH values.
+```
+
 ## Run Crag Stats on your own computer (Docker)
 
 Crag Stats turns your theCrag logbook into a dashboard you open in your browser.
