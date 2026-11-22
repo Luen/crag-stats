@@ -4,6 +4,8 @@
 
 - AI top-up progress must use `/files/{fileId}/languages/progress`, matching the `fileIds` submitted for pre-translation. Project-wide totals include guides and retained duplicate branches; using them makes a completed UI catalogue retry unrelated work and rotate through unused models.
 
+- Crowdin pre-translation jobs can finish with every string skipped (`languages[].skipped.ai_error`). Check file-scoped coverage and the report; its `files` list also includes directory roll-ups, so sum only submitted file IDs. Use AI request logs to distinguish minute limits, daily quota, and high-demand 503s; never print raw provider errors.
+
 - Crowdin AI top-up requires **Translation status → Project progress → Read only** (`project.status.progress:read`) on `CROWDIN_PERSONAL_TOKEN`, in addition to catalogue and AI scopes. A 403 naming that scope is a credential configuration failure, not exhausted model quota; correct the token permissions and rerun. Ordinary Crowdin Sync does not exercise this permission.
 
 - Documentation localisation (#506): Crowdin owns `docs/guide/<locale>/*.md` and the UI catalogue. Import initial translations before the first download; Markdown imports can leave unmatched sentences in English, so inspect the exported result and QA. Guide exports retain English for untranslated passages. Preserve `<!-- component:name -->` markers (unit-tested). Header language changes must invalidate all loaders even when removing `?locale=`, or the guide body stays in its previous language.

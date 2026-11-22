@@ -170,6 +170,13 @@ With this configuration, the project maintains a clean **0-issue QA baseline**.
 - The share cards use the resolved interface language, and copied URLs pin it explicitly. New SVG labels have German translations, translator context, and character limits where appropriate.
 - Completion and review are AI-assisted, not native-speaker approval. The Crowdin approval percentage remains separate from translation coverage.
 
+### French completion and Italian continuation — 23 November 2026
+
+- French covers all 5,345 source strings and 38,911 source words across both UI catalogues and all 30 guides. Crowdin QA returned zero findings, and the exported guides retain component markers and executable examples.
+- Italian covers 4,952 of 5,345 source strings and 33,743 of 38,911 source words. Both UI catalogues are complete. The remaining 393 strings are in sessions per week (15), solo climbing (34), tick types (26), training load (76), weather (205), weekday (18), and yearly statistics (19).
+- Corrected terminology, singular/plural agreement, grade-band labels, ascent/send distinctions, thresholds, CSV field names, and badge references in Crowdin. No QA checks were disabled. The approved Hydrogen, 3.8 Flash, 3.6 Flash, 3.5 Flash, and 3 Flash Preview models reached daily quotas; resume Italian with fresh quota and untranslated-only scope.
+- Review is AI-assisted, without native-speaker approval. This pass does not enable either locale in the app or merge translation PRs.
+
 ## 5. Typographic & String Conventions
 
 - **Ellipses:** Always use the single-character ellipsis glyph **`…`** (`U+2026`), never three full stops `...`. All catalogs maintain 100% adherence.
