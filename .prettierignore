@@ -7,3 +7,7 @@ bun.lockb
 
 # Miscellaneous
 /static/
+
+# Crowdin owns the translated guides and rewrites them on every sync, so formatting them here
+# would be reverted by the next translation PR (see docs/dev/TRANSLATIONS.md).
+/docs/guide/*/
