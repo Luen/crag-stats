@@ -29,7 +29,7 @@ on:
   workflow_dispatch:
     inputs:
       languages:
-        description: 'Comma-separated target languages (blank = de)'
+        description: 'Comma-separated target languages (blank = zh-CN)'
         type: string
         default: ''
       download:
@@ -67,9 +67,10 @@ jobs:
         env:
           CROWDIN_PROJECT_ID: ${{ secrets.CROWDIN_PROJECT_ID }}
           CROWDIN_PERSONAL_TOKEN: ${{ secrets.CROWDIN_PERSONAL_TOKEN }}
-          # German first: it is the only enabled target. Change this (and ENABLED_LOCALES in
-          # src/lib/i18n/types.ts) when the next language is ready to ship.
-          CROWDIN_LANGUAGES: ${{ inputs.languages || 'de' }}
+          # Simplified Chinese is the language being prepared. German, French, and Spanish have
+          # shipped. Change this (and export_languages in crowdin.yml) when the next language
+          # starts, and add it to ENABLED_LOCALES in src/lib/i18n/types.ts once it ships.
+          CROWDIN_LANGUAGES: ${{ inputs.languages || 'zh-CN' }}
 
       - name: Pull translations and open a PR
         # Nothing new means nothing to download — skip rather than open an empty PR.

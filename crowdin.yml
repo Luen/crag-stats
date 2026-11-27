@@ -16,9 +16,11 @@ base_path: '.'
 # same tree they were uploaded from.
 preserve_hierarchy: true
 
-# Export only catalogues registered in SUPPORTED_LOCALES. Other languages can
+# Export only catalogues registered in SUPPORTED_LOCALES, plus the next language being prepared. Other languages can
 # continue being translated in Crowdin without generating unused files here.
-export_languages: [de, fr, es-ES, it]
+# zh-CN is exported ahead of registration so the sync can download its catalogue and guides
+# (written as zh.json and docs/guide/zh/); the app ignores them until zh is registered.
+export_languages: [de, fr, es-ES, it, zh-CN]
 
 files:
   - source: /src/lib/i18n/locales/en.json
