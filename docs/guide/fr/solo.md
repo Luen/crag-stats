@@ -1,27 +1,27 @@
-# Solo climbing
+# Escalade en solo
 
-The **Solo climbing** card counts your solo ascents by type, plus every ascent you logged without a partner.
+La carte **Escalade en solo** comptabilise vos ascensions en solo par type, ainsi que chaque ascension enregistrée sans partenaire.
 
-## What counts as which kind of solo
+## Ce qui correspond à chaque type de solo
 
-It follows how theCrag records your tick ([theCrag tick types](https://www.thecrag.com/en/article/ticktypes)):
+Cela suit la façon dont theCrag enregistre votre réalisation ([types de croix theCrag](https://www.thecrag.com/en/article/ticktypes)) :
 
-| On the card     | What you logged on theCrag                                                                               |
-| --------------- | -------------------------------------------------------------------------------------------------------- |
-| Top-rope solo   | The **Roped Solo** tick: you top-roped the route by yourself, self-belaying on a rope set up from above. |
-| Lead solo       | The **Lead solo** tick: you led the route with a lead-solo device, the rope anchored at the bottom.      |
-| Free solo       | The **Free solo** climbing style, with any tick (onsight, flash, red point…): no rope at all.            |
-| Deep water solo | The **Deep water solo** climbing style.                                                                  |
-| Aid solo        | The **Aid solo** tick.                                                                                   |
+| Sur la carte       | Ce que vous avez enregistré sur theCrag                                                                                           |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------- |
+| Solo en moulinette | La croix **Roped Solo** : vous avez grimpé la voie seul en moulinette, en vous auto-assurant sur une corde installée par le haut. |
+| Solo en tête       | La croix **Lead solo** : vous avez grimpé la voie en tête avec un appareil d'auto-assurage, la corde étant ancrée en bas.         |
+| Solo intégral      | Le style d'escalade **Free solo**, quel que soit le type de croix (à vue, flash, après travail…) : sans aucune corde.             |
+| Psicobloc          | Le style d'escalade **Deep water solo**.                                                                                          |
+| Solo en artif      | La croix **Aid solo**.                                                                                                            |
 
-For each kind you see how many ascents and sends, the years they span, and your **hardest send**. That uses the grade you climbed, so a partial multipitch counts at the hardest pitch. Routes use Ewbank and boulders use V-grades, and they're never compared with each other. When a kind has both, the hardest route is shown.
+Pour chaque type, vous voyez le nombre d'ascensions et de réussites, les années couvertes et votre **enchaînement le plus dur**. Cela utilise la cotation que vous avez grimpée ; une grande voie partielle est donc comptabilisée selon sa longueur la plus dure. Les voies utilisent la cotation Ewbank et les blocs les cotations V, et ils ne sont jamais comparés entre eux. Lorsqu'un type comporte les deux, la voie la plus dure est affichée.
 
-## No partner tagged
+## Aucun partenaire identifié
 
-The last line counts ascents with nobody in theCrag's **With** field, and how many were sends. That's not the same as soloing. It also includes days you climbed with someone but didn't tag them, and indoor sessions. It's a rough measure of how often you climb without logging a partner, and it includes your roped and free solos.
+La dernière ligne compte les ascensions sans personne dans le champ **With** de theCrag, ainsi que le nombre d'enchaînements. Ce n'est pas la même chose que grimper en solo. Cela inclut également les journées où vous avez grimpé avec quelqu'un sans l'identifier, ainsi que les séances en salle. C'est une estimation de la fréquence à laquelle vous grimpez sans enregistrer de partenaire, et cela inclut vos solos encordés et en solo intégral.
 
-## First rope-solo badges
+## Badges de premier solo encordé
 
-Successful **Lead solo** and **Roped Solo / Top rope solo** ascents unlock separate first-event badges. The card and badges share normalization of explicit solo ticks, including the documented `leadsolo` and `ropedsolo` identifiers and ordinary case/spacing/separator variants. Original provider tick text is retained. The card can count an explicitly classified ascent without a send, but the badges require successful completion and a valid calendar date. See [Badges](/docs/badges).
+Les ascensions réussies en **Lead solo** et en **Roped Solo / Top rope solo** débloquent des badges de première réalisation distincts. La carte et les badges partagent la même normalisation des croix de solo explicites, y compris les identifiants documentés `leadsolo` et `ropedsolo` ainsi que les variantes courantes de casse, d'espacement et de séparateurs. Le texte d'origine de la croix fourni par la plateforme est conservé. La carte peut comptabiliser une ascension explicitement classée même sans enchaînement, mais les badges exigent une réussite complète et une date calendaire valide. Voir [Badges](/docs/badges).
 
-Click a solo-type card to open all matching ascents in the logbook, including attempts. The Solo type filter stays selected when you sort, paginate, or change other filters. The hardest-send link still opens that individual climb on theCrag.
+Cliquez sur une carte de type de solo pour ouvrir toutes les ascensions correspondantes dans le carnet de croix, y compris les essais. Le filtre de type de solo reste sélectionné lorsque vous triez, changez de page ou modifiez d'autres filtres. Le lien de l'enchaînement le plus dur ouvre toujours cette ascension spécifique sur theCrag.

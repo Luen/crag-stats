@@ -1,32 +1,32 @@
-# Tick types
+# Tipi di tick
 
-A **tick type** records _how_ you climbed something, not just whether you reached the top. An onsight is worth more than a red point of the same route. That's why theCrag (and Crag Stats) keep them apart.
+Un **tipo di tick** registra _come_ hai salito qualcosa, non solo se hai raggiunto la cima. Un a vista vale più di un rotpunkt sulla stessa via. Ecco perché theCrag (e Crag Stats) li tengono distinti.
 
-In the tables below, **Send** means Crag Stats counts the tick as a successful (clean) ascent, for example in "successful ascents", send rates and pyramids. **Attempt** means it's logged as an attempt: it shows as grey in charts, still counts as climbing volume, and can mark a route as a project.
+Nelle tabelle qui sotto, **Chiusura** significa che Crag Stats conta il tick come una salita riuscita (pulita), ad esempio nelle "salite riuscite", nelle percentuali di chiusura e nelle piramidi. **Tentativo** significa che è registrato come tentativo: appare in grigio nei grafici, conta comunque nel volume di arrampicata e può contrassegnare una via come progetto.
 
 <!-- component:tick-types -->
 
-## How ticks are used here
+## Come vengono usati i tick qui
 
-- **Pyramids and charts** colour each tick type consistently: onsight green, flash yellow, red point red, pink point pink, send/clean blue, attempts grey.
-- **CPR** shifts each tick by a grade offset (an onsight counts as harder than a red point); see [CPR](/docs/cpr).
-- **Projects** are routes with attempts but no send yet. A route you sent first go (onsight or flash) is never a project.
-- **Training load** counts attempts at 0.8× a send, since working a route is still hard work; see [Training load](/docs/training-load).
+- **Piramidi e grafici** colorano ogni tipo di tick in modo coerente: a vista in verde, flash in giallo, rotpunkt in rosso, pink point in rosa, chiusura/salita pulita in blu, tentativi in grigio.
+- Il **CPR** sposta ogni tick di uno scarto di grado (un a vista conta come più difficile di un rotpunkt); vedi [CPR](/docs/cpr).
+- I **Progetti** sono vie con tentativi ma senza ancora una chiusura. Una via chiusa al primo giro (a vista o flash) non è mai un progetto.
+- Il **Carico di allenamento** conta i tentativi a 0,8× rispetto a una chiusura, poiché lavorare una via richiede comunque un grande sforzo; vedi [Carico di allenamento](/docs/training-load).
 
-## Counted tick types in analytics
+## Tipi di salita conteggiati nelle analisi
 
-On theCrag, non-send attempts (such as `Working`, `Attempt`, `Hang dog`, or `Retreat`) are logged as ascents. If you log numerous working burns while projecting, counting every attempt in dashboard totals can skew your headline ascent count, style share, and climber type.
+Su theCrag, i tentativi senza chiusura (come `Working`, `Attempt`, `Hang dog` o `Retreat`) vengono registrati come salite. Se registri molti giri di lavoro mentre provi un progetto, contare ogni tentativo nei totali della dashboard può falsare il conteggio principale delle salite, la ripartizione degli stili e il tipo di arrampicatore.
 
-In **Settings → Display & visibility → Counted tick types**, you can configure how each tick type is treated across Crag Stats:
+In **Impostazioni → Visualizzazione e visibilità → Tipi di salita conteggiati**, puoi configurare come viene trattato ciascun tipo di tick in Crag Stats:
 
-- **Enable (Count everywhere):** Included in headline ascents, discipline breakdown, crags and sectors, pyramids, map totals, Eddington numbers, route repeats, the climber profile axes, activity heatmaps, training load, badges, projects, and goals.
-- **Projects & goals only (Out of totals):** Excluded from headline ascents, discipline share, crags, sectors, pyramids, map totals, Eddington numbers, route repeats, and the climber profile axes, but still counted towards project detection, session activity (heatmap, streaks, sessions per week, and weekday charts), training load fatigue, badges, and grade goals.
-- **Hide (Exclude completely):** Excluded across all analytics, projects, goals, and badges.
+- **Abilita (Conta ovunque):** incluso nelle salite principali, nella ripartizione per disciplina, nelle falesie e nei settori, nelle piramidi, nei totali sulla mappa, nei numeri di Eddington, nelle ripetizioni delle vie, negli assi del profilo arrampicatore, nelle mappe di calore delle attività, nel carico di allenamento, nei badge, nei progetti e negli obiettivi.
+- **Solo progetti e obiettivi (Fuori dai totali):** escluso dalle salite principali, dalla quota per disciplina, dalle falesie, dai settori, dalle piramidi, dai totali sulla mappa, dai numeri di Eddington, dalle ripetizioni delle vie e dagli assi del profilo arrampicatore, ma comunque conteggiato per il rilevamento dei progetti, l'attività delle sessioni (mappa di calore, serie consecutive, sessioni a settimana e grafici per giorno della settimana), l'affaticamento del carico di allenamento, i badge e gli obiettivi di grado.
+- **Nascondi (Escludi completamente):** escluso da tutte le analisi, progetti, obiettivi e badge.
 
-The logbook always preserves and displays all your logged ascents with full filtering regardless of this setting. For which badges follow each choice, see [Badges](/docs/badges).
+Il registro conserva e mostra sempre tutte le salite registrate con il filtraggio completo, indipendentemente da questa impostazione. Per sapere quali badge seguono ciascuna scelta, vedi [Badge](/docs/badges).
 
-When a configured tick type excludes some of your logged ascents, the dashboard also recalculates the profile figures that normally come from theCrag (outdoor and indoor ascents, routes ticked, total height, and climber type) from your counted ascents, so every total on the page describes the same set of ticks. Clear the configuration with the **All logged ticks** preset to go back to theCrag's own totals.
+Quando un tipo di tick configurato esclude alcune delle tue salite registrate, la dashboard ricalcola anche i dati del profilo che normalmente provengono da theCrag (salite outdoor e indoor, vie salite, dislivello totale e tipo di arrampicatore) a partire dalle salite conteggiate, così ogni totale nella pagina descrive lo stesso insieme di tick. Cancella la configurazione con il preset **Tutti i tick registrati** per tornare ai totali originali di theCrag.
 
-## Source
+## Fonte
 
-Definitions are paraphrased from theCrag's [Tick types](https://www.thecrag.com/en/article/ticktypes) article. Not every tick type applies to every gear style.
+Le definizioni sono parafrasate dall'articolo [Tick types](https://www.thecrag.com/en/article/ticktypes) di theCrag. Non tutti i tipi di tick si applicano a ogni stile di attrezzatura.

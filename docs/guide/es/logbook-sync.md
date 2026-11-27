@@ -23,8 +23,10 @@ Por lo tanto, un libro de vías sin cambios muestra cero adiciones/eliminaciones
 actualizados. Las ejecuciones omitidas y los errores muestran sus propios mensajes, no un resumen de éxito.
 
 Las cargas manuales de CSV también muestran los recuentos de procesados/nuevos/actualizados, pero nunca eliminan
-las entradas que faltan. El enriquecimiento del historial de vías y la meteorología son importaciones
-secundarias independientes en segundo plano y no se incluyen en los recuentos del libro de vías. El resumen describe la acción del botón
+las entradas que faltan. Route data and weather enrichment are separate background
+imports: when enabled, they start after every successful sync or CSV upload
+(including uploads to `POST /api/logbook/csv`), and are not included in these
+logbook counts. El resumen describe la acción del botón
 completada; no es un historial de sincronización persistente.
 
 ## Sincronización por API
@@ -57,7 +59,7 @@ Puedes mantener el libro de vías en CSV y seguir disponiendo de datos de vías 
 - `THECRAG_API_KEY`: tu clave de lectura del libro de vías de supporter, utilizada ahora solo para datos de vías y consultas de ubicación de escuelas/sectores.
 - `THECRAG_USERNAME`: tu nombre de usuario de theCrag, para que el historial de FA/FFA coincida contigo (las exportaciones CSV no lo incluyen).
 
-Esa es toda la configuración: tres valores, sin cambio de modo. Sin `CSV_INGEST_TOKEN`, `THECRAG_API_KEY` sincroniza el libro de vías y los datos de las vías comparten la misma clave. Las importaciones de vías y meteorología en segundo plano siguen la programación `IMPORT_CRON` (diaria por defecto) en lugar de la del libro de vías, por lo que una programación de `SYNC_CRON` semanal o mensual sigue recibiendo datos de vías a diario. Configuración → **Importar datos de vías** muestra el progreso e inicia una ejecución de forma manual.
+Esa es toda la configuración: tres valores, sin cambio de modo. Sin `CSV_INGEST_TOKEN`, `THECRAG_API_KEY` sincroniza el libro de vías y los datos de las vías comparten la misma clave. Background route and weather imports start after each successful sync or CSV upload, and also follow `IMPORT_CRON` (daily by default) rather than the logbook schedule, so a weekly or monthly `SYNC_CRON` still gets route data daily. Configuración → **Importar datos de vías** muestra el progreso e inicia una ejecución de forma manual.
 
 ## Cargar un CSV desde otro contenedor
 

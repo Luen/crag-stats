@@ -23,8 +23,8 @@ Triez par **Pop.** pour ordonner vos croix selon la popularité des voies (la pl
 
 ## Source
 
-Les chiffres proviennent de l'API des voies de theCrag (`show=info`). They reflect the whole community, not just your logbook.
+Les chiffres proviennent de l'API des voies de theCrag (`show=info`). Elles reflètent l'ensemble de la communauté, et pas seulement votre carnet de croix.
 
-Popularity uses relative popularity when available, then global popularity. Community ascent counts are shown separately and never compared numerically with popularity scores.
+La popularité utilise la popularité relative lorsqu'elle est disponible, puis la popularité globale. Le nombre d'ascensions de la communauté est affiché séparément et n'est jamais comparé numériquement aux scores de popularité.
 
-To keep community ascent totals, popularity and ratings fresh, the server owner can set `ROUTE_DATA_REFRESH_DAYS` to a whole number of days from 30 through 3650 (e.g. `90` recommended, or `180` for about half a year), with `ROUTE_DATA_IMPORT=true`. These are rolling day intervals. After successful logbook syncs, new routes take priority, then the oldest stale fetches refresh within the same 100-route limit and pacing. A backlog can take several syncs. Unset, `0`, under 30, or over 3650 keeps the default fetch-once cache; **Refresh all** remains available in Settings.
+Pour maintenir à jour les totaux d'ascensions de la communauté, la popularité et les évaluations, le propriétaire du serveur peut définir `ROUTE_DATA_REFRESH_DAYS` sur un nombre entier de jours compris entre 30 et 3650 (par ex. `90` recommandé, ou `180` pour environ six mois), avec `ROUTE_DATA_IMPORT=true`. Il s'agit d'intervalles de jours glissants. Après des synchronisations réussies du carnet de croix, les nouvelles voies sont prioritaires, puis les récupérations obsolètes les plus anciennes sont actualisées dans la même limite de 100 voies et selon la même cadence. Un retard accumulé peut nécessiter plusieurs synchronisations. Non défini, `0`, inférieur à 30 ou supérieur à 3650 conserve le cache par défaut à récupération unique ; **Tout actualiser** reste disponible dans les Paramètres.

@@ -1,25 +1,25 @@
-# Yearly stats
+# Statistiques annuelles
 
-The year-over-year table always shows ascent and onsight differences as counts, and height differences in your selected height unit, independently of the chart metric.
+Le tableau d’une année sur l’autre affiche toujours les différences d’ascensions et de réalisations à vue sous forme de nombres, et les différences de hauteur dans votre unité de hauteur sélectionnée, indépendamment de la métrique du graphique.
 
-The **Yearly stats** dashboard card (and the charts on **[Activity](/activity)** when that page is enabled) show how your volume changes year by year.
+La carte **Statistiques annuelles** du tableau de bord (et les graphiques sur **[Activité](/activity)** lorsque cette page est activée) montrent comment votre volume évolue année par année.
 
-## Per year
+## Par an
 
-Bars (oldest → newest) for the selected metric:
+Barres (plus ancienne → plus récente) pour la métrique sélectionnée :
 
-- **Ascents** — every logged tick that year
-- **Sends** — successful ticks only (see [Tick types](/docs/tick-types))
-- **Height** — summed ascent height (in meters or feet, matching your preferred height unit in Settings), falling back to route height when the tick has none
+- **Ascensions** — chaque croix enregistrée cette année-là
+- **Enchaînements** — uniquement les croix réussies (voir [Types de croix](/docs/tick-types))
+- **Hauteur** — somme des hauteurs d’ascension (en mètres ou en pieds, selon votre unité de hauteur préférée dans les Paramètres), en utilisant la hauteur de la voie par défaut lorsque la croix n’en a pas
 
-The small figure under each bar is the **year-over-year delta** versus the previous calendar year (or “—” for your first year). Year bars link to `/logbook?year=`.
+Le petit chiffre sous chaque barre correspond à l’**écart d’une année sur l’autre** par rapport à l’année civile précédente (ou « — » pour votre première année). Les barres des années renvoient vers `/logbook?year=`.
 
-## Cumulative
+## Cumulé
 
-A thick accent line is your **running career total** for the selected metric. Thin coloured overlays (when daily heatmap data is available) each restart at zero on 1 January and rise day by day across the shared Jan–Dec axis, so you can compare seasons side by side. After the last climb of a year the thin line continues **flat to December** (no invented volume). Click a day on a thin line to open `/logbook?day=` for that date (hover still shows the within-year total). Under the career dots, the parenthetical figure is **that year’s contribution**, not another YoY delta.
+Une ligne épaisse mise en valeur représente votre **total cumulé sur votre parcours** pour la métrique sélectionnée. De fines courbes superposées colorées (lorsque les données de la carte thermique quotidienne sont disponibles) repartent chacune de zéro le 1er janvier et progressent jour après jour sur l’axe commun janv.–déc., afin de vous permettre de comparer les saisons côte à côte. Après la dernière ascension d’une année, la ligne fine se poursuit **à plat jusqu’en décembre** (sans volume inventé). Cliquez sur un jour d’une ligne fine pour ouvrir `/logbook?day=` à cette date (le survol continue d’afficher le total de l’année en cours). Sous les points du parcours, le chiffre entre parenthèses correspond à **la contribution de cette année-là**, et non à un autre écart d’une année sur l’autre.
 
-Your chart-mode preference is stored in the browser (`cs_yearly_chart`).
+Votre préférence de mode de graphique est enregistrée dans le navigateur (`cs_yearly_chart`).
 
-## Year-over-year table
+## Tableau d’une année sur l’autre
 
-Expand **Year-over-year table** on the card for numeric deltas across ascents, height, and onsights for every year in the logbook.
+Développez **Tableau d’une année sur l’autre** sur la carte pour voir les écarts numériques concernant les ascensions, la hauteur et les réalisations à vue pour chaque année du carnet de croix.

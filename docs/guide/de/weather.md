@@ -4,7 +4,7 @@ Crag Stats kann das **tägliche Wetter im Freien** für Klettereien mit Routenko
 
 ## Optional aktivieren
 
-Standardmäßig deaktiviert. Der Serverbesitzer setzt `WEATHER_IMPORT=true` in `.env` und startet neu. Nach jeder erfolgreichen Tourenbuch-Synchronisierung, über den Hintergrund-Importplan (`IMPORT_CRON`, standardmäßig täglich, was auch per CSV importierte Tourenbücher abdeckt) und unter **Einstellungen → Wetter importieren** ruft Crag Stats pro Durchlauf bis zu **50** fehlende Outdoor-Tage aus der historischen Wetter-API von [Open-Meteo](https://open-meteo.com/) ab – die ältesten Klettertage zuerst – mit mindestens **1.1 Sekunden** zwischen den Anfragen. Die Aktion in den Einstellungen startet diesen Durchlauf im Hintergrund, sodass die Seite nicht auf den gesamten Batch warten muss. Das Löschen der lokalen Daten leert den Cache.
+Standardmäßig deaktiviert. Der Serverbesitzer setzt `WEATHER_IMPORT=true` in `.env` und startet neu. After each successful logbook sync or CSV upload, on the background import schedule (`IMPORT_CRON`, daily by default), and from **Settings → Import weather**, Crag Stats fetches up to **50** missing outdoor days per run from [Open-Meteo](https://open-meteo.com/)'s historical weather API, oldest climb days first, with at least **1.1 seconds** between requests. Die Aktion in den Einstellungen startet diesen Durchlauf im Hintergrund, sodass die Seite nicht auf den gesamten Batch warten muss. Das Löschen der lokalen Daten leert den Cache.
 
 Die kostenlose, nicht-kommerzielle Nutzung von Open-Meteo ist für persönliche, selbst gehostete Installationen gedacht. Aktiviere dies nicht für einen kommerziellen Multi-Tenant-Dienst, ohne vorher deren Nutzungsbedingungen und kostenpflichtige Optionen zu prüfen.
 

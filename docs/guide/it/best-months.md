@@ -1,41 +1,41 @@
-# Best months
+# Mesi migliori
 
-The **Best months** card compares [theCrag seasonality](https://www.thecrag.com/article/Seasonality) for the crags you climb most with **when you actually climb there**.
+La scheda **Mesi migliori** confronta la [stagionalità di theCrag](https://www.thecrag.com/article/Seasonality) per le falesie in cui arrampichi di più con **quando vi arrampichi effettivamente**.
 
-## Where the data comes from
+## Da dove provengono i dati
 
-theCrag stores a **12-value seasonality curve** per route (one value per calendar month). Crag Stats caches it on each route during the optional route data import (`ROUTE_DATA_IMPORT`, off by default). Until a route has been fetched at least once, there is no seasonality to show.
+theCrag memorizza una **curva di stagionalità a 12 valori** per ogni via (un valore per ogni mese di calendario). Crag Stats la salva in cache per ciascuna via durante l'importazione opzionale dei dati delle vie (`ROUTE_DATA_IMPORT`, disattivata di default). Fino a quando una via non è stata recuperata almeno una volta, non c'è alcuna stagionalità da mostrare.
 
-## How we aggregate it
+## Come aggregiamo i dati
 
-For each crag in your logbook:
+Per ogni falesia nel tuo logbook:
 
-1. **Your volume** — count your ascents by calendar month (all years combined).
-2. **theCrag seasonality** — for each route you have ticked at that crag, take the cached 12-month curve and weight it by **how many times you climbed that route**. Routes with more of your ticks influence the crag average more.
+1. **Il tuo volume** — conta le tue salite per mese di calendario (tutti gli anni combinati).
+2. **Stagionalità di theCrag** — per ogni via che hai segnato in quella falesia, prende la curva a 12 mesi salvata in cache e la pondera in base a **quante volte hai scalato quella via**. Le vie con più salite registrate influenzano maggiormente la media della falesia.
 
-We show up to **six** crags ranked by your total ascents there, but only crags where at least one climbed route has seasonality cached.
+Mostriamo fino a **sei** falesie classificate in base alle tue salite totali, ma solo le falesie in cui almeno una via scalata ha la stagionalità salvata in cache.
 
-## Reading the chart
+## Leggere il grafico
 
-- **Orange bars** — weighted mean seasonality (higher = more popular on theCrag that month).
-- **Grey bars** — your ascents that month at that crag.
+- **Barre arancioni** — stagionalità media ponderata (più alta = più popolare su theCrag in quel mese).
+- **Barre grigie** — le tue salite in quel mese in quella falesia.
 
-When the grey bars peak in different months than the orange strip, you may be climbing off-peak — or your sample is small.
+Quando le barre grigie raggiungono il picco in mesi diversi rispetto alla striscia arancione, potresti arrampicare fuori stagione — oppure il tuo campione è ridotto.
 
-## Refreshing seasonality
+## Aggiornare la stagionalità
 
-Run **Sync** from Settings. With route data import enabled, seasonality backfills in the background (rate-limited, up to 100 routes per run).
+Esegui **Sync** da Impostazioni. Con l'importazione dei dati delle vie abilitata, la stagionalità si aggiorna in background (con limite di frequenza, fino a 100 vie per esecuzione).
 
-The Sectors page can also show [weather on your cached visit days](/docs/weather). This describes conditions on your logged days, separately from the route seasonality used here.
+La pagina Settori può anche mostrare il [meteo nei giorni delle tue visite in cache](/docs/weather). Questo descrive le condizioni nei giorni delle tue salite registrate, separatamente dalla stagionalità delle vie usata qui.
 
-## Search by month
+## Cerca per mese
 
-Open [Seasonality search](/seasonality) from the Best months card to browse all crags and climbs in your synced logbook with cached monthly data. Choose a month (the current month in your display time zone by default), search a crag, area or climb name, and switch between **Crags** and **Climbs**. Searches, month selection, sorting and pages are stored in the URL so you can bookmark or share them. Choose **View climbs** to narrow to one crag, or **Search all crags** to leave that scope.
+Apri [Ricerca stagionalità](/seasonality) dalla scheda Mesi migliori per esplorare tutte le falesie e le vie nel tuo logbook sincronizzato con dati mensili in cache. Scegli un mese (di default il mese corrente nel tuo fuso orario di visualizzazione), cerca il nome di una falesia, area o via e passa da **Falesie** a **Vie** e viceversa. Le ricerche, la selezione del mese, l'ordinamento e le pagine vengono salvati nell'URL in modo da poterli aggiungere ai preferiti o condividerli. Scegli **Vedi vie** per restringere il campo a una sola falesia, oppure **Cerca in tutte le falesie** per uscire da tale ambito.
 
-Results are ranked by the selected month’s value divided by the highest value in that result’s annual curve. For example, a value of 5 with an annual peak of 10 shows **50% of annual peak**. Names break ties; you can also sort by name. There is no “in season” cutoff. A zero-only curve has **No seasonal signal** and sorts after curves with a positive peak. The month strip and expandable values table show all twelve months.
+I risultati sono classificati in base al valore del mese selezionato diviso per il valore massimo nella curva annuale di quel risultato. Ad esempio, un valore di 5 con un picco annuale di 10 mostra **50% del picco annuale**. I nomi risolvono i pareggi; puoi anche ordinare per nome. Non esiste una soglia per definire l'"alta stagione". Una curva con soli zeri ha **Nessun segnale stagionale** e viene ordinata dopo le curve con un picco positivo. La striscia dei mesi e la tabella espandibile dei valori mostrano tutti i dodici mesi.
 
-Crag curves use the same ascent-weighted mean as the dashboard: routes with more of your logged ascents have more influence; missing route curves do not enter the mean. Searching a climb name can find its crag, but does not change that crag’s full curve. Crags are kept separate by provider area identity where available. Each crag shows how many of its logged climbs have data; the page also reports coverage among matching climbs. Missing or malformed curves stay unknown and are omitted from ranked results.
+Le curve delle falesie usano la stessa media ponderata sulle salite della dashboard: le vie con più salite registrate hanno maggiore influenza; le curve delle vie mancanti non rientrano nella media. Cercare il nome di una via può individuare la sua falesia, ma non modifica la curva completa di quella falesia. Le falesie sono mantenute separate in base all'identità dell'area del provider, dove disponibile. Ogni falesia mostra quante delle sue vie registrate dispongono di dati; la pagina riporta anche la copertura tra le vie corrispondenti. Le curve mancanti o non valide rimangono sconosciute e vengono omesse dai risultati classificati.
 
-Climb results link to all your logbook entries for that exact climb and to its guidebook page on theCrag. Your browser’s Back button returns to the search. Searching reads the local cache only and does not trigger a provider fetch or search the whole theCrag catalogue. Enable the optional route data import and sync to build coverage.
+I risultati delle vie includono link a tutte le voci del tuo logbook per quella via specifica e alla sua pagina guida su theCrag. Il pulsante Indietro del browser torna alla ricerca. La ricerca legge solo la cache locale e non attiva un recupero dal provider né cerca nell'intero catalogo di theCrag. Abilita l'importazione opzionale dei dati delle vie e sincronizza per aumentare la copertura.
 
-Seasonality describes **community climbing patterns**, not forecast weather or measured conditions on your logged visits. See [Weather](/docs/weather) for those visit-day observations.
+La stagionalità descrive i **modelli di arrampicata della community**, non le previsioni meteo o le condizioni misurate durante le tue visite registrate. Vedi [Meteo](/docs/weather) per le osservazioni relative a quei giorni di visita.
