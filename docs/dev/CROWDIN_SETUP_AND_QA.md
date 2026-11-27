@@ -8,7 +8,7 @@ This document details the architecture, API quirks, quota rotation strategies, a
 
 ## 1. High-Level Architecture
 
-Use GitHub Actions as the only translation PR producer. The separate Crowdin GitHub integration was removed after it created a duplicate `main` source branch and PR. The retained duplicate catalogue has context and QA corrections, but is not an additional sync source. `export_languages` in `crowdin.yml` limits downloads to the registered German, French, Spanish, and Italian catalogues; future languages remain available in Crowdin until the application registers them.
+Use GitHub Actions as the only translation PR producer. The separate Crowdin GitHub integration was removed after it created a duplicate `main` source branch and PR. The retained duplicate catalogue has context and QA corrections, but is not an additional sync source. `export_languages` in `crowdin.yml` limits downloads to the registered German, French, Spanish, and Italian catalogues plus the languages being prepared: Japanese, Korean, Polish, Portuguese (`pt-PT`), and Simplified Chinese.
 
 ```
 GitHub Repository (main)
@@ -66,7 +66,7 @@ Google AI Studio's free tier meters requests **per day per model** (Requests Per
 
 `scripts/crowdin-topup.mjs` leverages this by rotating through models sequentially. When a pass adds 0 strings after waiting out the 65-second rate window, it patches the prompt to the next model via `PATCH /users/{userId}/ai/prompts/{promptId}` with `[{"op": "replace", "path": "/aiModelId", "value": model}]`.
 
-Because one day's rotation covers roughly one catalogue, `.github/workflows/crowdin-pretranslate.yml` pre-translates a single target language per scheduled run (`CROWDIN_LANGUAGES`, currently `de`). Translating every target at once splits the allowance and leaves each language half-done, so the next language is added to that line and to `ENABLED_LOCALES` in `src/lib/i18n/types.ts` only once the previous one is shipped. Retired model ids must be removed rather than left as a fallback: a dead id costs a failed pass plus a 65-second retry before the rotation moves on.
+Because one day's rotation covers roughly one catalogue, `.github/workflows/crowdin-pretranslate.yml` pre-translates a single target language per scheduled run (`CROWDIN_LANGUAGES`, currently `ko`). Translating every target at once splits the allowance and leaves each language half-done, so the next language is added to that line and to `ENABLED_LOCALES` in `src/lib/i18n/types.ts` only once the previous one is shipped. Retired model ids must be removed rather than left as a fallback: a dead id costs a failed pass plus a 65-second retry before the rotation moves on.
 
 ### Pre-Translation Prompt (`Crag Stats pre-translate`)
 

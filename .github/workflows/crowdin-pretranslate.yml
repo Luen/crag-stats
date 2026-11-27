@@ -29,7 +29,7 @@ on:
   workflow_dispatch:
     inputs:
       languages:
-        description: 'Comma-separated target languages (blank = de)'
+        description: 'Comma-separated target languages (blank = ko)'
         type: string
         default: ''
       download:
@@ -67,9 +67,10 @@ jobs:
         env:
           CROWDIN_PROJECT_ID: ${{ secrets.CROWDIN_PROJECT_ID }}
           CROWDIN_PERSONAL_TOKEN: ${{ secrets.CROWDIN_PERSONAL_TOKEN }}
-          # German first: it is the only enabled target. Change this (and ENABLED_LOCALES in
-          # src/lib/i18n/types.ts) when the next language is ready to ship.
-          CROWDIN_LANGUAGES: ${{ inputs.languages || 'de' }}
+          # Korean is next: its catalogue is untranslated, while Japanese, Polish, and Simplified
+          # Chinese are complete. Portuguese (pt-PT) follows once Korean is done. Add a language
+          # to ENABLED_LOCALES in src/lib/i18n/types.ts once it ships.
+          CROWDIN_LANGUAGES: ${{ inputs.languages || 'ko' }}
 
       - name: Pull translations and open a PR
         # Nothing new means nothing to download — skip rather than open an empty PR.
