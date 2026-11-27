@@ -1,43 +1,43 @@
-# Repeats vs new routes
+# 重复攀爬与新路线
 
-The **Repeats vs new routes** card shows how much of your climbing goes to routes you've logged before, compared with routes that are new to you. It sits after **Route popularity** by default (half width), and Customize dashboard can move it.
+**重复攀爬与新路线**卡片展示了你的攀爬中，之前已记录过的路线与对你而言的新路线各自所占的比例。它默认位于**路线热门度**之后（半宽显示），你可以通过“自定义仪表盘”移动其位置。
 
-## What counts
+## 统计范围
 
-Every logged ascent counts, sends and attempts alike, as long as it has a valid calendar date and a provider route ID.
+每一次记录的攀登都会计入统计，无论是完攀还是尝试，只要它包含有效的日历日期和数据源路线 ID。
 
-- A **first visit** is any ascent on the first day you logged that route. An attempt and a send on that same first day are both first visits.
-- A **repeat** is any ascent on a later day on the same route.
+- **首次到访**是指你在首次记录该路线的当天所做的任何攀登。如果同一天内既有尝试又有完攀，这两次都算作首次到访。
+- **重复攀爬**是指在之后的某一天对同一条路线的任何攀登。
 
-Routes are matched by their theCrag route ID, never by name, so two different routes called "Arete" stay separate. Days are the written climbing dates in your logbook, without any time-zone shift.
+路线通过其 theCrag 路线 ID 进行匹配，绝不按名称匹配，因此两条都叫“Arete”的不同路线会分开统计。天数按你在攀登日志中填写的攀登日期计算，不进行任何时区转换。
 
-## Filters
+## 筛选条件
 
-- **All time** or **Last 12 months**. The short range is the 365 days ending today. Whether an ascent is a repeat always depends on your whole history, so a route you first climbed three years ago counts as a repeat this year.
-- **All**, **Sport**, **Trad**, or **Boulder**. These match the logbook style filters (climbed style **or** route style). Top-rope and other styles appear only under **All**.
+- **全部时间**或**最近 12 个月**。较短的时间范围是指截止到今天的过去 365 天。一次攀登是否属于重复攀爬始终取决于你的完整历史记录，因此三年前首次攀登的路线在今年再次攀登时仍计为重复攀爬。
+- **全部**、**运动攀**、**传统攀**或**抱石**。这些选项与攀登日志的风格筛选器相匹配（实际攀登风格**或**路线风格）。顶绳攀登及其他风格仅在**全部**选项下显示。
 
-Your choices are saved in this browser (`cs_repeats_range`, `cs_repeats_style`).
+你的选择会保存在当前浏览器中（`cs_repeats_range`、`cs_repeats_style`）。
 
-## Labels
+## 标签
 
-Once the current view has at least 20 ascents, the card adds a short, descriptive label:
+当当前视图中至少有 20 次攀登记录时，卡片会添加一个简短的描述性标签：
 
-| Label              | Rule                                     |
-| ------------------ | ---------------------------------------- |
-| **Explorer**       | At least 75% of ascents are first visits |
-| **Repeat climber** | At least 50% of ascents are repeats      |
-| **A bit of both**  | Anything in between                      |
+| 标签        | 规则              |
+| --------- | --------------- |
+| **探索者**   | 至少 75% 的攀登为首次到访 |
+| **重复攀登者** | 至少 50% 的攀登为重复攀爬 |
+| **两者兼顾**  | 介于两者之间的其他情况     |
 
-The thresholds use exact shares; the percentages on the card are rounded. Neither style is better than the other: projecting, training laps, and favourite circuits all show up as repeats.
+阈值判断采用精确比例；卡片上显示的百分比经过了四舍五入。这两种倾向并无优劣之分：死磕难线、刷组训练以及常爬的心仪路线组合都会在统计中体现为重复攀爬。
 
-## Most repeated
+## 重攀最多
 
-Up to five routes you came back to most in the current view, ranked by the number of different days you climbed them, then by ascents, then by the most recent day. Each one links to its logbook entries.
+列出当前视图中你重返次数最多的前五条路线，依次按攀登的不同天数、攀登总次数以及最近攀登日期排序。每一条路线都链接到其对应的攀登日志条目。
 
-## When it shows
+## 显示条件
 
-The card stays hidden until you have at least 20 dated ascents with a route ID.
+在你拥有至少 20 条带有日期和路线 ID 的攀登记录之前，该卡片将保持隐藏。
 
-## Related badges
+## 相关徽章
 
-**Explorer**, **Wanderer**, **Route Collector**, **Guidebook Explorer**, **Old Faithful**, and **Home Turf** use the same first-visit and repeat rules. See [Badges](/docs/badges).
+**探索者**、**漫游者**、**路线收藏家**、**路书探索者**、**忠实老友**和**主场熟客**使用相同的首次到访与重复攀爬规则。请参阅[徽章](/docs/badges)。

@@ -1,27 +1,27 @@
-# Solo climbing
+# 独攀
 
-The **Solo climbing** card counts your solo ascents by type, plus every ascent you logged without a partner.
+**独攀**卡片会按类型统计你的独攀记录，并统计所有未标记搭档的攀登记录。
 
-## What counts as which kind of solo
+## 各类独攀的判定方式
 
-It follows how theCrag records your tick ([theCrag tick types](https://www.thecrag.com/en/article/ticktypes)):
+它遵循 theCrag 对攀登记录的分类方式（[theCrag 记录类型](https://www.thecrag.com/en/article/ticktypes)）：
 
-| On the card     | What you logged on theCrag                                                                               |
-| --------------- | -------------------------------------------------------------------------------------------------------- |
-| Top-rope solo   | The **Roped Solo** tick: you top-roped the route by yourself, self-belaying on a rope set up from above. |
-| Lead solo       | The **Lead solo** tick: you led the route with a lead-solo device, the rope anchored at the bottom.      |
-| Free solo       | The **Free solo** climbing style, with any tick (onsight, flash, red point…): no rope at all.            |
-| Deep water solo | The **Deep water solo** climbing style.                                                                  |
-| Aid solo        | The **Aid solo** tick.                                                                                   |
+| 卡片显示 | 你在 theCrag 上的记录                           |
+| ---- | ----------------------------------------- |
+| 顶绳独攀 | **绳索独攀**记录：你独自顶绳攀登该线路，利用从上方架设好的绳索进行自我保护。  |
+| 先锋独攀 | **先锋独攀**记录：你使用先锋独攀保护器先锋攀登该线路，绳索固定在底部保护站。  |
+| 徒手独攀 | **徒手独攀**攀登方式，配合任意完攀类型（视攀、闪攀、红点等）：完全不使用绳索。 |
+| 深水独攀 | **深水独攀**攀登方式。                             |
+| 器械独攀 | **器械独攀**记录。                               |
 
-For each kind you see how many ascents and sends, the years they span, and your **hardest send**. That uses the grade you climbed, so a partial multipitch counts at the hardest pitch. Routes use Ewbank and boulders use V-grades, and they're never compared with each other. When a kind has both, the hardest route is shown.
+对于每种类型，你都可以看到攀登次数与完攀次数、跨越的年份范围，以及你的**最高难度完攀**。该统计采用你实际攀登的难度等级，因此未全程完攀的多段线路会按其中最难的一段计算。线路采用 Ewbank 难度体系，抱石采用 V 级难度体系，两者绝不会互相比较。当某种类型同时包含线路和抱石记录时，将显示难度最高的线路。
 
-## No partner tagged
+## 未标记搭档
 
-The last line counts ascents with nobody in theCrag's **With** field, and how many were sends. That's not the same as soloing. It also includes days you climbed with someone but didn't tag them, and indoor sessions. It's a rough measure of how often you climb without logging a partner, and it includes your roped and free solos.
+最后一行统计在 theCrag 的 **With** 字段中未填写任何人的攀登次数，以及其中完攀的次数。这并不等同于独攀。它还包括你与他人一起攀登但未标记对方的记录，以及室内攀岩馆的攀爬记录。这只是大致衡量你未记录搭档的攀爬频率，其中也包含了你的绳索独攀和徒手独攀记录。
 
-## First rope-solo badges
+## 首次绳索独攀徽章
 
-Successful **Lead solo** and **Roped Solo / Top rope solo** ascents unlock separate first-event badges. The card and badges share normalization of explicit solo ticks, including the documented `leadsolo` and `ropedsolo` identifiers and ordinary case/spacing/separator variants. Original provider tick text is retained. The card can count an explicitly classified ascent without a send, but the badges require successful completion and a valid calendar date. See [Badges](/docs/badges).
+成功完成**先锋独攀**和**绳索独攀 / 顶绳独攀**攀登将分别解锁各自的首次成就徽章。该卡片与徽章共用一套针对明确独攀记录的标准化识别逻辑，包括文档中定义的 `leadsolo` 和 `ropedsolo` 标识符，以及常见的大小写、空格和分隔符变体。原始数据源的记录文本将被保留。卡片可以统计明确分类但未完攀的攀登记录，但解锁徽章必须满足成功完攀且具备有效日历日期的条件。参见[徽章](/docs/badges)。
 
-Click a solo-type card to open all matching ascents in the logbook, including attempts. The Solo type filter stays selected when you sort, paginate, or change other filters. The hardest-send link still opens that individual climb on theCrag.
+点击独攀类型卡片，即可在攀登日志中打开所有匹配的攀登记录，包括未完攀的尝试。在你进行排序、翻页或更改其他筛选条件时，独攀类型筛选器会保持选中状态。最高难度完攀链接仍会直接跳转到 theCrag 上的对应单条线路页面。

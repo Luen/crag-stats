@@ -1,32 +1,32 @@
-# Tick types
+# 攀爬记录类型
 
-A **tick type** records _how_ you climbed something, not just whether you reached the top. An onsight is worth more than a red point of the same route. That's why theCrag (and Crag Stats) keep them apart.
+**攀爬记录类型**记录的是你 _如何_ 完成攀爬，而不仅仅是你是否到达顶部。同一条线路，视攀的含金量高于红点。这就是为什么 theCrag（以及 Crag Stats）会将它们区分开来。
 
-In the tables below, **Send** means Crag Stats counts the tick as a successful (clean) ascent, for example in "successful ascents", send rates and pyramids. **Attempt** means it's logged as an attempt: it shows as grey in charts, still counts as climbing volume, and can mark a route as a project.
+在下表中，**完攀**表示 Crag Stats 将该记录计为一次成功的（干净）完攀，例如用于统计“成功完攀数”、完攀率和能力金字塔。**尝试**表示它被记录为一次尝试：在图表中显示为灰色，仍计入攀爬总量，并可将线路标记为攻克项目。
 
 <!-- component:tick-types -->
 
-## How ticks are used here
+## 本应用如何使用攀爬记录
 
-- **Pyramids and charts** colour each tick type consistently: onsight green, flash yellow, red point red, pink point pink, send/clean blue, attempts grey.
-- **CPR** shifts each tick by a grade offset (an onsight counts as harder than a red point); see [CPR](/docs/cpr).
-- **Projects** are routes with attempts but no send yet. A route you sent first go (onsight or flash) is never a project.
-- **Training load** counts attempts at 0.8× a send, since working a route is still hard work; see [Training load](/docs/training-load).
+- **金字塔和图表**对每种记录类型使用统一配色：视攀为绿色，闪攀为黄色，红点为红色，粉点为粉色，完攀/干净完攀为蓝色，尝试为灰色。
+- **CPR** 会根据难度偏移量调整每条记录（视攀在计算时比红点难度更高）；请参阅 [CPR](/docs/cpr)。
+- **目标线路**是指已有尝试记录但尚未完攀的线路。首次攀爬即完攀（视攀或闪电）的线路绝不会被视为目标线路。
+- **训练负荷**按完攀的 0.8× 计算尝试次数，因为试线同样需要付出很大努力；请参阅 [训练负荷](/docs/training-load)。
 
-## Counted tick types in analytics
+## 分析中计入的攀爬记录类型
 
-On theCrag, non-send attempts (such as `Working`, `Attempt`, `Hang dog`, or `Retreat`) are logged as ascents. If you log numerous working burns while projecting, counting every attempt in dashboard totals can skew your headline ascent count, style share, and climber type.
+在 theCrag 上，非完攀类的尝试（例如 `Working`、`Attempt`、`Hang dog` 或 `Retreat`）也会被记录为攀登记录。如果你在攻克目标线路时记录了大量试线过程，将每次尝试都计入仪表盘总数可能会使你的总攀登次数、风格占比和攀岩者类型产生偏差。
 
-In **Settings → Display & visibility → Counted tick types**, you can configure how each tick type is treated across Crag Stats:
+在 **设置 → 显示与可见性 → 计入统计的记录类型** 中，你可以配置 Crag Stats 如何处理每种记录类型：
 
-- **Enable (Count everywhere):** Included in headline ascents, discipline breakdown, crags and sectors, pyramids, map totals, Eddington numbers, route repeats, the climber profile axes, activity heatmaps, training load, badges, projects, and goals.
-- **Projects & goals only (Out of totals):** Excluded from headline ascents, discipline share, crags, sectors, pyramids, map totals, Eddington numbers, route repeats, and the climber profile axes, but still counted towards project detection, session activity (heatmap, streaks, sessions per week, and weekday charts), training load fatigue, badges, and grade goals.
-- **Hide (Exclude completely):** Excluded across all analytics, projects, goals, and badges.
+- **启用（全部计入）：** 计入总攀登次数、攀岩类型分布、岩场与岩区、金字塔、地图总计、爱丁顿数、线路重复攀爬、攀岩者能力档案坐标轴、活动热力图、训练负荷、徽章、目标线路和目标。
+- **仅用于目标线路和目标（不计入总数）：** 不计入总攀登次数、攀岩类型占比、岩场、岩区、金字塔、地图总计、爱丁顿数、线路重复攀爬和攀岩者能力档案坐标轴，但仍计入目标线路识别、攀爬场次活动（热力图、连续天数、每周场次及星期分布图）、训练负荷疲劳度、徽章和难度目标。
+- **隐藏（完全排除）：** 从所有分析、目标线路、目标和徽章中排除。
 
-The logbook always preserves and displays all your logged ascents with full filtering regardless of this setting. For which badges follow each choice, see [Badges](/docs/badges).
+无论此设置如何，攀登日志始终会保留并显示你所有已记录的攀登，并提供完整筛选功能。如需了解哪些徽章遵循各选项规则，请参阅 [徽章](/docs/badges)。
 
-When a configured tick type excludes some of your logged ascents, the dashboard also recalculates the profile figures that normally come from theCrag (outdoor and indoor ascents, routes ticked, total height, and climber type) from your counted ascents, so every total on the page describes the same set of ticks. Clear the configuration with the **All logged ticks** preset to go back to theCrag's own totals.
+当配置的记录类型排除了部分已记录的攀登时，仪表盘还会根据你计入统计的攀登重新计算通常来自 theCrag 的个人档案数据（户外和室内攀登次数、完攀线路数、总攀爬高度以及攀岩者类型），从而确保页面上的每一项总计都对应同一组记录。使用 **所有已记录的攀爬** 预设清除配置，即可恢复为 theCrag 自身的总计数据。
 
-## Source
+## 来源
 
-Definitions are paraphrased from theCrag's [Tick types](https://www.thecrag.com/en/article/ticktypes) article. Not every tick type applies to every gear style.
+相关定义参考并转述自 theCrag 的 [攀爬记录类型](https://www.thecrag.com/en/article/ticktypes) 文章。并非每种记录类型都适用于所有保护方式。

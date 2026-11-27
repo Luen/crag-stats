@@ -1,36 +1,32 @@
-# Rock types
+# 岩石类型
 
-theCrag stores geology on many routes as a structured **Rock type** tag (for example Granite or Sandstone). Crag Stats reads that tag from the synced logbook / route cache — it never scrapes pages or guesses rock from the crag name.
+theCrag 将许多线路的地质信息存储为结构化的**岩石类型**标签（例如花岗岩或砂岩）。 Crag Stats 会从同步的攀岩日志 / 线路缓存中读取该标签——绝不会抓取网页，也不会根据岩场名称猜测岩石类型。
 
-## Rock types card
+## 岩石类型卡片
 
-The dashboard **Rock types** card counts ascents whose route has a Rock type tag and shows each name’s share. The dominant type can show a short geology blurb. Each name links to the logbook filtered with `?rock=`.
+仪表盘中的**岩石类型**卡片会统计带有“岩石类型”标签线路的攀登次数，并显示每种岩石所占的比例。占比最高的岩石类型可能会附带一段简短的地质简介。每个岩石名称都会链接到已通过 `?rock=` 筛选的攀岩日志。
 
-Routes without a Rock type tag are left out of the chart, so the percentages describe tagged climbs only.
+没有“岩石类型”标签的线路不会计入图表，因此百分比仅反映已标记岩石类型的攀登记录。
 
-## Rock & performance card
+## 岩石与表现卡片
 
-Once **20 or more** climbing days include at least one send or attempt on a Rock-type-tagged route, the **Rock & performance** card compares how those climbs went by rock. Before that it shows how many tagged days you have so far. The card stays hidden while no tagged send or attempt exists, and can be moved or hidden from Settings → Dashboard.
+当有 **20 天或以上**的攀岩日包含至少一次对带有“岩石类型”标签线路的完攀或尝试时，**岩石与表现**卡片就会按岩石类型对比你的攀登表现。在此之前，该卡片会显示你目前已累积的已标记天数。如果没有任何已标记线路的完攀或尝试记录，该卡片将保持隐藏；你也可以在“设置 → 仪表盘”中移动或隐藏它。
 
-**What is counted.** Sends and attempts (the same tick classification as everywhere else) on routes with a Rock type tag. Untagged climbs are reported only as coverage (“N more … have no rock type tag”).
+**统计范围。** 带有“岩石类型”标签线路上的完攀与尝试（与其他位置采用相同的记录分类标准）。未标记的攀登记录仅作为覆盖情况报告（“另有 N 次……没有岩石类型标签”）。
 
-**Measures** (same ideas as [Weather & performance](/docs/weather)):
+**评估指标**（与[天气与表现](/docs/weather)理念相同）：
 
-- **Send rate:** sends as a share of sends and attempts on that rock.
-- **Near-limit:** the share of graded sends within 2 grades (1 V-grade on the V-scale) of your hardest send of the **same style and grade scale** in the 365 days before that day. V-scale and route grades are never mixed.
-- **Onsight/flash:** onsights and flashes as a share of sends on that rock.
+- **完攀率：** 该岩石类型上的完攀次数占完攀与尝试总次数的比例。
+- **接近极限：** 有难度定级的完攀中，难度在当天之前 365 天内**相同攀登方式和难度体系**最高完攀难度 2 个级别（V 难度体系为 1 个 V 级）以内的比例。 V 难度体系与路线难度等级绝不会混用。
+- **视攀/闪攀：** 该岩石类型上的视攀和闪攀次数占完攀总次数的比例。
 
-**Reading it honestly.**
+**客观解读数据。**
 
-- A rock needs at least **10** ascents (for that measure’s denominator) over at least **3** days before it shows a rate.
-- **Higher** / **Lower** uses the same cluster-robust test as weather performance: each rock-and-day group is one unit, so one big session cannot invent a pattern alone.
-- Crag choice, travel and projects confound rock type. Treat differences as correlation, not cause.
-- When you have many distinct rock names, the least frequent fold into **Other** (no logbook link). Named bands link to `/logbook?rock=…` with the same case-insensitive match as the Rock types card.
+- 某种岩石类型需要在至少 **3** 天内拥有至少 **10** 次攀登（作为该指标的分母），才会显示比率。
+- **较高** / **较低**采用与天气表现相同的聚类稳健检验：每个“岩石类型-日期”组合作为一个单元，因此单次高强度攀爬不会单独制造出某种规律。
+- 岩场选择、出行和攻克项目等因素都会对岩石类型的统计产生混杂影响。请将差异视为相关性，而非因果关系。
+- 当存在许多不同的岩石名称时，出现频率最低的类别会合并到**其他**中（无攀岩日志链接）。具名分组会链接到 `/logbook?rock=…`，采用与“岩石类型”卡片相同的不区分大小写匹配规则。
 
-Viewing the card never triggers a provider request, and private notes are never used.
+查看该卡片绝不会向数据源发起请求，也绝不会使用私人笔记。
 
-The near-limit reference includes your same-style, same-scale sends even when
-those reference routes have no rock tag. It uses the hardest climbed-pitch grade
-when available, includes the 365th prior day, and excludes all sends on the day
-being compared. Rock and weather performance share this reference calculation;
-weather additionally restricts its reference sends to outdoor climbs.
+接近极限的参考基准包含你所有相同方式、相同难度体系的完攀记录，即使这些参考线路没有岩石标签也是如此。在可用时，它会采用已攀爬的最难绳段难度，包含前第 365 天的记录，并排除被比较当天的所有完攀记录。岩石表现与天气表现共用这一参考基准计算方式；天气表现还会额外将参考完攀记录限制为户外攀登。

@@ -1,15 +1,15 @@
-# Sessions per week
+# 每周攀登场次
 
-The **Sessions per week** card counts how many climbing **sessions** you logged each week in a chosen year.
+**每周攀登场次**卡片统计你在选定年份中每周记录的攀登**场次**数量。
 
-## What is a session?
+## 什么是场次？
 
-A session is a **calendar day** with at least one ascent in your logbook — the same idea as “sessions” on project cards. Two ticks on the same day still count as one session. Days with no logs are empty bars.
+一个场次是指你的攀岩日志中至少有一次攀登记录的**日历日**——这与攻克项目卡片上的“场次”概念相同。同一天内的两次完攀记录仍计为一个场次。没有记录的日期显示为空白柱条。
 
-## Average
+## 平均值
 
-**Average sessions / week** is the year’s total sessions divided by the number of weeks shown for that year (about 52–53 ISO weeks that overlap the calendar year). Quiet winters pull the average down; a dense trip block pulls it up.
+**每周平均场次**是指该年的总场次数除以该年显示的周数（约 52–53 个与该日历年重叠的 ISO 周）。攀登较少的冬季会拉低平均值；密集的攀岩旅行则会拉高平均值。
 
-Weeks use a Monday start (UTC date of the ascent). Tap a bar to open the logbook for that week.
+每周以周一为起始（按完攀记录的 UTC 日期计算）。点击柱条即可打开该周的攀岩日志。
 
-Session analytics share strict UTC calendar-day validation: placeholders (`2018-00-00`), impossible dates (`2024-02-31`), and missing dates do not count as sessions. Leap days are accepted only in leap years. Repeated ticks or timestamps on the same written date still count once, regardless of browser or server time zone. This policy is shared with Partners, Weekday, dashboard active days and weather.
+场次分析采用严格的 UTC 日历日校验：占位符（`2018-00-00`）、不存在的日期（`2024-02-31`）以及缺失日期均不计入场次。闰日仅在闰年有效。无论浏览器或服务器时区如何，同一书面日期下的重复完攀记录或时间戳仍只计为一次。此规则同样适用于搭档、星期分布、仪表盘活跃天数以及天气统计。
