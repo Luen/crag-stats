@@ -75,7 +75,14 @@
 		gap: 0.2rem;
 		padding: 0.75rem 0.7rem 0.65rem;
 		border-radius: 1rem;
-		border-top: 3px solid var(--accent-2);
+	}
+	.tile::before {
+		content: '';
+		width: 1.75rem;
+		height: 3px;
+		margin-bottom: 0.3rem;
+		border-radius: 999px;
+		background: var(--accent-2);
 	}
 	.tile strong {
 		font-size: 1.9rem;
