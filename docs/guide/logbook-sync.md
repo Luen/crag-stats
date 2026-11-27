@@ -23,8 +23,10 @@ An unchanged logbook therefore shows zero additions/removals and existing ascent
 refreshed. Skipped runs and errors show their own messages, not a success summary.
 
 Manual CSV uploads show processed/new/refreshed counts too, but never remove
-missing entries. Route-history and weather enrichment are separate background
-imports and are not included in these logbook counts. The summary describes the
+missing entries. Route data and weather enrichment are separate background
+imports: when enabled, they start after every successful sync or CSV upload
+(including uploads to `POST /api/logbook/csv`), and are not included in these
+logbook counts. The summary describes the
 completed button action; it is not a persistent sync history.
 
 ## API sync
@@ -57,7 +59,7 @@ You can keep the logbook in CSV and still have route data (popularity, ascent co
 - `THECRAG_API_KEY`: your supporter logbook read key, now used only for route data and crag/sector location lookups.
 - `THECRAG_USERNAME`: your theCrag username, so FA/FFA history matches you (CSV exports don't include it).
 
-That is the whole configuration: three values, no mode switch. Without `CSV_INGEST_TOKEN`, `THECRAG_API_KEY` syncs the logbook and route data shares the same key. Background route and weather imports follow `IMPORT_CRON` (daily by default) rather than the logbook schedule, so a weekly or monthly `SYNC_CRON` still gets route data daily. Settings → **Import route data** shows progress and starts a run by hand.
+That is the whole configuration: three values, no mode switch. Without `CSV_INGEST_TOKEN`, `THECRAG_API_KEY` syncs the logbook and route data shares the same key. Background route and weather imports start after each successful sync or CSV upload, and also follow `IMPORT_CRON` (daily by default) rather than the logbook schedule, so a weekly or monthly `SYNC_CRON` still gets route data daily. Settings → **Import route data** shows progress and starts a run by hand.
 
 ## Uploading a CSV from another container
 

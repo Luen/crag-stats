@@ -4,6 +4,8 @@
 
 - AI top-up progress must use `/files/{fileId}/languages/progress`, matching the `fileIds` submitted for pre-translation. Project-wide totals include guides and retained duplicate branches; using them makes a completed UI catalogue retry unrelated work and rotate through unused models.
 
+- Crowdin pre-translation jobs can finish with every string skipped (`languages[].skipped.ai_error`). Check file-scoped coverage and the report; its `files` list also includes directory roll-ups, so sum only submitted file IDs. Use AI request logs to distinguish minute limits, daily quota, and high-demand 503s; never print raw provider errors.
+
 - Crowdin AI top-up requires **Translation status → Project progress → Read only** (`project.status.progress:read`) on `CROWDIN_PERSONAL_TOKEN`, in addition to catalogue and AI scopes. A 403 naming that scope is a credential configuration failure, not exhausted model quota; correct the token permissions and rerun. Ordinary Crowdin Sync does not exercise this permission.
 
 - Documentation localisation (#506): Crowdin owns `docs/guide/<locale>/*.md` and the UI catalogue. Import initial translations before the first download; Markdown imports can leave unmatched sentences in English, so inspect the exported result and QA. Guide exports retain English for untranslated passages. Preserve `<!-- component:name -->` markers (unit-tested). Header language changes must invalidate all loaders even when removing `?locale=`, or the guide body stays in its previous language.
@@ -551,7 +553,7 @@ World map (#313): `/map` uses bundled public-domain Natural Earth outlines, serv
 
 - Rope-solo milestones (#319): `#lib/soloTicks` normalizes only explicit known lead/top-rope/aid solo ticks; provider completion classification and `soloKind` share it. First lead/top-rope badges additionally require a send and strict valid day; never infer them from missing partners or route style. One-shot stable IDs `first_lead_rope_solo` / `first_top_rope_solo`, no Almost there. Data migration 0009 repairs completion flags only with matching cached provider tick evidence, preserving route metadata, styles and notes; 0006–0008 belong to #318.
 
-- Sync summaries (#335): aggregate actual upsert insert counts across API pages; CSV returns its transaction's counts. Settings shows successful processed/new/refreshed ascent, new route and prune counts, with neutral skipped-run feedback. Refreshed is not changed. Do not use before/after net totals or include private payloads. Manual CSV upload is upsert-only; weather/history are separate background work. No summary is persisted.
+- Sync summaries (#335): aggregate actual upsert insert counts across API pages; CSV returns its transaction's counts. Settings shows successful processed/new/refreshed ascent, new route and prune counts, with neutral skipped-run feedback. Refreshed is not changed. Do not use before/after net totals or include private payloads. Manual CSV upload is upsert-only; weather/history are separate background work, triggered after every successful sync and every `ingestLogbookCsv()` (Settings upload and `POST /api/logbook/csv`). No summary is persisted.
 
 - Seasonality search (#331) at `/seasonality` uses cached logged-route curves only. Ranking is selected-month / annual-peak (no cutoff); zero curves have no signal. Share `weightedSeasonality` with Best months, keep provider area identities separate, preserve URL filters, and use exact `/logbook?route=<local id>` links rather than name search. No provider fetch on view/search.
 
