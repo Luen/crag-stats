@@ -1,155 +1,153 @@
-# Weather
+# Meteo
 
-Crag Stats can cache **daily outdoor weather** for climbs that have route coordinates, then use it for badges, dashboard and logbook surfaces, and a comparison of how your climbing went in different weather.
+Crag Stats può salvare nella cache il **meteo giornaliero outdoor** per le salite dotate di coordinate della via, per poi usarlo nei badge, nella dashboard, nel diario e per confrontare il tuo rendimento su roccia in diverse condizioni meteo.
 
-## Opt-in
+## Attivazione facoltativa
 
-Off by default. The server owner sets `WEATHER_IMPORT=true` in `.env` and restarts. After each successful logbook sync, on the background import schedule (`IMPORT_CRON`, daily by default, which also covers logbooks that arrive by CSV), and from **Settings → Import weather**, Crag Stats fetches up to **50** missing outdoor days per run from [Open-Meteo](https://open-meteo.com/)'s historical weather API, oldest climb days first, with at least **1.1 seconds** between requests. The Settings action starts that run in the background so the page does not wait on the full batch. Wipe clears the cache.
+Disattivato per impostazione predefinita. Il proprietario del server imposta `WEATHER_IMPORT=true` in `.env` e riavvia. After each successful logbook sync or CSV upload, on the background import schedule (`IMPORT_CRON`, daily by default), and from **Settings → Import weather**, Crag Stats fetches up to **50** missing outdoor days per run from [Open-Meteo](https://open-meteo.com/)'s historical weather API, oldest climb days first, with at least **1.1 seconds** between requests. L'azione nelle Impostazioni avvia l'esecuzione in background in modo che la pagina non debba attendere il completamento dell'intero blocco. L'azzeramento svuota la cache.
 
-Open-Meteo's free non-commercial tier is intended for personal self-hosted installs. Do not enable this for a commercial multi-tenant service without reviewing their terms and paid options.
+Il piano gratuito non commerciale di Open-Meteo è pensato per installazioni personali self-hosted. Non attivare questa funzione per un servizio commerciale multi-tenant senza aver prima verificato i loro termini e le opzioni a pagamento.
 
-## What gets fetched
+## Cosa viene recuperato
 
-- **Outdoor only** — likely indoor / gym routes are skipped (same heuristics as goals).
-- **Coordinates required** — the route must have latitude and longitude (from theCrag sync, or from route data import for CSV logbooks).
-- **Past days** — today's UTC date is skipped; the archive is often incomplete for the current day.
-- **Shared cache key** — lat/lon are rounded to **one decimal place**, so nearby routes at one crag share a day row.
+- **Solo outdoor** — le vie probabilmente indoor / in palestra vengono saltate (stesse euristiche degli obiettivi).
+- **Coordinate obbligatorie** — la via deve avere latitudine e longitudine (dalla sincronizzazione con theCrag o dall'importazione dei dati delle vie per i diari CSV).
+- **Giorni passati** — la data UTC odierna viene saltata; l'archivio è spesso incompleto per la giornata in corso.
+- **Chiave di cache condivisa** — latitudine e longitudine vengono arrotondate a **una cifra decimale**, così le vie vicine nella stessa falesia condividono un'unica riga giornaliera.
 
-Stored fields: daily max/min temperature (°C), precipitation (mm), WMO weather code, mean humidity, and max/mean 10 m wind (km/h). Display units for temperature (°C or °F), wind (km/h or mph), and precipitation (mm or in) can be chosen in **Settings → Display & visibility**.
+Campi salvati: temperatura massima/minima giornaliera (°C), precipitazioni (mm), codice meteo WMO, umidità media e vento massimo/medio a 10 m (km/h). Le unità di visualizzazione per temperatura (°C o °F), vento (km/h o mph) e precipitazioni (mm o in) possono essere scelte in **Impostazioni → Visualizzazione e visibilità**.
 
-## Badges
+## Badge
 
-Once a day is cached, these badges can unlock from any **outdoor** logged ascent that day at that location (attempts count; indoor/gym rows are skipped even if they share a cached lat/lon):
+Una volta che un giorno è nella cache, questi badge possono sbloccarsi con qualsiasi salita **outdoor** registrata quel giorno in quella località (anche i tentativi contano; le righe indoor/palestra vengono saltate anche se condividono lat/lon nella cache):
 
-| Badge                    | Rule                                                                             |
-| ------------------------ | -------------------------------------------------------------------------------- |
-| **Heat Wave**            | Day's high ≥ 35°C                                                                |
-| **Freeze Frame**         | Day's low ≤ 0°C                                                                  |
-| **Rain Check**           | ≥ 1 mm precipitation and not classified as snow                                  |
-| **Climbing in the Snow** | WMO snow codes (71–77, 85–86), or ≥ 1 mm precip with high ≤ 1°C                  |
-| **Blown Away**           | Day's max 10 m wind ≥ 50 km/h                                                    |
-| **Bluebird**             | High 15–25°C, measured precip < 0.1 mm, not snow/thunderstorm WMO                |
-| **Sticky**               | Mean humidity ≥ 85%                                                              |
-| **Storm Send**           | A **send** on a day with ≥ 10 mm non-snow precip                                 |
-| **Four Seasons**         | Earn Heat Wave, Freeze Frame, Rain Check, and Climbing in the Snow at least once |
+| Badge                      | Regola                                                                                                |
+| -------------------------- | ----------------------------------------------------------------------------------------------------- |
+| **Ondata di caldo**        | Massima giornaliera ≥ 35°C                                                                            |
+| **Fermo immagine**         | Minima giornaliera ≤ 0°C                                                                              |
+| **Rinvio per pioggia**     | ≥ 1 mm di precipitazioni non classificate come neve                                                   |
+| **Arrampicata sulla neve** | Codici neve WMO (71–77, 85–86) oppure ≥ 1 mm di precipitazioni con massima ≤ 1°C                      |
+| **Spazzato dal vento**     | Vento massimo giornaliero a 10 m ≥ 50 km/h                                                            |
+| **Cielo limpido**          | Massima 15–25°C, precipitazioni misurate < 0,1 mm, nessun codice WMO neve/temporale                   |
+| **Aderenza umida**         | Umidità media ≥ 85%                                                                                   |
+| **Chiusura in tempesta**   | Una **chiusura** in un giorno con ≥ 10 mm di precipitazioni non nevose                                |
+| **Quattro stagioni**       | Ottieni Ondata di caldo, Fermo immagine, Rinvio per pioggia e Arrampicata sulla neve almeno una volta |
 
-Without `WEATHER_IMPORT` (or before the backlog is fetched), these badges stay locked even if you climbed in those conditions. A “scorcher streak” (many heat days in one week) is deferred.
+Senza `WEATHER_IMPORT` (o prima che lo storico venga recuperato), questi badge restano bloccati anche se hai arrampicato in quelle condizioni. Una «serie rovente» (molti giorni di caldo intenso in una settimana) è rimandata a sviluppi futuri.
 
-## Weather detail page
+## Pagina di dettaglio meteo
 
-Open [Weather](/weather) from the analytics sidebar or either dashboard weather card title. The dashboard keeps compact conditions and a daily-high/send-rate summary when a clear signal exists. With no clear signal, performance keeps its detailed bands and controls; the detail page always offers the full view. Saved dashboard card visibility and positions still apply.
+Apri [Meteo](/weather) dalla barra laterale delle statistiche o dal titolo di una delle due schede meteo nella dashboard. La dashboard mostra condizioni compatte e un riepilogo tra temperatura massima giornaliera e tasso di chiusura quando emerge un segnale chiaro. In assenza di un segnale chiaro, le prestazioni mantengono le fasce dettagliate e i controlli; la pagina di dettaglio offre sempre la vista completa. La visibilità e la posizione salvate delle schede nella dashboard continuano a essere rispettate.
 
-On the detail page, performance grouping and measure are saved in the URL (`group=temperature|conditions`, `measure=sendRate|nearLimit|onsightFlash`), so you can bookmark a view and use Back/Forward. Weather patterns describe correlations, not recommendations or causes.
+Nella pagina di dettaglio, il raggruppamento e la metrica delle prestazioni vengono salvati nell'URL (`group=temperature|conditions`, `measure=sendRate|nearLimit|onsightFlash`), così puoi salvare una vista nei segnalibri e usare Indietro/Avanti. Gli andamenti meteo descrivono correlazioni, non raccomandazioni o cause.
 
-**Coverage & location quality** separates usable cached location-days, checked days with unavailable weather, and days not checked yet (including today and future dates). Outdoor ascents with valid dates but no resolved location are counted separately: they cannot be assigned a location-day and are excluded from that denominator. Conditions count all outdoor ticks; performance counts sends and attempts only. Import and location controls remain in Settings, linked from Weather for the signed-in owner.
+**Copertura e qualità della posizione** distingue i giorni-località utilizzabili nella cache, i giorni controllati con meteo non disponibile e i giorni non ancora controllati (inclusi oggi e le date future). Le salite outdoor con date valide ma senza posizione risolta vengono contate separatamente: non possono essere assegnate a un giorno-località e sono escluse da quel denominatore. Le condizioni contano tutte le salite outdoor registrate; le prestazioni contano solo chiusure e tentativi. I controlli di importazione e posizione restano nelle Impostazioni, collegati da Meteo per il proprietario autenticato.
 
-Without cached outdoor weather the page explains how import works. Thin caches still show conditions while performance waits for its existing minimum sample. Viewing Weather never requests provider data.
+Senza dati meteo outdoor nella cache, la pagina spiega come funziona l'importazione. Con pochi dati in cache vengono comunque mostrate le condizioni, mentre le prestazioni attendono il campione minimo previsto. La visualizzazione della pagina Meteo non invia mai richieste al fornitore.
 
-## Weather conditions
+## Condizioni meteo
 
-The dashboard **Weather conditions** card appears once at least one outdoor climbing day has a cached weather row; without `WEATHER_IMPORT` (or before the first fetch finishes) it stays hidden. It can be shown, hidden or moved from Settings → Dashboard like any other card.
+La scheda **Condizioni meteo** della dashboard compare appena almeno un giorno di arrampicata outdoor ha una riga meteo in cache; senza `WEATHER_IMPORT` (o prima del termine del primo recupero) resta nascosta. Può essere mostrata, nascosta o spostata da Impostazioni → Dashboard come qualsiasi altra scheda.
 
-- **Days** are _location-days_: one calendar day at one cached location (lat/lon rounded to one decimal). A day split across two crags counts twice; gym and other likely-indoor routes never count.
-- **Coverage** compares days that have a cached weather row with all outdoor days that have route coordinates. Days without a usable cached row (including unchecked and checked-but-unavailable days) are listed as "without usable weather" and left out of every other number in the conditions view.
-- **Hottest / coldest climb** use the day's maximum and minimum temperature. The link goes to the earliest-logged ascent that day on theCrag.
-- **Share of days** shows perfect, rainy, snowy, freezing and hot days as a share of days with cached weather, using the same rules as the badges above (rain ≥ 1 mm and not snow, snow codes, low ≤ 0°C, high ≥ 35°C). A day can appear in more than one row, for example a freezing, snowy day.
-- A **Perfect** day is a fair day (high 15–25°C, dry, no snow or thunderstorm) that is also calm (max wind under 25 km/h), not humid (mean humidity under 85%) and stayed above freezing overnight. If the wind, humidity or low is missing for a day, it is not counted as perfect.
-- **Daily high** is a small histogram of each day's maximum temperature in 5°C bins, labelled in your chosen temperature unit. Ranges include the lower edge and exclude the upper edge (for example, 0–<5°C or 32–<41°F).
+- I **giorni** sono _giorni-località_: un giorno di calendario in una località nella cache (lat/lon arrotondate a un decimale). Una giornata divisa tra due falesie conta due volte; le vie in palestra e le altre vie probabilmente indoor non contano mai.
+- **Copertura** confronta i giorni che hanno una riga meteo in cache con tutti i giorni outdoor dotati di coordinate della via. I giorni senza una riga utilizzabile in cache (inclusi quelli non controllati e quelli controllati ma non disponibili) sono elencati come «senza meteo utilizzabile» ed esclusi da tutti gli altri numeri nella vista delle condizioni.
+- **Salita più calda / più fredda** usano la temperatura massima e minima della giornata. Il collegamento porta alla prima salita registrata quel giorno su theCrag.
+- **Quota di giorni** mostra i giorni perfetti, piovosi, nevosi, gelidi e caldi come percentuale dei giorni con meteo in cache, usando le stesse regole dei badge sopra (pioggia ≥ 1 mm e non neve, codici neve, minima ≤ 0°C, massima ≥ 35°C). Un giorno può comparire in più di una riga, ad esempio una giornata gelida e nevosa.
+- Un giorno **Perfetto** è una giornata favorevole (massima 15–25°C, asciutta, senza neve né temporali) che sia anche calma (vento massimo sotto i 25 km/h), poco umida (umidità media sotto l'85%) e rimasta sopra lo zero durante la notte. Se per un giorno mancano vento, umidità o minima, non viene contato come perfetto.
+- **Massima giornaliera** è un piccolo istogramma della temperatura massima di ciascun giorno in intervalli di 5°C, etichettato nell'unità di temperatura scelta. Gli intervalli includono l'estremo inferiore ed escludono quello superiore (ad esempio 0–<5°C o 32–<41°F).
 
-These are model values for the nearest grid cell, not official climate normals or a measurement at the wall.
+Si tratta di valori di modello per la cella di griglia più vicina, non di medie climatiche ufficiali né di una misurazione alla parete.
 
-## Weather & performance
+## Meteo e prestazioni
 
-Once **20 or more** outdoor location-days have cached weather, the **Weather & performance** detail view compares how your outdoor climbing went in different weather. Before that it shows how many eligible location-days are cached so far. The dashboard summary stays hidden while no weather is cached and can be moved or hidden from Settings → Dashboard; the detail page remains accessible with an empty-state explanation.
+Quando **20 o più** giorni-località outdoor hanno dati meteo in cache, la vista di dettaglio **Meteo e prestazioni** confronta com'è andata la tua arrampicata outdoor in condizioni meteo diverse. Prima di allora mostra quanti giorni-località idonei sono presenti finora nella cache. Il riepilogo della dashboard resta nascosto finché non ci sono dati meteo in cache e può essere spostato o nascosto da Impostazioni → Dashboard; la pagina di dettaglio resta accessibile con una spiegazione dello stato vuoto.
 
-**What is counted.** Outdoor sends and attempts (the same tick classification as everywhere else) whose location-day has cached weather. Gym routes, ticks that are neither a send nor an attempt, and ascents without a weather location are left out. Ascents whose weather comes from an approximate nearby place or area polygon are included, and the view says how many there are.
+**Cosa viene contato.** Chiusure e tentativi outdoor (la stessa classificazione delle salite usata ovunque) il cui giorno-località ha dati meteo in cache. Le vie in palestra, le salite che non sono né una chiusura né un tentativo e le salite senza una posizione meteo vengono escluse. Le salite il cui meteo proviene da una località vicina approssimativa o dal poligono di un'area sono incluse, e la vista indica quante sono.
 
-The compact dashboard summary shows daily-high/send rate. Its no-signal fallback and the detail page offer both controls below.
+Il riepilogo compatto della dashboard mostra il rapporto tra massima giornaliera e tasso di chiusura. Il fallback in assenza di segnale chiaro e la pagina di dettaglio offrono entrambi i controlli indicati di seguito.
 
-**Group by:**
+**Raggruppa per:**
 
-- **Daily high:** under 10°, 10–17°, 18–24°, 25–29° and 30°+. Each band includes its lower edge and stops just below the next one, like the logbook temperature range.
-- **Conditions:** Fair, Dry (measured precipitation under 1 mm and no snow; missing rain is unknown, not dry), Rainy, Snowy, Hot, Freezing, Calm (max wind under 25 km/h) and Windy (≥ 50 km/h), using the badge / logbook rules above. One day can be in several conditions. Measured wind from 25 to under 50 km/h is neither Calm nor Windy.
+- **Massima giornaliera:** sotto 10°, 10–17°, 18–24°, 25–29° e 30°+. Ogni fascia include il proprio limite inferiore e si ferma appena sotto la fascia successiva, come l'intervallo di temperatura del diario.
+- **Condizioni:** Buono, Asciutto (precipitazioni misurate sotto 1 mm e niente neve; la pioggia mancante è sconosciuta, non asciutta), Piovoso, Nevoso, Caldo, Gelido, Calmo (vento massimo sotto 25 km/h) e Ventoso (≥ 50 km/h), usando le regole di badge e diario indicate sopra. Uno stesso giorno può rientrare in più condizioni. Un vento misurato tra 25 e meno di 50 km/h non è né Calmo né Ventoso.
 
-**Measures:**
+**Metriche:**
 
-- **Send rate:** sends as a share of sends and attempts.
-- **Near-limit:** the share of graded sends within 2 grades (1 V-grade on the V-scale) of your hardest outdoor send of the **same style and grade scale** in the 365 days before that day. Trad is compared with trad and sport with sport, and V-scale and route grades are never mixed. Using your recent best rather than your all-time best means getting stronger over the years does not make recent weather look better. Sends with no earlier same-style send in that year, and ungraded sends, are left out of this measure.
-- **Onsight/flash:** onsights and flashes as a share of sends.
+- **Tasso di chiusura:** chiusure in rapporto al totale di chiusure e tentativi.
+- **Vicino al limite:** la quota di chiusure gradate entro 2 gradi (1 grado V sulla scala V) dalla tua chiusura outdoor più dura dello **stesso stile e scala di gradi** nei 365 giorni precedenti a quel giorno. Il trad viene confrontato con il trad e la sportiva con la sportiva, e la scala V e i gradi delle vie non vengono mai mescolati. Usare il tuo miglior risultato recente anziché il record assoluto evita che migliorare negli anni faccia apparire migliore il meteo recente. Le chiusure senza una chiusura precedente dello stesso stile in quell'anno e le chiusure senza grado sono escluse da questa metrica.
+- **A vista/flash:** salite a vista e flash in rapporto al totale delle chiusure.
 
-**Reading it honestly.**
+**Come leggerlo correttamente.**
 
-- Each bar shows the band's rate; the line marks your overall rate. A band needs at least **10** ascents (for that measure's denominator) over at least **3** days before it shows a rate. Smaller bands show "Not enough data".
-- A band is marked **Higher** or **Lower** only when it differs from all your _other_ weather days by more than day-to-day variation explains (a two-sided test at about 95%), with at least 5 days on each side. Ascents on the same day share the same weather and usually the same crag and partner, so the test treats each location-day as one unit rather than each ascent. One big day out cannot create a pattern by itself.
-- The one-line summary names the band that stands out most for the selected measure, or says that nothing stands out yet.
-- This is a **correlation, not a cause**. Season, crag, partners and where you are in a project all change with the weather. With many bands and measures, an occasional "Higher" or "Lower" can appear by chance.
+- Ogni barra mostra il tasso della fascia; la linea indica il tuo tasso complessivo. Una fascia richiede almeno **10** salite (per il denominatore di quella metrica) distribuite su almeno **3** giorni prima di mostrare un tasso. Le fasce più piccole mostrano «Dati insufficienti».
+- Una fascia è contrassegnata come **Più alto** o **Più basso** solo quando differisce da tutti gli _altri_ tuoi giorni meteo più di quanto spieghi la variabilità giornaliera (un test a due code intorno al 95%), con almeno 5 giorni per lato. Le salite dello stesso giorno condividono lo stesso meteo e di solito la stessa falesia e lo stesso compagno, quindi il test tratta ogni giorno-località come un'unica unità anziché contare ogni singola salita. Una singola giornata intensa non può creare una tendenza da sola.
+- Il riepilogo su una riga indica la fascia che spicca maggiormente per la metrica selezionata, oppure segnala che al momento non emerge nulla di significativo.
+- Si tratta di una **correlazione, non di una causa**. Stagione, falesia, compagni e fase di un progetto cambiano tutti insieme al meteo. Con molte fasce e metriche, un occasionale «Più alto» o «Più basso» può comparire per puro caso.
 
-Each daily-high band and the fair, rain, snow, heat, freeze, calm and windy conditions link to the logbook filtered to those ascents. Dry has no logbook filter. A values table under the detail-page bars lists every band with counts for all three measures. Viewing the card never triggers a weather request, and private notes are never used.
+Ogni fascia di massima giornaliera e le condizioni buono, pioggia, neve, caldo, gelo, calma e vento rimandano al diario filtrato su quelle salite. Asciutto non ha un filtro nel diario. Una tabella dei valori sotto le barre nella pagina di dettaglio elenca ogni fascia con i conteggi per tutte e tre le metriche. La visualizzazione della scheda non avvia mai una richiesta meteo e le note private non vengono mai utilizzate.
 
-When the dashboard's daily-high/send-rate comparison has no clear signal, the Weather & performance card keeps its detailed bands, local grouping/measure controls and values table. These controls leave the dashboard URL unchanged. A clear signal retains the compact summary; both versions link to the weather page. Minimum sample thresholds are unchanged.
+Quando il confronto tra massima giornaliera e tasso di chiusura nella dashboard non mostra un segnale chiaro, la scheda Meteo e prestazioni mantiene le fasce dettagliate, i controlli locali di raggruppamento/metrica e la tabella dei valori. Questi controlli lasciano invariato l'URL della dashboard. Un segnale chiaro mantiene il riepilogo compatto; entrambe le versioni rimandano alla pagina meteo. Le soglie minime del campione restano invariate.
 
-## Logbook filters and chips
+## Filtri del diario ed etichette
 
-Near-limit references use the same style-and-grade-scale calculation as
-[Rock & performance](/docs/rock-types), using climbed-pitch grades when available.
-The weather reference includes outdoor sends without cached weather, includes
-the 365th prior day, and excludes sends on the day being compared.
+I riferimenti vicino al limite utilizzano lo stesso calcolo per stile e scala di gradi di [Roccia e prestazioni](/docs/rock-types), usando i gradi dei tiri effettivamente saliti quando disponibili.
+Il riferimento meteo include le chiusure outdoor prive di meteo in cache, include il 365° giorno precedente ed esclude le chiusure del giorno confrontato.
 
-When any weather is cached, the logbook gains a **Weather on the day** filter (`?weather=`): `fair`, `perfect`, `heat`, `freeze`, `rain`, `snow`, `wind` or `calm`. **Windy day** matches daily max 10 m wind **≥ 50 km/h**, the same threshold as **Blown Away**. **Calm / still day** matches measured max wind **under 25 km/h**, the calm threshold used by **Perfect day**, without requiring fair temperatures, dry weather or low humidity. Missing wind readings match neither option; days from 25 to under 50 km/h match neither wind filter. The other options use the same rules as the badges. It only matches **outdoor** ascents with route coordinates and a cached day for that location; gym routes, ascents without coordinates and days that have not been fetched never match.
+Quando ci sono dati meteo in cache, il diario aggiunge il filtro **Meteo del giorno** (`?weather=`): `fair`, `perfect`, `heat`, `freeze`, `rain`, `snow`, `wind` o `calm`. **Giornata ventosa** corrisponde a un vento massimo giornaliero a 10 m **≥ 50 km/h**, la stessa soglia di **Spazzato dal vento**. **Giornata calma / senza vento** corrisponde a un vento massimo misurato **sotto i 25 km/h**, la soglia di calma usata da **Giornata perfetta**, senza richiedere temperature miti, tempo asciutto o bassa umidità. Le letture del vento mancanti non corrispondono a nessuna delle due opzioni; i giorni da 25 a meno di 50 km/h non corrispondono a nessun filtro del vento. Le altre opzioni usano le stesse regole dei badge. Corrisponde solo alle salite **outdoor** con coordinate della via e un giorno in cache per quella località; le vie in palestra, le salite senza coordinate e i giorni non ancora recuperati non corrispondono mai.
 
-Rows on cached days also show small text chips (for example "Hot 36°C", "Freezing -2°C", "Rain 4 mm", "Snow", "Windy 55 km/h", "Fair 21°C"). Ordinary days show nothing.
+Le righe dei giorni presenti in cache mostrano anche piccole etichette di testo (ad esempio «Caldo 36°C», «Gelido -2°C», «Pioggia 4 mm», «Neve», «Ventoso 55 km/h», «Bel tempo 21°C»). I giorni ordinari non mostrano nulla.
 
-The signed-in owner also gets **No weather cached** (`?missing=weather`), which lists outdoor ascents with coordinates and a past date that still have no cached weather, so you can see what the next imports will fetch. Visitors never see this option.
+Il proprietario autenticato dispone anche di **Nessun meteo memorizzato in cache** (`?missing=weather`), che elenca le salite outdoor con coordinate e data passata prive di meteo in cache, così puoi vedere cosa recupereranno le prossime importazioni. I visitatori non vedono mai questa opzione.
 
-The missing-weather backlog excludes days the provider has already checked but could not supply. These negative cache entries do not produce weather chips and are not automatically queued again. Invalid calendar dates are excluded from both the importer and backlog.
+L'elenco dei dati meteo mancanti esclude i giorni già verificati dal fornitore ma non disponibili. Queste voci negative nella cache non generano etichette meteo e non vengono riaccodate automaticamente. Le date di calendario non valide sono escluse sia dall'importatore sia dall'elenco arretrato.
 
-## Recent activities
+## Attività recenti
 
-The dashboard **Recent activities** card shows the same text chips under an outdoor climb when its day is cached. They are read as a short list labelled "Weather on the day", never colour-only, and the strip is omitted for gym routes, uncached days and ordinary weather.
+La scheda **Attività recenti** della dashboard mostra le stesse etichette di testo sotto una salita outdoor quando il relativo giorno è in cache. Vengono lette come un breve elenco etichettato «Meteo del giorno», mai basato solo sul colore, e la striscia viene omessa per vie in palestra, giorni non in cache e meteo ordinario.
 
-## Climbing story
+## Storia di arrampicata
 
-Story percentages describe cached outdoor location-days, not days whose weather is still unknown.
+Le percentuali della storia descrivono i giorni-località outdoor in cache, non i giorni il cui meteo è ancora sconosciuto.
 
-When the cache covers at least 20 outdoor days and half or more of your outdoor days, the [Climbing story](/docs/climbing-story) can add one short line about the conditions you climb in (snow, cold, heat, rain or a wide temperature spread). It describes what you do climb in, never what you avoid, and stays out of the story when coverage is thin.
+Quando la cache copre almeno 20 giorni outdoor e almeno la metà dei tuoi giorni outdoor, la [Storia di arrampicata](/docs/climbing-story) può aggiungere una breve riga sulle condizioni in cui arrampichi (neve, freddo, caldo, pioggia o un'ampia escursione termica). Descrive le condizioni in cui arrampichi, mai quelle che eviti, e non compare nella storia quando la copertura è scarsa.
 
-## Ascent calendar
+## Calendario delle salite
 
-The [Ascent calendar](/docs/ascent-calendar) has a **Weather** colour mode (only shown once weather is cached). It shares the badge rules; see that page for the colour key.
+Il [Calendario delle salite](/docs/ascent-calendar) ha una modalità colore **Meteo** (mostrata solo quando ci sono dati meteo in cache). Condivide le regole dei badge; consulta quella pagina per la legenda dei colori.
 
-## Sectors: climate on your visits
+## Settori: clima durante le tue visite
 
-On the **Sectors** page, a crag with at least **5** cached outdoor visit days shows a one-line summary: average daily high and low, and the share of those days with rain, snow, freezing or hot weather (snow, freezing and hot only when above 0%). It describes the days you actually climbed there, so it leans towards the seasons you visit. It is **not** official climate normals or a forecast, and it is hidden for crags below the threshold, for gym routes and when no weather is cached.
+Nella pagina **Settori**, una falesia con almeno **5** giorni di visita outdoor in cache mostra un riepilogo su una riga: massima e minima giornaliera media e la quota di quei giorni con pioggia, neve, gelo o caldo (neve, gelo e caldo solo quando superiori allo 0%). Descrive i giorni in cui hai effettivamente arrampicato lì, quindi riflette le stagioni in cui la frequenti. **Non** si tratta di medie climatiche ufficiali né di una previsione, ed è nascosto per le falesie sotto la soglia, per le vie in palestra e quando non ci sono dati meteo in cache.
 
-## Fair-weather rate
+## Percentuale bel tempo
 
-Once **20 or more** outdoor days have cached weather, the Weather conditions card adds a **Fair-weather rate**: the share of those days that were _fair_ (high 15-25°C, dry, no snow or thunderstorm - the same rule as **Bluebird**). It also reports the share of _tough_ days (hot, freezing, wet, snowy, or very windy). Days in between, such as a dry 29°C day, are counted in neither group.
+Quando **20 o più** giorni outdoor hanno dati meteo in cache, la scheda Condizioni meteo aggiunge una **Percentuale bel tempo**: la percentuale di quei giorni che sono stati _favorevoli_ (massima 15–25°C, asciutti, senza neve né temporali — la stessa regola di **Cielo limpido**). Riporta inoltre la percentuale di giorni _impegnativi_ (caldi, gelidi, piovosi, nevosi o molto ventosi). I giorni intermedi, come una giornata asciutta a 29°C, non vengono contati in nessuno dei due gruppi.
 
-The label is descriptive, not a grade: **Fair-weather leaning** at 60% fair or more, **All-weather climber** at 50% tough or more, otherwise **A bit of both**. The groups can overlap: a mild dry day may still be very windy or freezing overnight. When both label thresholds are met, **All-weather climber** takes priority. Below 20 days nothing is shown, so a thin cache never labels you. The link opens the logbook filtered to fair days.
-For seasonal recommendations from route metadata, see [Best months](/docs/best-months); those recommendations are separate from the weather sampled on your logged visits.
+L'etichetta è descrittiva, non una valutazione: **Incline al bel tempo** dal 60% di bel tempo in su, **Scalatore per ogni tempo** dal 50% di giorni impegnativi in su, altrimenti **Un po' di entrambi**. I gruppi possono sovrapporsi: una giornata mite e asciutta può comunque essere molto ventosa o scendere sotto lo zero di notte. Quando vengono soddisfatte entrambe le soglie, **Scalatore per ogni tempo** ha la priorità. Sotto i 20 giorni non viene mostrato nulla, così una cache ridotta non ti etichetta mai. Il collegamento apre il diario filtrato sui giorni favorevoli.
+Per le indicazioni stagionali tratte dai metadati delle vie, vedi [Mesi migliori](/docs/best-months); tali indicazioni sono separate dal meteo campionato durante le tue visite registrate.
 
-Fair-weather labels use the exact day counts for their thresholds; displayed rates are rounded to one decimal place. Display rounding alone never changes your label.
+Le etichette sul bel tempo usano i conteggi esatti dei giorni per le loro soglie; le percentuali mostrate sono arrotondate a una cifra decimale. Il solo arrotondamento di visualizzazione non cambia mai la tua etichetta.
 
-### From weather details to your logbook
+### Dai dettagli meteo al tuo diario
 
-Each condition row and each daily-high bar in the **Weather conditions** detail view opens the logbook filtered to those days. A temperature bar includes its lower bound and stops just below the next bar (for example 20–24° covers 20.0 °C up to, but not including, 25 °C). The range stays applied while you sort, page or add other filters; use **Clear weather range** to remove only that range.
+Ogni riga di condizione e ogni barra della massima giornaliera nella vista di dettaglio **Condizioni meteo** apre il diario filtrato su quei giorni. Una barra di temperatura include il limite inferiore e si ferma appena sotto la barra successiva (ad esempio 20–24° copre da 20,0 °C fino a 25 °C esclusi). L'intervallo resta applicato mentre ordini, cambi pagina o aggiungi altri filtri; usa **Cancella intervallo meteo** per rimuovere solo quell'intervallo.
 
-The card counts outdoor _days_ at each location, while the logbook lists every matching _ascent_, so the two numbers can differ. On wide screens the logbook shows a Weather column with the cached daily high, low and rain; on smaller screens the condition chips appear next to the route instead. Indoor or uncached ascents show a dash. Viewing these pages never triggers a weather request.
+La scheda conta i _giorni_ outdoor in ogni località, mentre il diario elenca ogni _salita_ corrispondente, quindi i due numeri possono differire. Sugli schermi ampi il diario mostra una colonna Meteo con massima, minima e pioggia in cache; sugli schermi più piccoli compaiono invece le etichette di condizione accanto alla via. Le salite indoor o non in cache mostrano un trattino. La visualizzazione di queste pagine non avvia mai una richiesta meteo.
 
-## Weather locations when route coordinates are missing
+## Posizioni meteo quando mancano le coordinate della via
 
-CSV exports do not include coordinates. With both weather import and route-data import enabled (`WEATHER_IMPORT=true` and `ROUTE_DATA_IMPORT=true`), the configured supporter API key can also look up locations for the crag/sector IDs found in cached route data. This does not import that key owner's logbook or profile. Both keyed logbook ancestors and route API ancestor arrays are supported.
+Le esportazioni CSV non includono le coordinate. Con l'importazione meteo e l'importazione dei dati delle vie entrambe attive (`WEATHER_IMPORT=true` e `ROUTE_DATA_IMPORT=true`), la chiave API supporter configurata può anche cercare le posizioni per gli ID di falesia/settore presenti nei dati delle vie in cache. Questo non importa il diario né il profilo del titolare della chiave. Sono supportati sia gli antenati del diario con chiave sia gli array di antenati dell'API delle vie.
 
-Area lookups share the route import's ten-request budget and one-second pacing. Route checks use the budget first; remaining requests check up to ten areas each. Settings shows **weather areas pending** and offers **Check weather locations now** when all routes are checked. Existing CSV installations can fill missing area locations without **Refresh all routes**. The next import run also checks the backlog. Once location checks finish, a background weather batch starts when eligible days exist.
+Le ricerche per area condividono il budget di dieci richieste e la cadenza di un secondo dell'importazione delle vie. I controlli delle vie usano il budget per primi; le richieste rimanenti controllano fino a dieci aree ciascuna. Le Impostazioni mostrano **aree meteo in sospeso** e offrono **Verifica posizioni meteo ora** quando tutte le vie sono state verificate. Le installazioni CSV esistenti possono completare le posizioni delle aree mancanti senza **Aggiorna tutte le vie**. Anche la successiva esecuzione di importazione controlla l'arretrato. Al termine dei controlli di posizione, viene avviato un blocco meteo in background se esistono giorni idonei.
 
-Area responses (including missing locations) are cached once by provider area ID. `ROUTE_DATA_REFRESH_DAYS` also controls their optional refresh age, and **Refresh all routes** makes area lookups eligible again. Access failures stop the import and use its existing backoff; a key that can read route history is not guaranteed access to area locations. If the API supplies no supported location, use the explicit nearby-place fallback below. No API calls run while viewing weather pages.
+Le risposte delle aree (incluse le posizioni mancanti) vengono salvate in cache una sola volta per ID area del fornitore. `ROUTE_DATA_REFRESH_DAYS` controlla anche la loro età di aggiornamento facoltativo e **Aggiorna tutte le vie** rende nuovamente idonee le ricerche per area. Gli errori di accesso interrompono l'importazione e usano il backoff esistente; una chiave che può leggere la cronologia delle vie non garantisce l'accesso alle posizioni delle aree. Se l'API non fornisce una posizione supportata, usa il fallback esplicito alla località vicina descritto sotto. Nessuna chiamata API viene eseguita durante la visualizzazione delle pagine meteo.
 
-Weather prefers an explicit route point, then its top-level crag (TLC) point, then its immediate sector point from cached provider data. It ignores country-only and arbitrary ancestor geometry. Older cached points without original provider geometry remain usable and are labelled “Cached point”; their original precision cannot be recovered from that point alone. Indoor routes remain excluded.
+Il meteo preferisce un punto esplicito della via, poi il punto della falesia principale (TLC), quindi il punto del settore immediato dai dati del fornitore in cache. Ignora le geometrie limitate al solo paese e quelle di antenati arbitrari. I punti più vecchi in cache privi della geometria originale del fornitore restano utilizzabili e sono etichettati come «Punto memorizzato in cache»; la loro precisione originale non può essere recuperata da quel solo punto. Le vie indoor restano escluse.
 
-Settings → Import weather → **Review weather locations** lists outdoor areas and unresolved route counts. For a missing location, search a nearby town using its name/region and a two-letter country code, then explicitly choose the correct result. The search submits only that entered text and country code to [Open-Meteo geocoding](https://open-meteo.com/en/docs/geocoding-api), whose location data comes from GeoNames. It does not send routes, ascent dates, private notes or API keys. Searches happen only after submitting the form, are cached for 30 days, paced, and back off on errors.
+Impostazioni → Importa meteo → **Rivedi posizioni meteo** elenca le aree outdoor e il numero di vie non risolte. Per una posizione mancante, cerca una città vicina usando nome/regione e un codice paese di due lettere, quindi scegli esplicitamente il risultato corretto. La ricerca invia solo il testo inserito e il codice paese a [Open-Meteo geocoding](https://open-meteo.com/en/docs/geocoding-api), i cui dati geografici provengono da GeoNames. Non invia vie, date di salita, note private né chiavi API. Le ricerche avvengono solo dopo l'invio del modulo, sono memorizzate in cache per 30 giorni, cadenzate e applicano un backoff in caso di errori.
 
-A chosen town is an **approximate nearby-place fallback**, shared only by the same provider area ID (or route identity if no area ID exists). It does not overwrite route coordinates, alter route maps or claim to be the nearest settlement. A valid route/sector/crag point always wins. Town weather can differ from a cliff because of distance, elevation and terrain, so town-based data appears in weather views and filters but **does not unlock weather badges**. You can remove the fallback at any time.
+Una città scelta funge da **fallback approssimativo a una località vicina**, condiviso solo dallo stesso ID area del fornitore (o dall'identità della via se non esiste un ID area). Non sovrascrive le coordinate della via, non altera le mappe delle vie e non pretende di essere il centro abitato più vicino. Un punto valido di via/settore/falesia ha sempre la precedenza. Il meteo della città può differire da quello della parete per distanza, altitudine e orografia, quindi i dati basati su una città compaiono nelle viste e nei filtri meteo ma **non sbloccano i badge meteo**. Puoi rimuovere il fallback in qualsiasi momento.
 
-The logbook and recent activity show the weather location source. The importer, backlog, calendar, conditions card, crag visit summaries and logbook use the same resolved location/day key. Changing or removing a fallback immediately stops using its old key; old weather stays cached and can still be used by other climbs at that location. Fetch the next weather batch to fill a newly chosen location. Wipe clears resolutions, place choices and search results, and cancels in-flight searches.
+Il diario e le attività recenti mostrano l'origine della posizione meteo. L'importatore, l'arretrato, il calendario, la scheda delle condizioni, i riepiloghi delle visite in falesia e il diario usano la stessa chiave risolta di posizione/giorno. La modifica o rimozione di un fallback interrompe immediatamente l'uso della vecchia chiave; i vecchi dati meteo restano in cache e possono ancora essere usati da altre salite in quella località. Recupera il blocco meteo successivo per popolare una posizione appena scelta. L'azzeramento cancella risoluzioni, scelte di località e risultati di ricerca, e annulla le ricerche in corso.
 
-When those points are missing, explicitly typed GeoJSON Polygon/MultiPolygon geometry on an identified crag or sector can supply its first outer-boundary coordinate directly; no centre or centroid is calculated. This is labelled **Approximate area polygon** and does not unlock weather or Summer Sun Face badges. Route and crag points always take priority. Country/region boundaries, malformed shapes, large areas (over a conservative 15 km bounding diagonal), and shapes crossing the date line are excluded. Untyped boundary arrays and undocumented Fence formats remain unsupported; no captured provider polygon fixture is available yet. A selected town is used only if these geometry fallbacks also fail. Weather importing must still be enabled to fetch missing days. Summer Sun Face uses separately verified route-tag evidence; see [Badges](/docs/badges).
+Quando quei punti mancano, una geometria GeoJSON Polygon/MultiPolygon tipizzata esplicitamente su una falesia o un settore identificato può fornire direttamente la prima coordinata del proprio confine esterno; non viene calcolato alcun centro o centroide. Questo è etichettato come **Poligono d'area approssimativo** e non sblocca i badge meteo o Parete al sole estivo. I punti delle vie e delle falesie hanno sempre la priorità. I confini di paesi/regioni, le forme malformate, le aree estese (oltre una diagonale di delimitazione prudenziale di 15 km) e le forme che attraversano la linea del cambio di data sono esclusi. Gli array di confini non tipizzati e i formati Fence non documentati rimangono non supportati; non è ancora disponibile alcuna fixture di poligono acquisita dal provider. Una località selezionata viene utilizzata solo se falliscono anche questi fallback geometrici. L'importazione meteo deve comunque essere abilitata per recuperare i giorni mancanti. Parete al sole estivo utilizza riscontri dai tag delle vie verificati separatamente; vedi [Badge](/docs/badges).

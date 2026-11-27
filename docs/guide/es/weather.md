@@ -4,7 +4,7 @@ Crag Stats puede almacenar en caché la **meteorología diaria en exterior** par
 
 ## Activación voluntaria
 
-Desactivado de forma predeterminada. El propietario del servidor configura `WEATHER_IMPORT=true` en `.env` y reinicia. Después de cada sincronización correcta del libro de vías, en la programación de importación en segundo plano (`IMPORT_CRON`, diaria por defecto, que también cubre los libros de vías que llegan por CSV) y desde **Ajustes → Importar meteorología**, Crag Stats obtiene hasta **50** días en exterior faltantes por ejecución desde la API de meteorología histórica de [Open-Meteo](https://open-meteo.com/), empezando por los días de escalada más antiguos y dejando al menos **1,1 segundos** entre solicitudes. La acción de Ajustes inicia esa ejecución en segundo plano para que la página no tenga que esperar a que termine todo el lote. Borrar vacía la caché.
+Desactivado de forma predeterminada. El propietario del servidor configura `WEATHER_IMPORT=true` en `.env` y reinicia. After each successful logbook sync or CSV upload, on the background import schedule (`IMPORT_CRON`, daily by default), and from **Settings → Import weather**, Crag Stats fetches up to **50** missing outdoor days per run from [Open-Meteo](https://open-meteo.com/)'s historical weather API, oldest climb days first, with at least **1.1 seconds** between requests. La acción de Ajustes inicia esa ejecución en segundo plano para que la página no tenga que esperar a que termine todo el lote. Borrar vacía la caché.
 
 El plan gratuito no comercial de Open-Meteo está pensado para instalaciones personales autoalojadas. No actives esta función en un servicio comercial multiinquilino sin revisar antes sus condiciones y opciones de pago.
 

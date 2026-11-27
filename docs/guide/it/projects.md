@@ -1,64 +1,64 @@
-# Projects
+# Progetti
 
-Crag Stats lists outdoor routes as **open projects** after unsent attempts on **at least two separate climbing days** in the logbook. Multiple tries on one day alone do not create an open project. Open projects disappear after a year without activity.
+Crag Stats elenca le vie outdoor come **progetti aperti** dopo tentativi non riusciti in **almeno due giorni di scalata distinti** nel logbook. Più tentativi in un solo giorno non creano un progetto aperto. I progetti aperti scompaiono dopo un anno senza attività.
 
-A **completed project** is a route sent after work across at least two days, or after **at least two unsuccessful tries on the send day** (three or more tries including the send). Attempts can be separate log entries or recorded in the send’s attempt count. Separate entries and the send count are not added together, to avoid counting the same tries twice. First-go sends and one failed try followed by a same-day send are not projects. Only work up to the first send counts; later repeats do not turn an earlier send into a project. Missing or invalid dates do not establish sessions. Completed projects appear on the **Recently sent** shelf for the past six calendar months.
+Un **progetto completato** è una via chiusa dopo averla lavorata per almeno due giorni, oppure dopo **almeno due tentativi falliti nel giorno della chiusura** (tre o più tentativi includendo la chiusura). I tentativi possono essere voci separate nel logbook o registrati nel conteggio dei tentativi della chiusura. Le voci separate e il conteggio della chiusura non vengono sommati, per evitare di contare due volte gli stessi tentativi. Le chiusure al primo colpo e un tentativo fallito seguito da una chiusura nello stesso giorno non sono considerati progetti. Conta solo il lavoro fino alla prima chiusura; ripetizioni successive non trasformano una chiusura precedente in un progetto. Le date mancanti o non valide non stabiliscono delle sessioni. I progetti completati appaiono nella sezione **Chiusi di recente** per gli ultimi sei mesi solari.
 
-When both an attempt and the first send include timestamps, attempts after that send are excluded from the classification. Date-only entries on the send day are treated as work leading to it because their within-day order is unknown. Multiple sends tied on a date without usable times use their stored ascent order, so a later repeat does not replace the first recorded send. Session totals on cards and the dashboard use the same valid calendar days as the classifier.
+Quando sia un tentativo che la prima chiusura includono l'orario, i tentativi successivi a quella chiusura sono esclusi dalla classificazione. Le voci con la sola data nel giorno della chiusura sono trattate come lavoro preparatorio perché l'ordine cronologico all'interno della giornata non è noto. Più chiusure nella stessa data senza orari validi utilizzano l'ordine di inserimento, quindi una ripetizione successiva non sostituisce la prima chiusura registrata. I totali delle sessioni sulle schede e sulla dashboard utilizzano gli stessi giorni solari validi del classificatore.
 
-**Recently sent** covers the past six calendar months in UTC, including the boundary day for date-only sends. At month ends the boundary clamps to the last valid day (31 October looks back to 30 April). Future dates are excluded. Timestamp sends preserve the reference clock at the boundary. The dashboard uses the same window when filling spare project slots with recent sends.
+**Chiusi di recente** copre gli ultimi sei mesi solari in UTC, incluso il giorno limite per le chiusure con la sola data. Alla fine del mese il limite si fissa all'ultimo giorno valido (il 31 ottobre guarda indietro fino al 30 aprile). Le date future sono escluse. Le chiusure con orario mantengono l'orologio di riferimento al limite. La dashboard utilizza la stessa finestra temporale quando riempie gli slot liberi dei progetti con le chiusure recenti.
 
-## Choosing your own projects
+## Scegliere i propri progetti
 
-The owner sees compact project pills beside the FA/FFA controls in the logbook and on project cards/details:
+Il proprietario vede dei piccoli indicatori di progetto accanto ai controlli FA/FFA nel logbook e sulle schede/dettagli del progetto:
 
-- **Mark project** selects a logged outdoor route even after just one session or a year without activity.
-- **Not a project** / **Unmark project** dismisses it from Projects, the dashboard and the active-project count until the owner marks it again or restores detection.
-- **Use automatic** removes the manual choice and restores the rules above.
+- **Segna come progetto** seleziona una via outdoor registrata anche dopo una sola sessione o un anno senza attività.
+- **Non è un progetto** / **Rimuovi progetto** lo esclude dai Progetti, dalla dashboard e dal conteggio dei progetti attivi finché il proprietario non lo segna di nuovo o ripristina il rilevamento.
+- **Usa automatico** rimuove la scelta manuale e ripristina le regole sopra indicate.
 
-Each pill saves directly. Logbook pills keep you on the same filtered page; project-card/detail pills return to the project list. The Project / Not a project tag shows a manual choice without relying on colour.
+Ogni indicatore salva direttamente. Gli indicatori del logbook ti mantengono sulla stessa pagina filtrata; quelli delle schede/dettagli del progetto tornano alla lista dei progetti. Il tag Progetto / Non è un progetto mostra una scelta manuale senza basarsi sul colore.
 
-Selections are local metadata and survive syncs, cache rebuilds and even a route being removed upstream and later returning. They do not change theCrag's logbook or its public Project flag. Only a real logged send makes a selected project sent. Selected sends outside the six-month window appear under **Earlier selected sends** instead of Recently sent. Settings → Wipe clears selections. Visitors can read the resulting projects but cannot change the choices. Indoor and unlogged routes cannot be manually included.
+Le selezioni sono metadati locali e sopravvivono a sincronizzazioni, ricostruzioni della cache e persino alla rimozione di una via a monte che ritorna successivamente. Non modificano il logbook di theCrag o il suo flag pubblico Progetto. Solo una vera chiusura registrata rende chiusa un progetto selezionato. Le chiusure selezionate al di fuori della finestra di sei mesi appaiono sotto **Chiusure selezionate precedenti** invece di Chiusi di recente. Impostazioni → Cancella tutto pulisce le selezioni. I visitatori possono leggere i progetti risultanti ma non possono modificare le scelte. Le vie indoor e quelle non registrate non possono essere incluse manualmente.
 
-## Project details, progression and estimates
+## Dettagli del progetto, progressione e stime
 
-Click a project name on the Projects page or dashboard to open its detail page. It shows the route, public guidebook excerpts when cached, dated session progression, and previous tries/sends (including climbed pitch labels). The bottom link opens every logbook entry for that exact route, including older repeats. Private ascent notes stay in the logbook under the existing owner-only visibility setting.
+Clicca sul nome di un progetto nella pagina Progetti o nella dashboard per aprire la sua pagina di dettaglio. Mostra la via, estratti della guida pubblica se presenti in cache, la progressione delle sessioni datate e i tentativi/chiusure precedenti (inclusi i nomi dei tiri saliti). Il link in basso apre ogni voce del logbook per quella esatta via, incluse le ripetizioni più vecchie. Le note private delle salite rimangono nel logbook con l'attuale impostazione di visibilità riservata al solo proprietario.
 
-The **approximate readiness** bar follows the goals readiness approach: it measures supporting evidence, not a percentage of a grade or the probability of sending. Only a logged send on this route completes the bar. Another route at the same grade cannot do that. Earlier sessions use only evidence available by that climbing day, so a later send does not rewrite their readiness.
+La barra di **preparazione approssimativa** segue l'approccio della preparazione agli obiettivi: misura le prove a supporto, non una percentuale di un grado o la probabilità di chiusura. Solo una chiusura registrata su questa via completa la barra. Un'altra via dello stesso grado non può farlo. Le sessioni precedenti utilizzano solo le prove disponibili entro quel giorno di scalata, quindi una chiusura successiva non riscrive la loro preparazione.
 
-For each reference day, the model uses the preceding 365 days (including that day) of outdoor sends in the same discipline and grade scale, using effective climbed grades. Supporting pyramid counts use distinct routes; repeats do not fill the pyramid again. The target route is excluded from supporting evidence.
+Per ogni giorno di riferimento, il modello utilizza i 365 giorni precedenti (incluso quel giorno) di chiusure outdoor nella stessa disciplina e scala di gradi, utilizzando i gradi effettivi saliti. I conteggi della piramide di supporto utilizzano vie distinte; le ripetizioni non riempiono di nuovo la piramide. La via target è esclusa dalle prove a supporto.
 
-- Best recent send at/above target: 60 points; one step below: 35; two steps below: 10; otherwise zero.
-- Two distinct routes one step below add up to 20 points, and four two steps below add up to 25 points.
-- Unsuccessful tries on the target add up to 15 points, against a soft target of 15, 35 or 75 tries. The horizon is **Short-term** when the gap to your recent best is at most one step, **Medium** for two, otherwise **Long-haul** (also when no recent send is known).
-- The base model caps at 94%, then gains one point per additional valid climbing day on this route (the first day establishes the baseline), up to 99% until this project has a logged send. Unknown grades have no estimate. V-scale zero/negative grades are supported and never mixed with route grades.
+- Migliore chiusura recente al livello o sopra il target: 60 punti; un grado sotto: 35; due gradi sotto: 10; altrimenti zero.
+- Due vie distinte un grado sotto sommano 20 punti, e quattro vie due gradi sotto sommano 25 punti.
+- I tentativi falliti sul target sommano fino a 15 punti, rispetto a un obiettivo indicativo di 15, 35 o 75 tentativi. L'orizzonte è a **Breve termine** quando il divario rispetto al tuo miglior risultato recente è al massimo di un grado, **Medio** per due gradi, altrimenti a **Lungo termine** (anche quando non è nota alcuna chiusura recente).
+- Il modello di base arriva al massimo al 94%, poi guadagna un punto per ogni ulteriore giorno di scalata valido su questa via (il primo giorno stabilisce la linea di base), fino al 99% finché questo progetto non ha una chiusura registrata. I gradi sconosciuti non hanno una stima. I gradi della scala V pari a zero o negativi sono supportati e non vengono mai mescolati con i gradi delle vie.
 
-Practice can raise this bar without proving that a particular move is solved. Grades and logged effort cannot reveal beta, conditions, injuries or confidence, so this is an explainable heuristic, not a scientifically validated model.
+La pratica può innalzare questa barra senza dimostrare che un particolare movimento sia stato risolto. Gradi e sforzo registrato non possono rivelare beta, condizioni, infortuni o sicurezza di sé, quindi questa è un'euristica spiegabile, non un modello validato scientificamente.
 
-**Estimated work remaining** compares your history of completed outdoor projects in the same discipline and scale, within one numeric grade step. First-go sends do not enter this cohort; partial-pitch sends below the route grade do not stand in for whole-route sends. For each metric separately, at least three completed projects must have taken more sessions/tries than you have logged so far. The displayed range is the middle half (25th–75th percentile, using enclosing observed ranks) of those totals minus your logged work; remaining tries include the eventual send. When you exceed that history or there are too few comparisons, the estimate is withheld rather than inventing a deadline. Cohorts include all recorded years, while readiness uses recent sends.
+**Lavoro rimanente stimato** confronta la tua cronologia di progetti outdoor completati nella stessa disciplina e scala, entro un grado numerico. Le chiusure al primo colpo e le chiusure parziali di un tiro sotto il grado della via non rientrano in questo gruppo. Per ogni metrica separatamente, almeno tre progetti completati devono aver richiesto più sessioni/tentativi di quelli che hai registrato finora. L'intervallo visualizzato è la metà centrale (25°-75° percentile, utilizzando i ranghi osservati inclusi) di quei totali meno il tuo lavoro registrato; i tentativi rimanenti includono la chiusura finale. Quando superi quella cronologia o ci sono troppi pochi confronti, la stima viene omessa piuttosto che inventare una scadenza. I gruppi includono tutti gli anni registrati, mentre la preparazione utilizza le chiusure recenti.
 
-These estimates describe completed projects only: unsent projects and unlogged attempts are absent, and ability changes over time. They are rough personal comparisons, not guaranteed remaining effort. Session totals count valid written calendar days. Missing, invalid and future dates are listed in history but excluded from progression/estimates. Send-entry attempt counts include the successful try and may overlap separate failure entries; summaries use the larger failure total instead of adding both. A later repeat remains visible without changing which send first completed the project.
+Queste stime descrivono solo i progetti completati: i progetti non chiusi e i tentativi non registrati sono assenti, e l'abilità cambia nel tempo. Sono confronti personali approssimativi, non uno sforzo rimanente garantito. I totali delle sessioni contano i giorni solari scritti validi. Le date mancanti, non valide e future sono elencate nella cronologia ma escluse dalla progressione/stime. Il conteggio dei tentativi della voce di chiusura include il tentativo riuscito e può sovrapporsi a voci di fallimento separate; i riepiloghi utilizzano il totale di fallimenti maggiore invece di sommare entrambi. Una ripetizione successiva rimane visibile senza cambiare quale chiusura ha completato per prima il progetto.
 
-## New route?
+## Nuova via?
 
-When a project has **no grade** on theCrag (or is literally graded “Project” / “Proj”), cards show a **New route?** badge — usually a new line you are bolting or still working. The same badge also appears for **wide provisional spans** such as `21-23` or `V1-3`, which often mean the grade is still being dialled in. Adjacent half-grades like `V1/2` stay ordinary published grades and do not get the badge. The grade chip still shows the parsed midpoint when one exists; only the badge changes. A definite theCrag **Project** flag (from route-info import) shows the separate Project badge instead.
+Quando un progetto non ha **alcun grado** su theCrag (o è letteralmente graduato "Project" / "Proj"), le schede mostrano un badge **Nuova via?** — solitamente una nuova linea che stai chiodando o su cui stai ancora lavorando. Lo stesso badge appare anche per **ampi intervalli provvisori** come `21-23` o `V1-3`, che spesso significano che il grado è ancora in fase di definizione. I mezzi gradi adiacenti come `V1/2` rimangono gradi pubblicati ordinari e non ricevono il badge. L'indicatore del grado mostra comunque il punto medio analizzato, quando ne esiste uno; cambia solo il badge. Un flag **Progetto** definito di theCrag (dall'importazione delle info via) mostra invece il badge Progetto separato.
 
-## Guidebook text on project cards
+## Testo della guida sulle schede del progetto
 
-When **route data import** has cached public guidebook data for a route, project cards can show:
+Quando l'**importazione dei dati della via** ha memorizzato in cache i dati della guida pubblica per una via, le schede del progetto possono mostrare:
 
-- A short **description** excerpt
-- An **access** warning when the guidebook lists access issues (for example closed or tolerated crags)
+- Un breve estratto della **descrizione**
+- Un avviso di **accesso** quando la guida elenca problemi di accesso (per esempio falesie chiuse o tollerate)
 
-That text comes from theCrag’s public route pages (`beta` fields such as Description and Access issues). It is **not** your private logbook notes.
+Quel testo proviene dalle pagine pubbliche delle vie di theCrag (campi `beta` come Descrizione e Problemi di accesso). **Non** sono le tue note private del logbook.
 
-### Privacy
+### Riservatezza
 
-- **Private ascent notes** (`ascents.comment`) stay separate. They only appear in the logbook when you opt in under Settings, and never on project cards or dashboard stats.
-- **Guidebook beta** is public community content. Crag Stats stores short excerpts in `routes.beta_json` during the same opt-in route import as FA history — never mixed with notes.
+- Le **note private della salita** (`ascents.comment`) rimangono separate. Appaiono nel logbook solo se acconsenti nelle Impostazioni, e mai sulle schede dei progetti o sulle statistiche della dashboard.
+- La **beta della guida** è un contenuto pubblico della community. Crag Stats memorizza brevi estratti in `routes.beta_json` durante la stessa importazione opzionale della via utilizzata per la cronologia FA — non vengono mai mescolati con le note.
 
-### Licensing & attribution
+### Licenza e attribuzione
 
-theCrag guidebook content may be licensed under terms such as [Creative Commons BY-SA](https://creativecommons.org/licenses/by-sa/4.0/). Route pages often credit contributors (for example local clubs). Crag Stats shows **short excerpts** only, links back to the **route page on theCrag**, and labels the source (CC BY-SA). For the full description, ethics, approach and current access status, use the link on the card.
+il contenuto della guida di theCrag può essere concesso in licenza secondo termini quali [Creative Commons BY-SA](https://creativecommons.org/licenses/by-sa/4.0/). Le pagine delle vie spesso citano i collaboratori (ad esempio i club locali). Crag Stats mostra solo **brevi estratti**, rimanda con un link alla **pagina della via su theCrag** e indica la fonte (CC BY-SA). Per la descrizione completa, l'etica, l'avvicinamento e lo stato attuale dell'accesso, usa il link sulla scheda.
 
-Route import is **off by default** (`ROUTE_DATA_IMPORT`). Set `ROUTE_DATA_IMPORT=true` on the server and restart if you want guidebook excerpts and automatic FA hints; see [First ascents](/docs/first-ascents) for the privacy and pacing limits.
+L'importazione della via è **disattivata per impostazione predefinita** (`ROUTE_DATA_IMPORT`). Imposta `ROUTE_DATA_IMPORT=true` sul server e riavvia se desideri gli estratti della guida e i suggerimenti automatici FA; vedi [Prime salite](/docs/first-ascents) per i limiti di privacy e frequenza.

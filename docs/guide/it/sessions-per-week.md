@@ -1,15 +1,15 @@
-# Sessions per week
+# Sessioni a settimana
 
-The **Sessions per week** card counts how many climbing **sessions** you logged each week in a chosen year.
+La scheda **Sessioni a settimana** conta quante **sessioni** di arrampicata hai registrato ogni settimana in un anno a tua scelta.
 
-## What is a session?
+## Cos'è una sessione?
 
-A session is a **calendar day** with at least one ascent in your logbook — the same idea as “sessions” on project cards. Two ticks on the same day still count as one session. Days with no logs are empty bars.
+Una sessione è un **giorno di calendario** con almeno una salita nel tuo diario — lo stesso concetto delle “sessioni” nelle schede dei progetti. Due salite registrate nello stesso giorno contano comunque come una sola sessione. I giorni senza registrazioni corrispondono a barre vuote.
 
-## Average
+## Media
 
-**Average sessions / week** is the year’s total sessions divided by the number of weeks shown for that year (about 52–53 ISO weeks that overlap the calendar year). Quiet winters pull the average down; a dense trip block pulls it up.
+**Media sessioni / settimana** corrisponde al totale delle sessioni dell'anno diviso per il numero di settimane mostrate per quell'anno (circa 52–53 settimane ISO che ricadono nell'anno solare). Inverni tranquilli abbassano la media; un periodo intenso di viaggi la fa salire.
 
-Weeks use a Monday start (UTC date of the ascent). Tap a bar to open the logbook for that week.
+Le settimane iniziano di lunedì (data UTC della salita). Tocca una barra per aprire il diario di quella settimana.
 
-Session analytics share strict UTC calendar-day validation: placeholders (`2018-00-00`), impossible dates (`2024-02-31`), and missing dates do not count as sessions. Leap days are accepted only in leap years. Repeated ticks or timestamps on the same written date still count once, regardless of browser or server time zone. This policy is shared with Partners, Weekday, dashboard active days and weather.
+Le statistiche sulle sessioni condividono una convalida rigorosa del giorno di calendario UTC: i segnaposto (`2018-00-00`), le date impossibili (`2024-02-31`) e le date mancanti non contano come sessioni. I giorni bisestili sono accettati solo negli anni bisestili. Più salite o timestamp nella stessa data indicata contano comunque una sola volta, indipendentemente dal fuso orario del browser o del server. Questa regola è condivisa con Compagni, Giorno della settimana, giorni attivi della dashboard e meteo.

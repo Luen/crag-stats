@@ -1,30 +1,30 @@
-# Route popularity
+# Popolarità della via
 
-The **Route popularity** card uses community stats theCrag caches on each route: **ascent count**, **popularity**, and **relative popularity** (0–100). Crag Stats stores these when route data import runs (`ROUTE_DATA_IMPORT=true` on the server, then restart and sync).
+La scheda **Popolarità della via** utilizza le statistiche della community che theCrag salva in cache per ogni via: **numero di ascensioni**, **popolarità** e **popolarità relativa** (0–100). Crag Stats le memorizza quando viene eseguita l'importazione dei dati delle vie (`ROUTE_DATA_IMPORT=true` sul server, poi riavvia e sincronizza).
 
-## Beaten track vs off the beaten track
+## Percorsi battuti vs percorsi poco frequentati
 
-For each ascent where popularity data exists, we compare **relative popularity** when present, otherwise **global popularity**:
+Per ogni ascensione per la quale esistono dati di popolarità, confrontiamo la **popolarità relativa**, se presente, altrimenti la **popolarità globale**:
 
-| Bucket                   | Rule          |
-| ------------------------ | ------------- |
-| **Beaten track**         | Score ≥ 50    |
-| **Off the beaten track** | Score &lt; 50 |
+| Categoria                     | Regola            |
+| ----------------------------- | ----------------- |
+| **Percorso battuto**          | Punteggio ≥ 50    |
+| **Percorso poco frequentato** | Punteggio &lt; 50 |
 
-The card shows what **share of those ticks** fall in each bucket. Ascents on routes without cached stats are excluded from the percentages.
+La scheda mostra quale **quota di tali chiusure** rientra in ogni categoria. Le ascensioni su vie senza statistiche in cache sono escluse dalle percentuali.
 
-## Hidden gems
+## Perle nascoste
 
-**Hidden gems** are **sends** on routes that are both well regarded (`qualityScore` ≥ 70, or at least ★★★, or a strong quality label on your tick) and quiet (community **ascent count** ≤ 100 and popularity score &lt; 50). Up to three distinct routes are listed, ranked by quality.
+**Le perle nascoste** sono **chiusure** su vie che sono sia ben considerate (`qualityScore` ≥ 70, o almeno ★★★, o una valutazione di qualità elevata nella tua chiusura) che poco frequentate (**numero di ascensioni** della community ≤ 100 e punteggio di popolarità &lt; 50). Vengono elencate fino a tre vie distinte, classificate in base alla qualità.
 
 ## Logbook
 
-Sort by **Pop.** to order ticks by route popularity (highest first by default). Rows without cached stats sort to the bottom.
+Ordina per **Pop.** per disporre le chiusure in base alla popolarità della via (la più alta per prima per impostazione predefinita). Le righe senza statistiche in cache vengono visualizzate in fondo.
 
-## Source
+## Fonte
 
-Numbers come from theCrag’s route API (`show=info`). They reflect the whole community, not just your logbook.
+I numeri provengono dalle API delle vie di theCrag (`show=info`). Riflettono l'intera community, non solo il tuo logbook.
 
-Popularity uses relative popularity when available, then global popularity. Community ascent counts are shown separately and never compared numerically with popularity scores.
+La popolarità utilizza la popolarità relativa quando disponibile, altrimenti la popolarità globale. Il numero di ascensioni della community viene mostrato separatamente e non viene mai confrontato numericamente con i punteggi di popolarità.
 
-To keep community ascent totals, popularity and ratings fresh, the server owner can set `ROUTE_DATA_REFRESH_DAYS` to a whole number of days from 30 through 3650 (e.g. `90` recommended, or `180` for about half a year), with `ROUTE_DATA_IMPORT=true`. These are rolling day intervals. After successful logbook syncs, new routes take priority, then the oldest stale fetches refresh within the same 100-route limit and pacing. A backlog can take several syncs. Unset, `0`, under 30, or over 3650 keeps the default fetch-once cache; **Refresh all** remains available in Settings.
+Per mantenere aggiornati i totali delle ascensioni della community, la popolarità e le valutazioni, il proprietario del server può impostare `ROUTE_DATA_REFRESH_DAYS` su un numero intero di giorni da 30 a 3650 (ad es. `90` consigliato, o `180` per circa sei mesi), con `ROUTE_DATA_IMPORT=true`. Si tratta di intervalli di giorni mobili. Dopo che la sincronizzazione del logbook è andata a buon fine, le nuove vie hanno la priorità, poi i recuperi di dati più vecchi vengono aggiornati entro lo stesso limite di 100 vie e lo stesso ritmo. L'smaltimento di un arretrato può richiedere diverse sincronizzazioni. Se non impostato, o con valori `0`, inferiori a 30 o superiori a 3650, viene mantenuta la cache predefinita di un solo caricamento; **Aggiorna tutto** rimane disponibile nelle Impostazioni.

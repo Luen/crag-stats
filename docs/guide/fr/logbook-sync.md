@@ -23,8 +23,10 @@ Un carnet de croix inchangé affiche donc zéro ajout/suppression et des croix
 existantes actualisées. Les exécutions ignorées et les erreurs affichent leurs propres messages, et non un récapitulatif de succès.
 
 Les imports manuels de CSV affichent aussi le nombre d'entrées traitées/nouvelles/actualisées, mais ne suppriment jamais
-les entrées manquantes. L'historique des voies et l'enrichissement météo sont des imports en arrière-plan
-distincts et ne sont pas inclus dans ces décomptes du carnet de croix. Le récapitulatif décrit l'action
+les entrées manquantes. Route data and weather enrichment are separate background
+imports: when enabled, they start after every successful sync or CSV upload
+(including uploads to `POST /api/logbook/csv`), and are not included in these
+logbook counts. Le récapitulatif décrit l'action
 du bouton qui vient de se terminer ; il ne s'agit pas d'un historique de synchronisation persistant.
 
 ## Synchronisation par API
@@ -57,7 +59,7 @@ Vous pouvez conserver le carnet de croix en CSV tout en bénéficiant des donné
 - `THECRAG_API_KEY` : votre clé de lecture de carnet supporter, désormais utilisée uniquement pour les données de voies et la recherche de localisation des falaises/secteurs.
 - `THECRAG_USERNAME` : votre nom d'utilisateur theCrag, pour que l'historique FA/FFA vous soit attribué (les exports CSV ne l'incluent pas).
 
-C'est l'ensemble de la configuration : trois valeurs, aucun changement de mode. Sans `CSV_INGEST_TOKEN`, `THECRAG_API_KEY` synchronise le carnet de croix et les données de voies partagent la même clé. Les imports en arrière-plan des voies et de la météo suivent `IMPORT_CRON` (quotidien par défaut) plutôt que la planification du carnet de croix, de sorte qu'un `SYNC_CRON` hebdomadaire ou mensuel récupère tout de même les données de voies quotidiennement. Paramètres → **Importer les données de voies** affiche la progression et lance une exécution manuellement.
+C'est l'ensemble de la configuration : trois valeurs, aucun changement de mode. Sans `CSV_INGEST_TOKEN`, `THECRAG_API_KEY` synchronise le carnet de croix et les données de voies partagent la même clé. Background route and weather imports start after each successful sync or CSV upload, and also follow `IMPORT_CRON` (daily by default) rather than the logbook schedule, so a weekly or monthly `SYNC_CRON` still gets route data daily. Paramètres → **Importer les données de voies** affiche la progression et lance une exécution manuellement.
 
 ## Importer un CSV depuis un autre conteneur
 

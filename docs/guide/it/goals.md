@@ -1,61 +1,61 @@
-# Goals
+# Obiettivi
 
-Goals turn a target in your theCrag logbook into a progress bar on the dashboard and the **Goals** page. Height and climbing-day goals fill linearly. **Grade** goals use an approximate **pyramid readiness** model so sitting one grade under the target no longer looks almost done.
+Gli obiettivi trasformano un traguardo nel tuo logbook di theCrag in una barra di avanzamento sulla dashboard e sulla pagina **Obiettivi**. Gli obiettivi di altezza e di giorni di arrampicata si caricano linearmente. Gli obiettivi di **Grado** utilizzano un modello approssimativo di **preparazione a piramide**, in modo che trovarsi un grado sotto il traguardo non sembri più quasi completato.
 
-## Goal kinds
+## Tipi di obiettivo
 
-| Kind                 | What “done” means                                    | Progress bar               |
-| -------------------- | ---------------------------------------------------- | -------------------------- |
-| **Grade this year**  | A send at or above the target score in the goal year | Pyramid readiness (below)  |
-| **Height this year** | Metres climbed in that year                          | Linear: metres ÷ target    |
-| **Days this month**  | Distinct climbing days in the current calendar month | Linear: days ÷ target      |
-| **Custom**           | You mark it complete                                 | Manual (no automatic fill) |
+| Tipo                   | Cosa significa “completato”                                                | Barra di avanzamento                    |
+| ---------------------- | -------------------------------------------------------------------------- | --------------------------------------- |
+| **Grado quest'anno**   | Una chiusura pari o superiore al punteggio target nell'anno dell'obiettivo | Preparazione a piramide (sotto)         |
+| **Altezza quest'anno** | Metri arrampicati in quell'anno                                            | Lineare: metri ÷ traguardo              |
+| **Giorni questo mese** | Giorni di arrampicata distinti nel mese solare corrente                    | Lineare: giorni ÷ traguardo             |
+| **Personalizzato**     | Lo contrassegni come completato                                            | Manuale (nessun caricamento automatico) |
 
-Venue scope (outdoor / indoor / any) filters which ascents count. Grade goals default to **outdoor**.
+L'ambito del luogo (all'aperto / indoor / qualsiasi) filtra quali salite contano. Gli obiettivi di grado sono impostati come predefiniti su **all'aperto**.
 
-Height goals always **store metres**. The create form asks for the target in your selected height unit (metres or feet) and converts feet before saving, and the progress and target labels follow that unit too. Switching units later relabels the goal without changing the stored target. See [Display settings](/docs/display-settings).
+Gli obiettivi di altezza **memorizzano sempre i metri**. Il modulo di creazione richiede il traguardo nell'unità di altezza selezionata (metri o piedi) e converte i piedi prima di salvare; anche le etichette di avanzamento e del traguardo seguono tale unità. Cambiando le unità in un secondo momento si rietichetta l'obiettivo senza modificare il traguardo memorizzato. Vedi [Impostazioni di visualizzazione](/docs/display-settings).
 
-Grade goals keep their **Routes** or **Boulders** scale. Targets and progress labels follow the corresponding grade system in Settings; changing the display system does not change the target or percentage. Suggested-goal titles follow Settings too, while custom titles stay as entered. In a goal's **Grade preferences**, you can choose its scale and whether to use an automatic title.
+Gli obiettivi di grado mantengono la loro scala per **Vie** o **Boulder**. I traguardi e le etichette di avanzamento seguono il sistema di gradi corrispondente nelle Impostazioni; cambiare il sistema di visualizzazione non modifica il traguardo o la percentuale. Anche i titoli degli obiettivi suggeriti seguono le Impostazioni, mentre i titoli personalizzati rimangono come inseriti. Nelle **Preferenze di grado** di un obiettivo, puoi scegliere la sua scala e se utilizzare un titolo automatico.
 
-If a goal says **Grade scale needed**, its progress is unavailable until the owner chooses **Routes** or **Boulders**. Its title and saved target are preserved; a title mentioning a grade does not decide its scale.
+Se un obiettivo indica **Scala di gradi necessaria**, il suo avanzamento non è disponibile finché il proprietario non sceglie **Vie** o **Boulder**. Il titolo e il traguardo salvato vengono preservati; un titolo che menziona un grado non determina la sua scala.
 
-## Grade readiness
+## Preparazione al grado
 
-A grade goal asks for a **send ≥ target** (canonical score, usually Ewbank for routes or V-scale for boulders) in the goal year. The bar is **not** `best send ÷ target` — that made 22→23 look like ~96% when you still needed the send at 23.
+Un obiettivo di grado richiede una **chiusura ≥ traguardo** (punteggio canonico, solitamente Ewbank per le vie o scala V per i boulder) nell'anno dell'obiettivo. La barra **non** è `best send ÷ target` — ciò faceva apparire il passaggio 22→23 come ~96% quando era ancora necessaria la chiusura a 23.
 
-Instead the model asks how built your pyramid is under the target **N**, then how much you’ve worked near it:
+Invece, il modello valuta quanto sia solida la tua piramide sotto il traguardo **N**, e quanto hai lavorato vicino ad esso:
 
-1. **Done (100%)** when your best qualifying send is already ≥ N.
-2. **Base** when you have a send at N−1 (~35%) or only at N−2 (~10%).
-3. **Pyramid fill** from distinct routes with a send in those buckets — soft need of about **2 routes at N−1** and **4 at N−2** (up to about +20% and +25%).
-4. **Attempt fill** from non-send (working) ticks with effective score **≥ N−1** — up to about +20%, with a **horizon-scaled** soft need so short-term projects move faster per attempt than long-haul ones.
-5. **Cap the base model at 94%.** The first qualifying session establishes the baseline; each additional distinct climbing day with working ticks at ≥ N−1 adds one readiness point, up to 99%. Only a qualifying send reaches 100%. Multiple routes or attempts on the same day earn one session; missing, invalid and future dates earn none. Session credit follows the goal year and venue, and does not change height or climbing-day goal ratios.
+1. **Completato (100%)** quando la tua migliore chiusura valida è già ≥ N.
+2. **Base** quando hai una chiusura a N−1 (~35%) o solo a N−2 (~10%).
+3. **Riempimento piramide** da vie distinte con una chiusura in quegli scaglioni — necessità indicativa di circa **2 vie a N−1** e **4 a N−2** (fino a circa +20% e +25%).
+4. **Contributo dei tentativi** dalle salite senza chiusura (di lavoro) con punteggio effettivo **≥ N−1** — fino a circa +20%, con un fabbisogno indicativo **proporzionato all’orizzonte temporale**, così i progetti a breve termine avanzano più per ogni tentativo rispetto a quelli a lungo termine.
+5. **Il modello base è limitato al 94%.** La prima sessione valida stabilisce il valore di base; ogni ulteriore giorno distinto di arrampicata con tentativi registrati a ≥ N−1 aggiunge un punto di preparazione, fino al 99%. Solo una chiusura valida raggiunge il 100%. Più vie o tentativi nello stesso giorno valgono come una sessione; date mancanti, non valide e future non valgono nulla. Il credito della sessione segue l'anno dell'obiettivo e il luogo, e non cambia i rapporti degli obiettivi di altezza o di giorni di arrampicata.
 
-Send evidence uses the same year and venue filter as completion: **effective grade** (hardest climbed pitch on multipitch), and **distinct routes** per pyramid bucket (repeat sends on one route count once). Attempts count every qualifying working tick (repeats on the same route still nudge the bar).
+L'evidenza della chiusura utilizza lo stesso filtro di anno e luogo del completamento: **grado effettivo** (tiro più difficile scalato su una multipitch) e **vie distinte** per scaglione della piramide (chiusure ripetute sulla stessa via contano una volta sola). I tentativi contano ogni segnatura di progetto valida (le ripetizioni sulla stessa via fanno comunque avanzare la barra).
 
-The progress line shows your best send, the N−1 / N−2 route counts, attempt evidence when present, and a short horizon hint:
+La linea di avanzamento mostra la tua migliore chiusura, il conteggio delle vie a N−1 / N−2, l'evidenza dei tentativi se presente e un breve suggerimento sull'orizzonte:
 
-| Gap to target       | Hint       | Soft attempt need (≈ fill the attempt band) |
-| ------------------- | ---------- | ------------------------------------------- |
-| 1 grade             | Short-term | ~15 attempts                                |
-| 2 grades            | Medium     | ~35 attempts                                |
-| Wider / no send yet | Long-haul  | ~75 attempts                                |
+| Divario dal traguardo               | Suggerimento  | Necessità indicativa di tentativi (≈ riempire la fascia dei tentativi) |
+| ----------------------------------- | ------------- | ---------------------------------------------------------------------- |
+| 1 grado                             | Breve termine | ~15 tentativi                                                          |
+| 2 gradi                             | Medio         | ~35 tentativi                                                          |
+| Più ampio / nessuna chiusura ancora | Lungo termine | ~75 tentativi                                                          |
 
-## Suggested next grade
+## Grado successivo suggerito
 
-On the **Goals** page, when you have outdoor sends in the last **two years**, Crag Stats may offer a soft suggestion: take your hardest outdoor send (route and/or boulder, kept separate) and aim for the **next grade step** this year (V5 → V6, 25 → 26). Suggestions never write a goal until you click **Add goal**. If you already track that outdoor target for the year, the chip says **Already tracking**.
+Sulla pagina **Obiettivi**, quando hai delle chiusure all'aperto negli ultimi **due anni**, Crag Stats può offrire un suggerimento indicativo: prendi la tua chiusura all'aperto più difficile (via e/o boulder, tenuti separati) e punta al **grado successivo** per quest'anno (V5 → V6, 25 → 26). I suggerimenti non creano mai un obiettivo finché non clicchi su **Aggiungi obiettivo**. Se stai già monitorando quel traguardo all'aperto per l'anno, il chip dirà **Già monitorato**.
 
-## What you see
+## Cosa vedi
 
-- **Dashboard** “Active goals” card: up to a few open goals with the same percentages and labels.
-- **Goals** page: optional suggested next-grade chips, full Active / Achieved lists, create/edit, and the same readiness copy for grade goals.
+- Scheda “Obiettivi attivi” della **Dashboard**: fino a pochi obiettivi aperti con le stesse percentuali ed etichette.
+- Pagina **Obiettivi**: chip opzionali con il grado successivo suggerito, elenchi completi Attivi / Raggiunti, crea/modifica e lo stesso testo sulla preparazione per gli obiettivi di grado.
 
-## Caveats
+## Avvertenze
 
-- **Approximate.** Soft pyramid numbers are a coaching rule of thumb, not a prediction that you will send N.
-- **Same-system scores.** Supporting buckets are the score ranges [N−1, N) and [N−2, N−1), so fractional sends below a target still support it. Scores use the goal’s canonical score; mixed grading systems are not converted inside the bar.
-- **Scale, year, and venue.** Route and V-scale evidence never mix. Older ticks outside the goal year, or the wrong venue, do not help readiness. V-graded DWS and highballs count with boulder goals, using the grade system rather than the gear style.
-- **Attempts are approximate.** We only see logged non-sends with a grade at ≥ N−1 — not every burn on an ungraded project.
-- **Custom goals** never auto-fill from the logbook.
+- **Approssimativo.** I numeri indicativi della piramide sono una regola empirica di allenamento, non una previsione che chiuderai N.
+- **Punteggi dello stesso sistema.** Gli scaglioni di supporto sono gli intervalli di punteggio [N−1, N) e [N−2, N−1), quindi le chiusure frazionarie al di sotto di un traguardo lo supportano comunque. I punteggi utilizzano il punteggio canonico dell'obiettivo; i sistemi di gradazione misti non vengono convertiti all'interno della barra.
+- **Scala, anno e luogo.** Le prove per le vie e per la scala V non si mescolano mai. Segnature più vecchie al di fuori dell'anno dell'obiettivo, o nel luogo sbagliato, non aiutano la preparazione. DWS e highball con gradazione V contano per gli obiettivi boulder, utilizzando il sistema di gradi piuttosto che lo stile dell'attrezzatura.
+- **I tentativi sono approssimativi.** Vediamo solo le segnature senza chiusura registrate con un grado ≥ N−1 — non ogni giro su un progetto senza grado.
+- Gli **obiettivi personalizzati** non vengono mai caricati automaticamente dal logbook.
 
-Height and days goals stay simple linear ratios so a half-finished kilometre or month still reads as halfway.
+Gli obiettivi di altezza e di giorni rimangono semplici rapporti lineari, quindi un chilometro o un mese completato a metà risulterà comunque come metà percorso.

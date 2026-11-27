@@ -1,23 +1,23 @@
-# Climber profile
+# Profilo arrampicatore
 
-The **Climber profile** radar compares how you have been climbing over the **last 30 days** (inner series) with the **last 90 days** (outer series). Each axis is scored 0–100 from your local logbook — not a theCrag leaderboard score.
+Il radar del **Profilo arrampicatore** confronta il tuo rendimento in arrampicata negli **ultimi 30 giorni** (serie interna) con gli **ultimi 90 giorni** (serie esterna). Ogni asse ha un punteggio da 0 a 100 calcolato dal tuo logbook locale — non è un punteggio della classifica di theCrag.
 
-## Axes
+## Assi
 
-| Axis              | What it rewards                                                                 |
-| ----------------- | ------------------------------------------------------------------------------- |
-| **Volume**        | How many ascents you logged relative to the window length.                      |
-| **Style variety** | How many distinct climb styles appear (sport, trad, boulder, …).                |
-| **Density**       | How many distinct active days you climbed, relative to the window.              |
-| **Height**        | Metres climbed (ascent or route height) relative to the window.                 |
-| **Intensity**     | Average and peak effective grades in the window (harder ticks push this up).    |
-| **Consistency**   | Mix of send rate and onsight/flash share — finishing climbs and first-go ticks. |
+| Asse                 | Cosa premia                                                                                               |
+| -------------------- | --------------------------------------------------------------------------------------------------------- |
+| **Volume**           | Quante salite hai registrato in rapporto alla durata del periodo.                                         |
+| **Varietà di stili** | Quanti stili di arrampicata distinti compaiono (sport, trad, boulder, …).                                 |
+| **Densità**          | Quanti giorni attivi distinti hai arrampicato, in rapporto al periodo.                                    |
+| **Altezza**          | Metri scalati (altezza della salita o della via) in rapporto al periodo.                                  |
+| **Intensità**        | Gradi effettivi medi e massimi nel periodo (le salite più dure spingono questo valore verso l'alto).      |
+| **Costanza**         | Mix tra percentuale di chiusura e quota a vista/flash — completare le vie e chiuderle al primo tentativo. |
 
-Scores are capped at 100. Quiet periods pull axes in; a busy trip or projecting block pushes them out. Treat the shape as a nudge, not a diagnosis.
+I punteggi hanno un limite massimo di 100. I periodi di inattività contraggono gli assi; un viaggio intenso o un periodo di tentativi su un progetto li spinge verso l'esterno. Considera la forma come uno spunto, non come una diagnosi.
 
-## Reading 30 vs 90
+## Leggere 30 vs 90
 
-- **Last 90 days** (teal fill) is your recent baseline.
-- **Last 30 days** (blue outline) shows whether the latest month is above or below that baseline on each axis.
+- Gli **ultimi 90 giorni** (riempimento verde acqua) rappresentano il tuo riferimento recente.
+- Gli **ultimi 30 giorni** (bordo blu) mostrano se l'ultimo mese è al di sopra o al di sotto di tale riferimento su ciascun asse.
 
-If either polygon is empty, you do not have enough dated ascents in that window yet.
+Se uno dei poligoni è vuoto, non hai ancora abbastanza salite datate in quel periodo.

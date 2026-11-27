@@ -1,79 +1,79 @@
-# First ascents
+# Prime ascensioni
 
-The **First ascents** card counts the routes and boulders where you did the first ascent (**FA**) or the first free ascent (**FFA**). When route history is cached, it also shows how many routes credit you as **route setter** (bolting / setting).
+La scheda **Prime ascensioni** conta le vie e i blocchi in cui hai effettuato la prima ascensione (**FA**) o la prima libera (**FFA**). Quando la cronologia della via è salvata in cache, mostra anche quante vie ti accreditano come **tracciatore** (chiodatura / tracciatura).
 
-## What you need
+## Cosa ti serve
 
-- **Owner login** — If `APP_PASSWORD` is set, sign in so you can open Settings and use **Mark FA** / **FFA** in the logbook. Visitors see the card and badges once at least one route is marked, but cannot add marks themselves.
-- **Optional route data import** — Set `ROUTE_DATA_IMPORT=true` on the server if you want Crag Stats to auto-mark FAs and FFAs from public theCrag route history (see below). Manual marks and import both write to the same `first_ascents` table; neither depends on private notes.
-- **Private notes are unrelated** — **Settings → Show private notes** only controls whether your **ascent comments** appear on `/logbook` (and in search). It does not gate the First ascents card, FA/FFA badges, milestones, or route data import.
+- **Login proprietario** — Se `APP_PASSWORD` è impostata, effettua l'accesso in modo da poter aprire le Impostazioni e usare **Contrassegna FA** / **FFA** nel logbook. I visitatori vedono la scheda e i badge non appena è contrassegnata almeno una via, ma non possono aggiungere contrassegni personalmente.
+- **Importazione opzionale dei dati delle vie** — Imposta `ROUTE_DATA_IMPORT=true` sul server se vuoi che Crag Stats contrassegni automaticamente le FA e le FFA dalla cronologia pubblica delle vie di theCrag (vedi sotto). I contrassegni manuali e l'importazione scrivono entrambi nella stessa tabella `first_ascents`; nessuno dei due dipende dalle note private.
+- **Le note private non sono collegate** — **Impostazioni → Mostra note private** controlla solo se i tuoi **commenti di salita** appaiono su `/logbook` (e nella ricerca). Non vincola la scheda Prime ascensioni, i badge FA/FFA, i traguardi o l'importazione dei dati delle vie.
 
-## Marking a first ascent
+## Contrassegnare una prima ascensione
 
-theCrag records first ascents in each route's **history** (the FA / FFA entries on the route page), not as a tick type. Its logbook API doesn't return route history, so a normal sync can't see them. You can mark them yourself, or turn on the optional import below.
+theCrag registra le prime ascensioni nella **cronologia** di ciascuna via (le voci FA / FFA nella pagina della via), non come tipo di salita. La sua API per il logbook non restituisce la cronologia della via, quindi una sincronizzazione normale non può vederla. Puoi contrassegnarle tu stesso o attivare l'importazione opzionale di seguito.
 
-### Mark one yourself
+### Contrassegnane una tu stesso
 
-1. Open the **Logbook** and find any ascent of the route.
-2. Hover the row (or tab to it) and press **Mark FA** or **FFA**.
-3. Press **Unmark** to undo.
+1. Apri il **Logbook** e trova una qualsiasi salita della via.
+2. Passa il cursore sulla riga (o navigaci con il tasto Tab) e premi **Contrassegna FA** o **FFA**.
+3. Premi **Rimuovi contrassegno** per annullare.
 
-Only someone who can open Settings can mark FAs: anyone if no `APP_PASSWORD` is set, otherwise only when logged in. Visitors see the FA badge and the card, but not the buttons.
+Solo chi può aprire le Impostazioni può contrassegnare le FA: chiunque se non è impostata alcuna `APP_PASSWORD`, altrimenti solo quando si è collegati. I visitatori vedono il badge FA e la scheda, ma non i pulsanti.
 
-The mark is stored against theCrag's route ID, so it survives re-syncs. It disappears from the card if every ascent of the route is deleted on theCrag, and it comes back if you log the route again. **Settings → Wipe** removes all marks.
+Il contrassegno viene salvato associandolo all'ID via di theCrag, quindi sopravvive alle risincronizzazioni. Scompare dalla scheda se ogni salita della via viene eliminata su theCrag e riappare se registri di nuovo la via. **Impostazioni → Cancella tutto** rimuove tutti i contrassegni.
 
-### Filter the logbook
+### Filtrare il logbook
 
-On **Logbook**, use the **First ascent mark** control to show only your FAs, FFAs, either, or climbs with no mark yet (`?fa=FA|FFA|any|none`). If route data import is enabled, the owner also gets **History not checked yet** (`?history=pending`), which lists climbs the importer has not fetched.
+Su **Logbook**, usa il controllo **Contrassegno prima salita** per mostrare solo le tue FA, FFA, entrambe, o le salite senza ancora alcun contrassegno (`?fa=FA|FFA|any|none`). Se l'importazione dei dati delle vie è abilitata, il proprietario ha a disposizione anche **Cronologia non ancora verificata** (`?history=pending`), che elenca le salite non ancora recuperate dall'importatore.
 
-### Import them from route history (optional, off by default)
+### Importarle dalla cronologia della via (opzionale, disattivato di default)
 
-If your server owner turns it on (`ROUTE_DATA_IMPORT=true`; older versions called this `ROUTE_HISTORY_IMPORT`, which is no longer read, so rename it and restart), Crag Stats reads each logbook route's public history from theCrag in the background and marks the FAs and FFAs that name you.
+Se il proprietario del server la attiva (`ROUTE_DATA_IMPORT=true`; nelle versioni precedenti era chiamata `ROUTE_HISTORY_IMPORT`, che non viene più letta, quindi rinominala e riavvia), Crag Stats legge in background la cronologia pubblica di ciascuna via del logbook da theCrag e contrassegna le FA e le FFA che indicano il tuo nome.
 
-- **Only entries naming your theCrag username** (`@yourlogin`) count. Plain-text names are ignored because they're too easy to mix up. API sync saves that login; if your logbook comes from CSV uploads, set `THECRAG_USERNAME` so the import knows which entries are yours.
-- **Your choices win.** Marks you set stay as they are, and routes you unmarked stay unmarked. **Settings → Import route data → Re-apply** can override either, using history already saved, without asking theCrag again.
-- **Gentle on theCrag.** Each route is checked **once** by default (optional periodic data refreshes are described below), at most **100 routes per run** and one request a second. A run happens after each logbook sync, on the background import schedule (`IMPORT_CRON`, daily by default), when the app restarts with routes still waiting (for example after an upgrade), or when you press **Check next 100 routes now**. If theCrag pushes back, the import pauses for at least a day.
-- Settings shows how many of your routes have been checked so far. With the daily sync, a few hundred routes take a few weeks; pressing the button speeds that up.
+- Contano **solo le voci che menzionano il tuo nome utente theCrag** (`@yourlogin`). I nomi in testo semplice vengono ignorati perché è troppo facile confonderli. La sincronizzazione tramite API salva quel nome utente; se il tuo logbook proviene da caricamenti CSV, imposta `THECRAG_USERNAME` in modo che l'importazione sappia quali voci sono tue.
+- **Le tue scelte hanno la priorità.** I contrassegni che imposti rimangono tali e le vie a cui hai rimosso il contrassegno rimangono senza contrassegno. **Impostazioni → Importa dati vie → Riapplica** può sovrascrivere entrambe le opzioni, utilizzando la cronologia già salvata, senza richiedere nuovamente i dati a theCrag.
+- **Rispettoso verso theCrag.** Per impostazione predefinita ogni via viene verificata **una sola volta** (gli aggiornamenti periodici opzionali dei dati sono descritti di seguito), al massimo **100 vie per esecuzione** e una richiesta al secondo. A run happens after each logbook sync or CSV upload, on the background import schedule (`IMPORT_CRON`, daily by default), when the app restarts with routes still waiting (for example after an upgrade), or when you press **Check next 100 routes now**. Se theCrag limita le richieste, l'importazione si mette in pausa per almeno un giorno.
+- Nelle Impostazioni viene mostrato quante delle tue vie sono state verificate finora. Con la sincronizzazione giornaliera, alcune centinaia di vie richiedono alcune settimane; premere il pulsante velocizza il processo.
 
-Only public route history is saved, never your private ascent notes. **Settings → Wipe** removes it along with your marks.
+Viene salvata solo la cronologia pubblica della via, mai le tue note private sulla salita. **Impostazioni → Cancella tutto** la rimuove insieme ai tuoi contrassegni.
 
-## What the card shows
+## Cosa mostra la scheda
 
-When the card includes imported FA/FFA or setter credits, its footer credits theCrag route history. This follows the saved credits, even if import is later disabled. Manual marks need no attribution label; mixed collections retain the route-history credit.
+Quando la scheda include crediti FA/FFA o di tracciatura importati, il piè di pagina attribuisce la fonte alla cronologia delle vie di theCrag. Questo segue i crediti salvati, anche se l'importazione viene successivamente disabilitata. I contrassegni manuali non necessitano di etichetta di attribuzione; le raccolte miste mantengono l'attribuzione alla cronologia della via.
 
-- **Count:** how many routes are credited as FA or FFA, from manual marks or the route data import (public route history). When you have FFAs, it also shows the FA / FFA split.
-- **Routes set:** distinct routes whose cached history lists you as route setter (`@yourlogin`). Same `@login` rule as FA import; free-text names don't count. Needs route data import (`ROUTE_DATA_IMPORT=true`) so those rows are saved locally.
-- **Community ascents (estimate):** cached ticks on routes you put up (FA/FFA marks **or** setter credits), minus your own logbook ticks recorded at the same fetch. A second tile splits out **sport / bolted** routes (Sport gear style, or any route with bolts recorded). Later owner repeats or deletions do not change the old snapshot. These are estimates of ascent totals, not unique climbers or live counters; visibility differences and an incomplete owner logbook can affect them.
-- **Community coverage:** the card shows how many credited logbook routes have paired count snapshots, out of all eligible routes. Known zero totals are displayed as zero; unavailable counts are excluded rather than treated as zero. Partial coverage is labelled explicitly. An entirely missing cache shows an unavailable message.
-- **Years:** from the year of your first FA to your latest. Each FA is dated by your **first logged send** of the route (see below).
-- **Grade range:** your easiest and hardest FA, using the route's grade (not a single pitch). Routes and boulders are listed separately, because Ewbank and V-grades can't be compared. Grades show in your route and boulder display systems.
-- **Styles:** how your FAs split across sport, trad, boulder and so on, using the route's style on theCrag.
-- **Latest:** your three most recent FAs on the dashboard card (full list via the logbook).
-- **Community by route:** top three credited routes on the dashboard (more counted below the list).
-- **Community by route:** up to eight credited routes, ranked by the community estimate. Each row shows FA, FFA and/or setter credit, a style badge (Sport/bolted, Trad, Boulder, or other known gear style from cached route info), the estimate (or Unavailable), and when that count was fetched. Count freshness is stored separately from other route-info fields, so refreshing beta or quality alone does not pretend the counter is new.
+- **Conteggio:** quante vie sono accreditate come FA o FFA, da contrassegni manuali o dall'importazione dei dati delle vie (cronologia pubblica delle vie). Quando hai delle FFA, mostra anche la suddivisione tra FA / FFA.
+- **Vie tracciate:** vie distinte la cui cronologia salvata in cache ti elenca come tracciatore (`@yourlogin`). Stessa regola del nome utente `@login` dell'importazione FA; i nomi in testo libero non contano. Richiede l'importazione dei dati delle vie (`ROUTE_DATA_IMPORT=true`) in modo che tali righe vengano salvate localmente.
+- **Salite della community (stima):** salite salvate in cache sulle vie da te aperte (contrassegni FA/FFA **o** crediti di tracciatura), meno le tue salite nel logbook registrate nello stesso momento. Un secondo riquadro separa le vie **sportive / chiodate** (stile di materiale Sport, o qualsiasi via con spit/fittoni registrati). Ripetizioni o eliminazioni successive da parte del proprietario non modificano la vecchia istantanea. Queste sono stime dei totali delle salite, non di scalatori unici o contatori in tempo reale; differenze di visibilità e un logbook incompleto del proprietario possono influire su di esse.
+- **Copertura della community:** la scheda mostra quante vie del logbook accreditate hanno istantanee del conteggio abbinate, su tutte le vie idonee. I totali pari a zero noti vengono visualizzati come zero; i conteggi non disponibili vengono esclusi anziché essere trattati come zero. La copertura parziale è indicata esplicitamente. Una cache completamente mancante mostra un messaggio di non disponibilità.
+- **Anni:** dall'anno della tua prima FA fino alla più recente. Ogni FA è datata in base alla tua **prima chiusura registrata** della via (vedi sotto).
+- **Intervallo di gradi:** la tua FA più facile e quella più dura, utilizzando il grado della via (non di un singolo tiro). Le vie e i blocchi sono elencati separatamente, perché i gradi Ewbank e V-Scale non possono essere confrontati. I gradi vengono mostrati nei sistemi di visualizzazione impostati per le vie e per i blocchi.
+- **Stili:** come si suddividono le tue FA tra sportivo, trad, boulder e così via, utilizzando lo stile della via su theCrag.
+- **Più recenti:** le tue tre FA più recenti sulla scheda della dashboard (elenco completo tramite il logbook).
+- **Community per via:** le prime tre vie accreditate sulla dashboard (altre vengono conteggiate sotto l'elenco).
+- **Community per via:** fino a otto vie accreditate, ordinate in base alla stima della community. Ogni riga mostra il credito FA, FFA e/o tracciatore, un badge di stile (Sportiva/chiodata, Trad, Boulder o altro stile noto dalle info via salvate in cache), la stima (o Non disponibile) e quando è stato recuperato quel conteggio. La data del conteggio viene salvata separatamente dagli altri dati della via, così aggiornare soltanto le informazioni tecniche o la qualità non fa apparire nuovo il conteggio.
 
-The card only appears for visitors once at least one FA is marked. Until then, the owner sees a short how-to instead.
+La scheda appare ai visitatori solo dopo che è stata contrassegnata almeno una FA. Fino ad allora, il proprietario vede invece una breve guida di istruzioni.
 
-Route data import must be enabled (`ROUTE_DATA_IMPORT=true`) to fill count snapshots. Community totals and owner-count snapshots come from the route API during background import (100 routes per run, pacing and back-off apply). To keep totals and other route data fresh automatically, set `ROUTE_DATA_REFRESH_DAYS` to a whole number of days from 30 through 3650 (e.g. `90` recommended, or `180` for about half a year) alongside `ROUTE_DATA_IMPORT=true`. Routes become eligible after that many days and refresh after a successful logbook sync, sharing the 100-route budget with new routes. New routes go first, then the oldest stale data; large backlogs can take multiple syncs. Unset, `0`, under 30, or over 3650 retains fetch-once behavior; **Refresh all** in Settings remains an optional manual reset. Manual marks and unmarks stay protected.
+L'importazione dei dati delle vie deve essere abilitata (`ROUTE_DATA_IMPORT=true`) per compilare le istantanee dei conteggi. I totali della community e le istantanee del conteggio del proprietario provengono dall'API della via durante l'importazione in background (100 vie per esecuzione, con limitazione della frequenza e tempi d'attesa). Per mantenere aggiornati automaticamente i totali e gli altri dati delle vie, imposta `ROUTE_DATA_REFRESH_DAYS` su un numero intero di giorni da 30 a 3650 (ad es. `90` consigliato, oppure `180` per circa metà anno) insieme a `ROUTE_DATA_IMPORT=true`. Le vie diventano idonee allo scadere di quel numero di giorni e si aggiornano dopo una sincronizzazione riuscita del logbook, condividendo la quota di 100 vie con le nuove vie. Le nuove vie vengono elaborate per prime, seguite dai dati non aggiornati più vecchi; arretrati consistenti possono richiedere più sincronizzazioni. Se non impostato, `0`, inferiore a 30 o superiore a 3650, viene mantenuto il comportamento di recupero singolo; **Aggiorna tutto** nelle Impostazioni rimane un ripristino manuale opzionale. I contrassegni e le rimozioni manuali dei contrassegni rimangono protetti.
 
-In Settings, the route-history check button counts down until the next run is allowed and becomes available automatically. Runs have a one-minute minimum interval; a block or error can require a longer wait. Without JavaScript, reload Settings to update availability.
+Nelle Impostazioni, il pulsante di verifica della cronologia della via mostra un conto alla rovescia fino all'esecuzione successiva consentita e diventa disponibile automaticamente. Le esecuzioni hanno un intervallo minimo di un minuto; un blocco o un errore possono richiedere un'attesa più lunga. Senza JavaScript, ricarica le Impostazioni per aggiornare la disponibilità.
 
-## When an FA counts, and its date
+## Quando conta una FA e la sua data
 
-A first ascent is the send, so each one is dated by your **first logged send** of the marked route. Earlier attempts and hang-dogs while you worked it don't count, and neither do later repeats. If you've only logged attempts so far, the route still appears on the card (dated by your earliest ascent), but it doesn't earn badges or a milestone until you log the send.
+Una prima ascensione è la chiusura, quindi ciascuna viene datata in base alla tua **prima chiusura registrata** della via contrassegnata. I tentativi precedenti e i rest su corda mentre lavoravi la via non contano, e nemmeno le ripetizioni successive. Se finora hai registrato solo tentativi, la via appare comunque sulla scheda (datata in base alla tua ascensione più remota), ma non ottiene badge o traguardi finché non registri la chiusura.
 
-## Badges and milestones
+## Badge e traguardi
 
-These unlock from owner-marked FAs/FFAs (and your first send of each marked route), not from turning on private notes. The Milestones card and badge catalog use the same thresholds — not one row per route.
+Questi si sbloccano dalle FA/FFA contrassegnate dal proprietario (e dalla tua prima chiusura di ogni via contrassegnata), non dall'attivazione delle note private. La scheda Traguardi e il catalogo dei badge usano le stesse soglie — non una riga per via.
 
-- **First Ascent** and **First Free Ascent:** your first send of a route you marked FA, or FFA.
-- **Combined first-ascent counts** (5, 10 / Pioneer, 20, 50, 100): that many different routes marked FA or FFA.
-- **First free ascent counts** (5, 10, 20, 50, 100): FFA marks only.
-- **Style first-ascent counts** (10, 20, 50 for Sport, Trad, and Boulder): FA or FFA marks on that gear style.
-- **Route Setter**, **Route Developer** (5), **Wall Builder** (10), **Crag Architect** (25): route setter credits from cached route history, dated by the earliest setter entry that names your `@login` on each route (not by logbook sends).
-- **Shared Crag** (10), **Crowd Pleaser** (50), **Hundred Hands** (100), **Local Classic** (500): approximate community ascents on routes you put up (FA/FFA or setter), from paired count snapshots. Counts are ascents, not distinct climbers. Incomplete coverage is noted on the badge detail.
-- **Bolted Buzz** (10), **Sport Magnet** (50), **Clip Classic** (100): the same estimate restricted to Sport gear style or bolted routes.
+- **Prima salita** e **Prima salita in libera:** la tua prima chiusura di una via che hai contrassegnato come FA o FFA.
+- **Conteggio complessivo prime ascensioni** (5, 10 / Pioneer, 20, 50, 100): quel numero di vie distinte contrassegnate come FA o FFA.
+- **Conteggio prime libere** (5, 10, 20, 50, 100): solo contrassegni FFA.
+- **Conteggio prime ascensioni per stile** (10, 20, 50 per Sportiva, Trad e Boulder): contrassegni FA o FFA su quello stile di arrampicata.
+- **Tracciatore**, **Sviluppatore di vie** (5), **Costruttore di pareti** (10), **Architetto di falesia** (25): crediti di tracciatore dalla cronologia della via salvata in cache, datati in base alla prima voce di tracciatura che menziona il tuo `@login` su ciascuna via (non dalle chiusure nel logbook).
+- **Falesia condivisa** (10), **Grande successo** (50), **Cento mani** (100), **Classica locale** (500): salite approssimative della community sulle vie da te aperte (FA/FFA o tracciatore), dalle istantanee abbinate dei conteggi. I conteggi si riferiscono alle salite, non a scalatori distinti. La copertura incompleta è segnalata nei dettagli del badge.
+- **Fervore chiodato** (10), **Calamita sportiva** (50), **Classica da rinvio** (100): la stessa stima limitata allo stile Sportiva o vie chiodate.
 
-Each threshold is dated by the first send of the route that crossed it; the detail names that unlocking route.
+Ciascuna soglia è datata in base alla prima chiusura della via che l'ha superata; il dettaglio riporta il nome di quella via sbloccante.
 
-Setter credits with no valid history date still count toward setter badges, but their earned date is left unknown. Community-ascent badges likewise leave the earned date unknown — the totals are cached aggregates, not an event day.
+I crediti di tracciatore privi di una data di cronologia valida contano comunque per i badge da tracciatore, ma la loro data di ottenimento rimane sconosciuta. Allo stesso modo, i badge per le salite della community lasciano la data di ottenimento sconosciuta — i totali sono aggregati salvati in cache, non un giorno specifico.

@@ -1,22 +1,22 @@
-# Weekday
+# Giorno della settimana
 
-The **Weekday** card shows which days of the week you climb on, inspired by [Dreeve](https://dreeve.app/)’s weekday chart for Strava. The distribution is a **donut (pie) chart** with a Mon–Sun legend. By default it sits left of **Sessions per week** (half-width), on the row under **Monthly** / **Yearly** stats; Customize dashboard can move either card.
+La scheda **Giorno della settimana** mostra in quali giorni della settimana arrampichi, ispirandosi al grafico settimanale di [Dreeve](https://dreeve.app/) per Strava. La distribuzione è un **grafico ad anello (a torta)** con una legenda Lun–Dom. Per impostazione predefinita si trova a sinistra di **Sessioni a settimana** (a metà larghezza), nella riga sotto le statistiche **Mensili** / **Annuali**; con Personalizza dashboard è possibile spostare entrambe le schede.
 
-## What counts
+## Cosa viene conteggiato
 
-- **Sessions** (default) — a calendar day with at least one matching ascent (same idea as [Sessions per week](/docs/sessions-per-week))
-- **Ascents** — every matching tick that weekday
+- **Sessioni** (predefinito) — un giorno di calendario con almeno una salita corrispondente (lo stesso principio di [Sessioni a settimana](/docs/sessions-per-week))
+- **Salite** — ogni salita registrata corrispondente in quel giorno della settimana
 
-Weekday is taken from the ascent’s `YYYY-MM-DD` date in UTC — logbook rows are day-stamped without a time of day.
+Il giorno della settimana è ricavato dalla data `YYYY-MM-DD` della salita in UTC — le righe del diario riportano solo la data senza l’ora.
 
-## Filters
+## Filtri
 
-- **All time** / **Last 12 weeks** — inclusive 84-day window ending today for the short range
-- **Sessions** / **Ascents** — what the slice size means
-- **All** / **Sport** / **Trad** / **Boulder** — style chips use the same discipline colours as the rest of the app, and match logbook style filters (climbed style **or** route style). Top-rope and other styles only appear under **All**.
+- **Tutti i tempi** / **Ultime 12 settimane** — finestra inclusiva di 84 giorni che termina oggi per l’intervallo breve
+- **Sessioni** / **Salite** — cosa indica la dimensione di ciascuna fetta
+- **Tutto** / **Sportiva** / **Tradizionale** / **Blocco** — i chip di stile usano gli stessi colori delle discipline presenti nel resto dell’app e corrispondono ai filtri di stile del diario (stile di arrampicata **o** stile della via). Moulinette e altri stili compaiono solo sotto **Tutto**.
 
-Choices are stored in the browser (`cs_weekday_range`, `cs_weekday_metric`, `cs_weekday_style`).
+Le scelte vengono salvate nel browser (`cs_weekday_range`, `cs_weekday_metric`, `cs_weekday_style`).
 
-## Most active day
+## Giorno più attivo
 
-The centre of the donut and the lead line name the weekday with the highest value for the current metric (ties break toward the other metric). That weekday’s slice and legend row are emphasised. **View weekday values** under the chart lists exact sessions, ascents and share for screen readers and keyboard users.
+Il centro del grafico ad anello e la riga principale indicano il giorno della settimana con il valore più alto per la metrica corrente (in caso di parità si guarda l’altra metrica). La fetta e la riga della legenda di quel giorno della settimana vengono evidenziate. **Vedi valori dei giorni della settimana** sotto il grafico elenca esattamente sessioni, salite e percentuale per gli screen reader e gli utenti che navigano da tastiera.

@@ -1,44 +1,44 @@
-# Grades & grade bands
+# Gradi e fasce di grado
 
-Crag Stats shows grades the way [theCrag](https://www.thecrag.com/en/article/grades) does. Every grading system is converted onto one internal scale, and that scale is split into five colour-coded **bands**.
+Crag Stats mostra i gradi nello stesso modo di [theCrag](https://www.thecrag.com/en/article/grades). Ogni sistema di gradazione viene convertito in un'unica scala interna, e tale scala è suddivisa in cinque **fasce** identificate da colori.
 
-## The five bands
+## Le cinque fasce
 
 <!-- component:grade-bands -->
 
-These colours appear in every pyramid, grade chip, CPR chart and band breakdown. They match theCrag, so a grade looks the same here as it does there.
+Questi colori compaiono in ogni piramide, etichetta di grado, grafico CPR e dettaglio delle fasce. Corrispondono a theCrag, quindi un grado appare qui nello stesso modo in cui appare lì.
 
-## How grades are compared
+## Come vengono confrontati i gradi
 
-- **One internal scale per kind of climbing.** Routes (sport, trad, top rope, alpine…) are scored on the **Ewbank** scale (the Australian numbers). Boulders are scored on the **V-scale**. They're never mixed in one list: a V5 boulder and a grade 21 route sit in different pyramids.
-- **The grade decides the scale, not the style.** Deep water solos and highballs are often given V-grades even though they aren't boulders. Those stay on the V-scale: they're counted with boulders in hardest sends and grade indexes, and get their own pyramid (for example **DWS · V**), never an Ewbank one.
-- **Your display systems** are chosen in **Settings → Display & visibility**, one for each kind of climbing. **Route grades** (Ewbank, French, or YDS; Ewbank by default) cover sport, trad, top rope, and other roped climbing. **Boulder grades** (V-scale (Hueco) or Fontainebleau; V-scale by default) cover boulders and V-graded highballs. The two are independent, so you can show French routes with Font boulders. A shared link can override them once with `?system=` (a route or boulder system) and `?boulderSystem=`.
-- **Assigned vs your grade.** theCrag stores both the route's consensus grade and the grade you gave it. Crag Stats prefers the grade on the ascent when it's in the right system, and falls back to the route's grade.
-- **Reading individual climbs.** Projects, project history, and Logbook show your selected grade first. When the original theCrag route grade differs, it follows in parentheses, for example `6b (20)`. For a partial multi-pitch ascent, the first grade still describes the pitches you climbed; the parentheses show the route's original grade. Unscored grades keep their original text rather than guessing a conversion.
-- **Multi-pitch:** the effective grade of an ascent is the hardest pitch _you_ climbed, not the hardest pitch on the route. For systems the text parser cannot read, such as UIAA, a complete climb or a matching pitch grade uses the ascent's universal score. Other pitches use their difficulty band's midpoint when available.
-- **Ambiguous boulder numbers:** provider grade-system context decides whether a bare number means V-scale or Ewbank. Country alone never changes a grade on API rows. Repairs preserve the original API evidence. CSV exports have no grade-system column, so Australian boulder rows with bare digits (`9`, `1`) get an AU hint from Country / Crag Path / australia URL stubs; explicit `V5` / `VB` stay V-scale. As with API imports, an inferred AU ascent grade does not override an explicit V-scale route grade.
-- **Ranges** such as `V1/2` count as the midpoint (V1.5).
-- **theCrag's universal score.** theCrag scores every grade, in every grading system, on one difficulty scale. Synced ascents carry that score, so Crag Stats can rank grades in any system theCrag supports (UIAA, Saxon, Nordic, Polish, Brazilian, and more), even ones it can't read as text. Bare numbers in those systems (a UIAA `7`) are never mistaken for Ewbanks.
-- **In-between grades.** French, YDS, and Fontainebleau conversions use theCrag's scores too, so grades without a whole Ewbank or V equivalent (French `5c+`, `6a`, and `7a+`, Font `6A+` and `7C+`) still rank strictly between their neighbours (`7a` < `7a+` < `7b`). French, YDS, and Font pyramids group by the nearest grade in that display system, with midpoint ties going to the harder grade. Each row links to its own grade range in the logbook. Ewbank and V-scale pyramids keep whole-grade rows. Their band comes from theCrag's score as well, so a French `6a` stays Intermediate and a `7a+` stays Experienced.
-- **CSV uploads** have no score column, so their grades are read from the text. French, YDS, Ewbank, V, and Font grades convert as above; grades in other systems may show unconverted.
+- **Una scala interna per ogni tipo di arrampicata.** Le vie (sportive, trad, top rope, alpinismo…) sono valutate sulla scala **Ewbank** (i numeri australiani). I boulder sono valutati sulla **V-scale**. Non sono mai mescolati in un unico elenco: un boulder V5 e una via di grado 21 si trovano in piramidi diverse.
+- **Il grado decide la scala, non lo stile.** Ai deep water solo e agli highball vengono spesso assegnati gradi-V anche se non sono boulder. Questi rimangono sulla V-scale: vengono conteggiati insieme ai boulder nelle chiusure più difficili e negli indici di grado, e hanno la loro piramide (ad esempio **DWS · V**), mai una Ewbank.
+- Puoi scegliere i **tuoi sistemi di visualizzazione** in **Impostazioni → Visualizzazione e visibilità**, uno per ogni tipo di arrampicata. I **gradi delle vie** (Ewbank, francese o YDS; Ewbank per impostazione predefinita) coprono l'arrampicata sportiva, trad, top rope e altre discipline con corda. I **gradi boulder** (V-scale (Hueco) o Fontainebleau; V-scale per impostazione predefinita) coprono boulder e highball con grado V. I due sono indipendenti, quindi puoi visualizzare le vie in francese e i boulder in Font. Un link condiviso può sovrascriverli una sola volta con `?system=` (un sistema per vie o boulder) e `?boulderSystem=`.
+- **Grado assegnato vs il tuo grado.** theCrag memorizza sia il grado di consenso della via sia il grado che le hai assegnato tu. Crag Stats preferisce il grado dell'ascesa quando è nel sistema corretto, altrimenti ripiega sul grado della via.
+- **Lettura delle singole scalate.** Progetti, cronologia dei progetti e Logbook mostrano prima il grado che hai selezionato. Quando il grado originale della via su theCrag differisce, segue tra parentesi, ad esempio `6b (20)`. Per una salita parziale di una via multi-pitch, il primo grado descrive ancora i tiri che hai scalato; le parentesi mostrano il grado originale della via. I gradi non valutati mantengono il testo originale invece di ipotizzare una conversione.
+- **Multi-pitch:** il grado effettivo di un'ascesa è il tiro più difficile che _tu_ hai scalato, non il tiro più difficile della via. Per i sistemi che il parser di testo non può leggere, come l'UIAA, una scalata completa o un grado di tiro corrispondente utilizza il punteggio universale dell'ascesa. Gli altri tiri utilizzano il punto medio della loro fascia di difficoltà, quando disponibile.
+- **Numeri boulder ambigui:** il contesto del sistema di gradazione del fornitore decide se un numero semplice indica la V-scale o Ewbank. Il solo paese non cambia mai un grado nelle righe dell'API. Le riparazioni conservano l'evidenza originale dell'API. Le esportazioni CSV non hanno una colonna per il sistema di gradazione, quindi le righe dei blocchi australiani con cifre semplici (`9`, `1`) ricevono un’indicazione AU dai campi Country / Crag Path / segmenti URL australia; i valori espliciti `V5` / `VB` rimangono sulla scala V. Come per le importazioni API, un grado di ascesa AU dedotto non sovrascrive un grado di via esplicito in V-scale.
+- **Gli intervalli** come `V1/2` contano come punto medio (V1.5).
+- **Punteggio universale di theCrag.** theCrag valuta ogni grado, in ogni sistema di gradazione, su un'unica scala di difficoltà. Le ascese sincronizzate portano con sé quel punteggio, così Crag Stats può classificare i gradi in qualsiasi sistema supportato da theCrag (UIAA, sassone, nordico, polacco, brasiliano e altri), anche quelli che non riesce a leggere come testo. I numeri semplici in quei sistemi (un `7` UIAA) non vengono mai scambiati per gradi Ewbank.
+- **Gradi intermedi.** Anche le conversioni per i sistemi francese, YDS e Fontainebleau utilizzano i punteggi di theCrag, quindi i gradi senza un equivalente intero Ewbank o V (francese `5c+`, `6a` e `7a+`, Font `6A+` e `7C+`) si collocano comunque rigorosamente tra i gradi vicini (`7a` < `7a+` < `7b`). Le piramidi francese, YDS e Font raggruppano per il grado più vicino in quel sistema di visualizzazione; in caso di parità nel punto medio, si sceglie il grado più difficile. Ogni riga rimanda al proprio intervallo di gradi nel logbook. Le piramidi Ewbank e V-scale mantengono le righe per gradi interi. Anche la loro fascia deriva dal punteggio di theCrag, quindi un `6a` francese rimane Intermedio e un `7a+` rimane Avanzato.
+- I **caricamenti CSV** non hanno una colonna per il punteggio, quindi i loro gradi vengono letti dal testo. I gradi francese, YDS, Ewbank, V e Font vengono convertiti come sopra; i gradi in altri sistemi potrebbero apparire non convertiti.
 
-## Conversion tables
+## Tabelle di conversione
 
-Conversions between systems are approximate: grades are cultural, and a "6c" at one crag isn't always a "23" at another. The tables below are generated from the same code the dashboard uses.
+Le conversioni tra i sistemi sono approssimative: i gradi sono culturali, e un "6c" in una falesia non è sempre un "23" in un'altra. Le tabelle sottostanti sono generate dallo stesso codice utilizzato dalla dashboard.
 
-### Routes (Ewbank ↔ French ↔ YDS)
+### Vie (Ewbank ↔ Francese ↔ YDS)
 
 <!-- component:route-conversions -->
 
-### Boulders (V-scale ↔ Fontainebleau)
+### Boulder (V-scale ↔ Fontainebleau)
 
 <!-- component:boulder-conversions -->
 
-## Sources
+## Fonti
 
-- theCrag: [Grades and grade conversions](https://www.thecrag.com/en/article/grades)
-- theCrag: [Grades on theCrag](https://www.thecrag.com/en/article/gradesonthecrag)
+- theCrag: [Gradi e conversioni di grado](https://www.thecrag.com/en/article/grades)
+- theCrag: [Gradi su theCrag](https://www.thecrag.com/en/article/gradesonthecrag)
 
-## Dashboard grade records
+## Record di grado della dashboard
 
-The dashboard starts with **Hardest send** and **Hardest onsight / flash**. They show your all-time highest successful grade and highest successful first-go grade, in your selected systems. Attempts and unscored climbs do not qualify. Routes and boulders have separate results; V-graded DWS and highballs count with boulders. Partial multi-pitch ascents use the hardest pitch you climbed. Each result names its tick and links to the qualifying ascent. When onsight and flash records tie, the onsight is shown. A missing record shows a dash and an explanation.
+La dashboard inizia con **Chiusura più difficile** e **Più difficile a vista / flash**. Mostrano il tuo grado massimo di sempre raggiunto con successo e il grado massimo raggiunto al primo tentativo, nei sistemi selezionati. I tentativi e le scalate senza valutazione non sono validi. Vie e boulder hanno risultati separati; i DWS e gli highball con grado V contano insieme ai boulder. Le ascese parziali di vie lunghe utilizzano il tiro più difficile che tu abbia scalato. Ogni risultato indica il tipo di salita e rimanda alla salita valida corrispondente. In caso di parità tra i record a vista e flash, viene mostrato il record a vista. Un record mancante mostra un trattino e una spiegazione.

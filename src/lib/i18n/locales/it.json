@@ -403,8 +403,8 @@
 			"empty": "Dati insufficienti per una cronologia CPR.",
 			"footnoteApi": "Curva dall'API di theCrag (CPR decaduto); le candele mostrano i tuoi tick.",
 			"footnoteApprox": "CPR approssimativo: fattore potenza 5, spostamento tick, decadimento ~0.7 gradi/anno.",
-			"footnoteGaps": "",
-			"gapsToggle": "",
+			"footnoteGaps": "I trimestri vuoti senza salite interrompono la curva.",
+			"gapsToggle": "Mostra trimestri vuoti",
 			"howCprWorks": "Come funciona il CPR",
 			"labelCurrent": "Attuale",
 			"labelPeak": "Picco",
@@ -417,7 +417,7 @@
 			"titleCandle": "{family} {min}–{max} ({count})",
 			"titleCprGrade": "CPR ≈ {grade}",
 			"titleGapInTime": "Pausa temporale",
-			"titleNoAscents": "",
+			"titleNoAscents": "{label}: nessuna salita registrata",
 			"titleSourceApi": "Curva CPR dall'API di theCrag",
 			"titleSourceApprox": "Modello CPR approssimativo (vedi Doc)",
 			"titleVolumeLink": "{label}: {count, plural, one {# salita} other {# salite}} — apri libro di vie"
@@ -492,11 +492,11 @@
 		"docBlock": {
 			"ariaBoulderGradeConversions": "Conversioni gradi boulder",
 			"ariaRouteGradeConversions": "Conversioni gradi vie",
-			"bandText1": "",
-			"bandText2": "",
-			"bandText3": "",
-			"bandText4": "",
-			"bandText5": "",
+			"bandText1": "I tuoi primi giorni di arrampicata, spesso da secondo o in moulinette. Molte persone li superano al primo giorno, anche se alcune vie a questo livello sono comunque impegnative.",
+			"bandText2": "Tipico per i climbers al primo anno. La maggior parte dell'arrampicata outdoor avviene in questa fascia e molti climbers esperti ci ritornano per divertimento.",
+			"bandText3": "Alla portata dopo un paio d'anni di arrampicata regolare; i climbers occasionali diventano rari qui.",
+			"bandText4": "Richiede un allenamento mirato e strutturato; relativamente pochi climbers arrivano a questo livello.",
+			"bandText5": "Livello professionale: i migliori climbers al mondo.",
 			"thBand": "Fascia",
 			"thBoulders": "Boulder",
 			"thEwbank": "Ewbank",
@@ -506,47 +506,47 @@
 			"thVScale": "Scala V",
 			"thWhatItMeans": "Significato",
 			"thYds": "YDS",
-			"tickGroupAid": "",
-			"tickGroupAidStyles": "",
-			"tickGroupAttempts": "",
-			"tickGroupAttemptsStyles": "",
-			"tickGroupBouldering": "",
-			"tickGroupBoulderingStyles": "",
-			"tickGroupGeneral": "",
-			"tickGroupGeneralStyles": "",
-			"tickGroupLead": "",
-			"tickGroupLeadStyles": "",
-			"tickGroupTopRope": "",
-			"tickGroupTopRopeStyles": "",
-			"tickMeaningAidSolo": "",
-			"tickMeaningAidTick": "",
-			"tickMeaningAttempt": "",
-			"tickMeaningBoulderDab": "",
-			"tickMeaningBoulderFlash": "",
-			"tickMeaningBoulderOnsight": "",
-			"tickMeaningBoulderRepeat": "",
-			"tickMeaningBoulderSend": "",
-			"tickMeaningFreeSolo": "",
-			"tickMeaningGeneralTick": "",
-			"tickMeaningLeadAllFreeWithRest": "",
-			"tickMeaningLeadFlash": "",
-			"tickMeaningLeadGreenPoint": "",
-			"tickMeaningLeadGroundUpRedPoint": "",
-			"tickMeaningLeadHangDog": "",
-			"tickMeaningLeadOnsight": "",
-			"tickMeaningLeadPinkPoint": "",
-			"tickMeaningLeadRedPoint": "",
-			"tickMeaningLeadSolo": "",
-			"tickMeaningRetreat": "",
-			"tickMeaningTopRopeClean": "",
-			"tickMeaningTopRopeFlash": "",
-			"tickMeaningTopRopeHangDog": "",
-			"tickMeaningTopRopeOnsight": "",
-			"tickMeaningTopRopeRopedSolo": "",
-			"tickMeaningWorking": "",
-			"ariaTable": "",
-			"tickNameGreenPoint": "",
-			"tickNameGroundUpRedPoint": ""
+			"tickGroupAid": "Artificiale & free solo",
+			"tickGroupAidStyles": "Artificiale, free solo",
+			"tickGroupAttempts": "Tentativi",
+			"tickGroupAttemptsStyles": "Tutti gli stili",
+			"tickGroupBouldering": "Bouldering",
+			"tickGroupBoulderingStyles": "Boulder",
+			"tickGroupGeneral": "Generale",
+			"tickGroupGeneralStyles": "La maggior parte degli stili",
+			"tickGroupLead": "Da primo",
+			"tickGroupLeadStyles": "Sport, trad, deep-water solo e ghiaccio",
+			"tickGroupTopRope": "Moulinette & da secondo",
+			"tickGroupTopRopeStyles": "Moulinette, secondo",
+			"tickMeaningAidSolo": "Via salita in artificiale da solo.",
+			"tickMeaningAidTick": "Via salita in artificiale usando protezioni fisse o posizionate durante la salita.",
+			"tickMeaningAttempt": "Provata ma non completata.",
+			"tickMeaningBoulderDab": "Raggiunta la cima, ma toccando terra o uno spotter lungo il percorso.",
+			"tickMeaningBoulderFlash": "Chiuso al primo tentativo, con beta.",
+			"tickMeaningBoulderOnsight": "Chiuso al primo tentativo senza beta (raro nel bouldering).",
+			"tickMeaningBoulderRepeat": "Chiuso un blocco già salito in precedenza.",
+			"tickMeaningBoulderSend": "Chiuso pulito dopo tentativi precedenti.",
+			"tickMeaningFreeSolo": "Scalato senza corda (a vista, flash o Rotpunkt).",
+			"tickMeaningGeneralTick": "Scalata; usato per alpinismo, via ferrata o quando dimentichi lo stile.",
+			"tickMeaningLeadAllFreeWithRest": "Scalato in libera ma con riposi o cadute; accettato solo in alcune regioni (es. Sassonia).",
+			"tickMeaningLeadFlash": "Scalato da primo pulito al primo tentativo, ma con beta o ispezione.",
+			"tickMeaningLeadGreenPoint": "Una via attrezzata a fix o fittoni salita da primo usando solo protezioni trad; conta come trad.",
+			"tickMeaningLeadGroundUpRedPoint": "Rotpunkt in cui ad ogni tentativo fallito ci si è calati sfilando la corda, senza provare i singoli passi.",
+			"tickMeaningLeadHangDog": "Scalato da primo fino in cima ma con cadute o riposi sul materiale.",
+			"tickMeaningLeadOnsight": "Scalato da primo pulito al primo tentativo senza beta o ispezione previa.",
+			"tickMeaningLeadPinkPoint": "Rotpunkt con protezioni o rinvii già posizionati.",
+			"tickMeaningLeadRedPoint": "Scalato da primo pulito dopo tentativi precedenti (include ripetizioni).",
+			"tickMeaningLeadSolo": "Scalato da primo da solo usando un dispositivo d'autoassicurazione.",
+			"tickMeaningRetreat": "Rinunciato (troppo difficile, meteo, materiale, infortunio…).",
+			"tickMeaningTopRopeClean": "Pulito dopo tentativi precedenti (include ripetizioni).",
+			"tickMeaningTopRopeFlash": "Pulito al primo tentativo, con beta.",
+			"tickMeaningTopRopeHangDog": "Raggiunta la cima ma con cadute o riposi sulla corda.",
+			"tickMeaningTopRopeOnsight": "Pulito al primo tentativo senza beta.",
+			"tickMeaningTopRopeRopedSolo": "In moulinette da solo su una corda fissa dall'alto in autoassicurazione.",
+			"tickMeaningWorking": "Lavorando la via o il blocco.",
+			"ariaTable": "Tabella",
+			"tickNameGreenPoint": "Green point",
+			"tickNameGroundUpRedPoint": "Rotpunkt dal basso"
 		},
 		"eddington": {
 			"foot": "Come il numero di Eddington del ciclismo: il valore E più grande raggiunto E volte.",
@@ -1320,8 +1320,8 @@
 			"titleVolume": "Volume"
 		},
 		"docs": {
-			"pageDescription": "",
-			"pageTitle": ""
+			"pageDescription": "Come Crag Stats calcola le tue statistiche di arrampicata.",
+			"pageTitle": "Documentazione"
 		},
 		"docsLayout": {
 			"ariaDocs": "Documentazione",
@@ -1329,120 +1329,120 @@
 		},
 		"docsPages": {
 			"activity": {
-				"summary": "",
-				"title": ""
+				"summary": "Volume mensile e annuale oltre le schede della dashboard — tabelle mensili complete e variazioni anno su anno.",
+				"title": "Attività"
 			},
 			"ascentCalendar": {
-				"summary": "",
-				"title": ""
+				"summary": "Mappa termica annuale dei giorni registrati; l'Intensità varia in base al volume, il Grado in base alla fascia di chiusura più difficile del giorno.",
+				"title": "Calendario salite"
 			},
 			"badges": {
-				"summary": "",
-				"title": ""
+				"summary": "Traguardi del logbook e la data automatica di importazione dei Primi Passi.",
+				"title": "Badge"
 			},
 			"bestMonths": {
-				"summary": "",
-				"title": ""
+				"summary": "theCrag: stagionalità delle tue falesie principali, ponderata in base alle tue salite e confrontata con i periodi in cui ci arrampichi.",
+				"title": "Mesi migliori"
 			},
 			"climberProfile": {
-				"summary": "",
-				"title": ""
+				"summary": "Assi radar per volume, varietà, densità, altezza, intensità e costanza su 30 contro 90 giorni.",
+				"title": "Profilo climber"
 			},
 			"climberType": {
-				"summary": "",
-				"title": ""
+				"summary": "Come la dashboard stabilisce se sei un climber sportivo, trad, boulder o completo.",
+				"title": "Tipo di climber"
 			},
 			"climbingMap": {
-				"summary": "",
-				"title": ""
+				"summary": "Luoghi nel mondo, indicatori luminosi di densità di salita, filtri e copertura delle posizioni.",
+				"title": "Mappa arrampicata"
 			},
 			"climbingStory": {
-				"summary": "",
-				"title": ""
+				"summary": "Descrizione in prima persona dal tuo logbook: anzianità, vie chiodate/aperte, falesia di casa, compagni e altri segnali rilevanti.",
+				"title": "Storia d'arrampicata"
 			},
 			"cpr": {
-				"summary": "",
-				"title": ""
+				"summary": "theCrag: il suo Climber Performance Rating, come viene calcolato e come leggere la cronologia.",
+				"title": "CPR"
 			},
 			"displaySettings": {
-				"summary": "",
-				"title": ""
+				"summary": "Formati di data, unità granulari e soglie metriche che rimangono fisse.",
+				"title": "Impostazioni visualizzazione"
 			},
 			"eddington": {
-				"summary": "",
-				"title": ""
+				"summary": "Il numero di Eddington del ciclismo adattato all'arrampicata: giorni di chiusura, giorni di dislivello e indici di grado.",
+				"title": "Numeri di Eddington"
 			},
 			"firstAscents": {
-				"summary": "",
-				"title": ""
+				"summary": "Contrassegno delle tue FA e FFA, vie tracciate/chiodate e salite della community sulle linee che hai aperto.",
+				"title": "Prime ascensioni"
 			},
 			"goals": {
-				"summary": "",
-				"title": ""
+				"summary": "Obiettivi annuali di grado, altezza e giorni; le barre di grado usano la prontezza della piramide invece di migliore÷obiettivo.",
+				"title": "Obiettivi"
 			},
 			"grades": {
-				"summary": "",
-				"title": ""
+				"summary": "Fasce Principiante → Elite, confronto tra sistemi di gradi e tabelle di conversione.",
+				"title": "Gradi & fasce di grado"
 			},
 			"karma": {
-				"summary": "",
-				"title": ""
+				"summary": "Karma di salita approssimativo dalle vie registrate; i punti per la modifica delle guide attendono un'API di theCrag.",
+				"title": "Karma"
 			},
 			"logbookSync": {
-				"summary": "",
-				"title": ""
+				"summary": "Per il proprietario del server: sincronizzazione API programmata con chiave sostenitore, o caricamenti CSV manuali.",
+				"title": "Sincro logbook"
 			},
 			"offline": {
-				"summary": "",
-				"title": ""
+				"summary": "Scarica un'istantanea pubblica in sola lettura delle statistiche e del logbook per questo browser.",
+				"title": "Modalità offline"
 			},
 			"partners": {
-				"summary": "",
-				"title": ""
+				"summary": "Con chi arrampichi — classifica per salite condivise, sessioni (giorni) o falesie distinte.",
+				"title": "Compagni"
 			},
 			"projects": {
-				"summary": "",
-				"title": ""
+				"summary": "Progetti rilevati automaticamente, estratti di guida pubblica sulle schede e come differiscono dalle note private.",
+				"title": "Progetti"
 			},
 			"repeats": {
-				"summary": "",
-				"title": ""
+				"summary": "Prime visite rispetto a giornate di ritorno sulla stessa via, con etichette climber Esploratore e Ripetitore.",
+				"title": "Ripetizioni vs nuove vie"
 			},
 			"rockTypes": {
-				"summary": "",
-				"title": ""
+				"summary": "Tag del tipo di roccia da theCrag, scheda del volume e percentuale di chiusura / vicino al limite per roccia.",
+				"title": "Tipi di roccia"
 			},
 			"routePopularity": {
-				"summary": "",
-				"title": ""
+				"summary": "Salite affollate vs tranquille dalla popolarità di theCrag, più gemme nascoste (alta qualità, scarso traffico).",
+				"title": "Popolarità vie"
 			},
 			"sessionsPerWeek": {
-				"summary": "",
-				"title": ""
+				"summary": "Giorni di arrampicata per settimana ISO e la frequenza media annuale delle sessioni.",
+				"title": "Sessioni a settimana"
 			},
 			"solo": {
-				"summary": "",
-				"title": ""
+				"summary": "Moulinette, da primo, free solo, deep-water soloing e salite senza compagno taggato.",
+				"title": "Arrampicata in solitario"
 			},
 			"tickTypes": {
-				"summary": "",
-				"title": ""
+				"summary": "A vista, flash, Rotpunkt, tentativi e il resto, e quali contano come chiusure.",
+				"title": "Tipi di salita"
 			},
 			"trainingLoad": {
-				"summary": "",
-				"title": ""
+				"summary": "Il modello di carico acuto:cronico ponderato sull'intensità dietro la scheda Carico di allenamento.",
+				"title": "Carico di allenamento"
 			},
 			"weather": {
-				"summary": "",
-				"title": ""
+				"summary": "Cache opzionale dei giorni all'aperto di Open-Meteo e badge caldo / gelo / pioggia / neve / vento (WEATHER_IMPORT opzionale).",
+				"title": "Meteo"
 			},
 			"weekday": {
-				"summary": "",
-				"title": ""
+				"summary": "In quali giorni della settimana arrampichi — sessioni e salite Lun–Dom, di sempre o nelle ultime 12 settimane.",
+				"title": "Giorni settimana"
 			},
 			"yearlyStats": {
-				"summary": "",
-				"title": ""
+				"summary": "Barre per anno o totali di carriera cumulativi per salite, chiusure e altezza, con linee infrannuali opzionali.",
+				"title": "Statistiche annuali"
 			}
 		},
 		"eddington": {
@@ -1946,8 +1946,8 @@
 			"hintColumnProjectsGoals": "Escludi dai totali",
 			"hintCountedTickTypes": "Configura quali tipi di salita contano nei totali del dashboard, nelle pagine, nei progetti e negli obiettivi. Il registro elenca sempre tutte le salite registrate.",
 			"hintCsvImport": "Per chi non ha l'accesso API supporter. Esporta da theCrag: {action}, poi carica il file qui ogni volta che desideri aggiornare. L'importazione CSV aggiorna e inserisce le righe ma **non** rimuove le voci mancanti. La sincronizzazione API riconcilia le eliminazioni. {syncOptions}",
-			"hintCsvLogbook": "",
-			"hintCsvOnlyRouteData": "",
+			"hintCsvLogbook": "I caricamenti CSV sono la fonte del tuo diario delle salite perché {token} è impostato: la sincronizzazione API non viene eseguita e le salite caricate non vengono mai eliminate. Usa **Importazione CSV** qui sopra quando vuoi aggiornare i dati.",
+			"hintCsvOnlyRouteData": "{key} viene ancora utilizzata per i dati delle vie e le ricerche delle aree. Il diario delle salite del titolare della chiave non viene mai sincronizzato al posto dei dati che hai caricato.",
 			"hintDateFormat": "Controlla il formato delle date nel registro delle salite, nelle mappe di calore e nei grafici.",
 			"hintDatesAreDisplayOnly": "Le date e le misurazioni servono solo per la visualizzazione: i dati memorizzati, le soglie dei badge e i filtri rimangono nel sistema metrico.",
 			"hintDistance": "Distanza verticale cumulativa scalata.",
@@ -1969,11 +1969,11 @@
 			"hintRouteDataDisabled": "Disattivato. Per attivarlo, imposta {import} in {env} e riavvia. theCrag blocca le semplici richieste server alla sua API vie, quindi questo utilizza la simulazione del browser ({impers}). È a tuo rischio secondo i termini di theCrag; i contrassegni manuali per FA funzionano sempre. Rinominato da {oldImport}, che non ha più alcun effetto.",
 			"hintRouteDataFetchOnce": "Ogni via viene controllata una volta sola, a meno che tu non richieda un aggiornamento.",
 			"hintRouteDataIntro": "Salva in cache i dettagli delle vie del tuo registro da theCrag (popolarità, numero di salite, qualità, stagionalità, info, posizione, tiri e contrassegni) insieme alla loro cronologia pubblica. Le voci FA / FFA che citano il tuo {login} vengono contrassegnate come tue.",
-			"hintRouteDataNeedsKey": "",
-			"hintRouteDataNeedsOwnerLogin": "",
+			"hintRouteDataNeedsKey": "Richiede {key}.",
+			"hintRouteDataNeedsOwnerLogin": "Le importazioni CSV non contengono il tuo {login}, quindi imposta {ownerLogin} sul tuo nome utente theCrag. Senza di esso, i crediti FA / FFA non verranno mai associati.",
 			"hintRouteDataRefresh": "Ricarica questa pagina per aggiornare la disponibilità dei dati delle vie.",
 			"hintRouteDataRefreshCycle": "I dati delle vie vengono messi in coda per l'aggiornamento dopo {days} giorni.",
-			"hintRouteDataTail": "",
+			"hintRouteDataTail": "Fino a {count} vie per esecuzione, al massimo una richiesta al secondo, dopo ogni sincronizzazione del diario delle salite e secondo la pianificazione delle importazioni in background. Quando l’importazione meteo è attiva, le richieste rimanenti verificano anche le posizioni di falesie e settori, anche per le importazioni CSV. {docs}",
 			"hintRouteGrades": "Arrampicata sportiva, trad, da secondo/moulinette e altre arrampicate con corda.",
 			"hintSearchIndexing": "Deseleziona per chiedere a Google e altri motori di non indicizzare questo sito (meta tag {robots}, {noindex} e header {xRobotsTag}). Le impostazioni e il login non vengono mai indicizzati.",
 			"hintSearchIndexingForcedOff": "Disattivato — l'intero sito è protetto da password ({authScope}).",
@@ -2198,24 +2198,24 @@
 		"working": "In lavorazione"
 	},
 	"embed": {
-		"myClimbing": "",
-		"title": "",
-		"summaryTitle": "",
-		"hardestTitle": "",
-		"duration": "",
-		"ascents": "",
-		"sends": "",
-		"onsights": "",
-		"climbed": "",
-		"eddingtonSubtitle": "",
-		"vertical": "",
-		"routeIndex": "",
-		"boulderIndex": "",
-		"sendDays": "",
-		"routeCurrent": "",
-		"routeNext": "",
-		"boulderCurrent": "",
-		"boulderNext": "",
-		"empty": ""
+		"myClimbing": "La mia arrampicata",
+		"title": "{name} · {card}",
+		"summaryTitle": "Statistiche arrampicata",
+		"hardestTitle": "Chiusure più difficili",
+		"duration": "{type} · arrampicata {duration}",
+		"ascents": "salite",
+		"sends": "chiusure",
+		"onsights": "a vista",
+		"climbed": "scalato",
+		"eddingtonSubtitle": "Numeri di Eddington · costanza tra giorni e gradi",
+		"vertical": "dislivello ({metres} m)",
+		"routeIndex": "indice grado vie",
+		"boulderIndex": "indice grado boulder",
+		"sendDays": "giorni di chiusura",
+		"routeCurrent": "{count, plural, one {# via chiusa} other {# vie chiuse}} a {grade} o superiore",
+		"routeNext": "{needed, plural, one {Ancora # via} other {Ancora # vie}} a ≥ {grade} per l'indice {next}",
+		"boulderCurrent": "{count, plural, one {# blocco chiuso} other {# blocchi chiusi}} a {grade} o superiore",
+		"boulderNext": "{needed, plural, one {Ancora # blocco} other {Ancora # blocchi}} a ≥ {grade} per l'indice {next}",
+		"empty": "Nessuna chiusura di vie o blocchi con un grado registrata finora."
 	}
 }

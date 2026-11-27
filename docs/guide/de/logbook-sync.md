@@ -19,7 +19,10 @@ Nach erfolgreichem **Jetzt synchronisieren** oder **Vollständig neu synchronisi
 Eine Route, die von mehreren Begehungen geteilt wird, zählt als eine neue Route. „Aktualisiert“ bedeutet, dass eine bestehende Begehung erneut verarbeitet wurde; es bedeutet nicht zwangsläufig, dass sich ihr Inhalt geändert hat.
 Ein unverändertes Tourenbuch zeigt daher null Hinzufügungen/Entfernungen und aktualisierte bestehende Begehungen an. Übersprungene Durchläufe und Fehler zeigen eigene Meldungen statt einer Erfolgsübersicht.
 
-Manuelle CSV-Uploads zeigen ebenfalls Zähler für verarbeitet/neu/aktualisiert, entfernen jedoch niemals fehlende Einträge. Routenhistorie und Wetteranreicherung sind separate Hintergrundimporte und in diesen Tourenbuch-Zählern nicht enthalten. Die Zusammenfassung beschreibt die abgeschlossene Aktion; sie ist kein dauerhafter Synchronisierungsverlauf.
+Manuelle CSV-Uploads zeigen ebenfalls Zähler für verarbeitet/neu/aktualisiert, entfernen jedoch niemals fehlende Einträge. Route data and weather enrichment are separate background
+imports: when enabled, they start after every successful sync or CSV upload
+(including uploads to `POST /api/logbook/csv`), and are not included in these
+logbook counts. Die Zusammenfassung beschreibt die abgeschlossene Aktion; sie ist kein dauerhafter Synchronisierungsverlauf.
 
 ## API-Synchronisierung
 
@@ -51,7 +54,7 @@ Du kannst dein Tourenbuch per CSV pflegen und trotzdem Routendaten (Beliebtheit,
 - `THECRAG_API_KEY`: dein Unterstützer-Schlüssel, der in diesem Modus nur für Routendaten und Standortabfragen verwendet wird.
 - `THECRAG_USERNAME`: dein theCrag-Benutzername für den Abgleich von FA/FFA-Einträgen (CSV-Exporte enthalten ihn nicht).
 
-Das ist die gesamte Konfiguration: drei Werte, kein zusätzlicher Modusschalter. Ohne `CSV_INGEST_TOKEN` synchronisiert der API-Schlüssel weiterhin das Tourenbuch. Routendaten- und Wetterimporte folgen unabhängig davon `IMPORT_CRON` (standardmäßig täglich). Unter **Einstellungen → Routendaten importieren** kannst du einen Lauf starten und den Fortschritt sehen.
+Das ist die gesamte Konfiguration: drei Werte, kein zusätzlicher Modusschalter. Ohne `CSV_INGEST_TOKEN` synchronisiert der API-Schlüssel weiterhin das Tourenbuch. Background route and weather imports start after each successful sync or CSV upload, and also follow `IMPORT_CRON` (daily by default) rather than the logbook schedule, so a weekly or monthly `SYNC_CRON` still gets route data daily. Unter **Einstellungen → Routendaten importieren** kannst du einen Lauf starten und den Fortschritt sehen.
 
 ## CSV aus einem anderen Container hochladen
 
