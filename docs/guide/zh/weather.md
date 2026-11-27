@@ -1,155 +1,151 @@
-# Weather
+# 天气
 
-Crag Stats can cache **daily outdoor weather** for climbs that have route coordinates, then use it for badges, dashboard and logbook surfaces, and a comparison of how your climbing went in different weather.
+Crag Stats 可以为带有线路坐标的攀登记录缓存**每日户外天气**，并将其用于徽章、仪表盘和攀登日志页面，以及对比你在不同天气下的攀登表现。
 
-## Opt-in
+## 手动启用
 
-Off by default. The server owner sets `WEATHER_IMPORT=true` in `.env` and restarts. After each successful logbook sync or CSV upload, on the background import schedule (`IMPORT_CRON`, daily by default), and from **Settings → Import weather**, Crag Stats fetches up to **50** missing outdoor days per run from [Open-Meteo](https://open-meteo.com/)'s historical weather API, oldest climb days first, with at least **1.1 seconds** between requests. The Settings action starts that run in the background so the page does not wait on the full batch. Wipe clears the cache.
+默认关闭。服务器管理员可在 `.env` 中设置 `WEATHER_IMPORT=true` 并重启服务。在每次成功同步攀登日志或上传 CSV 后、按后台导入计划（`IMPORT_CRON`，默认为每天）执行时，以及通过**设置 → 导入天气**触发时，Crag Stats 每次运行会从 [Open-Meteo](https://open-meteo.com/) 的历史天气 API 获取最多 **50** 个缺失的户外攀登日数据，优先获取最早的攀登日，且每次请求之间至少间隔 **1.1 秒**。“设置”中的操作会在后台启动该任务，因此页面无需等待整个批次完成。“清空”会清除缓存。
 
-Open-Meteo's free non-commercial tier is intended for personal self-hosted installs. Do not enable this for a commercial multi-tenant service without reviewing their terms and paid options.
+Open-Meteo 的免费非商业套餐适用于个人自托管安装实例。在未仔细阅读其条款和付费选项前，请勿为商业多租户服务启用此功能。
 
-## What gets fetched
+## 获取内容
 
-- **Outdoor only** — likely indoor / gym routes are skipped (same heuristics as goals).
-- **Coordinates required** — the route must have latitude and longitude (from theCrag sync, or from route data import for CSV logbooks).
-- **Past days** — today's UTC date is skipped; the archive is often incomplete for the current day.
-- **Shared cache key** — lat/lon are rounded to **one decimal place**, so nearby routes at one crag share a day row.
+- **仅限户外** — 疑似室内/岩馆线路会被跳过（与目标功能采用相同的判断逻辑）。
+- **需要坐标** — 线路必须具有经纬度（来自 theCrag 同步，或来自 CSV 攀登日志的线路数据导入）。
+- **过往日期** — 跳过当天的 UTC 日期；当天的归档数据通常尚不完整。
+- **共享缓存键** — 经纬度会四舍五入到**小数点后一位**，因此同一岩场附近的线路会共享同一天的数据行。
 
-Stored fields: daily max/min temperature (°C), precipitation (mm), WMO weather code, mean humidity, and max/mean 10 m wind (km/h). Display units for temperature (°C or °F), wind (km/h or mph), and precipitation (mm or in) can be chosen in **Settings → Display & visibility**.
+存储字段包括：每日最高/最低气温（°C）、降水量（mm）、WMO 天气代码、平均湿度以及 10 米高处最大/平均风速（km/h）。可在**设置 → 显示与可见性**中选择温度（°C 或 °F）、风速（km/h 或 mph）和降水量（mm 或 in）的显示单位。
 
-## Badges
+## 徽章
 
-Once a day is cached, these badges can unlock from any **outdoor** logged ascent that day at that location (attempts count; indoor/gym rows are skipped even if they share a cached lat/lon):
+一旦某天的数据被缓存，当天在该位置记录的任何**户外**攀登均可解锁以下徽章（尝试也计入在内；即使共享同一缓存经纬度，室内/岩馆记录也会被跳过）：
 
-| Badge                    | Rule                                                                             |
-| ------------------------ | -------------------------------------------------------------------------------- |
-| **Heat Wave**            | Day's high ≥ 35°C                                                                |
-| **Freeze Frame**         | Day's low ≤ 0°C                                                                  |
-| **Rain Check**           | ≥ 1 mm precipitation and not classified as snow                                  |
-| **Climbing in the Snow** | WMO snow codes (71–77, 85–86), or ≥ 1 mm precip with high ≤ 1°C                  |
-| **Blown Away**           | Day's max 10 m wind ≥ 50 km/h                                                    |
-| **Bluebird**             | High 15–25°C, measured precip < 0.1 mm, not snow/thunderstorm WMO                |
-| **Sticky**               | Mean humidity ≥ 85%                                                              |
-| **Storm Send**           | A **send** on a day with ≥ 10 mm non-snow precip                                 |
-| **Four Seasons**         | Earn Heat Wave, Freeze Frame, Rain Check, and Climbing in the Snow at least once |
+| 徽章       | 规则                                            |
+| -------- | --------------------------------------------- |
+| **热浪**   | 当日最高气温 ≥ 35°C                                 |
+| **冰点定格** | 当日最低气温 ≤ 0°C                                  |
+| **雨中打卡** | 降水量 ≥ 1 mm 且未归类为降雪                            |
+| **雪中攀登** | WMO 降雪代码（71–77、85–86），或降水量 ≥ 1 mm 且最高气温 ≤ 1°C |
+| **狂风席卷** | 当日 10 米高处最大风速 ≥ 50 km/h                       |
+| **晴空万里** | 最高气温 15–25°C，实测降水量 < 0.1 mm，且 WMO 代码非降雪/雷暴    |
+| **潮湿黏腻** | 平均湿度 ≥ 85%                                    |
+| **暴雨完攀** | 在非降雪降水量 ≥ 10 mm 的日子完成一次**完攀**                 |
+| **四季全能** | 至少获得一次“热浪”、“冰点定格”、“雨中打卡”和“雪中攀登”徽章             |
 
-Without `WEATHER_IMPORT` (or before the backlog is fetched), these badges stay locked even if you climbed in those conditions. A “scorcher streak” (many heat days in one week) is deferred.
+如果未启用 `WEATHER_IMPORT`（或尚未获取历史积压数据），即使你在这些天气条件下攀登过，这些徽章也会保持锁定状态。“酷热连击”（一周内多个高温日）功能暂缓推出。
 
-## Weather detail page
+## 天气详情页面
 
-Open [Weather](/weather) from the analytics sidebar or either dashboard weather card title. The dashboard keeps compact conditions and a daily-high/send-rate summary when a clear signal exists. With no clear signal, performance keeps its detailed bands and controls; the detail page always offers the full view. Saved dashboard card visibility and positions still apply.
+可从分析侧边栏或仪表盘上的任一天气卡片标题打开[天气](/weather)页面。当存在明确信号时，仪表盘会保持简洁，仅展示天气状况和每日最高温/完攀率摘要。当没有明确信号时，表现卡片会保留详细分段和控件；详情页则始终提供完整视图。已保存的仪表盘卡片可见性和位置设置依然有效。
 
-On the detail page, performance grouping and measure are saved in the URL (`group=temperature|conditions`, `measure=sendRate|nearLimit|onsightFlash`), so you can bookmark a view and use Back/Forward. Weather patterns describe correlations, not recommendations or causes.
+在详情页中，表现分组方式和衡量指标会保存在 URL 中（`group=temperature|conditions`、`measure=sendRate|nearLimit|onsightFlash`），因此你可以收藏特定视图并使用浏览器的前进/后退功能。天气模式仅描述相关性，并非建议或因果关系。
 
-**Coverage & location quality** separates usable cached location-days, checked days with unavailable weather, and days not checked yet (including today and future dates). Outdoor ascents with valid dates but no resolved location are counted separately: they cannot be assigned a location-day and are excluded from that denominator. Conditions count all outdoor ticks; performance counts sends and attempts only. Import and location controls remain in Settings, linked from Weather for the signed-in owner.
+**覆盖率与位置质量**会区分可用的缓存位置天数、已检查但无可用天气的天数，以及尚未检查的天数（包括今天和未来日期）。具有有效日期但未解析出位置的户外攀登会单独统计：它们无法分配到位置天数，也不会计入该分母中。天气状况统计所有户外记录；表现统计仅计算完攀和尝试。导入和位置控制仍在“设置”中管理，已登录的管理员可从“天气”页面直接跳转过去。
 
-Without cached outdoor weather the page explains how import works. Thin caches still show conditions while performance waits for its existing minimum sample. Viewing Weather never requests provider data.
+若没有缓存的户外天气数据，该页面会说明导入功能的工作方式。在缓存数据较少时，系统仍会显示天气状况，而表现分析则会等待达到既定的最小样本量后再展示。查看“天气”页面绝不会向天气服务商发起数据请求。
 
-## Weather conditions
+## 天气状况
 
-The dashboard **Weather conditions** card appears once at least one outdoor climbing day has a cached weather row; without `WEATHER_IMPORT` (or before the first fetch finishes) it stays hidden. It can be shown, hidden or moved from Settings → Dashboard like any other card.
+一旦至少有一个户外攀登日拥有缓存天气数据，仪表盘上的**天气状况**卡片就会显示；若未启用 `WEATHER_IMPORT`（或首次获取尚未完成），该卡片将保持隐藏。你可以像其他卡片一样，在“设置 → 仪表盘”中显示、隐藏或移动它。
 
-- **Days** are _location-days_: one calendar day at one cached location (lat/lon rounded to one decimal). A day split across two crags counts twice; gym and other likely-indoor routes never count.
-- **Coverage** compares days that have a cached weather row with all outdoor days that have route coordinates. Days without a usable cached row (including unchecked and checked-but-unavailable days) are listed as "without usable weather" and left out of every other number in the conditions view.
-- **Hottest / coldest climb** use the day's maximum and minimum temperature. The link goes to the earliest-logged ascent that day on theCrag.
-- **Share of days** shows perfect, rainy, snowy, freezing and hot days as a share of days with cached weather, using the same rules as the badges above (rain ≥ 1 mm and not snow, snow codes, low ≤ 0°C, high ≥ 35°C). A day can appear in more than one row, for example a freezing, snowy day.
-- A **Perfect** day is a fair day (high 15–25°C, dry, no snow or thunderstorm) that is also calm (max wind under 25 km/h), not humid (mean humidity under 85%) and stayed above freezing overnight. If the wind, humidity or low is missing for a day, it is not counted as perfect.
-- **Daily high** is a small histogram of each day's maximum temperature in 5°C bins, labelled in your chosen temperature unit. Ranges include the lower edge and exclude the upper edge (for example, 0–<5°C or 32–<41°F).
+- **天数**指_位置天数_：即某个缓存位置（经纬度四舍五入至小数点后一位）上的一个日历日。同一天在两个不同岩场攀登会计为两天；岩馆及其他疑似室内线路从不计入。
+- **覆盖率**会将拥有缓存天气数据的天数与所有带线路坐标的户外攀登天数进行对比。没有可用缓存数据的天数（包括未检查和已检查但无可用数据的天数）会列为“无可用天气”，并从天气状况视图的所有其他数值中排除。
+- **最热/最冷攀登**使用当天的最高气温和最低气温。点击链接可跳转到当天在 theCrag 上最早记录的那次攀登。
+- **天数占比**会将完美、下雨、下雪、冰冻和炎热天数展示为占缓存天气总天数的比例，采用与上述徽章相同的规则（雨天：降水量 ≥ 1 mm 且非降雪；雪天：降雪代码；冰冻：最低温 ≤ 0°C；炎热：最高温 ≥ 35°C）。同一天可能会同时出现在多行中，例如又冰冻又下雪的一天。
+- **完美**天气日是指晴好日（最高温 15–25°C、干燥、无雪且无雷暴），同时还需满足微风（最大风速低于 25 km/h）、不潮湿（平均湿度低于 85%）且夜间气温保持在冰点以上。如果某天的风速、湿度或最低温缺失，则不会计为完美天气日。
+- **每日最高温**是一个以 5°C 为区间的小型直方图，统计每天的最高气温，并按你选择的温度单位标注。区间包含下限但不包含上限（例如 0–<5°C 或 32–<41°F）。
 
-These are model values for the nearest grid cell, not official climate normals or a measurement at the wall.
+这些数值是最近网格单元的模型估算值，并非官方气候标准值或岩壁现场实测值。
 
-## Weather & performance
+## 天气与表现
 
-Once **20 or more** outdoor location-days have cached weather, the **Weather & performance** detail view compares how your outdoor climbing went in different weather. Before that it shows how many eligible location-days are cached so far. The dashboard summary stays hidden while no weather is cached and can be moved or hidden from Settings → Dashboard; the detail page remains accessible with an empty-state explanation.
+当有 **20 个或更多**户外位置日拥有缓存天气数据时，**天气与表现**详情视图会对比你在不同天气下的户外攀登表现。在达到该数量之前，页面会显示目前已缓存了多少个符合条件的位置日。在没有缓存任何天气数据时，仪表盘摘要会保持隐藏，也可在“设置 → 仪表盘”中移动或隐藏；详情页仍可访问，并会显示空状态说明。
 
-**What is counted.** Outdoor sends and attempts (the same tick classification as everywhere else) whose location-day has cached weather. Gym routes, ticks that are neither a send nor an attempt, and ascents without a weather location are left out. Ascents whose weather comes from an approximate nearby place or area polygon are included, and the view says how many there are.
+**统计范围。** 所在位置日拥有缓存天气数据的户外完攀和尝试（与其他页面采用相同的记录分类标准）。岩馆线路、既非完攀也非尝试的记录，以及没有天气位置的攀登均不计入。天气数据来自近似邻近地点或区域多边形的攀登会被计入，且视图中会标明此类攀登的数量。
 
-The compact dashboard summary shows daily-high/send rate. Its no-signal fallback and the detail page offer both controls below.
+简洁版仪表盘摘要会显示每日最高温/完攀率。当无显著信号时回退的视图以及详情页都会提供以下两种控制选项。
 
-**Group by:**
+**分组方式：**
 
-- **Daily high:** under 10°, 10–17°, 18–24°, 25–29° and 30°+. Each band includes its lower edge and stops just below the next one, like the logbook temperature range.
-- **Conditions:** Fair, Dry (measured precipitation under 1 mm and no snow; missing rain is unknown, not dry), Rainy, Snowy, Hot, Freezing, Calm (max wind under 25 km/h) and Windy (≥ 50 km/h), using the badge / logbook rules above. One day can be in several conditions. Measured wind from 25 to under 50 km/h is neither Calm nor Windy.
+- **每日最高温：** 低于 10°、10–17°、18–24°、25–29° 以及 30°+。每个区间包含下限并止于下一区间的下限之前，与攀登日志中的温度范围逻辑一致。
+- **天气状况：** 晴好、干燥（实测降水量低于 1 mm 且无雪；缺失降水数据视为未知而非干燥）、下雨、下雪、炎热、冰冻、微风（最大风速低于 25 km/h）以及大风（≥ 50 km/h），采用与上述徽章/攀登日志相同的规则。同一天可归入多种天气状况。实测风速在 25 至不到 50 km/h 之间既不算微风也不算大风。
 
-**Measures:**
+**衡量指标：**
 
-- **Send rate:** sends as a share of sends and attempts.
-- **Near-limit:** the share of graded sends within 2 grades (1 V-grade on the V-scale) of your hardest outdoor send of the **same style and grade scale** in the 365 days before that day. Trad is compared with trad and sport with sport, and V-scale and route grades are never mixed. Using your recent best rather than your all-time best means getting stronger over the years does not make recent weather look better. Sends with no earlier same-style send in that year, and ungraded sends, are left out of this measure.
-- **Onsight/flash:** onsights and flashes as a share of sends.
+- **完攀率：** 完攀次数占完攀和尝试总次数的比例。
+- **接近极限：** 在当天之前的 365 天内，与你在**相同攀登风格和难度体系**下的最难户外完攀相差不超过 2 个难度级别（V 难度体系为 1 个级别）的定级完攀所占比例。传统攀仅与传统攀对比，运动攀仅与运动攀对比，且 V 难度与线路难度绝不会混用。使用近期最佳水平而非历史最佳水平，可以避免因你多年来实力提升而让近期的天气看起来“更有利”。在该年内此前没有同风格完攀记录的完攀，以及未定级的完攀，均不计入此指标。
+- **视攀/闪攀：** 视攀和闪攀占总完攀次数的比例。
 
-**Reading it honestly.**
+**客观看待数据。**
 
-- Each bar shows the band's rate; the line marks your overall rate. A band needs at least **10** ascents (for that measure's denominator) over at least **3** days before it shows a rate. Smaller bands show "Not enough data".
-- A band is marked **Higher** or **Lower** only when it differs from all your _other_ weather days by more than day-to-day variation explains (a two-sided test at about 95%), with at least 5 days on each side. Ascents on the same day share the same weather and usually the same crag and partner, so the test treats each location-day as one unit rather than each ascent. One big day out cannot create a pattern by itself.
-- The one-line summary names the band that stands out most for the selected measure, or says that nothing stands out yet.
-- This is a **correlation, not a cause**. Season, crag, partners and where you are in a project all change with the weather. With many bands and measures, an occasional "Higher" or "Lower" can appear by chance.
+- 每根柱子代表该区间的比率；基准线标示你的整体比率。一个区间至少需要跨越 **3** 天、包含 **10** 次攀登（针对该指标的分母）才会显示比率。样本更小的区间会显示“数据不足”。
+- 只有当某个区间与你所有_其他_天气日之间的差异超出日常波动所能解释的范围（约 95% 置信度的双侧检验），且两侧均至少有 5 天数据时，该区间才会被标记为**偏高**或**偏低**。同一天的攀登共享相同的天气，通常也处于同一岩场并与相同搭档攀登，因此该检验将每个位置日而非每次攀登作为一个独立样本单元。单日的高产攀登无法单独构成某种模式。
+- 单行摘要会指出在所选指标下表现最突出的区间，或说明目前尚未发现明显规律。
+- 这仅代表**相关性，而非因果关系**。季节、岩场、搭档以及你在攻克项目线路时所处的阶段都会随天气而变化。当分组和指标较多时，偶尔也可能纯属随机出现“偏高”或“偏低”的结果。
 
-Each daily-high band and the fair, rain, snow, heat, freeze, calm and windy conditions link to the logbook filtered to those ascents. Dry has no logbook filter. A values table under the detail-page bars lists every band with counts for all three measures. Viewing the card never triggers a weather request, and private notes are never used.
+每个每日最高温区间以及晴好、下雨、下雪、炎热、冰冻、微风和大风状况，均可链接到按对应攀登过滤的攀登日志。“干燥”没有对应的攀登日志过滤器。详情页柱状图下方的数值表会列出每个区间在所有三个指标下的具体计数。查看该卡片绝不会触发天气请求，且绝不会使用私人笔记。
 
-When the dashboard's daily-high/send-rate comparison has no clear signal, the Weather & performance card keeps its detailed bands, local grouping/measure controls and values table. These controls leave the dashboard URL unchanged. A clear signal retains the compact summary; both versions link to the weather page. Minimum sample thresholds are unchanged.
+当仪表盘的每日最高温/完攀率对比没有明确信号时，天气与表现卡片会保留其详细分段、本地分组/指标控件以及数值表。这些控件不会改变仪表盘的 URL。当存在明确信号时则会保留简洁摘要；两种版本均会链接到天气页面。最小样本量阈值保持不变。
 
-## Logbook filters and chips
+## 攀登日志过滤器与标签
 
-Near-limit references use the same style-and-grade-scale calculation as
-[Rock & performance](/docs/rock-types), using climbed-pitch grades when available.
-The weather reference includes outdoor sends without cached weather, includes
-the 365th prior day, and excludes sends on the day being compared.
+接近极限的基准计算与[岩石类型与表现](/docs/rock-types)采用相同的风格和难度体系计算方式，在有实际攀爬绳距难度时优先使用绳距难度。天气基准会包含没有缓存天气数据的户外完攀，包含第 365 个前导日，并排除正在对比当天的完攀。
 
-When any weather is cached, the logbook gains a **Weather on the day** filter (`?weather=`): `fair`, `perfect`, `heat`, `freeze`, `rain`, `snow`, `wind` or `calm`. **Windy day** matches daily max 10 m wind **≥ 50 km/h**, the same threshold as **Blown Away**. **Calm / still day** matches measured max wind **under 25 km/h**, the calm threshold used by **Perfect day**, without requiring fair temperatures, dry weather or low humidity. Missing wind readings match neither option; days from 25 to under 50 km/h match neither wind filter. The other options use the same rules as the badges. It only matches **outdoor** ascents with route coordinates and a cached day for that location; gym routes, ascents without coordinates and days that have not been fetched never match.
+一旦缓存了任意天气数据，攀登日志就会新增一个**当日天气**过滤器（`?weather=`）：可选 `fair`、`perfect`、`heat`、`freeze`、`rain`、`snow`、`wind` 或 `calm`。**大风日**匹配每日 10 米高处最大风速 **≥ 50 km/h**，与**狂风席卷**徽章的阈值相同。**微风/无风日**匹配实测最大风速**低于 25 km/h**，即**完美天气日**所用的微风阈值，但不要求温度适宜、天气干燥或低湿度。缺失风速读数的日期不匹配任一选项；风速在 25 至不到 50 km/h 之间的日期也不匹配任一风力过滤器。其他选项采用与徽章相同的规则。它仅匹配带有线路坐标且该位置当天已有缓存数据的**户外**攀登；岩馆线路、无坐标的攀登以及尚未获取数据的日期均不会匹配。
 
-Rows on cached days also show small text chips (for example "Hot 36°C", "Freezing -2°C", "Rain 4 mm", "Snow", "Windy 55 km/h", "Fair 21°C"). Ordinary days show nothing.
+在已缓存天气的日期中，日志行还会显示小型文字标签（例如“炎热 36°C”、“冰冻 -2°C”、“雨天 4 mm”、“下雪”、“大风 55 km/h”、“晴好 21°C”）。普通天气的日期不显示任何标签。
 
-The signed-in owner also gets **No weather cached** (`?missing=weather`), which lists outdoor ascents with coordinates and a past date that still have no cached weather, so you can see what the next imports will fetch. Visitors never see this option.
+已登录的管理员还会看到**无缓存天气**（`?missing=weather`）选项，用于列出带有坐标和过往日期但尚无缓存天气的户外攀登，以便查看接下来的导入任务将要获取哪些数据。访客永远不会看到此选项。
 
-The missing-weather backlog excludes days the provider has already checked but could not supply. These negative cache entries do not produce weather chips and are not automatically queued again. Invalid calendar dates are excluded from both the importer and backlog.
+缺失天气的待获取列表会排除服务商已经检查过但无法提供数据的日期。这些无效缓存条目不会生成天气标签，也不会再次自动加入队列。无效的日历日期会被导入器和待获取列表同时排除。
 
-## Recent activities
+## 近期动态
 
-The dashboard **Recent activities** card shows the same text chips under an outdoor climb when its day is cached. They are read as a short list labelled "Weather on the day", never colour-only, and the strip is omitted for gym routes, uncached days and ordinary weather.
+当某个户外攀登当天的天气已被缓存时，仪表盘的**近期动态**卡片会在该记录下方显示相同的文字标签。这些标签会作为带有“当日天气”标识的简短列表读取，绝不仅仅依赖颜色区分；对于岩馆线路、未缓存的日期以及普通天气，该标签条不会显示。
 
-## Climbing story
+## 攀登故事
 
-Story percentages describe cached outdoor location-days, not days whose weather is still unknown.
+故事中的百分比描述的是已缓存的户外位置日，而不是天气尚未知晓的日期。
 
-When the cache covers at least 20 outdoor days and half or more of your outdoor days, the [Climbing story](/docs/climbing-story) can add one short line about the conditions you climb in (snow, cold, heat, rain or a wide temperature spread). It describes what you do climb in, never what you avoid, and stays out of the story when coverage is thin.
+当缓存覆盖至少 20 个户外日且占你户外攀登总天数的一半或以上时，[攀登故事](/docs/climbing-story)会加入一句简短描述，说明你经常在什么天气条件下攀登（雪天、寒冷、炎热、雨天或较大的温差跨度）。它只描述你在哪些条件下攀登，从不描述你回避了什么天气，并且在覆盖率较低时不会出现在故事中。
 
-## Ascent calendar
+## 攀登日历
 
-The [Ascent calendar](/docs/ascent-calendar) has a **Weather** colour mode (only shown once weather is cached). It shares the badge rules; see that page for the colour key.
+[攀登日历](/docs/ascent-calendar)提供**天气**色彩模式（仅在已有缓存天气数据后显示）。它共用相同的徽章规则；颜色图例请参阅该页面。
 
-## Sectors: climate on your visits
+## 岩区：造访期间的气候
 
-On the **Sectors** page, a crag with at least **5** cached outdoor visit days shows a one-line summary: average daily high and low, and the share of those days with rain, snow, freezing or hot weather (snow, freezing and hot only when above 0%). It describes the days you actually climbed there, so it leans towards the seasons you visit. It is **not** official climate normals or a forecast, and it is hidden for crags below the threshold, for gym routes and when no weather is cached.
+在**岩区**页面中，拥有至少 **5** 个缓存户外造访日的岩场会显示一行摘要：平均每日最高温和最低温，以及这些日子中出现下雨、下雪、冰冻或炎热天气的比例（下雪、冰冻和炎热仅在比例高于 0% 时显示）。它描述的是你实际在那里攀登的日子，因此结果会偏向你经常前往的季节。它**并非**官方气候标准值或天气预报，对于低于天数阈值的岩场、岩馆线路以及无缓存天气数据时均会隐藏。
 
-## Fair-weather rate
+## 宜人天气比率
 
-Once **20 or more** outdoor days have cached weather, the Weather conditions card adds a **Fair-weather rate**: the share of those days that were _fair_ (high 15-25°C, dry, no snow or thunderstorm - the same rule as **Bluebird**). It also reports the share of _tough_ days (hot, freezing, wet, snowy, or very windy). Days in between, such as a dry 29°C day, are counted in neither group.
+当有 **20 个或更多**户外日拥有缓存天气数据时，“天气状况”卡片会增加一项**宜人天气比率**：即其中属于_晴好_天气的天数占比（最高温 15-25°C、干燥、无雪无雷暴——与**晴空万里**规则相同）。它同时还会报告_恶劣_天气日的占比（炎热、冰冻、潮湿下雨、下雪或大风）。介于两者之间的日子，例如干燥的 29°C 天气，不会计入任何一组。
 
-The label is descriptive, not a grade: **Fair-weather leaning** at 60% fair or more, **All-weather climber** at 50% tough or more, otherwise **A bit of both**. The groups can overlap: a mild dry day may still be very windy or freezing overnight. When both label thresholds are met, **All-weather climber** takes priority. Below 20 days nothing is shown, so a thin cache never labels you. The link opens the logbook filtered to fair days.
-For seasonal recommendations from route metadata, see [Best months](/docs/best-months); those recommendations are separate from the weather sampled on your logged visits.
+该标签仅作描述之用，并非评级：晴好天气占 60% 及以上为**偏好晴好天气**，恶劣天气占 50% 及以上为**全天候攀登者**，其余情况为**两者兼具**。两组定义可能存在重叠：温和干燥的日子仍可能刮大风或夜间结冰。当同时满足两个标签阈值时，优先显示**全天候攀登者**。少于 20 天时不显示该标签，以免在缓存数据较薄时给你贴上标签。点击链接会打开已过滤为晴好天气日的攀登日志。如需查看基于线路元数据的季节推荐，请参阅[最佳月份](/docs/best-months)；这些推荐独立于你记录造访时所抽样的天气数据。
 
-Fair-weather labels use the exact day counts for their thresholds; displayed rates are rounded to one decimal place. Display rounding alone never changes your label.
+宜人天气标签使用精确的天数计数来判断阈值；页面显示的比率会四舍五入到小数点后一位。仅显示层面的四舍五入绝不会改变你的标签。
 
-### From weather details to your logbook
+### 从天气详情跳转到攀登日志
 
-Each condition row and each daily-high bar in the **Weather conditions** detail view opens the logbook filtered to those days. A temperature bar includes its lower bound and stops just below the next bar (for example 20–24° covers 20.0 °C up to, but not including, 25 °C). The range stays applied while you sort, page or add other filters; use **Clear weather range** to remove only that range.
+在**天气状况**详情视图中，点击每个天气状况行和每个每日最高温柱状图条，都会打开已过滤为对应日期的攀登日志。温度柱状图包含其下限值，并止于下一柱状图的下限之前（例如 20–24° 涵盖 20.0 °C 起直至但不包含 25 °C 的范围）。在你排序、翻页或添加其他过滤器时，该温度范围会保持生效；使用**清除天气范围**可仅移除该范围限制。
 
-The card counts outdoor _days_ at each location, while the logbook lists every matching _ascent_, so the two numbers can differ. On wide screens the logbook shows a Weather column with the cached daily high, low and rain; on smaller screens the condition chips appear next to the route instead. Indoor or uncached ascents show a dash. Viewing these pages never triggers a weather request.
+卡片统计的是每个位置的户外_天数_，而攀登日志列出的是每一次匹配的_攀登记录_，因此两者的数字可能会有所不同。在宽屏设备上，攀登日志会显示包含缓存每日最高温、最低温和降水量的“天气”列；在较窄屏幕上，天气状况标签则会显示在路线名称旁。室内或未缓存的攀登显示为短横线。查看这些页面绝不会触发天气请求。
 
-## Weather locations when route coordinates are missing
+## 缺少线路坐标时的天气位置处理
 
-CSV exports do not include coordinates. With both weather import and route-data import enabled (`WEATHER_IMPORT=true` and `ROUTE_DATA_IMPORT=true`), the configured supporter API key can also look up locations for the crag/sector IDs found in cached route data. This does not import that key owner's logbook or profile. Both keyed logbook ancestors and route API ancestor arrays are supported.
+CSV 导出文件不包含坐标信息。同时启用天气导入和线路数据导入（`WEATHER_IMPORT=true` 且 `ROUTE_DATA_IMPORT=true`）后，已配置的支持者 API 密钥还可以根据缓存线路数据中的岩场/岩区 ID 查找位置信息。这不会导入该密钥所有者的攀登日志或个人资料。带密钥的攀登日志祖先节点和线路 API 祖先节点数组均受支持。
 
-Area lookups share the route import's ten-request budget and one-second pacing. Route checks use the budget first; remaining requests check up to ten areas each. Settings shows **weather areas pending** and offers **Check weather locations now** when all routes are checked. Existing CSV installations can fill missing area locations without **Refresh all routes**. The next import run also checks the backlog. Once location checks finish, a background weather batch starts when eligible days exist.
+区域查询与线路导入共享十次请求预算和每秒一次的速率限制。线路检查优先使用该预算；剩余的请求额度每次最多检查十个区域。当所有线路都检查完毕后，“设置”中会显示**待处理天气区域**，并提供**立即检查天气位置**按钮。现有的 CSV 安装实例无需点击**刷新所有线路**即可补充缺失的区域位置。下一次导入运行时也会检查积压的待处理项。位置检查完成后，若存在符合条件的天数，系统会自动在后台启动天气数据获取批次。
 
-Area responses (including missing locations) are cached once by provider area ID. `ROUTE_DATA_REFRESH_DAYS` also controls their optional refresh age, and **Refresh all routes** makes area lookups eligible again. Access failures stop the import and use its existing backoff; a key that can read route history is not guaranteed access to area locations. If the API supplies no supported location, use the explicit nearby-place fallback below. No API calls run while viewing weather pages.
+区域响应（包括缺失的位置信息）会按服务商的区域 ID 缓存一次。 `ROUTE_DATA_REFRESH_DAYS` 同样控制其可选的刷新周期，点击**刷新所有线路**会重新使区域查询符合刷新条件。访问失败会中止导入并沿用现有的退避策略；能够读取线路历史记录的密钥并不保证一定有权限访问区域位置。如果 API 未提供受支持的位置，请使用下方的显式邻近地点回退方案。浏览天气页面期间不会运行任何 API 调用。
 
-Weather prefers an explicit route point, then its top-level crag (TLC) point, then its immediate sector point from cached provider data. It ignores country-only and arbitrary ancestor geometry. Older cached points without original provider geometry remain usable and are labelled “Cached point”; their original precision cannot be recovered from that point alone. Indoor routes remain excluded.
+天气功能优先使用显式的线路坐标点，其次是缓存服务商数据中的顶级岩场（TLC）坐标点，最后是其直属岩区坐标点。它会忽略仅国家级别的坐标以及任意祖先节点的几何图形。缺少原始服务商几何信息的旧缓存坐标点依然可用，并会被标记为“缓存坐标点”；仅凭该坐标点本身无法恢复其原始精度。室内线路仍被排除在外。
 
-Settings → Import weather → **Review weather locations** lists outdoor areas and unresolved route counts. For a missing location, search a nearby town using its name/region and a two-letter country code, then explicitly choose the correct result. The search submits only that entered text and country code to [Open-Meteo geocoding](https://open-meteo.com/en/docs/geocoding-api), whose location data comes from GeoNames. It does not send routes, ascent dates, private notes or API keys. Searches happen only after submitting the form, are cached for 30 days, paced, and back off on errors.
+设置 → 导入天气 → **查看天气位置**会列出户外区域以及未解析位置的线路数量。对于缺少位置的区域，可以使用城镇名称/地区以及两位字母的国家代码搜索邻近城镇，然后手动选择正确的结果。搜索仅会将你输入的文本和国家代码提交给 [Open-Meteo 地理编码服务](https://open-meteo.com/en/docs/geocoding-api)，其位置数据源自 GeoNames。搜索不会发送线路信息、攀登日期、私人笔记或 API 密钥。搜索仅在提交表单后执行，结果会缓存 30 天，受速率控制，并在出错时进行退避。
 
-A chosen town is an **approximate nearby-place fallback**, shared only by the same provider area ID (or route identity if no area ID exists). It does not overwrite route coordinates, alter route maps or claim to be the nearest settlement. A valid route/sector/crag point always wins. Town weather can differ from a cliff because of distance, elevation and terrain, so town-based data appears in weather views and filters but **does not unlock weather badges**. You can remove the fallback at any time.
+选定的城镇属于**近似邻近地点回退**，仅在同一个服务商区域 ID 之间共享（若无区域 ID，则仅限同一线路标识）。它不会覆盖线路坐标、改变线路地图，也不声称该城镇就是距离最近的聚落。有效的线路/岩区/岩场坐标点始终具有更高优先级。由于距离、海拔和地形差异，城镇天气可能与岩壁实际天气不同，因此基于城镇的数据会出现在天气视图和过滤器中，但**不会解锁天气徽章**。你可以随时移除该回退位置。
 
-The logbook and recent activity show the weather location source. The importer, backlog, calendar, conditions card, crag visit summaries and logbook use the same resolved location/day key. Changing or removing a fallback immediately stops using its old key; old weather stays cached and can still be used by other climbs at that location. Fetch the next weather batch to fill a newly chosen location. Wipe clears resolutions, place choices and search results, and cancels in-flight searches.
+攀登日志和近期动态会显示天气位置的来源。导入器、待获取列表、日历、天气状况卡片、岩场造访摘要以及攀登日志均使用同一套解析后的位置/日期键。更改或移除回退位置会立即停止使用其旧键；旧的天气数据仍会保留在缓存中，并可继续供该位置的其他攀登使用。获取下一批天气数据即可填充新选定位置的天气。“清空”会清除位置解析记录、地点选择和搜索结果，并取消正在进行的搜索。
 
-When those points are missing, explicitly typed GeoJSON Polygon/MultiPolygon geometry on an identified crag or sector can supply its first outer-boundary coordinate directly; no centre or centroid is calculated. This is labelled **Approximate area polygon** and does not unlock weather or Summer Sun Face badges. Route and crag points always take priority. Country/region boundaries, malformed shapes, large areas (over a conservative 15 km bounding diagonal), and shapes crossing the date line are excluded. Untyped boundary arrays and undocumented Fence formats remain unsupported; no captured provider polygon fixture is available yet. A selected town is used only if these geometry fallbacks also fail. Weather importing must still be enabled to fetch missing days. Summer Sun Face uses separately verified route-tag evidence; see [Badges](/docs/badges).
+当这些坐标点均缺失时，已识别岩场或岩区上明确标注类型的 GeoJSON Polygon/MultiPolygon 几何图形可以直接提供其首个外边界坐标；系统不会计算中心点或质心。此类位置会被标记为**近似区域多边形**，且不会解锁天气徽章或夏日晴颜徽章。线路和岩场坐标点始终优先。国家/地区边界、格式错误的形状、大面积区域（外接边界对角线超过保守的 15 km）以及跨越国际日期变更线的形状均会被排除。无类型的边界数组和未记录在案的 Fence 格式仍不受支持；目前尚无已捕获的数据提供方多边形测试样本。仅当这些几何图形回退方案也失败时，才会使用所选城镇。仍须启用天气导入功能，才能获取缺失日期的天气数据。夏日向阳面使用单独验证的路线标签证据；请参阅[徽章](/docs/badges)。

@@ -32,7 +32,7 @@ theCrag 将首次攀登记录在每条线路的**历史**中（线路页面上�
 
 - **仅限署名为你的 theCrag 用户名** (`@yourlogin`) 的条目才有效。纯文本姓名会被忽略，因为它们太容易混淆。 API 同步会保存该登录名；如果你的日志来自 CSV 上传，请设置 `THECRAG_USERNAME` 以便导入程序知道哪些条目属于你。
 - **你的选择优先。** 你设置的标记将保持原样，你取消标记的路线也将保持未标记状态。**设置 → 导入路线数据 → 重新应用**可以覆盖以上任一情况，使用已保存的历史记录，而无需再次请求 theCrag。
-- **对 theCrag 友好。** 默认情况下，每条路线仅检查**一次**（下文将介绍可选的定期数据更新），每次运行最多检查 **100 条路线**，且每秒仅发一次请求。 A run happens after each logbook sync or CSV upload, on the background import schedule (`IMPORT_CRON`, daily by default), when the app restarts with routes still waiting (for example after an upgrade), or when you press **Check next 100 routes now**. 如果 theCrag 拒绝请求，导入将暂停至少一天。
+- **对 theCrag 友好。** 默认情况下，每条路线仅检查**一次**（下文将介绍可选的定期数据更新），每次运行最多检查 **100 条路线**，且每秒仅发一次请求。运行会在每次攀登日志同步或 CSV 上传后、按后台导入计划（`IMPORT_CRON`，默认每天一次）、应用重启且仍有路线等待处理时（例如升级后），或当您点击**立即检查下 100 条路线**时触发。如果 theCrag 拒绝请求，导入将暂停至少一天。
 - “设置”会显示目前为止已检查了多少条你的路线。通过每日同步，几百条路线需要几周时间；点击按钮可以加快这一过程。
 
 仅保存公开的路线历史记录，绝不会保存你的私人攀登笔记。**设置 → 清空**会将其随同你的标记一并删除。

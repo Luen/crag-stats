@@ -1,63 +1,63 @@
-# Training load
+# 训练负荷
 
-The **Training load** card (and the dedicated [`/training-load`](/training-load) page) estimates how hard you've been climbing recently compared with what your body is used to. A quick increase is when finger and shoulder injuries most often happen. The dashboard card summarises the newest 12 weeks; the page shows 26 weeks plus a 28-day daily load strip.
+**训练负荷**卡片（以及专门的 [`/training-load`](/training-load) 页面）用于估算你近期的攀爬强度与身体已适应的日常强度相比如何。负荷快速上升往往是手指和肩部损伤最常发生的时候。仪表盘卡片汇总最近 12 周的数据；专门页面则展示 26 周的数据，外加一个 28 天每日负荷条。
 
-## 1. Load per ascent
+## 1. 单次攀登负荷
 
-Each ascent gets a load score:
+每次攀登都会获得一个负荷分值：
 
-> **load = 10 × intensity × style factor**
+> **负荷 = 10 × 强度 × 攀登方式系数**
 
-**Intensity** compares the ascent's grade with your **hardest send of the last 12 months** in the same discipline. Routes are compared on Ewbank and boulders on the V-scale.
+**强度**将该次攀登的难度与你过去 12 个月内在同一攀岩类型中的**最高完攀难度**进行对比。路线按 Ewbank 难度对比，抱石按 V 级对比。
 
-| Grade compared with your 12-month max                      | Intensity |
-| ---------------------------------------------------------- | --------- |
-| At your max                                                | 1.0       |
-| 2 Ewbank grades (1 V-grade) below                          | 0.5       |
-| 4 Ewbank grades (2 V-grades) below                         | 0.25      |
-| Above your max (a new high)                                | up to 1.5 |
-| Working an ungraded route or a theCrag Project (see below) | 1.0       |
-| Ungraded send, or no sends in 12 months                    | 0.3       |
+| 与过去 12 个月最高难度对比                  | 强度     |
+| -------------------------------- | ------ |
+| 达到最高难度                           | 1.0    |
+| 低 2 个 Ewbank 级别（1 个 V 级）         | 0.5    |
+| 低 4 个 Ewbank 级别（2 个 V 级）         | 0.25   |
+| 高于最高难度（突破新高）                     | 最高 1.5 |
+| 试攀未定级路线或 theCrag Project 路线（见下文） | 1.0    |
+| 未定级完攀，或 12 个月内无完攀记录              | 0.3    |
 
-Climbing near your limit counts much more than mileage well below it. A day of ten easy routes and a day spent on one project can come out similar.
+接近极限的攀爬在负荷计算中占的比重，远高于远低于极限的刷量。一天爬十条简单路线和一天攻克一条目标线路，算出来的负荷可能相近。
 
-**Ungraded and flagged projects:** an attempt, hang-dog or other unsent tick on a route with **no grade**, or on a route theCrag marks with the **Project** flag (from the optional route-info import), is treated as climbing **at your max**. Ungraded routes you keep working are usually new lines near your limit; the flag is the definite case when we have it. The same attempts also count towards the near-limit share. If you gave the tick a grade yourself on theCrag, that grade is used instead. An ungraded _send_ still counts as light (0.3), since an unnamed easy route shouldn't look like a limit day.
+**未定级与标记为 Project 的路线：** 在**无定级**路线上，或在 theCrag 带有 **Project** 标记的路线（来自可选的路线信息导入）上进行的试攀、挂绳休息或其他未完攀记录，均视为**处于你的最高难度**进行攀爬。你反复试攀的未定级路线通常是接近你极限的新线；而带有该标记则是我们有数据时的明确依据。这些试攀同样会计入接近极限比例中。如果你在 theCrag 上自己为该条记录填写了难度，则会改用该难度。未定级的 _完攀_ 仍按低强度（0.3）计算，因为一条未标明难度的简单路线不应被算作极限训练日。
 
-**Style factor:** a lead send is 1.0. Attempts and hang-dogs are 0.8, because working a route is still real effort. Top-roping or seconding is 0.8× on top of that.
+**攀登方式系数：** 先锋完攀为 1.0。试攀和挂绳休息为 0.8，因为磕线依然需要付出实打实的体能。顶绳或跟攀在此基础上再乘以 0.8。
 
-## 2. Fatigue and fitness
+## 2. 疲劳度与体能状态
 
-Daily loads are averaged two ways, both weighted towards recent days:
+每日负荷会通过两种方式取平均值，两者均偏向近期天数加权：
 
-- **Fatigue (acute):** a 7-day exponentially weighted average.
-- **Fitness (chronic):** a 28-day exponentially weighted average.
+- **疲劳度（急性负荷）：** 7 天指数加权平均值。
+- **体能状态（慢性负荷）：** 28 天指数加权平均值。
 
-## 3. Acute : chronic ratio
+## 3. 急性 : 慢性负荷比
 
-**ratio = fatigue ÷ fitness**
+**比值 = 疲劳度 ÷ 体能状态**
 
-| Ratio     | Status      | Meaning                                                    |
-| --------- | ----------- | ---------------------------------------------------------- |
-| —         | Resting     | Nothing logged recently                                    |
-| < 0.8     | Below usual | Lighter than normal: fresh, tapering, or losing fitness    |
-| 0.8 – 1.3 | Sweet spot  | In line with what you're used to                           |
-| 1.3 – 1.5 | Ramping up  | Climbing more than usual; keep an eye on recovery          |
-| > 1.5     | Spike       | A big jump; the zone most associated with overuse injuries |
+| 比值        | 状态   | 含义                     |
+| --------- | ---- | ---------------------- |
+| —         | 休息中  | 近期无攀爬记录                |
+| < 0.8     | 低于平常 | 比平时更轻：精力充沛、赛前减量或体能有所下降 |
+| 0.8 – 1.3 | 理想区间 | 与你身体习惯的强度一致            |
+| 1.3 – 1.5 | 负荷上升 | 攀爬量高于平时；请注意恢复          |
+| > 1.5     | 骤增   | 负荷大幅跃升；最容易引发过度使用损伤的区间  |
 
-These bands come from the acute:chronic workload ratio used in sports science and climbing coaching. Treat them as a nudge, not a diagnosis.
+这些区间源自运动科学和攀岩教练领域常用的急性:慢性工作负荷比。请将它们视为提醒，而非医学诊断。
 
-## Also on the card / page
+## 卡片与页面上的其他指标
 
-- **Weekly load:** the total load for each week (12 on the card, 26 on the page). The current week is the highlighted bar.
-- **Daily load (page):** the last 28 days of intensity-weighted load, including rest days.
-- **Near-limit sends · 28d:** sends in the last 28 days within 2 Ewbank grades (1 V-grade) of your 12-month max.
-- **Near-limit share:** the percentage of the last 28 days' graded ascents that were near your limit. A high share over several weeks means a lot of limit climbing; consider deload weeks.
-- **Last 7 / 28 days:** ascents, sends, active and rest days, height climbed and send rate.
+- **每周负荷：** 每周的总负荷（卡片显示 12 周，页面显示 26 周）。高亮显示的柱条代表本周。
+- **每日负荷（页面）：** 过去 28 天经强度加权的每日负荷，包含休息日。
+- **接近极限完攀 · 28 天：** 过去 28 天内难度在 12 个月最高难度 2 个 Ewbank 级别（1 个 V 级）以内的完攀。
+- **接近极限比例：** 过去 28 天所有定级攀登中接近你极限的占比。若连续数周占比偏高，说明极限攀爬过多；可考虑安排减载周。
+- **最近 7 / 28 天：** 攀登次数、完攀次数、活跃天数与休息天数、攀爬高度以及完攀率。
 
-## Caveats
+## 注意事项
 
-- **Only what you log counts.** Gym sessions, hangboarding and other training you don't log are invisible.
-- **Grades are noisy**, and a soft or sandbagged route skews intensity.
-- **The ratio needs history.** With fewer than a few weeks of logs, "fitness" is low and the ratio jumps around.
+- **只有记录下来的才会计入。** 未记录的岩馆训练、指力板训练及其他训练都不会被统计在内。
+- **难度定级存在偏差**，偏水或压级的路线会让强度估算失真。
+- **比值计算需要历史数据。** 如果记录不足数周，“体能状态”会偏低，比值也会大幅波动。
 
-For Project routes, a personal grade must come from the ascent or a climbed pitch (or the CSV Ascent Grade field). An effective grade copied from the route is only a fallback, so it does not disable the at-max Project assumption.
+对于 Project 路线，个人定级必须来自该次攀登或已攀爬绳距的记录（或 CSV 中的 Ascent Grade 字段）。从路线复制过来的有效难度仅作为兜底值，因此不会取消“Project 视为最高难度”的假定。

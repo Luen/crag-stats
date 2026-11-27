@@ -1,25 +1,25 @@
-# Yearly stats
+# 年度统计
 
-The year-over-year table always shows ascent and onsight differences as counts, and height differences in your selected height unit, independently of the chart metric.
+同比数据表始终以次数显示攀登和视攀的增减差值，并以你所选的高度单位显示高度差值，不受图表指标影响。
 
-The **Yearly stats** dashboard card (and the charts on **[Activity](/activity)** when that page is enabled) show how your volume changes year by year.
+**年度统计**仪表盘卡片（以及开启 **[活动](/activity)** 页面后该页面上的图表）会展示你的攀登量如何逐年变化。
 
-## Per year
+## 按年统计
 
-Bars (oldest → newest) for the selected metric:
+所选指标的柱状图（从最早年份到最新年份）：
 
-- **Ascents** — every logged tick that year
-- **Sends** — successful ticks only (see [Tick types](/docs/tick-types))
-- **Height** — summed ascent height (in meters or feet, matching your preferred height unit in Settings), falling back to route height when the tick has none
+- **攀登** — 当年记录的每一次攀登
+- **完攀** — 仅限成功完攀的记录（详见[记录类型](/docs/tick-types)）
+- **高度** — 累计攀登高度（以米或英尺为单位，与你在设置中选择的高度单位一致），若单条记录未填写高度，则回退使用路线高度
 
-The small figure under each bar is the **year-over-year delta** versus the previous calendar year (or “—” for your first year). Year bars link to `/logbook?year=`.
+每根柱子下方的小数字表示与上一自然年相比的**同比变化量**（你的第一年显示为“—”）。年份柱状图可点击跳转至 `/logbook?year=`。
 
-## Cumulative
+## 累计
 
-A thick accent line is your **running career total** for the selected metric. Thin coloured overlays (when daily heatmap data is available) each restart at zero on 1 January and rise day by day across the shared Jan–Dec axis, so you can compare seasons side by side. After the last climb of a year the thin line continues **flat to December** (no invented volume). Click a day on a thin line to open `/logbook?day=` for that date (hover still shows the within-year total). Under the career dots, the parenthetical figure is **that year’s contribution**, not another YoY delta.
+粗强调折线表示所选指标的**生涯累计总量**。彩色细折线（在每日热力图数据可用时显示）每年均从 1 月 1 日的零点重新开始，并在共用的 1 月至 12 月横轴上逐日上升，方便你并排对比不同年份的季节表现。在某年最后一次攀登之后，细折线会**水平延伸至 12 月**（不会虚构攀登量）。点击细折线上的某一天即可打开该日期对应的 `/logbook?day=`（鼠标悬停仍会显示当年截至该日的累计总量）。生涯累计数据点下方括号内的数字表示**当年的贡献值**，而非另一个同比变化量。
 
-Your chart-mode preference is stored in the browser (`cs_yearly_chart`).
+你的图表模式偏好保存在浏览器中（`cs_yearly_chart`）。
 
-## Year-over-year table
+## 同比数据表
 
-Expand **Year-over-year table** on the card for numeric deltas across ascents, height, and onsights for every year in the logbook.
+展开卡片上的**同比数据表**，即可查看攀登日志中每一年在攀登次数、高度和视攀次数方面的具体数值变化。

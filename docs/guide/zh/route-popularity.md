@@ -1,30 +1,30 @@
-# Route popularity
+# 路线热度
 
-The **Route popularity** card uses community stats theCrag caches on each route: **ascent count**, **popularity**, and **relative popularity** (0–100). Crag Stats stores these when route data import runs (`ROUTE_DATA_IMPORT=true` on the server, then restart and sync).
+**路线热度**卡片使用 theCrag 为每条路线缓存的社区统计数据：**攀登次数**、**热度**以及**相对热度**（0–100）。当运行路线数据导入时（在服务器上设置 `ROUTE_DATA_IMPORT=true`，然后重启并同步），Crag Stats 会保存这些数据。
 
-## Beaten track vs off the beaten track
+## 热门路线与小众路线
 
-For each ascent where popularity data exists, we compare **relative popularity** when present, otherwise **global popularity**:
+对于存在热度数据的每次攀登，如果存在**相对热度**，我们会优先使用它进行比较，否则使用**全局热度**：
 
-| Bucket                   | Rule          |
-| ------------------------ | ------------- |
-| **Beaten track**         | Score ≥ 50    |
-| **Off the beaten track** | Score &lt; 50 |
+| 分组       | 规则         |
+| -------- | ---------- |
+| **热门路线** | 分数 ≥ 50    |
+| **小众路线** | 分数 &lt; 50 |
 
-The card shows what **share of those ticks** fall in each bucket. Ascents on routes without cached stats are excluded from the percentages.
+该卡片显示**这些攀登记录**在各分组中所占的比例。没有缓存统计数据的路线上的攀登记录不计入百分比。
 
-## Hidden gems
+## 宝藏路线
 
-**Hidden gems** are **sends** on routes that are both well regarded (`qualityScore` ≥ 70, or at least ★★★, or a strong quality label on your tick) and quiet (community **ascent count** ≤ 100 and popularity score &lt; 50). Up to three distinct routes are listed, ranked by quality.
+**宝藏路线**是指你**完攀**的、既备受好评（`qualityScore` ≥ 70，或至少 ★★★，或在你的攀登记录中有较高评价标签）又较为冷门（社区**攀登次数** ≤ 100 且热度分数 &lt; 50）的路线。最多列出三条不同的路线，按质量排序。
 
-## Logbook
+## 攀登日志
 
-Sort by **Pop.** to order ticks by route popularity (highest first by default). Rows without cached stats sort to the bottom.
+按**热度**排序即可按路线热度排列攀登记录（默认从高到低）。没有缓存统计数据的行会排在最底部。
 
-## Source
+## 数据来源
 
-Numbers come from theCrag’s route API (`show=info`). They reflect the whole community, not just your logbook.
+数值来自 theCrag 的路线 API（`show=info`）。它们反映的是整个社区的数据，而不仅仅是你的攀登日志。
 
-Popularity uses relative popularity when available, then global popularity. Community ascent counts are shown separately and never compared numerically with popularity scores.
+热度在可用时优先使用相对热度，其次使用全局热度。社区攀登次数会单独显示，绝不会与热度分数进行数值比较。
 
-To keep community ascent totals, popularity and ratings fresh, the server owner can set `ROUTE_DATA_REFRESH_DAYS` to a whole number of days from 30 through 3650 (e.g. `90` recommended, or `180` for about half a year), with `ROUTE_DATA_IMPORT=true`. These are rolling day intervals. After successful logbook syncs, new routes take priority, then the oldest stale fetches refresh within the same 100-route limit and pacing. A backlog can take several syncs. Unset, `0`, under 30, or over 3650 keeps the default fetch-once cache; **Refresh all** remains available in Settings.
+为了保持社区总攀登次数、热度和评分的时效性，服务器管理员可以在启用 `ROUTE_DATA_IMPORT=true` 的同时，将 `ROUTE_DATA_REFRESH_DAYS` 设置为 30 到 3650 之间的整数天数（例如建议设为 `90`，或设为 `180` 表示大约半年）。这些均为滚动天数间隔。在攀登日志成功同步后，新路线会优先获取，随后最早过期的缓存会在相同的 100 条路线限制和速率控制内刷新。积压的路线可能需要多次同步才能处理完毕。未设置、`0`、小于 30 或大于 3650 时将保持默认的仅获取一次缓存策略；你仍可在“设置”中使用**全部刷新**。

@@ -21,10 +21,7 @@ Crag Stats 通过以下两种方式之一获取你的日志：
 已更新。跳过的运行和错误会显示各自的消息，而不是成功摘要。
 
 手动 CSV 上传也会显示已处理/新建/更新的计数，但绝不会删除
-缺失的条目。 Route data and weather enrichment are separate background
-imports: when enabled, they start after every successful sync or CSV upload
-(including uploads to `POST /api/logbook/csv`), and are not included in these
-logbook counts. 摘要描述的是已完成的
+缺失的条目。路线数据和天气数据补充属于独立的后台导入：启用后，它们会在每次同步成功或上传 CSV（包括上传至 `POST /api/logbook/csv`）后启动，且不计入这些攀登日志统计中。摘要描述的是已完成的
 按钮操作；它不是持久的同步历史记录。
 
 ## API 同步
@@ -57,7 +54,7 @@ logbook counts. 摘要描述的是已完成的
 - `THECRAG_API_KEY`：你的赞助会员日志读取密钥，现在仅用于线路数据以及岩场/分区位置查询。
 - `THECRAG_USERNAME`：你的 theCrag 用户名，以便 FA/FFA 历史记录与你匹配（CSV 导出不包含此项）。
 
-这就是全部配置：三个值，无需切换模式。如果没有 `CSV_INGEST_TOKEN`，`THECRAG_API_KEY` 将同步日志，且线路数据共享同一密钥。 Background route and weather imports start after each successful sync or CSV upload, and also follow `IMPORT_CRON` (daily by default) rather than the logbook schedule, so a weekly or monthly `SYNC_CRON` still gets route data daily. 设置 → **导入线路数据** 显示进度并手动开始运行。
+这就是全部配置：三个值，无需切换模式。如果没有 `CSV_INGEST_TOKEN`，`THECRAG_API_KEY` 将同步日志，且线路数据共享同一密钥。后台路线与天气导入会在每次同步成功或上传 CSV 后启动，并遵循 `IMPORT_CRON`（默认每天一次）而非攀登日志的计划任务，因此即使 `SYNC_CRON` 设为每周或每月一次，仍会每天获取路线数据。设置 → **导入线路数据** 显示进度并手动开始运行。
 
 ## 从另一个容器上传 CSV
 
